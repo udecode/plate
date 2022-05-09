@@ -1,7 +1,7 @@
 import { ReactEditor } from 'slate-react';
-import { Value } from '../types/TEditor';
-import { TNode } from '../types/TNode';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TNode } from '../node/TNode';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * Find a key for a Slate node.

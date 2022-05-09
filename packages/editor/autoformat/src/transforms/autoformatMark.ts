@@ -1,13 +1,14 @@
 import {
   collapseSelection,
   deleteText,
-  getText,
+  getEditorString,
   removeMark,
   select,
   TEditor,
+  Value,
 } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Point, Range, Transforms } from 'slate';
+import { Point, Range } from 'slate';
 import { AutoformatMarkRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
@@ -16,8 +17,8 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
   text: string;
 }
 
-export const autoformatMark = (
-  editor: TEditor,
+export const autoformatMark = <V extends Value>(
+  editor: TEditor<V>,
   { type, text, trigger, match: _match, ignoreTrim }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
@@ -48,7 +49,7 @@ export const autoformatMark = (
     } as Range;
 
     if (!ignoreTrim) {
-      const matchText = getText(editor, matchRange);
+      const matchText = getEditorString(editor, matchRange);
       if (matchText.trim() !== matchText) continue;
     }
 
@@ -70,7 +71,7 @@ export const autoformatMark = (
       editor.addMark(mark, true);
     });
     collapseSelection(editor, { edge: 'end' });
-    removeMark(editor, { key: marks, shouldChange: false });
+    removeMark(editor, { key: marks as any, shouldChange: false });
 
     deleteText(editor, {
       at: {

@@ -1,12 +1,15 @@
 import React from 'react';
-import { LinkNodeData } from '@udecode/plate-link';
+import { Value } from '@udecode/plate-core';
+import { TLinkElement } from '@udecode/plate-link';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';
 
-export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {
+export const LinkElement = <V extends Value>(
+  props: StyledElementProps<V, TLinkElement>
+) => {
   const { attributes, children, nodeProps, element } = props;
 
   const rootProps = getRootProps(props);

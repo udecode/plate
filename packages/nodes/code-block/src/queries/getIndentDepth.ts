@@ -1,11 +1,11 @@
-import { getText, TEditor } from '@udecode/plate-core';
+import { getEditorString, TEditor, Value } from '@udecode/plate-core';
 import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
-export const getIndentDepth = (
-  editor: TEditor,
+export const getIndentDepth = <V extends Value>(
+  editor: TEditor<V>,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const text = getText(editor, codeLinePath);
+  const text = getEditorString(editor, codeLinePath);
   return text.search(/\S|$/);
 };

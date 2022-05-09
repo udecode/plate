@@ -1,6 +1,6 @@
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
-import { Value } from '../../../slate/types/TEditor';
+import { Value } from '../../../slate/editor/TEditor';
 import { KeyboardHandler } from '../../../types/plugins/KeyboardHandler';
 import { getPluginType } from '../../../utils/getPluginType';
 import { toggleNodeType } from '../../transforms/toggleNodeType';

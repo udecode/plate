@@ -2,18 +2,19 @@ import { DropTargetMonitor, useDrop } from 'react-dnd';
 import {
   collapseSelection,
   findNode,
+  focusEditor,
   isExpanded,
   moveNodes,
   TReactEditor,
+  Value,
 } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
-import { Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { DragItemBlock } from '../types';
 import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
 
-export const useDropBlockOnEditor = (
-  editor: TReactEditor,
+export const useDropBlockOnEditor = <V extends Value>(
+  editor: TReactEditor<V>,
   {
     blockRef,
     id,

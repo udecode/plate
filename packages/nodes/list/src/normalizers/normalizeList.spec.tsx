@@ -1,14 +1,16 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { getNode, normalizeEditor, PlateEditor } from '@udecode/plate-core';
+import { normalizeEditor, PlateEditor, Value } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createListPlugin } from '../createListPlugin';
 
 jsx;
 
-const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
+const testNormalize = (
+  input: PlateEditor<Value>,
+  output: PlateEditor<Value>
+): void => {
   const editor = createPlateUIEditor({
     editor: input,
     plugins: [createListPlugin()],

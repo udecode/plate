@@ -1,6 +1,6 @@
 import { Path } from 'slate';
-import { Value } from '../../slate/types/TEditor';
-import { EAncestorEntry, EDescendantEntry } from '../../slate/types/TNodeEntry';
+import { Value } from '../../slate/editor/TEditor';
+import { EAncestorEntry, EDescendantEntry } from '../../slate/node/TNodeEntry';
 
 /**
  * Get the next sibling nodes after a path.

@@ -1,9 +1,14 @@
-import { getBlockAbove, KeyboardHandler, queryNode } from '@udecode/plate-core';
+import {
+  getBlockAbove,
+  KeyboardHandler,
+  queryNode,
+  Value,
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { exitBreak } from './transforms/exitBreak';
 import { ExitBreakPlugin } from './types';
 
-export const onKeyDownExitBreak: KeyboardHandler<{}, ExitBreakPlugin> = (
+export const onKeyDownExitBreak: KeyboardHandler<Value, {}, ExitBreakPlugin> = (
   editor,
   { options: { rules = [] } }
 ) => (event) => {

@@ -1,27 +1,27 @@
 import {
   createPathRef,
   deleteMerge,
-  getNode,
+  getNodeEntry,
   getPluginType,
   getPreviousPath,
-  insertNodes,
+  insertElements,
   isExpanded,
   PlateEditor,
   removeNodes,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
-  list: TNodeEntry<TElement>;
-  listItem: TNodeEntry<TElement>;
+  list: TElementEntry;
+  listItem: TElementEntry;
   reverse?: boolean;
 }
 
@@ -54,14 +54,11 @@ export const removeListItem = <V extends Value>(
      * 5. remove tempLi
      */
     if (previousLiPath) {
-      const previousLi = getNode(
-        editor,
-        previousLiPath
-      ) as TNodeEntry<TElement>;
+      const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
 
       // 1
       let tempLiPath = Path.next(liPath);
-      insertNodes<TElement>(
+      insertElements(
         editor,
         {
           type: getPluginType(editor, ELEMENT_LI),
@@ -75,7 +72,7 @@ export const removeListItem = <V extends Value>(
         { at: tempLiPath }
       );
 
-      const tempLi = getNode(editor, tempLiPath) as TNodeEntry<TElement>;
+      const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
       const tempLiPathRef = createPathRef(editor, tempLi[1]);
 
       // 2

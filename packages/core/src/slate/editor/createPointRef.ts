@@ -1,5 +1,5 @@
 import { Editor, Point } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 export type CreatePointRefOptions = Parameters<typeof Editor.pointRef>[2];
 

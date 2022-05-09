@@ -1,8 +1,7 @@
 import {
   isFirstChild,
   PlateEditor,
-  TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
 } from '@udecode/plate-core';
 import { isListNested } from '../queries/isListNested';
@@ -17,8 +16,8 @@ export const removeFirstListItem = <V extends Value>(
     list,
     listItem,
   }: {
-    list: TNodeEntry<TElement>;
-    listItem: TNodeEntry<TElement>;
+    list: TElementEntry;
+    listItem: TElementEntry;
   }
 ) => {
   const [, listPath] = list;

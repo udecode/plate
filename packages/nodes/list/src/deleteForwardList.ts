@@ -1,22 +1,22 @@
 import {
   getBlockAbove,
   getChildren,
+  getEditorString,
   getNode,
-  getNodes,
+  getNodeEntries,
+  getNodeEntry,
   getParentNode,
   getPluginType,
   getPointAfter,
-  getText,
   isSelectionAtBlockEnd,
   PlateEditor,
   removeNodes,
-  TDescendant,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Node, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
 import {
@@ -25,11 +25,6 @@ import {
   removeFirstListItem,
   removeListItem,
 } from './transforms';
-
-const pathToEntry = <V extends Value, T extends Node>(
-  editor: PlateEditor<V>,
-  path: Path
-): TNodeEntry<T> => getNode(editor, path) as TNodeEntry<T>;
 
 const selectionIsNotInAListHandler = <V extends Value>(
   editor: PlateEditor<V>
@@ -52,7 +47,7 @@ const selectionIsNotInAListHandler = <V extends Value>(
         at: editor.selection!.anchor,
       });
 
-      if (!getText(editor, parentBlockEntity![1])) {
+      if (!getEditorString(editor, parentBlockEntity![1])) {
         // the selected block is empty
         removeNodes(editor);
 
@@ -75,14 +70,14 @@ const selectionIsNotInAListHandler = <V extends Value>(
 
 const selectionIsInAListHandler = <V extends Value>(
   editor: PlateEditor<V>,
-  res: { list: TNodeEntry<TElement>; listItem: TNodeEntry<TElement> }
+  res: { list: TElementEntry; listItem: TElementEntry }
 ): boolean => {
   const { listItem } = res;
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = getPluginType(editor, ELEMENT_LI);
-    const _nodes = getNodes(editor, {
+    const _nodes = getNodeEntries(editor, {
       at: listItem[1],
       mode: 'lowest',
       match: (node, path) => {
@@ -92,7 +87,7 @@ const selectionIsInAListHandler = <V extends Value>(
 
         const isNodeLi = (node as TElement).type === liType;
         const isSiblingOfNodeLi =
-          (getNode(editor, Path.next(path)) as TDescendant)?.type === liType;
+          getNode<TElement>(editor, Path.next(path))?.type === liType;
 
         return isNodeLi && isSiblingOfNodeLi;
       },
@@ -111,10 +106,7 @@ const selectionIsInAListHandler = <V extends Value>(
 
         if (nextSiblingListRes) {
           // it is a list so we merge the lists
-          const listRoot = getListRoot(
-            editor,
-            listItem[1]
-          ) as TNodeEntry<TElement>;
+          const listRoot = getListRoot(editor, listItem[1]);
 
           moveListItemsToList(editor, {
             fromList: nextSiblingListRes.list,
@@ -129,17 +121,15 @@ const selectionIsInAListHandler = <V extends Value>(
       return false;
     }
 
-    const siblingListItem = pathToEntry(
+    const siblingListItem = getNodeEntry<TElement>(
       editor,
       Path.next(liWithSiblings)
-    ) as TNodeEntry<TElement>;
+    );
 
-    const siblingList = getParentNode(
-      editor,
-      siblingListItem[1]
-    ) as TNodeEntry<TElement>;
+    const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
 
     if (
+      siblingList &&
       removeListItem(editor, {
         list: siblingList,
         listItem: siblingListItem,
@@ -155,13 +145,11 @@ const selectionIsInAListHandler = <V extends Value>(
   }
 
   // if it has children
-  const nestedList = pathToEntry<TElement>(
+  const nestedList = getNodeEntry<TElement>(
     editor,
     Path.next([...listItem[1], 0])
   );
-  const nestedListItem = getChildren<TElement>(
-    nestedList
-  )[0] as TNodeEntry<TElement>;
+  const nestedListItem = getChildren<TElement>(nestedList)[0];
 
   if (
     removeFirstListItem(editor, {

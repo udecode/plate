@@ -1,5 +1,5 @@
 import { Text } from 'slate';
-import { TText } from '../types/TText';
+import { TText } from './TText';
 
 /**
  * Check if an text matches set of properties.

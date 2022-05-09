@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';

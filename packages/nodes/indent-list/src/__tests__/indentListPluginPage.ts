@@ -1,6 +1,11 @@
-import { getNode, PlatePlugin, TElement, Value } from '@udecode/plate-core';
+import {
+  getNode,
+  getPreviousPath,
+  PlatePlugin,
+  TElement,
+  Value,
+} from '@udecode/plate-core';
 import { Path } from 'slate';
-import { getPreviousPath } from '../../../../core/src/common/queries/getPreviousPath';
 import { IndentListPlugin } from '../createIndentListPlugin';
 
 export const indentListPluginPage: Partial<
@@ -16,7 +21,7 @@ export const indentListPluginPage: Partial<
 
             const prevPagePath = [path[0] - 1];
 
-            const node = getNode(e, prevPagePath) as TElement | undefined;
+            const node = getNode<TElement>(e, prevPagePath);
             if (!node) return;
 
             const lastNode = node.children[node.children.length - 1];
@@ -30,12 +35,10 @@ export const indentListPluginPage: Partial<
         },
         getNextEntry: ([, path]: any) => {
           const nextPath = Path.next(path);
-          const nextNode = getNode(e, nextPath);
+          const nextNode = getNode<TElement>(e, nextPath);
           if (!nextNode) {
             const nextPagePath = [path[0] + 1];
-            const nextPageNode = getNode(e, nextPagePath) as
-              | TElement
-              | undefined;
+            const nextPageNode = getNode<TElement>(e, nextPagePath);
 
             if (!nextPageNode) return;
 

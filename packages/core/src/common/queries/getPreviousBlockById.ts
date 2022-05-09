@@ -1,10 +1,9 @@
-import { getNodes } from '../../slate/editor/getNodes';
+import { getNodeEntries } from '../../slate/editor/getNodeEntries';
 import { getPreviousNode } from '../../slate/editor/getPreviousNode';
 import { isBlock } from '../../slate/editor/isBlock';
-import { EDescendant } from '../../slate/types/TDescendant';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { ENode } from '../../slate/types/TNode';
-import { TNodeEntry } from '../../slate/types/TNodeEntry';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EDescendant } from '../../slate/node/TDescendant';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
 import { queryNode } from './queryNode';
@@ -13,22 +12,25 @@ import { queryNode } from './queryNode';
  * Find the block before a block by id.
  * If not found, find the first block by id and return [null, its previous path]
  */
-export const getPreviousBlockById = <V extends Value, N extends EDescendant<V>>(
+export const getPreviousBlockById = <
+  N extends EDescendant<V>,
+  V extends Value = Value
+>(
   editor: TEditor<V>,
   id: string,
-  query?: QueryNodeOptions<ENode<V>>
+  query?: QueryNodeOptions
 ): TNodeEntry<N> | undefined => {
-  const entry = findNode<V, ENode<V>>(editor, {
+  const entry = findNode(editor, {
     match: { id },
   });
   if (entry) {
-    const prevEntry = getPreviousNode<V, N>(editor, { at: entry[1] });
+    const prevEntry = getPreviousNode<N>(editor, { at: entry[1] });
     if (prevEntry && prevEntry[0].id && isBlock(editor, prevEntry[0])) {
       return prevEntry;
     }
   }
   let found = false;
-  const _nodes = getNodes<V, N>(editor, {
+  const _nodes = getNodeEntries<N>(editor, {
     mode: 'highest',
     reverse: true,
     match: (n) => {
@@ -51,7 +53,7 @@ export const getPreviousBlockById = <V extends Value, N extends EDescendant<V>>(
   }
   if (!found) return;
 
-  const _entries = getNodes<V, EDescendant<V>>(editor, {
+  const _entries = getNodeEntries(editor, {
     mode: 'highest',
     match: (n) => {
       return isBlock(editor, n) && !!n.id && queryNode([n, []], query);

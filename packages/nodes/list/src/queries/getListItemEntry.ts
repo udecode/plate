@@ -1,12 +1,12 @@
 import {
   getAboveNode,
-  getNode,
+  getNodeEntry,
   getParentNode,
   getPluginType,
   isCollapsed,
   PlateEditor,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
 } from '@udecode/plate-core';
 import { Location, Path, Range } from 'slate';
@@ -18,9 +18,7 @@ import { ELEMENT_LI } from '../createListPlugin';
 export const getListItemEntry = <V extends Value>(
   editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}
-):
-  | { list: TNodeEntry<TElement>; listItem: TNodeEntry<TElement> }
-  | undefined => {
+): { list: TElementEntry; listItem: TElementEntry } | undefined => {
   const liType = getPluginType(editor, ELEMENT_LI);
 
   let _at: Path;
@@ -34,15 +32,15 @@ export const getListItemEntry = <V extends Value>(
   }
 
   if (_at) {
-    const node = getNode(editor, _at) as TElement;
+    const node = getNodeEntry<TElement>(editor, _at);
     if (node) {
-      const listItem = getAboveNode(editor, {
+      const listItem = getAboveNode<TElement>(editor, {
         at: _at,
         match: { type: liType },
-      }) as TNodeEntry<TElement>;
+      });
 
       if (listItem) {
-        const list = getParentNode(editor, listItem[1]) as TNodeEntry<TElement>;
+        const list = getParentNode<TElement>(editor, listItem[1])!;
 
         return { list, listItem };
       }

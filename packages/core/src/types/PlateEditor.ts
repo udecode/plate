@@ -1,6 +1,6 @@
-import { TEditor, Value } from '../slate/types/TEditor';
-import { THistoryEditor } from '../slate/types/THistoryEditor';
-import { TReactEditor } from '../slate/types/TReactEditor';
+import { TEditor, Value } from '../slate/editor/TEditor';
+import { THistoryEditor } from '../slate/history-editor/THistoryEditor';
+import { TReactEditor } from '../slate/react-editor/TReactEditor';
 import { WithPlatePlugin } from './plugins/PlatePlugin';
 import { PluginKey } from './plugins/PlatePluginKey';
 

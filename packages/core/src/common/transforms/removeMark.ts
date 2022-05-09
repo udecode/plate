@@ -1,11 +1,11 @@
 import { castArray } from 'lodash';
 import { Range } from 'slate';
 import { getMarks } from '../../slate/editor/getMarks';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { isText } from '../../slate/text/isText';
+import { EMarks } from '../../slate/text/TText';
 import { SetNodesOptions } from '../../slate/transforms/setNodes';
 import { unsetNodes } from '../../slate/transforms/unsetNodes';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { EMarks } from '../../slate/types/TText';
 
 export interface RemoveMarkOptions<V extends Value, K extends keyof EMarks<V>>
   extends Omit<SetNodesOptions<V>, 'match' | 'split'> {

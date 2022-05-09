@@ -10,9 +10,11 @@ import {
   setSelection,
   TElement,
   TNode,
+  TText,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
-import { Editor, Node, Range } from 'slate';
+import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -20,9 +22,9 @@ import {
   isNodeMentionInput,
   isSelectionInMentionInput,
 } from './queries';
-import { MentionInputNode, MentionPlugin } from './types';
+import { MentionPlugin, TMentionInputElement } from './types';
 
-export const withMention: WithOverride<{}, MentionPlugin> = (
+export const withMention: WithOverride<Value, {}, MentionPlugin> = (
   editor,
   { options: { id, trigger, inputCreation } }
 ) => {
@@ -84,7 +86,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       (beginningOfLine || precededByWhitespace) &&
       (endOfLine || followedByWhitespace)
     ) {
-      const data: MentionInputNode = {
+      const data: TMentionInputElement = {
         type,
         children: [{ text: '' }],
         trigger,
@@ -92,7 +94,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       if (inputCreation) {
         data[inputCreation.key] = inputCreation.value;
       }
-      return insertNodes<MentionInputNode>(editor, data);
+      return insertNodes<TMentionInputElement>(editor, data);
     }
 
     return insertText(text);
@@ -126,11 +128,13 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       operation.type === 'insert_node' &&
       isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if ((operation.node as TElement).trigger !== trigger) {
+      if ((operation.node as TMentionInputElement).trigger !== trigger) {
         return;
       }
 
-      const text = (operation.node as TElement).children[0]?.text ?? '';
+      const text =
+        ((operation.node as TMentionInputElement).children as TText[])[0]
+          ?.text ?? '';
 
       if (
         inputCreation === undefined ||

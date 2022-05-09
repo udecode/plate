@@ -6,12 +6,11 @@ import {
   isCollapsed,
   PlateEditor,
   select,
-  TElement,
   unwrapNodes,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
-import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_LINK } from '../createLinkPlugin';
+import { TLinkElement } from '../types';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -37,7 +36,7 @@ export const upsertLinkAtSelection = <V extends Value, T = {}>(
   const type = getPluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
-    return insertNodes<TElement>(editor, {
+    return insertNodes<TLinkElement>(editor, {
       type,
       url,
       children: [{ text: url }],

@@ -1,21 +1,21 @@
 import { Editor, Location, Path, Point, Range } from 'slate';
+import { TNodeEntry } from '../node/TNodeEntry';
 import { mergeNodes } from '../transforms/mergeNodes';
 import { removeNodes } from '../transforms/removeNodes';
 import { select } from '../transforms/select';
-import { TEditor, Value } from '../types/TEditor';
-import { TNodeEntry } from '../types/TNodeEntry';
 import { createPathRef } from './createPathRef';
 import { createPointRef } from './createPointRef';
 import { getAboveNode } from './getAboveNode';
 import { getEndPoint } from './getEndPoint';
 import { getLeafNode } from './getLeafNode';
-import { getNodes } from './getNodes';
+import { getNodeEntries } from './getNodeEntries';
 import { getPointAfter } from './getPointAfter';
 import { getPointBefore } from './getPointBefore';
 import { getStartPoint } from './getStartPoint';
 import { getVoidNode } from './getVoidNode';
 import { isBlock } from './isBlock';
 import { isVoid } from './isVoid';
+import { TEditor, Value } from './TEditor';
 import { withoutNormalizing } from './withoutNormalizing';
 
 export const deleteMerge = <V extends Value>(
@@ -121,7 +121,7 @@ export const deleteMerge = <V extends Value>(
     const matches: TNodeEntry[] = [];
     let lastPath: Path | undefined;
 
-    const _nodes = getNodes(editor as any, { at, voids });
+    const _nodes = getNodeEntries(editor as any, { at, voids });
     for (const entry of _nodes) {
       const [node, path] = entry;
 

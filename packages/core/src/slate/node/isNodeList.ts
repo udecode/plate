@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { TNode } from '../types/TNode';
+import { TNode } from './TNode';
 
 /**
  * Check if a value is a list of `Node` objects.

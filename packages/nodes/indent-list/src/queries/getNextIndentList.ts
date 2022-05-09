@@ -1,4 +1,11 @@
-import { getNode, TEditor, TNodeEntry } from '@udecode/plate-core';
+import {
+  EElement,
+  EElementEntry,
+  getNode,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 import {
   getSiblingIndentList,
@@ -8,15 +15,15 @@ import {
 /**
  * Get the next indent list.
  */
-export const getNextIndentList = (
-  editor: TEditor,
-  entry: TNodeEntry,
-  options?: Partial<GetSiblingIndentListOptions>
-): TNodeEntry | undefined => {
+export const getNextIndentList = <N extends EElement<V>, V extends Value>(
+  editor: TEditor<V>,
+  entry: EElementEntry<V>,
+  options?: Partial<GetSiblingIndentListOptions<N, V>>
+): TNodeEntry<N> | undefined => {
   return getSiblingIndentList(editor, entry, {
     getNextEntry: ([, currPath]) => {
       const nextPath = Path.next(currPath);
-      const nextNode = getNode(editor, nextPath);
+      const nextNode = getNode<N>(editor, nextPath);
       if (!nextNode) return;
 
       return [nextNode, nextPath];

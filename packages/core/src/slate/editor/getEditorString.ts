@@ -1,5 +1,5 @@
 import { Editor, Location } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 export type GetEditorStringOptions = Parameters<typeof Editor.string>[2];
 

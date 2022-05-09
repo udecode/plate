@@ -2,12 +2,12 @@ import {
   getAboveNode,
   getNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   isLastChild,
   moveNodes,
   PlateEditor,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
@@ -18,8 +18,8 @@ import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: TNodeEntry<TElement>;
-  listItem: TNodeEntry<TElement>;
+  list: TElementEntry;
+  listItem: TElementEntry;
 }
 
 /**
@@ -50,7 +50,7 @@ export const moveListItemUp = <V extends Value>(
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        insertNodes<TElement>(
+        insertElements(
           editor,
           {
             type: listNode.type,
@@ -98,7 +98,7 @@ export const moveListItemUp = <V extends Value>(
     if (!isLastChild(list, liPath)) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        insertNodes<TElement>(
+        insertElements(
           editor,
           {
             type: listNode.type,

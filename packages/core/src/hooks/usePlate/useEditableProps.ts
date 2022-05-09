@@ -3,7 +3,7 @@ import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 import { PlateProps } from '../../components/Plate';
 import { TEditableProps } from '../../slate/types/TEditableProps';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import { usePlateSelectors } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';

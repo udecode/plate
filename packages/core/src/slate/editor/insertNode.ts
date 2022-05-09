@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import { EDescendant } from '../types/TDescendant';
-import { TEditor, Value } from '../types/TEditor';
+import { EDescendant } from '../node/TDescendant';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Insert a node at the current selection.

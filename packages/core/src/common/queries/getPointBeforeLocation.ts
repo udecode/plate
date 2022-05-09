@@ -5,7 +5,7 @@ import { Location, Point } from 'slate';
 import { getEditorString } from '../../slate/editor/getEditorString';
 import { getPoint } from '../../slate/editor/getPoint';
 import { getPointBefore } from '../../slate/editor/getPointBefore';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {

@@ -2,7 +2,6 @@ import {
   getNodeString,
   isElement,
   removeNodes,
-  TNodeEntry,
   Value,
   WithOverride,
 } from '@udecode/plate-core';
@@ -21,7 +20,7 @@ export const withRemoveEmptyNodes: WithOverride<
 
   const { normalizeNode } = editor;
 
-  editor.normalizeNode = ([node, path]: TNodeEntry) => {
+  editor.normalizeNode = ([node, path]) => {
     if (
       isElement(node) &&
       node.type &&

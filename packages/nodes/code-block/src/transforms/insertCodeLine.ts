@@ -1,4 +1,4 @@
-import { insertNodes, PlateEditor, TElement, Value } from '@udecode/plate-core';
+import { insertElements, PlateEditor, Value } from '@udecode/plate-core';
 import { getCodeLineType } from '../options';
 
 /**
@@ -11,7 +11,7 @@ export const insertCodeLine = <V extends Value>(
   if (editor.selection) {
     const indent = ' '.repeat(indentDepth);
 
-    insertNodes<TElement>(editor, {
+    insertElements(editor, {
       type: getCodeLineType(editor),
       children: [{ text: indent }],
     });

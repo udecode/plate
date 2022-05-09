@@ -3,8 +3,8 @@ import { getEndPoint } from '../../slate/editor/getEndPoint';
 import { getStartPoint } from '../../slate/editor/getStartPoint';
 import { focusEditor } from '../../slate/react-editor/focusEditor';
 import { select } from '../../slate/transforms/select';
-import { Value } from '../../slate/types/TEditor';
-import { TReactEditor } from '../../slate/types/TReactEditor';
+import { Value } from '../../slate/editor/TEditor';
+import { TReactEditor } from '../../slate/react-editor/TReactEditor';
 
 export interface SelectEditorOptions {
   /**

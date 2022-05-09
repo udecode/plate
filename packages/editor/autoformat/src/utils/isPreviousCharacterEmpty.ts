@@ -1,10 +1,18 @@
-import { getRangeBefore, getText, TEditor } from '@udecode/plate-core';
+import {
+  getEditorString,
+  getRangeBefore,
+  TEditor,
+  Value,
+} from '@udecode/plate-core';
 import { Location } from 'slate';
 
-export const isPreviousCharacterEmpty = (editor: TEditor, at: Location) => {
+export const isPreviousCharacterEmpty = <V extends Value>(
+  editor: TEditor<V>,
+  at: Location
+) => {
   const range = getRangeBefore(editor, at);
   if (range) {
-    const text = getText(editor, range);
+    const text = getEditorString(editor, range);
     if (text) {
       const noWhiteSpaceRegex = new RegExp(`\\S+`);
 

@@ -1,21 +1,21 @@
 import { Path } from 'slate';
 import { isText } from '../../slate/text/isText';
-import { ChildOf } from '../../slate/types/TDescendant';
-import { TNode } from '../../slate/types/TNode';
-import { TNodeChildEntry, TNodeEntry } from '../../slate/types/TNodeEntry';
+import { ChildOf } from '../../slate/node/TDescendant';
+import { TNode } from '../../slate/node/TNode';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 
 /**
  * Get the last child of a node or null if no children.
  */
-export const getLastChild = <N extends TNode>(
-  nodeEntry: TNodeEntry<N>
-): TNodeChildEntry<N> | null => {
+export const getLastChild = <N extends ChildOf<R>, R extends TNode>(
+  nodeEntry: TNodeEntry<R>
+): TNodeEntry<N> | null => {
   const [node, path] = nodeEntry;
 
   if (isText(node)) return null;
   if (!node.children.length) return null;
 
-  const children = node.children as ChildOf<N>[];
+  const children = node.children as N[];
 
   return [children[children.length - 1], path.concat([children.length - 1])];
 };

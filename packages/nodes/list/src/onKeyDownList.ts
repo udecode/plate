@@ -2,12 +2,13 @@ import {
   getAboveNode,
   HotkeyPlugin,
   KeyboardHandler,
+  Value,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { moveListItems, toggleList } from './transforms';
 
-export const onKeyDownList: KeyboardHandler<{}, HotkeyPlugin> = (
+export const onKeyDownList: KeyboardHandler<Value, {}, HotkeyPlugin> = (
   editor,
   { type, options: { hotkey } }
 ) => (e) => {

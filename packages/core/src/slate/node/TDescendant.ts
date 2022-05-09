@@ -1,9 +1,9 @@
+import { TEditor, Value } from '../editor/TEditor';
 import { isElement } from '../element/isElement';
+import { EElement, ElementOf, TElement } from '../element/TElement';
 import { isText } from '../text/isText';
-import { TEditor, Value } from './TEditor';
-import { EElement, ElementOf, TElement } from './TElement';
+import { EText, TextOf, TText } from '../text/TText';
 import { TNode } from './TNode';
-import { EText, TextOf, TText } from './TText';
 
 /**
  * The `Descendant` union type represents nodes that are descendants in the

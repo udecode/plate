@@ -3,11 +3,11 @@ import {
   findDescendant,
   getLastChildPath,
   getParentNode,
-  insertNodes,
+  insertElements,
   moveChildren,
   PlateEditor,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
@@ -18,12 +18,12 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
    * The list item to merge.
    */
-  fromListItem: TNodeEntry<TElement>;
+  fromListItem: TElementEntry;
 
   /**
    * The list item where to merge.
    */
-  toListItem: TNodeEntry<TElement>;
+  toListItem: TElementEntry;
 
   /**
    * Move to the start of the list instead of the end.
@@ -54,7 +54,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
         type: getListTypes(editor),
       },
     });
-    if (!fromListItemSublist) return 0;
+    if (!fromListItemSublist) return;
 
     const [, fromListItemSublistPath] = fromListItemSublist;
 
@@ -69,16 +69,16 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
 
     if (!toListItemSublist) {
       const fromList = getParentNode(editor, fromListItemPath);
-      if (!fromList) return 0;
+      if (!fromList) return;
       const [fromListNode] = fromList;
 
       const fromListType = fromListNode.type;
 
       const toListItemSublistPath = toListItemPath.concat([1]);
 
-      insertNodes<TElement>(
+      insertElements(
         editor,
-        { type: fromListType, children: [] },
+        { type: fromListType as string, children: [] },
         { at: toListItemSublistPath }
       );
 

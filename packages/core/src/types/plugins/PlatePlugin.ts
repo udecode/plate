@@ -1,6 +1,6 @@
 import { Nullable } from '../../common/types/utility/Nullable';
 import { WithRequired } from '../../common/types/utility/types';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';

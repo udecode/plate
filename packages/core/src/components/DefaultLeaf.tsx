@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 
 export const DefaultLeaf = <V extends Value>({

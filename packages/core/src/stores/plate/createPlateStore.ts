@@ -1,7 +1,7 @@
 import { createStore } from '@udecode/zustood';
 import { ELEMENT_DEFAULT } from '../../common/types/node.types';
 import { withPlate } from '../../plugins/withPlate';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
 import { createTEditor } from '../../utils/createTEditor';
 

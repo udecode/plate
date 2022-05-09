@@ -1,7 +1,7 @@
 import { Location } from 'slate';
-import { EAncestor } from '../../slate/types/TAncestor';
-import { Value } from '../../slate/types/TEditor';
-import { ENode, TNode } from '../../slate/types/TNode';
+import { Value } from '../../slate/editor/TEditor';
+import { EAncestor } from '../../slate/node/TAncestor';
+import { ENode, TNode } from '../../slate/node/TNode';
 import { Predicate } from '../queries/match';
 
 export type ENodeMatch<N extends TNode> = Predicate<N>;

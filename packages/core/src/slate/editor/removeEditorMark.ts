@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { EMarks } from '../types/TText';
+import { EMarks } from '../text/TText';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Remove a custom property from all of the leaf text nodes in the current

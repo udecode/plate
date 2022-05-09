@@ -1,4 +1,4 @@
-import { TEditor, TNodeEntry, unsetNodes } from '@udecode/plate-core';
+import { TEditor, TNodeEntry, unsetNodes, Value } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 import { outdentList } from './outdentList';
@@ -6,8 +6,8 @@ import { outdentList } from './outdentList';
 /**
  * Unset list style type if already set.
  */
-export const toggleIndentListUnset = (
-  editor: TEditor,
+export const toggleIndentListUnset = <V extends Value>(
+  editor: TEditor<V>,
   [node, path]: TNodeEntry,
   {
     listStyleType = ListStyleType.Disc,
@@ -16,7 +16,7 @@ export const toggleIndentListUnset = (
   }
 ) => {
   if (listStyleType === node[KEY_LIST_STYLE_TYPE]) {
-    unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
+    unsetNodes(editor as any, KEY_LIST_STYLE_TYPE, { at: path });
     outdentList(editor as any, { listStyleType });
     return true;
   }

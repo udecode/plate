@@ -1,7 +1,9 @@
+import { TElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
-export interface HrElementStyleProps extends HrElementProps {
+export interface HrElementStyleProps<V extends Value>
+  extends HrElementProps<V> {
   selected?: boolean;
   focused?: boolean;
 }
@@ -10,5 +12,5 @@ export interface HrElementStyles {
   hr: CSSProp;
 }
 
-export interface HrElementProps
-  extends StyledElementProps<{}, HrElementStyles> {}
+export interface HrElementProps<V extends Value>
+  extends StyledElementProps<V, TElement, HrElementStyles> {}

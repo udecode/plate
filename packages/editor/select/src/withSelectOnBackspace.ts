@@ -1,19 +1,20 @@
 import {
-  getNodes,
+  getNodeEntries,
   getPointBefore,
   isCollapsed,
   queryNode,
   select,
-  TNode,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
-import Slate, { Editor } from 'slate';
+import Slate from 'slate';
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 
 /**
  * Set a list of element types to select on backspace
  */
 export const withSelectOnBackspace: WithOverride<
+  Value,
   {},
   SelectOnBackspacePlugin
 > = (editor, { options: { query } }) => {
@@ -26,8 +27,8 @@ export const withSelectOnBackspace: WithOverride<
         unit,
       });
       if (prevNode) {
-        const [prevCell] = getNodes(editor, {
-          match: (node) => queryNode([node as TNode, prevNode.path], query),
+        const [prevCell] = getNodeEntries(editor, {
+          match: (node) => queryNode([node, prevNode.path], query),
           at: prevNode,
         });
 

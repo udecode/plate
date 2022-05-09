@@ -1,6 +1,6 @@
 import { Nullable } from '../common/types/utility/Nullable';
 import { TEditableProps } from '../slate/types/TEditableProps';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { createPlateStore } from '../stores/plate/createPlateStore';
 import { PlatePlugin } from './plugins/PlatePlugin';
 import { PlateEditor } from './PlateEditor';

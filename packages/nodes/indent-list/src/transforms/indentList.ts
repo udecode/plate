@@ -3,7 +3,8 @@ import { setIndent, SetIndentOptions } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 
-export interface IndentListOptions extends SetIndentOptions {
+export interface IndentListOptions<V extends Value>
+  extends SetIndentOptions<V> {
   listStyleType?: ListStyleType | string;
 }
 
@@ -12,7 +13,7 @@ export interface IndentListOptions extends SetIndentOptions {
  */
 export const indentList = <V extends Value>(
   editor: PlateEditor<V>,
-  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions = {}
+  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<V> = {}
 ) => {
   setIndent(editor, {
     offset: 1,

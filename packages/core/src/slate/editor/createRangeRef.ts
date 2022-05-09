@@ -1,5 +1,5 @@
 import { Editor, Range } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 export type CreateRangeRefOptions = Parameters<typeof Editor.rangeRef>[2];
 

@@ -2,7 +2,7 @@ import { createStore } from '@udecode/zustood';
 import { castArray } from 'lodash';
 import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import {
   PlatesStoreState,
   PlateStoreApi,

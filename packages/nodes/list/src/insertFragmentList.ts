@@ -1,29 +1,29 @@
 import {
-  AncestorOf,
-  DescendantOf,
   EDescendant,
   EText,
   findNode,
   getCommonNode,
-  getNodeNode,
-  getNodeNodes,
+  getNode,
+  getNodeEntries,
   getNodeString,
   getNodeTexts,
   getPlugin,
+  insertElements,
   insertFragment,
-  insertNodes,
   isElement,
   PlateEditor,
   PlatePlugin,
   removeNodes,
+  TAncestor,
   TAncestorEntry,
   TDescendant,
+  TDescendantEntry,
   TElement,
-  TNode,
-  TNodeEntry,
+  TElementEntry,
+  TText,
   Value,
 } from '@udecode/plate-core';
-import { Node, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemContentType, getListItemType, isListRoot } from './queries';
 
@@ -34,32 +34,32 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
 
-  const getFirstAncestorOfType = <N extends TDescendant>(
-    root: TNode,
-    entry: TNodeEntry<N>,
+  const getFirstAncestorOfType = (
+    root: TDescendant,
+    entry: TDescendantEntry,
     { type }: PlatePlugin<V>
-  ): TAncestorEntry<N> => {
+  ): TAncestorEntry => {
     let ancestor: Path = Path.parent(entry[1]);
-    while ((getNodeNode(root, ancestor) as TDescendant).type !== type) {
+    while ((getNode(root, ancestor) as TDescendant).type !== type) {
       ancestor = Path.parent(ancestor);
     }
 
-    return [getNodeNode(root, ancestor) as AncestorOf<N>, ancestor];
+    return [getNode(root, ancestor) as TAncestor, ancestor];
   };
 
-  const findListItemsWithContent = <N extends TDescendant>(first: N) => {
+  const findListItemsWithContent = (first: TDescendant): TDescendant[] => {
     let prev = null;
-    let node: N | DescendantOf<N> = first;
+    let node = first;
     while (
       isListRoot(editor, node) ||
       (node.type === listItemType &&
-        (node.children as DescendantOf<N>[])[0].type !== listItemContentType)
+        (node.children as TElement[])[0].type !== listItemContentType)
     ) {
       prev = node;
-      [node] = node.children as DescendantOf<N>[];
+      [node] = node.children as TDescendant[];
     }
 
-    return (prev ? prev.children : [node]) as DescendantOf<N>[];
+    return prev ? (prev.children as TDescendant[]) : [node];
   };
 
   /**
@@ -67,9 +67,9 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
    *
    * @returns If argument is not a list root, returns it, otherwise returns ul[] or li[].
    */
-  const trimList = <N extends TDescendant>(listRoot: N): N[] => {
+  const trimList = (listRoot: TDescendant): TElement[] => {
     if (!isListRoot(editor, listRoot)) {
-      return [listRoot];
+      return [listRoot as TElement];
     }
 
     const _texts = getNodeTexts(listRoot);
@@ -93,13 +93,13 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     return [...findListItemsWithContent(first), ...rest];
   };
 
-  const wrapNodeIntoListItem = <N extends TDescendant>(node: N) => {
+  const wrapNodeIntoListItem = (node: TDescendant): TElement => {
     return node.type === listItemType
-      ? node
+      ? (node as TElement)
       : ({
           type: listItemType,
           children: [node],
-        } as N);
+        } as TElement);
   };
 
   /**
@@ -111,16 +111,16 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
 
     return (
       isFragmentOnlyListRoot &&
-      [...getNodeNodes({ children: fragment })]
-        .filter((entry): entry is TNodeEntry<TElement> => isElement(entry[0]))
+      [...getNodeEntries({ children: fragment } as any)]
+        .filter((entry): entry is TElementEntry => isElement(entry[0]))
         .filter(([node]) => node.type === listItemContentType).length === 1
     );
   };
 
-  const getTextAndListItemNodes = <D extends TDescendant, N extends TNode>(
-    fragment: D[],
-    liEntry: TNodeEntry<N>,
-    licEntry: TNodeEntry<N>
+  const getTextAndListItemNodes = (
+    fragment: TDescendant[],
+    liEntry: TElementEntry,
+    licEntry: TElementEntry
   ) => {
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;
@@ -128,18 +128,18 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
-    let textNode;
-    let listItemNodes;
+    let textNode: TText;
+    let listItemNodes: TElement[];
     if (isListRoot(editor, fragment[0])) {
       if (isSingleLic(fragment)) {
-        textNode = first;
-        listItemNodes = rest;
+        textNode = first as any;
+        listItemNodes = rest as TElement[];
       } else if (isEmptyNode) {
         // FIXME: is there a more direct way to set this?
-        const li = getNodeNode(editor, liPath);
-        const [, ...currentSublists] = li!.children as DescendantOf<D>[];
-        const [newLic, ...newSublists] = first.children as DescendantOf<D>[];
-        insertNodes(editor, newLic as EDescendant<V>, {
+        const li = getNode(editor, liPath);
+        const [, ...currentSublists] = li!.children as TElement[];
+        const [newLic, ...newSublists] = first.children as TElement[];
+        insertElements(editor, newLic, {
           at: Path.next(licPath),
           select: true,
         });
@@ -150,12 +150,12 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
           if (currentSublists?.length) {
             // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
             const path = [...liPath, 1, 0];
-            insertNodes(editor, newSublists[0].children as EDescendant<V>[], {
+            insertElements(editor, newSublists[0].children as TElement[], {
               at: path,
               select: true,
             });
           } else {
-            insertNodes(editor, newSublists as EDescendant<V>[], {
+            insertElements(editor, newSublists, {
               at: Path.next(licPath),
               select: true,
             });
@@ -163,21 +163,21 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
         }
 
         textNode = { text: '' };
-        listItemNodes = rest;
+        listItemNodes = rest as TElement[];
       } else {
         textNode = { text: '' };
-        listItemNodes = [first, ...rest];
+        listItemNodes = [first as TElement, ...(rest as TElement[])];
       }
     } else {
-      textNode = first;
-      listItemNodes = rest;
+      textNode = first as any;
+      listItemNodes = rest as TElement[];
     }
 
     return { textNode, listItemNodes };
   };
 
   return (fragment: EDescendant<V>[]) => {
-    let liEntry = findNode(editor, {
+    let liEntry = findNode<TElement>(editor, {
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -191,15 +191,15 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     }
 
     // delete selection (if necessary) so that it can check if needs to insert into an empty block
-    insertFragment(editor, [{ text: '' } as EText<V>]);
+    insertFragment<TText>(editor, [{ text: '' }]);
 
     // refetch to find the currently selected LI after the deletion above is performed
-    liEntry = findNode(editor, {
+    liEntry = findNode<TElement>(editor, {
       match: { type: listItemType },
       mode: 'lowest',
     });
 
-    const licEntry = findNode(editor, {
+    const licEntry = findNode<TElement>(editor, {
       match: { type: listItemContentType },
       mode: 'lowest',
     });
@@ -217,11 +217,11 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       licEntry
     );
 
-    insertFragment(editor, [textNode as EText<V>]); // insert text if needed
+    insertFragment<TText>(editor, [textNode]); // insert text if needed
 
     const [, liPath] = liEntry!;
 
-    return insertNodes(editor, listItemNodes as EDescendant<V>[], {
+    return insertElements(editor, listItemNodes, {
       at: Path.next(liPath),
       select: true,
     });

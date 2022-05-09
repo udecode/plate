@@ -6,7 +6,6 @@ import {
   mergeNodes,
   PlateEditor,
   splitNodes,
-  TElement,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import {
@@ -435,7 +434,7 @@ describe('when inserting nodes', () => {
         ],
       });
 
-      insertNodes<TElement>(
+      insertNodes(
         editor,
         (
           <fragment>
@@ -444,7 +443,7 @@ describe('when inserting nodes', () => {
         ) as any
       );
 
-      insertNodes<TElement>(
+      insertNodes(
         editor,
         (
           <fragment>

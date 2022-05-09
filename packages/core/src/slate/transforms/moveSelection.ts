@@ -1,5 +1,5 @@
 import { Transforms } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from '../editor/TEditor';
 
 /**
  * Move the selection's point forward or backward.

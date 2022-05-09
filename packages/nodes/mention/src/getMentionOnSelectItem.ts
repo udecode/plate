@@ -17,15 +17,15 @@ import {
   PlatePluginKey,
   removeNodes,
   select,
+  TNodeProps,
+  withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor } from 'slate';
-import { HistoryEditor } from 'slate-history';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
-import { MentionNode, MentionNodeData, MentionPlugin } from './types';
+import { MentionPlugin, TMentionElement } from './types';
 
 export interface CreateMentionNode<TData extends Data> {
-  (item: TComboboxItem<TData>): MentionNodeData;
+  (item: TComboboxItem<TData>): TNodeProps<TMentionElement>;
 }
 
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
@@ -37,7 +37,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
   const {
     type,
     options: { insertSpaceAfterMention, createMentionNode },
-  } = getPlugin<MentionPlugin>(editor, key);
+  } = getPlugin<MentionPlugin>(editor as any, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
@@ -53,18 +53,20 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
     select(editor, targetRange);
 
-    HistoryEditor.withoutMerging(editor, () =>
+    withoutMergingHistory(editor, () =>
       removeNodes(editor, {
         // TODO: replace any
         match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
       })
     );
 
-    insertNodes<MentionNode>(editor, {
+    const props = createMentionNode!(item);
+
+    insertNodes<TMentionElement>(editor, {
       type,
       children: [{ text: '' }],
-      ...createMentionNode!(item),
-    });
+      ...props,
+    } as TMentionElement);
 
     // move the selection after the element
     moveSelection(editor);

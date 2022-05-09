@@ -1,7 +1,7 @@
 import { ReactEditor } from 'slate-react';
 import { DOMNode } from 'slate-react/dist/utils/dom';
-import { Value } from '../types/TEditor';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * Check if a DOM node is within the editor.

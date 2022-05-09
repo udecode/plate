@@ -1,14 +1,14 @@
-import { TNode } from '../../slate/types/TNode';
-import { TNodeEntry } from '../../slate/types/TNodeEntry';
+import { TNode } from '../../slate/node/TNode';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 
 /**
  * Filter nodes.
  */
-export interface QueryNodeOptions<N extends TNode> {
+export interface QueryNodeOptions {
   /**
    * Query the node entry.
    */
-  filter?: (entry: TNodeEntry<N>) => boolean;
+  filter?: <N extends TNode>(entry: TNodeEntry<N>) => boolean;
 
   /**
    * List of types that are valid. If empty or undefined - allow all.

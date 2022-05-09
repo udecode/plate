@@ -1,7 +1,12 @@
-import { getPluginType, PlateEditor, wrapNodes } from '@udecode/plate-core';
+import {
+  getPluginType,
+  PlateEditor,
+  Value,
+  wrapNodes,
+} from '@udecode/plate-core';
 import { Location } from 'slate';
-import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_LINK } from '../createLinkPlugin';
+import { TLinkElement } from '../types';
 
 /**
  * Wrap selected nodes with a link and collapse at the end.
@@ -10,7 +15,7 @@ export const wrapLink = <V extends Value, T = {}>(
   editor: PlateEditor<V, T>,
   { at, url }: { url: string; at?: Location }
 ) => {
-  wrapNodes(
+  wrapNodes<TLinkElement>(
     editor,
     {
       type: getPluginType(editor, ELEMENT_LINK),

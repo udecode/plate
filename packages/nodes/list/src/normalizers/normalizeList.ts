@@ -7,16 +7,15 @@ import {
   getPreviousPath,
   isElement,
   match,
+  NNodeEntry,
   PlateEditor,
   removeNodes,
-  setNodes,
-  TDescendant,
+  setElements,
   TElement,
-  TNodeEntry,
   Value,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Descendant, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries';
 import { moveListItemsToList } from '../transforms';
@@ -36,7 +35,7 @@ export const normalizeList = <V extends Value>(
   const licType = getPluginType(editor, ELEMENT_LIC);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: TNodeEntry) => {
+  return ([node, path]: NNodeEntry<V>) => {
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
@@ -56,18 +55,16 @@ export const normalizeList = <V extends Value>(
     }
 
     // remove empty list
-    if (match(node, { type: getListTypes(editor) })) {
+    if (match(node, [], { type: getListTypes(editor) })) {
       if (
         !node.children.length ||
-        !node.children.find(
-          (item: Descendant) => (item as TDescendant).type === liType
-        )
+        !node.children.find((item) => item.type === liType)
       ) {
         return removeNodes(editor, { at: path });
       }
 
       const nextPath = Path.next(path);
-      const nextNode = getNode(editor, nextPath) as TElement | null;
+      const nextNode = getNode<TElement>(editor, nextPath);
 
       // Has a list afterwards with the same type
       if (nextNode?.type === node.type) {
@@ -79,7 +76,7 @@ export const normalizeList = <V extends Value>(
       }
 
       const prevPath = getPreviousPath(path) as Path;
-      const prevNode = getNode(editor, prevPath) as TElement | null;
+      const prevNode = getNode<TElement>(editor, prevPath);
 
       // Has a list before with the same type
       if (prevNode?.type === node.type) {
@@ -108,7 +105,7 @@ export const normalizeList = <V extends Value>(
     // LIC should have LI parent. If not, set LIC to DEFAULT type.
     if (node.type === licType && licType !== defaultType) {
       if (getParentNode(editor, path)?.[0].type !== liType) {
-        setNodes(editor, { type: defaultType }, { at: path });
+        setElements(editor, { type: defaultType }, { at: path });
         return;
       }
     }

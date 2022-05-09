@@ -1,6 +1,6 @@
 import { Node, Path } from 'slate';
-import { NodeOf, TNode } from '../types/TNode';
-import { TNodeEntry } from '../types/TNodeEntry';
+import { NodeOf, TNode } from './TNode';
+import { TNodeEntry } from './TNodeEntry';
 
 /**
  * Return a generator of the in a branch of the tree, from a specific path.
@@ -8,13 +8,9 @@ import { TNodeEntry } from '../types/TNodeEntry';
  * By default the order is top-down, from lowest to highest node in the tree,
  * but you can pass the `reverse: true` option to go bottom-up.
  */
-export const getNodeLevels = <N extends TNode>(
-  root: N,
+export const getNodeLevels = <N extends NodeOf<R>, R extends TNode = TNode>(
+  root: R,
   path: Path,
   options?: Parameters<typeof Node.levels>[2]
 ) =>
-  Node.levels(root, path, options) as Generator<
-    TNodeEntry<NodeOf<N>>,
-    void,
-    undefined
-  >;
+  Node.levels(root, path, options) as Generator<TNodeEntry<N>, void, undefined>;

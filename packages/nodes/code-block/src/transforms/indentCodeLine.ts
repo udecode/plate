@@ -5,13 +5,13 @@ import {
   insertText,
   isExpanded,
   TEditor,
-  TNodeEntry,
+  TElementEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Ancestor, Editor, Node } from 'slate';
 
 export interface IndentCodeLineOptions {
-  codeBlock: TNodeEntry<Ancestor>;
-  codeLine: TNodeEntry<Ancestor | Node>;
+  codeBlock: TElementEntry;
+  codeLine: TElementEntry;
 }
 
 /**
@@ -20,8 +20,8 @@ export interface IndentCodeLineOptions {
  * - the selected code line has no whitespace character
  * Indentation = 2 spaces.
  */
-export const indentCodeLine = (
-  editor: TEditor,
+export const indentCodeLine = <V extends Value>(
+  editor: TEditor<V>,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

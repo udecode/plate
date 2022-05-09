@@ -4,17 +4,8 @@
 
 export * from './NodeMatchOption';
 export * from './SlateProps';
-export * from './TAncestor';
-export * from './TDescendant';
 export * from './TEditableProps';
-export * from './TEditor';
-export * from './TElement';
-export * from './THistoryEditor';
-export * from './TNode';
-export * from './TNodeEntry';
 export * from './TOperation';
-export * from './TReactEditor';
 export * from './TRenderElementProps';
 export * from './TRenderLeafProps';
-export * from './TText';
 export * from './interfaces';

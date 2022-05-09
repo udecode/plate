@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { EMarks } from '../types/TText';
+import { EMarks } from '../text/TText';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Get the marks that would be added to text at the current selection.

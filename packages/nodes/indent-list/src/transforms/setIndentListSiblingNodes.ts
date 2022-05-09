@@ -1,4 +1,10 @@
-import { TEditor, TNodeEntry, withoutNormalizing } from '@udecode/plate-core';
+import {
+  EElement,
+  EElementEntry,
+  TEditor,
+  Value,
+  withoutNormalizing,
+} from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { getIndentListSiblings } from '../queries/getIndentListSiblings';
 import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
@@ -8,15 +14,18 @@ import { setIndentListNode } from './setIndentListNode';
 /**
  * Set indent list to entry + siblings.
  */
-export const setIndentListSiblingNodes = (
-  editor: TEditor,
-  entry: TNodeEntry,
+export const setIndentListSiblingNodes = <
+  N extends EElement<V>,
+  V extends Value
+>(
+  editor: TEditor<V>,
+  entry: EElementEntry<V>,
   {
     listStyleType = ListStyleType.Disc,
     getSiblingIndentListOptions,
   }: {
     listStyleType?: string;
-    getSiblingIndentListOptions?: GetSiblingIndentListOptions;
+    getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, V>;
   }
 ) => {
   withoutNormalizing(editor, () => {
@@ -29,7 +38,7 @@ export const setIndentListSiblingNodes = (
     siblings.forEach(([node, path]) => {
       setIndentListNode(editor, {
         listStyleType,
-        indent: node[KEY_INDENT],
+        indent: node[KEY_INDENT] as number,
         at: path,
       });
     });

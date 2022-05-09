@@ -1,19 +1,19 @@
 import {
   ELEMENT_DEFAULT,
   findNode,
-  getNodes,
+  getCommonNode,
+  getNodeEntries,
   getPluginType,
   isCollapsed,
+  isElement,
   isRangeAcrossBlocks,
   PlateEditor,
-  setNodes,
+  setElements,
   TElement,
-  TNodeEntry,
   Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { getCommonNode } from '@udecode/plate-core/dist/common/slate/node/getCommonNode';
 import { Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';
@@ -35,12 +35,13 @@ export const toggleList = <V extends Value>(
       if (res) {
         const { list } = res;
         if (list[0].type !== type) {
-          setNodes(
+          setElements(
             editor,
             { type },
             {
               at: editor.selection,
-              match: (n) => getListTypes(editor).includes(n.type),
+              match: (n) =>
+                isElement(n) && getListTypes(editor).includes(n.type),
               mode: 'lowest',
             }
           );
@@ -51,11 +52,13 @@ export const toggleList = <V extends Value>(
         const list = { type, children: [] };
         wrapNodes(editor, list);
 
-        const _nodes = getNodes(editor, {
+        const _nodes = getNodeEntries(editor, {
           match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
         });
         const nodes = Array.from(_nodes);
-        setNodes(editor, { type: getPluginType(editor, ELEMENT_LIC) });
+        setElements(editor, {
+          type: getPluginType(editor, ELEMENT_LIC),
+        });
 
         const listItem = {
           type: getPluginType(editor, ELEMENT_LI),
@@ -72,7 +75,11 @@ export const toggleList = <V extends Value>(
       // selection is a range
 
       const [startPoint, endPoint] = Range.edges(editor.selection!);
-      const commonEntry = getCommonNode(editor, startPoint.path, endPoint.path);
+      const commonEntry = getCommonNode<TElement>(
+        editor,
+        startPoint.path,
+        endPoint.path
+      );
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
@@ -93,12 +100,13 @@ export const toggleList = <V extends Value>(
             startList![1].length,
             endList![1].length
           );
-          setNodes(
+          setElements(
             editor,
             { type },
             {
               at: editor.selection,
               match: (n, path) =>
+                isElement(n) &&
                 getListTypes(editor).includes(n.type) &&
                 path.length >= rangeLength,
               mode: 'all',
@@ -109,18 +117,18 @@ export const toggleList = <V extends Value>(
         }
       } else {
         const rootPathLength = commonEntry[1].length;
-        const _nodes = getNodes(editor, {
+        const _nodes = getNodeEntries<TElement>(editor, {
           mode: 'all',
         });
-        const nodes = (Array.from(_nodes) as TNodeEntry<TElement>[])
+        const nodes = Array.from(_nodes)
           .filter(([, path]) => path.length === rootPathLength + 1)
           .reverse();
 
         nodes.forEach((n) => {
           if (getListTypes(editor).includes(n[0].type)) {
-            setNodes(editor, { type }, { at: n[1] });
+            setElements(editor, { type }, { at: n[1] });
           } else {
-            setNodes(
+            setElements(
               editor,
               { type: getPluginType(editor, ELEMENT_LIC) },
               { at: n[1] }

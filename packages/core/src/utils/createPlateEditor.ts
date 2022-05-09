@@ -1,6 +1,6 @@
 import { withPlate, WithPlateOptions } from '../plugins/withPlate';
 import { normalizeEditor } from '../slate/editor/normalizeEditor';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';

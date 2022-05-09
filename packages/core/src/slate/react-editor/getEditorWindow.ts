@@ -1,6 +1,6 @@
 import { ReactEditor } from 'slate-react';
-import { Value } from '../types/TEditor';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * Return the host window of the current editor.

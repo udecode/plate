@@ -1,12 +1,12 @@
 import { castArray } from 'lodash';
 import { isBlock } from '../../slate/editor/isBlock';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { ENode, TNode } from '../../slate/types/TNode';
-import { AnyObject } from '../types/utility/AnyObject';
+import { TPath } from '../../slate/types/interfaces';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { ENode, TNode } from '../../slate/node/TNode';
 
-export type PredicateObj<T extends TNode> = Partial<T> & AnyObject;
-export type PredicateFn<T extends TNode> = (obj: T) => boolean;
-export type Predicate<T extends TNode> = PredicateObj<T> | PredicateFn<T>;
+export type PredicateObj = Record<string, any | any[]>;
+export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
+export type Predicate<T extends TNode> = PredicateObj | PredicateFn<T>;
 
 /**
  * Match the object with a predicate object or function.
@@ -16,6 +16,7 @@ export type Predicate<T extends TNode> = PredicateObj<T> | PredicateFn<T>;
  */
 export const match = <T extends TNode>(
   obj: T,
+  path: TPath,
   predicate?: Predicate<T>
 ): boolean => {
   if (!predicate) return true;
@@ -28,12 +29,8 @@ export const match = <T extends TNode>(
     });
   }
 
-  return predicate(obj);
+  return predicate(obj, path);
 };
-
-export const matchPredicate = <T extends TNode>(predicate?: Predicate<T>) => (
-  obj: T
-) => match(obj, predicate);
 
 /**
  * Extended query options for slate queries:
@@ -46,7 +43,7 @@ export const getQueryOptions = <V extends Value>(
 ) => {
   return {
     ...options,
-    match: (n: ENode<V>) =>
-      match(n, options.match) && (!options?.block || isBlock(editor, n)),
+    match: (n: ENode<V>, path: TPath) =>
+      match(n, path, options.match) && (!options?.block || isBlock(editor, n)),
   };
 };

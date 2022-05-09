@@ -1,12 +1,14 @@
 import React from 'react';
-import { findNodePath, setNodes, TElement } from '@udecode/plate-core';
-import { MediaEmbedNodeData } from '@udecode/plate-media-embed';
+import { findNodePath, setNodes, Value } from '@udecode/plate-core';
+import { TMediaEmbedElement } from '@udecode/plate-media-embed';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 
-export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
+export const MediaEmbedElement = <V extends Value>(
+  props: MediaEmbedElementProps<V>
+) => {
   const { attributes, children, nodeProps, element, editor } = props;
 
   const rootProps = getRootProps(props);
@@ -47,11 +49,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             const path = findNodePath(editor, element);
             if (!path) return;
 
-            setNodes<TElement<MediaEmbedNodeData>>(
-              editor,
-              { url: val },
-              { at: path }
-            );
+            setNodes<TMediaEmbedElement>(editor, { url: val }, { at: path });
           }}
         />
       </div>

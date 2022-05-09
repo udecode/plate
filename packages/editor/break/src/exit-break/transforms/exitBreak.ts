@@ -2,11 +2,11 @@ import {
   ELEMENT_DEFAULT,
   getPath,
   getPluginType,
-  insertNodes,
+  insertElements,
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 import { ExitBreakRule } from '../types';
 
@@ -35,7 +35,7 @@ export const exitBreak = <V extends Value>(
     insertPath = Path.next(selectionPath.slice(0, level + 1));
   }
 
-  insertNodes(
+  insertElements(
     editor,
     { type: defaultType, children: [{ text: '' }] },
     {

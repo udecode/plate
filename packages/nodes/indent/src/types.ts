@@ -1,3 +1,9 @@
+import { TElement } from '@udecode/plate-core';
+
+export interface TIndentElement extends TElement {
+  indent: number;
+}
+
 export type IndentPlugin = {
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.

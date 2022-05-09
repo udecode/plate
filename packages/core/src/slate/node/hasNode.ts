@@ -1,5 +1,5 @@
 import { Node, Path } from 'slate';
-import { TNode } from '../types/TNode';
+import { TNode } from './TNode';
 
 /**
  * Check if a descendant node exists at a specific path.

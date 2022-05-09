@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
-import { Value } from '../../slate/types/TEditor';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateRenderLeafProps } from '../../types/PlateRenderLeafProps';
 import { pipeInjectProps } from '../../utils/pipeInjectProps';

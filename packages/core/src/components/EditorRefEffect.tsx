@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEditorRef } from '../hooks/useEditorRef';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { usePlateSelectors } from '../stores/plate/platesStore';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlateProps } from './Plate';

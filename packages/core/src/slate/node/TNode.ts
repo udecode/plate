@@ -1,7 +1,7 @@
 import { Path } from 'slate';
-import { TEditor, Value } from './TEditor';
-import { ElementOf, TElement } from './TElement';
-import { TextOf, TText } from './TText';
+import { TEditor, Value } from '../editor/TEditor';
+import { ElementOf, TElement } from '../element/TElement';
+import { TextOf, TText } from '../text/TText';
 
 export type TNode = TEditor<Value> | TElement | TText;
 
@@ -27,6 +27,6 @@ export type TNodeProps<N extends TNode> = N extends TEditor<Value>
 /**
  * A helper type for narrowing matched nodes with a predicate.
  */
-export type TNodeMatch<N extends TNode> =
+export type TNodeMatch<N extends TNode = TNode> =
   | ((node: N, path: Path) => node is N)
   | ((node: N, path: Path) => boolean);

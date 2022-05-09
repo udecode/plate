@@ -1,19 +1,20 @@
 import {
   EditorNodesOptions,
+  focusEditor,
   removeNodes,
   TReactEditor,
   unhangRange,
+  Value,
 } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 
 /**
  * Remove blocks with an id and focus the editor.
  */
-export const removeBlocksAndFocus = (
-  editor: TReactEditor,
-  options: EditorNodesOptions
+export const removeBlocksAndFocus = <V extends Value>(
+  editor: TReactEditor<V>,
+  options: EditorNodesOptions<V>
 ) => {
   unhangRange(editor, options?.at, options);
 

@@ -1,6 +1,6 @@
 import { getMarks } from '../../slate/editor/getMarks';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { EMarks } from '../../slate/types/TText';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EMarks } from '../../slate/text/TText';
 
 /**
  * Get selected mark by type.

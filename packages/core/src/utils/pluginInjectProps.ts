@@ -1,10 +1,10 @@
 import { CSSProperties } from 'react';
 import clsx from 'clsx';
 import { AnyObject } from '../common/types/utility/AnyObject';
+import { Value } from '../slate/editor/TEditor';
 import { isElement } from '../slate/element/isElement';
-import { Value } from '../slate/types/TEditor';
-import { EElement } from '../slate/types/TElement';
-import { EText } from '../slate/types/TText';
+import { EElement } from '../slate/element/TElement';
+import { EText } from '../slate/text/TText';
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 

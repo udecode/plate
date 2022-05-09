@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editable } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateProps } from './Plate';
 
 /**

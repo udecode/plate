@@ -46,7 +46,7 @@ export const deleteBackwardList = <V extends Value>(
 
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           onKeyDownResetNode(
-            editor,
+            editor as any,
             mockPlugin<ResetNodePlugin>({
               options: {
                 rules: [

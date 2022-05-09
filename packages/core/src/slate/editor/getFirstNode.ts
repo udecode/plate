@@ -1,6 +1,6 @@
 import { Editor, Location } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { ENodeEntry } from '../types/TNodeEntry';
+import { TEditor, Value } from './TEditor';
+import { ENodeEntry } from '../node/TNodeEntry';
 
 /**
  * Get the first node at a location.

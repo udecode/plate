@@ -1,9 +1,12 @@
 import React from 'react';
+import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { getTableRowElementStyles } from './TableRowElement.styles';
 import { TableRowElementProps } from './TableRowElement.types';
 
-export const TableRowElement = (props: TableRowElementProps) => {
+export const TableRowElement = <V extends Value>(
+  props: TableRowElementProps<V>
+) => {
   const { attributes, children, nodeProps } = props;
 
   const rootProps = getRootProps(props);

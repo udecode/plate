@@ -1,9 +1,9 @@
-import { AnyObject } from '@udecode/plate-core';
+import { AnyObject, EElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { StyledLeafProps } from '../StyledLeaf/StyledLeaf.types';
 
-export const getRootProps = (
-  props: StyledElementProps | StyledLeafProps | AnyObject
+export const getRootProps = <V extends Value = Value>(
+  props: StyledElementProps<V, EElement<V>> | StyledLeafProps<V> | AnyObject
 ) => {
   const {
     editor,

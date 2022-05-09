@@ -12,16 +12,17 @@ import {
   select,
   setNodes,
   TText,
+  Value,
 } from '@udecode/plate-core';
+import { TImageElement } from '@udecode/plate-image';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
-import { Node } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
 
-export const ImageElement = (props: ImageElementProps) => {
+export const ImageElement = <V extends Value>(props: ImageElementProps<V>) => {
   const {
     attributes,
     children,
@@ -66,7 +67,7 @@ export const ImageElement = (props: ImageElementProps) => {
         // Focus the node if not resized
         select(editor, path);
       } else {
-        setNodes(editor, { width: w }, { at: path });
+        setNodes<TImageElement>(editor, { width: w }, { at: path });
       }
     },
     [editor, element, nodeWidth]
@@ -76,13 +77,17 @@ export const ImageElement = (props: ImageElementProps) => {
     (e) => {
       const path = findNodePath(editor, element);
       path &&
-        setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
+        setNodes<TImageElement>(
+          editor,
+          { caption: [{ text: e.target.value }] },
+          { at: path }
+        );
     },
     [editor, element]
   );
 
   const captionString = useMemo(() => {
-    return getNodeString(nodeCaption[0]) || '';
+    return getNodeString(nodeCaption[0] as any) || '';
   }, [nodeCaption]);
 
   return (

@@ -4,8 +4,7 @@ import {
   getNodeString,
   getParentNode,
   getPlugin,
-  TDescendant,
-  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
 
 // noinspection ES6UnusedImports
@@ -57,36 +56,36 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
-import { Node, Range } from 'slate';
+import { Range } from 'slate';
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
 } from './constants';
-import { CodeBlockPlugin } from './types';
+import { CodeBlockPlugin, TCodeBlockElement } from './types';
 
 export interface CodeSyntaxRange extends Range {
   tokenType: string;
   [ELEMENT_CODE_SYNTAX]: true;
 }
 
-export const decorateCodeLine: Decorate = (editor) => {
+export const decorateCodeLine: Decorate<Value> = (editor) => {
   const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
   const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 
-  return ([node, path]: TNodeEntry<TDescendant>): CodeSyntaxRange[] => {
+  return ([node, path]): CodeSyntaxRange[] => {
     const ranges: CodeSyntaxRange[] = [];
 
     if (!code_block.options.syntax || node.type !== code_line.type) {
       return ranges;
     }
 
-    const codeBlock = getParentNode(editor, path);
+    const codeBlock = getParentNode<TCodeBlockElement>(editor, path);
     if (!codeBlock) {
       return ranges;
     }
 
-    let langName = codeBlock[0].lang;
+    let langName = codeBlock[0].lang ?? '';
     if (langName === 'plain') {
       langName = '';
     }

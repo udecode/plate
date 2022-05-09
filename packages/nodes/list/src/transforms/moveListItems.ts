@@ -1,14 +1,14 @@
 import {
   createPathRef,
   EditorNodesOptions,
-  getNodes,
+  getNodeEntries,
   getParentNode,
   getPluginType,
   PlateEditor,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path, PathRef } from 'slate';
+import { Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
@@ -16,7 +16,7 @@ import { moveListItemUp } from './moveListItemUp';
 
 export type MoveListItemsOptions = {
   increase?: boolean;
-  at?: EditorNodesOptions['at'];
+  at?: EditorNodesOptions<Value>['at'];
 };
 
 export const moveListItems = <V extends Value>(
@@ -26,7 +26,7 @@ export const moveListItems = <V extends Value>(
     at = editor.selection ?? undefined,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = getNodes(editor, {
+  const _nodes = getNodeEntries(editor, {
     at,
     match: {
       type: getPluginType(editor, ELEMENT_LIC),

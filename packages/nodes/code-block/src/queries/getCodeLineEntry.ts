@@ -1,4 +1,5 @@
 import {
+  EElement,
   getAboveNode,
   getParentNode,
   isElement,
@@ -12,7 +13,10 @@ import { getCodeLineType } from '../options';
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
  */
-export const getCodeLineEntry = <V extends Value>(
+export const getCodeLineEntry = <
+  N extends EElement<V>,
+  V extends Value = Value
+>(
   editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
@@ -28,10 +32,10 @@ export const getCodeLineEntry = <V extends Value>(
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAboveNode(editor, {
+      getAboveNode<N>(editor, {
         at,
         match: { type: getCodeLineType(editor) },
-      }) || getParentNode(editor, parentPath);
+      }) || getParentNode<N>(editor, parentPath);
 
     if (!codeLine) return;
     const [codeLineNode, codeLinePath] = codeLine;
@@ -42,7 +46,7 @@ export const getCodeLineEntry = <V extends Value>(
     )
       return;
 
-    const codeBlock = getParentNode(editor, codeLinePath);
+    const codeBlock = getParentNode<N>(editor, codeLinePath);
     if (!codeBlock) return;
 
     return {

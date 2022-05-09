@@ -2,7 +2,7 @@ import {
   collapseSelection,
   getEndPoint,
   getNodeChildren,
-  getNodes,
+  getNodeEntries,
   getPluginType,
   getPointAfter,
   getPointBefore,
@@ -10,10 +10,9 @@ import {
   isCollapsed,
   isElement,
   removeNodes,
-  TElement,
   WithOverride,
 } from '@udecode/plate-core';
-import { Editor, Node, Point } from 'slate';
+import { Node, Point } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
 
 export const withTable: WithOverride = (editor) => {
@@ -35,12 +34,13 @@ export const withTable: WithOverride = (editor) => {
     const { selection } = editor;
 
     if (isCollapsed(selection)) {
-      const [cell] = getNodes<TElement>(editor, {
+      const [cell] = getNodeEntries(editor, {
         match: matchCells,
       });
       if (cell) {
         // Prevent deletions within a cell
         const [, cellPath] = cell;
+
         const start = pointCallback(editor, cellPath);
 
         if (selection && Point.equals(selection.anchor, start)) {
@@ -49,7 +49,7 @@ export const withTable: WithOverride = (editor) => {
       } else {
         // Prevent deleting cell when selection is before or after a table
         const next = nextPoint(editor, selection, { unit });
-        const _nodes = getNodes(editor, {
+        const _nodes = getNodeEntries(editor, {
           match: matchCells,
           at: next,
         });
@@ -63,19 +63,19 @@ export const withTable: WithOverride = (editor) => {
 
   editor.deleteFragment = () => {
     const { selection } = editor;
-    let _nodes = getNodes(editor, {
+    let _nodes = getNodeEntries(editor, {
       match: matchCells,
       at: selection?.anchor.path,
     });
     const [start] = Array.from(_nodes);
-    _nodes = getNodes(editor, {
+    _nodes = getNodeEntries(editor, {
       match: matchCells,
       at: selection?.focus.path,
     });
     const [end] = Array.from(_nodes);
     // Skip deletes if they start or end in a table cell, unless start & end in the same cell
     if ((start || end) && start?.[0] !== end?.[0]) {
-      const _cells = getNodes(editor, {
+      const _cells = getNodeEntries(editor, {
         match: matchCells,
       });
       // Clear cells content
@@ -95,19 +95,19 @@ export const withTable: WithOverride = (editor) => {
 
   editor.insertText = (text) => {
     const { selection } = editor;
-    const _starts = getNodes(editor, {
+    const _starts = getNodeEntries(editor, {
       match: matchCells,
       at: selection?.anchor.path,
     });
     const [start] = Array.from(_starts);
-    const _ends = getNodes(editor, {
+    const _ends = getNodeEntries(editor, {
       match: matchCells,
       at: selection?.focus.path,
     });
     const [end] = Array.from(_ends);
     // Collapse selection if multiple cells are selected to avoid breaking the table
     if (!isCollapsed(selection) && (start || end) && start?.[0] !== end?.[0]) {
-      const _cells = getNodes(editor, { match: matchCells });
+      const _cells = getNodeEntries(editor, { match: matchCells });
       const [cell] = Array.from(_cells);
       if (cell) {
         collapseSelection(editor, { edge: 'end' });

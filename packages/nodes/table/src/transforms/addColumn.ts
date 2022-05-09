@@ -1,7 +1,7 @@
 import {
   getAboveNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   PlateEditor,
   someNode,
   TElement,
@@ -48,7 +48,7 @@ export const addColumn = <V extends Value>(
               getPluginType(editor, ELEMENT_TH)
             : header;
 
-        insertNodes<TElement>(
+        insertElements(
           editor,
           getEmptyCellNode(editor, { header: isHeaderRow }),
           {

@@ -46,7 +46,7 @@ export const withNodeId: WithOverride<Value, {}, NodeIdPlugin> = (
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
       // clone to be able to write (read-only)
-      const node = cloneDeep(operation.node) as TNode;
+      const node = cloneDeep(operation.node);
 
       // the id in the new node is already being used in the editor, we need to replace it with a new id
       if (

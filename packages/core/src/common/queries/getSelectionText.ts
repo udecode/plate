@@ -1,5 +1,5 @@
 import { getEditorString } from '../../slate/editor/getEditorString';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 
 /**
  * Get the selected text.

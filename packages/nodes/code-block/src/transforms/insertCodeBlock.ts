@@ -4,7 +4,7 @@ import {
   isExpanded,
   isSelectionAtBlockStart,
   PlateEditor,
-  setNodes,
+  setElements,
   someNode,
   TElement,
   Value,
@@ -19,7 +19,7 @@ import { getCodeLineType } from '../options';
  */
 export const insertCodeBlock = <V extends Value>(
   editor: PlateEditor<V>,
-  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
+  insertNodesOptions: Omit<InsertNodesOptions<V>, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 
@@ -39,7 +39,7 @@ export const insertCodeBlock = <V extends Value>(
     editor.insertBreak();
   }
 
-  setNodes<TElement>(
+  setElements(
     editor,
     {
       type: getCodeLineType(editor),

@@ -3,9 +3,9 @@ import {
   Simplify,
   UnionToIntersection,
 } from '../../common/types/utility/types';
-import { TEditor, Value } from './TEditor';
-import { TElement } from './TElement';
-import { TNode, TNodeProps } from './TNode';
+import { TEditor, Value } from '../editor/TEditor';
+import { TElement } from '../element/TElement';
+import { TNode, TNodeProps } from '../node/TNode';
 
 /**
  * `Text` objects represent the nodes that contain the actual text content of a

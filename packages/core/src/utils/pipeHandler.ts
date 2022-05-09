@@ -1,6 +1,6 @@
 import { SyntheticEvent } from 'react';
 import { TEditableProps } from '../slate/types/TEditableProps';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugins/DOMHandlers';
 

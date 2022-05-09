@@ -1,5 +1,5 @@
 import { Location, Transforms } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from '../editor/TEditor';
 
 /**
  * Set the selection to a new value.

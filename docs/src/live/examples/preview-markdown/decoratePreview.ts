@@ -1,13 +1,13 @@
 /* eslint-disable simple-import-sort/imports */
 import { Decorate } from '@udecode/plate';
-import { isText, TNodeEntry } from '@udecode/plate-core'; // noinspection CommaExpressionJS
+import { isText } from '@udecode/plate-core'; // noinspection CommaExpressionJS
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markdown';
 
 /**
  * Decorate texts with markdown preview.
  */
-export const decoratePreview: Decorate = () => ([node, path]: TNodeEntry) => {
+export const decoratePreview: Decorate = () => ([node, path]) => {
   const ranges: any[] = [];
 
   if (!isText(node)) {

@@ -1,5 +1,5 @@
 import { Text } from 'slate';
-import { TText } from '../types/TText';
+import { TText } from './TText';
 
 /**
  * Check if a value is a list of `Text` objects.

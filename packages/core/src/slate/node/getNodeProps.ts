@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { TNode, TNodeProps } from '../types/TNode';
+import { TNode, TNodeProps } from './TNode';
 
 /**
  * Extract the custom properties from a node.

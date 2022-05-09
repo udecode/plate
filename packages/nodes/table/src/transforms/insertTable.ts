@@ -6,11 +6,10 @@ import {
   PlateEditor,
   selectEditor,
   someNode,
-  TElement,
   Value,
 } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
+import { TablePluginOptions, TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
 export const insertTable = <V extends Value>(
@@ -22,7 +21,7 @@ export const insertTable = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    insertNodes<TElement>(editor, getEmptyTableNode(editor, { header }));
+    insertNodes<TTableElement>(editor, getEmptyTableNode(editor, { header }));
     if (editor.selection) {
       const tableEntry = getAboveNode(editor, {
         match: { type: getPluginType(editor, ELEMENT_TABLE) },

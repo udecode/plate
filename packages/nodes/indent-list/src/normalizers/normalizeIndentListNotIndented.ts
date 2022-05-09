@@ -1,12 +1,12 @@
-import { TEditor, TNodeEntry, unsetNodes } from '@udecode/plate-core';
+import { TEditor, TNodeEntry, unsetNodes, Value } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
 /**
  * Unset KEY_LIST_STYLE_TYPE, KEY_LIST_START if KEY_INDENT is not defined.
  */
-export const normalizeIndentListNotIndented = (
-  editor: TEditor,
+export const normalizeIndentListNotIndented = <V extends Value>(
+  editor: TEditor<V>,
   [node, path]: TNodeEntry
 ) => {
   if (

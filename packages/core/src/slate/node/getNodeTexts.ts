@@ -1,13 +1,14 @@
 import { Node } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { NodeOf, TNode } from '../types/TNode';
-import { TNodeEntry, TTextEntry } from '../types/TNodeEntry';
+import { TextOf } from '../text/TText';
+import { NodeOf, TNode } from './TNode';
+import { TNodeEntry } from './TNodeEntry';
 
 /**
  * Return a generator of all leaf text nodes in a root node.
  */
-export const getNodeTexts = <N extends TNode>(
-  root: N,
+export const getNodeTexts = <N extends TextOf<R>, R extends TNode = TNode>(
+  root: R,
   options?: Modify<
     NonNullable<Parameters<typeof Node.texts>[1]>,
     {
@@ -15,4 +16,4 @@ export const getNodeTexts = <N extends TNode>(
     }
   >
 ) =>
-  Node.texts(root, options as any) as Generator<TTextEntry<N>, void, undefined>;
+  Node.texts(root, options as any) as Generator<TNodeEntry<N>, void, undefined>;

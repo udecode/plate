@@ -1,11 +1,13 @@
 import {
   createPathRef,
   getNode,
-  TEditor,
+  getNodeEntry,
+  TElement,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { Editor, Node, PathRef } from 'slate';
+import { PathRef } from 'slate';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
@@ -16,7 +18,7 @@ import {
 import { normalizeIndentList } from './normalizeIndentList';
 import { ListStyleType } from './types';
 
-export const withIndentList: WithOverride<{}, IndentListPlugin> = (
+export const withIndentList: WithOverride<Value, {}, IndentListPlugin> = (
   editor,
   { options }
 ) => {
@@ -24,12 +26,12 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
 
   const { getSiblingIndentListOptions } = options;
 
-  editor.normalizeNode = normalizeIndentList(editor as TEditor, options);
+  editor.normalizeNode = normalizeIndentList(editor, options);
 
   editor.apply = (operation) => {
     const { path } = operation as any;
 
-    let nodeBefore: Node | null = null;
+    let nodeBefore: TElement | null = null;
 
     if (operation.type === 'set_node') {
       nodeBefore = getNode(editor, path);
@@ -42,11 +44,11 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
 
       if (
         listStyleType &&
-        ['lower-roman', 'upper-roman'].includes(listStyleType)
+        ['lower-roman', 'upper-roman'].includes(listStyleType as ListStyleType)
       ) {
         const prevNodeEntry = getPreviousIndentList(
           editor,
-          [operation.node, path],
+          [operation.node as TElement, path],
           {
             eqIndent: false,
             breakOnEqIndentNeqListStyleType: false,
@@ -78,7 +80,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
       operation.type === 'merge_node' &&
       operation.properties[KEY_LIST_STYLE_TYPE]
     ) {
-      const node = getNode(editor, path);
+      const node = getNode<TElement>(editor, path);
 
       if (node) {
         const nextNodeEntryBefore = getNextIndentList(
@@ -98,7 +100,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
       const { properties } = operation;
 
       if (properties[KEY_LIST_STYLE_TYPE]) {
-        const node = getNode(editor, path);
+        const node = getNodeEntry(editor, path);
         if (!node) return;
 
         // const prevNodeEntry = getPreviousIndentList(
@@ -129,7 +131,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
         if (nextIndentListPathRef) {
           const nextPath = nextIndentListPathRef.unref();
           if (nextPath) {
-            const nextNode = getNode(editor, nextPath);
+            const nextNode = getNode<TElement>(editor, nextPath);
             if (nextNode) {
               normalizeIndentListStart(
                 editor,
@@ -171,7 +173,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
           (prevListStyleType || listStyleType) &&
           prevListStyleType !== listStyleType
         ) {
-          const node = getNode(editor, path);
+          const node = getNode<TElement>(editor, path);
           if (!node) return;
 
           /**
@@ -230,7 +232,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
 
         // Update indent
         if (prevIndent !== indent) {
-          const node = getNode(editor, path);
+          const node = getNode<TElement>(editor, path);
           if (!node) return;
 
           /**

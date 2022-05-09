@@ -1,6 +1,6 @@
 import React from 'react';
 import { DefaultLeaf } from '../components/DefaultLeaf';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { RenderLeaf } from '../types/RenderLeaf';

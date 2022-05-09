@@ -2,7 +2,7 @@ import { Point } from 'slate';
 import { getEditorString } from '../../slate/editor/getEditorString';
 import { getPointBefore } from '../../slate/editor/getPointBefore';
 import { getRange } from '../../slate/editor/getRange';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { escapeRegExp } from '../utils/escapeRegexp';
 
 /**

@@ -1,9 +1,9 @@
 import { Path } from 'slate';
 import { isBlock } from '../../slate/editor/isBlock';
-import { getNodeNode } from '../../slate/node/getNodeNode';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { getNode } from '../../slate/node/getNode';
+import { ENodeEntry } from '../../slate/node/TNodeEntry';
 import { moveNodes } from '../../slate/transforms/moveNodes';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { ENodeEntry } from '../../slate/types/TNodeEntry';
 
 export interface MoveChildrenOptions<V extends Value> {
   /**
@@ -38,13 +38,13 @@ export const moveChildren = <V extends Value>(
 ) => {
   let moved = 0;
   const parentPath = Path.isPath(at) ? at : at[1];
-  const parentNode = Path.isPath(at) ? getNodeNode(editor, parentPath) : at[0];
+  const parentNode = Path.isPath(at) ? getNode(editor, parentPath) : at[0];
 
   if (!isBlock(editor, parentNode)) return moved;
 
   for (let i = parentNode.children.length - 1; i >= fromStartIndex; i--) {
     const childPath = [...parentPath, i];
-    const childNode = getNodeNode(editor, childPath);
+    const childNode = getNode(editor, childPath);
 
     if (!match || (childNode && match([childNode, childPath]))) {
       moveNodes(editor, { at: childPath, to });

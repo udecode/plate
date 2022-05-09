@@ -1,11 +1,16 @@
-import { findNodePath, getParentNode, TElement } from '@udecode/plate-core';
-import { ReactEditor } from 'slate-react';
+import {
+  findNodePath,
+  getParentNode,
+  TElement,
+  TReactEditor,
+  Value,
+} from '@udecode/plate-core';
 
 /**
  * Get table column index of a cell node.
  */
-export const getTableColumnIndex = (
-  editor: ReactEditor,
+export const getTableColumnIndex = <V extends Value>(
+  editor: TReactEditor<V>,
   { node }: { node: TElement }
 ) => {
   const path = findNodePath(editor, node);

@@ -1,10 +1,21 @@
-import { TEditor, TNode, TNodeEntry } from '@udecode/plate-core';
+import {
+  EDescendantEntry,
+  EElement,
+  EElementEntry,
+  TEditor,
+  TNode,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
-export interface GetSiblingIndentListOptions {
-  getPreviousEntry?: (entry: TNodeEntry) => TNodeEntry | undefined;
-  getNextEntry?: (entry: TNodeEntry) => TNodeEntry | undefined;
+export interface GetSiblingIndentListOptions<
+  N extends EElement<V>,
+  V extends Value
+> {
+  getPreviousEntry?: (entry: EDescendantEntry<V>) => TNodeEntry<N> | undefined;
+  getNextEntry?: (entry: EDescendantEntry<V>) => TNodeEntry<N> | undefined;
   /**
    * Query to validate lookup. If false, check the next sibling.
    */
@@ -22,9 +33,9 @@ export interface GetSiblingIndentListOptions {
  * Get the next sibling indent list node.
  * Default query: the sibling node should have the same listStyleType.
  */
-export const getSiblingIndentList = (
-  editor: TEditor,
-  [node, path]: TNodeEntry,
+export const getSiblingIndentList = <N extends EElement<V>, V extends Value>(
+  editor: TEditor<V>,
+  [node, path]: EElementEntry<V>,
   {
     getPreviousEntry,
     getNextEntry,
@@ -33,8 +44,8 @@ export const getSiblingIndentList = (
     breakQuery,
     breakOnLowerIndent = true,
     breakOnEqIndentNeqListStyleType = true,
-  }: GetSiblingIndentListOptions
-): TNodeEntry | undefined => {
+  }: GetSiblingIndentListOptions<N, V>
+): TNodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
@@ -46,21 +57,24 @@ export const getSiblingIndentList = (
 
     const [nextNode, nextPath] = nextEntry;
 
-    if (!nextNode[KEY_INDENT]) return;
+    const indent = node[KEY_INDENT] as number;
+    const nextIndent = nextNode[KEY_INDENT] as number;
 
-    if (breakQuery && breakQuery(nextNode as TNode)) return;
+    if (!nextIndent) return;
 
-    if (breakOnLowerIndent && nextNode[KEY_INDENT] < node[KEY_INDENT]) return;
+    if (breakQuery && breakQuery(nextNode)) return;
+
+    if (breakOnLowerIndent && nextIndent < indent) return;
     if (
       breakOnEqIndentNeqListStyleType &&
-      nextNode[KEY_INDENT] === node[KEY_INDENT] &&
+      nextIndent === indent &&
       nextNode[KEY_LIST_STYLE_TYPE] !== node[KEY_LIST_STYLE_TYPE]
     )
       return;
 
     let valid = !query || query(nextNode as TNode);
     if (valid) {
-      valid = !eqIndent || nextNode[KEY_INDENT] === node[KEY_INDENT];
+      valid = !eqIndent || nextIndent === indent;
       if (valid) return [nextNode, nextPath];
     }
 

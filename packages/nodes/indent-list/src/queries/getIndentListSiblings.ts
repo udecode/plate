@@ -1,25 +1,33 @@
-import { TEditor, TNodeEntry } from '@udecode/plate-core';
+import {
+  EElement,
+  EElementEntry,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 import { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
-export interface GetIndentListSiblingsOptions
-  extends Partial<GetSiblingIndentListOptions> {
+export interface GetIndentListSiblingsOptions<
+  N extends EElement<V>,
+  V extends Value
+> extends Partial<GetSiblingIndentListOptions<N, V>> {
   previous?: boolean;
   current?: boolean;
   next?: boolean;
 }
 
-export const getIndentListSiblings = (
-  editor: TEditor,
-  entry: TNodeEntry,
+export const getIndentListSiblings = <N extends EElement<V>, V extends Value>(
+  editor: TEditor<V>,
+  entry: EElementEntry<V>,
   {
     previous = true,
     current = true,
     next = true,
     ...options
-  }: GetIndentListSiblingsOptions = {}
+  }: GetIndentListSiblingsOptions<N, V> = {}
 ) => {
   const siblings: TNodeEntry[] = [];
 
@@ -31,7 +39,7 @@ export const getIndentListSiblings = (
 
   if (previous) {
     while (true) {
-      const prevEntry = getPreviousIndentList(editor, iterEntry, options);
+      const prevEntry = getPreviousIndentList<N, V>(editor, iterEntry, options);
       if (!prevEntry) break;
 
       siblings.push(prevEntry);

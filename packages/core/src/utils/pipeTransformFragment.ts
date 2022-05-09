@@ -1,5 +1,5 @@
-import { TDescendant } from '../slate/types/TDescendant';
-import { Value } from '../slate/types/TEditor';
+import { TDescendant } from '../slate/node/TDescendant';
+import { Value } from '../slate/editor/TEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';
 

@@ -5,31 +5,30 @@ import {
   moveChildren,
   MoveChildrenOptions,
   PlateEditor,
-  TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MergeListItemIntoListOptions {
+export interface MergeListItemIntoListOptions<V extends Value> {
   /**
    * List items of the sublist of this node will be moved.
    */
-  fromListItem?: TNodeEntry<TElement>;
+  fromListItem?: TElementEntry;
 
   /**
    * List items of the list will be moved.
    */
-  fromList?: TNodeEntry<TElement>;
+  fromList?: TElementEntry;
 
   /**
    * List items will be moved in this list.
    */
-  toList?: TNodeEntry<TElement>;
+  toList?: TElementEntry;
 
-  fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
+  fromStartIndex?: MoveChildrenOptions<V>['fromStartIndex'];
 
   /**
    * List position where to move the list items.
@@ -59,7 +58,7 @@ export const moveListItemsToList = <V extends Value>(
     toList,
     toListIndex = null,
     deleteFromList = true,
-  }: MergeListItemIntoListOptions
+  }: MergeListItemIntoListOptions<V>
 ) => {
   let fromListPath: Path | undefined;
   let moved;
@@ -72,7 +71,7 @@ export const moveListItemsToList = <V extends Value>(
           type: getListTypes(editor),
         },
       });
-      if (!fromListItemSublist) return 0;
+      if (!fromListItemSublist) return;
 
       fromListPath = fromListItemSublist?.[1];
     } else if (fromList) {

@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react';
 import { useEditorState } from '../hooks/useEditorState';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateProps } from './Plate';
 

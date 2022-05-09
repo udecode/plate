@@ -3,12 +3,15 @@ import {
   KeyboardHandler,
   select,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
 
-export const onKeyDownTable: KeyboardHandler = (editor, { type }) => (e) => {
+export const onKeyDownTable: KeyboardHandler<Value> = (editor, { type }) => (
+  e
+) => {
   if (e.key === 'Tab') {
     e.preventDefault();
     e.stopPropagation();

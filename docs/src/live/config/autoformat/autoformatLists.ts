@@ -5,11 +5,9 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_UL,
   setNodes,
-  TElement,
-  TodoListItemNodeData,
+  TTodoListItemElement,
 } from '@udecode/plate';
 import { isBlock } from '@udecode/plate-core';
-import { Editor } from 'slate';
 import { clearBlockFormat, formatList } from './autoformatUtils';
 
 export const autoformatLists: AutoformatRule[] = [
@@ -37,7 +35,7 @@ export const autoformatLists: AutoformatRule[] = [
     type: ELEMENT_TODO_LI,
     match: '[x] ',
     format: (editor) =>
-      setNodes<TElement<TodoListItemNodeData>>(
+      setNodes<TTodoListItemElement>(
         editor,
         { type: ELEMENT_TODO_LI, checked: true },
         {

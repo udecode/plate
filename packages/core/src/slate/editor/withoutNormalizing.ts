@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Call a function, deferring normalization until after it completes

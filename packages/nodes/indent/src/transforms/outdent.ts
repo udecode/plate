@@ -6,7 +6,7 @@ import { setIndent, SetIndentOptions } from './setIndent';
  */
 export const outdent = <V extends Value>(
   editor: PlateEditor<V>,
-  options?: SetIndentOptions
+  options?: SetIndentOptions<V>
 ) => {
   setIndent(editor, { offset: -1, ...options });
 };

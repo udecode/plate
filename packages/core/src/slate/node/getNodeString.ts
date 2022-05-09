@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { TNode } from '../types/TNode';
+import { TNode } from './TNode';
 
 /**
  * Get the concatenated text string of a node's content.

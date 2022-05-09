@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { PlateProps } from '../../components/Plate';
 import { withPlate } from '../../plugins/withPlate';
 import { normalizeEditor } from '../../slate/editor/normalizeEditor';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import {
   getPlateActions,
   usePlateSelectors,

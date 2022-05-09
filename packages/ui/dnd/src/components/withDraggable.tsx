@@ -11,10 +11,10 @@ import { useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
-export interface WithDraggableOptions
-  extends Pick<DraggableProps, 'onRenderDragHandle' | 'styles'> {
+export interface WithDraggableOptions<V extends Value>
+  extends Pick<DraggableProps<V>, 'onRenderDragHandle' | 'styles'> {
   level?: number;
-  filter?: (editor: TEditor, path: Path) => boolean;
+  filter?: (editor: TEditor<V>, path: Path) => boolean;
   allowReadOnly?: boolean;
 }
 
@@ -26,7 +26,7 @@ export const withDraggable = <V extends Value>(
     filter,
     allowReadOnly = false,
     onRenderDragHandle,
-  }: WithDraggableOptions = {}
+  }: WithDraggableOptions<V> = {}
 ) => {
   return forwardRef((props: PlateRenderElementProps<V>, ref) => {
     const { attributes, element, editor } = props;

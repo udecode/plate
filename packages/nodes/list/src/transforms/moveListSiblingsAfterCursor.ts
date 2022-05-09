@@ -1,9 +1,10 @@
 import {
-  getNodeNode,
+  getNode,
   match,
   moveChildren,
   PlateEditor,
-  TNodeEntry,
+  TElement,
+  TElementEntry,
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
@@ -21,18 +22,18 @@ export const moveListSiblingsAfterCursor = <V extends Value>(
 ): number => {
   const offset = at[at.length - 1];
   at = Path.parent(at);
-  const listNode = getNodeNode(editor, at);
-  const listEntry: TNodeEntry = [listNode, at];
+  const listNode = getNode<TElement>(editor, at)!;
+  const listEntry: TElementEntry = [listNode, at];
 
   if (
-    !match(listNode, { type: getListTypes(editor) }) ||
+    !match(listNode, [], { type: getListTypes(editor) }) ||
     Path.isParent(at, to) // avoid moving nodes within its own list
   ) {
     return 0;
   }
 
   return moveChildren(editor, {
-    at: listEntry,
+    at: listEntry as any,
     to,
     fromStartIndex: offset + 1,
   });

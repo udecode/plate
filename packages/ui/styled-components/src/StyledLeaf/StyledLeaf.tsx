@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/plate-core';
+import { EText, Value } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { getRootProps } from '../utils/getRootProps';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';
@@ -8,7 +8,9 @@ import { StyledLeafProps } from './StyledLeaf.types';
 /**
  * StyledLeaf with no default styles.
  */
-export const StyledLeaf = <V extends Value>(props: StyledLeafProps<V>) => {
+export const StyledLeaf = <V extends Value, N extends EText<V> = EText<V>>(
+  props: StyledLeafProps<V, N>
+) => {
   const { attributes, children, nodeProps, styles } = props;
 
   const rootProps = getRootProps(props);

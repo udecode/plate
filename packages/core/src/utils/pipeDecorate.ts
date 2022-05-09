@@ -1,6 +1,6 @@
 import { Range } from 'slate';
 import { TEditableProps } from '../slate/types/TEditableProps';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 
 /**

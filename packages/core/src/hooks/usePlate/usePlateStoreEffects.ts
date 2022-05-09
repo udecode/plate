@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDeepCompareEffect } from 'use-deep-compare';
 import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import { getPlateActions } from '../../stores/plate/platesStore';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 

@@ -1,18 +1,19 @@
 import {
   escapeRegExp,
+  getEditorString,
   getPointBefore,
   getRange,
-  getText,
   TEditor,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, Point } from 'slate';
+import { Point } from 'slate';
 
 /**
  * Get text and range from trigger to cursor.
  * Starts with trigger and ends with non-whitespace character.
  */
-export const getTextFromTrigger = (
-  editor: TEditor,
+export const getTextFromTrigger = <V extends Value>(
+  editor: TEditor<V>,
   {
     at,
     trigger,
@@ -32,7 +33,7 @@ export const getTextFromTrigger = (
 
     start = getPointBefore(editor, start);
     const charRange = start && getRange(editor, start, end);
-    const charText = getText(editor, charRange);
+    const charText = getEditorString(editor, charRange);
 
     if (!charText.match(searchPattern)) {
       start = end;
@@ -42,7 +43,7 @@ export const getTextFromTrigger = (
 
   // Range from start to cursor
   const range = start && getRange(editor, start, at);
-  const text = getText(editor, range);
+  const text = getEditorString(editor, range);
 
   if (!range || !text.match(triggerRegex)) return;
 
@@ -53,7 +54,7 @@ export const getTextFromTrigger = (
 };
 
 // export const matchesTriggerAndPattern = (
-//   editor: TEditor,
+//   editor: TEditor<V>,
 //   { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
 // ) => {
 //   // Point at the start of line
@@ -63,7 +64,7 @@ export const getTextFromTrigger = (
 //   const beforeRange = lineStart && getRange(editor, lineStart, at);
 //
 //   // Before text
-//   const beforeText = getText(editor, beforeRange);
+//   const beforeText = getEditorString(editor, beforeRange);
 //
 //   // Starts with char and ends with word characters
 //   const escapedTrigger = escapeRegExp(trigger);

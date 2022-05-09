@@ -1,5 +1,5 @@
 import { PlateProps } from '../components/Plate';
-import { TEditor, Value } from '../slate/types/TEditor';
+import { TEditor, Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
 

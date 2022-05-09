@@ -1,5 +1,4 @@
-import { match, PlateEditor, Value } from '@udecode/plate-core';
-import { Ancestor } from 'slate';
+import { match, PlateEditor, TAncestor, Value } from '@udecode/plate-core';
 import { getListTypes } from './getListTypes';
 
 /**
@@ -7,5 +6,5 @@ import { getListTypes } from './getListTypes';
  */
 export const hasListChild = <V extends Value>(
   editor: PlateEditor<V>,
-  node: Ancestor
-) => node.children.some((n) => match(n, { type: getListTypes(editor) }));
+  node: TAncestor
+) => node.children.some((n) => match(n, [], { type: getListTypes(editor) }));

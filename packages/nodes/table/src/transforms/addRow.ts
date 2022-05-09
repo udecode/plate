@@ -1,10 +1,9 @@
 import {
   getAboveNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   PlateEditor,
   someNode,
-  TElement,
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
@@ -26,7 +25,7 @@ export const addRow = <V extends Value>(
     });
     if (currentRowItem) {
       const [currentRowElem, currentRowPath] = currentRowItem;
-      insertNodes<TElement>(
+      insertElements(
         editor,
         getEmptyRowNode(editor, {
           header,

@@ -8,7 +8,7 @@ import {
 } from './moveSelectionByOffset';
 
 export const mentionOnKeyDownHandler: <V extends Value>(
-  options?: MoveSelectionByOffsetOptions
+  options?: MoveSelectionByOffsetOptions<V>
 ) => (editor: PlateEditor<V>) => KeyboardEventHandler = (options) => (
   editor
 ) => (event) => {

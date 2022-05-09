@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Check if the editor is currently normalizing after each operation.

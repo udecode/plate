@@ -1,8 +1,8 @@
 import { queryNode } from '../common/queries/index';
 import { QueryNodeOptions } from '../common/types/QueryNodeOptions';
 import { isAncestor } from '../slate/node/isAncestor';
-import { NodeOf, TNode } from '../slate/types/TNode';
-import { TNodeEntry } from '../slate/types/TNodeEntry';
+import { NodeOf, TNode } from '../slate/node/TNode';
+import { TNodeEntry } from '../slate/node/TNodeEntry';
 
 export interface ApplyDeepToNodesOptions<N extends TNode> {
   // The destination node object.
@@ -15,7 +15,7 @@ export interface ApplyDeepToNodesOptions<N extends TNode> {
     source: Record<string, any> | (() => Record<string, any>)
   ) => void;
   // Query to filter the nodes.
-  query?: QueryNodeOptions<NodeOf<N>>;
+  query?: QueryNodeOptions;
 }
 
 /**

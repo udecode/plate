@@ -1,10 +1,10 @@
 import {
   AnyObject,
   EditorNodesOptions,
-  getNodes,
+  getNodeEntries,
   getPluginInjectProps,
   PlateEditor,
-  setNodes,
+  setElements,
   UnhangRangeOptions,
   unsetNodes,
   Value,
@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '../createIndentPlugin';
 
-export interface SetIndentOptions {
+export interface SetIndentOptions<V extends Value> {
   /**
    * 1 to indent
    * -1 to outdent
@@ -21,9 +21,9 @@ export interface SetIndentOptions {
   offset?: number;
 
   /**
-   * getNodes options
+   * getNodeEntries options
    */
-  getNodesOptions?: EditorNodesOptions & UnhangRangeOptions;
+  getNodesOptions?: EditorNodesOptions<V> & UnhangRangeOptions;
 
   /**
    * Set other props than the indent one.
@@ -47,11 +47,11 @@ export const setIndent = <V extends Value>(
     getNodesOptions,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions
+  }: SetIndentOptions<V>
 ) => {
   const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 
-  const _nodes = getNodes(editor, {
+  const _nodes = getNodeEntries(editor, {
     block: true,
     ...getNodesOptions,
   });
@@ -59,7 +59,7 @@ export const setIndent = <V extends Value>(
 
   withoutNormalizing(editor, () => {
     nodes.forEach(([node, path]) => {
-      const blockIndent = node[nodeKey!] ?? 0;
+      const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;
 
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
@@ -69,7 +69,7 @@ export const setIndent = <V extends Value>(
           at: path,
         });
       } else {
-        setNodes(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
+        setElements(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

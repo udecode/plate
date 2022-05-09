@@ -1,7 +1,7 @@
 import { ReactEditor } from 'slate-react';
 import { DOMPoint } from 'slate-react/dist/utils/dom';
-import { Value } from '../types/TEditor';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * {@link ReactEditor.toSlatePoint}

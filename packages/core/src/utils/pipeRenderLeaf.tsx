@@ -1,7 +1,7 @@
 import React from 'react';
 import { DefaultLeaf } from '../components/DefaultLeaf';
+import { Value } from '../slate/editor/TEditor';
 import { TEditableProps } from '../slate/types/TEditableProps';
-import { Value } from '../slate/types/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { RenderLeaf } from '../types/RenderLeaf';

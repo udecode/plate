@@ -8,7 +8,6 @@ import {
   Plate,
   PlateRenderElementProps,
 } from '@udecode/plate';
-import { Value } from '../../../../../packages/core/src/slate/types/TEditor';
 import { CONFIG } from '../../config/config';
 import { VALUES } from '../../config/values/values';
 
@@ -27,7 +26,7 @@ const plugins = createPlugins(
 export const EditableVoidElement = <V extends Value>({
   attributes,
   children,
-}: PlateRenderElementProps<V>) => {
+}: PlateRenderElementProps<V, TElement>) => {
   const [inputValue, setInputValue] = useState('');
 
   return (

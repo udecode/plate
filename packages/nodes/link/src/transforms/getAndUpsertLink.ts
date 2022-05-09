@@ -4,8 +4,8 @@ import {
   isCollapsed,
   PlateEditor,
   unwrapNodes,
+  Value,
 } from '@udecode/plate-core';
-import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';

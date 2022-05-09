@@ -1,11 +1,13 @@
 import React from 'react';
-import { getHandler } from '@udecode/plate-core';
+import { getHandler, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionElementStyles } from './MentionElement.styles';
 import { MentionElementProps } from './MentionElement.types';
 
-export const MentionElement = (props: MentionElementProps) => {
+export const MentionElement = <V extends Value>(
+  props: MentionElementProps<V>
+) => {
   const {
     attributes,
     children,

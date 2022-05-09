@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { PlateEditor } from '../../../../types/PlateEditor';
-import { getNodeNode } from '../../../queries/index';
+import { getNode } from '../../../queries/index';
 
 jsx;
 

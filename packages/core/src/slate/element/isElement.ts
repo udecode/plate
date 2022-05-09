@@ -1,5 +1,5 @@
 import { Element } from 'slate';
-import { TElement } from '../types/TElement';
+import { TElement } from './TElement';
 
 /**
  * Check if a value implements the 'Element' interface.

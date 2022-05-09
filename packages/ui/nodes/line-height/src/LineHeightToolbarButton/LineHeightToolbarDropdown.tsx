@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import {
+  focusEditor,
   getPluginInjectProps,
   isCollapsed,
   someNode,
@@ -7,7 +8,6 @@ import {
   usePlateEditorState,
   withPlateEventProvider,
 } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,

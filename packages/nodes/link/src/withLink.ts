@@ -1,8 +1,8 @@
 import {
+  getEditorString,
   getPluginType,
   getRangeBefore,
   getRangeFromBlockStart,
-  getText,
   isCollapsed,
   mockPlugin,
   moveSelection,
@@ -50,7 +50,7 @@ const upsertLinkIfValid = <V extends Value>(
   { isUrl }: { isUrl: any }
 ) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
-  const textFromBlockStart = getText(editor, rangeFromBlockStart);
+  const textFromBlockStart = getEditorString(editor, rangeFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
     upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
@@ -67,7 +67,7 @@ const upsertLinkIfValid = <V extends Value>(
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink: WithOverride<{}, LinkPlugin> = (
+export const withLink: WithOverride<Value, {}, LinkPlugin> = (
   editor,
   { type, options: { isUrl, rangeBeforeOptions } }
 ) => {
@@ -89,7 +89,7 @@ export const withLink: WithOverride<{}, LinkPlugin> = (
       );
 
       if (beforeWordRange) {
-        const beforeWordText = getText(editor, beforeWordRange);
+        const beforeWordText = getEditorString(editor, beforeWordRange);
 
         if (isUrl!(beforeWordText)) {
           upsertLink(editor, { url: beforeWordText, at: beforeWordRange });

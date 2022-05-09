@@ -1,5 +1,5 @@
 import { Element } from 'slate';
-import { TElement } from '../types/TElement';
+import { TElement } from './TElement';
 
 /**
  * Check if a value is an array of `Element` objects.

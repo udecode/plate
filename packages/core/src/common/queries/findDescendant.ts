@@ -3,22 +3,26 @@
  * no match is found, return undefined.
  */
 import { Path, Range, Span } from 'slate';
-import { getNode } from '../../slate/editor/getNode';
+import { getNodeEntry } from '../../slate/editor/getNodeEntry';
 import { getPath } from '../../slate/editor/getPath';
 import { isVoid } from '../../slate/editor/isVoid';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getNodeDescendants } from '../../slate/node/getNodeDescendants';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { EDescendantEntry, ENodeEntry } from '../../slate/types/TNodeEntry';
+import { EDescendant } from '../../slate/node/TDescendant';
+import { ENodeEntry, TNodeEntry } from '../../slate/node/TNodeEntry';
 import { FindNodeOptions } from './findNode';
 import { match } from './match';
 
 /**
  * Get the first descendant node matching the condition.
  */
-export const findDescendant = <V extends Value>(
+export const findDescendant = <
+  N extends EDescendant<V>,
+  V extends Value = Value
+>(
   editor: TEditor<V>,
   options: FindNodeOptions<V>
-): EDescendantEntry<V> | undefined => {
+): TNodeEntry<N> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const {
@@ -43,10 +47,10 @@ export const findDescendant = <V extends Value>(
 
     let root: ENodeEntry<V> = [editor, []];
     if (Path.isPath(at)) {
-      root = getNode(editor, at);
+      root = getNodeEntry(editor, at);
     }
 
-    const nodeEntries = getNodeDescendants(root[0], {
+    const nodeEntries = getNodeDescendants<N>(root[0], {
       reverse,
       from,
       to,
@@ -54,8 +58,8 @@ export const findDescendant = <V extends Value>(
     });
 
     for (const [node, path] of nodeEntries) {
-      if (match(node, _match as any)) {
-        return [node as any, (at as Path).concat(path)];
+      if (match(node, path, _match as any)) {
+        return [node, (at as Path).concat(path)];
       }
     }
   } catch (error) {

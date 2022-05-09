@@ -1,6 +1,6 @@
 import { Editor, Location } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { ENodeEntry } from '../types/TNodeEntry';
+import { ENodeEntry } from '../node/TNodeEntry';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Get the last node at a location.

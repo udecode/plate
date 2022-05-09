@@ -1,5 +1,5 @@
 import { Point, Transforms } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from '../editor/TEditor';
 
 /**
  * Set new properties on one of the selection's points.

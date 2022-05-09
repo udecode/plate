@@ -1,10 +1,11 @@
 import React from 'react';
+import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { getHrElementStyles } from './HrElement.styles';
 import { HrElementProps } from './HrElement.types';
 
-export const HrElement = (props: HrElementProps) => {
+export const HrElement = <V extends Value>(props: HrElementProps<V>) => {
   const { attributes, children, nodeProps } = props;
 
   const selected = useSelected();

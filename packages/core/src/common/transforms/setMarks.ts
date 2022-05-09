@@ -1,7 +1,7 @@
 import castArray from 'lodash/castArray';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { withoutNormalizing } from '../../slate/editor/withoutNormalizing';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { EMarks } from '../../slate/types/TText';
+import { EMarks } from '../../slate/text/TText';
 import { removeMark } from './removeMark';
 
 /**

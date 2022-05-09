@@ -7,6 +7,7 @@ import {
   TEditor,
   toggleList,
   unwrapList,
+  Value,
 } from '@udecode/plate';
 
 export const clearBlockFormat: AutoformatBlockRule['preFormat'] = (editor) =>
@@ -38,6 +39,9 @@ export const formatList = <V extends Value>(
   );
 };
 
-export const formatText = (editor: TEditor, text: string) => {
+export const formatText = <V extends Value>(
+  editor: TEditor<V>,
+  text: string
+) => {
   format(editor, () => editor.insertText(text));
 };

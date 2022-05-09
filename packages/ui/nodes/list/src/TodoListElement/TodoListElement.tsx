@@ -1,13 +1,15 @@
 import React from 'react';
-import { findNodePath, setNodes, TElement } from '@udecode/plate-core';
-import { TodoListItemNodeData } from '@udecode/plate-list';
+import { findNodePath, setNodes, Value } from '@udecode/plate-core';
+import { TTodoListItemElement } from '@udecode/plate-list';
 import { getRootProps } from '@udecode/plate-styled-components';
 import clsx from 'clsx';
 import { useReadOnly } from 'slate-react';
 import { getTodoListElementStyles } from './TodoListElement.styles';
 import { TodoListElementProps } from './TodoListElement.types';
 
-export const TodoListElement = (props: TodoListElementProps) => {
+export const TodoListElement = <V extends Value>(
+  props: TodoListElementProps<V>
+) => {
   const { attributes, children, nodeProps, element, editor } = props;
 
   const rootProps = getRootProps(props);
@@ -44,7 +46,7 @@ export const TodoListElement = (props: TodoListElementProps) => {
             const path = findNodePath(editor, element);
             if (!path) return;
 
-            setNodes<TElement<TodoListItemNodeData>>(
+            setNodes<TTodoListItemElement>(
               editor,
               { checked: e.target.checked },
               {

@@ -1,5 +1,5 @@
 import defaultsDeep from 'lodash/defaultsDeep';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { mergeDeepPlugins } from './mergeDeepPlugins';

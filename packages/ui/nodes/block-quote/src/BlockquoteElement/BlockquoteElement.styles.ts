@@ -1,3 +1,4 @@
+import { Value } from '@udecode/plate-core';
 import {
   createStyles,
   StyledElementProps,
@@ -5,7 +6,9 @@ import {
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
-export const getBlockquoteElementStyles = (props: StyledElementProps) =>
+export const getBlockquoteElementStyles = <V extends Value>(
+  props: StyledElementProps<V>
+) =>
   createStyles(
     { prefixClassNames: 'BlockquoteElement', ...props },
     {

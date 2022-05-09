@@ -1,6 +1,6 @@
 import { jsx } from 'slate-hyperscript';
-import { EDescendant, TDescendant } from '../../../slate/types/TDescendant';
-import { Value } from '../../../slate/types/TEditor';
+import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
+import { Value } from '../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';

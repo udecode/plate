@@ -8,7 +8,7 @@ import { IndentListOptions } from './indentList';
  */
 export const outdentList = <V extends Value>(
   editor: PlateEditor<V>,
-  options: IndentListOptions = {}
+  options: IndentListOptions<V> = {}
 ) => {
   setIndent(editor, {
     offset: -1,

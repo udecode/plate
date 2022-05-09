@@ -1,6 +1,6 @@
 import { Range } from 'slate';
-import { Value } from '../../slate/types/TEditor';
-import { ENodeEntry } from '../../slate/types/TNodeEntry';
+import { Value } from '../../slate/editor/TEditor';
+import { ENodeEntry } from '../../slate/node/TNodeEntry';
 import { PlateEditor } from '../PlateEditor';
 import { WithPlatePlugin } from './PlatePlugin';
 

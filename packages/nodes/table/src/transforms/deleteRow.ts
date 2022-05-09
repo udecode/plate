@@ -7,6 +7,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { TTableElement } from '../types';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
   if (
@@ -14,7 +15,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentTableItem = getAboveNode(editor, {
+    const currentTableItem = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
     const currentRowItem = getAboveNode(editor, {

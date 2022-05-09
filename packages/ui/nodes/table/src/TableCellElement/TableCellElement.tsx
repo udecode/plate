@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { findNodePath } from '@udecode/plate-core';
+import { findNodePath, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import {
   ELEMENT_TABLE,
@@ -13,7 +13,9 @@ import { hoveredColIndexAtom, resizingColAtom } from '../table.atoms';
 import { getTableCellElementStyles } from './TableCellElement.styles';
 import { TableCellElementProps } from './TableCellElement.types';
 
-export const TableCellElement = (props: TableCellElementProps) => {
+export const TableCellElement = <V extends Value>(
+  props: TableCellElementProps<V>
+) => {
   const {
     attributes,
     children,

@@ -1,6 +1,6 @@
 import castArray from 'lodash/castArray';
-import { TNode } from '../../slate/types/TNode';
-import { TNodeEntry } from '../../slate/types/TNodeEntry';
+import { TNode } from '../../slate/node/TNode';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 /**
@@ -8,7 +8,7 @@ import { QueryNodeOptions } from '../types/QueryNodeOptions';
  */
 export const queryNode = <N extends TNode>(
   entry?: TNodeEntry<N>,
-  { filter, allow, exclude }: QueryNodeOptions<N> = {}
+  { filter, allow, exclude }: QueryNodeOptions = {}
 ) => {
   if (!entry) return false;
 

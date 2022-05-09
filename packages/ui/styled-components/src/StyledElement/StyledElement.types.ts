@@ -1,11 +1,11 @@
 import { HTMLAttributes } from 'react';
-import { PlateRenderElementProps } from '@udecode/plate-core';
-import { Element } from 'slate';
+import { EElement, PlateRenderElementProps, Value } from '@udecode/plate-core';
 import { StyledProps } from '../types/StyledProps';
 
 export type StyledElementProps<
-  TElement = Element,
+  V extends Value,
+  N extends EElement<V> = EElement<V>,
   TStyles = {}
-> = PlateRenderElementProps<TElement> &
+> = PlateRenderElementProps<V, N> &
   StyledProps<TStyles> &
   HTMLAttributes<HTMLElement>;

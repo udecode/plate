@@ -1,6 +1,6 @@
 import { ReactEditor } from 'slate-react';
-import { Value } from '../types/TEditor';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * Find the DOM node that implements DocumentOrShadowRoot for the editor.

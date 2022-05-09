@@ -10,7 +10,7 @@ import { Plate } from './Plate';
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {
     // it('should trigger normalize if normalizeInitialValue set', () => {
-    //   const fn = jest.fn((e: TEditor<V>, [node, path]: TNodeEntry) => {
+    //   const fn = jest.fn((e: TEditor<V>, [node, path]) => {
     //     if (
     //       isBlock(e, node) &&
     //       path?.length &&

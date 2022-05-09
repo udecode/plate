@@ -1,5 +1,4 @@
-import { PlateEditor, select, Value } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
+import { focusEditor, PlateEditor, select, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';

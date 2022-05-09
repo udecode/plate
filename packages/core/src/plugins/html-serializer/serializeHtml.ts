@@ -1,9 +1,9 @@
+import { Value } from '../../slate/editor/TEditor';
+import { EElement } from '../../slate/element/TElement';
+import { TDescendant } from '../../slate/node/TDescendant';
 import { isText } from '../../slate/text/isText';
+import { EText } from '../../slate/text/TText';
 import { SlateProps } from '../../slate/types/SlateProps';
-import { TDescendant } from '../../slate/types/TDescendant';
-import { Value } from '../../slate/types/TEditor';
-import { EElement } from '../../slate/types/TElement';
-import { EText } from '../../slate/types/TText';
 import { PlateEditor } from '../../types/PlateEditor';
 import { isEncoded } from './utils/isEncoded';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';

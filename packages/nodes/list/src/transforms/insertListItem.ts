@@ -5,19 +5,18 @@ import {
   getMarks,
   getParentNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   isBlockTextEmptyAfterSelection,
   isStartPoint,
   moveNodes,
   PlateEditor,
   select,
   splitNodes,
-  TElement,
   Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Editor, Path, Range } from 'slate';
+import { Path, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
 /**
@@ -65,7 +64,7 @@ export const insertListItem = <V extends Value>(
      * If start, insert a list item before
      */
     if (isStart) {
-      insertNodes<TElement>(
+      insertElements(
         editor,
         {
           type: liType,
@@ -107,7 +106,7 @@ export const insertListItem = <V extends Value>(
        * If end, insert a list item after and select it
        */
       const marks = getMarks(editor) || {};
-      insertNodes<TElement>(
+      insertElements(
         editor,
         {
           type: liType,

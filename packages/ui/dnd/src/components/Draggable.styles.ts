@@ -1,9 +1,12 @@
+import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { DraggableStyleProps } from './Draggable.types';
 
-export const getDraggableStyles = (props: DraggableStyleProps) =>
+export const getDraggableStyles = <V extends Value>(
+  props: DraggableStyleProps<V>
+) =>
   createStyles(
     { prefixClassNames: 'Draggable', ...props },
     {

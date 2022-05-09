@@ -1,5 +1,5 @@
 import defaults from 'lodash/defaults';
-import { TNode } from '../../slate/types/TNode';
+import { TNode } from '../../slate/node/TNode';
 import {
   applyDeepToNodes,
   ApplyDeepToNodesOptions,

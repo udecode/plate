@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { EElement } from '../types/TElement';
+import { TEditor, Value } from './TEditor';
+import { EElement } from '../element/TElement';
 
 /**
  * Check if an element is empty, accounting for void nodes.

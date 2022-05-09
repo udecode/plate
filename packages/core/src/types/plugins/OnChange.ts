@@ -1,4 +1,4 @@
-import { Value } from '../../slate/types/TEditor';
+import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../PlateEditor';
 import { HandlerReturnType } from './DOMHandlers';
 import { WithPlatePlugin } from './PlatePlugin';

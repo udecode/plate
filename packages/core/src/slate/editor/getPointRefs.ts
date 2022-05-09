@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Get the set of currently tracked point refs of the editor.

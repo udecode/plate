@@ -1,6 +1,6 @@
 import { Editor, Location } from 'slate';
-import { TEditor, Value } from '../types/TEditor';
-import { ETextEntry } from '../types/TNodeEntry';
+import { TEditor, Value } from './TEditor';
+import { ETextEntry } from '../node/TNodeEntry';
 
 /**
  * Get the leaf text node at a location.

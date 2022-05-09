@@ -1,5 +1,6 @@
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
+  focusEditor,
   getMark,
   getPluginType,
   isMarkActive,
@@ -11,7 +12,6 @@ import {
   usePlateEditorState,
   withPlateEventProvider,
 } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import {
   ToolbarButton,
   ToolbarButtonProps,

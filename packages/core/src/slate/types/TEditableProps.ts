@@ -1,7 +1,7 @@
 import { Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { Value } from './TEditor';
-import { ENodeEntry } from './TNodeEntry';
+import { Value } from '../editor/TEditor';
+import { ENodeEntry } from '../node/TNodeEntry';
 import { RenderElementFn } from './TRenderElementProps';
 import { RenderLeafFn } from './TRenderLeafProps';
 

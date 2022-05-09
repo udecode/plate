@@ -1,30 +1,33 @@
 import { getLastNode } from '../../slate/editor/getLastNode';
 import { isAncestor } from '../../slate/node/isAncestor';
-import { ChildOf } from '../../slate/types/TDescendant';
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { TNode } from '../../slate/types/TNode';
-import { EDescendantEntry } from '../../slate/types/TNodeEntry';
+import { ChildOf, EDescendant } from '../../slate/node/TDescendant';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { TNode } from '../../slate/node/TNode';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 
-const getLastChild = <N extends TNode>(
-  node: N,
+const getLastChild = <N extends ChildOf<R>, R extends TNode>(
+  node: R,
   level: number
-): N | ChildOf<N> => {
+): R | N => {
   if (!(level + 1) || !isAncestor(node)) return node;
 
   const { children } = node;
 
   const lastNode = children[children.length - 1];
 
-  return getLastChild(lastNode, level - 1) as ChildOf<N>;
+  return getLastChild(lastNode, level - 1) as N;
 };
 
 /**
  * Get the last node at a given level.
  */
-export const getLastNodeByLevel = <V extends Value>(
+export const getLastNodeByLevel = <
+  N extends EDescendant<V>,
+  V extends Value = Value
+>(
   editor: TEditor<V>,
   level: number
-): EDescendantEntry<V> | undefined => {
+): TNodeEntry<N> | undefined => {
   const { children } = editor;
 
   const lastNode = children[children.length - 1];
@@ -33,8 +36,5 @@ export const getLastNodeByLevel = <V extends Value>(
 
   const [, lastPath] = getLastNode(editor, []);
 
-  return [
-    getLastChild(lastNode, level - 1),
-    lastPath.slice(0, level + 1),
-  ] as EDescendantEntry<V>;
+  return [getLastChild(lastNode, level - 1) as N, lastPath.slice(0, level + 1)];
 };

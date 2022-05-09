@@ -1,6 +1,6 @@
 import defaultsDeep from 'lodash/defaultsDeep';
 import { NoInfer } from '../common/types/utility/NoInfer';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 

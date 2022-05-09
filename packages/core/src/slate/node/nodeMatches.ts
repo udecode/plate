@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { TNode } from '../types/TNode';
+import { TNode } from './TNode';
 
 /**
  * Check if a node matches a set of props.

@@ -1,10 +1,9 @@
 import {
-  getNodes,
+  getNodeEntries,
   getPluginType,
   PlateEditor,
-  setNodes,
+  setElements,
   someNode,
-  TElement,
   Value,
   wrapNodes,
 } from '@udecode/plate-core';
@@ -23,7 +22,7 @@ export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
 
   unwrapCodeBlock(editor);
 
-  setNodes<TElement>(editor, {
+  setElements(editor, {
     type: getCodeLineType(editor),
   });
 
@@ -34,7 +33,7 @@ export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
     };
     wrapNodes(editor, codeBlock);
 
-    const _nodes = getNodes(editor, {
+    const _nodes = getNodeEntries(editor, {
       match: { type: getCodeLineType(editor) },
     });
     const nodes = Array.from(_nodes);
@@ -45,7 +44,7 @@ export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
     };
 
     for (const [, path] of nodes) {
-      setNodes<TElement>(editor, codeLine, {
+      setElements(editor, codeLine, {
         at: path,
       });
     }

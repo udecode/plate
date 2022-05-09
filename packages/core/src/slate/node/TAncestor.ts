@@ -1,5 +1,5 @@
-import { TEditor, Value } from './TEditor';
-import { ElementOf, TElement } from './TElement';
+import { TEditor, Value } from '../editor/TEditor';
+import { ElementOf, TElement } from '../element/TElement';
 import { TNode } from './TNode';
 
 /**

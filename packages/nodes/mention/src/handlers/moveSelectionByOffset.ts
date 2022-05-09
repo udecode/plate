@@ -9,7 +9,7 @@ export interface MoveSelectionByOffsetOptions<V extends Value> {
 // TODO: move to core
 export const moveSelectionByOffset: <V extends Value>(
   editor: PlateEditor<V>,
-  options?: MoveSelectionByOffsetOptions
+  options?: MoveSelectionByOffsetOptions<V>
 ) => KeyboardEventHandler = (editor, { query = () => true } = {}) => (
   event
 ) => {

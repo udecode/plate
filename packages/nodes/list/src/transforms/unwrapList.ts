@@ -3,7 +3,7 @@ import {
   getAboveNode,
   getPluginType,
   PlateEditor,
-  setNodes,
+  setElements,
   unwrapNodes,
   Value,
   withoutNormalizing,
@@ -18,7 +18,7 @@ export const unwrapList = <V extends Value>(
 ) => {
   withoutNormalizing(editor, () => {
     do {
-      setNodes(editor, {
+      setElements(editor, {
         type: getPluginType(editor, ELEMENT_DEFAULT),
       });
 

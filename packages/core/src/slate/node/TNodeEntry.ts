@@ -1,10 +1,10 @@
 import { Path } from 'slate';
+import { TEditor, Value } from '../editor/TEditor';
+import { EElement, ElementOf } from '../element/TElement';
+import { EText, TextOf } from '../text/TText';
 import { AncestorOf } from './TAncestor';
 import { ChildOf, DescendantOf, EDescendant } from './TDescendant';
-import { TEditor, Value } from './TEditor';
-import { EElement, ElementOf } from './TElement';
 import { ENode, TNode } from './TNode';
-import { EText, TextOf } from './TText';
 
 /**
  * `TNodeEntry` objects are returned when iterating over the nodes in a Slate

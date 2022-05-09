@@ -3,7 +3,7 @@ import { Provider } from 'jotai';
 import { Editable, Slate } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
 import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { plateIdAtom } from '../stores/plateIdAtom';
 import { PlateStoreState } from '../types/PlateStore';

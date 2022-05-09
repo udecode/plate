@@ -5,13 +5,13 @@ import {
   isCollapsed,
   isElementEmpty,
   useEditorState,
+  Value,
 } from '@udecode/plate-core';
-import { Editor } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';
 import { PlaceholderProps } from './Placeholder.types';
 
-export const Placeholder = (props: PlaceholderProps) => {
+export const Placeholder = <V extends Value>(props: PlaceholderProps<V>) => {
   const {
     children,
     element,

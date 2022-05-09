@@ -1,5 +1,5 @@
 import { Element } from 'slate';
-import { TAncestor } from '../types/TAncestor';
+import { TAncestor } from './TAncestor';
 
 /**
  * Check if a value implements the 'Ancestor' interface.

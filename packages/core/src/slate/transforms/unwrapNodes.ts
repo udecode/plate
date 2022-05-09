@@ -2,7 +2,7 @@ import { Transforms } from 'slate';
 import { getQueryOptions } from '../../common/queries/match';
 import { ENodeMatchOptions } from '../../common/types/Editor.types';
 import { Modify } from '../../common/types/utility/types';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from '../editor/TEditor';
 
 export type UnwrapNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.unwrapNodes>[1]>,

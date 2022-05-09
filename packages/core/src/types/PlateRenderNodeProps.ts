@@ -1,5 +1,5 @@
 import { AnyObject, UnknownObject } from '../common/types/utility/AnyObject';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from './PlateEditor';
 
 /**

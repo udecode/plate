@@ -1,7 +1,7 @@
 import { isInline } from '../../slate/editor/isInline';
 import { getNodeString } from '../../slate/node/getNodeString';
-import { TAncestor } from '../../slate/types/TAncestor';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TAncestor } from '../../slate/node/TAncestor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 
 /**
  * Is an ancestor empty (empty text and no inline children).

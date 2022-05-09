@@ -1,6 +1,6 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { RenderElement } from '../types/RenderElement';

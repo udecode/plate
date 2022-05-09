@@ -1,7 +1,8 @@
 import { Transforms } from 'slate';
 import { Modify } from '../../common/types/utility/types';
 import { NodeMatchOption } from '../types/NodeMatchOption';
-import { TEditor, Value } from '../types/TEditor';
+import { TEditor, Value } from '../editor/TEditor';
+import { ENode, TNodeProps } from '../node/TNode';
 
 export type UnsetNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.unsetNodes>[2]>,
@@ -11,9 +12,9 @@ export type UnsetNodesOptions<V extends Value> = Modify<
 /**
  * Unset properties on the nodes at a location.
  */
-export const unsetNodes = <V extends Value>(
+export const unsetNodes = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
-  props: string | string[],
+  props: keyof TNodeProps<N> | (keyof TNodeProps<N>)[],
   options?: UnsetNodesOptions<V>
 ) => {
   return Transforms.unsetNodes(editor as any, props as any, options as any);

@@ -1,9 +1,9 @@
-import { Value } from '../slate/types/TEditor';
-import { PlateEditor } from '../types/PlateEditor';
-import { PluginKey } from '../types/plugins/PlatePluginKey';
-import { getPlugin } from './getPlugin';
+import { Value } from "../slate/editor/TEditor";
+import { PlateEditor } from "../types/PlateEditor";
+import { PluginKey } from "../types/plugins/PlatePluginKey";
+import { getPlugin } from "./getPlugin";
 
-export const getPluginOptions = <V extends Value, P = {}, T = {}>(
+export const getPluginOptions = <P, V extends Value = Value, T = {}>(
   editor: PlateEditor<V, T>,
   key: PluginKey
-): P => getPlugin<V, P, T>(editor, key).options ?? ({} as P);
+): P => getPlugin<P, V, T>(editor, key).options ?? ({} as P);

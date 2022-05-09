@@ -1,8 +1,8 @@
 import { Editor } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { TEditor, Value } from '../types/TEditor';
-import { ENode, TNode, TNodeMatch } from '../types/TNode';
-import { TNodeEntry } from '../types/TNodeEntry';
+import { TEditor, Value } from './TEditor';
+import { ENode, TNodeMatch } from '../node/TNode';
+import { TNodeEntry } from '../node/TNodeEntry';
 
 export type GetLevelsOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Editor.levels>[1]>,
@@ -14,8 +14,8 @@ export type GetLevelsOptions<V extends Value> = Modify<
 /**
  * Iterate through all of the levels at a location.
  */
-export const getLevels = <V extends Value, N extends TNode>(
+export const getLevels = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
   options?: GetLevelsOptions<V>
-): Generator<TNodeEntry<N & ENode<V>>, void, undefined> =>
+): Generator<TNodeEntry<N>, void, undefined> =>
   Editor.levels(editor as any, options as any) as any;

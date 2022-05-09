@@ -1,8 +1,8 @@
 import { jsx } from 'slate-hyperscript';
 import { isElement } from '../../../slate/element/isElement';
 import { isText } from '../../../slate/text/isText';
-import { EDescendant, TDescendant } from '../../../slate/types/TDescendant';
-import { Value } from '../../../slate/types/TEditor';
+import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
+import { Value } from '../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';

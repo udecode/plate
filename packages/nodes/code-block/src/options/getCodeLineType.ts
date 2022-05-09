@@ -1,5 +1,4 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
-import { Value } from '../../../../core/src/slate/types/TEditor';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { ELEMENT_CODE_LINE } from '../constants';
 
 export const getCodeLineType = <V extends Value, T = {}>(

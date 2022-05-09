@@ -1,9 +1,12 @@
+import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { ImageElementStyleProps } from './ImageElement.types';
 
-export const getImageElementStyles = (props: ImageElementStyleProps) => {
+export const getImageElementStyles = <V extends Value>(
+  props: ImageElementStyleProps<V>
+) => {
   const {
     focused,
     selected,

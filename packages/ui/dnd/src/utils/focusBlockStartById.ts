@@ -1,15 +1,19 @@
 import {
   findNode,
+  focusEditor,
   getStartPoint,
   select,
   TReactEditor,
+  Value,
 } from '@udecode/plate-core';
-import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 
 /**
  * Select the start of a block by id and focus the editor.
  */
-export const focusBlockStartById = (editor: TReactEditor, id: string) => {
+export const focusBlockStartById = <V extends Value>(
+  editor: TReactEditor<V>,
+  id: string
+) => {
   const path = findNode(editor, { at: [], match: { id } })?.[1];
   if (!path) return;
 

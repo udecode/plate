@@ -21,10 +21,10 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import { Value } from '../slate/editor/TEditor';
+import { TReactEditor } from '../slate/react-editor/TReactEditor';
 import { isText } from '../slate/text/isText';
-import { Value } from '../slate/types/TEditor';
-import { TReactEditor } from '../slate/types/TReactEditor';
-import { MarksOf } from '../slate/types/TText';
+import { MarksOf } from '../slate/text/TText';
 import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';

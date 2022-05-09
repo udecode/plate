@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { PlateProps } from '../components/Plate';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { platesActions, platesSelectors } from '../stores/plate/platesStore';
 
 /**

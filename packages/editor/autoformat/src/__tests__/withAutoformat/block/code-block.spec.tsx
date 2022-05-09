@@ -6,9 +6,9 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ELEMENT_DEFAULT,
+  getEditorString,
   getPluginType,
   getRangeFromBlockStart,
-  getText,
   mockPlugin,
   PlateEditor,
 } from '@udecode/plate-core';
@@ -99,7 +99,7 @@ describe('when ``` at block start, but customising with query we get the most re
                 }
 
                 const matchRange = getRangeFromBlockStart(editor) as Range;
-                const textFromBlockStart = getText(editor, matchRange);
+                const textFromBlockStart = getEditorString(editor, matchRange);
                 const currentNodeText = (textFromBlockStart || '') + rule.text;
 
                 return rule.match === currentNodeText;

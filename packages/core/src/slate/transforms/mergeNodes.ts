@@ -4,16 +4,16 @@ import { Modify } from '../../common/types/utility/types';
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';
-import { getNodes } from '../editor/getNodes';
+import { getNodeEntries } from '../editor/getNodeEntries';
 import { getParentNode } from '../editor/getParentNode';
 import { getPreviousNode } from '../editor/getPreviousNode';
 import { isBlock } from '../editor/isBlock';
 import { isElementEmpty } from '../editor/isElementEmpty';
+import { TEditor, Value } from '../editor/TEditor';
 import { withoutNormalizing } from '../editor/withoutNormalizing';
 import { isElement } from '../element/isElement';
 import { isText } from '../text/isText';
 import { NodeMatchOption } from '../types/NodeMatchOption';
-import { TEditor, Value } from '../types/TEditor';
 import { deleteText } from './deleteText';
 import { moveNodes } from './moveNodes';
 import { removeNodes } from './removeNodes';
@@ -86,7 +86,7 @@ export const mergeNodes = <V extends Value>(
       }
     }
 
-    const _nodes = getNodes(editor as any, { at, match, voids, mode });
+    const _nodes = getNodeEntries(editor as any, { at, match, voids, mode });
     const [current] = Array.from(_nodes);
     const prev = getPreviousNode(editor as any, { at, match, voids, mode });
 

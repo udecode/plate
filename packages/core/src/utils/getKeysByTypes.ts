@@ -1,5 +1,5 @@
 import { castArray } from 'lodash';
-import { Value } from '../slate/types/TEditor';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 
 /**

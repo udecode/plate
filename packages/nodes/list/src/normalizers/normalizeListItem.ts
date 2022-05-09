@@ -9,14 +9,14 @@ import {
   moveNodes,
   PlateEditor,
   removeNodes,
-  setNodes,
-  TAncestor,
+  setElements,
   TDescendant,
   TElement,
+  TElementEntry,
   TNodeEntry,
   Value,
 } from '@udecode/plate-core';
-import { Editor, Path, PathRef, Transforms } from 'slate';
+import { Path, PathRef } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 import { moveListItemUp } from '../transforms';
@@ -41,7 +41,7 @@ export const getDeepInlineChildren = <V extends Value>(
     if (isBlock(editor, child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(child as TNodeEntry<TAncestor>),
+          children: getChildren(child),
         })
       );
     } else {
@@ -61,7 +61,7 @@ export const normalizeListItem = <V extends Value>(
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: TNodeEntry<TElement> } & ListPlugin
+  }: { listItem: TElementEntry } & ListPlugin
 ) => {
   let changed = false;
 
@@ -73,16 +73,15 @@ export const normalizeListItem = <V extends Value>(
   ];
 
   const [, liPath] = listItem;
-  const liChildren = getChildren(listItem);
+  const liChildren = getChildren<TElement>(listItem);
 
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
     .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
     .map(([, childPath]) => createPathRef(editor, childPath));
 
-  const firstLiChild: TNodeEntry<any> | undefined = liChildren[0];
-  const [firstLiChildNode, firstLiChildPath] =
-    (firstLiChild as TNodeEntry<TElement>) ?? [];
+  const firstLiChild: TElementEntry | undefined = liChildren[0];
+  const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !isBlock(editor, firstLiChildNode)) {
@@ -95,23 +94,23 @@ export const normalizeListItem = <V extends Value>(
   // If first li child is a block but not lic, set it to lic
   if (
     isBlock(editor, firstLiChildNode) &&
-    !match(firstLiChildNode as any, {
+    !match(firstLiChildNode, [], {
       type: getPluginType(editor, ELEMENT_LIC),
     })
   ) {
     if (
-      match(firstLiChildNode as any, {
+      match(firstLiChildNode, [], {
         type: getListTypes(editor),
       })
     ) {
       // the listItem has no lic so we move the children up a level
       const parent = getParentNode(editor, listItem[1]);
       const sublist = firstLiChild;
-      const children = getChildren(firstLiChild).reverse();
+      const children = getChildren<TElement>(firstLiChild).reverse();
       children.forEach((c) => {
         moveListItemUp(editor, {
           list: sublist,
-          listItem: c as TNodeEntry<TElement>,
+          listItem: c,
         });
       });
 
@@ -125,7 +124,7 @@ export const normalizeListItem = <V extends Value>(
       return true;
     }
 
-    setNodes<TElement>(
+    setElements(
       editor,
       {
         type: getPluginType(editor, ELEMENT_LIC),
@@ -154,7 +153,7 @@ export const normalizeListItem = <V extends Value>(
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(licChild as TNodeEntry<TElement>),
+          children: getChildren(licChild),
         })
       );
     }

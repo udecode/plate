@@ -9,6 +9,7 @@ import {
   getPreventDefaultHandler,
   useEventPlateId,
   usePlateEditorState,
+  Value,
   withPlateEventProvider,
 } from '@udecode/plate-core';
 import {
@@ -17,12 +18,12 @@ import {
 } from '@udecode/plate-ui-toolbar';
 
 export const CodeBlockToolbarButton = withPlateEventProvider(
-  ({
+  <V extends Value>({
     id,
     options,
     ...props
   }: ToolbarButtonProps & {
-    options?: CodeBlockInsertOptions;
+    options?: CodeBlockInsertOptions<V>;
   }) => {
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;

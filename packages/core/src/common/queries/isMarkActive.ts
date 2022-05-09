@@ -1,5 +1,5 @@
-import { TEditor, Value } from '../../slate/types/TEditor';
-import { EMarks } from '../../slate/types/TText';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EMarks } from '../../slate/text/TText';
 import { isDefined } from '../utils/types.utils';
 import { getMark } from './getMark';
 

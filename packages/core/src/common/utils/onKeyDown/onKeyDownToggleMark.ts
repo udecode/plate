@@ -1,5 +1,5 @@
 import isHotkey from 'is-hotkey';
-import { Value } from '../../../slate/types/TEditor';
+import { Value } from '../../../slate/editor/TEditor';
 import { KeyboardHandler } from '../../../types/plugins/KeyboardHandler';
 import { toggleMark } from '../../transforms/toggleMark';
 import { ToggleMarkPlugin } from '../../types/plugins/ToggleMarkPlugin';
@@ -7,7 +7,7 @@ import { ToggleMarkPlugin } from '../../types/plugins/ToggleMarkPlugin';
 export const onKeyDownToggleMark: KeyboardHandler<
   Value,
   {},
-  ToggleMarkPlugin<Value, string>
+  ToggleMarkPlugin
 > = (editor, { type, options: { hotkey, clear } }) => (e) => {
   if (!hotkey) return;
 

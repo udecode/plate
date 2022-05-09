@@ -1,8 +1,8 @@
 import { ReactEditor } from 'slate-react';
 import { DOMNode } from 'slate-react/dist/utils/dom';
-import { Value } from '../types/TEditor';
-import { TNode } from '../types/TNode';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TNode } from '../node/TNode';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * {@link ReactEditor.toSlateNode}

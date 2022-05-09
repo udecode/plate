@@ -1,18 +1,18 @@
 import {
   deleteText,
   ELEMENT_DEFAULT,
+  getEditorString,
   getRangeBefore,
   getRangeFromBlockStart,
-  getText,
   isBlock,
   isVoid,
-  setNodes,
+  setElements,
   someNode,
   TEditor,
-  TElement,
+  Value,
 } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Editor, Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { AutoformatBlockRule } from '../types';
 import { getMatchRange } from '../utils/getMatchRange';
 
@@ -20,8 +20,8 @@ export interface AutoformatBlockOptions extends AutoformatBlockRule {
   text: string;
 }
 
-export const autoformatBlock = (
-  editor: TEditor,
+export const autoformatBlock = <V extends Value>(
+  editor: TEditor<V>,
   {
     text,
     trigger,
@@ -55,7 +55,7 @@ export const autoformatBlock = (
       });
       if (hasVoidNode) continue;
 
-      const textFromBlockStart = getText(editor, matchRange);
+      const textFromBlockStart = getEditorString(editor, matchRange);
 
       if (end !== textFromBlockStart) continue;
     } else {
@@ -76,7 +76,7 @@ export const autoformatBlock = (
     preFormat?.(editor);
 
     if (!format) {
-      setNodes(
+      setElements(
         editor,
         { type },
         {

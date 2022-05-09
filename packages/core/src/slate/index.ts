@@ -4,6 +4,7 @@
 
 export * from './editor/index';
 export * from './element/index';
+export * from './history-editor/index';
 export * from './node/index';
 export * from './range/index';
 export * from './react-editor/index';

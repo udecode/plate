@@ -2,8 +2,9 @@ import { Editor } from 'slate';
 import { getQueryOptions } from '../../common/queries/match';
 import { ENodeMatchOptions } from '../../common/types/Editor.types';
 import { Modify } from '../../common/types/utility/types';
-import { TEditor, Value } from '../types/TEditor';
-import { EAncestorEntry } from '../types/TNodeEntry';
+import { EAncestor } from '../node/TAncestor';
+import { TEditor, Value } from './TEditor';
+import { TNodeEntry } from '../node/TNodeEntry';
 
 export type GetAboveNodeOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Editor.above>[1]>,
@@ -13,8 +14,8 @@ export type GetAboveNodeOptions<V extends Value> = Modify<
 /**
  * Get the ancestor above a location in the document.
  */
-export const getAboveNode = <V extends Value>(
+export const getAboveNode = <N extends EAncestor<V>, V extends Value = Value>(
   editor: TEditor<V>,
   options?: GetAboveNodeOptions<V>
-): EAncestorEntry<V> | undefined =>
+): TNodeEntry<N> | undefined =>
   Editor.above(editor as any, getQueryOptions(editor, options)) as any;

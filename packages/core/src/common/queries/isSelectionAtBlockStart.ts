@@ -1,6 +1,6 @@
 import { GetAboveNodeOptions } from '../../slate/editor/getAboveNode';
 import { isStartPoint } from '../../slate/editor/isStartPoint';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

@@ -1,6 +1,7 @@
 import {
   getInjectedPlugins,
   pipeInsertDataQuery,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { insertImage } from './transforms/insertImage';
@@ -13,7 +14,7 @@ import { ImagePlugin } from './types';
  * @param options.type
  * @param options.uploadImage
  */
-export const withImageUpload: WithOverride<{}, ImagePlugin> = (
+export const withImageUpload: WithOverride<Value, {}, ImagePlugin> = (
   editor,
   plugin
 ) => {

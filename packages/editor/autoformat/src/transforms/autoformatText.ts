@@ -1,4 +1,4 @@
-import { deleteText, insertText, TEditor } from '@udecode/plate-core';
+import { deleteText, insertText, TEditor, Value } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';
 import { AutoformatTextRule } from '../types';
@@ -9,8 +9,8 @@ export interface AutoformatTextOptions extends AutoformatTextRule {
   text: string;
 }
 
-export const autoformatText = (
-  editor: TEditor,
+export const autoformatText = <V extends Value>(
+  editor: TEditor<V>,
   { text, match: _match, trigger, format }: AutoformatTextOptions
 ) => {
   const selection = editor.selection as Range;

@@ -4,9 +4,9 @@ import {
   getPluginType,
   PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { Location } from 'slate';
-import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 
 /**

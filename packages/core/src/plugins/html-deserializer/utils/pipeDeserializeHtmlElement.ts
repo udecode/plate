@@ -1,6 +1,6 @@
 import { AnyObject } from '../../../common/types/utility/AnyObject';
 import { Nullable } from '../../../common/types/utility/Nullable';
-import { Value } from '../../../slate/types/TEditor';
+import { Value } from '../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugins/DeserializeHtml';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';

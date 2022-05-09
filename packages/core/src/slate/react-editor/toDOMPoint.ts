@@ -1,7 +1,7 @@
 import { Point } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { Value } from '../types/TEditor';
-import { TReactEditor } from '../types/TReactEditor';
+import { Value } from '../editor/TEditor';
+import { TReactEditor } from './TReactEditor';
 
 /**
  * Find a native DOM selection point from a Slate point.

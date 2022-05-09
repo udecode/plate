@@ -39,7 +39,7 @@ export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
   }
 
   const didReset = onKeyDownResetNode(
-    editor,
+    editor as any,
     mockPlugin<ResetNodePlugin>({
       options: {
         rules: [
@@ -47,7 +47,7 @@ export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
             types: [getPluginType(editor, ELEMENT_LI)],
             defaultType: getPluginType(editor, ELEMENT_DEFAULT),
             predicate: () => !moved && isBlockAboveEmpty(editor),
-            onReset: (_editor) => unwrapList(_editor as PlateEditor),
+            onReset: (_editor) => unwrapList(_editor),
           },
         ],
       },

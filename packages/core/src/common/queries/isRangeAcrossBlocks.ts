@@ -1,6 +1,6 @@
 import { Path, Range } from 'slate';
 import { GetAboveNodeOptions } from '../../slate/editor/getAboveNode';
-import { TEditor, Value } from '../../slate/types/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

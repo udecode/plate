@@ -1,20 +1,20 @@
 import {
-  getNode,
+  getNodeEntry,
   match,
   moveNodes,
   PlateEditor,
   TElement,
-  TNodeEntry,
+  TElementEntry,
   Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Ancestor, Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { getListTypes } from '../queries';
 
 export interface MoveListItemDownOptions {
-  list: TNodeEntry<TElement>;
-  listItem: TNodeEntry<TElement>;
+  list: TElementEntry;
+  listItem: TElementEntry;
 }
 
 export const moveListItemDown = <V extends Value>(
@@ -33,16 +33,16 @@ export const moveListItemDown = <V extends Value>(
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = getNode(
+  const previousSiblingItem = getNodeEntry<TElement>(
     editor,
     previousListItemPath
-  ) as TNodeEntry<Ancestor>;
+  );
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = previousNode.children.find((n) =>
-      match(n, { type: getListTypes(editor) })
+    const sublist = (previousNode.children as TElement[]).find((n) =>
+      match(n, [], { type: getListTypes(editor) })
     );
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
