@@ -1,23 +1,23 @@
 import defaultsDeep from 'lodash/defaultsDeep';
 import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { mergeDeepPlugins } from './mergeDeepPlugins';
 import { setDefaultPlugin } from './setDefaultPlugin';
 
 /**
  * Recursively merge plugin.plugins into editor.plugins and editor.pluginsByKey
  */
-export const flattenDeepPlugins = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
-  plugins?: PlatePlugin<V, T>[]
+export const flattenDeepPlugins = <V extends Value>(
+  editor: PlateEditor<V>,
+  plugins?: PlatePlugin<{}, V>[]
 ) => {
   if (!plugins) return;
 
   plugins.forEach((plugin) => {
-    let p = setDefaultPlugin(plugin as PlatePlugin<V>) as WithPlatePlugin<V, T>;
+    let p = setDefaultPlugin(plugin);
 
-    p = mergeDeepPlugins<V, T>(editor, p);
+    p = mergeDeepPlugins<V>(editor, p);
 
     if (!editor.pluginsByKey[p.key]) {
       editor.plugins.push(p);

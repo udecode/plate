@@ -18,8 +18,8 @@ import { wrapLink } from './wrapLink';
  * Then, the focus of the location is set to selection focus.
  * Then, wrap the link at the location.
  */
-export const upsertLinkAtSelection = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const upsertLinkAtSelection = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     url,
     wrap,

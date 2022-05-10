@@ -10,8 +10,8 @@ import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
-export const getAndUpsertLink = async <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getAndUpsertLink = async <V extends Value>(
+  editor: PlateEditor<V>,
   getLinkUrl?: LinkPlugin['getLinkUrl']
 ) => {
   const type = getPluginType(editor, ELEMENT_LINK);

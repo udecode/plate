@@ -3,6 +3,7 @@ import { castArray } from 'lodash';
 import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
 import { Value } from '../../slate/editor/TEditor';
+import { PlateEditor } from '../../types/PlateEditor';
 import {
   PlatesStoreState,
   PlateStoreApi,
@@ -12,9 +13,12 @@ import { eventEditorActions } from '../event-editor/event-editor.store';
 import { createPlateStore } from './createPlateStore';
 import { getPlateStore, usePlateStore } from './usePlateStore';
 
-export const setPlateState = <V extends Value>(
-  draft: Partial<PlateStoreState<V>>,
-  state: PlateProps<V>
+export const setPlateState = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  draft: Partial<PlateStoreState<V, E>>,
+  state: PlateProps<V, E>
 ) => {
   if (!isUndefined(state.onChange)) draft.onChange = state.onChange;
   if (!isUndefined(state.plugins)) draft.plugins = state.plugins;
@@ -54,13 +58,13 @@ export const createPlatesStore = (
        * If the store is already set, it will be updated.
        */
       // eslint-disable-next-line prettier/prettier
-      set: <V extends Value, T = {},>(id: string, state?: PlateProps<V, T>) => {
+      set: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(id: string, state?: PlateProps<V, E>) => {
         set.state((draft) => {
           if (!id) return;
 
           let store = draft[id];
           if (!store) {
-            store = createPlateStore<V, T>({
+            store = createPlateStore<V, E>({
               id,
               ...setPlateState({}, state ?? ({} as any)),
             } as any) as any;
@@ -82,8 +86,8 @@ export const createPlatesStore = (
     }))
     .extendSelectors((state) => ({
       // eslint-disable-next-line prettier/prettier
-      get<V extends Value, T = {},>(id: string) {
-        return (state[id] as any) as PlateStoreApi<V, T>;
+      get<V extends Value, E extends PlateEditor<V> = PlateEditor<V>,>(id: string) {
+        return (state[id] as any) as PlateStoreApi<V, E>;
       },
       has(id?: string | string[]) {
         const ids = castArray<string>(id);
@@ -98,9 +102,21 @@ export const platesActions = platesStore.set;
 export const platesSelectors = platesStore.get;
 export const usePlatesSelectors = platesStore.use;
 
-export const getPlateActions = <V extends Value, T = {}>(id?: string) =>
-  getPlateStore<V, T>(id).set;
-export const getPlateSelectors = <V extends Value, T = {}>(id?: string) =>
-  getPlateStore<V, T>(id).get;
-export const usePlateSelectors = <V extends Value, T = {}>(id?: string) =>
-  usePlateStore<V, T>(id).use;
+export const getPlateActions = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  id?: string
+) => getPlateStore<V, E>(id).set;
+export const getPlateSelectors = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  id?: string
+) => getPlateStore<V, E>(id).get;
+export const usePlateSelectors = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  id?: string
+) => usePlateStore<V, E>(id).use;

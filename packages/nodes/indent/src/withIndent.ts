@@ -1,11 +1,11 @@
-import { setNodes, unsetNodes, Value, WithOverride } from '@udecode/plate-core';
+import { setNodes, unsetNodes, WithOverride } from '@udecode/plate-core';
 import { IndentPlugin, TIndentElement } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent: WithOverride<Value, {}, IndentPlugin> = (
+export const withIndent: WithOverride<IndentPlugin> = (
   editor,
   { inject: { props: { validTypes } = {} }, options: { indentMax } }
 ) => {

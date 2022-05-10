@@ -8,7 +8,7 @@ import { EText } from '../slate/text/TText';
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 
-export interface GetInjectPropsOptions<V extends Value> {
+export interface GetInjectPropsOptions<V extends Value = Value> {
   /**
    * Existing className.
    */
@@ -44,7 +44,7 @@ export interface GetInjectPropsReturnType extends AnyObject {
  */
 export const pluginInjectProps = <V extends Value>(
   editor: PlateEditor<V>,
-  { key, inject: { props } }: WithPlatePlugin<V>,
+  { key, inject: { props } }: WithPlatePlugin<{}, V>,
   nodeProps: GetInjectPropsOptions<V>
 ): GetInjectPropsReturnType | undefined => {
   const { element, text, className, style } = nodeProps;

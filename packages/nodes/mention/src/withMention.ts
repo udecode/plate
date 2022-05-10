@@ -11,7 +11,6 @@ import {
   TElement,
   TNode,
   TText,
-  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
@@ -24,7 +23,7 @@ import {
 } from './queries';
 import { MentionPlugin, TMentionInputElement } from './types';
 
-export const withMention: WithOverride<Value, {}, MentionPlugin> = (
+export const withMention: WithOverride<MentionPlugin> = (
   editor,
   { options: { id, trigger, inputCreation } }
 ) => {

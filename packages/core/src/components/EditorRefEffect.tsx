@@ -1,25 +1,22 @@
 import React from 'react';
 import { useEditorRef } from '../hooks/useEditorRef';
-import { Value } from '../slate/editor/TEditor';
 import { usePlateSelectors } from '../stores/plate/platesStore';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlateProps } from './Plate';
 
-export const EditorRefPluginEffect = <V extends Value>({
+export const EditorRefPluginEffect = ({
   plugin,
 }: {
-  plugin: WithPlatePlugin<V>;
+  plugin: WithPlatePlugin;
 }) => {
-  const editor = useEditorRef<V>();
+  const editor = useEditorRef();
 
   plugin.useHooks?.(editor, plugin);
 
   return null;
 };
 
-export const EditorRefEffect = <V extends Value>({
-  id,
-}: Pick<PlateProps<V>, 'id'>) => {
+export const EditorRefEffect = ({ id }: Pick<PlateProps, 'id'>) => {
   const editor = useEditorRef();
   usePlateSelectors(id).keyPlugins();
 

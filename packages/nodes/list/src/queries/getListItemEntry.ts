@@ -1,6 +1,6 @@
 import {
   getAboveNode,
-  getNodeEntry,
+  getNode,
   getParentNode,
   getPluginType,
   isCollapsed,
@@ -32,7 +32,7 @@ export const getListItemEntry = <V extends Value>(
   }
 
   if (_at) {
-    const node = getNodeEntry<TElement>(editor, _at);
+    const node = getNode<TElement>(editor, _at);
     if (node) {
       const listItem = getAboveNode<TElement>(editor, {
         at: _at,

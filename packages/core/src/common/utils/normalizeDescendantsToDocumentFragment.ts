@@ -1,7 +1,7 @@
-import { isElement } from '../../slate/element/isElement';
-import { isText } from '../../slate/text/isText';
-import { EDescendant, TDescendant } from '../../slate/node/TDescendant';
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { isElement } from '../../slate/element/isElement';
+import { EDescendant, TDescendant } from '../../slate/node/TDescendant';
+import { isText } from '../../slate/text/isText';
 import { PlateEditor } from '../../types/PlateEditor';
 import { getPluginType } from '../../utils/getPluginType';
 import { ELEMENT_DEFAULT } from '../types/index';
@@ -105,8 +105,8 @@ const normalize = <N extends TDescendant>(
 /**
  * Normalize the descendants to a valid document fragment.
  */
-export const normalizeDescendantsToDocumentFragment = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const normalizeDescendantsToDocumentFragment = <V extends Value>(
+  editor: PlateEditor<V>,
   { descendants }: { descendants: EDescendant<V>[] }
 ): EDescendant<V>[] => {
   const isInline = isInlineNode<V>(editor);

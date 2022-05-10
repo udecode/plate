@@ -5,8 +5,8 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugins/DeserializeHtml';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-export const pipeDeserializeHtmlElement = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const pipeDeserializeHtmlElement = <V extends Value>(
+  editor: PlateEditor<V>,
   element: HTMLElement
 ) => {
   let result: (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined;

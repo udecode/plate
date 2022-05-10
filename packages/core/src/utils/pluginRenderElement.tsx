@@ -13,7 +13,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export const pluginRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
-  { key, type, component: _component, props }: PlatePlugin<V>
+  { key, type, component: _component, props }: PlatePlugin<{}, V>
 ): RenderElement => (nodeProps) => {
   const { element, children: _children } = nodeProps;
 
@@ -37,10 +37,10 @@ export const pluginRenderElement = <V extends Value>(
     let children = _children;
 
     injectBelowComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key });
+      const hoc = withHOC({ ...nodeProps, key } as any);
 
       if (hoc) {
-        children = hoc({ ...nodeProps, children });
+        children = hoc({ ...nodeProps, children } as any);
       }
     });
 
@@ -49,10 +49,10 @@ export const pluginRenderElement = <V extends Value>(
     );
 
     injectAboveComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key });
+      const hoc = withHOC({ ...nodeProps, key } as any);
 
       if (hoc) {
-        component = hoc({ ...nodeProps, children: component });
+        component = hoc({ ...nodeProps, children: component } as any);
       }
     });
 

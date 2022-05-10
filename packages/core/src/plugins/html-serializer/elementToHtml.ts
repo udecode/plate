@@ -43,7 +43,7 @@ export const elementToHtml = <V extends Value>(
       createElementWithSlate({
         ...slateProps,
         children:
-          plugin.serializeHtml?.(props) ??
+          plugin.serializeHtml?.(props as any) ??
           pluginRenderElement(editor, plugin)(props),
       })
     );

@@ -5,8 +5,8 @@ import { PlateEditor } from '../types/PlateEditor';
 /**
  * Get plugin keys by types
  */
-export const getKeysByTypes = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getKeysByTypes = <V extends Value>(
+  editor: PlateEditor<V>,
   type: string | string[]
 ) => {
   const types = castArray<string>(type);

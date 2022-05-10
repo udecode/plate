@@ -5,7 +5,7 @@ import { getPlugin } from './getPlugin';
 /**
  * Get plugin type option by plugin key.
  */
-export const getPluginType = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getPluginType = <V extends Value>(
+  editor: PlateEditor<V>,
   key: string
-): string => getPlugin(editor, key).type ?? key ?? '';
+): string => getPlugin<{}, V>(editor, key).type ?? key ?? '';

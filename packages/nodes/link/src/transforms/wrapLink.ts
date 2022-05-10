@@ -11,8 +11,8 @@ import { TLinkElement } from '../types';
 /**
  * Wrap selected nodes with a link and collapse at the end.
  */
-export const wrapLink = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const wrapLink = <V extends Value>(
+  editor: PlateEditor<V>,
   { at, url }: { url: string; at?: Location }
 ) => {
   wrapNodes<TLinkElement>(

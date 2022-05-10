@@ -1,6 +1,6 @@
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { unwrapNodes } from '../../slate/transforms/unwrapNodes';
 import { wrapNodes } from '../../slate/transforms/wrapNodes';
-import { TEditor, Value } from '../../slate/editor/TEditor';
 import { someNode } from '../queries/someNode';
 
 /**

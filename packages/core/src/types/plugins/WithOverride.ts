@@ -6,7 +6,9 @@ import { WithPlatePlugin } from './PlatePlugin';
  * Plate plugin overriding the `editor` methods.
  * Naming convention is `with*`.
  */
-export type WithOverride<V extends Value = Value, T = {}, P = {}> = (
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>
-) => PlateEditor<V, T>;
+export type WithOverride<
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+  EE = {}
+> = (editor: E, plugin: WithPlatePlugin<P, V, E>) => E & EE;

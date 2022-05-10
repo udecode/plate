@@ -9,7 +9,11 @@ import { WithPlatePlugin } from './PlatePlugin';
  * If the function returns undefined then no ranges are modified.
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */
-export type Decorate<V extends Value, T = {}, P = {}> = (
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>
+export type Decorate<
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = (
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
 ) => (entry: ENodeEntry<V>) => Range[] | undefined;

@@ -13,14 +13,14 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export const pluginRenderLeaf = <V extends Value>(
   editor: PlateEditor<V>,
-  { key, type = key, component, props }: PlatePlugin<V>
+  { key, type = key, component, props }: PlatePlugin<{}, V>
 ): RenderLeaf => (nodeProps) => {
   const { leaf, children } = nodeProps;
 
   if (leaf[type]) {
     const Leaf = component ?? DefaultLeaf;
 
-    nodeProps = getRenderNodeProps<V>({
+    nodeProps = getRenderNodeProps({
       attributes: leaf.attributes as any,
       props,
       nodeProps: nodeProps as any,

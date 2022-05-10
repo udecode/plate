@@ -1,5 +1,5 @@
-import { InsertNodesOptions } from '../../slate/transforms/insertNodes';
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { InsertNodesOptions } from '../../slate/transforms/insertNodes';
 import { getQueryOptions } from '../queries/match';
 import { insertElements } from './insertElements';
 

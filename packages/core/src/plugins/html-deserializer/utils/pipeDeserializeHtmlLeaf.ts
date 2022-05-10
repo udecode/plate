@@ -3,8 +3,8 @@ import { Value } from '../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-export const pipeDeserializeHtmlLeaf = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const pipeDeserializeHtmlLeaf = <V extends Value>(
+  editor: PlateEditor<V>,
   element: HTMLElement
 ) => {
   let node: AnyObject = {};

@@ -1,4 +1,4 @@
-import { createEditor } from 'slate';
+import { createTEditor } from './createTEditor';
 import { mergeDeepPlugins } from './mergeDeepPlugins';
 import { mockPlugin } from './mockPlugin';
 
@@ -6,7 +6,7 @@ describe('mergeDeepPlugins', () => {
   it('should be', () => {
     expect(
       mergeDeepPlugins(
-        createEditor() as any,
+        createTEditor() as any,
         mockPlugin({
           key: 'a',
           plugins: [

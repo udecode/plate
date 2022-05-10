@@ -2,6 +2,7 @@
 
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { Value } from '../../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../../types/PlateEditor';
 import { createPlateEditor } from '../../../../utils/createPlateEditor';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';

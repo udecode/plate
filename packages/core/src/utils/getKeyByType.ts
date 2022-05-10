@@ -5,9 +5,9 @@ import { getKeysByTypes } from './getKeysByTypes';
 /**
  * Get plugin key by type
  */
-export const getKeyByType = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getKeyByType = <V extends Value>(
+  editor: PlateEditor<V>,
   type: string
 ): string | undefined => {
-  return getKeysByTypes<V, T>(editor, type)[0];
+  return getKeysByTypes<V>(editor, type)[0];
 };

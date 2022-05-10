@@ -7,10 +7,7 @@ import { createListPlugin } from '../createListPlugin';
 
 jsx;
 
-const testNormalize = (
-  input: PlateEditor<Value>,
-  output: PlateEditor<Value>
-): void => {
+const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
   const editor = createPlateUIEditor({
     editor: input,
     plugins: [createListPlugin()],

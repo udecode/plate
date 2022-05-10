@@ -1,7 +1,7 @@
-import { createEditor } from 'slate';
 import { createHeadingPlugin } from '../../../nodes/heading/src/createHeadingPlugin';
 import { createParagraphPlugin } from '../../../nodes/paragraph/src/createParagraphPlugin';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { createTEditor } from '../utils/createTEditor';
 import { getPlugin } from '../utils/getPlugin';
 import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
@@ -23,7 +23,7 @@ const coreKeys = [
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('should be', () => {
-      const editor = withPlate(createEditor(), { id: '1' });
+      const editor = withPlate(createTEditor(), { id: '1' });
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
@@ -47,7 +47,7 @@ describe('withPlate', () => {
         }
       );
 
-      const editor = withPlate(createEditor(), {
+      const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [pluginP, pluginA, pluginB],
       });
@@ -88,7 +88,7 @@ describe('withPlate', () => {
 
       const plugins = [pluginInput];
 
-      const editor = withPlate(createEditor(), { id: '1', plugins });
+      const editor = withPlate(createTEditor(), { id: '1', plugins });
 
       const { type, inject } = getPlugin(editor, 'a');
 
@@ -139,7 +139,10 @@ describe('withPlate', () => {
         }),
       };
 
-      const editor = withPlate(createEditor(), { id: '1', plugins: [pluginA] });
+      const editor = withPlate(createTEditor(), {
+        id: '1',
+        plugins: [pluginA],
+      });
 
       const outputPluginAA = getPlugin(editor, 'aa');
       const outputPluginAB = getPlugin(editor, 'ab');
@@ -174,7 +177,7 @@ describe('withPlate', () => {
 
   describe('when then in nested plugins', () => {
     it('should deep merge the plugins', () => {
-      const editor = withPlate(createEditor(), {
+      const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [
           {
@@ -234,7 +237,7 @@ describe('withPlate', () => {
 
   describe('when plugin has overridesByKey', () => {
     it('should be', () => {
-      const editor = withPlate(createEditor(), {
+      const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [
           {

@@ -1,7 +1,7 @@
 import { Path } from 'slate';
 import { getEndPoint } from '../../slate/editor/getEndPoint';
-import { select } from '../../slate/transforms/select';
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { select } from '../../slate/transforms/select';
 import { getBlockAbove } from '../queries/index';
 
 /**

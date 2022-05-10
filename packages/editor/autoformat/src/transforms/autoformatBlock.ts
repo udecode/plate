@@ -6,9 +6,9 @@ import {
   getRangeFromBlockStart,
   isBlock,
   isVoid,
+  PlateEditor,
   setElements,
   someNode,
-  TEditor,
   Value,
 } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
@@ -21,7 +21,7 @@ export interface AutoformatBlockOptions extends AutoformatBlockRule {
 }
 
 export const autoformatBlock = <V extends Value>(
-  editor: TEditor<V>,
+  editor: PlateEditor<V>,
   {
     text,
     trigger,
@@ -73,7 +73,9 @@ export const autoformatBlock = <V extends Value>(
 
     deleteText(editor, { at: matchRange });
 
-    preFormat?.(editor);
+    if (preFormat) {
+      preFormat<V>(editor);
+    }
 
     if (!format) {
       setElements(
@@ -84,7 +86,7 @@ export const autoformatBlock = <V extends Value>(
         }
       );
     } else {
-      format(editor);
+      format<V>(editor);
     }
 
     return true;

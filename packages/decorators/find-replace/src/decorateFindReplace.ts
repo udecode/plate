@@ -1,8 +1,8 @@
-import { Decorate, isText, Value } from '@udecode/plate-core';
+import { Decorate, isText } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { FindReplacePlugin } from './types';
 
-export const decorateFindReplace: Decorate<Value, {}, FindReplacePlugin> = (
+export const decorateFindReplace: Decorate<FindReplacePlugin> = (
   editor,
   { key, type }
 ) => ([node, path]) => {

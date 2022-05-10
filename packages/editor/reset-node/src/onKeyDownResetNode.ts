@@ -3,7 +3,6 @@ import {
   KeyboardHandler,
   setElements,
   someNode,
-  Value,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { ResetNodePlugin } from './types';
@@ -13,7 +12,7 @@ export const SIMULATE_BACKSPACE: any = {
   which: 8,
 };
 
-export const onKeyDownResetNode: KeyboardHandler<Value, {}, ResetNodePlugin> = (
+export const onKeyDownResetNode: KeyboardHandler<ResetNodePlugin> = (
   editor,
   { options: { rules } }
 ) => (event) => {

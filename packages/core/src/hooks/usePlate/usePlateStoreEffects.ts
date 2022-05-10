@@ -4,10 +4,13 @@ import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
 import { Value } from '../../slate/editor/TEditor';
 import { getPlateActions } from '../../stores/plate/platesStore';
-import { PlatePlugin } from '../../types/plugins/PlatePlugin';
+import { PlateEditor } from '../../types/PlateEditor';
 
-export type UsePlateStoreEffects<V extends Value, T = {}> = Pick<
-  PlateProps<V, T>,
+export type UsePlateStoreEffects<
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = Pick<
+  PlateProps<V, E>,
   | 'id'
   | 'value'
   | 'enabled'
@@ -19,7 +22,10 @@ export type UsePlateStoreEffects<V extends Value, T = {}> = Pick<
   | 'renderLeaf'
 >;
 
-export const usePlateStoreEffects = <V extends Value, T = {}>({
+export const usePlateStoreEffects = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>({
   id,
   value: valueProp,
   enabled: enabledProp = true,
@@ -29,8 +35,8 @@ export const usePlateStoreEffects = <V extends Value, T = {}>({
   decorate,
   renderElement,
   renderLeaf,
-}: UsePlateStoreEffects<V, T>) => {
-  const plateActions = getPlateActions<V>(id);
+}: UsePlateStoreEffects<V, E>) => {
+  const plateActions = getPlateActions<V, E>(id);
 
   // Store Slate.value
   useEffect(() => {
@@ -84,7 +90,7 @@ export const usePlateStoreEffects = <V extends Value, T = {}>({
   // Store plugins
   useEffect(() => {
     if (!isUndefined(plugins)) {
-      plateActions.plugins(plugins as PlatePlugin<V>[]);
+      plateActions.plugins(plugins);
     }
   }, [plugins, plateActions]);
 };

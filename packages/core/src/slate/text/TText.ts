@@ -29,8 +29,6 @@ export type EText<V extends Value> = Extract<
   TText
 >;
 
-// const a: EText<MyValue> = {}
-
 /**
  * A utility type to get all the text node types from a root node type.
  */

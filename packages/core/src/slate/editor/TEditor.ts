@@ -1,8 +1,8 @@
 import { Editor } from 'slate';
 import { UnknownObject } from '../../common/types/utility/AnyObject';
 import { Modify } from '../../common/types/utility/types';
-import { EDescendant } from '../node/TDescendant';
 import { EElement, TElement } from '../element/TElement';
+import { EDescendant } from '../node/TDescendant';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TOperation } from '../types/TOperation';
 

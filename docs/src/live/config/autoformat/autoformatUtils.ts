@@ -2,9 +2,10 @@ import {
   AutoformatBlockRule,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
+  getParentNode,
   isElement,
   isType,
-  TEditor,
+  PlateEditor,
   toggleList,
   unwrapList,
   Value,
@@ -13,7 +14,10 @@ import {
 export const clearBlockFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
 
-export const format = (editor: TEditor<V>, customFormatting: any) => {
+export const format = <V extends Value>(
+  editor: PlateEditor<V>,
+  customFormatting: any
+) => {
   if (editor.selection) {
     const parentEntry = getParentNode(editor, editor.selection);
     if (!parentEntry) return;
@@ -29,7 +33,7 @@ export const format = (editor: TEditor<V>, customFormatting: any) => {
 };
 
 export const formatList = <V extends Value>(
-  editor: TEditor<V>,
+  editor: PlateEditor<V>,
   elementType: string
 ) => {
   format(editor, () =>
@@ -40,7 +44,7 @@ export const formatList = <V extends Value>(
 };
 
 export const formatText = <V extends Value>(
-  editor: TEditor<V>,
+  editor: PlateEditor<V>,
   text: string
 ) => {
   format(editor, () => editor.insertText(text));

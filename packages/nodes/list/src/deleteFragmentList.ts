@@ -11,7 +11,7 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Range } from 'slate';
+import { Range } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';

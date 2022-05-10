@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, TEditor } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 import { createIndentListPlugin } from './createIndentListPlugin';
@@ -22,7 +22,7 @@ describe('normalizeIndentList', () => {
             1
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const output = ((
         <editor>
@@ -33,7 +33,7 @@ describe('normalizeIndentList', () => {
             1
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

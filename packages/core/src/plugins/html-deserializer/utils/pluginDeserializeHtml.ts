@@ -10,9 +10,9 @@ import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 /**
  * Get a deserializer by type, node names, class names and styles.
  */
-export const pluginDeserializeHtml = <V extends Value, T = {}, P = {}>(
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>,
+export const pluginDeserializeHtml = <V extends Value>(
+  editor: PlateEditor<V>,
+  plugin: WithPlatePlugin<{}, V>,
   {
     element: el,
     deserializeLeaf,
@@ -125,7 +125,7 @@ export const pluginDeserializeHtml = <V extends Value, T = {}, P = {}>(
   let node = getNode(el, {}) ?? {};
   if (!Object.keys(node).length) return;
 
-  const injectedPlugins = getInjectedPlugins(editor, plugin);
+  const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.(el, node);

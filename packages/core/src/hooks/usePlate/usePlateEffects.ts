@@ -8,7 +8,7 @@ import {
   usePlateSelectors,
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
-import { PlatePlugin } from '../../types/plugins/PlatePlugin';
+import { PlateEditor } from '../../types/PlateEditor';
 import { createTEditor } from '../../utils/createTEditor';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
 import { usePlateStoreEffects } from './usePlateStoreEffects';
@@ -17,7 +17,10 @@ import { usePlateStoreEffects } from './usePlateStoreEffects';
  * Effects to update the plate store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const usePlateEffects = <V extends Value, T = {}>({
+export const usePlateEffects = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>({
   id = 'main',
   editor: editorProp,
   initialValue,
@@ -28,15 +31,15 @@ export const usePlateEffects = <V extends Value, T = {}>({
   onChange,
   value,
   enabled: enabledProp,
-}: PlateProps<V, T>) => {
-  const editor = usePlateEditorRef<V, T>(id);
+}: PlateProps<V, E>) => {
+  const editor = usePlateEditorRef<V, E>(id);
   const enabled = usePlateSelectors(id).enabled();
-  const plugins = usePlateSelectors(id).plugins() as PlatePlugin<V, T>[];
+  const plugins = usePlateSelectors<V>(id).plugins();
 
   const prevEditor = useRef(editor);
   const prevPlugins = useRef(plugins);
 
-  const plateActions = getPlateActions<V, T>(id);
+  const plateActions = getPlateActions<V, E>(id);
 
   // Set initialValue once
   useEffect(() => {
@@ -65,7 +68,7 @@ export const usePlateEffects = <V extends Value, T = {}>({
     if (!editor && enabled) {
       plateActions.editor(
         editorProp ??
-          withPlate(createTEditor(), {
+          withPlate(createTEditor() as E, {
             id,
             plugins: pluginsProp,
             disableCorePlugins,
@@ -90,7 +93,7 @@ export const usePlateEffects = <V extends Value, T = {}>({
       prevEditor.current === editor &&
       prevPlugins.current !== plugins
     ) {
-      setPlatePlugins(editor, { plugins, disableCorePlugins });
+      setPlatePlugins<V>(editor, { plugins, disableCorePlugins });
       prevPlugins.current = plugins;
     }
   }, [plugins, editor, disableCorePlugins]);

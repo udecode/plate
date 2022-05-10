@@ -5,8 +5,11 @@ import { PlatePlugin } from '../types/plugins/PlatePlugin';
 /**
  * Get `editor.plugins`
  */
-export const getPlugins = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>
-): PlatePlugin<V, T>[] => {
-  return editor?.plugins ?? [];
+export const getPlugins = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+): PlatePlugin<{}, V, E>[] => {
+  return (editor?.plugins as PlatePlugin<{}, V, E>[]) ?? [];
 };

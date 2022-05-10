@@ -4,7 +4,6 @@ import {
   KeyboardHandler,
   select,
   TElement,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { getCodeLineType } from './options/getCodeLineType';
@@ -17,7 +16,7 @@ import { CodeBlockPlugin } from './types';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler<Value, {}, CodeBlockPlugin> = (
+export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPlugin> = (
   editor
 ) => (e) => {
   if (e.key === 'Tab') {

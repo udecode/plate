@@ -67,7 +67,7 @@ const upsertLinkIfValid = <V extends Value>(
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink: WithOverride<Value, {}, LinkPlugin> = (
+export const withLink: WithOverride<LinkPlugin> = (
   editor,
   { type, options: { isUrl, rangeBeforeOptions } }
 ) => {

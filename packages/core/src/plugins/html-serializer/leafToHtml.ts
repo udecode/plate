@@ -31,7 +31,8 @@ export const leafToHtml = <V extends Value>(
     };
 
     const serialized =
-      plugin.serializeHtml?.(props) ?? pluginRenderLeaf(editor, plugin)(props);
+      plugin.serializeHtml?.(props as any) ??
+      pluginRenderLeaf(editor, plugin)(props);
 
     if (serialized === children) return result;
 

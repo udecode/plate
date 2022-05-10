@@ -1,6 +1,6 @@
-import { KeyboardHandler, Value } from '@udecode/plate-core';
+import { KeyboardHandler } from '@udecode/plate-core';
 
-export const onKeyDownSingleLine: KeyboardHandler<Value> = () => (event) => {
+export const onKeyDownSingleLine: KeyboardHandler = () => (event) => {
   if (event.key === 'Enter') {
     event.preventDefault();
   }

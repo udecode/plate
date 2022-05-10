@@ -349,8 +349,8 @@ This property extends most `textarea` handlers like:
 
 The type of each handler is:
 ```ts
-type Handler<V extends Value, T = {}, P = {}> = (
-  editor: PlateEditor<V, T>, plugin: WithPlatePlugin<V, T, P>
+type Handler<P = {}, V extends Value, E extends PlateEditor<V> = PlateEditor<V>> = (
+  editor: E, plugin: WithPlatePlugin<P, V, E>
 ) => (event: Event) => boolean | void;
 ```
 
@@ -509,9 +509,9 @@ createIndentPlugin({
 - Type is:
 ```tsx
 (
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>
-) => Partial<PlatePlugin<V, T, P>>
+  editor: PlateEditor<V>,
+  plugin: WithPlatePlugin<P, V, E>
+) => Partial<PlatePlugin<P, V, E>>
 ```
 
 ### `type`

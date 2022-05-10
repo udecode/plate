@@ -11,10 +11,10 @@ import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
  */
 export const mergeDeepPlugins = <
   V extends Value,
-  T = {},
-  P extends WithPlatePlugin<V, T> = WithPlatePlugin<V, T>
+  E extends PlateEditor<V> = PlateEditor<V>,
+  P extends WithPlatePlugin<{}, V, E> = WithPlatePlugin<{}, V, E>
 >(
-  editor: PlateEditor<V, T>,
+  editor: E,
   _plugin: P
 ): P => {
   const plugin = { ..._plugin };
@@ -25,7 +25,7 @@ export const mergeDeepPlugins = <
 
     const { plugins: pluginPlugins } = plugin;
 
-    const pluginThen = mergeDeepPlugins<V, T, P>(
+    const pluginThen = mergeDeepPlugins<V, E, P>(
       editor,
       defaultsDeep(then(editor, plugin), plugin)
     );

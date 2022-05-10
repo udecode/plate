@@ -29,7 +29,6 @@ import {
   TrailingBlockPlugin,
   withProps,
 } from '@udecode/plate';
-import { Value } from '@udecode/plate-core';
 import {
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
@@ -50,16 +49,16 @@ interface Config {
   editableProps: EditableProps;
 
   align: Partial<PlatePlugin>;
-  autoformat: Partial<PlatePlugin<Value, {}, AutoformatPlugin>>;
-  exitBreak: Partial<PlatePlugin<Value, {}, ExitBreakPlugin>>;
-  forceLayout: Partial<PlatePlugin<Value, {}, NormalizeTypesPlugin>>;
-  indent: Partial<PlatePlugin<Value, {}, IndentPlugin>>;
+  autoformat: Partial<PlatePlugin<AutoformatPlugin>>;
+  exitBreak: Partial<PlatePlugin<ExitBreakPlugin>>;
+  forceLayout: Partial<PlatePlugin<NormalizeTypesPlugin>>;
+  indent: Partial<PlatePlugin<IndentPlugin>>;
   lineHeight: Partial<PlatePlugin>;
   mentionItems: any;
-  resetBlockType: Partial<PlatePlugin<Value, {}, ResetNodePlugin>>;
-  selectOnBackspace: Partial<PlatePlugin<Value, {}, SelectOnBackspacePlugin>>;
-  softBreak: Partial<PlatePlugin<Value, {}, SoftBreakPlugin>>;
-  trailingBlock: Partial<PlatePlugin<Value, {}, TrailingBlockPlugin>>;
+  resetBlockType: Partial<PlatePlugin<ResetNodePlugin>>;
+  selectOnBackspace: Partial<PlatePlugin<SelectOnBackspacePlugin>>;
+  softBreak: Partial<PlatePlugin<SoftBreakPlugin>>;
+  trailingBlock: Partial<PlatePlugin<TrailingBlockPlugin>>;
 }
 
 export const CONFIG: Config = {

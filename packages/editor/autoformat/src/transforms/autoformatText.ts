@@ -1,4 +1,9 @@
-import { deleteText, insertText, TEditor, Value } from '@udecode/plate-core';
+import {
+  deleteText,
+  insertText,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';
 import { AutoformatTextRule } from '../types';
@@ -10,7 +15,7 @@ export interface AutoformatTextOptions extends AutoformatTextRule {
 }
 
 export const autoformatText = <V extends Value>(
-  editor: TEditor<V>,
+  editor: PlateEditor<V>,
   { text, match: _match, trigger, format }: AutoformatTextOptions
 ) => {
   const selection = editor.selection as Range;
@@ -49,7 +54,7 @@ export const autoformatText = <V extends Value>(
     }
 
     if (typeof format === 'function') {
-      format(editor, matched);
+      format<V>(editor, matched);
     } else {
       const formatEnd = Array.isArray(format) ? format[1] : format;
       editor.insertText(formatEnd);

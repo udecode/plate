@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { PlateProps } from '../../components/Plate';
-import { SlateProps } from '../../slate/types/SlateProps';
 import { Value } from '../../slate/editor/TEditor';
+import { SlateProps } from '../../slate/types/SlateProps';
 import {
   getPlateActions,
   usePlateSelectors,

@@ -4,7 +4,6 @@ import {
   getNodeString,
   getParentNode,
   getPlugin,
-  Value,
 } from '@udecode/plate-core';
 
 // noinspection ES6UnusedImports
@@ -69,7 +68,7 @@ export interface CodeSyntaxRange extends Range {
   [ELEMENT_CODE_SYNTAX]: true;
 }
 
-export const decorateCodeLine: Decorate<Value> = (editor) => {
+export const decorateCodeLine: Decorate = (editor) => {
   const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
   const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 

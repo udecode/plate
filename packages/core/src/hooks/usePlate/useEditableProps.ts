@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 import { PlateProps } from '../../components/Plate';
-import { TEditableProps } from '../../slate/types/TEditableProps';
 import { Value } from '../../slate/editor/TEditor';
+import { TEditableProps } from '../../slate/types/TEditableProps';
 import { usePlateSelectors } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
@@ -15,7 +15,7 @@ import { pipeRenderLeaf } from '../../utils/pipeRenderLeaf';
 export const useEditableProps = <V extends Value>({
   id = 'main',
 }: Pick<PlateProps<V>, 'id'>): TEditableProps<V> => {
-  const editor = usePlateEditorRef<V>(id);
+  const editor = usePlateEditorRef<V>(id)!;
   const keyPlugins = usePlateSelectors<V>(id).keyPlugins();
   const editableProps = usePlateSelectors<V>(id).editableProps();
   const storeDecorate = usePlateSelectors<V>(id).decorate();

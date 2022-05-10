@@ -2,7 +2,6 @@ import {
   getLastNodeByLevel,
   insertElements,
   queryNode,
-  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
@@ -11,7 +10,7 @@ import { TrailingBlockPlugin } from './createTrailingBlockPlugin';
 /**
  * Add a trailing block when the last node type is not `type` and when the editor has .
  */
-export const withTrailingBlock: WithOverride<Value, {}, TrailingBlockPlugin> = (
+export const withTrailingBlock: WithOverride<TrailingBlockPlugin> = (
   editor,
   { type, options: { level, ...query } }
 ) => {

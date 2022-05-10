@@ -3,7 +3,6 @@ import {
   DeserializeHtml,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
-  Value,
 } from '@udecode/plate-core';
 import {
   ELEMENT_H1,
@@ -67,7 +66,7 @@ const KEYS = [
   ELEMENT_H6,
 ];
 
-const overrideByKey: Record<string, Partial<PlatePlugin<Value>>> = {};
+const overrideByKey: Record<string, Partial<PlatePlugin>> = {};
 
 KEYS.forEach((key) => {
   overrideByKey[key] = {

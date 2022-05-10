@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { PlateEditor, PlatePlugin, Value } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
@@ -13,7 +13,7 @@ jsx;
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: Partial<PlatePlugin<Value, {}, ListPlugin>>
+  listPluginOptions?: Partial<PlatePlugin<ListPlugin>>
 ) => {
   const editor = createPlateUIEditor({
     editor: input,

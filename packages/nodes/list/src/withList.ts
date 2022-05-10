@@ -1,4 +1,4 @@
-import { Value, WithOverride } from '@udecode/plate-core';
+import { WithOverride } from '@udecode/plate-core';
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
 import { deleteFragmentList } from './deleteFragmentList';
@@ -7,7 +7,7 @@ import { insertFragmentList } from './insertFragmentList';
 import { normalizeList } from './normalizers';
 import { ListPlugin } from './types';
 
-export const withList: WithOverride<Value, {}, ListPlugin> = (
+export const withList: WithOverride<ListPlugin> = (
   editor,
   { options: { validLiChildrenTypes } }
 ) => {

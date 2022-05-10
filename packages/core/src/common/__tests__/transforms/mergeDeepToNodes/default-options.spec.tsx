@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { TEditor } from '../../../../slate/editor/TEditor';
 import { mergeDeepToNodes } from '../../../../utils/mergeDeepToNodes';
 
 jsx;
@@ -10,7 +10,7 @@ const editor = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as TEditor;
+) as any) as PlateEditor;
 
 const props = { a: 1 };
 

@@ -5,12 +5,14 @@ import { QueryNodeOptions } from './QueryNodeOptions';
 /**
  * Query the editor state.
  */
-export interface QueryEditorOptions<V extends Value>
-  extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
+export interface QueryEditorOptions<
+  V extends Value,
+  E extends TEditor<V> = TEditor<V>
+> extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /**
    * Query the editor.
    */
-  filter?: (editor: TEditor<V>) => boolean;
+  filter?: (editor: E) => boolean;
 
   /**
    * Location from where to lookup the node types (bottom-up)

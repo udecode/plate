@@ -1,5 +1,5 @@
-import { TPath, TRange } from './interfaces';
 import { TNode } from '../node/TNode';
+import { TPath, TRange } from './interfaces';
 
 export type TInsertNodeOperation = {
   type: 'insert_node';

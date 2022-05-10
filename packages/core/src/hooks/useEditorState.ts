@@ -7,5 +7,7 @@ import { PlateEditor } from '../types/PlateEditor';
  * Needs to be called in a child component of `Plate`.
  * Else, use `usePlateEditorState`.
  */
-export const useEditorState = <V extends Value = Value, T = {}>() =>
-  (useSlate() as unknown) as PlateEditor<V, T>;
+export const useEditorState = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>() => (useSlate() as unknown) as E;

@@ -1,8 +1,8 @@
 import { jsx } from 'slate-hyperscript';
-import { isElement } from '../../../slate/element/isElement';
-import { isText } from '../../../slate/text/isText';
-import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
 import { Value } from '../../../slate/editor/TEditor';
+import { isElement } from '../../../slate/element/isElement';
+import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
+import { isText } from '../../../slate/text/isText';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -12,8 +12,8 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
-export const htmlElementToLeaf = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const htmlElementToLeaf = <V extends Value>(
+  editor: PlateEditor<V>,
   element: HTMLElement
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);

@@ -1,8 +1,8 @@
 import { Path } from 'slate';
-import { isText } from '../../slate/text/isText';
 import { ChildOf } from '../../slate/node/TDescendant';
 import { TNode } from '../../slate/node/TNode';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
+import { isText } from '../../slate/text/isText';
 
 /**
  * Get the last child of a node or null if no children.

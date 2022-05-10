@@ -74,12 +74,12 @@ export interface ResetNodePluginRule extends HotkeyPlugin {
   /**
    * Additional condition to the rule.
    */
-  predicate: <V extends Value>(editor: PlateEditor<V>) => boolean;
+  predicate: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(editor: E) => boolean;
 
   /**
    * Callback called when resetting.
    */
-  onReset?: <V extends Value>(editor: PlateEditor<V>) => void;
+  onReset?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(editor: E) => void;
 }
 
 export interface ResetNodePlugin {

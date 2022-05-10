@@ -12,7 +12,6 @@ import {
   insertFragment,
   isElement,
   PlateEditor,
-  PlatePlugin,
   removeNodes,
   TAncestor,
   TAncestorEntry,
@@ -22,6 +21,7 @@ import {
   TElementEntry,
   TText,
   Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
@@ -30,14 +30,14 @@ import { getListItemContentType, getListItemType, isListRoot } from './queries';
 export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const { insertFragment: _insertFragment } = editor;
 
-  const listItemPlugin = getPlugin(editor, ELEMENT_LI);
+  const listItemPlugin = getPlugin(editor as PlateEditor, ELEMENT_LI);
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
 
   const getFirstAncestorOfType = (
     root: TDescendant,
     entry: TDescendantEntry,
-    { type }: PlatePlugin<V>
+    { type }: WithPlatePlugin
   ): TAncestorEntry => {
     let ancestor: Path = Path.parent(entry[1]);
     while ((getNode(root, ancestor) as TDescendant).type !== type) {

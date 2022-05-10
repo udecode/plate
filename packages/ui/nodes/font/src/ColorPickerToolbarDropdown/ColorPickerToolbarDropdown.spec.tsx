@@ -8,7 +8,7 @@ import {
   Plate,
   PlateEditor,
   select,
-  TDescendant,
+  Value,
 } from '@udecode/plate-core';
 import {
   createFontBackgroundColorPlugin,
@@ -25,7 +25,7 @@ const DEFAULT_PLUGINS = [
   createFontSizePlugin(),
 ];
 
-const DEFAULT_INITIAL_VALUE: TDescendant[] = [
+const DEFAULT_INITIAL_VALUE: Value = [
   {
     type: 'p',
     children: [
@@ -42,7 +42,7 @@ function renderWithPlate(
     initialValue = DEFAULT_INITIAL_VALUE,
     ...options
   }: {
-    initialValue?: TDescendant[];
+    initialValue?: Value;
   } & RenderOptions = {}
 ) {
   const Wrapper = ({ children }: { children?: ReactNode }) => (

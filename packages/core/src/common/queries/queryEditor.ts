@@ -8,8 +8,8 @@ import { someNode } from './someNode';
 /**
  * Query the editor state.
  */
-export const queryEditor = <V extends Value>(
-  editor: TEditor<V>,
+export const queryEditor = <V extends Value, E extends TEditor<V> = TEditor<V>>(
+  editor: E,
   {
     filter,
     selectionAtBlockStart,

@@ -1,8 +1,8 @@
 import { Transforms } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { NodeMatchOption } from '../types/NodeMatchOption';
-import { EDescendant } from '../node/TDescendant';
 import { TEditor, Value } from '../editor/TEditor';
+import { EDescendant } from '../node/TDescendant';
+import { NodeMatchOption } from '../types/NodeMatchOption';
 
 export type InsertNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.insertNodes>[2]>,

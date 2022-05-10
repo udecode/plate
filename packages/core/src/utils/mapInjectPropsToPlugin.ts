@@ -7,17 +7,21 @@ import { getKeysByTypes } from './getKeysByTypes';
 /**
  * Map plugin inject props to injected plugin
  */
-export const mapInjectPropsToPlugin = <V extends Value, T = {}, P = {}>(
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>,
-  injectedPlugin: Partial<PlatePlugin<V>>
+export const mapInjectPropsToPlugin = <
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>,
+  injectedPlugin: Partial<PlatePlugin>
 ) => {
   const validTypes = plugin.inject.props?.validTypes;
   if (!validTypes) return;
 
   const keys = getKeysByTypes(editor, validTypes);
 
-  const injected: Record<PluginKey, Partial<PlatePlugin<V>>> = {};
+  const injected: Record<PluginKey, Partial<PlatePlugin>> = {};
 
   keys.forEach((key) => {
     injected[key] = injectedPlugin;

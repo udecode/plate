@@ -6,13 +6,16 @@ import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
 import { Value } from '../slate/editor/TEditor';
 import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { plateIdAtom } from '../stores/plateIdAtom';
+import { PlateEditor } from '../types/PlateEditor';
 import { PlateStoreState } from '../types/PlateStore';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
-export interface PlateProps<V extends Value, T = {}>
-  extends Partial<
-    Omit<PlateStoreState<V, T>, 'keyEditor' | 'keyPlugins' | 'keySelection'>
+export interface PlateProps<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends Partial<
+    Omit<PlateStoreState<V, E>, 'keyEditor' | 'keyPlugins' | 'keySelection'>
   > {
   /**
    * The children rendered inside `Slate` before the `Editable` component.
@@ -54,12 +57,15 @@ export interface PlateProps<V extends Value, T = {}>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const PlateContent = <V extends Value, T extends {} = {}>({
+export const PlateContent = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>({
   children,
   renderEditable,
   ...options
-}: PlateProps<V, T>) => {
-  const { slateProps, editableProps } = usePlate(options);
+}: PlateProps<V, E>) => {
+  const { slateProps, editableProps } = usePlate<V, E>(options);
 
   if (!slateProps.editor) return null;
 
@@ -75,8 +81,11 @@ export const PlateContent = <V extends Value, T extends {} = {}>({
   );
 };
 
-export const Plate = <V extends Value, T extends {} = {}>(
-  props: PlateProps<V, T>
+export const Plate = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  props: PlateProps<V, E>
 ) => {
   const { id = 'main', ...state } = props;
   const hasId = usePlatesSelectors.has(id);

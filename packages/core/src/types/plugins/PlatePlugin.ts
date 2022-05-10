@@ -19,9 +19,9 @@ import { WithOverride } from './WithOverride';
  * The `PlatePlugin` interface is a base interface for all plugins.
  */
 export type PlatePlugin<
-  V extends Value,
-  T = {},
-  P = {}
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
 > = Required<PlatePluginKey> & {
   editor?: Nullable<{
     /**
@@ -37,11 +37,11 @@ export type PlatePlugin<
    * If it returns `true`, the next handlers will not be called.
    */
   handlers?: Nullable<
-    DOMHandlers<V, T, P> & {
+    DOMHandlers<P, V, E> & {
       /**
        * @see {@link OnChange}
        */
-      onChange?: OnChange<V, T, P>;
+      onChange?: OnChange<P, V, E>;
     }
   >;
 
@@ -52,12 +52,12 @@ export type PlatePlugin<
     /**
      * Property used by Plate to inject a component above other plugins `component`.
      */
-    aboveComponent?: InjectComponent;
+    aboveComponent?: InjectComponent<V>;
 
     /**
      * Property used by Plate to inject a component below other plugins `component`, i.e. above its `children`.
      */
-    belowComponent?: InjectComponent;
+    belowComponent?: InjectComponent<V>;
 
     /**
      * Property that can be used by a plugin to allow other plugins to inject code.
@@ -66,7 +66,7 @@ export type PlatePlugin<
      * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
      * Differs from `overrideByKey` as this is not overriding any plugin.
      */
-    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<V, T>>>;
+    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<{}, V, E>>>;
   }>;
 
   /**
@@ -111,7 +111,7 @@ export type PlatePlugin<
     /**
      * @see {@link Decorate}
      */
-    decorate?: Decorate<V, T, P>;
+    decorate?: Decorate<P, V, E>;
 
     /**
      * Properties used by the HTML deserializer core plugin for each HTML element.
@@ -121,13 +121,13 @@ export type PlatePlugin<
     /**
      * Property used by Plate to deeply override plugins by key.
      */
-    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<V, T>>>;
+    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<{}, V, E>>>;
 
     /**
      * Recursive plugin support to allow having multiple plugins in a single plugin.
      * Plate eventually flattens all the plugins into the editor.
      */
-    plugins?: PlatePlugin<V, T>[];
+    plugins?: PlatePlugin<{}, V, E>[];
 
     /**
      * Property used by Plate to override node `component` props.
@@ -147,25 +147,26 @@ export type PlatePlugin<
      * The returned value will be deeply merged to the plugin.
      */
     then?: (
-      editor: PlateEditor<V, T>,
-      plugin: WithPlatePlugin<V, T, P>
-    ) => Partial<PlatePlugin<V, T, P>> | void;
+      editor: E,
+      plugin: WithPlatePlugin<P, V, E>
+    ) => Partial<PlatePlugin<P, V, E>> | void;
 
     /**
      * Hook called when the editor is initialized.
      */
-    useHooks?: (
-      editor: PlateEditor<V, T>,
-      plugin: WithPlatePlugin<V, T, P>
-    ) => void;
+    useHooks?: (editor: E, plugin: WithPlatePlugin<P, V, E>) => void;
 
     /**
      * Editor method overriders.
      */
-    withOverrides?: WithOverride<V, T, P>;
+    withOverrides?: WithOverride<P, V, E>;
   }>;
 
-export type WithPlatePlugin<V extends Value, T = {}, P = {}> = WithRequired<
-  PlatePlugin<V, T, P>,
+export type WithPlatePlugin<
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = WithRequired<
+  PlatePlugin<P, V, E>,
   'type' | 'options' | 'inject' | 'editor'
 >;

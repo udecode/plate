@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from './TEditor';
 import { TElement } from '../element/TElement';
+import { TEditor, Value } from './TEditor';
 
 /**
  * Check if a node has block children.

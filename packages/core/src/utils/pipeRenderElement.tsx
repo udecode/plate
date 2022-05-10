@@ -1,7 +1,7 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
-import { TEditableProps } from '../slate/types/TEditableProps';
 import { Value } from '../slate/editor/TEditor';
+import { TEditableProps } from '../slate/types/TEditableProps';
 import { PlateEditor } from '../types/PlateEditor';
 import { RenderElement } from '../types/RenderElement';
 import { pipeInjectProps } from './pipeInjectProps';

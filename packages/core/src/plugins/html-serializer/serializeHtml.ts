@@ -1,6 +1,6 @@
 import { Value } from '../../slate/editor/TEditor';
 import { EElement } from '../../slate/element/TElement';
-import { TDescendant } from '../../slate/node/TDescendant';
+import { EDescendant } from '../../slate/node/TDescendant';
 import { isText } from '../../slate/text/isText';
 import { EText } from '../../slate/text/TText';
 import { SlateProps } from '../../slate/types/SlateProps';
@@ -26,7 +26,7 @@ export const serializeHtml = <V extends Value>(
     /**
      * Slate nodes to convert to HTML.
      */
-    nodes: TDescendant[];
+    nodes: EDescendant<V>[];
 
     /**
      * Enable stripping data attributes
@@ -73,7 +73,7 @@ export const serializeHtml = <V extends Value>(
           element: node as EElement<V>,
           children: encodeURIComponent(
             serializeHtml(editor, {
-              nodes: node.children,
+              nodes: node.children as EDescendant<V>[],
               preserveClassNames,
               stripWhitespace,
             })

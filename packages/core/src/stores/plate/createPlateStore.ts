@@ -2,11 +2,15 @@ import { createStore } from '@udecode/zustood';
 import { ELEMENT_DEFAULT } from '../../common/types/node.types';
 import { withPlate } from '../../plugins/withPlate';
 import { Value } from '../../slate/editor/TEditor';
+import { PlateEditor } from '../../types/PlateEditor';
 import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
 import { createTEditor } from '../../utils/createTEditor';
 
-export const createPlateStore = <V extends Value, T = {}>(
-  state: Partial<PlateStoreState<V, T>> = {}
+export const createPlateStore = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  state: Partial<PlateStoreState<V, E>> = {}
 ) =>
   createStore(`plate-${state.id}`)({
     id: 'main',
@@ -23,13 +27,13 @@ export const createPlateStore = <V extends Value, T = {}>(
     renderElement: null,
     renderLeaf: null,
     ...state,
-  } as PlateStoreState<V, T>).extendActions((_set, _get) => ({
+  } as PlateStoreState<V, E>).extendActions((_set, _get) => ({
     /**
      * Set a new editor with plate.
      */
     resetEditor: () => {
       _set.editor(
-        withPlate<V, T>(createTEditor(), {
+        withPlate<V, E>(createTEditor() as E, {
           id: state.id,
           plugins: _get.editor()?.plugins as any,
         })

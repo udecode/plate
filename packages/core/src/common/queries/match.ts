@@ -1,8 +1,8 @@
 import { castArray } from 'lodash';
 import { isBlock } from '../../slate/editor/isBlock';
-import { TPath } from '../../slate/types/interfaces';
 import { TEditor, Value } from '../../slate/editor/TEditor';
 import { ENode, TNode } from '../../slate/node/TNode';
+import { TPath } from '../../slate/types/interfaces';
 
 export type PredicateObj = Record<string, any | any[]>;
 export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;

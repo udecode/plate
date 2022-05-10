@@ -1,9 +1,7 @@
 import {
   createPathRef,
   getNode,
-  getNodeEntry,
   TElement,
-  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
@@ -18,7 +16,7 @@ import {
 import { normalizeIndentList } from './normalizeIndentList';
 import { ListStyleType } from './types';
 
-export const withIndentList: WithOverride<Value, {}, IndentListPlugin> = (
+export const withIndentList: WithOverride<IndentListPlugin> = (
   editor,
   { options }
 ) => {
@@ -100,7 +98,7 @@ export const withIndentList: WithOverride<Value, {}, IndentListPlugin> = (
       const { properties } = operation;
 
       if (properties[KEY_LIST_STYLE_TYPE]) {
-        const node = getNodeEntry(editor, path);
+        const node = getNode(editor, path);
         if (!node) return;
 
         // const prevNodeEntry = getPreviousIndentList(

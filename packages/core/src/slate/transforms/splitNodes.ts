@@ -1,7 +1,7 @@
 import { Transforms } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { NodeMatchOption } from '../types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
+import { NodeMatchOption } from '../types/NodeMatchOption';
 
 export type SplitNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.splitNodes>[1]>,

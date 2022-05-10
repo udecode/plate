@@ -1,25 +1,23 @@
 import {
-  getNodeEntry,
+  getNode,
   insertElements,
   isElement,
   setElements,
-  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<
-  Value,
-  {},
-  NormalizeTypesPlugin
-> = (editor, { options: { rules, onError } }) => {
+export const withNormalizeTypes: WithOverride<NormalizeTypesPlugin> = (
+  editor,
+  { options: { rules, onError } }
+) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
       const endCurrentNormalizationPass = rules!.some(
         ({ strictType, type, path }) => {
-          const node = getNodeEntry(editor, path);
+          const node = getNode(editor, path);
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {

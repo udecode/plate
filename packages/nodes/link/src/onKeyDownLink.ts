@@ -1,9 +1,9 @@
-import { KeyboardHandler, Value } from '@udecode/plate-core';
+import { KeyboardHandler } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { getAndUpsertLink } from './transforms';
 import { LinkPlugin } from './types';
 
-export const onKeyDownLink: KeyboardHandler<Value, {}, LinkPlugin> = (
+export const onKeyDownLink: KeyboardHandler<LinkPlugin> = (
   editor,
   { options: { getLinkUrl, hotkey } }
 ) => (e) => {

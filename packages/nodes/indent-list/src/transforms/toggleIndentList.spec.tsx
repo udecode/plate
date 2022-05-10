@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, TEditor } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
@@ -18,7 +18,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const output = ((
         <editor>
@@ -26,7 +26,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -46,7 +46,7 @@ describe('toggleIndentList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const output = ((
           <editor>
@@ -54,7 +54,7 @@ describe('toggleIndentList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -76,7 +76,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const output = ((
         <editor>
@@ -84,7 +84,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -130,7 +130,7 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const output = ((
         <editor>
@@ -163,7 +163,7 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any) as TEditor;
+      ) as any) as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -191,7 +191,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const output = ((
           <editor>
@@ -207,7 +207,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -234,7 +234,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const output = ((
           <editor>
@@ -250,7 +250,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -279,7 +279,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const output = ((
           <editor>
@@ -293,7 +293,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -322,7 +322,7 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const output = ((
           <editor>
@@ -338,7 +338,7 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any) as TEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

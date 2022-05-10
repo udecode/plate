@@ -1,7 +1,7 @@
 import { getLastNode } from '../../slate/editor/getLastNode';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { isAncestor } from '../../slate/node/isAncestor';
 import { ChildOf, EDescendant } from '../../slate/node/TDescendant';
-import { TEditor, Value } from '../../slate/editor/TEditor';
 import { TNode } from '../../slate/node/TNode';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
 

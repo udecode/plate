@@ -1,8 +1,8 @@
 import { Transforms } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { NodeMatchOption } from '../types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
 import { ENode, TNodeProps } from '../node/TNode';
+import { NodeMatchOption } from '../types/NodeMatchOption';
 
 export type UnsetNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.unsetNodes>[2]>,

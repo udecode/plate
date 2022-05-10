@@ -1,7 +1,7 @@
 import { Editor, Location } from 'slate';
 import { EAncestor } from '../node/TAncestor';
-import { TEditor, Value } from './TEditor';
 import { TNodeEntry } from '../node/TNodeEntry';
+import { TEditor, Value } from './TEditor';
 
 export type GetParentOptions = Parameters<typeof Editor.parent>[2];
 

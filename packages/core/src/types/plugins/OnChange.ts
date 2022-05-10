@@ -8,7 +8,11 @@ import { WithPlatePlugin } from './PlatePlugin';
  * Return `false` to prevent calling the next plugin handler.
  * @see {@link SlatePropsOnChange}
  */
-export type OnChange<V extends Value, T = {}, P = {}> = (
-  editor: PlateEditor<V, T>,
-  plugin: WithPlatePlugin<V, T, P>
+export type OnChange<
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = (
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
 ) => (value: V) => HandlerReturnType;

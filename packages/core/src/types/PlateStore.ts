@@ -1,6 +1,6 @@
 import { Nullable } from '../common/types/utility/Nullable';
-import { TEditableProps } from '../slate/types/TEditableProps';
 import { Value } from '../slate/editor/TEditor';
+import { TEditableProps } from '../slate/types/TEditableProps';
 import { createPlateStore } from '../stores/plate/createPlateStore';
 import { PlatePlugin } from './plugins/PlatePlugin';
 import { PlateEditor } from './PlateEditor';
@@ -15,7 +15,10 @@ export type EditorId = string | null | undefined;
 
 export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
 
-export type PlateStoreState<V extends Value, T = {}> = {
+export type PlateStoreState<
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = {
   /**
    * A unique id used to store the editor state by id.
    * Required if rendering multiple `Plate`. Optional otherwise.
@@ -23,7 +26,7 @@ export type PlateStoreState<V extends Value, T = {}> = {
    */
   id: string;
 
-  plugins: PlatePlugin<V, T>[];
+  plugins: PlatePlugin<{}, V, E>[];
 } & Required<
   Nullable<Pick<TEditableProps<V>, 'decorate' | 'renderElement' | 'renderLeaf'>>
 > &
@@ -37,7 +40,7 @@ export type PlateStoreState<V extends Value, T = {}> = {
      * Slate editor reference.
      * @default pipe(createTEditor(), withPlate({ id, plugins, options, components }))
      */
-    editor: PlateEditor<V, T>;
+    editor: E;
 
     /**
      * If true, plate will create the editor with `withPlate`.
@@ -73,11 +76,14 @@ export type PlateStoreState<V extends Value, T = {}> = {
     value: V;
   }>;
 
-class Helper<V extends Value, T = {}> {
-  Return = createPlateStore<V, T>();
+class Helper<V extends Value, E extends PlateEditor<V> = PlateEditor<V>> {
+  Return = createPlateStore<V, E>();
 }
 
-export type PlateStoreApi<V extends Value, T = {}> = Helper<V, T>['Return'];
+export type PlateStoreApi<
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = Helper<V, E>['Return'];
 
 export type PlatesStoreState<V extends Value> = Record<
   string,

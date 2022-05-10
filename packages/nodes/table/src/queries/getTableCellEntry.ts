@@ -13,8 +13,8 @@ import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
  * If at (default = selection) is in table>tr>td or table>tr>th,
  * return table, tr, and td or th node entries.
  */
-export const getTableCellEntry = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getTableCellEntry = <V extends Value>(
+  editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

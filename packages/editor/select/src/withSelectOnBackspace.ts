@@ -4,7 +4,6 @@ import {
   isCollapsed,
   queryNode,
   select,
-  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import Slate from 'slate';
@@ -13,11 +12,10 @@ import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 /**
  * Set a list of element types to select on backspace
  */
-export const withSelectOnBackspace: WithOverride<
-  Value,
-  {},
-  SelectOnBackspacePlugin
-> = (editor, { options: { query } }) => {
+export const withSelectOnBackspace: WithOverride<SelectOnBackspacePlugin> = (
+  editor,
+  { options: { query } }
+) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {

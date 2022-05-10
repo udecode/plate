@@ -1,6 +1,6 @@
 import { Transforms } from 'slate';
-import { EDescendant } from '../node/TDescendant';
 import { TEditor, Value } from '../editor/TEditor';
+import { EDescendant } from '../node/TDescendant';
 
 /**
  * Insert a fragment at a specific location in the editor.

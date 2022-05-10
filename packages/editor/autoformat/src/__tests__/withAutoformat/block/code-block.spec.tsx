@@ -83,9 +83,9 @@ describe('when ``` at block start, but customising with query we get the most re
               type: ELEMENT_CODE_BLOCK,
               match: '```',
               triggerAtBlockStart: false,
-              preFormat: clearBlockFormat,
+              preFormat: clearBlockFormat as any,
               format: (editor) => {
-                insertEmptyCodeBlock(editor as PlateEditor, {
+                insertEmptyCodeBlock(editor, {
                   defaultType: getPluginType(
                     editor as PlateEditor,
                     ELEMENT_DEFAULT

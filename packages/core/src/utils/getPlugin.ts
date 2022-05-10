@@ -7,7 +7,11 @@ import { getPluginsByKey } from './getPluginsByKey';
 /**
  * Get plugin options by plugin key.
  */
-export const getPlugin = <P = {}, V extends Value = Value, T = {}>(
-  editor: PlateEditor<V, T>,
+export const getPlugin = <
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
   key: PluginKey
-): WithPlatePlugin<V, T, P> => getPluginsByKey<V, T, P>(editor)[key] ?? { key };
+): WithPlatePlugin<P, V, E> => getPluginsByKey<P, V, E>(editor)[key] ?? { key };

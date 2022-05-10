@@ -1,6 +1,6 @@
+import { Value } from '../slate/editor/TEditor';
 import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
 import { EDescendant } from '../slate/node/TDescendant';
-import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';
@@ -8,9 +8,9 @@ import { InjectedPlugin } from './getInjectedPlugins';
 /**
  * Pipe preInsert then insertFragment.
  */
-export const pipeInsertFragment = <V extends Value, T = {}>(
-  editor: PlateEditor<V, T>,
-  injectedPlugins: InjectedPlugin<V, T>[],
+export const pipeInsertFragment = <V extends Value>(
+  editor: PlateEditor<V>,
+  injectedPlugins: InjectedPlugin<{}, V>[],
   {
     fragment,
     ...options

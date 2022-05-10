@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
-import { TEditor, Value } from './TEditor';
 import { EElement } from '../element/TElement';
 import { TNodeEntry } from '../node/TNodeEntry';
+import { TEditor, Value } from './TEditor';
 
 export type GetVoidNodeOptions = Parameters<typeof Editor.void>[1];
 

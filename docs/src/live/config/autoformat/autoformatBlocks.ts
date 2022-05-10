@@ -13,6 +13,7 @@ import {
   getPluginType,
   insertEmptyCodeBlock,
   insertNodes,
+  setElements,
 } from '@udecode/plate';
 import { clearBlockFormat } from './autoformatUtils';
 

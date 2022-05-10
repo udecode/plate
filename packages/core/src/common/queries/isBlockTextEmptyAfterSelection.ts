@@ -1,7 +1,7 @@
 import { getParentNode } from '../../slate/editor/getParentNode';
 import { isEndPoint } from '../../slate/editor/isEndPoint';
-import { isText } from '../../slate/text/isText';
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { isText } from '../../slate/text/isText';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
 

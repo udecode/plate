@@ -2,7 +2,6 @@ import {
   createPluginFactory,
   onKeyDownToggleElement,
   PlatePlugin,
-  Value,
 } from '@udecode/plate-core';
 import { KEYS_HEADING } from './constants';
 import { HeadingPlugin, HeadingsPlugin } from './types';
@@ -17,12 +16,12 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
     levels: 6,
   },
   then: (editor, { options: { levels } = {} }) => {
-    const plugins: PlatePlugin<Value, {}, HeadingPlugin>[] = [];
+    const plugins: PlatePlugin<HeadingPlugin>[] = [];
 
     for (let level = 1; level <= levels!; level++) {
       const key = KEYS_HEADING[level - 1];
 
-      const plugin: PlatePlugin<Value, {}, HeadingPlugin> = {
+      const plugin: PlatePlugin<HeadingPlugin> = {
         key,
         isElement: true,
         deserializeHtml: {
