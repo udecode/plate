@@ -3,9 +3,11 @@ import {
   getPreviousPath,
   PlatePlugin,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { IndentListPlugin } from '../createIndentListPlugin';
+import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
 export const indentListPluginPage: Partial<PlatePlugin<IndentListPlugin>> = {
   then: (e) => ({
@@ -44,7 +46,7 @@ export const indentListPluginPage: Partial<PlatePlugin<IndentListPlugin>> = {
 
           return [nextNode, nextPath];
         },
-      },
+      } as GetSiblingIndentListOptions<TElement, Value>,
     },
   }),
 };

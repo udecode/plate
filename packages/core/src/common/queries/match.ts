@@ -39,11 +39,16 @@ export const match = <T extends TNode>(
  */
 export const getQueryOptions = <V extends Value>(
   editor: TEditor<V>,
-  options: any
+  options: any = {}
 ) => {
+  const { match: _match, block } = options;
+
   return {
     ...options,
-    match: (n: ENode<V>, path: TPath) =>
-      match(n, path, options.match) && (!options?.block || isBlock(editor, n)),
+    match:
+      _match || block
+        ? (n: ENode<V>, path: TPath) =>
+            match(n, path, _match) && (!block || isBlock(editor, n))
+        : undefined,
   };
 };

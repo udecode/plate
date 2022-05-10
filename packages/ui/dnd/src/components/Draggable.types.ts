@@ -1,7 +1,7 @@
 import React from 'react';
-import { EElement, TEditor, Value } from '@udecode/plate-core';
+import { EElement, TEditor, TElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
-import { Element, Path } from 'slate';
+import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
 
 export interface DraggableStyleProps<V extends Value>
@@ -61,7 +61,7 @@ export interface DragHandleProps
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   > {
-  element: Element;
+  element: TElement;
   styles?: CSSProp;
 }
 

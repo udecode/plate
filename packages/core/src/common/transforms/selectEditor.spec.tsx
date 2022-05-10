@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { ReactEditor } from 'slate-react';
+import { PlateEditor } from '../../types/PlateEditor';
 import { selectEditor } from './selectEditor';
 
 jsx;
@@ -19,7 +19,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -31,7 +31,7 @@ describe('selectEditor', () => {
           </hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     selectEditor(input, {
       edge: 'end',
@@ -52,7 +52,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -64,7 +64,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     selectEditor(input, {
       edge: 'start',
@@ -85,7 +85,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -97,7 +97,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any) as ReactEditor;
+    ) as any) as PlateEditor;
 
     selectEditor(input, {
       at: {

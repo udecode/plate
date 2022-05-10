@@ -4,7 +4,7 @@ import {
   findNode,
   getCommonNode,
   getNode,
-  getNodeEntries,
+  getNodes,
   getNodeString,
   getNodeTexts,
   getPlugin,
@@ -30,7 +30,7 @@ import { getListItemContentType, getListItemType, isListRoot } from './queries';
 export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const { insertFragment: _insertFragment } = editor;
 
-  const listItemPlugin = getPlugin(editor as PlateEditor, ELEMENT_LI);
+  const listItemPlugin = getPlugin<{}, V>(editor, ELEMENT_LI);
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
 
@@ -40,11 +40,11 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     { type }: WithPlatePlugin
   ): TAncestorEntry => {
     let ancestor: Path = Path.parent(entry[1]);
-    while ((getNode(root, ancestor) as TDescendant).type !== type) {
+    while (getNode<TElement>(root, ancestor)!.type !== type) {
       ancestor = Path.parent(ancestor);
     }
 
-    return [getNode(root, ancestor) as TAncestor, ancestor];
+    return [getNode<TAncestor>(root, ancestor)!, ancestor];
   };
 
   const findListItemsWithContent = (first: TDescendant): TDescendant[] => {
@@ -81,7 +81,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
           ? commonAncestor
           : (getCommonNode(listRoot, textEntry[1], commonAncestor[1]) as any),
       // any list item would do, we grab the first one
-      getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin)
+      getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin as any)
     );
 
     const [first, ...rest] = isListRoot(
@@ -111,7 +111,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
 
     return (
       isFragmentOnlyListRoot &&
-      [...getNodeEntries({ children: fragment } as any)]
+      [...getNodes({ children: fragment } as any)]
         .filter((entry): entry is TElementEntry => isElement(entry[0]))
         .filter(([node]) => node.type === listItemContentType).length === 1
     );

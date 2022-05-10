@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { isEqual, memoize } from 'lodash';
 import { isBlock } from '../slate/editor/isBlock';
 import { setNodes } from '../slate/transforms/setNodes';
-import { PlatePlugin, TEditor, TNodeEntry, Value } from '../types';
+import { PlatePlugin } from '../types';
 import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate } from './Plate';
 
@@ -52,7 +52,7 @@ describe('Plate', () => {
     // });
 
     it('should not trigger normalize if normalizeInitialValue is not set to true', () => {
-      const fn = jest.fn((e: TEditor<Value>, [node, path]: TNodeEntry) => {
+      const fn = jest.fn((e, [node, path]) => {
         if (
           isBlock(e, node) &&
           path?.length &&
@@ -67,7 +67,7 @@ describe('Plate', () => {
           key: 'a',
           withOverrides: (e) => {
             const { normalizeNode } = e;
-            e.normalizeNode = (n: TNodeEntry) => {
+            e.normalizeNode = (n) => {
               fn(e, n);
               normalizeNode(n);
             };
@@ -82,7 +82,7 @@ describe('Plate', () => {
         <Plate
           editor={editor}
           plugins={plugins}
-          initialValue={[{ children: [{ text: '' }] }]}
+          initialValue={[{ children: [{ text: '' }] } as any]}
         />
       );
 

@@ -903,10 +903,10 @@ const createHugeDocument = () => {
   const hugeDocument: TDescendant[] = [];
 
   for (let h = 0; h < HEADINGS; h++) {
-    hugeDocument.push(<hh1>{faker.lorem.sentence()}</hh1>);
+    hugeDocument.push((<hh1>{faker.lorem.sentence()}</hh1>) as any);
 
     for (let p = 0; p < PARAGRAPHS; p++) {
-      hugeDocument.push(<hp>{faker.lorem.paragraph()}</hp>);
+      hugeDocument.push((<hp>{faker.lorem.paragraph()}</hp>) as any);
     }
   }
 
@@ -918,10 +918,10 @@ const createMultiEditors = () => {
 
   for (let h = 0; h < 400; h++) {
     const multiEditor: TDescendant[] = [];
-    multiEditor.push(<hh1>{faker.lorem.sentence()}</hh1>);
+    multiEditor.push((<hh1>{faker.lorem.sentence()}</hh1>) as any);
 
     for (let p = 0; p < 2; p++) {
-      multiEditor.push(<hp>{faker.lorem.paragraph()}</hp>);
+      multiEditor.push((<hp>{faker.lorem.paragraph()}</hp>) as any);
     }
     multiEditors.push(multiEditor);
   }

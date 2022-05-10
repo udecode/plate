@@ -8,7 +8,6 @@ import {
   getRange,
   insertNodes,
   setSelection,
-  TElement,
   TNode,
   TText,
   WithOverride,
@@ -157,7 +156,7 @@ export const withMention: WithOverride<MentionPlugin> = (
       operation.type === 'remove_node' &&
       isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if ((operation.node as TElement).trigger !== trigger) {
+      if ((operation.node as TMentionInputElement).trigger !== trigger) {
         return;
       }
 

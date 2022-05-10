@@ -4,8 +4,8 @@ import {
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
   TElement,
+  TText,
 } from '@udecode/plate';
-import { Text } from 'slate';
 
 export const createElement = (
   text = '',
@@ -34,7 +34,7 @@ export const createList = (
 ): TElement[] => {
   const children: TElement[] = items.map((item) => {
     const texts = item.split(splitSeparator);
-    const marks: Text[] = texts.map((text, index) => {
+    const marks: TText[] = texts.map((text, index) => {
       const res: any = { text };
       if (index % 2 === 1) {
         res.code = true;

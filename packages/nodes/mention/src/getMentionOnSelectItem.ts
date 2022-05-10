@@ -55,8 +55,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
     withoutMergingHistory(editor, () =>
       removeNodes(editor, {
-        // TODO: replace any
-        match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
+        match: (node) => node.type === ELEMENT_MENTION_INPUT,
       })
     );
 

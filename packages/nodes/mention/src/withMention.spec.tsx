@@ -38,7 +38,7 @@ describe('withMention', () => {
     ),
     options?: CreateEditorOptions
   ): PlateEditor<V> => {
-    const editor = createEditor(at, options);
+    const editor = createEditor(at, options) as PlateEditor<V>;
 
     editor.insertText(trigger);
 
