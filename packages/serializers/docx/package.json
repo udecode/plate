@@ -41,7 +41,7 @@
     "@udecode/plate-indent-list": "10.5.3",
     "@udecode/plate-paragraph": "10.5.3",
     "@udecode/plate-table": "10.6.3",
-    "validator": "13.7.0"
+    "validator": "^13.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

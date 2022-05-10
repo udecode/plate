@@ -43,8 +43,8 @@
     "@udecode/plate-list": "10.5.3",
     "@udecode/plate-paragraph": "10.5.3",
     "remark-parse": "^9.0.0",
-    "remark-slate": "^1.4.0",
-    "unified": "^9.2.0"
+    "remark-slate": "^1.8.6",
+    "unified": "^9.2.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

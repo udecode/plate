@@ -1,0 +1,8 @@
+---
+"@udecode/plate-serializer-juice": patch
+---
+
+updated deps:
+```bash
+"juice": "^8.0.0"
+```

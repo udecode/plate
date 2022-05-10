@@ -32,9 +32,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@popperjs/core": "2.10.2",
+    "@popperjs/core": "^2.11.5",
     "@udecode/plate-core": "10.5.3",
-    "react-popper": "2.2.5"
+    "react-popper": "^2.3.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

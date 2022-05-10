@@ -1,12 +1,12 @@
 diff --git a/node_modules/slate-hyperscript/dist/index.js b/node_modules/slate-hyperscript/dist/index.js
-index 6e43e54..de9b8c5 100644
+index fab2438..a7da5e9 100644
 --- a/node_modules/slate-hyperscript/dist/index.js
 +++ b/node_modules/slate-hyperscript/dist/index.js
-@@ -699,10 +699,22 @@ var createFactory = function createFactory(creators) {
+@@ -699,10 +699,23 @@ var createFactory = function createFactory(creators) {
        attributes = {};
      }
-
-+        // We are in an unejected CRA that uses its Babel config for Jest. The plugin
+     
++    // We are in an unejected CRA that uses its Babel config for Jest. The plugin
 +    // https://babeljs.io/docs/en/babel-plugin-transform-react-jsx-source.html
 +    // adds sourcemap information when parsing hyperscript (jsx) that we want to omit so
 +    // when we assert we aren't asserting on the sourcemap stuff.
@@ -17,6 +17,7 @@ index 6e43e54..de9b8c5 100644
 +      delete newAttributes.__source
 +      delete newAttributes.__self
 +    }
++    
 +
      children = children.filter(function (child) {
        return Boolean(child);
@@ -25,11 +26,11 @@ index 6e43e54..de9b8c5 100644
 +    var ret = creator(tagName, newAttributes, children);
      return ret;
    };
-
-@@ -741,6 +753,14 @@ var normalizeElements = function normalizeElements(elements) {
-
+ 
+@@ -741,6 +754,13 @@ var normalizeElements = function normalizeElements(elements) {
+ 
  var jsx = createHyperscript();
-
+ 
 +// Slate doesn't export these, but we'll want them eventually.
 +exports.createAnchor = createAnchor;
 +exports.createCursor = createCursor;
@@ -37,7 +38,6 @@ index 6e43e54..de9b8c5 100644
 +exports.createFocus = createFocus;
 +exports.createFragment = createFragment;
 +exports.createSelection = createSelection;
-+exports.createText = createText;
  exports.createEditor = createEditor;
  exports.createHyperscript = createHyperscript;
- exports.jsx = jsx;
+ exports.createText = createText;

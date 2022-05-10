@@ -17,9 +17,7 @@ import {
 import { TImageElement } from '@udecode/plate-image';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable, ResizableProps } from 're-resizable';
-import { Node, Transforms } from 'slate';
-
-import { ReactEditor, useFocused, useReadOnly, useSelected } from 'slate-react';
+import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
