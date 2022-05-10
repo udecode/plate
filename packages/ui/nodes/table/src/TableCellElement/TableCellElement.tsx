@@ -8,7 +8,8 @@ import {
 } from '@udecode/plate-table';
 import clsx from 'clsx';
 import { useAtom } from 'jotai';
-import { Resizable, ResizableProps } from 're-resizable';
+import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
+import { useReadOnly } from 'slate-react';
 import { hoveredColIndexAtom, resizingColAtom } from '../table.atoms';
 import { getTableCellElementStyles } from './TableCellElement.styles';
 import { TableCellElementProps } from './TableCellElement.types';
@@ -23,15 +24,28 @@ export const TableCellElement = <V extends Value>(
     element,
     resizableProps,
     editor,
+    ignoreReadOnly = false,
   } = props;
 
   const rootProps = getRootProps(props);
+  const readOnly = useReadOnly();
 
   const [hoveredColIndex, setHoveredColIndex] = useAtom(
     hoveredColIndexAtom,
     ELEMENT_TABLE
   );
   const [, setResizingCol] = useAtom(resizingColAtom, ELEMENT_TABLE);
+
+  const handleResize: HandleStyles | undefined =
+    ignoreReadOnly || !readOnly
+      ? {
+          right: {
+            top: -12,
+            height: 'calc(100% + 12px)',
+            zIndex: 20,
+          },
+        }
+      : undefined;
 
   const colIndex = useMemo(
     () => getTableColumnIndex(editor, { node: element }),
@@ -47,6 +61,7 @@ export const TableCellElement = <V extends Value>(
   } = getTableCellElementStyles({
     ...props,
     hovered: hoveredColIndex === colIndex,
+    readOnly: !ignoreReadOnly && readOnly,
   });
 
   const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
@@ -92,14 +107,8 @@ export const TableCellElement = <V extends Value>(
           css={resizable?.css}
           className={resizable?.className}
           size={{ width: '100%', height: '100%' }}
-          enable={{ right: true }}
-          handleStyles={{
-            right: {
-              top: -12,
-              height: 'calc(100% + 12px)',
-              zIndex: 20,
-            },
-          }}
+          enable={{ right: ignoreReadOnly || !readOnly }}
+          handleStyles={handleResize}
           onResize={onResize}
           onResizeStop={onResizeStop}
           {...resizableProps}
