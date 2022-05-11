@@ -413,7 +413,7 @@ export function Thread({
           comment={comment}
           thread={thread}
           showResolveThreadButton={showResolveThreadButton && index === 0}
-          showReOpenThreadButton={showReOpenThreadButton}
+          showReOpenThreadButton={showReOpenThreadButton && index === 0}
           showMoreButton={showMoreButton}
           showLinkToThisComment={index === 0}
           onSaveComment={onSaveComment}
