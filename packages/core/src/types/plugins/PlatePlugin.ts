@@ -28,7 +28,7 @@ export type PlatePlugin<
      * Properties used by the `insertData` core plugin to deserialize inserted data to a slate fragment.
      * The fragment will be inserted to the editor if not empty.
      */
-    insertData?: PlatePluginInsertData;
+    insertData?: PlatePluginInsertData<V>;
   }>;
 
   /**
