@@ -42,7 +42,7 @@ export function createResolveThreadButtonStyles(props: StyledProps) {
 export function createReOpenThreadButtonStyles(props: StyledProps) {
   return createStyles(
     {
-      prefixClassNames: 'ThreadResolveThreadButton',
+      prefixClassNames: 'ThreadReOpenThreadButton',
       ...props,
     },
     {
