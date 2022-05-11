@@ -1,7 +1,10 @@
 import { useDrag } from 'react-dnd';
-import { TEditor } from '@udecode/plate-core';
+import { TEditor, Value } from '@udecode/plate-core';
 
-export const useDragBlock = (editor: TEditor, id: string) => {
+export const useDragBlock = <V extends Value>(
+  editor: TEditor<V>,
+  id: string
+) => {
   return useDrag(
     () => ({
       type: 'block',

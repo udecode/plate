@@ -1,20 +1,21 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Value } from '../../slate/editor/TEditor';
+import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateRenderElementProps } from '../../types/PlateRenderElementProps';
-import { SlateProps } from '../../types/slate/SlateProps';
 import { pipeInjectProps } from '../../utils/pipeInjectProps';
 import { pluginRenderElement } from '../../utils/pluginRenderElement';
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 
-export const elementToHtml = (
-  editor: PlateEditor,
+export const elementToHtml = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     props,
     slateProps,
     preserveClassNames,
   }: {
-    props: PlateRenderElementProps;
+    props: PlateRenderElementProps<V>;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }
@@ -26,7 +27,7 @@ export const elementToHtml = (
     return html;
   }
 
-  props = pipeInjectProps<PlateRenderElementProps>(editor, props);
+  props = pipeInjectProps<V>(editor, props);
 
   // Search for matching plugin based on element type
   editor.plugins.some((plugin) => {
@@ -42,7 +43,7 @@ export const elementToHtml = (
       createElementWithSlate({
         ...slateProps,
         children:
-          plugin.serializeHtml?.(props) ??
+          plugin.serializeHtml?.(props as any) ??
           pluginRenderElement(editor, plugin)(props),
       })
     );

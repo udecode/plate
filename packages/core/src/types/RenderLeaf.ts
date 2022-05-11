@@ -1,3 +1,4 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 /**
@@ -9,4 +10,6 @@ import { PlateRenderLeafProps } from './PlateRenderLeafProps';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf = (props: PlateRenderLeafProps) => JSX.Element;
+export type RenderLeaf = <V extends Value>(
+  props: PlateRenderLeafProps<V>
+) => JSX.Element;

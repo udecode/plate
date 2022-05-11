@@ -1,4 +1,5 @@
-import { TDescendant } from '../slate/TDescendant';
+import { Value } from '../../slate/editor/TEditor';
+import { EDescendant } from '../../slate/node/TDescendant';
 import { HandlerReturnType } from './DOMHandlers';
 
 export type PlatePluginInsertDataOptions = {
@@ -6,7 +7,7 @@ export type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-export type PlatePluginInsertData = {
+export type PlatePluginInsertData<V extends Value> = {
   /**
    * Format to get data. Example data types are text/plain and text/uri-list.
    */
@@ -22,7 +23,7 @@ export type PlatePluginInsertData = {
    */
   getFragment?: (
     options: PlatePluginInsertDataOptions
-  ) => TDescendant[] | undefined;
+  ) => EDescendant<V>[] | undefined;
 
   // injected
 
@@ -33,7 +34,7 @@ export type PlatePluginInsertData = {
    * @return if true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: TDescendant[],
+    fragment: EDescendant<V>[],
     options: PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
@@ -49,7 +50,7 @@ export type PlatePluginInsertData = {
    * Transform the fragment to insert.
    */
   transformFragment?: (
-    fragment: TDescendant[],
+    fragment: EDescendant<V>[],
     options: PlatePluginInsertDataOptions
-  ) => TDescendant[];
+  ) => EDescendant<V>[];
 };

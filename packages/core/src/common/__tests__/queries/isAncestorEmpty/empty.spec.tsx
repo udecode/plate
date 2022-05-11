@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { Element } from 'slate';
 import { PlateEditor } from '../../../../types/PlateEditor';
 import { isAncestorEmpty } from '../../../queries/index';
 
@@ -16,5 +15,5 @@ const input = ((
 const output = true;
 
 it('should be', () => {
-  expect(isAncestorEmpty(input, input as Element)).toEqual(output);
+  expect(isAncestorEmpty(input, input)).toEqual(output);
 });

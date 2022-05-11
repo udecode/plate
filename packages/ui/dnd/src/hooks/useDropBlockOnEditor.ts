@@ -1,13 +1,20 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { findNode, isExpanded } from '@udecode/plate-core';
-import { Path, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import {
+  collapseSelection,
+  findNode,
+  focusEditor,
+  isExpanded,
+  moveNodes,
+  TReactEditor,
+  Value,
+} from '@udecode/plate-core';
+import { Path } from 'slate';
 import { DragItemBlock } from '../types';
 import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
 
-export const useDropBlockOnEditor = (
-  editor: ReactEditor,
+export const useDropBlockOnEditor = <V extends Value>(
+  editor: TReactEditor<V>,
   {
     blockRef,
     id,
@@ -33,7 +40,7 @@ export const useDropBlockOnEditor = (
       if (!dragEntry) return;
       const [, dragPath] = dragEntry;
 
-      ReactEditor.focus(editor);
+      focusEditor(editor);
 
       let dropPath: Path | undefined;
       if (direction === 'bottom') {
@@ -63,7 +70,7 @@ export const useDropBlockOnEditor = (
           Path.isSibling(dragPath, _dropPath);
         const to = before ? _dropPath : Path.next(_dropPath);
 
-        Transforms.moveNodes(editor, {
+        moveNodes(editor, {
           at: dragPath,
           to,
         });
@@ -78,8 +85,8 @@ export const useDropBlockOnEditor = (
       if (dropLineDir) setDropLine(dropLineDir);
 
       if (direction && isExpanded(editor.selection)) {
-        ReactEditor.focus(editor);
-        Transforms.collapse(editor);
+        focusEditor(editor);
+        collapseSelection(editor);
       }
     },
   });

@@ -1,20 +1,20 @@
-import { Editor } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { EditorAboveOptions } from '../types/Editor.types';
+import { GetAboveNodeOptions } from '../../slate/editor/getAboveNode';
+import { getStartPoint } from '../../slate/editor/getStartPoint';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 import { getPointFromLocation } from './getPointFromLocation';
 
 /**
  * Get the range from the start of the block above a location (default: selection) to the location.
  */
-export const getRangeFromBlockStart = (
-  editor: TEditor,
-  options: Omit<EditorAboveOptions, 'match'> = {}
+export const getRangeFromBlockStart = <V extends Value>(
+  editor: TEditor<V>,
+  options: Omit<GetAboveNodeOptions<V>, 'match'> = {}
 ) => {
   const path = getBlockAbove(editor, options)?.[1];
   if (!path) return;
 
-  const start = Editor.start(editor, path);
+  const start = getStartPoint(editor, path);
 
   const focus = getPointFromLocation(editor, options);
 

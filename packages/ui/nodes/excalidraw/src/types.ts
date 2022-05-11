@@ -1,8 +1,9 @@
 import { ImportedDataState } from '@excalidraw/excalidraw-next/types/data/types';
 import { ExcalidrawElement } from '@excalidraw/excalidraw-next/types/element/types';
 import { ExcalidrawProps } from '@excalidraw/excalidraw-next/types/types';
+import { TElement } from '@udecode/plate-core';
 
-export interface ExcalidrawNodeData {
+export interface TExcalidrawElement extends TElement {
   data?: {
     elements: ExcalidrawDataState['elements'];
     state: ExcalidrawDataState['appState'];

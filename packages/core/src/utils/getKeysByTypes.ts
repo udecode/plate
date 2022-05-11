@@ -1,11 +1,12 @@
 import { castArray } from 'lodash';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 
 /**
  * Get plugin keys by types
  */
-export const getKeysByTypes = <T = {}>(
-  editor: PlateEditor<T>,
+export const getKeysByTypes = <V extends Value>(
+  editor: PlateEditor<V>,
   type: string | string[]
 ) => {
   const types = castArray<string>(type);

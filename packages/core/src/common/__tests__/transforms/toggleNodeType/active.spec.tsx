@@ -2,6 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { ELEMENT_BLOCKQUOTE } from '../../../../../../nodes/block-quote/src/createBlockquotePlugin';
+import { Value } from '../../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../../types/PlateEditor';
 import { toggleNodeType } from '../../../transforms/toggleNodeType';
 

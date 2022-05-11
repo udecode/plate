@@ -1,5 +1,5 @@
 import { Location, Path, Point, Range } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 
 /**
  * Get the point from a location (default: selection).
@@ -7,8 +7,8 @@ import { TEditor } from '../../types/slate/TEditor';
  * If the location is a path, get the point at this path with offset 0.
  * If `focus` is true, get the focus point.
  */
-export const getPointFromLocation = (
-  editor: TEditor,
+export const getPointFromLocation = <V extends Value>(
+  editor: TEditor<V>,
   {
     at = editor.selection,
     focus,

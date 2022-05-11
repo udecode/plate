@@ -3,20 +3,14 @@
  */
 
 export * from './defaultsDeepToNodes';
-export * from './deleteFragment';
+export * from './insertElements';
 export * from './insertEmptyElement';
-export * from './insertNodes';
-export * from './mergeNodes';
 export * from './moveChildren';
 export * from './removeMark';
 export * from './selectEditor';
 export * from './selectEndOfBlockAboveSelection';
+export * from './setElements';
 export * from './setMarks';
-export * from './setNodes';
 export * from './toggleMark';
 export * from './toggleNodeType';
 export * from './toggleWrapNodes';
-export * from './unhangRange';
-export * from './unwrapNodes';
-export * from './withoutNormalizing';
-export * from './wrapNodes';

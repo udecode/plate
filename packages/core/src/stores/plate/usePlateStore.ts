@@ -1,3 +1,5 @@
+import { Value } from '../../slate/editor/TEditor';
+import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreApi } from '../../types/PlateStore';
 import { getEventEditorId } from '../event-editor/selectors/getEventEditorId';
 import { usePlateId } from './selectors/usePlateId';
@@ -8,22 +10,32 @@ const loadingStore = createPlateStore({
   id: 'loading',
 });
 
-export const getPlateStore = (id?: string): PlateStoreApi => {
+export const getPlateStore = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  id?: string
+): PlateStoreApi<V, E> => {
   id = getEventEditorId(id);
 
   const store = platesStore.get.get(id);
 
-  return store || loadingStore;
+  return (store || loadingStore) as PlateStoreApi<V, E>;
 };
 
-export const usePlateStore = (id?: string): PlateStoreApi => {
+export const usePlateStore = <
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  id?: string
+): PlateStoreApi<V, E> => {
   const plateId = usePlateId();
   id = id ?? plateId ?? 'main';
 
   const store = platesStore.use.get(id);
 
   if (store) {
-    return store;
+    return store as PlateStoreApi<V, E>;
   }
 
   console.warn(

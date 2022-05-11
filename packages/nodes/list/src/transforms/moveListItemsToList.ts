@@ -1,31 +1,34 @@
 import {
+  deleteText,
   findDescendant,
   getLastChildPath,
   moveChildren,
   MoveChildrenOptions,
   PlateEditor,
-  TElement,
+  TElementEntry,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MergeListItemIntoListOptions {
+export interface MergeListItemIntoListOptions<V extends Value> {
   /**
    * List items of the sublist of this node will be moved.
    */
-  fromListItem?: NodeEntry<TElement>;
+  fromListItem?: TElementEntry;
 
   /**
    * List items of the list will be moved.
    */
-  fromList?: NodeEntry<TElement>;
+  fromList?: TElementEntry;
 
   /**
    * List items will be moved in this list.
    */
-  toList?: NodeEntry<TElement>;
+  toList?: TElementEntry;
 
-  fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
+  fromStartIndex?: MoveChildrenOptions<V>['fromStartIndex'];
 
   /**
    * List position where to move the list items.
@@ -45,8 +48,8 @@ export interface MergeListItemIntoListOptions {
  * Move the list items of the sublist of `fromListItem` to `toList` (if `fromListItem` is defined).
  * Move the list items of `fromList` to `toList` (if `fromList` is defined).
  */
-export const moveListItemsToList = (
-  editor: PlateEditor,
+export const moveListItemsToList = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     fromList,
     fromListItem,
@@ -55,12 +58,12 @@ export const moveListItemsToList = (
     toList,
     toListIndex = null,
     deleteFromList = true,
-  }: MergeListItemIntoListOptions
+  }: MergeListItemIntoListOptions<V>
 ) => {
   let fromListPath: Path | undefined;
   let moved;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     if (fromListItem) {
       const fromListItemSublist = findDescendant(editor, {
         at: fromListItem[1],
@@ -68,7 +71,7 @@ export const moveListItemsToList = (
           type: getListTypes(editor),
         },
       });
-      if (!fromListItemSublist) return 0;
+      if (!fromListItemSublist) return;
 
       fromListPath = fromListItemSublist?.[1];
     } else if (fromList) {
@@ -98,7 +101,7 @@ export const moveListItemsToList = (
 
     // Remove the empty list
     if (deleteFromList) {
-      Transforms.delete(editor, { at: fromListPath });
+      deleteText(editor, { at: fromListPath });
     }
   });
 

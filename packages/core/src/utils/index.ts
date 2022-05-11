@@ -6,6 +6,7 @@ export * from './applyDeepToNodes';
 export * from './createPlateEditor';
 export * from './createPluginFactory';
 export * from './createPlugins';
+export * from './createTEditor';
 export * from './dom-attributes';
 export * from './flattenDeepPlugins';
 export * from './getInjectedPlugins';

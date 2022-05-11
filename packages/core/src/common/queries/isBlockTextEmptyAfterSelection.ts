@@ -1,16 +1,18 @@
-import { Editor } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { isText } from '../../types/slate/TText';
+import { getParentNode } from '../../slate/editor/getParentNode';
+import { isEndPoint } from '../../slate/editor/isEndPoint';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { isText } from '../../slate/text/isText';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
-import { getParent } from './getParent';
 
 /**
  * Is there empty text after the selection.
- * If there is no leaf after the selected leaf, return {@link Editor.isEnd}.
+ * If there is no leaf after the selected leaf, return {@link isEndPoint}.
  * Else, check if the next leaves are empty.
  */
-export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
+export const isBlockTextEmptyAfterSelection = <V extends Value>(
+  editor: TEditor<V>
+) => {
   if (!editor.selection) return false;
 
   const blockAbove = getBlockAbove(editor);
@@ -18,11 +20,11 @@ export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
 
   const cursor = editor.selection.focus;
 
-  const selectionParentEntry = getParent(editor, editor.selection);
+  const selectionParentEntry = getParentNode(editor, editor.selection);
   if (!selectionParentEntry) return false;
   const [, selectionParentPath] = selectionParentEntry;
 
-  if (!Editor.isEnd(editor, cursor, selectionParentPath)) return false;
+  if (!isEndPoint(editor, cursor, selectionParentPath)) return false;
 
   const siblingNodes = getNextSiblingNodes(blockAbove, cursor.path);
 
@@ -33,7 +35,7 @@ export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
       }
     }
   } else {
-    return Editor.isEnd(editor, cursor, blockAbove[1]);
+    return isEndPoint(editor, cursor, blockAbove[1]);
   }
 
   return true;

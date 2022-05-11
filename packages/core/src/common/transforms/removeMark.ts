@@ -1,14 +1,18 @@
 import { castArray } from 'lodash';
-import { Editor, Range, Text, Transforms } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { SetNodesOptions } from '../types/index';
+import { Range } from 'slate';
+import { getMarks } from '../../slate/editor/getMarks';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { isText } from '../../slate/text/isText';
+import { EMarks } from '../../slate/text/TText';
+import { SetNodesOptions } from '../../slate/transforms/setNodes';
+import { unsetNodes } from '../../slate/transforms/unsetNodes';
 
-export interface RemoveMarkOptions
-  extends Omit<SetNodesOptions, 'match' | 'split'> {
+export interface RemoveMarkOptions<V extends Value, K extends keyof EMarks<V>>
+  extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
   /**
    * Mark or the array of marks that will be removed
    */
-  key: string | string[];
+  key: K | K[];
 
   /**
    * When location is not a Range,
@@ -26,23 +30,23 @@ export interface RemoveMarkOptions
 /**
  * Remove mark and trigger `onChange` if collapsed selection.
  */
-export const removeMark = (
-  editor: TEditor,
-  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions
+export const removeMark = <V extends Value, K extends keyof EMarks<V>>(
+  editor: TEditor<V>,
+  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions<V, K>
 ) => {
   const selection = at ?? editor.selection;
   key = castArray(key);
 
   if (selection) {
     if (Range.isRange(selection) && Range.isExpanded(selection)) {
-      Transforms.unsetNodes(editor, key, {
+      unsetNodes(editor, (key as any) as string, {
         at: selection,
-        match: Text.isText,
+        match: isText,
         split: true,
         ...rest,
       });
     } else if (editor.selection) {
-      const marks = { ...(Editor.marks(editor) || {}) };
+      const marks: Partial<EMarks<V>> = { ...(getMarks(editor) || {}) };
       key.forEach((k) => {
         delete marks[k];
       });

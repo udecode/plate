@@ -1,8 +1,9 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PluginKey } from '../types/plugins/PlatePluginKey';
 import { getPlugin } from './getPlugin';
 
-export const getPluginInjectProps = <T = {}>(
-  editor: PlateEditor<T>,
+export const getPluginInjectProps = <V extends Value>(
+  editor: PlateEditor<V>,
   key: PluginKey
-) => getPlugin<{}, T>(editor, key).inject?.props ?? {};
+) => getPlugin<{}, V>(editor, key).inject?.props ?? {};

@@ -3,7 +3,7 @@ import isHotkey from 'is-hotkey';
 import { exitBreak } from './transforms/exitBreak';
 import { ExitBreakPlugin } from './types';
 
-export const onKeyDownExitBreak: KeyboardHandler<{}, ExitBreakPlugin> = (
+export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPlugin> = (
   editor,
   { options: { rules = [] } }
 ) => (event) => {

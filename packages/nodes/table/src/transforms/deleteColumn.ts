@@ -1,10 +1,11 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   someNode,
+  Value,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
@@ -12,13 +13,13 @@ import {
   ELEMENT_TR,
 } from '../createTablePlugin';
 
-export const deleteColumn = (editor: PlateEditor) => {
+export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentCellItem = getAbove(editor, {
+    const currentCellItem = getAboveNode(editor, {
       match: {
         type: [
           getPluginType(editor, ELEMENT_TD),
@@ -26,10 +27,10 @@ export const deleteColumn = (editor: PlateEditor) => {
         ],
       },
     });
-    const currentRowItem = getAbove(editor, {
+    const currentRowItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
-    const currentTableItem = getAbove(editor, {
+    const currentTableItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
 
@@ -47,7 +48,7 @@ export const deleteColumn = (editor: PlateEditor) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         pathToDelete[replacePathPos] = rowIdx;
 
-        Transforms.removeNodes(editor, {
+        removeNodes(editor, {
           at: pathToDelete,
         });
       });

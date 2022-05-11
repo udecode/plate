@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { getNode, PlateEditor } from '@udecode/plate-core';
+import { normalizeEditor, PlateEditor, Value } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createListPlugin } from '../createListPlugin';
 
 jsx;
@@ -14,7 +13,7 @@ const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
     plugins: [createListPlugin()],
   });
 
-  Editor.normalize(editor, { force: true });
+  normalizeEditor(editor, { force: true });
 
   expect(input.children).toEqual(output.children);
 };

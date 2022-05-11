@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@udecode/plate-core": "10.5.3",
-    "juice": "8.0.0"
+    "juice": "^8.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

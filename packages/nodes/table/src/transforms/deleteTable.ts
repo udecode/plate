@@ -1,23 +1,24 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   someNode,
+  Value,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
-export const deleteTable = (editor: PlateEditor) => {
+export const deleteTable = <V extends Value>(editor: PlateEditor<V>) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const tableItem = getAbove(editor, {
+    const tableItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
     if (tableItem) {
-      Transforms.removeNodes(editor, {
+      removeNodes(editor, {
         at: tableItem[1],
       });
     }

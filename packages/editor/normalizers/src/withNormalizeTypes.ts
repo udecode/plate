@@ -1,14 +1,13 @@
 import {
   getNode,
-  insertNodes,
+  insertElements,
   isElement,
-  setNodes,
-  TElement,
+  setElements,
   WithOverride,
 } from '@udecode/plate-core';
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<{}, NormalizeTypesPlugin> = (
+export const withNormalizeTypes: WithOverride<NormalizeTypesPlugin> = (
   editor,
   { options: { rules, onError } }
 ) => {
@@ -22,7 +21,7 @@ export const withNormalizeTypes: WithOverride<{}, NormalizeTypesPlugin> = (
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {
-              setNodes<TElement>(
+              setElements(
                 editor,
                 { type: strictType },
                 {
@@ -33,7 +32,7 @@ export const withNormalizeTypes: WithOverride<{}, NormalizeTypesPlugin> = (
             }
           } else {
             try {
-              insertNodes<TElement>(
+              insertElements(
                 editor,
                 {
                   type: strictType ?? type!,

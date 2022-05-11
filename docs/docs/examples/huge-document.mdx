@@ -32,7 +32,7 @@ title: Huge Document
   const WithoutPlate = () => {
     const [value, setValue] = useState(initialValue);
     const renderElement = useCallback((p) => <Element {...p} />, []);
-    const editor = useMemo(() => withReact(createEditor()), []);
+    const editor = useMemo(() => withReact(createTEditor(), []);
 
     return (
       <Slate

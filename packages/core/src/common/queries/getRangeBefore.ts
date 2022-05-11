@@ -1,21 +1,25 @@
-import { Editor, Location, Range } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { getPointBefore, PointBeforeOptions } from './getPointBefore';
+import { Location, Range } from 'slate';
+import { getPoint } from '../../slate/editor/getPoint';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import {
+  getPointBeforeLocation,
+  PointBeforeOptions,
+} from './getPointBeforeLocation';
 
 export interface RangeBeforeOptions extends PointBeforeOptions {}
 
 /**
- * Get range from {@link getPointBefore} to the end point of `at`.
+ * Get range from {@link getPointBeforeLocation} to the end point of `at`.
  */
-export const getRangeBefore = (
-  editor: TEditor,
+export const getRangeBefore = <V extends Value>(
+  editor: TEditor<V>,
   at: Location,
   options?: RangeBeforeOptions
 ): Range | undefined => {
-  const anchor = getPointBefore(editor, at, options);
+  const anchor = getPointBeforeLocation(editor, at, options);
   if (!anchor) return;
 
-  const focus = Editor.point(editor, at, { edge: 'end' });
+  const focus = getPoint(editor, at, { edge: 'end' });
 
   return {
     anchor,

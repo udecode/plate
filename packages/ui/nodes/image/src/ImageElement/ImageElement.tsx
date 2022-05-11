@@ -6,16 +6,23 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { setNodes } from '@udecode/plate-core';
+import {
+  findNodePath,
+  getNodeString,
+  select,
+  setNodes,
+  TText,
+  Value,
+} from '@udecode/plate-core';
+import { TImageElement } from '@udecode/plate-image';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable, ResizableProps } from 're-resizable';
-import { Node, Transforms } from 'slate';
-import { ReactEditor, useFocused, useReadOnly, useSelected } from 'slate-react';
+import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
 
-export const ImageElement = (props: ImageElementProps) => {
+export const ImageElement = <V extends Value>(props: ImageElementProps<V>) => {
   const {
     attributes,
     children,
@@ -72,13 +79,14 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const setNodeWidth = useCallback(
     (w: number) => {
-      const path = ReactEditor.findPath(editor, element);
+      const path = findNodePath(editor, element);
+      if (!path) return;
 
       if (w === nodeWidth) {
         // Focus the node if not resized
-        Transforms.select(editor, path);
+        select(editor, path);
       } else {
-        setNodes(editor, { width: w }, { at: path });
+        setNodes<TImageElement>(editor, { width: w }, { at: path });
       }
     },
     [editor, element, nodeWidth]
@@ -86,14 +94,19 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
-      const path = ReactEditor.findPath(editor as ReactEditor, element);
-      setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
+      const path = findNodePath(editor, element);
+      path &&
+        setNodes<TImageElement>(
+          editor,
+          { caption: [{ text: e.target.value }] },
+          { at: path }
+        );
     },
     [editor, element]
   );
 
   const captionString = useMemo(() => {
-    return Node.string(nodeCaption[0]) || '';
+    return getNodeString(nodeCaption[0] as any) || '';
   }, [nodeCaption]);
 
   return (
@@ -168,7 +181,7 @@ export const ImageElement = (props: ImageElementProps) => {
                 data-testid="ImageElementTextArea"
                 css={styles.caption?.css}
                 className={styles.caption?.className}
-                value={nodeCaption[0].text}
+                value={(nodeCaption[0] as TText).text}
                 placeholder={placeholder}
                 onChange={onChangeCaption}
                 readOnly={(!ignoreReadOnly && readOnly) || caption.readOnly}

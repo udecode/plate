@@ -1,6 +1,4 @@
-import { ExcalidrawNodeData } from '@udecode/plate-ui-excalidraw';
-
-export const initialDataExcalidraw: ExcalidrawNodeData = {
+export const initialDataExcalidraw: any = {
   data: {
     elements: [
       {

@@ -1,12 +1,15 @@
-import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { getNode } from '../queries/getNode';
+import { Path } from 'slate';
+import { isBlock } from '../../slate/editor/isBlock';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { getNode } from '../../slate/node/getNode';
+import { ENodeEntry } from '../../slate/node/TNodeEntry';
+import { moveNodes } from '../../slate/transforms/moveNodes';
 
-export interface MoveChildrenOptions {
+export interface MoveChildrenOptions<V extends Value> {
   /**
    * Parent node of the children to move.
    */
-  at: NodeEntry | Path;
+  at: ENodeEntry<V> | Path;
 
   /**
    * Path where to move the children.
@@ -22,29 +25,29 @@ export interface MoveChildrenOptions {
   /**
    * Condition for the child to be moved
    */
-  match?(entry: NodeEntry): boolean;
+  match?(entry: ENodeEntry<V>): boolean;
 }
 
 /**
  * Move the children of a node to a path.
  * Returns the number of children moved.
  */
-export const moveChildren = (
-  editor: TEditor,
-  { at, to, match, fromStartIndex = 0 }: MoveChildrenOptions
+export const moveChildren = <V extends Value>(
+  editor: TEditor<V>,
+  { at, to, match, fromStartIndex = 0 }: MoveChildrenOptions<V>
 ) => {
   let moved = 0;
   const parentPath = Path.isPath(at) ? at : at[1];
-  const parentNode = Path.isPath(at) ? Node.get(editor, parentPath) : at[0];
+  const parentNode = Path.isPath(at) ? getNode(editor, parentPath) : at[0];
 
-  if (!Editor.isBlock(editor, parentNode)) return moved;
+  if (!isBlock(editor, parentNode)) return moved;
 
   for (let i = parentNode.children.length - 1; i >= fromStartIndex; i--) {
     const childPath = [...parentPath, i];
     const childNode = getNode(editor, childPath);
 
     if (!match || (childNode && match([childNode, childPath]))) {
-      Transforms.moveNodes(editor, { at: childPath, to });
+      moveNodes(editor, { at: childPath, to });
       moved++;
     }
   }

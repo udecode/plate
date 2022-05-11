@@ -1,9 +1,12 @@
-import { TRenderLeafProps } from './slate/TRenderLeafProps';
-import { AnyObject } from './utility/AnyObject';
+import { Value } from '../slate/editor/TEditor';
+import { EText } from '../slate/text/TText';
+import { TRenderLeafProps } from '../slate/types/TRenderLeafProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
 /**
  * Leaf props passed by Plate
  */
-export type PlateRenderLeafProps<EText = AnyObject> = PlateRenderNodeProps &
-  TRenderLeafProps<EText>;
+export type PlateRenderLeafProps<
+  V extends Value,
+  N extends EText<V> = EText<V>
+> = PlateRenderNodeProps<V> & TRenderLeafProps<V, N>;

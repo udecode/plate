@@ -1,14 +1,16 @@
-import { TEditor } from '@udecode/plate-core';
-import { Editor, NodeEntry } from 'slate';
+import { getRange, TEditor, TNodeEntry, Value } from '@udecode/plate-core';
 
 /**
  * Get node entries range.
  */
-export const getNodesRange = (editor: TEditor, nodeEntries: NodeEntry[]) => {
+export const getNodesRange = <V extends Value>(
+  editor: TEditor<V>,
+  nodeEntries: TNodeEntry[]
+) => {
   if (!nodeEntries.length) return;
 
   const firstBlockPath = nodeEntries[0][1];
   const lastBlockPath = nodeEntries[nodeEntries.length - 1][1];
 
-  return Editor.range(editor, firstBlockPath, lastBlockPath);
+  return getRange(editor, firstBlockPath, lastBlockPath);
 };

@@ -1,3 +1,5 @@
+import { TCodeBlockElement } from '@udecode/plate-code-block';
+import { Value } from '@udecode/plate-core';
 import {
   createStyles,
   StyledElementProps,
@@ -5,7 +7,9 @@ import {
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
-export const getCodeBlockElementStyles = (props: StyledElementProps) =>
+export const getCodeBlockElementStyles = <V extends Value>(
+  props: StyledElementProps<V, TCodeBlockElement>
+) =>
   createStyles(
     { prefixClassNames: 'CodeBlockElement', ...props },
     {

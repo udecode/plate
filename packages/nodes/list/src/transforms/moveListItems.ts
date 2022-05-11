@@ -1,11 +1,14 @@
 import {
+  createPathRef,
   EditorNodesOptions,
-  getNodes,
-  getParent,
+  getNodeEntries,
+  getParentNode,
   getPluginType,
   PlateEditor,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path, PathRef } from 'slate';
+import { Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
@@ -13,17 +16,17 @@ import { moveListItemUp } from './moveListItemUp';
 
 export type MoveListItemsOptions = {
   increase?: boolean;
-  at?: EditorNodesOptions['at'];
+  at?: EditorNodesOptions<Value>['at'];
 };
 
-export const moveListItems = (
-  editor: PlateEditor,
+export const moveListItems = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     increase = true,
     at = editor.selection ?? undefined,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = getNodes(editor, {
+  const _nodes = getNodeEntries(editor, {
     at,
     match: {
       type: getPluginType(editor, ELEMENT_LIC),
@@ -50,7 +53,7 @@ export const moveListItems = (
     });
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(Editor.pathRef(editor, licPath));
+      highestLicPathRefs.push(createPathRef(editor, licPath));
     }
   });
 
@@ -58,14 +61,14 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     licPathRefsToMove.forEach((licPathRef) => {
       const licPath = licPathRef.unref();
       if (!licPath) return;
 
-      const listItem = getParent(editor, licPath);
+      const listItem = getParentNode(editor, licPath);
       if (!listItem) return;
-      const listEntry = getParent(editor, listItem[1]);
+      const listEntry = getParentNode(editor, listItem[1]);
 
       if (increase) {
         moveListItemDown(editor, {

@@ -1,5 +1,11 @@
-import { getNodes, getParent, KeyboardHandler } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import {
+  getNodeEntries,
+  getParentNode,
+  KeyboardHandler,
+  select,
+  TElement,
+  withoutNormalizing,
+} from '@udecode/plate-core';
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { indentCodeLine } from './transforms/indentCodeLine';
@@ -10,13 +16,13 @@ import { CodeBlockPlugin } from './types';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler<{}, CodeBlockPlugin> = (
+export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPlugin> = (
   editor
 ) => (e) => {
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
 
-    const _codeLines = getNodes(editor, {
+    const _codeLines = getNodeEntries<TElement>(editor, {
       match: { type: getCodeLineType(editor) },
     });
     const codeLines = Array.from(_codeLines);
@@ -24,10 +30,10 @@ export const onKeyDownCodeBlock: KeyboardHandler<{}, CodeBlockPlugin> = (
     if (codeLines.length) {
       e.preventDefault();
       const [, firstLinePath] = codeLines[0];
-      const codeBlock = getParent(editor, firstLinePath);
+      const codeBlock = getParentNode<TElement>(editor, firstLinePath);
       if (!codeBlock) return;
 
-      Editor.withoutNormalizing(editor, () => {
+      withoutNormalizing(editor, () => {
         for (const codeLine of codeLines) {
           if (shiftTab) {
             outdentCodeLine(editor, { codeBlock, codeLine });
@@ -51,7 +57,7 @@ export const onKeyDownCodeBlock: KeyboardHandler<{}, CodeBlockPlugin> = (
     const [, codeBlockPath] = codeBlock;
 
     // select the whole code block
-    Transforms.select(editor, codeBlockPath);
+    select(editor, codeBlockPath);
 
     e.preventDefault();
     e.stopPropagation();

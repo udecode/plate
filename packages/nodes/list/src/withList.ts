@@ -7,7 +7,7 @@ import { insertFragmentList } from './insertFragmentList';
 import { normalizeList } from './normalizers';
 import { ListPlugin } from './types';
 
-export const withList: WithOverride<{}, ListPlugin> = (
+export const withList: WithOverride<ListPlugin> = (
   editor,
   { options: { validLiChildrenTypes } }
 ) => {

@@ -1,9 +1,8 @@
 import {
   isCollapsed,
   KeyboardHandler,
-  setNodes,
+  setElements,
   someNode,
-  TElement,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { ResetNodePlugin } from './types';
@@ -13,7 +12,7 @@ export const SIMULATE_BACKSPACE: any = {
   which: 8,
 };
 
-export const onKeyDownResetNode: KeyboardHandler<{}, ResetNodePlugin> = (
+export const onKeyDownResetNode: KeyboardHandler<ResetNodePlugin> = (
   editor,
   { options: { rules } }
 ) => (event) => {
@@ -25,7 +24,7 @@ export const onKeyDownResetNode: KeyboardHandler<{}, ResetNodePlugin> = (
         if (predicate(editor) && someNode(editor, { match: { type: types } })) {
           event.preventDefault?.();
 
-          setNodes<TElement>(editor, { type: defaultType });
+          setElements(editor, { type: defaultType });
 
           onReset?.(editor);
 

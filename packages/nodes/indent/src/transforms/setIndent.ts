@@ -1,17 +1,18 @@
 import {
   AnyObject,
   EditorNodesOptions,
-  getNodes,
+  getNodeEntries,
   getPluginInjectProps,
   PlateEditor,
-  setNodes,
+  setElements,
   UnhangRangeOptions,
+  unsetNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import { KEY_INDENT } from '../createIndentPlugin';
 
-export interface SetIndentOptions {
+export interface SetIndentOptions<V extends Value> {
   /**
    * 1 to indent
    * -1 to outdent
@@ -20,9 +21,9 @@ export interface SetIndentOptions {
   offset?: number;
 
   /**
-   * getNodes options
+   * getNodeEntries options
    */
-  getNodesOptions?: EditorNodesOptions & UnhangRangeOptions;
+  getNodesOptions?: EditorNodesOptions<V> & UnhangRangeOptions;
 
   /**
    * Set other props than the indent one.
@@ -39,18 +40,18 @@ export interface SetIndentOptions {
 /**
  * Add offset to the indentation of the selected blocks.
  */
-export const setIndent = (
-  editor: PlateEditor,
+export const setIndent = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     offset = 1,
     getNodesOptions,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions
+  }: SetIndentOptions<V>
 ) => {
   const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 
-  const _nodes = getNodes(editor, {
+  const _nodes = getNodeEntries(editor, {
     block: true,
     ...getNodesOptions,
   });
@@ -58,17 +59,17 @@ export const setIndent = (
 
   withoutNormalizing(editor, () => {
     nodes.forEach(([node, path]) => {
-      const blockIndent = node[nodeKey!] ?? 0;
+      const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;
 
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        Transforms.unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
+        unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {
-        setNodes(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
+        setElements(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

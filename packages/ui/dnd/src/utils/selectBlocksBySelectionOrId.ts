@@ -1,5 +1,5 @@
-import { Range, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import { focusEditor, PlateEditor, select, Value } from '@udecode/plate-core';
+import { Range } from 'slate';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 import { selectBlockById } from './selectBlockById';
@@ -9,8 +9,8 @@ import { selectBlockById } from './selectBlockById';
  * If the block with id is not selected, select the block with id.
  * Else, select the blocks above the selection.
  */
-export const selectBlocksBySelectionOrId = (
-  editor: ReactEditor,
+export const selectBlocksBySelectionOrId = <V extends Value>(
+  editor: PlateEditor<V>,
   id: string
 ) => {
   if (!editor.selection) return;
@@ -21,8 +21,8 @@ export const selectBlocksBySelectionOrId = (
   );
 
   if (isBlockSelected) {
-    Transforms.select(editor, getNodesRange(editor, blockEntries) as Range);
-    ReactEditor.focus(editor);
+    select(editor, getNodesRange(editor, blockEntries) as Range);
+    focusEditor(editor);
   } else {
     selectBlockById(editor, id);
   }

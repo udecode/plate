@@ -1,3 +1,5 @@
+import { Value } from '../../../slate/editor/TEditor';
+import { EDescendant } from '../../../slate/node/TDescendant';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
@@ -5,9 +7,9 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
 /**
  * Deserialize HTML element to fragment.
  */
-export const deserializeHtmlElement = <T = {}>(
-  editor: PlateEditor<T>,
+export const deserializeHtmlElement = <V extends Value>(
+  editor: PlateEditor<V>,
   element: HTMLElement
-): DeserializeHtmlNodeReturnType => {
+): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
   return deserializeHtmlNode(editor)(element);
 };

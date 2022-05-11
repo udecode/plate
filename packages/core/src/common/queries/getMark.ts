@@ -1,11 +1,17 @@
-import { Editor } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { getMarks } from '../../slate/editor/getMarks';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EMarks } from '../../slate/text/TText';
 
 /**
  * Get selected mark by type.
  */
-export const getMark = (editor: TEditor, type: string): any => {
+export const getMark = <V extends Value, K extends keyof EMarks<V>>(
+  editor: TEditor<V>,
+  type: K
+) => {
   if (!editor) return;
 
-  return Editor.marks(editor)?.[type];
+  const marks = getMarks(editor);
+
+  return marks?.[type] as K | undefined;
 };

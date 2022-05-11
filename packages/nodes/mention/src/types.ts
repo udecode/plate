@@ -2,16 +2,13 @@ import { Data, NoData } from '@udecode/plate-combobox';
 import { TElement } from '@udecode/plate-core';
 import { CreateMentionNode } from './getMentionOnSelectItem';
 
-export interface MentionNodeData {
+export interface TMentionElement extends TElement {
   value: string;
 }
 
-export interface MentionInputNodeData {
+export interface TMentionInputElement extends TElement {
   trigger: string;
 }
-
-export type MentionNode = TElement<MentionNodeData>;
-export type MentionInputNode = TElement<MentionInputNodeData>;
 
 export interface MentionPlugin<TData extends Data = NoData> {
   createMentionNode?: CreateMentionNode<TData>;

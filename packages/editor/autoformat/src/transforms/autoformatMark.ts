@@ -1,6 +1,14 @@
-import { getText, removeMark, TEditor } from '@udecode/plate-core';
+import {
+  collapseSelection,
+  deleteText,
+  getEditorString,
+  removeMark,
+  select,
+  TEditor,
+  Value,
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Point, Range, Transforms } from 'slate';
+import { Point, Range } from 'slate';
 import { AutoformatMarkRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
@@ -9,8 +17,8 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
   text: string;
 }
 
-export const autoformatMark = (
-  editor: TEditor,
+export const autoformatMark = <V extends Value>(
+  editor: TEditor<V>,
   { type, text, trigger, match: _match, ignoreTrim }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
@@ -41,13 +49,13 @@ export const autoformatMark = (
     } as Range;
 
     if (!ignoreTrim) {
-      const matchText = getText(editor, matchRange);
+      const matchText = getEditorString(editor, matchRange);
       if (matchText.trim() !== matchText) continue;
     }
 
     // delete end match
     if (end) {
-      Transforms.delete(editor, {
+      deleteText(editor, {
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -58,14 +66,14 @@ export const autoformatMark = (
     const marks = castArray(type);
 
     // add mark to the text between the matches
-    Transforms.select(editor, matchRange as Range);
+    select(editor, matchRange as Range);
     marks.forEach((mark) => {
       editor.addMark(mark, true);
     });
-    Transforms.collapse(editor, { edge: 'end' });
-    removeMark(editor, { key: marks, shouldChange: false });
+    collapseSelection(editor, { edge: 'end' });
+    removeMark(editor, { key: marks as any, shouldChange: false });
 
-    Transforms.delete(editor, {
+    deleteText(editor, {
       at: {
         anchor: beforeStartMatchPoint as Point,
         focus: afterStartMatchPoint as Point,

@@ -2,10 +2,13 @@ import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import {
+  getEndPoint,
   getPlateEditorRef,
+  getStartPoint,
   Plate,
   PlateEditor,
-  TDescendant,
+  select,
+  Value,
 } from '@udecode/plate-core';
 import {
   createFontBackgroundColorPlugin,
@@ -14,7 +17,6 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
 } from '@udecode/plate-font';
-import { Editor, Transforms } from 'slate';
 import { ColorPickerToolbarDropdown } from './ColorPickerToolbarDropdown';
 
 const DEFAULT_PLUGINS = [
@@ -23,7 +25,7 @@ const DEFAULT_PLUGINS = [
   createFontSizePlugin(),
 ];
 
-const DEFAULT_INITIAL_VALUE: TDescendant[] = [
+const DEFAULT_INITIAL_VALUE: Value = [
   {
     type: 'p',
     children: [
@@ -40,7 +42,7 @@ function renderWithPlate(
     initialValue = DEFAULT_INITIAL_VALUE,
     ...options
   }: {
-    initialValue?: TDescendant[];
+    initialValue?: Value;
   } & RenderOptions = {}
 ) {
   const Wrapper = ({ children }: { children?: ReactNode }) => (
@@ -85,9 +87,9 @@ describe('ColorPickerToolbarDropdown', () => {
         editor = getPlateEditorRef()!;
 
         // select the entire text
-        Transforms.select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
+        select(editor, {
+          anchor: getStartPoint(editor, []),
+          focus: getEndPoint(editor, []),
         });
       });
 

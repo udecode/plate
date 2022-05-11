@@ -1,5 +1,10 @@
-import { Editor, Location, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import { Location } from 'slate';
+import { getEndPoint } from '../../slate/editor/getEndPoint';
+import { getStartPoint } from '../../slate/editor/getStartPoint';
+import { Value } from '../../slate/editor/TEditor';
+import { focusEditor } from '../../slate/react-editor/focusEditor';
+import { TReactEditor } from '../../slate/react-editor/TReactEditor';
+import { select } from '../../slate/transforms/select';
 
 export interface SelectEditorOptions {
   /**
@@ -21,25 +26,25 @@ export interface SelectEditorOptions {
 /**
  * Select an editor at a target or an edge (start, end).
  */
-export const selectEditor = (
-  editor: ReactEditor,
+export const selectEditor = <V extends Value>(
+  editor: TReactEditor<V>,
   { at, edge, focus }: SelectEditorOptions
 ) => {
   if (focus) {
-    ReactEditor.focus(editor);
+    focusEditor(editor);
   }
 
   let location = at as Location;
 
   if (edge === 'start') {
-    location = Editor.start(editor, []);
+    location = getStartPoint(editor, []);
   }
 
   if (edge === 'end') {
-    location = Editor.end(editor, []);
+    location = getEndPoint(editor, []);
   }
 
   if (location) {
-    Transforms.select(editor, location);
+    select(editor, location);
   }
 };

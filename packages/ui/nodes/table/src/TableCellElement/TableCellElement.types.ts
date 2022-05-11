@@ -1,8 +1,10 @@
+import { TElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ResizableProps } from 're-resizable';
 import { CSSProp } from 'styled-components';
 
-export interface TableCellElementStyleProps extends TableCellElementProps {
+export interface TableCellElementStyleProps<V extends Value>
+  extends TableCellElementProps<V> {
   hovered: boolean;
   readOnly: boolean;
 }
@@ -14,8 +16,8 @@ export interface TableCellElementStyles {
   handle: CSSProp;
 }
 
-export interface TableCellElementProps
-  extends StyledElementProps<{}, TableCellElementStyles> {
+export interface TableCellElementProps<V extends Value>
+  extends StyledElementProps<V, TElement, TableCellElementStyles> {
   resizableProps?: ResizableProps;
   hideBorder?: boolean;
 

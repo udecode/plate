@@ -1,12 +1,13 @@
+import { AnyObject } from '../../common/types/utility/AnyObject';
+import { Value } from '../../slate/editor/TEditor';
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
 import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
-import { AnyObject } from '../utility/AnyObject';
 
 /**
  * Props object or function returning props object.
  */
-export type PlatePluginProps =
+export type PlatePluginProps<V extends Value> =
   | AnyObject
   | ((
-      props: PlateRenderElementProps | PlateRenderLeafProps
+      props: PlateRenderElementProps<V> & PlateRenderLeafProps<V>
     ) => AnyObject | undefined);

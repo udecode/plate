@@ -1,24 +1,26 @@
 import {
+  getEditorString,
   getPluginType,
   getRangeBefore,
   getRangeFromBlockStart,
-  getText,
   isCollapsed,
   mockPlugin,
+  moveSelection,
   PlateEditor,
   someNode,
   unwrapNodes,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
-import { Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
 import { ELEMENT_LINK } from './createLinkPlugin';
 import { LinkPlugin } from './types';
 
-const upsertLink = (
-  editor: PlateEditor,
+const upsertLink = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     url,
     at,
@@ -43,9 +45,12 @@ const upsertLink = (
   });
 };
 
-const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
+const upsertLinkIfValid = <V extends Value>(
+  editor: PlateEditor<V>,
+  { isUrl }: { isUrl: any }
+) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
-  const textFromBlockStart = getText(editor, rangeFromBlockStart);
+  const textFromBlockStart = getEditorString(editor, rangeFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
     upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
@@ -62,7 +67,7 @@ const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink: WithOverride<{}, LinkPlugin> = (
+export const withLink: WithOverride<LinkPlugin> = (
   editor,
   { type, options: { isUrl, rangeBeforeOptions } }
 ) => {
@@ -73,7 +78,7 @@ export const withLink: WithOverride<{}, LinkPlugin> = (
       const selection = editor.selection as Range;
 
       if (upsertLinkIfValid(editor, { isUrl })) {
-        Transforms.move(editor, { unit: 'offset' });
+        moveSelection(editor, { unit: 'offset' });
         return insertText(text);
       }
 
@@ -84,11 +89,11 @@ export const withLink: WithOverride<{}, LinkPlugin> = (
       );
 
       if (beforeWordRange) {
-        const beforeWordText = getText(editor, beforeWordRange);
+        const beforeWordText = getEditorString(editor, beforeWordRange);
 
         if (isUrl!(beforeWordText)) {
           upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
-          Transforms.move(editor, { unit: 'offset' });
+          moveSelection(editor, { unit: 'offset' });
         }
       }
     }

@@ -1,12 +1,14 @@
 import { CSSProperties } from 'react';
 import clsx from 'clsx';
+import { AnyObject } from '../common/types/utility/AnyObject';
+import { Value } from '../slate/editor/TEditor';
+import { isElement } from '../slate/element/isElement';
+import { EElement } from '../slate/element/TElement';
+import { EText } from '../slate/text/TText';
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
-import { TElement } from '../types/slate/TElement';
-import { TText } from '../types/slate/TText';
-import { AnyObject } from '../types/utility/AnyObject';
 
-export interface GetInjectPropsOptions {
+export interface GetInjectPropsOptions<V extends Value = Value> {
   /**
    * Existing className.
    */
@@ -15,12 +17,12 @@ export interface GetInjectPropsOptions {
   /**
    * Style value or className key.
    */
-  element?: TElement;
+  element?: EElement<V>;
 
   /**
    * Style value or className key.
    */
-  text?: TText;
+  text?: EText<V>;
 
   /**
    * Existing style.
@@ -40,10 +42,10 @@ export interface GetInjectPropsReturnType extends AnyObject {
  * If `classNames[value]` is defined, override `className` with it.
  * If `styleKey` is defined, override `style` with `[styleKey]: value`.
  */
-export const pluginInjectProps = (
-  editor: PlateEditor,
-  { key, inject: { props } }: WithPlatePlugin,
-  nodeProps: GetInjectPropsOptions
+export const pluginInjectProps = <V extends Value>(
+  editor: PlateEditor<V>,
+  { key, inject: { props } }: WithPlatePlugin<{}, V>,
+  nodeProps: GetInjectPropsOptions<V>
 ): GetInjectPropsReturnType | undefined => {
   const { element, text, className, style } = nodeProps;
 
@@ -63,11 +65,16 @@ export const pluginInjectProps = (
     defaultNodeValue,
   } = props;
 
-  if (validTypes && node.type && !validTypes.includes(node.type)) {
+  if (
+    validTypes &&
+    isElement(node) &&
+    node.type &&
+    !validTypes.includes(node.type)
+  ) {
     return;
   }
 
-  const nodeValue = node[nodeKey!];
+  const nodeValue = node[nodeKey!] as any;
 
   // early return if there is now reason to add styles
   if (

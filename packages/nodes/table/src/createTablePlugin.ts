@@ -37,8 +37,8 @@ export const createTablePlugin = createPluginFactory({
       },
       props: ({ element }) => ({
         nodeProps: {
-          colSpan: element?.attributes?.colspan,
-          rowSpan: element?.attributes?.rowspan,
+          colSpan: (element?.attributes as any)?.colspan,
+          rowSpan: (element?.attributes as any)?.rowspan,
         },
       }),
     },
@@ -51,8 +51,8 @@ export const createTablePlugin = createPluginFactory({
       },
       props: ({ element }) => ({
         nodeProps: {
-          colSpan: element?.attributes?.colspan,
-          rowSpan: element?.attributes?.rowspan,
+          colSpan: (element?.attributes as any)?.colspan,
+          rowSpan: (element?.attributes as any)?.rowspan,
         },
       }),
     },

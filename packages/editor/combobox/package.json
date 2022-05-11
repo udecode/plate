@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@udecode/plate-core": "10.5.3",
-    "@udecode/zustood": "0.4.4",
-    "downshift": "6.1.7",
-    "zustand": "3.7.0"
+    "@udecode/zustood": "^1.1.1",
+    "downshift": "^6.1.7",
+    "zustand": "^3.7.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

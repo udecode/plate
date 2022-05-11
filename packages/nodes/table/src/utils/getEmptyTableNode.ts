@@ -1,12 +1,12 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
+import { TablePluginOptions, TTableElement } from '../types';
 import { getEmptyRowNode } from './getEmptyRowNode';
 
-export const getEmptyTableNode = (
-  editor: PlateEditor,
+export const getEmptyTableNode = <V extends Value>(
+  editor: PlateEditor<V>,
   { header }: TablePluginOptions
-) => {
+): TTableElement => {
   return {
     type: getPluginType(editor, ELEMENT_TABLE),
     children: [

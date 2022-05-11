@@ -6,7 +6,7 @@ import { toggleNodeType } from '../../transforms/toggleNodeType';
 import { ELEMENT_DEFAULT } from '../../types/node.types';
 import { HotkeyPlugin } from '../../types/plugins/HotkeyPlugin';
 
-export const onKeyDownToggleElement: KeyboardHandler<{}, HotkeyPlugin> = (
+export const onKeyDownToggleElement: KeyboardHandler<HotkeyPlugin> = (
   editor,
   { type, options: { hotkey } }
 ) => (e) => {

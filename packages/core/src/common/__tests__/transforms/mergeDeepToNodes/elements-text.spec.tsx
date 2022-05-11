@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { isElement } from '../../../../types/slate/TElement';
+import { isElement } from '../../../../slate/element/isElement';
 import { mergeDeepToNodes } from '../../../../utils/mergeDeepToNodes';
 
 jsx;

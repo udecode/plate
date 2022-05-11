@@ -3,16 +3,16 @@ import {
   queryNode,
   someNode,
   TNode,
+  TNodeEntry,
   WithOverride,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
-import { NodeEntry } from 'slate';
 import { NodeIdPlugin } from './createNodeIdPlugin';
 
 /**
  * Enables support for inserting nodes with an id key.
  */
-export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
+export const withNodeId: WithOverride<NodeIdPlugin> = (
   editor,
   {
     options: {
@@ -30,7 +30,7 @@ export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
 
   const idPropsCreator = () => ({ [idKey]: idCreator!() });
 
-  const filterNode = (nodeEntry: NodeEntry<TNode>) => {
+  const filterNode = (nodeEntry: TNodeEntry) => {
     return (
       filter!(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
     );
@@ -45,7 +45,7 @@ export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
       // clone to be able to write (read-only)
-      const node = cloneDeep(operation.node) as TNode;
+      const node = cloneDeep(operation.node);
 
       // the id in the new node is already being used in the editor, we need to replace it with a new id
       if (

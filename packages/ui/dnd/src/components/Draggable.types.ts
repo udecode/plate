@@ -1,10 +1,11 @@
 import React from 'react';
-import { TEditor } from '@udecode/plate-core';
+import { EElement, TEditor, TElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
-import { Element, Path } from 'slate';
+import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
 
-export interface DraggableStyleProps extends DraggableProps {
+export interface DraggableStyleProps<V extends Value>
+  extends DraggableProps<V> {
   direction: '' | 'top' | 'bottom';
   isDragging: boolean;
 
@@ -60,12 +61,12 @@ export interface DragHandleProps
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   > {
-  element: Element;
+  element: TElement;
   styles?: CSSProp;
 }
 
-export interface DraggableProps
-  extends StyledElementProps<{}, DraggableStyles> {
+export interface DraggableProps<V extends Value>
+  extends StyledElementProps<V, EElement<V>, DraggableStyles> {
   componentRef?: any;
 
   /**
@@ -74,6 +75,6 @@ export interface DraggableProps
   onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
 
   level?: number;
-  filter?: (editor: TEditor, path: Path) => boolean;
+  filter?: (editor: TEditor<V>, path: Path) => boolean;
   allowReadOnly?: boolean;
 }

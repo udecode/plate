@@ -1,6 +1,7 @@
 import { jsx } from 'slate-hyperscript';
+import { Value } from '../../../slate/editor/TEditor';
+import { EDescendant } from '../../../slate/node/TDescendant';
 import { PlateEditor } from '../../../types/PlateEditor';
-import { TDescendant } from '../../../types/slate/TDescendant';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
 jsx;
@@ -8,11 +9,15 @@ jsx;
 /**
  * Deserialize HTML body element to Fragment.
  */
-export const htmlBodyToFragment = <T = {}>(
-  editor: PlateEditor<T>,
+export const htmlBodyToFragment = <V extends Value>(
+  editor: PlateEditor<V>,
   element: HTMLElement
-): TDescendant[] | undefined => {
+): EDescendant<V>[] | undefined => {
   if (element.nodeName === 'BODY') {
-    return jsx('fragment', {}, deserializeHtmlNodeChildren(editor, element));
+    return jsx(
+      'fragment',
+      {},
+      deserializeHtmlNodeChildren(editor, element)
+    ) as EDescendant<V>[];
   }
 };

@@ -1,16 +1,18 @@
-import { TAncestor } from '../../types/slate/TAncestor';
-import { TEditor } from '../../types/slate/TEditor';
-import { EditorAboveOptions } from '../types/Editor.types';
-import { getAbove } from './getAbove';
+import {
+  getAboveNode,
+  GetAboveNodeOptions,
+} from '../../slate/editor/getAboveNode';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EAncestor } from '../../slate/node/TAncestor';
 
 /**
  * Get the block above a location (default: selection).
  */
-export const getBlockAbove = <T extends TAncestor = TAncestor>(
-  editor: TEditor,
-  options: EditorAboveOptions<T> = {}
+export const getBlockAbove = <N extends EAncestor<V>, V extends Value = Value>(
+  editor: TEditor<V>,
+  options: GetAboveNodeOptions<V> = {}
 ) =>
-  getAbove<T>(editor, {
+  getAboveNode<N, V>(editor, {
     ...options,
     block: true,
   });

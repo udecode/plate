@@ -1,9 +1,10 @@
 import {
-  getAbove,
-  getParent,
+  getAboveNode,
+  getParentNode,
   getPluginType,
   PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
@@ -12,8 +13,8 @@ import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
  * If at (default = selection) is in table>tr>td or table>tr>th,
  * return table, tr, and td or th node entries.
  */
-export const getTableCellEntry = <T = {}>(
-  editor: PlateEditor<T>,
+export const getTableCellEntry = <V extends Value>(
+  editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (
@@ -28,12 +29,12 @@ export const getTableCellEntry = <T = {}>(
       },
     })
   ) {
-    const selectionParent = getParent(editor, at);
+    const selectionParent = getParentNode(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
 
     const tableCell =
-      getAbove(editor, {
+      getAboveNode(editor, {
         at,
         match: {
           type: [
@@ -41,7 +42,7 @@ export const getTableCellEntry = <T = {}>(
             getPluginType(editor, ELEMENT_TH),
           ],
         },
-      }) || getParent(editor, paragraphPath);
+      }) || getParentNode(editor, paragraphPath);
 
     if (!tableCell) return;
     const [tableCellNode, tableCellPath] = tableCell;
@@ -52,13 +53,13 @@ export const getTableCellEntry = <T = {}>(
     )
       return;
 
-    const tableRow = getParent(editor, tableCellPath);
+    const tableRow = getParentNode(editor, tableCellPath);
     if (!tableRow) return;
     const [tableRowNode, tableRowPath] = tableRow;
 
     if (tableRowNode.type !== getPluginType(editor, ELEMENT_TR)) return;
 
-    const tableElement = getParent(editor, tableRowPath);
+    const tableElement = getParentNode(editor, tableRowPath);
     if (!tableElement) return;
 
     return {

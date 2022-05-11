@@ -1,20 +1,21 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Value } from '../../slate/editor/TEditor';
+import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateRenderLeafProps } from '../../types/PlateRenderLeafProps';
-import { SlateProps } from '../../types/slate/SlateProps';
 import { pipeInjectProps } from '../../utils/pipeInjectProps';
 import { pluginRenderLeaf } from '../../utils/pluginRenderLeaf';
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 
-export const leafToHtml = (
-  editor: PlateEditor,
+export const leafToHtml = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     props,
     slateProps,
     preserveClassNames,
   }: {
-    props: PlateRenderLeafProps;
+    props: PlateRenderLeafProps<V>;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }
@@ -25,12 +26,13 @@ export const leafToHtml = (
     if (!plugin.isLeaf) return result;
 
     props = {
-      ...pipeInjectProps<PlateRenderLeafProps>(editor, props),
+      ...pipeInjectProps<V>(editor, props),
       children: encodeURIComponent(result),
     };
 
     const serialized =
-      plugin.serializeHtml?.(props) ?? pluginRenderLeaf(editor, plugin)(props);
+      plugin.serializeHtml?.(props as any) ??
+      pluginRenderLeaf(editor, plugin)(props);
 
     if (serialized === children) return result;
 

@@ -1,10 +1,10 @@
-import { getPluginType, PlateEditor, TDescendant } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, TNode, Value } from '@udecode/plate-core';
 import { ELEMENT_MENTION_INPUT } from '../createMentionPlugin';
-import { MentionInputNode } from '../types';
+import { TMentionInputElement } from '../types';
 
-export const isNodeMentionInput = (
-  editor: PlateEditor,
-  node: TDescendant
-): node is MentionInputNode => {
+export const isNodeMentionInput = <V extends Value>(
+  editor: PlateEditor<V>,
+  node: TNode
+): node is TMentionInputElement => {
   return node.type === getPluginType(editor, ELEMENT_MENTION_INPUT);
 };

@@ -1,12 +1,14 @@
 import { CSSProperties } from 'react';
+import { AnyObject } from '../../common/types/utility/AnyObject';
+import { Value } from '../../slate/editor/TEditor';
 import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
-import { AnyObject } from '../utility/AnyObject';
 
-export interface TransformOptions extends GetInjectPropsOptions {
+export interface TransformOptions<V extends Value>
+  extends GetInjectPropsOptions<V> {
   nodeValue?: any;
 }
 
-export interface InjectProps {
+export interface InjectProps<V extends Value> {
   inject?: {
     /**
      * Properties used by Plate to inject props into any node `component`.
@@ -38,19 +40,19 @@ export interface InjectProps {
        * Transform the className.
        * @default clsx(className, classNames[value])
        */
-      transformClassName?: (options: TransformOptions) => any;
+      transformClassName?: (options: TransformOptions<V>) => any;
 
       /**
        * Transform the node value for the style or className.
        * @default nodeValue
        */
-      transformNodeValue?: (options: TransformOptions) => any;
+      transformNodeValue?: (options: TransformOptions<V>) => any;
 
       /**
        * Transform the style.
        * @default { ...style, [styleKey]: value }
        */
-      transformStyle?: (options: TransformOptions) => CSSProperties;
+      transformStyle?: (options: TransformOptions<V>) => CSSProperties;
 
       /**
        * List of supported node values.

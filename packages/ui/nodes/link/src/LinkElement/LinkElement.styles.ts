@@ -1,10 +1,13 @@
+import { Value } from '@udecode/plate-core';
 import {
   createStyles,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 
-export const getLinkElementStyles = (props: StyledElementProps) =>
+export const getLinkElementStyles = <V extends Value>(
+  props: StyledElementProps<V>
+) =>
   createStyles(
     { prefixClassNames: 'LinkElement', ...props },
     {

@@ -1,8 +1,11 @@
+import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import tw from 'twin.macro';
 import { TodoListElementStyleProps } from './TodoListElement.types';
 
-export const getTodoListElementStyles = (props: TodoListElementStyleProps) => {
+export const getTodoListElementStyles = <V extends Value>(
+  props: TodoListElementStyleProps<V>
+) => {
   return createStyles(
     { prefixClassNames: 'TodoListElement', ...props },
     {

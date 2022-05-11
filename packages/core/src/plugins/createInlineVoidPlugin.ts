@@ -1,5 +1,4 @@
 import { WithOverride } from '../types/plugins/WithOverride';
-import { TElement } from '../types/slate/TElement';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
@@ -26,13 +25,11 @@ export const withInlineVoid: WithOverride = (editor) => {
   });
 
   editor.isInline = (element) => {
-    return inlineTypes.includes((element as TElement).type)
-      ? true
-      : isInline(element);
+    return inlineTypes.includes(element.type) ? true : isInline(element);
   };
 
   editor.isVoid = (element) =>
-    voidTypes.includes((element as TElement).type) ? true : isVoid(element);
+    voidTypes.includes(element.type) ? true : isVoid(element);
 
   return editor;
 };

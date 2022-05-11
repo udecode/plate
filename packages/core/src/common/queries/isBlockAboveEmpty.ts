@@ -1,11 +1,11 @@
-import { TEditor } from '../../types/slate/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 import { isAncestorEmpty } from './isAncestorEmpty';
 
 /**
  * Is the block above the selection empty.
  */
-export const isBlockAboveEmpty = (editor: TEditor) => {
+export const isBlockAboveEmpty = <V extends Value>(editor: TEditor<V>) => {
   const block = getBlockAbove(editor)?.[0];
   if (!block) return false;
   return isAncestorEmpty(editor, block);

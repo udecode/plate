@@ -1,22 +1,22 @@
-import { NodeEntry } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { TNode } from '../../types/slate/TNode';
+import { getNodeEntries } from '../../slate/editor/getNodeEntries';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { ENode } from '../../slate/node/TNode';
+import { TNodeEntry } from '../../slate/node/TNodeEntry';
 import { EditorNodesOptions } from '../types/index';
-import { getNodes } from './getNodes';
 import { getQueryOptions } from './match';
 
-export type FindNodeOptions<T extends TNode = TNode> = EditorNodesOptions<T>;
+export type FindNodeOptions<V extends Value> = EditorNodesOptions<V>;
 
 /**
  * Find node matching the condition.
  */
-export const findNode = <T extends TNode = TNode>(
-  editor: TEditor,
-  options: FindNodeOptions<T> = {}
-): NodeEntry<T> | undefined => {
+export const findNode = <N extends ENode<V>, V extends Value = Value>(
+  editor: TEditor<V>,
+  options: FindNodeOptions<V> = {}
+): TNodeEntry<N> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
-    const nodeEntries = getNodes<T>(editor, {
+    const nodeEntries = getNodeEntries<N, V>(editor, {
       at: editor.selection || [],
       ...getQueryOptions(editor, options),
     });

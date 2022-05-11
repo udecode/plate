@@ -1,4 +1,6 @@
-import { NodeEntry, Range } from 'slate';
+import { Range } from 'slate';
+import { Value } from '../../slate/editor/TEditor';
+import { ENodeEntry } from '../../slate/node/TNodeEntry';
 import { PlateEditor } from '../PlateEditor';
 import { WithPlatePlugin } from './PlatePlugin';
 
@@ -7,7 +9,11 @@ import { WithPlatePlugin } from './PlatePlugin';
  * If the function returns undefined then no ranges are modified.
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */
-export type Decorate<T = {}, P = {}> = (
-  editor: PlateEditor<T>,
-  plugin: WithPlatePlugin<T, P>
-) => (entry: NodeEntry) => Range[] | undefined;
+export type Decorate<
+  P = {},
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = (
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
+) => (entry: ENodeEntry<V>) => Range[] | undefined;

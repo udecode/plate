@@ -1,22 +1,24 @@
 import React, { forwardRef, useMemo } from 'react';
 import {
   createNodesWithHOC,
+  findNodePath,
   PlateRenderElementProps,
   TEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ReactEditor, useReadOnly } from 'slate-react';
+import { useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
-export interface WithDraggableOptions
-  extends Pick<DraggableProps, 'onRenderDragHandle' | 'styles'> {
+export interface WithDraggableOptions<V extends Value>
+  extends Pick<DraggableProps<V>, 'onRenderDragHandle' | 'styles'> {
   level?: number;
-  filter?: (editor: TEditor, path: Path) => boolean;
+  filter?: (editor: TEditor<V>, path: Path) => boolean;
   allowReadOnly?: boolean;
 }
 
-export const withDraggable = (
+export const withDraggable = <V extends Value>(
   Component: any,
   {
     styles,
@@ -24,20 +26,21 @@ export const withDraggable = (
     filter,
     allowReadOnly = false,
     onRenderDragHandle,
-  }: WithDraggableOptions = {}
+  }: WithDraggableOptions<V> = {}
 ) => {
-  return forwardRef((props: PlateRenderElementProps, ref) => {
+  return forwardRef((props: PlateRenderElementProps<V>, ref) => {
     const { attributes, element, editor } = props;
     const readOnly = useReadOnly();
-    const path = useMemo(() => ReactEditor.findPath(editor, element), [
+    const path = useMemo(() => findNodePath(editor, element), [
       editor,
       element,
     ]);
 
     const filteredOut = useMemo(
       () =>
-        (Number.isInteger(level) && level !== path.length - 1) ||
-        (filter && filter(editor, path)),
+        path &&
+        ((Number.isInteger(level) && level !== path.length - 1) ||
+          (filter && filter(editor, path))),
       [path, editor]
     );
 

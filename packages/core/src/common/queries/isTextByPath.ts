@@ -1,8 +1,13 @@
-import { Node, Path, Text } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { Path } from 'slate';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { getNode } from '../../slate/node/getNode';
+import { isText } from '../../slate/text/isText';
 
-export const isTextByPath = (editor: TEditor, path: Path) => {
-  const node = Node.get(editor, path);
+export const isTextByPath = <V extends Value>(
+  editor: TEditor<V>,
+  path: Path
+) => {
+  const node = getNode(editor, path);
 
-  return Text.isText(node);
+  return isText(node);
 };

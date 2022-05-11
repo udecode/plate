@@ -1,18 +1,17 @@
-import { NodeEntry } from 'slate';
 import { queryNode } from '../common/queries/index';
 import { QueryNodeOptions } from '../common/types/QueryNodeOptions';
-import { isAncestor } from '../types/slate/TAncestor';
-import { TDescendant } from '../types/slate/TDescendant';
-import { TNode } from '../types/slate/TNode';
+import { isAncestor } from '../slate/node/isAncestor';
+import { NodeOf, TNode } from '../slate/node/TNode';
+import { TNodeEntry } from '../slate/node/TNodeEntry';
 
-export interface ApplyDeepToNodesOptions {
+export interface ApplyDeepToNodesOptions<N extends TNode> {
   // The destination node object.
-  node: TNode;
+  node: N;
   // The source object. Can be a factory.
   source: Record<string, any> | (() => Record<string, any>);
   // Function to call on each node following the query.
   apply: (
-    node: TNode,
+    node: NodeOf<N>,
     source: Record<string, any> | (() => Record<string, any>)
   ) => void;
   // Query to filter the nodes.
@@ -22,15 +21,15 @@ export interface ApplyDeepToNodesOptions {
 /**
  * Recursively apply an operation to children nodes with a query.
  */
-export const applyDeepToNodes = ({
+export const applyDeepToNodes = <N extends TNode>({
   node,
   source,
   apply,
   query,
-}: ApplyDeepToNodesOptions) => {
-  const entry: NodeEntry<TNode> = [node, []];
+}: ApplyDeepToNodesOptions<N>) => {
+  const entry: TNodeEntry<N> = [node, []];
 
-  if (queryNode(entry, query)) {
+  if (queryNode<N>(entry, query)) {
     if (source instanceof Function) {
       apply(node, source());
     } else {
@@ -40,7 +39,12 @@ export const applyDeepToNodes = ({
 
   if (!isAncestor(node)) return;
 
-  node.children.forEach((child: TDescendant) => {
-    applyDeepToNodes({ node: child, source, apply, query });
+  node.children.forEach((child) => {
+    applyDeepToNodes({
+      node: child as any,
+      source,
+      apply,
+      query,
+    });
   });
 };

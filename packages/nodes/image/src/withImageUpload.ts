@@ -13,10 +13,7 @@ import { ImagePlugin } from './types';
  * @param options.type
  * @param options.uploadImage
  */
-export const withImageUpload: WithOverride<{}, ImagePlugin> = (
-  editor,
-  plugin
-) => {
+export const withImageUpload: WithOverride<ImagePlugin> = (editor, plugin) => {
   const {
     options: { uploadImage },
   } = plugin;

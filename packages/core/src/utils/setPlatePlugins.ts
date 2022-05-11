@@ -21,6 +21,7 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import { Value } from '../slate/editor/TEditor';
 import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
@@ -30,54 +31,59 @@ import { overridePluginsByKey } from './overridePluginsByKey';
 /**
  * Flatten deep plugins then set editor.plugins and editor.pluginsByKey
  */
-export const setPlatePlugins = <T = {}>(
-  editor: PlateEditor<T>,
+export const setPlatePlugins = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     disableCorePlugins,
     plugins: _plugins = [],
-  }: Pick<PlateProps<T>, 'plugins' | 'disableCorePlugins'>
+  }: Pick<PlateProps<V>, 'plugins' | 'disableCorePlugins'>
 ) => {
-  let plugins: PlatePlugin<T>[] = [];
+  let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
 
     if (typeof dcp !== 'object' || !dcp.react) {
-      plugins.push(editor.pluginsByKey?.react ?? createReactPlugin());
+      plugins.push((editor.pluginsByKey?.react as any) ?? createReactPlugin());
     }
     if (typeof dcp !== 'object' || !dcp.history) {
-      plugins.push(editor.pluginsByKey?.history ?? createHistoryPlugin());
+      plugins.push(
+        (editor.pluginsByKey?.history as any) ?? createHistoryPlugin()
+      );
     }
     if (typeof dcp !== 'object' || !dcp.eventEditor) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_EVENT_EDITOR] ?? createEventEditorPlugin()
+        (editor.pluginsByKey?.[KEY_EVENT_EDITOR] as any) ??
+          createEventEditorPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.inlineVoid) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_INLINE_VOID] ?? createInlineVoidPlugin()
+        (editor.pluginsByKey?.[KEY_INLINE_VOID] as any) ??
+          createInlineVoidPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.insertData) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_INSERT_DATA] ?? createInsertDataPlugin()
+        (editor.pluginsByKey?.[KEY_INSERT_DATA] as any) ??
+          createInsertDataPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.deserializeHtml) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_DESERIALIZE_HTML] ??
+        (editor.pluginsByKey?.[KEY_DESERIALIZE_HTML] as any) ??
           createDeserializeHtmlPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.deserializeAst) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_DESERIALIZE_AST] ??
+        (editor.pluginsByKey?.[KEY_DESERIALIZE_AST] as any) ??
           createDeserializeAstPlugin()
       );
     }
   }
 
-  plugins = [...plugins, ..._plugins];
+  plugins = [...plugins, ..._plugins] as any;
 
   editor.plugins = [];
   editor.pluginsByKey = {};
@@ -88,14 +94,14 @@ export const setPlatePlugins = <T = {}>(
   editor.plugins.forEach((plugin) => {
     if (plugin.overrideByKey) {
       const newPlugins = editor.plugins.map((p) => {
-        return overridePluginsByKey<T, {}>(p, plugin.overrideByKey as any);
+        return overridePluginsByKey<V>(p as any, plugin.overrideByKey as any);
       });
 
       editor.plugins = [];
       editor.pluginsByKey = {};
 
       // flatten again the overrides
-      flattenDeepPlugins(editor, newPlugins);
+      flattenDeepPlugins<V>(editor, newPlugins as any);
     }
   });
 

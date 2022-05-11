@@ -16,12 +16,12 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
     levels: 6,
   },
   then: (editor, { options: { levels } = {} }) => {
-    const plugins: PlatePlugin<{}, HeadingPlugin>[] = [];
+    const plugins: PlatePlugin<HeadingPlugin>[] = [];
 
     for (let level = 1; level <= levels!; level++) {
       const key = KEYS_HEADING[level - 1];
 
-      const plugin: PlatePlugin<{}, HeadingPlugin> = {
+      const plugin: PlatePlugin<HeadingPlugin> = {
         key,
         isElement: true,
         deserializeHtml: {

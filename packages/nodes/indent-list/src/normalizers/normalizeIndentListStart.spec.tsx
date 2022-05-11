@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createParagraphPlugin } from '../../../paragraph/src/createParagraphPlugin';
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
 import { createIndentListPlugin } from '../createIndentListPlugin';
@@ -46,7 +45,7 @@ describe('normalizeIndentListStart', () => {
           14
         </hp>
       </editor>
-    ) as any) as Editor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -82,7 +81,7 @@ describe('normalizeIndentListStart', () => {
           14
         </hp>
       </editor>
-    ) as any) as Editor;
+    ) as any) as PlateEditor;
 
     it('should be', async () => {
       const editor = createPlateEditor({
@@ -122,7 +121,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any) as Editor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -145,7 +144,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any) as Editor;
+    ) as any) as PlateEditor;
 
     it('should be', async () => {
       const editor = createPlateEditor({

@@ -1,17 +1,17 @@
 import { Path, Range } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { EditorAboveOptions } from '../types/Editor.types';
+import { GetAboveNodeOptions } from '../../slate/editor/getAboveNode';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**
  * Is the range (default: selection) across blocks.
  */
-export const isRangeAcrossBlocks = (
-  editor: TEditor,
+export const isRangeAcrossBlocks = <V extends Value>(
+  editor: TEditor<V>,
   {
     at,
     ...options
-  }: Omit<EditorAboveOptions, 'at' | 'match'> & { at?: Range | null } = {}
+  }: Omit<GetAboveNodeOptions<V>, 'at' | 'match'> & { at?: Range | null } = {}
 ) => {
   if (!at) at = editor.selection;
   if (!at) return false;

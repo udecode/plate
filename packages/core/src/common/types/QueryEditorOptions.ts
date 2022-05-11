@@ -1,16 +1,18 @@
 import { Location } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { QueryNodeOptions } from './QueryNodeOptions';
 
 /**
  * Query the editor state.
  */
-export interface QueryEditorOptions
-  extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
+export interface QueryEditorOptions<
+  V extends Value,
+  E extends TEditor<V> = TEditor<V>
+> extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /**
    * Query the editor.
    */
-  filter?: (editor: TEditor) => boolean;
+  filter?: (editor: E) => boolean;
 
   /**
    * Location from where to lookup the node types (bottom-up)

@@ -1,9 +1,17 @@
-import { isExpanded, TEditor } from '@udecode/plate-core';
-import { Ancestor, Editor, Node, NodeEntry, Transforms } from 'slate';
+import {
+  getEditorString,
+  getRange,
+  getStartPoint,
+  insertText,
+  isExpanded,
+  TEditor,
+  TElementEntry,
+  Value,
+} from '@udecode/plate-core';
 
 export interface IndentCodeLineOptions {
-  codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor | Node>;
+  codeBlock: TElementEntry;
+  codeLine: TElementEntry;
 }
 
 /**
@@ -12,22 +20,22 @@ export interface IndentCodeLineOptions {
  * - the selected code line has no whitespace character
  * Indentation = 2 spaces.
  */
-export const indentCodeLine = (
-  editor: TEditor,
+export const indentCodeLine = <V extends Value>(
+  editor: TEditor<V>,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = Editor.start(editor, codeLinePath);
+  const codeLineStart = getStartPoint(editor, codeLinePath);
   if (!isExpanded(editor.selection)) {
     const cursor = editor.selection?.anchor;
-    const range = Editor.range(editor, codeLineStart, cursor);
-    const text = Editor.string(editor, range);
+    const range = getRange(editor, codeLineStart, cursor);
+    const text = getEditorString(editor, range);
 
     if (/\S/.test(text)) {
-      Transforms.insertText(editor, '  ', { at: editor.selection! });
+      insertText(editor, '  ', { at: editor.selection! });
       return;
     }
   }
 
-  Transforms.insertText(editor, '  ', { at: codeLineStart });
+  insertText(editor, '  ', { at: codeLineStart });
 };

@@ -1,10 +1,12 @@
 import { castArray } from 'lodash';
-import { Editor } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { isBlock } from '../../slate/editor/isBlock';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { ENode, TNode } from '../../slate/node/TNode';
+import { TPath } from '../../slate/types/interfaces';
 
-export type PredicateObj<T> = Partial<Record<keyof T, any | any[]>>;
-export type PredicateFn<T> = (obj: T) => boolean;
-export type Predicate<T> = PredicateObj<T> | PredicateFn<T>;
+export type PredicateObj = Record<string, any | any[]>;
+export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
+export type Predicate<T extends TNode> = PredicateObj | PredicateFn<T>;
 
 /**
  * Match the object with a predicate object or function.
@@ -12,7 +14,11 @@ export type Predicate<T> = PredicateObj<T> | PredicateFn<T>;
  * - object: every predicate key/value should be in obj.
  * - function: it should return true.
  */
-export const match = <T>(obj: T, predicate?: Predicate<T>): boolean => {
+export const match = <T extends TNode>(
+  obj: T,
+  path: TPath,
+  predicate?: Predicate<T>
+): boolean => {
   if (!predicate) return true;
 
   if (typeof predicate === 'object') {
@@ -23,22 +29,26 @@ export const match = <T>(obj: T, predicate?: Predicate<T>): boolean => {
     });
   }
 
-  return predicate(obj);
+  return predicate(obj, path);
 };
-
-export const matchPredicate = <T>(predicate?: Predicate<T>) => (obj: T) =>
-  match(obj, predicate);
 
 /**
  * Extended query options for slate queries:
  * - `match` can be an object predicate where one of the values should include the node value.
  * Example: { type: ['1', '2'] } will match the nodes having one of these 2 types.
  */
-export const getQueryOptions = <T>(editor: TEditor, options: any) => {
+export const getQueryOptions = <V extends Value>(
+  editor: TEditor<V>,
+  options: any = {}
+) => {
+  const { match: _match, block } = options;
+
   return {
     ...options,
-    match: (n: T) =>
-      match<T>(n, options.match) &&
-      (!options?.block || Editor.isBlock(editor, n)),
+    match:
+      _match || block
+        ? (n: ENode<V>, path: TPath) =>
+            match(n, path, _match) && (!block || isBlock(editor, n))
+        : undefined,
   };
 };

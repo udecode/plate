@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
 export interface MatchRange {
@@ -39,7 +39,10 @@ export interface AutoformatCommonRule {
   /**
    * Query to allow autoformat.
    */
-  query?: (editor: TEditor, options: AutoformatQueryOptions) => boolean;
+  query?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
+    editor: E,
+    options: AutoformatQueryOptions
+  ) => boolean;
 }
 
 export interface AutoformatBlockRule extends AutoformatCommonRule {
@@ -75,13 +78,17 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
    * Function called just before `format`.
    * Generally used to reset the selected block.
    */
-  preFormat?: (editor: TEditor) => void;
+  preFormat?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
+    editor: E
+  ) => void;
 
   /**
    * Custom formatting function.
-   * @default setNodes(editor, { type }, { match: (n) => Editor.isBlock(editor, n) })
+   * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
    */
-  format?: (editor: TEditor) => void;
+  format?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
+    editor: E
+  ) => void;
 }
 
 export interface AutoformatMarkRule extends AutoformatCommonRule {
@@ -111,7 +118,10 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   format:
     | string
     | string[]
-    | ((editor: TEditor, options: GetMatchPointsReturnType) => void);
+    | (<V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
+        editor: E,
+        options: GetMatchPointsReturnType
+      ) => void);
 }
 
 export type AutoformatRule =

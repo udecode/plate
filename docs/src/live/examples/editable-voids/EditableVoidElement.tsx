@@ -23,10 +23,10 @@ const plugins = createPlugins(
   }
 );
 
-export const EditableVoidElement = ({
+export const EditableVoidElement = <V extends Value>({
   attributes,
   children,
-}: PlateRenderElementProps) => {
+}: PlateRenderElementProps<V, TElement>) => {
   const [inputValue, setInputValue] = useState('');
 
   return (

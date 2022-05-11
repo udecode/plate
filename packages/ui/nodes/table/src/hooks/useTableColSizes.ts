@@ -1,15 +1,12 @@
-import { TElement } from '@udecode/plate-core';
 import {
   ELEMENT_TABLE,
   getTableColumnCount,
-  TableNodeData,
+  TTableElement,
 } from '@udecode/plate-table';
 import { useAtom } from 'jotai';
 import { resizingColAtom } from '../table.atoms';
 
-export const useTableColSizes = (
-  tableNode: TElement<TableNodeData>
-): number[] => {
+export const useTableColSizes = (tableNode: TTableElement): number[] => {
   const [resizingCol] = useAtom(resizingColAtom, ELEMENT_TABLE);
 
   const colCount = getTableColumnCount(tableNode);

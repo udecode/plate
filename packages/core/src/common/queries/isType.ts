@@ -1,12 +1,13 @@
 import castArray from 'lodash/castArray';
+import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/PlateEditor';
 import { getPluginType } from '../../utils/getPluginType';
 
 /**
  * Does the node match the type provided.
  */
-export const isType = (
-  editor: PlateEditor,
+export const isType = <V extends Value>(
+  editor: PlateEditor<V>,
   node: any,
   key?: string | string[]
 ) => {

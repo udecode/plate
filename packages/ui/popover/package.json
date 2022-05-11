@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@tippyjs/react": "^4.2.5",
+    "@tippyjs/react": "^4.2.6",
     "@udecode/plate-core": "10.5.3",
     "@udecode/plate-styled-components": "10.5.3"
   },

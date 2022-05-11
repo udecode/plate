@@ -1,13 +1,14 @@
 import {
   getBlockAbove,
-  getNodes,
+  getNodeEntries,
   getPluginOptions,
   isCollapsed,
   isExpanded,
   PlateEditor,
-  setNodes,
+  setElements,
   TElement,
   unsetNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
@@ -25,19 +26,19 @@ import { toggleIndentListUnset } from './toggleIndentListUnset';
 /**
  * Increase the indentation of the selected blocks.
  */
-export const toggleIndentList = (
-  editor: PlateEditor,
-  options: IndentListOptions
+export const toggleIndentList = <V extends Value>(
+  editor: PlateEditor<V>,
+  options: IndentListOptions<V>
 ) => {
   const { listStyleType } = options;
 
-  const { getSiblingIndentListOptions } = getPluginOptions<IndentListPlugin>(
+  const { getSiblingIndentListOptions } = getPluginOptions<IndentListPlugin, V>(
     editor,
     KEY_LIST_STYLE_TYPE
   );
 
   if (isCollapsed(editor.selection)) {
-    const entry = getBlockAbove(editor);
+    const entry = getBlockAbove<TElement>(editor);
     if (!entry) return;
 
     if (toggleIndentListSet(editor, entry, { listStyleType })) {
@@ -56,7 +57,7 @@ export const toggleIndentList = (
   }
 
   if (isExpanded(editor.selection)) {
-    const _entries = getNodes<TElement>(editor, { block: true });
+    const _entries = getNodeEntries<TElement>(editor, { block: true });
     const entries = [..._entries];
 
     const eqListStyleType = areEqListStyleType(editor, entries, {
@@ -68,13 +69,11 @@ export const toggleIndentList = (
         entries.forEach((entry) => {
           const [node, path] = entry;
 
+          const indent = node[KEY_INDENT] as number;
+
           unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
-          if (node[KEY_INDENT] > 1) {
-            setNodes(
-              editor,
-              { [KEY_INDENT]: node[KEY_INDENT] - 1 },
-              { at: path }
-            );
+          if (indent > 1) {
+            setElements(editor, { [KEY_INDENT]: indent - 1 }, { at: path });
           } else {
             unsetNodes(editor, KEY_INDENT, { at: path });
           }

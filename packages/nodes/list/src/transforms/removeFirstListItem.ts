@@ -1,19 +1,23 @@
-import { isFirstChild, PlateEditor, TElement } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import {
+  isFirstChild,
+  PlateEditor,
+  TElementEntry,
+  Value,
+} from '@udecode/plate-core';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
 /**
  * If list is not nested and if li is not the first child, move li up.
  */
-export const removeFirstListItem = (
-  editor: PlateEditor,
+export const removeFirstListItem = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     list,
     listItem,
   }: {
-    list: NodeEntry<TElement>;
-    listItem: NodeEntry<TElement>;
+    list: TElementEntry;
+    listItem: TElementEntry;
   }
 ) => {
   const [, listPath] = list;

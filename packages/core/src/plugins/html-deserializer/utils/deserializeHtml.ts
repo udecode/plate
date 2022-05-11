@@ -1,14 +1,15 @@
 import { normalizeDescendantsToDocumentFragment } from '../../../common/utils/normalizeDescendantsToDocumentFragment';
+import { Value } from '../../../slate/editor/TEditor';
+import { EDescendant } from '../../../slate/node/TDescendant';
 import { PlateEditor } from '../../../types/PlateEditor';
-import { TDescendant } from '../../../types/slate/TDescendant';
 import { htmlStringToDOMNode } from '../../html-serializer/utils/htmlStringToDOMNode';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHtml = <T = {}>(
-  editor: PlateEditor<T>,
+export const deserializeHtml = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     element,
     stripWhitespace = true,
@@ -16,13 +17,13 @@ export const deserializeHtml = <T = {}>(
     element: HTMLElement | string;
     stripWhitespace?: boolean;
   }
-): TDescendant[] => {
+): EDescendant<V>[] => {
   // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element, stripWhitespace);
   }
 
-  const fragment = deserializeHtmlElement(editor, element) as TDescendant[];
+  const fragment = deserializeHtmlElement(editor, element) as EDescendant<V>[];
 
   return normalizeDescendantsToDocumentFragment(editor, {
     descendants: fragment,

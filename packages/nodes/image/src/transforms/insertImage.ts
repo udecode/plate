@@ -2,16 +2,20 @@ import {
   getPluginType,
   insertNodes,
   PlateEditor,
-  TElement,
+  Value,
 } from '@udecode/plate-core';
 import { ELEMENT_IMAGE } from '../createImagePlugin';
+import { TImageElement } from '../types';
 
-export const insertImage = (editor: PlateEditor, url: string | ArrayBuffer) => {
+export const insertImage = <V extends Value>(
+  editor: PlateEditor<V>,
+  url: string | ArrayBuffer
+) => {
   const text = { text: '' };
-  const image = {
+  const image: TImageElement = {
     type: getPluginType(editor, ELEMENT_IMAGE),
-    url,
+    url: url as any,
     children: [text],
   };
-  insertNodes<TElement>(editor, image);
+  insertNodes<TImageElement>(editor, image);
 };
