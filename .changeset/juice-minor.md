@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-serializer-juice": patch
+"@udecode/plate-juice": patch
 ---
 
 updated deps:
