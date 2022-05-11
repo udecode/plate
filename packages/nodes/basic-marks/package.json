@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-marks",
-  "version": "10.5.3",
+  "version": "11.0.0",
   "description": "Basic marks plugin for Plate",
   "keywords": [
     "slate",
@@ -31,7 +31,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "10.5.3"
+    "@udecode/plate-core": "11.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,5 +1,16 @@
 # @udecode/plate-combobox
 
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "@udecode/zustood": "^1.1.1",
+  "downshift": "^6.1.7",
+  "zustand": "^3.7.2"
+  ```
+
 ## 10.6.0
 
 ### Patch Changes

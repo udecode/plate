@@ -1,5 +1,15 @@
 # @udecode/plate-table-ui
 
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "jotai": "^1.6.6",
+  "re-resizable": "^6.9.9"
+  ```
+
 ## 10.8.0
 
 ### Minor Changes

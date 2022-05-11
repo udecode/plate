@@ -1,5 +1,14 @@
 # @udecode/plate-ui-popover
 
+## 11.0.0
+
+### Patch Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "@tippyjs/react": "^4.2.6",
+  ```
+
 ## 10.6.2
 
 ### Patch Changes

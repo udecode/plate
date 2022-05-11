@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-break",
-  "version": "10.6.1",
+  "version": "11.0.0",
   "description": "Insert break plugins for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "10.5.3"
+    "@udecode/plate-core": "11.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

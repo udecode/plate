@@ -1,5 +1,15 @@
 # @udecode/plate-md-serializer
 
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "remark-slate": "^1.8.6",
+  "unified": "^9.2.1"
+  ```
+
 ## 10.6.0
 
 ### Minor Changes
