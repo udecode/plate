@@ -13,13 +13,13 @@ export const AddThreadToolbarButton = withPlateEventProvider(
 
     return (
       <ToolbarButton
-        onMouseDown={(event) => {
+        onMouseDown={async (event) => {
           if (!editor) {
             return;
           }
 
           event.preventDefault();
-          onAddThread();
+          await onAddThread();
         }}
         {...props}
       />

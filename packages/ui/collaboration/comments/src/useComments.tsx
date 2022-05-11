@@ -19,14 +19,6 @@ import { determineAbsolutePosition } from './determineAbsolutePosition';
 
 export type OnSubmitComment = (commentText: string) => Promise<void>;
 
-export interface UseCommentsResult {
-  thread: Thread | null;
-  show: boolean;
-  position: ThreadPosition;
-  onSubmitComment: OnSubmitComment;
-  onAddThread: () => void;
-}
-
 function replaceElement<T>(
   elements: T[],
   newElement: T,

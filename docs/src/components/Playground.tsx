@@ -32,13 +32,11 @@ import {
   TableToolbarButtons,
 } from '../live/config/components/Toolbars';
 import { CONFIG } from '../live/config/config';
+import { user } from '../user';
 
 export function Playground() {
   const retrieveUser = useCallback(function retrieveUser() {
-    return {
-      id: '1',
-      name: 'Jon Doe',
-    };
+    return { ...user };
   }, []);
 
   const {

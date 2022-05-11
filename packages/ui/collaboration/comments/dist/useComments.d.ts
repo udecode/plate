@@ -1,12 +1,5 @@
 import { Comment, Thread, User } from '@udecode/plate-comments';
 export declare type OnSubmitComment = (commentText: string) => Promise<void>;
-export interface UseCommentsResult {
-    thread: Thread | null;
-    show: boolean;
-    position: ThreadPosition;
-    onSubmitComment: OnSubmitComment;
-    onAddThread: () => void;
-}
 export interface ThreadPosition {
     left: number;
     top: number;

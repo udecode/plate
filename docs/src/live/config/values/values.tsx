@@ -3,6 +3,7 @@
 import { ELEMENT_HR, TDescendant } from '@udecode/plate';
 import { hjsx } from '@udecode/plate-test-utils';
 import * as faker from 'faker';
+import { user } from '../../../user';
 import { initialDataExcalidraw } from './initialDataExcalidraw';
 import { createList, getNodesWithRandomId } from './utils';
 
@@ -903,7 +904,14 @@ const comments: any = (
       <hthread
         thread={{
           id: 1,
-          comments: [{ id: 1, text: 'A comment', createdAt: Date.now() }],
+          comments: [
+            {
+              id: 1,
+              text: 'A comment',
+              createdAt: Date.now(),
+              createdBy: { ...user },
+            },
+          ],
           isResolved: false,
         }}
       >
@@ -914,7 +922,14 @@ const comments: any = (
       <hthread
         thread={{
           id: 2,
-          comments: [{ id: 2, text: 'A comment', createdAt: Date.now() }],
+          comments: [
+            {
+              id: 2,
+              text: 'A comment',
+              createdAt: Date.now(),
+              createdBy: { ...user },
+            },
+          ],
           isResolved: true,
         }}
       >
@@ -925,7 +940,14 @@ const comments: any = (
       <hthread
         thread={{
           id: 3,
-          comments: [{ id: 3, text: 'A comment', createdAt: Date.now() }],
+          comments: [
+            {
+              id: 3,
+              text: 'A comment',
+              createdAt: Date.now(),
+              createdBy: { ...user },
+            },
+          ],
           isResolved: true,
         }}
       >

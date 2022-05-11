@@ -5307,37 +5307,6 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
-"@udecode/plate-comments@file:packages/collaboration/comments":
-  version "1.0.0"
-  dependencies:
-    "@udecode/plate-core" "10.5.3"
-
-"@udecode/plate-comments@https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?672fae423726baa61427290f3a52fb3ec184535f":
-  version "1.0.0"
-  resolved "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?672fae423726baa61427290f3a52fb3ec184535f"
-  integrity sha512-sQC2mFznSud4mvvklwGD13+QN9I3+6or5UwVd9M3CPkveEMs4x2F3QwX1C1Gnyxt4FhuTVtqWDIiJIMhRusbJw==
-  dependencies:
-    "@udecode/plate-core" "10.5.3"
-
-"@udecode/plate-ui-comments@https://gitpkg.now.sh/xolvio/plate/packages/ui/collaboration/comments?502d0198d86a1a612ef494052df204d4fbc3c709":
-  version "1.0.0"
-  resolved "https://gitpkg.now.sh/xolvio/plate/packages/ui/collaboration/comments?502d0198d86a1a612ef494052df204d4fbc3c709"
-  integrity sha512-oOjSBPv3VSk2Hrb51LPiA/jlUG/AoWQYrKDNPDswVfD59KNUJCGOg96HBKOC3tLVpO1MmnQSBuI1oQZSiB2Q6A==
-  dependencies:
-    "@material/button" "^13.0.0"
-    "@material/dialog" "^13.0.0"
-    "@material/icon-button" "^13.0.0"
-    "@material/menu" "^13.0.0"
-    "@material/menu-surface" "^13.0.0"
-    "@material/ripple" "^13.0.0"
-    "@material/snackbar" "^13.0.0"
-    "@material/textfield" "^13.0.0"
-    "@styled-icons/material" "^10.34.0"
-    "@udecode/plate-comments" "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?672fae423726baa61427290f3a52fb3ec184535f"
-    "@udecode/plate-core" "10.5.3"
-    "@udecode/plate-styled-components" "10.5.3"
-    "@udecode/plate-ui-toolbar" "10.5.3"
-
 "@udecode/zustood@0.4.4":
   version "0.4.4"
   resolved "https://registry.npmjs.org/@udecode/zustood/-/zustood-0.4.4.tgz"
