@@ -1,5 +1,14 @@
 # @udecode/plate-serializer-csv
 
+## 11.0.0
+
+### Patch Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "papaparse": "^5.3.2"
+  ```
+
 ## 10.6.3
 
 ## 10.5.3

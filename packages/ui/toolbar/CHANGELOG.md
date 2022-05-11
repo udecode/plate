@@ -1,5 +1,16 @@
 # @udecode/plate-toolbar
 
+## 11.0.0
+
+### Patch Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "@tippyjs/react": "^4.2.6",
+  "react-popper": "^2.3.0",
+  "react-use": "^17.3.2"
+  ```
+
 ## 10.5.3
 
 ## 10.5.2
