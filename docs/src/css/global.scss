@@ -18,3 +18,7 @@ body {
   flex-direction: column;
   font-family: var(--ifm-font-family-base);
 }
+
+.token.operator {
+  background: none !important;
+}
