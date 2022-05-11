@@ -24,8 +24,3 @@ export interface EditorNodesOptions<V extends Value>
   reverse?: boolean;
   voids?: boolean;
 }
-
-export interface EditorParentOptions {
-  depth?: number | undefined;
-  edge?: 'start' | 'end' | undefined;
-}

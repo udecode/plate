@@ -10,5 +10,5 @@ export type WithOverride<
   P = {},
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EE = {}
-> = (editor: E, plugin: WithPlatePlugin<P, V, E>) => E & EE;
+  EE extends E = E
+> = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
