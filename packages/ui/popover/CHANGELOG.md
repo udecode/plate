@@ -1,5 +1,7 @@
 # @udecode/plate-ui-popover
 
+## 11.0.1
+
 ## 11.0.0
 
 ### Patch Changes
