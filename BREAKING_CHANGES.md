@@ -21,6 +21,7 @@
   Those Slate types should be replaced by the new types:
 
   - `Editor` -> `TEditor<V extends Value>`
+    - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods. 
   - `ReactEditor` -> `TReactEditor<V extends Value>`
   - `HistoryEditor` -> `THistoryEditor<V extends Value>`
   - `EditableProps` -> `TEditableProps<V extends Value>`

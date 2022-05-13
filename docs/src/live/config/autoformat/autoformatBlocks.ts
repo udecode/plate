@@ -11,8 +11,8 @@ import {
   ELEMENT_H6,
   ELEMENT_HR,
   getPluginType,
+  insertElements,
   insertEmptyCodeBlock,
-  insertNodes,
   setElements,
 } from '@udecode/plate';
 import { clearBlockFormat } from './autoformatUtils';
@@ -67,7 +67,7 @@ export const autoformatBlocks: AutoformatRule[] = [
     preFormat: clearBlockFormat,
     format: (editor) => {
       setElements(editor, { type: ELEMENT_HR });
-      insertNodes(editor, {
+      insertElements(editor, {
         type: ELEMENT_DEFAULT,
         children: [{ text: '' }],
       });

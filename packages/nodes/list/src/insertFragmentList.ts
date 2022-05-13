@@ -1,5 +1,4 @@
 import {
-  EElementOrText,
   findNode,
   getCommonNode,
   getNode,
@@ -175,14 +174,14 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     return { textNode, listItemNodes };
   };
 
-  return (fragment: EElementOrText<V>[]) => {
+  return (fragment: TDescendant[]) => {
     let liEntry = findNode<TElement>(editor, {
       match: { type: listItemType },
       mode: 'lowest',
     });
     // not inserting into a list item, delegate to other plugins
     if (!liEntry) {
-      return _insertFragment<Value>(
+      return _insertFragment(
         isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
@@ -201,7 +200,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       mode: 'lowest',
     });
     if (!licEntry) {
-      return _insertFragment<Value>(
+      return _insertFragment(
         isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }

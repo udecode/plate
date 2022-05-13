@@ -1,10 +1,10 @@
-import { TNode } from '../node/TNode';
+import { TDescendant } from '../node/TDescendant';
 import { TPath, TRange } from './interfaces';
 
-export type TInsertNodeOperation = {
+export type TInsertNodeOperation<N extends TDescendant = TDescendant> = {
   type: 'insert_node';
   path: TPath;
-  node: TNode;
+  node: N;
   [key: string]: unknown;
 };
 
@@ -31,10 +31,10 @@ export type TMoveNodeOperation = {
   [key: string]: unknown;
 };
 
-export type TRemoveNodeOperation = {
+export type TRemoveNodeOperation<N extends TDescendant = TDescendant> = {
   type: 'remove_node';
   path: TPath;
-  node: TNode;
+  node: N;
   [key: string]: unknown;
 };
 
@@ -82,11 +82,11 @@ export type TSplitNodeOperation = {
   [key: string]: unknown;
 };
 
-export type TNodeOperation =
-  | TInsertNodeOperation
+export type TNodeOperation<N extends TDescendant = TDescendant> =
+  | TInsertNodeOperation<N>
   | TMergeNodeOperation
   | TMoveNodeOperation
-  | TRemoveNodeOperation
+  | TRemoveNodeOperation<N>
   | TSetNodeOperation
   | TSplitNodeOperation;
 
@@ -99,4 +99,7 @@ export type TTextOperation = TInsertTextOperation | TRemoveTextOperation;
  * operations is what allows Slate editors to easily implement history,
  * collaboration, and other features.
  */
-export type TOperation = TNodeOperation | TSelectionOperation | TTextOperation;
+export type TOperation<N extends TDescendant = TDescendant> =
+  | TNodeOperation<N>
+  | TSelectionOperation
+  | TTextOperation;

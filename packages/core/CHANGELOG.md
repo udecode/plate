@@ -21,6 +21,7 @@
   Those Slate types should be replaced by the new types:
 
   - `Editor` -> `TEditor<V extends Value>`
+    - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods. 
   - `ReactEditor` -> `TReactEditor<V extends Value>`
   - `HistoryEditor` -> `THistoryEditor<V extends Value>`
   - `EditableProps` -> `TEditableProps<V extends Value>`
@@ -145,7 +146,7 @@
   - `TAncestorEntry<N extends TNode = TNode>`: Ancestor entry from a node.
   - `EAncestorEntry<V extends Value>`: Ancestor entry from an editor.
   - `TDescendantEntry<N extends TNode = TNode>`: Descendant entry from a node.
-  - `TOperation`: operation types now accept unknown props.
+  - `TOperation<N extends TDescendant = TDescendant>`: operation types now accept unknown props.
 
   Updated deps:
 

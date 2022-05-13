@@ -1,6 +1,5 @@
 import {
   ELEMENT_DEFAULT,
-  ENodeEntry,
   getChildren,
   getNode,
   getParentNode,
@@ -12,6 +11,7 @@ import {
   removeNodes,
   setElements,
   TElement,
+  TNodeEntry,
   Value,
   wrapNodes,
 } from '@udecode/plate-core';
@@ -35,7 +35,7 @@ export const normalizeList = <V extends Value>(
   const licType = getPluginType(editor, ELEMENT_LIC);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: ENodeEntry<V>) => {
+  return ([node, path]: TNodeEntry) => {
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
