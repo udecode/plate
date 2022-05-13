@@ -10,6 +10,7 @@ export * from './getLastChild';
 export * from './getLastNodeByLevel';
 export * from './getMark';
 export * from './getNextSiblingNodes';
+export * from './getOperations';
 export * from './getPointBeforeLocation';
 export * from './getPointFromLocation';
 export * from './getPointNextToVoid';

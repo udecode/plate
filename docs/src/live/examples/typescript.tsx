@@ -1,67 +1,126 @@
 import React, { useState } from 'react';
-import { getPlateSelectors, Plate, PlateEditor } from '@udecode/plate';
+import {
+  getPlateSelectors,
+  Plate,
+  PlateEditor,
+  TElement,
+  TImageElement as ImageElement,
+  TLinkElement as LinkElement,
+  TTableElement as TableElement,
+  TText,
+  useEditorRef,
+  useEditorState,
+  usePlateEditorRef,
+  usePlateEditorState,
+} from '@udecode/plate';
 
-type FormattedText = {
+/**
+ * Text
+ */
+
+export interface MyText extends TText {
   bold?: boolean;
   italic?: boolean;
   code?: boolean;
   underline?: boolean;
-  text: string;
-};
+}
 
-type BulletedList = {
-  type: 'bulleted-list';
-  children: ListItem[];
-};
+/**
+ * Inline Elements
+ */
 
-type HeadingThree = {
-  type: 'heading-three';
-  children: FormattedText[];
-};
-
-type Image = {
-  type: 'image';
-  url: string;
-  children: [FormattedText];
-};
-
-type Link = {
+export interface TLinkElement extends LinkElement {
   type: 'link';
-  url: string;
-  children: FormattedText[];
-};
+  children: MyText[];
+}
 
-type ListItem = {
-  type: 'list-item';
-  children: (Link | FormattedText)[];
-};
+export type MyInlineElements = TLinkElement;
 
-type NumberedList = {
-  type: 'numbered-list';
-  children: ListItem[];
-};
+export type MyInlineNodes = MyInlineElements | MyText;
 
-type Paragraph = {
+/**
+ * Blocks
+ */
+
+export interface TParagraphElement extends TElement {
   type: 'paragraph';
-  children: (Link | FormattedText)[];
-};
+  children: MyInlineNodes[];
+}
 
-type Quote = {
+export interface TBulletedListElement extends TElement {
+  type: 'bulleted-list';
+  children: TListItemElement[];
+}
+
+export interface TNumberedListElement extends TElement {
+  type: 'numbered-list';
+  children: TListItemElement[];
+}
+
+export interface TListItemElement extends TElement {
+  type: 'list-item';
+  children: MyInlineNodes[];
+}
+
+export interface THeadingElement extends TElement {
+  type: 'heading';
+  children: MyInlineNodes[];
+}
+
+export interface TImageElement extends ImageElement {
+  type: 'image';
+  children: [MyText];
+}
+
+export interface TQuoteElement extends TElement {
   type: 'quote';
-  children: (Link | FormattedText)[];
-};
+  children: MyInlineNodes[];
+}
 
-type MyElements =
-  | Paragraph
-  | Quote
-  | Image
-  | HeadingThree
-  | BulletedList
-  | NumberedList;
+export interface TTableElement extends TElement, TableElement {
+  type: 'table';
+  children: TTableRowElement[];
+}
 
-type MyValue = MyElements[];
+export interface TTableRowElement extends TElement {
+  type: 'tr';
+  children: TTableCellElement[];
+}
 
-type MyEditor = PlateEditor<MyValue> & { typescript: boolean };
+export interface TTableCellElement extends TElement {
+  type: 'td';
+  children: MyNestableBlocks[];
+}
+
+export type MyNestableBlocks =
+  | TParagraphElement
+  | TImageElement
+  | TBulletedListElement
+  | TNumberedListElement
+  | TQuoteElement;
+
+export type MyRootBlocks = THeadingElement | TTableElement;
+
+export type MyBlocks = MyRootBlocks | MyNestableBlocks;
+
+export type MyValue = MyBlocks[];
+
+export type MyEditor = PlateEditor<MyValue> & { typescript: boolean };
+
+/**
+ * Utils
+ */
+
+export const useTEditorRef = () => useEditorRef<MyValue, MyEditor>();
+export const useTEditorState = () => useEditorState<MyValue, MyEditor>();
+export const useTPlateEditorRef = (id?: string) =>
+  usePlateEditorRef<MyValue, MyEditor>(id);
+export const useTPlateEditorState = (id?: string) =>
+  usePlateEditorState<MyValue, MyEditor>(id);
+
+/**
+ * Example
+ */
 
 export const TypeScriptExample = () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -107,7 +166,7 @@ const initialValue: MyValue = [
     ],
   },
   {
-    type: 'heading-three',
+    type: 'heading',
     children: [{ text: 'Quotes' }],
   },
   {
@@ -119,7 +178,7 @@ const initialValue: MyValue = [
     children: [{ text: 'A wise quote.' }],
   },
   {
-    type: 'heading-three',
+    type: 'heading',
     children: [{ text: 'Images' }],
   },
   {

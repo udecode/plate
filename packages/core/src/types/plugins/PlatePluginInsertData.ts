@@ -1,5 +1,5 @@
 import { Value } from '../../slate/editor/TEditor';
-import { EDescendant } from '../../slate/node/TDescendant';
+import { EElementOrText } from '../../slate/element/TElement';
 import { HandlerReturnType } from './DOMHandlers';
 
 export type PlatePluginInsertDataOptions = {
@@ -23,7 +23,7 @@ export type PlatePluginInsertData<V extends Value> = {
    */
   getFragment?: (
     options: PlatePluginInsertDataOptions
-  ) => EDescendant<V>[] | undefined;
+  ) => EElementOrText<V>[] | undefined;
 
   // injected
 
@@ -34,7 +34,7 @@ export type PlatePluginInsertData<V extends Value> = {
    * @return if true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: EDescendant<V>[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
@@ -50,7 +50,7 @@ export type PlatePluginInsertData<V extends Value> = {
    * Transform the fragment to insert.
    */
   transformFragment?: (
-    fragment: EDescendant<V>[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
-  ) => EDescendant<V>[];
+  ) => EElementOrText<V>[];
 };

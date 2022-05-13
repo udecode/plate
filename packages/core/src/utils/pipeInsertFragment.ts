@@ -1,6 +1,6 @@
 import { Value } from '../slate/editor/TEditor';
 import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
-import { EDescendant } from '../slate/node/TDescendant';
+import { EElementOrText } from '../slate/element/TElement';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';
@@ -14,7 +14,7 @@ export const pipeInsertFragment = <V extends Value>(
   {
     fragment,
     ...options
-  }: PlatePluginInsertDataOptions & { fragment: EDescendant<V>[] }
+  }: PlatePluginInsertDataOptions & { fragment: EElementOrText<V>[] }
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {

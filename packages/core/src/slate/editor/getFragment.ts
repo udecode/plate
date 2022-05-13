@@ -1,5 +1,5 @@
 import { Editor, Location } from 'slate';
-import { EDescendant } from '../node/TDescendant';
+import { EElementOrText } from '../element/TElement';
 import { TEditor, Value } from './TEditor';
 
 /**
@@ -8,4 +8,4 @@ import { TEditor, Value } from './TEditor';
 export const getFragment = <V extends Value>(
   editor: TEditor<V>,
   at: Location
-): EDescendant<V>[] => Editor.fragment(editor as any, at) as any;
+): EElementOrText<V>[] => Editor.fragment(editor as any, at) as any;

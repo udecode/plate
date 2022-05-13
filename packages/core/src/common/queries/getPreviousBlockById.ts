@@ -2,7 +2,7 @@ import { getNodeEntries } from '../../slate/editor/getNodeEntries';
 import { getPreviousNode } from '../../slate/editor/getPreviousNode';
 import { isBlock } from '../../slate/editor/isBlock';
 import { TEditor, Value } from '../../slate/editor/TEditor';
-import { EDescendant } from '../../slate/node/TDescendant';
+import { EElement } from '../../slate/element/TElement';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
@@ -13,7 +13,7 @@ import { queryNode } from './queryNode';
  * If not found, find the first block by id and return [null, its previous path]
  */
 export const getPreviousBlockById = <
-  N extends EDescendant<V>,
+  N extends EElement<V>,
   V extends Value = Value
 >(
   editor: TEditor<V>,

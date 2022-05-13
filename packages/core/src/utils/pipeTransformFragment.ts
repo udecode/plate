@@ -1,5 +1,5 @@
 import { Value } from '../slate/editor/TEditor';
-import { EDescendant } from '../slate/node/TDescendant';
+import { EElementOrText } from '../slate/element/TElement';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';
@@ -15,7 +15,7 @@ export const pipeTransformFragment = <
   {
     fragment,
     ...options
-  }: PlatePluginInsertDataOptions & { fragment: EDescendant<V>[] }
+  }: PlatePluginInsertDataOptions & { fragment: EElementOrText<V>[] }
 ) => {
   plugins.forEach((p) => {
     const transformFragment = p.editor?.insertData?.transformFragment;

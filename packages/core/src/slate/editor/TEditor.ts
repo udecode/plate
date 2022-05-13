@@ -1,16 +1,18 @@
 import { Editor } from 'slate';
 import { UnknownObject } from '../../common/types/utility/AnyObject';
 import { Modify } from '../../common/types/utility/types';
-import { EElement, TElement } from '../element/TElement';
-import { EDescendant } from '../node/TDescendant';
+import { EElement, EElementOrText, TElement } from '../element/TElement';
+import { TDescendant } from '../node/TDescendant';
+import { ENode, TNode } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TOperation } from '../types/TOperation';
 
 export type Value = TElement[];
 
-export type NNodeEntry<V extends Value> = TNodeEntry<
-  TEditor<V> | EDescendant<V>
->;
+/**
+ * A helper type for getting the value of an editor.
+ */
+export type ValueOf<E extends TEditor<Value>> = E['children'];
 
 export type TEditor<V extends Value> = Modify<
   Editor,
@@ -20,22 +22,40 @@ export type TEditor<V extends Value> = Modify<
     marks: Record<string, any> | null;
 
     // Schema-specific node behaviors.
-    isInline: <EV extends V>(element: EElement<EV>) => boolean;
-    isVoid: <EV extends V>(element: EElement<EV>) => boolean;
-    normalizeNode: <EV extends V>(entry: NNodeEntry<EV>) => void;
+    isInline: <N extends TElement>(element: N) => boolean;
+    isVoid: <N extends TElement>(element: N) => boolean;
+    normalizeNode: <N extends TNode>(entry: TNodeEntry<N>) => void;
 
     // Overrideable core actions.
-    apply: (operation: TOperation) => void;
-    getFragment: <EV extends V>() => EDescendant<EV>[];
-    insertFragment: <EV extends V>(fragment: EDescendant<EV>[]) => void;
-    insertNode: <EV extends V>(
-      node: EDescendant<EV> | EDescendant<EV>[]
-    ) => void;
+    apply: <N extends TDescendant>(operation: TOperation<N>) => void;
+    getFragment: <N extends TDescendant>() => N[];
+    insertFragment: <N extends TDescendant>(fragment: N[]) => void;
+    insertNode: <N extends TDescendant>(node: N | N[]) => void;
   }
 > &
   UnknownObject;
 
 /**
- * A helper type for getting the value of an editor.
+ * Get editor with typed methods and operations.
+ * Note that it can't be used as a parameter of type TEditor.
  */
-export type ValueOf<E extends TEditor<Value>> = E['children'];
+export const getTEditor = <V extends Value, E extends TEditor<V> = TEditor<V>>(
+  editor: E
+) =>
+  editor as Modify<
+    E,
+    {
+      operations: TOperation<EElementOrText<V>>[];
+
+      // Schema-specific node behaviors.
+      isInline: (element: EElement<V>) => boolean;
+      isVoid: (element: EElement<V>) => boolean;
+      normalizeNode: (entry: TNodeEntry<ENode<V>>) => void;
+
+      // Overrideable core actions.
+      apply: (operation: TOperation<EElementOrText<V>>) => void;
+      getFragment: () => EElementOrText<V>[];
+      insertFragment: (fragment: EElementOrText<V>[]) => void;
+      insertNode: (node: EElementOrText<V> | EElementOrText<V>[]) => void;
+    }
+  >;

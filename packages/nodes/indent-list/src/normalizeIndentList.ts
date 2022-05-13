@@ -1,5 +1,5 @@
 import {
-  NNodeEntry,
+  ENodeEntry,
   TEditor,
   TElement,
   Value,
@@ -15,11 +15,11 @@ export const normalizeIndentList = <V extends Value>(
 ) => {
   const { normalizeNode } = editor;
 
-  return ([node, path]: NNodeEntry<V>) => {
+  return ([node, path]: ENodeEntry<V>) => {
     const normalized = withoutNormalizing(editor, () => {
       if (normalizeIndentListNotIndented(editor, [node, path])) return true;
       if (
-        normalizeIndentListStart(
+        normalizeIndentListStart<TElement, Value>(
           editor,
           [node as TElement, path],
           getSiblingIndentListOptions

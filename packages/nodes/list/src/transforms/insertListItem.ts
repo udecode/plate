@@ -12,6 +12,7 @@ import {
   PlateEditor,
   select,
   splitNodes,
+  TElement,
   Value,
   withoutNormalizing,
   wrapNodes,
@@ -84,7 +85,7 @@ export const insertListItem = <V extends Value>(
     if (!isEnd) {
       withoutNormalizing(editor, () => {
         splitNodes(editor);
-        wrapNodes(
+        wrapNodes<TElement>(
           editor,
           {
             type: liType,

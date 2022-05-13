@@ -50,7 +50,7 @@ export const toggleList = <V extends Value>(
         }
       } else {
         const list = { type, children: [] };
-        wrapNodes(editor, list);
+        wrapNodes<TElement>(editor, list);
 
         const _nodes = getNodeEntries(editor, {
           match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
@@ -66,7 +66,7 @@ export const toggleList = <V extends Value>(
         };
 
         for (const [, path] of nodes) {
-          wrapNodes(editor, listItem, {
+          wrapNodes<TElement>(editor, listItem, {
             at: path,
           });
         }
@@ -138,12 +138,12 @@ export const toggleList = <V extends Value>(
               type: getPluginType(editor, ELEMENT_LI),
               children: [],
             };
-            wrapNodes(editor, listItem, {
+            wrapNodes<TElement>(editor, listItem, {
               at: n[1],
             });
 
             const list = { type, children: [] };
-            wrapNodes(editor, list, { at: n[1] });
+            wrapNodes<TElement>(editor, list, { at: n[1] });
           }
         });
       }

@@ -48,7 +48,7 @@ export const insertCodeBlock = <V extends Value>(
     insertNodesOptions
   );
 
-  wrapNodes(
+  wrapNodes<TElement>(
     editor,
     {
       type: getPluginType(editor, ELEMENT_CODE_BLOCK),

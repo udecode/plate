@@ -2,6 +2,7 @@ import { UnknownObject } from '../../common/types/utility/AnyObject';
 import { TEditor, Value } from '../editor/TEditor';
 import { TDescendant } from '../node/TDescendant';
 import { TNode } from '../node/TNode';
+import { EText } from '../text/TText';
 
 /**
  * `Element` objects are a type of node in a Slate document that contain other
@@ -16,12 +17,12 @@ export interface TElement extends UnknownObject {
 /**
  * Element of an editor.
  */
-// export type EElement<V extends Value> = ElementOf<TEditor<V>>;
+export type EElement<V extends Value> = ElementOf<TEditor<V>>;
 
 /**
- * Element of a value.
+ * Element or text of an editor. Differs from EDescendant<V>.
  */
-export type EElement<V extends Value> = V[number];
+export type EElementOrText<V extends Value> = EElement<V> | EText<V>;
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
