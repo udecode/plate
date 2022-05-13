@@ -1,5 +1,7 @@
 # @udecode/plate-popper
 
+## 11.0.1
+
 ## 11.0.0
 
 ### Patch Changes

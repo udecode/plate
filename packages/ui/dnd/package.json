@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-dnd",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Drag & drop feature for Plate",
   "keywords": [
     "slate",
@@ -36,8 +36,8 @@
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.2",
     "@tippyjs/react": "^4.2.6",
-    "@udecode/plate-core": "11.0.0",
-    "@udecode/plate-styled-components": "11.0.0",
+    "@udecode/plate-core": "11.0.1",
+    "@udecode/plate-styled-components": "11.0.1",
     "react-dnd": "^15.1.2",
     "react-dnd-html5-backend": "^15.1.3"
   },

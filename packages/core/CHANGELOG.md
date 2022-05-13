@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 11.0.1
+
+### Patch Changes
+
+- [#1521](https://github.com/udecode/plate/pull/1521) by [@zbeyens](https://github.com/zbeyens) – Fix: nested element types in `Value` type
+
 ## 11.0.0
 
 ### Major Changes
@@ -18,20 +24,20 @@
 
 **Slate types**
 
-  Those Slate types should be replaced by the new types:
+Those Slate types should be replaced by the new types:
 
-  - `Editor` -> `TEditor<V extends Value>`
-    - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods. 
-  - `ReactEditor` -> `TReactEditor<V extends Value>`
-  - `HistoryEditor` -> `THistoryEditor<V extends Value>`
-  - `EditableProps` -> `TEditableProps<V extends Value>`
-  - `Node` -> `TNode`
-  - `Element` -> `TElement`
-  - `Text` -> `TText`
+- `Editor` -> `TEditor<V extends Value>`
+  - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
+- `ReactEditor` -> `TReactEditor<V extends Value>`
+- `HistoryEditor` -> `THistoryEditor<V extends Value>`
+- `EditableProps` -> `TEditableProps<V extends Value>`
+- `Node` -> `TNode`
+- `Element` -> `TElement`
+- `Text` -> `TText`
 
 **Slate functions**
 
-  Those Slate functions should be replaced by the new typed ones:
+Those Slate functions should be replaced by the new typed ones:
 
 - As the new editor type is not matching the slate ones, all `Transforms`, `Editor`, `Node`, `Element`, `Text`, `HistoryEditor`, `ReactEditor` functions should be replaced: The whole API has been typed into Plate core. See https://github.com/udecode/plate/packages/core/src/slate
 - `createEditor` -> `createTEditor`
@@ -64,48 +70,49 @@
     EE extends E = E
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
+
 - `type TEditor<V extends Value>`
 - `type PlateEditor<V extends Value>`
 
 **Renamed functions**
 
-  - `getAbove` -> `getAboveNode`
-  - `getParent` -> `getParentNode`
-  - `getText` -> `getEditorString`
-  - `getLastNode` -> `getLastNodeByLevel`
-  - `getPointBefore` -> `getPointBeforeLocation`
-  - `getNodes` -> `getNodeEntries`
-  - `getNodes` -> `getNodeEntries`
-  - `isStart` -> `isStartPoint`
-  - `isEnd` -> `isEndPoint`
+- `getAbove` -> `getAboveNode`
+- `getParent` -> `getParentNode`
+- `getText` -> `getEditorString`
+- `getLastNode` -> `getLastNodeByLevel`
+- `getPointBefore` -> `getPointBeforeLocation`
+- `getNodes` -> `getNodeEntries`
+- `getNodes` -> `getNodeEntries`
+- `isStart` -> `isStartPoint`
+- `isEnd` -> `isEndPoint`
 
 **Replaced types**
 
-  Removing node props types in favor of element types (same props + extends `TElement`). You can use `TNodeProps` to get the node data (props).
+Removing node props types in favor of element types (same props + extends `TElement`). You can use `TNodeProps` to get the node data (props).
 
-  - `LinkNodeData` -> `TLinkElement`
-  - `ImageNodeData` -> `TImageElement`
-  - `TableNodeData` -> `TTableElement`
-  - `MentionNodeData` -> `TMentionElement`
-  - `MentionNode` -> `TMentionElement`
-  - `MentionInputNodeData` -> `TMentionInputElement`
-  - `MentionInputNode` -> `TMentionInputElement`
-  - `CodeBlockNodeData` -> `TCodeBlockElement`
-  - `MediaEmbedNodeData` -> `TMediaEmbedElement`
-  - `TodoListItemNodeData` -> `TTodoListItemElement`
-  - `ExcalidrawNodeData` -> `TExcalidrawElement`
+- `LinkNodeData` -> `TLinkElement`
+- `ImageNodeData` -> `TImageElement`
+- `TableNodeData` -> `TTableElement`
+- `MentionNodeData` -> `TMentionElement`
+- `MentionNode` -> `TMentionElement`
+- `MentionInputNodeData` -> `TMentionInputElement`
+- `MentionInputNode` -> `TMentionInputElement`
+- `CodeBlockNodeData` -> `TCodeBlockElement`
+- `MediaEmbedNodeData` -> `TMediaEmbedElement`
+- `TodoListItemNodeData` -> `TTodoListItemElement`
+- `ExcalidrawNodeData` -> `TExcalidrawElement`
 
-  **Utils**
+**Utils**
 
-  - `match` signature change:
+- `match` signature change:
 
-  ```
-  <T extends TNode>(
-    obj: T,
-    path: TPath,
-    predicate?: Predicate<T>
-  )
-  ```
+```
+<T extends TNode>(
+  obj: T,
+  path: TPath,
+  predicate?: Predicate<T>
+)
+```
 
 ### Minor Changes
 
