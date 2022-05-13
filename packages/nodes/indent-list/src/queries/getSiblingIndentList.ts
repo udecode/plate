@@ -1,7 +1,7 @@
 import {
-  EDescendantEntry,
   EElement,
   EElementEntry,
+  EElementOrText,
   TEditor,
   TNode,
   TNodeEntry,
@@ -14,8 +14,12 @@ export interface GetSiblingIndentListOptions<
   N extends EElement<V>,
   V extends Value
 > {
-  getPreviousEntry?: (entry: EDescendantEntry<V>) => TNodeEntry<N> | undefined;
-  getNextEntry?: (entry: EDescendantEntry<V>) => TNodeEntry<N> | undefined;
+  getPreviousEntry?: (
+    entry: TNodeEntry<EElementOrText<V>>
+  ) => TNodeEntry<N> | undefined;
+  getNextEntry?: (
+    entry: TNodeEntry<EElementOrText<V>>
+  ) => TNodeEntry<N> | undefined;
   /**
    * Query to validate lookup. If false, check the next sibling.
    */

@@ -19,15 +19,7 @@ export interface TText extends UnknownObject {
 /**
  * Text node of an editor.
  */
-// export type EText<V extends Value> = TextOf<TEditor<V>>;
-
-/**
- * Text of a value.
- */
-export type EText<V extends Value> = Extract<
-  V[number]['children'][number],
-  TText
->;
+export type EText<V extends Value> = TextOf<TEditor<V>>;
 
 /**
  * A utility type to get all the text node types from a root node type.

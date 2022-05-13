@@ -1,4 +1,5 @@
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { TElement } from '../../slate/element/TElement';
 import { unwrapNodes } from '../../slate/transforms/unwrapNodes';
 import { wrapNodes } from '../../slate/transforms/wrapNodes';
 import { someNode } from '../queries/someNode';
@@ -14,7 +15,7 @@ export const toggleWrapNodes = <V extends Value>(
   if (someNode(editor, { match: { type } })) {
     unwrapNodes(editor, { match: { type } });
   } else {
-    wrapNodes(editor, {
+    wrapNodes<TElement>(editor, {
       type,
       children: [],
     });

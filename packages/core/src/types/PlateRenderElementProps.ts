@@ -1,5 +1,5 @@
 import { Value } from '../slate/editor/TEditor';
-import { EElement } from '../slate/element/TElement';
+import { EElement, TElement } from '../slate/element/TElement';
 import { TRenderElementProps } from '../slate/types/TRenderElementProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
@@ -8,5 +8,5 @@ import { PlateRenderNodeProps } from './PlateRenderNodeProps';
  */
 export type PlateRenderElementProps<
   V extends Value,
-  N extends EElement<V> = EElement<V>
+  N extends TElement = EElement<V>
 > = PlateRenderNodeProps<V> & TRenderElementProps<V, N>;

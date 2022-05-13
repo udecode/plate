@@ -1,5 +1,6 @@
 import {
   ELEMENT_DEFAULT,
+  ENodeEntry,
   getChildren,
   getNode,
   getParentNode,
@@ -7,7 +8,6 @@ import {
   getPreviousPath,
   isElement,
   match,
-  NNodeEntry,
   PlateEditor,
   removeNodes,
   setElements,
@@ -35,7 +35,7 @@ export const normalizeList = <V extends Value>(
   const licType = getPluginType(editor, ELEMENT_LIC);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: NNodeEntry<V>) => {
+  return ([node, path]: ENodeEntry<V>) => {
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
@@ -46,7 +46,7 @@ export const normalizeList = <V extends Value>(
       );
 
       if (nonLiChild) {
-        return wrapNodes(
+        return wrapNodes<TElement>(
           editor,
           { type: liType, children: [] },
           { at: nonLiChild[1] }

@@ -1,16 +1,11 @@
 import { Editor } from 'slate';
 import { UnknownObject } from '../../common/types/utility/AnyObject';
 import { Modify } from '../../common/types/utility/types';
-import { EElement, TElement } from '../element/TElement';
-import { EDescendant } from '../node/TDescendant';
-import { TNodeEntry } from '../node/TNodeEntry';
+import { EElement, EElementOrText, TElement } from '../element/TElement';
+import { ENodeEntry } from '../node/TNodeEntry';
 import { TOperation } from '../types/TOperation';
 
 export type Value = TElement[];
-
-export type NNodeEntry<V extends Value> = TNodeEntry<
-  TEditor<V> | EDescendant<V>
->;
 
 export type TEditor<V extends Value> = Modify<
   Editor,
@@ -20,16 +15,16 @@ export type TEditor<V extends Value> = Modify<
     marks: Record<string, any> | null;
 
     // Schema-specific node behaviors.
-    isInline: <EV extends V>(element: EElement<EV>) => boolean;
-    isVoid: <EV extends V>(element: EElement<EV>) => boolean;
-    normalizeNode: <EV extends V>(entry: NNodeEntry<EV>) => void;
+    isInline: <EV extends Value>(element: EElement<EV>) => boolean;
+    isVoid: <EV extends Value>(element: EElement<EV>) => boolean;
+    normalizeNode: <EV extends Value>(entry: ENodeEntry<EV>) => void;
 
     // Overrideable core actions.
     apply: (operation: TOperation) => void;
-    getFragment: <EV extends V>() => EDescendant<EV>[];
-    insertFragment: <EV extends V>(fragment: EDescendant<EV>[]) => void;
-    insertNode: <EV extends V>(
-      node: EDescendant<EV> | EDescendant<EV>[]
+    getFragment: <EV extends Value>() => EElementOrText<EV>[];
+    insertFragment: <EV extends Value>(fragment: EElementOrText<EV>[]) => void;
+    insertNode: <EV extends Value>(
+      node: EElementOrText<EV> | EElementOrText<EV>[]
     ) => void;
   }
 > &

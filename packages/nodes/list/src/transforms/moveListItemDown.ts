@@ -51,7 +51,7 @@ export const moveListItemDown = <V extends Value>(
     withoutNormalizing(editor, () => {
       if (!sublist) {
         // Create new sublist
-        wrapNodes(
+        wrapNodes<TElement>(
           editor,
           { type: listNode.type, children: [] },
           { at: listItemPath }

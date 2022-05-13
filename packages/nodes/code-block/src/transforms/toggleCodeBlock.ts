@@ -4,6 +4,7 @@ import {
   PlateEditor,
   setElements,
   someNode,
+  TElement,
   Value,
   wrapNodes,
 } from '@udecode/plate-core';
@@ -31,7 +32,7 @@ export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
       type: codeBlockType,
       children: [],
     };
-    wrapNodes(editor, codeBlock);
+    wrapNodes<TElement>(editor, codeBlock);
 
     const _nodes = getNodeEntries(editor, {
       match: { type: getCodeLineType(editor) },

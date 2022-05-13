@@ -1,7 +1,8 @@
 import { getLastNode } from '../../slate/editor/getLastNode';
 import { TEditor, Value } from '../../slate/editor/TEditor';
+import { EElementOrText } from '../../slate/element/TElement';
 import { isAncestor } from '../../slate/node/isAncestor';
-import { ChildOf, EDescendant } from '../../slate/node/TDescendant';
+import { ChildOf } from '../../slate/node/TDescendant';
 import { TNode } from '../../slate/node/TNode';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
 
@@ -22,7 +23,7 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
  * Get the last node at a given level.
  */
 export const getLastNodeByLevel = <
-  N extends EDescendant<V>,
+  N extends EElementOrText<V>,
   V extends Value = Value
 >(
   editor: TEditor<V>,

@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { EDescendant } from '../node/TDescendant';
+import { EElementOrText } from '../element/TElement';
 import { TEditor, Value } from './TEditor';
 
 /**
@@ -9,5 +9,5 @@ import { TEditor, Value } from './TEditor';
  */
 export const insertNode = <V extends Value>(
   editor: TEditor<V>,
-  node: EDescendant<V> | EDescendant<V>[]
+  node: EElementOrText<V> | EElementOrText<V>[]
 ) => Editor.insertNode(editor as any, node as any);

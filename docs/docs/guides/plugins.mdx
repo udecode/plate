@@ -271,7 +271,7 @@ type PlatePluginInsertData<V extends Value> = {
    */
   getFragment?: (
     options: PlatePluginInsertDataOptions
-  ) => EDescendant<V>[] | undefined;
+  ) => EElementOrText<V>[] | undefined;
 
   // injected
 
@@ -282,7 +282,7 @@ type PlatePluginInsertData<V extends Value> = {
    * @return if true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: EDescendant<V>[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
@@ -298,9 +298,9 @@ type PlatePluginInsertData<V extends Value> = {
    * Transform the fragment to insert.
    */
   transformFragment?: (
-    fragment: EDescendant<V>[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
-  ) => EDescendant<V>[];
+  ) => EElementOrText<V>[];
 }
 ```
 

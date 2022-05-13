@@ -1,5 +1,6 @@
 import {
-  EDescendant,
+  EElement,
+  EElementOrText,
   findNode,
   getNodeString,
   getPluginType,
@@ -28,7 +29,7 @@ export const insertFragmentCodeBlock = <V extends Value>(
     return node.children as TElement[];
   }
 
-  return (fragment: EDescendant<V>[]) => {
+  return (fragment: EElementOrText<V>[]) => {
     const inCodeLine = findNode(editor, { match: { type: codeLineType } });
     if (!inCodeLine) {
       return _insertFragment(fragment);
@@ -39,9 +40,9 @@ export const insertFragmentCodeBlock = <V extends Value>(
       fragment.flatMap((node) => {
         const element = node as TElement;
 
-        return element.type === codeBlockType
+        return (element.type === codeBlockType
           ? extractCodeLinesFromCodeBlock(element)
-          : convertNodeToCodeLine(element);
+          : convertNodeToCodeLine(element)) as EElement<V>;
       })
     );
   };
