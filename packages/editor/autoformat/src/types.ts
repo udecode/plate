@@ -7,7 +7,7 @@ export interface MatchRange {
 }
 
 export interface AutoformatQueryOptions<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends Omit<AutoformatCommonRule<V, E>, 'query'> {
   /**
@@ -17,7 +17,7 @@ export interface AutoformatQueryOptions<
 }
 
 export interface AutoformatCommonRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > {
   /**
@@ -48,7 +48,7 @@ export interface AutoformatCommonRule<
 }
 
 export interface AutoformatBlockRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends AutoformatCommonRule<V, E> {
   /**
@@ -93,7 +93,7 @@ export interface AutoformatBlockRule<
 }
 
 export interface AutoformatMarkRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends AutoformatCommonRule<V, E> {
   mode: 'mark';
@@ -110,7 +110,7 @@ export interface AutoformatMarkRule<
 }
 
 export interface AutoformatTextRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends AutoformatCommonRule<V, E> {
   mode: 'text';
@@ -129,7 +129,7 @@ export interface AutoformatTextRule<
 }
 
 export type AutoformatRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > =
   | AutoformatBlockRule<V, E>

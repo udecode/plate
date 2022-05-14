@@ -1,7 +1,7 @@
 import { HotkeyPlugin, PlateEditor, Value } from '@udecode/plate-core';
 
 export interface ResetNodePluginRule<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends HotkeyPlugin {
   defaultType?: string;

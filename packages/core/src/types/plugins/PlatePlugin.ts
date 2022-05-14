@@ -1,4 +1,4 @@
-import { UnknownObject } from '../../common/types/utility/AnyObject';
+import { AnyObject } from '../../common/types/utility/AnyObject';
 import { Nullable } from '../../common/types/utility/Nullable';
 import { WithRequired } from '../../common/types/utility/types';
 import { Value } from '../../slate/editor/TEditor';
@@ -166,7 +166,7 @@ export type PlatePlugin<
     withOverrides?: WithOverride<P, V, E>;
   }>;
 
-export type PluginOptions = UnknownObject;
+export type PluginOptions = AnyObject;
 
 export type WithPlatePlugin<
   P = PluginOptions,
