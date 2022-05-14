@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-line-height",
-  "version": "11.0.1",
+  "version": "11.0.2",
   "description": "Line height UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-line-height": "11.0.1",
-    "@udecode/plate-core": "11.0.1",
-    "@udecode/plate-styled-components": "11.0.1",
-    "@udecode/plate-ui-toolbar": "11.0.1"
+    "@udecode/plate-line-height": "11.0.2",
+    "@udecode/plate-core": "11.0.2",
+    "@udecode/plate-styled-components": "11.0.2",
+    "@udecode/plate-ui-toolbar": "11.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
