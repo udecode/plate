@@ -1,6 +1,6 @@
-# 11.0.0
+# 11.0.2
 
-## @udecode/plate-core@11.0.0
+## @udecode/plate-core@11.0.2
 
 ### Major Changes
 
