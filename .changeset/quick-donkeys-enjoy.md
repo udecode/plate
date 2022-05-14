@@ -3,5 +3,9 @@
 ---
 
 - `unhangRange`: return the range instead of void
-- add default generics to many places
-- 
+- add default generic types to many places
+- add generic types to:
+  - `WithOverride` functions
+  - `Decorate` functions
+  - `OnChange` functions
+  - `KeyboardHandler` functions

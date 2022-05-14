@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';
 
@@ -27,6 +26,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownSingleLine(input, mockPlugin())(event);
+  onKeyDownSingleLine()(event);
   expect(input.children).toEqual(output.children);
 });
