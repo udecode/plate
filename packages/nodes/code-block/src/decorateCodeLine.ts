@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
 import {
-  Decorate,
+  DecorateEntry,
   getNodeString,
   getParentNode,
   getPlugin,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 
 // noinspection ES6UnusedImports
@@ -68,9 +70,14 @@ export interface CodeSyntaxRange extends Range {
   [ELEMENT_CODE_SYNTAX]: true;
 }
 
-export const decorateCodeLine: Decorate = (editor) => {
-  const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
-  const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
+export const decorateCodeLine = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+): DecorateEntry => {
+  const code_block = getPlugin<CodeBlockPlugin, V>(editor, ELEMENT_CODE_BLOCK);
+  const code_line = getPlugin<{}, V>(editor, ELEMENT_CODE_LINE);
 
   return ([node, path]): CodeSyntaxRange[] => {
     const ranges: CodeSyntaxRange[] = [];

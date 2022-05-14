@@ -3,4 +3,5 @@
 ---
 
 - `unhangRange`: return the range instead of void
-- `toggleMark`: default generics
+- add default generics to many places
+- 

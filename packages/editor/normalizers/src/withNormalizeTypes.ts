@@ -2,14 +2,20 @@ import {
   getNode,
   insertElements,
   isElement,
+  PlateEditor,
   setElements,
-  WithOverride,
+  TElement,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<NormalizeTypesPlugin> = (
-  editor,
-  { options: { rules, onError } }
+export const withNormalizeTypes = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  { options: { rules, onError } }: WithPlatePlugin<NormalizeTypesPlugin, V, E>
 ) => {
   const { normalizeNode } = editor;
 
@@ -17,7 +23,7 @@ export const withNormalizeTypes: WithOverride<NormalizeTypesPlugin> = (
     if (!currentPath.length) {
       const endCurrentNormalizationPass = rules!.some(
         ({ strictType, type, path }) => {
-          const node = getNode(editor, path);
+          const node = getNode<TElement>(editor, path);
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {

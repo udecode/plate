@@ -37,7 +37,7 @@ export const normalizeNextIndentListStart = <V extends Value>(
 
 export const normalizeIndentListStart = <
   N extends EElement<V>,
-  V extends Value
+  V extends Value = Value
 >(
   editor: TEditor<V>,
   entry: EElementEntry<V>,

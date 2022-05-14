@@ -12,7 +12,7 @@ import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends EElement<V>,
-  V extends Value
+  V extends Value = Value
 > {
   getPreviousEntry?: (
     entry: TNodeEntry<EElementOrText<V>>
@@ -37,7 +37,10 @@ export interface GetSiblingIndentListOptions<
  * Get the next sibling indent list node.
  * Default query: the sibling node should have the same listStyleType.
  */
-export const getSiblingIndentList = <N extends EElement<V>, V extends Value>(
+export const getSiblingIndentList = <
+  N extends EElement<V>,
+  V extends Value = Value
+>(
   editor: TEditor<V>,
   [node, path]: EElementEntry<V>,
   {

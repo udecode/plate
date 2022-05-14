@@ -4,6 +4,10 @@ import { ENodeEntry } from '../../slate/node/TNodeEntry';
 import { PlateEditor } from '../PlateEditor';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
+export type DecorateEntry<V extends Value = Value> = (
+  entry: ENodeEntry<V>
+) => Range[] | undefined;
+
 /**
  * Property used by Plate to decorate editor ranges.
  * If the function returns undefined then no ranges are modified.
@@ -14,6 +18,6 @@ export type Decorate<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = (
-  editor: E,
+  editor: PlateEditor<V>,
   plugin: WithPlatePlugin<P, V, E>
-) => (entry: ENodeEntry<V>) => Range[] | undefined;
+) => DecorateEntry<V>;

@@ -2,7 +2,9 @@ import {
   createPluginFactory,
   getPlugin,
   KEY_DESERIALIZE_HTML,
+  PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import {
   ELEMENT_CODE_BLOCK,
@@ -18,7 +20,11 @@ import { withCodeBlock } from './withCodeBlock';
 /**
  * Enables support for pre-formatted code blocks.
  */
-export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
+export const createCodeBlockPlugin = createPluginFactory<
+  CodeBlockPlugin,
+  Value,
+  PlateEditor
+>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
   deserializeHtml: deserializeHtmlCodeBlock,
