@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Table plugin for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.0.0"
+    "@udecode/plate-core": "11.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

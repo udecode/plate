@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 11.0.1
+
+### Patch Changes
+
+- [#1521](https://github.com/udecode/plate/pull/1521) by [@zbeyens](https://github.com/zbeyens) – Fix: nested element types in `Value` type
+
 ## 11.0.0
 
 ### Major Changes
