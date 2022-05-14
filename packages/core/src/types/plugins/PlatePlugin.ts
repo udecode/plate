@@ -1,3 +1,4 @@
+import { AnyObject } from '../../common/types/utility/AnyObject';
 import { Nullable } from '../../common/types/utility/Nullable';
 import { WithRequired } from '../../common/types/utility/types';
 import { Value } from '../../slate/editor/TEditor';
@@ -19,7 +20,7 @@ import { WithOverride } from './WithOverride';
  * The `PlatePlugin` interface is a base interface for all plugins.
  */
 export type PlatePlugin<
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = Required<PlatePluginKey> & {
@@ -66,7 +67,7 @@ export type PlatePlugin<
      * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
      * Differs from `overrideByKey` as this is not overriding any plugin.
      */
-    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<{}, V, E>>>;
+    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<PluginOptions, V, E>>>;
   }>;
 
   /**
@@ -121,13 +122,16 @@ export type PlatePlugin<
     /**
      * Property used by Plate to deeply override plugins by key.
      */
-    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<{}, V, E>>>;
+    overrideByKey?: Record<
+      PluginKey,
+      Partial<PlatePlugin<PluginOptions, V, E>>
+    >;
 
     /**
      * Recursive plugin support to allow having multiple plugins in a single plugin.
      * Plate eventually flattens all the plugins into the editor.
      */
-    plugins?: PlatePlugin<{}, V, E>[];
+    plugins?: PlatePlugin<PluginOptions, V, E>[];
 
     /**
      * Property used by Plate to override node `component` props.
@@ -162,8 +166,10 @@ export type PlatePlugin<
     withOverrides?: WithOverride<P, V, E>;
   }>;
 
+export type PluginOptions = AnyObject;
+
 export type WithPlatePlugin<
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = WithRequired<

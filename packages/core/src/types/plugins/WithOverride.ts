@@ -1,13 +1,13 @@
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../PlateEditor';
-import { WithPlatePlugin } from './PlatePlugin';
+import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
 /**
  * Plate plugin overriding the `editor` methods.
  * Naming convention is `with*`.
  */
 export type WithOverride<
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
   EE extends E = E

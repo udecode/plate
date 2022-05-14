@@ -10,13 +10,14 @@ import { AutoformatTextRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatTextOptions extends AutoformatTextRule {
+export interface AutoformatTextOptions<V extends Value>
+  extends AutoformatTextRule<V> {
   text: string;
 }
 
 export const autoformatText = <V extends Value>(
   editor: PlateEditor<V>,
-  { text, match: _match, trigger, format }: AutoformatTextOptions
+  { text, match: _match, trigger, format }: AutoformatTextOptions<V>
 ) => {
   const selection = editor.selection as Range;
   const matches = castArray(_match);
@@ -54,7 +55,7 @@ export const autoformatText = <V extends Value>(
     }
 
     if (typeof format === 'function') {
-      format<V>(editor, matched);
+      format(editor, matched);
     } else {
       const formatEnd = Array.isArray(format) ? format[1] : format;
       editor.insertText(formatEnd);

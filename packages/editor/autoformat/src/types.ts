@@ -6,15 +6,20 @@ export interface MatchRange {
   end: string;
 }
 
-export interface AutoformatQueryOptions
-  extends Omit<AutoformatCommonRule, 'query'> {
+export interface AutoformatQueryOptions<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends Omit<AutoformatCommonRule<V, E>, 'query'> {
   /**
    * `insertText` text.
    */
   text: string;
 }
 
-export interface AutoformatCommonRule {
+export interface AutoformatCommonRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> {
   /**
    * The rule applies when the trigger and the text just before the cursor matches.
    * For `mode: 'block'`: lookup for the end match(es) before the cursor.
@@ -39,13 +44,13 @@ export interface AutoformatCommonRule {
   /**
    * Query to allow autoformat.
    */
-  query?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    options: AutoformatQueryOptions
-  ) => boolean;
+  query?: (editor: E, options: AutoformatQueryOptions<V, E>) => boolean;
 }
 
-export interface AutoformatBlockRule extends AutoformatCommonRule {
+export interface AutoformatBlockRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends AutoformatCommonRule<V, E> {
   /**
    * - text: insert text.
    * - block: set block type or custom format.
@@ -78,20 +83,19 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
    * Function called just before `format`.
    * Generally used to reset the selected block.
    */
-  preFormat?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E
-  ) => void;
+  preFormat?: (editor: E) => void;
 
   /**
    * Custom formatting function.
    * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
    */
-  format?: <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E
-  ) => void;
+  format?: (editor: E) => void;
 }
 
-export interface AutoformatMarkRule extends AutoformatCommonRule {
+export interface AutoformatMarkRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends AutoformatCommonRule<V, E> {
   mode: 'mark';
 
   /**
@@ -105,7 +109,10 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
   ignoreTrim?: boolean;
 }
 
-export interface AutoformatTextRule extends AutoformatCommonRule {
+export interface AutoformatTextRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends AutoformatCommonRule<V, E> {
   mode: 'text';
 
   match: string | string[];
@@ -118,20 +125,23 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   format:
     | string
     | string[]
-    | (<V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
-        editor: E,
-        options: GetMatchPointsReturnType
-      ) => void);
+    | ((editor: E, options: GetMatchPointsReturnType) => void);
 }
 
-export type AutoformatRule =
-  | AutoformatBlockRule
-  | AutoformatMarkRule
-  | AutoformatTextRule;
+export type AutoformatRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> =
+  | AutoformatBlockRule<V, E>
+  | AutoformatMarkRule<V, E>
+  | AutoformatTextRule<V, E>;
 
-export interface AutoformatPlugin {
+export interface AutoformatPlugin<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> {
   /**
    * A list of triggering rules.
    */
-  rules?: AutoformatRule[];
+  rules?: AutoformatRule<V>[];
 }
