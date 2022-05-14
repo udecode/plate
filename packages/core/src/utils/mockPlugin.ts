@@ -1,7 +1,11 @@
 import { NoInfer } from '../common/types/utility/NoInfer';
-import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import {
+  PlatePlugin,
+  PluginOptions,
+  WithPlatePlugin,
+} from '../types/plugins/PlatePlugin';
 
-export const mockPlugin = <P = {}>(
+export const mockPlugin = <P = PluginOptions>(
   plugin?: Partial<PlatePlugin<NoInfer<P>>>
 ): WithPlatePlugin<NoInfer<P>> => ({
   key: '',

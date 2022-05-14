@@ -1,9 +1,13 @@
 import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import {
+  PlatePlugin,
+  PluginOptions,
+  WithPlatePlugin,
+} from '../types/plugins/PlatePlugin';
 
 export type InjectedPlugin<
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = Partial<PlatePlugin<P, V, E>>;
@@ -13,7 +17,7 @@ export type InjectedPlugin<
  * It includes `plugin` itself.
  */
 export const getInjectedPlugins = <
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(

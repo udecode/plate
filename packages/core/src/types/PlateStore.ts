@@ -2,7 +2,7 @@ import { Nullable } from '../common/types/utility/Nullable';
 import { Value } from '../slate/editor/TEditor';
 import { TEditableProps } from '../slate/types/TEditableProps';
 import { createPlateStore } from '../stores/plate/createPlateStore';
-import { PlatePlugin } from './plugins/PlatePlugin';
+import { PlatePlugin, PluginOptions } from './plugins/PlatePlugin';
 import { PlateEditor } from './PlateEditor';
 
 /**
@@ -26,7 +26,7 @@ export type PlateStoreState<
    */
   id: string;
 
-  plugins: PlatePlugin<{}, V, E>[];
+  plugins: PlatePlugin<PluginOptions, V, E>[];
 } & Required<
   Nullable<Pick<TEditableProps<V>, 'decorate' | 'renderElement' | 'renderLeaf'>>
 > &

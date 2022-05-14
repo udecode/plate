@@ -1,9 +1,13 @@
 import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import {
+  PlatePlugin,
+  PluginOptions,
+  WithPlatePlugin,
+} from '../types/plugins/PlatePlugin';
 
 export const setDefaultPlugin = <
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(

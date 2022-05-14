@@ -3,14 +3,14 @@ import { NoInfer } from '../common/types/utility/NoInfer';
 import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { PlatePlugin, PluginOptions } from '../types/plugins/PlatePlugin';
 
 /**
  * Recursive deep merge of each plugin from `overrideByKey`
  * into plugin with same key (plugin > plugin.plugins).
  */
 export const overridePluginsByKey = <
-  P = {},
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(

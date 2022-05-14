@@ -2,7 +2,7 @@ import { NoInfer } from '../common/types/utility/NoInfer';
 import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { PlatePlugin, PluginOptions } from '../types/plugins/PlatePlugin';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
 /**
@@ -13,15 +13,23 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  *   - first param `override` can be used to (deeply) override the default plugin.
  *   - second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
  */
-export const createPluginFactory = <P = {}>(
-  defaultPlugin: PlatePlugin<NoInfer<P>, Value, PlateEditor>
-) => <V extends Value, E extends PlateEditor<V> = PlateEditor<V>>(
-  override?: Partial<PlatePlugin<NoInfer<P>, V, E>>,
-  overrideByKey: OverrideByKey<V, E> = {}
-): PlatePlugin<NoInfer<P>, V, E> => {
+export const createPluginFactory = <
+  P = PluginOptions,
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  defaultPlugin: PlatePlugin<NoInfer<P>, V, E>
+) => <
+  OP = P,
+  OV extends Value = V,
+  OE extends PlateEditor<OV> = PlateEditor<OV>
+>(
+  override?: Partial<PlatePlugin<NoInfer<P>, OV, OE>>,
+  overrideByKey: OverrideByKey<OV, OE> = {}
+): PlatePlugin<NoInfer<OP>, OV, OE> => {
   overrideByKey[defaultPlugin.key] = override as any;
 
-  return overridePluginsByKey<P, V, E>(
+  return overridePluginsByKey<OP, OV, OE>(
     { ...defaultPlugin } as any,
     overrideByKey
   );

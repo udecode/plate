@@ -41,7 +41,7 @@
 **Generic types**
 
 - `<T = {}>` could be used to extend the editor type. It is now replaced by `<E extends PlateEditor<V> = PlateEditor<V>>` to customize the whole editor type.
-- When the plugin type is customizable, these generics are used: `<P = {}, V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>`, where `P` is the plugin options type.
+- When the plugin type is customizable, these generics are used: `<P = PluginOptions, V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>`, where `P` is the plugin options type.
 - `Editor` functions are using `<V extends Value>` generic, where `V` can be a custom editor value type used in `PlateEditor<V>`.
 - `Editor` functions returning a node are using `<N extends ENode<V>, V extends Value = Value>` generics, where `N` can be a custom returned node type.
 - `Editor` callbacks (e.g. a plugin option) are using `<V extends Value, E extends PlateEditor<V> = PlateEditor<V>>` generics, where `E` can be a custom editor type.
@@ -58,7 +58,7 @@
 
   // after - where E is the Editor type (input), and EE is the Extended Editor type (output)
   export type WithOverride<
-    P = {},
+    P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
     EE extends E = E
