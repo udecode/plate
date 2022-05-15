@@ -28,6 +28,8 @@
   - `Node` -> `TNode`
   - `Element` -> `TElement`
   - `Text` -> `TText`
+  - `NodeEntry` -> `TNodeEntry`
+  - `NodeProps` -> `TNodeProps`
 
 **Slate functions**
 
