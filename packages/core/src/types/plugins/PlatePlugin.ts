@@ -38,11 +38,11 @@ export type PlatePlugin<
    * If it returns `true`, the next handlers will not be called.
    */
   handlers?: Nullable<
-    DOMHandlers<P, V> & {
+    DOMHandlers<P, V, E> & {
       /**
        * @see {@link OnChange}
        */
-      onChange?: OnChange<P, V>;
+      onChange?: OnChange<P, V, E>;
     }
   >;
 
