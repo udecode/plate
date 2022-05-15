@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-combobox",
-  "version": "11.0.3",
+  "version": "11.0.4",
   "description": "Combobox for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.0.3",
+    "@udecode/plate-core": "11.0.4",
     "@udecode/zustood": "^1.1.1",
     "downshift": "^6.1.7",
     "zustand": "^3.7.2"
