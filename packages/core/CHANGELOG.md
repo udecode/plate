@@ -1,5 +1,18 @@
 # @udecode/plate-core
 
+## 11.0.3
+
+### Patch Changes
+
+- [#1526](https://github.com/udecode/plate/pull/1526) by [@zbeyens](https://github.com/zbeyens) –
+  - `unhangRange`: return the range instead of void
+  - add default generic types to many places
+  - add generic types to:
+    - `WithOverride` functions
+    - `Decorate` functions
+    - `OnChange` functions
+    - `KeyboardHandler` functions
+
 ## 11.0.2
 
 ### Patch Changes

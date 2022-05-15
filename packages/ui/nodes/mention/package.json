@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-mention",
-  "version": "11.0.2",
+  "version": "11.0.3",
   "description": "Media embed UI for Plate",
   "keywords": [
     "slate",
@@ -32,11 +32,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "11.0.2",
-    "@udecode/plate-core": "11.0.2",
-    "@udecode/plate-mention": "11.0.2",
-    "@udecode/plate-styled-components": "11.0.2",
-    "@udecode/plate-ui-combobox": "11.0.2"
+    "@udecode/plate-combobox": "11.0.3",
+    "@udecode/plate-core": "11.0.3",
+    "@udecode/plate-mention": "11.0.3",
+    "@udecode/plate-styled-components": "11.0.3",
+    "@udecode/plate-ui-combobox": "11.0.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
