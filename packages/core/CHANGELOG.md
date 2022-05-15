@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 11.0.4
+
+### Patch Changes
+
+- [#1528](https://github.com/udecode/plate/pull/1528) by [@zbeyens](https://github.com/zbeyens) – fix: propagate editor generic to `PlatePlugin` handlers
+
 ## 11.0.3
 
 ### Patch Changes

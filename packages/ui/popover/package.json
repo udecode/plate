@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-popover",
-  "version": "11.0.3",
+  "version": "11.0.4",
   "description": "Popover UI for Plate",
   "keywords": [
     "slate",
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.6",
-    "@udecode/plate-core": "11.0.3",
-    "@udecode/plate-styled-components": "11.0.3"
+    "@udecode/plate-core": "11.0.4",
+    "@udecode/plate-styled-components": "11.0.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
