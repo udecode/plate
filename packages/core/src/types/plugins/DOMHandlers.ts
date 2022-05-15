@@ -23,15 +23,14 @@ import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
  */
 export type HandlerReturnType = boolean | void;
 
+export type DOMHandlerReturnType<EV = {}> = (event: EV) => HandlerReturnType;
+
 export type DOMHandler<
   P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
   EV = {}
-> = (
-  editor: E,
-  plugin: WithPlatePlugin<P, V, E>
-) => (event: EV) => HandlerReturnType;
+> = (editor: E, plugin: WithPlatePlugin<P, V, E>) => DOMHandlerReturnType<EV>;
 
 export interface DOMHandlers<
   P = PluginOptions,

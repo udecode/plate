@@ -16,7 +16,7 @@ import { setIndentListNode } from './setIndentListNode';
  */
 export const setIndentListSiblingNodes = <
   N extends EElement<V>,
-  V extends Value
+  V extends Value = Value
 >(
   editor: TEditor<V>,
   entry: EElementEntry<V>,

@@ -1,4 +1,8 @@
-import { KeyboardHandler } from '@udecode/plate-core';
+import {
+  KeyboardHandlerReturnType,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-core';
 import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
 import {
   comboboxActions,
@@ -13,7 +17,12 @@ import {
  * - escape (reset combobox)
  * - tab, enter (select item)
  */
-export const onKeyDownCombobox: KeyboardHandler = (editor) => (event) => {
+export const onKeyDownCombobox = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+): KeyboardHandlerReturnType => (event) => {
   const {
     highlightedIndex,
     filteredItems,

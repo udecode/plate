@@ -1,24 +1,28 @@
 import {
   getNodeEntries,
   getParentNode,
-  KeyboardHandler,
+  KeyboardHandlerReturnType,
+  PlateEditor,
   select,
   TElement,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
-import { CodeBlockPlugin } from './types';
 
 /**
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPlugin> = (
-  editor
-) => (e) => {
+export const onKeyDownCodeBlock = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+): KeyboardHandlerReturnType => (e) => {
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
 

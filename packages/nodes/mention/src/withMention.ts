@@ -7,10 +7,12 @@ import {
   getPointBefore,
   getRange,
   insertNodes,
+  PlateEditor,
   setSelection,
   TNode,
   TText,
-  WithOverride,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
@@ -22,11 +24,16 @@ import {
 } from './queries';
 import { MentionPlugin, TMentionInputElement } from './types';
 
-export const withMention: WithOverride<MentionPlugin> = (
-  editor,
-  { options: { id, trigger, inputCreation } }
+export const withMention = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  {
+    options: { id, trigger, inputCreation },
+  }: WithPlatePlugin<MentionPlugin, V, E>
 ) => {
-  const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
+  const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
 
   const { apply, insertBreak, insertText, deleteBackward } = editor;
 

@@ -1,4 +1,5 @@
 import { Editor, Path, Point, Range, Span } from 'slate';
+import { TRange } from '../types/interfaces';
 import { TEditor, Value } from './TEditor';
 
 export type UnhangRangeOptions = Parameters<typeof Editor.unhangRange>[2] & {
@@ -18,6 +19,6 @@ export const unhangRange = <V extends Value>(
   const { voids, unhang = true } = options;
 
   if (Range.isRange(range) && unhang) {
-    Editor.unhangRange(editor as any, range, { voids });
+    return Editor.unhangRange(editor as any, range, { voids }) as TRange;
   }
 };

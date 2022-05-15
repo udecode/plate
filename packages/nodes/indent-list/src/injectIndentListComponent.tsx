@@ -1,10 +1,16 @@
 import React, { CSSProperties } from 'react';
-import { InjectComponent } from '@udecode/plate-core';
+import {
+  InjectComponentProps,
+  InjectComponentReturnType,
+  Value,
+} from '@udecode/plate-core';
 import clsx from 'clsx';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 import { ListStyleType } from './types';
 
-export const injectIndentListComponent: InjectComponent = (props) => {
+export const injectIndentListComponent = <V extends Value = Value>(
+  props: InjectComponentProps<V>
+): InjectComponentReturnType<V> => {
   const { element } = props;
 
   const listStyleType = element[KEY_LIST_STYLE_TYPE] as string;

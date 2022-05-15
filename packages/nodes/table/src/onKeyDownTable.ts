@@ -1,14 +1,25 @@
 import {
   getAboveNode,
-  KeyboardHandler,
+  KeyboardHandlerReturnType,
+  PlateEditor,
+  PluginOptions,
   select,
   TElement,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
 
-export const onKeyDownTable: KeyboardHandler = (editor, { type }) => (e) => {
+export const onKeyDownTable = <
+  P = PluginOptions,
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  { type }: WithPlatePlugin<P, V, E>
+): KeyboardHandlerReturnType => (e) => {
   if (e.key === 'Tab') {
     e.preventDefault();
     e.stopPropagation();

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { TNode } from '../../../../slate/node/TNode';
+import { PlateEditor } from '../../../../types/PlateEditor';
 import { mergeDeepToNodes } from '../../../../utils/mergeDeepToNodes';
 
 jsx;

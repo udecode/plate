@@ -10,7 +10,7 @@ import {
   someNode,
   unwrapNodes,
   Value,
-  WithOverride,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Range } from 'slate';
@@ -67,9 +67,15 @@ const upsertLinkIfValid = <V extends Value>(
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink: WithOverride<LinkPlugin> = (
-  editor,
-  { type, options: { isUrl, rangeBeforeOptions } }
+export const withLink = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  {
+    type,
+    options: { isUrl, rangeBeforeOptions },
+  }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
   const { insertData, insertText } = editor;
 
@@ -125,9 +131,9 @@ export const withLink: WithOverride<LinkPlugin> = (
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes(
+  editor = withRemoveEmptyNodes<V, E>(
     editor,
-    mockPlugin({
+    mockPlugin<{}, V, E>({
       options: { types: type },
     })
   );

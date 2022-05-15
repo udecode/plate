@@ -9,13 +9,19 @@ import {
   getStartPoint,
   isCollapsed,
   isElement,
+  PlateEditor,
   removeNodes,
-  WithOverride,
+  Value,
 } from '@udecode/plate-core';
 import { Node, Point } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
 
-export const withTable: WithOverride = (editor) => {
+export const withTable = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&

@@ -15,7 +15,10 @@ import {
 /**
  * Get the next indent list.
  */
-export const getNextIndentList = <N extends EElement<V>, V extends Value>(
+export const getNextIndentList = <
+  N extends EElement<V>,
+  V extends Value = Value
+>(
   editor: TEditor<V>,
   entry: EElementEntry<V>,
   options?: Partial<GetSiblingIndentListOptions<N, V>>

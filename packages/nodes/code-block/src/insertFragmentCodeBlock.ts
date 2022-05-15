@@ -1,11 +1,11 @@
 import {
   EElement,
-  EElementOrText,
   findNode,
   getNodeString,
   getPluginType,
   insertFragment,
   PlateEditor,
+  TDescendant,
   TElement,
   Value,
 } from '@udecode/plate-core';
@@ -29,7 +29,7 @@ export const insertFragmentCodeBlock = <V extends Value>(
     return node.children as TElement[];
   }
 
-  return (fragment: EElementOrText<V>[]) => {
+  return (fragment: TDescendant[]) => {
     const inCodeLine = findNode(editor, { match: { type: codeLineType } });
     if (!inCodeLine) {
       return _insertFragment(fragment);

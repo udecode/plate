@@ -1,10 +1,12 @@
 import {
   defaultsDeepToNodes,
+  PlateEditor,
   queryNode,
   someNode,
   TNode,
   TNodeEntry,
-  WithOverride,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeIdPlugin } from './createNodeIdPlugin';
@@ -12,8 +14,11 @@ import { NodeIdPlugin } from './createNodeIdPlugin';
 /**
  * Enables support for inserting nodes with an id key.
  */
-export const withNodeId: WithOverride<NodeIdPlugin> = (
-  editor,
+export const withNodeId = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
   {
     options: {
       idKey = '',
@@ -24,7 +29,7 @@ export const withNodeId: WithOverride<NodeIdPlugin> = (
       allow,
       exclude,
     },
-  }
+  }: WithPlatePlugin<NodeIdPlugin, V, E>
 ) => {
   const { apply } = editor;
 

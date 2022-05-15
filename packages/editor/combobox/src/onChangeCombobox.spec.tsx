@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate';
-import { HandlerReturnType, mockPlugin } from '@udecode/plate-core';
+import { HandlerReturnType } from '@udecode/plate-core';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -26,7 +26,7 @@ describe('onChangeCombobox', () => {
   };
 
   const onChange = (fragment: JSX.Element): HandlerReturnType => {
-    return onChangeCombobox(createEditor(fragment), mockPlugin())([]);
+    return onChangeCombobox(createEditor(fragment))();
   };
 
   const createCombobox = ({

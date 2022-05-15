@@ -1,4 +1,4 @@
-import { isCollapsed, OnChange } from '@udecode/plate-core';
+import { isCollapsed, PlateEditor, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { getTextFromTrigger } from './utils/getTextFromTrigger';
 import { comboboxActions, comboboxSelectors } from './combobox.store';
@@ -11,7 +11,12 @@ import { comboboxActions, comboboxSelectors } from './combobox.store';
  * - open the combobox: set id, search, targetRange in the store
  * Close the combobox if needed
  */
-export const onChangeCombobox: OnChange = (editor) => () => {
+export const onChangeCombobox = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+) => () => {
   const byId = comboboxSelectors.byId();
   const activeId = comboboxSelectors.activeId();
 
