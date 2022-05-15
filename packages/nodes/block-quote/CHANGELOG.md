@@ -1,5 +1,7 @@
 # @udecode/plate-block-quote
 
+## 11.0.3
+
 ## 11.0.2
 
 ## 11.0.1
