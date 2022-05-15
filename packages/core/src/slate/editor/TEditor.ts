@@ -14,7 +14,7 @@ export type Value = TElement[];
  */
 export type ValueOf<E extends TEditor<Value>> = E['children'];
 
-export type TEditor<V extends Value> = Modify<
+export type TEditor<V extends Value = Value> = Modify<
   Editor,
   {
     children: V;
