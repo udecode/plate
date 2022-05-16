@@ -9,7 +9,7 @@ import { createPlugins } from './createPlugins';
 import { createTEditor } from './createTEditor';
 
 export interface CreatePlateEditorOptions<
-  V extends Value,
+  V extends Value = Value,
   E extends TEditor<V> = TEditor<V>
 > extends Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'> {
   editor?: E;

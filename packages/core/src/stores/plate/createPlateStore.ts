@@ -7,7 +7,7 @@ import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
 import { createTEditor } from '../../utils/createTEditor';
 
 export const createPlateStore = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   state: Partial<PlateStoreState<V, E>> = {}

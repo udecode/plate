@@ -63,7 +63,7 @@ npm install @udecode/plate-reset-node
 ### Options
 
 ```tsx
-export interface ResetNodePluginRule<V extends Value, E extends PlateEditor<V> = PlateEditor<V>> extends HotkeyPlugin {
+export interface ResetNodePluginRule<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>> extends HotkeyPlugin {
   defaultType?: string;
 
   /**

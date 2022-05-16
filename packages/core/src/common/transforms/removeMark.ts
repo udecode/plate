@@ -7,8 +7,10 @@ import { EMarks } from '../../slate/text/TText';
 import { SetNodesOptions } from '../../slate/transforms/setNodes';
 import { unsetNodes } from '../../slate/transforms/unsetNodes';
 
-export interface RemoveMarkOptions<V extends Value, K extends keyof EMarks<V>>
-  extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
+export interface RemoveMarkOptions<
+  V extends Value = Value,
+  K extends keyof EMarks<V> = keyof EMarks<V>
+> extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
   /**
    * Mark or the array of marks that will be removed
    */

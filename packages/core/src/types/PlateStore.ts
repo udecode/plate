@@ -16,7 +16,7 @@ export type EditorId = string | null | undefined;
 export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
 
 export type PlateStoreState<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = {
   /**
@@ -81,11 +81,11 @@ class Helper<V extends Value, E extends PlateEditor<V> = PlateEditor<V>> {
 }
 
 export type PlateStoreApi<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = Helper<V, E>['Return'];
 
-export type PlatesStoreState<V extends Value> = Record<
+export type PlatesStoreState<V extends Value = Value> = Record<
   string,
   PlateStoreApi<V>
 >;

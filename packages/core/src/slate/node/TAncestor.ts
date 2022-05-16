@@ -7,7 +7,7 @@ import { TNode } from './TNode';
  * It is returned as a convenience in certain cases to narrow a value further
  * than the more generic `Node` union.
  */
-export type TAncestor = TEditor<Value> | TElement;
+export type TAncestor = TEditor | TElement;
 
 /**
  * Ancestor of an editor.
@@ -17,11 +17,11 @@ export type EAncestor<V extends Value> = AncestorOf<TEditor<V>>;
 /**
  * A utility type to get all the ancestor node types from a root node type.
  */
-export type AncestorOf<N extends TNode> = TEditor<Value> extends N
-  ? TEditor<Value> | TElement
+export type AncestorOf<N extends TNode> = TEditor extends N
+  ? TEditor | TElement
   : TElement extends N
   ? TElement
-  : N extends TEditor<Value>
+  : N extends TEditor
   ? N | N['children'][number] | ElementOf<N['children'][number]>
   : N extends TElement
   ? N | ElementOf<N>

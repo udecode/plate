@@ -9,7 +9,7 @@ import { StyledElementProps } from './StyledElement.types';
  * StyledElement with no default styles.
  */
 export const StyledElement = <
-  V extends Value,
+  V extends Value = Value,
   N extends EElement<V> = EElement<V>
 >(
   props: StyledElementProps<V, N>

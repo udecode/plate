@@ -3,7 +3,7 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { getPlateSelectors, usePlateSelectors } from '../platesStore';
 
 export const getPlateEditorRef = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string
@@ -13,7 +13,7 @@ export const getPlateEditorRef = <
  * Get editor ref which is never updated.
  */
 export const usePlateEditorRef = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string

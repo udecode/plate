@@ -20,7 +20,7 @@ export type EDescendant<V extends Value> = DescendantOf<TEditor<V>>;
 /**
  * A utility type to get all the descendant node types from a root node type.
  */
-export type DescendantOf<N extends TNode> = N extends TEditor<Value>
+export type DescendantOf<N extends TNode> = N extends TEditor
   ? ElementOf<N> | TextOf<N>
   : N extends TElement
   ? ElementOf<N['children'][number]> | TextOf<N>
@@ -32,7 +32,7 @@ export type DescendantOf<N extends TNode> = N extends TEditor<Value>
 export type ChildOf<
   N extends TNode,
   I extends number = number
-> = N extends TEditor<Value>
+> = N extends TEditor
   ? N['children'][I]
   : N extends TElement
   ? N['children'][I]
