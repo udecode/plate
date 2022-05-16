@@ -7,7 +7,7 @@ import { getPlateActions } from '../../stores/plate/platesStore';
 import { PlateEditor } from '../../types/PlateEditor';
 
 export type UsePlateStoreEffects<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > = Pick<
   PlateProps<V, E>,
@@ -23,7 +23,7 @@ export type UsePlateStoreEffects<
 >;
 
 export const usePlateStoreEffects = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
   id,

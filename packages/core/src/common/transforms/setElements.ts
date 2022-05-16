@@ -6,5 +6,5 @@ import { setNodes, SetNodesOptions } from '../../slate/transforms/setNodes';
 export const setElements = <V extends Value>(
   editor: TEditor<V>,
   props: Partial<TNodeProps<TElement>>,
-  options?: SetNodesOptions<Value>
+  options?: SetNodesOptions
 ) => setNodes<TElement>(editor, props, options);

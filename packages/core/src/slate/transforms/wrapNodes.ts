@@ -5,7 +5,7 @@ import { unhangRange } from '../editor/unhangRange';
 import { EElement } from '../element/TElement';
 import { NodeMatchOption } from '../types/NodeMatchOption';
 
-export type WrapNodesOptions<V extends Value> = Modify<
+export type WrapNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.wrapNodes>[2]>,
   NodeMatchOption<V>
 >;

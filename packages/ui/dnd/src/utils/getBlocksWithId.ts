@@ -1,6 +1,6 @@
 import {
-  EditorNodesOptions,
   getNodeEntries,
+  GetNodeEntriesOptions,
   isBlock,
   TEditor,
   Value,
@@ -11,7 +11,7 @@ import {
  */
 export const getBlocksWithId = <V extends Value>(
   editor: TEditor<V>,
-  options: EditorNodesOptions<V>
+  options: GetNodeEntriesOptions<V>
 ) => {
   const _nodes = getNodeEntries(editor, {
     match: (n) => isBlock(editor, n) && !!n.id,

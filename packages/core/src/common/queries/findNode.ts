@@ -1,11 +1,13 @@
-import { getNodeEntries } from '../../slate/editor/getNodeEntries';
+import {
+  getNodeEntries,
+  GetNodeEntriesOptions,
+} from '../../slate/editor/getNodeEntries';
 import { TEditor, Value } from '../../slate/editor/TEditor';
 import { ENode } from '../../slate/node/TNode';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
-import { EditorNodesOptions } from '../types/index';
 import { getQueryOptions } from './match';
 
-export type FindNodeOptions<V extends Value> = EditorNodesOptions<V>;
+export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
 
 /**
  * Find node matching the condition.

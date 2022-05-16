@@ -1,8 +1,8 @@
+import { GetNodeEntriesOptions } from '../../slate/editor/getNodeEntries';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/PlateEditor';
 import { getPluginType } from '../../utils/getPluginType';
 import { someNode } from '../queries/someNode';
-import { EditorNodesOptions } from '../types/Editor.types';
 import { ELEMENT_DEFAULT } from '../types/node.types';
 import { setElements } from './setElements';
 
@@ -25,7 +25,7 @@ export interface ToggleNodeTypeOptions {
 export const toggleNodeType = <V extends Value>(
   editor: PlateEditor<V>,
   options: ToggleNodeTypeOptions,
-  editorNodesOptions?: Omit<EditorNodesOptions<V>, 'match'>
+  editorNodesOptions?: Omit<GetNodeEntriesOptions<V>, 'match'>
 ) => {
   const {
     activeType,

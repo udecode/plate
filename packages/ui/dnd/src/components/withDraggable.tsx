@@ -11,7 +11,7 @@ import { useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
-export interface WithDraggableOptions<V extends Value>
+export interface WithDraggableOptions<V extends Value = Value>
   extends Pick<DraggableProps<V>, 'onRenderDragHandle' | 'styles'> {
   level?: number;
   filter?: (editor: TEditor<V>, path: Path) => boolean;

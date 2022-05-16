@@ -10,7 +10,7 @@ import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
  * Recursively merge nested plugins into the root plugins
  */
 export const mergeDeepPlugins = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
   P extends WithPlatePlugin<{}, V, E> = WithPlatePlugin<{}, V, E>
 >(

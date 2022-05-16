@@ -24,7 +24,7 @@ export const createPluginFactory = <
   OV extends Value = V,
   OE extends PlateEditor<OV> = PlateEditor<OV>
 >(
-  override?: Partial<PlatePlugin<NoInfer<P>, OV, OE>>,
+  override?: Partial<PlatePlugin<NoInfer<OP>, OV, OE>>,
   overrideByKey: OverrideByKey<OV, OE> = {}
 ): PlatePlugin<NoInfer<OP>, OV, OE> => {
   overrideByKey[defaultPlugin.key] = override as any;

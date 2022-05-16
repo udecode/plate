@@ -5,14 +5,14 @@ import { usePlateSelectors } from '../platesStore';
 import { getPlateEditorRef } from './usePlateEditorRef';
 
 export const getPlatePlugins = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string
 ) => getPlugins<V, E>(getPlateEditorRef<V, E>(id)!);
 
 export const usePlatePlugins = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string

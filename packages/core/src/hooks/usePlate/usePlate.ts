@@ -10,7 +10,7 @@ import { useSlateProps } from './useSlateProps';
  * Use `usePlateStore` to select store state.
  */
 export const usePlate = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   options: PlateProps<V, E>

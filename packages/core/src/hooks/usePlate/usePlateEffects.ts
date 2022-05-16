@@ -18,7 +18,7 @@ import { usePlateStoreEffects } from './usePlateStoreEffects';
  * Dynamically updating the options will update the store state.
  */
 export const usePlateEffects = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
   id = 'main',

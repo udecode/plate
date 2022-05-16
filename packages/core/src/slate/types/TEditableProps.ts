@@ -5,7 +5,7 @@ import { ENodeEntry } from '../node/TNodeEntry';
 import { RenderElementFn } from './TRenderElementProps';
 import { RenderLeafFn } from './TRenderLeafProps';
 
-export type TEditableProps<V extends Value> = Omit<
+export type TEditableProps<V extends Value = Value> = Omit<
   EditableProps,
   'decorate' | 'renderElement' | 'renderLeaf'
 > & {

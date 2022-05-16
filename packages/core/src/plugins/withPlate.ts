@@ -4,7 +4,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
 
 export interface WithPlateOptions<
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 > extends Pick<PlateProps<V, E>, 'id' | 'disableCorePlugins' | 'plugins'> {}
 
@@ -15,7 +15,10 @@ export interface WithPlateOptions<
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: Plate options
  */
-export const withPlate = <V extends Value, E extends TEditor<V> = TEditor<V>>(
+export const withPlate = <
+  V extends Value = Value,
+  E extends TEditor<V> = TEditor<V>
+>(
   e: E,
   {
     id = 'main',

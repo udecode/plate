@@ -12,7 +12,7 @@ import {
 import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MergeListItemIntoListOptions<V extends Value> {
+export interface MergeListItemIntoListOptions<V extends Value = Value> {
   /**
    * List items of the sublist of this node will be moved.
    */

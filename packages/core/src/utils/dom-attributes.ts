@@ -1,7 +1,6 @@
-import { Value } from '../slate/editor/TEditor';
 import { DOMHandlers } from '../types/plugins/DOMHandlers';
 
-export const DOM_HANDLERS: (keyof DOMHandlers<Value>)[] = [
+export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Clipboard Events
   'onCopy',
   'onCopyCapture',

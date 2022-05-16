@@ -52,3 +52,10 @@ export const getQueryOptions = <V extends Value>(
         : undefined,
   };
 };
+
+export type ENodeMatch<N extends TNode> = Predicate<N>;
+
+export interface ENodeMatchOptions<V extends Value = Value> {
+  match?: ENodeMatch<ENode<V>>;
+  block?: boolean;
+}

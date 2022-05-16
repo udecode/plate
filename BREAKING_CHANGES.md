@@ -1,6 +1,6 @@
-# 11.0.4
+# 11.0.6
 
-## @udecode/plate-core@11.0.4
+## @udecode/plate-core@11.0.6
 
 ### Major Changes
 
@@ -20,11 +20,11 @@
 
   Those Slate types should be replaced by the new types:
 
-  - `Editor` -> `TEditor<V extends Value>`
+  - `Editor` -> `TEditor<V extends Value = Value>`
     - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods. 
-  - `ReactEditor` -> `TReactEditor<V extends Value>`
-  - `HistoryEditor` -> `THistoryEditor<V extends Value>`
-  - `EditableProps` -> `TEditableProps<V extends Value>`
+  - `ReactEditor` -> `TReactEditor<V extends Value = Value>`
+  - `HistoryEditor` -> `THistoryEditor<V extends Value = Value>`
+  - `EditableProps` -> `TEditableProps<V extends Value = Value>`
   - `Node` -> `TNode`
   - `Element` -> `TElement`
   - `Text` -> `TText`
@@ -46,7 +46,7 @@
 - When the plugin type is customizable, these generics are used: `<P = PluginOptions, V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>`, where `P` is the plugin options type.
 - `Editor` functions are using `<V extends Value>` generic, where `V` can be a custom editor value type used in `PlateEditor<V>`.
 - `Editor` functions returning a node are using `<N extends ENode<V>, V extends Value = Value>` generics, where `N` can be a custom returned node type.
-- `Editor` callbacks (e.g. a plugin option) are using `<V extends Value, E extends PlateEditor<V> = PlateEditor<V>>` generics, where `E` can be a custom editor type.
+- `Editor` callbacks (e.g. a plugin option) are using `<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>` generics, where `E` can be a custom editor type.
 - `Node` functions returning a node are using `<N extends Node, R extends TNode = TNode>` generics.
 - These generics are used by `<V extends Value, K extends keyof EMarks<V>>`: `getMarks`, `isMarkActive`, `removeMark`, `setMarks`, `ToggleMarkPlugin`, `addMark`, `removeEditorMark`
 - `WithOverride` is a special type case as it can return a new editor type:

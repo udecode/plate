@@ -8,7 +8,7 @@ import { StyledLeafProps } from './StyledLeaf.types';
 /**
  * StyledLeaf with no default styles.
  */
-export const StyledLeaf = <V extends Value, N extends TText = EText<V>>(
+export const StyledLeaf = <V extends Value = Value, N extends TText = EText<V>>(
   props: StyledLeafProps<V, N>
 ) => {
   const { attributes, children, nodeProps, styles } = props;

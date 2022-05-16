@@ -3,7 +3,7 @@ import { Modify } from '../../common/types/utility/types';
 import { TEditor, Value } from '../editor/TEditor';
 import { NodeMatchOption } from '../types/NodeMatchOption';
 
-export type SplitNodesOptions<V extends Value> = Modify<
+export type SplitNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.splitNodes>[1]>,
   NodeMatchOption<V>
 >;

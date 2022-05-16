@@ -6,7 +6,7 @@ import { PlatePlugin, PluginOptions } from '../types/plugins/PlatePlugin';
  * Get `editor.plugins`
  */
 export const getPlugins = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E

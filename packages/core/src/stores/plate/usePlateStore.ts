@@ -11,7 +11,7 @@ const loadingStore = createPlateStore({
 });
 
 export const getPlateStore = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string
@@ -24,7 +24,7 @@ export const getPlateStore = <
 };
 
 export const usePlateStore = <
-  V extends Value,
+  V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   id?: string

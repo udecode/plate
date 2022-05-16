@@ -1,7 +1,7 @@
 import {
   AnyObject,
-  EditorNodesOptions,
   getNodeEntries,
+  GetNodeEntriesOptions,
   getPluginInjectProps,
   PlateEditor,
   setElements,
@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '../createIndentPlugin';
 
-export interface SetIndentOptions<V extends Value> {
+export interface SetIndentOptions<V extends Value = Value> {
   /**
    * 1 to indent
    * -1 to outdent
@@ -23,7 +23,7 @@ export interface SetIndentOptions<V extends Value> {
   /**
    * getNodeEntries options
    */
-  getNodesOptions?: EditorNodesOptions<V> & UnhangRangeOptions;
+  getNodesOptions?: GetNodeEntriesOptions<V> & UnhangRangeOptions;
 
   /**
    * Set other props than the indent one.

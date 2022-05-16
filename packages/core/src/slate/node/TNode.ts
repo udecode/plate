@@ -3,7 +3,7 @@ import { TEditor, Value } from '../editor/TEditor';
 import { ElementOf, TElement } from '../element/TElement';
 import { TextOf, TText } from '../text/TText';
 
-export type TNode = TEditor<Value> | TElement | TText;
+export type TNode = TEditor | TElement | TText;
 
 /**
  * Node of an editor.
@@ -18,7 +18,7 @@ export type NodeOf<N extends TNode> = N | ElementOf<N> | TextOf<N>;
 /**
  * Convenience type for returning the props of a node.
  */
-export type TNodeProps<N extends TNode> = N extends TEditor<Value>
+export type TNodeProps<N extends TNode> = N extends TEditor
   ? Omit<N, 'children'>
   : N extends TElement
   ? Omit<N, 'children'>

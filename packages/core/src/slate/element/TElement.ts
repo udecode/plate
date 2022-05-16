@@ -33,11 +33,11 @@ export type EElementOrText<V extends Value> = EElement<V> | EText<V>;
 /**
  * A utility type to get all the element nodes type from a root node.
  */
-export type ElementOf<N extends TNode> = TEditor<Value> extends N
+export type ElementOf<N extends TNode> = TEditor extends N
   ? TElement
   : TElement extends N
   ? TElement
-  : N extends TEditor<Value>
+  : N extends TEditor
   ? Extract<N['children'][number], TElement> | ElementOf<N['children'][number]>
   : N extends TElement
   ?

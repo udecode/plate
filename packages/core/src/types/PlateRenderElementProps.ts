@@ -7,6 +7,6 @@ import { PlateRenderNodeProps } from './PlateRenderNodeProps';
  * Element props passed by Plate
  */
 export type PlateRenderElementProps<
-  V extends Value,
+  V extends Value = Value,
   N extends TElement = EElement<V>
 > = PlateRenderNodeProps<V> & TRenderElementProps<V, N>;

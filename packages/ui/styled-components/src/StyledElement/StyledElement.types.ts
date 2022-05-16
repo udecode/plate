@@ -8,7 +8,7 @@ import {
 import { StyledProps } from '../types/StyledProps';
 
 export type StyledElementProps<
-  V extends Value,
+  V extends Value = Value,
   N extends TElement = EElement<V>,
   TStyles = {}
 > = PlateRenderElementProps<V, N> &

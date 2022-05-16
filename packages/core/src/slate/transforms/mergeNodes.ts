@@ -19,7 +19,7 @@ import { moveNodes } from './moveNodes';
 import { removeNodes } from './removeNodes';
 import { select } from './select';
 
-export type MergeNodesOptions<V extends Value> = Modify<
+export type MergeNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
   NodeMatchOption<V>
 > & {
