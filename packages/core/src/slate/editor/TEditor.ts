@@ -1,11 +1,11 @@
-import { Editor } from "slate";
-import { UnknownObject } from "../../common/types/utility/AnyObject";
-import { Modify } from "../../common/types/utility/types";
-import { EElement, EElementOrText, TElement } from "../element/TElement";
-import { TDescendant } from "../node/TDescendant";
-import { ENode, TNode } from "../node/TNode";
-import { TNodeEntry } from "../node/TNodeEntry";
-import { TOperation } from "../types/TOperation";
+import { Editor } from 'slate';
+import { UnknownObject } from '../../common/types/utility/AnyObject';
+import { Modify } from '../../common/types/utility/types';
+import { EElement, EElementOrText, TElement } from '../element/TElement';
+import { TDescendant } from '../node/TDescendant';
+import { ENode, TNode } from '../node/TNode';
+import { TNodeEntry } from '../node/TNodeEntry';
+import { TOperation } from '../types/TOperation';
 
 export type Value = TElement[];
 

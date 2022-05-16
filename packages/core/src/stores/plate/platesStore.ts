@@ -1,13 +1,17 @@
-import { createStore } from "@udecode/zustood";
-import { castArray } from "lodash";
-import { isUndefined } from "../../common/utils/types.utils";
-import { PlateProps } from "../../components/Plate";
-import { Value } from "../../slate/editor/TEditor";
-import { PlateEditor } from "../../types/PlateEditor";
-import { PlatesStoreState, PlateStoreApi, PlateStoreState } from "../../types/PlateStore";
-import { eventEditorActions } from "../event-editor/event-editor.store";
-import { createPlateStore } from "./createPlateStore";
-import { getPlateStore, usePlateStore } from "./usePlateStore";
+import { createStore } from '@udecode/zustood';
+import { castArray } from 'lodash';
+import { isUndefined } from '../../common/utils/types.utils';
+import { PlateProps } from '../../components/Plate';
+import { Value } from '../../slate/editor/TEditor';
+import { PlateEditor } from '../../types/PlateEditor';
+import {
+  PlatesStoreState,
+  PlateStoreApi,
+  PlateStoreState,
+} from '../../types/PlateStore';
+import { eventEditorActions } from '../event-editor/event-editor.store';
+import { createPlateStore } from './createPlateStore';
+import { getPlateStore, usePlateStore } from './usePlateStore';
 
 export const setPlateState = <
   V extends Value = Value,
