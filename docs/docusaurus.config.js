@@ -256,5 +256,6 @@ module.exports = {
         alias,
       },
     ],
+    path.resolve(__dirname, 'plugins/source-maps'),
   ],
 };
