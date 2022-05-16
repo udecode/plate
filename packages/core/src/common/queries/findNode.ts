@@ -5,6 +5,7 @@ import {
 import { TEditor, Value } from '../../slate/editor/TEditor';
 import { ENode } from '../../slate/node/TNode';
 import { TNodeEntry } from '../../slate/node/TNodeEntry';
+import { getQueryOptions } from './match';
 
 export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
 
@@ -18,8 +19,8 @@ export const findNode = <N extends ENode<V>, V extends Value = Value>(
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const nodeEntries = getNodeEntries<N, V>(editor, {
-      ...options,
       at: editor.selection || [],
+      ...getQueryOptions(editor, options),
     });
 
     for (const [node, path] of nodeEntries) {
