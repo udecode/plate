@@ -1,5 +1,14 @@
 # @udecode/plate-core
 
+## 11.0.6
+
+### Patch Changes
+
+- [#1534](https://github.com/udecode/plate/pull/1534) by [@zbeyens](https://github.com/zbeyens) – types:
+  - `createPluginFactory`: use generic `P` type in first parameter
+  - add `Value` default type in place it can't be inferred
+  - replace `EditorNodesOptions` by `GetNodeEntriesOptions`
+
 ## 11.0.5
 
 ### Patch Changes
