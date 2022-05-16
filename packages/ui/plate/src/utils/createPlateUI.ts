@@ -45,7 +45,7 @@ import {
   CodeLineElement,
   CodeSyntaxLeaf,
 } from '@udecode/plate-ui-code-block';
-import { ThreadElement } from '@udecode/plate-ui-comments';
+import { ThreadElement } from '@xolvio/plate-ui-comments';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { ImageElement } from '@udecode/plate-ui-image';
 import { LinkElement } from '@udecode/plate-ui-link';

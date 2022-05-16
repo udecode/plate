@@ -1,9 +1,9 @@
 import React from 'react';
-import { Thread, ThreadNodeData } from '@udecode/plate-comments';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
+import { Thread, ThreadNodeData } from '@xolvio/plate-comments';
 import { createThreadElementStyles } from './ThreadElement.styles';
 
 function determineStyle(

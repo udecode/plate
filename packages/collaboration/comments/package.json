@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-comments",
-  "version": "1.1.0",
+  "name": "@xolvio/plate-comments",
+  "version": "0.1.0",
   "description": "Comments for Plate",
   "keywords": [
     "slate",
@@ -10,11 +10,11 @@
   ],
   "homepage": "https://plate.udecode.io",
   "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
+    "url": "https://github.com/xolvio/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git",
+    "url": "https://github.com/xolvio/plate.git",
     "directory": "packages/collaboration/comments"
   },
   "license": "MIT",

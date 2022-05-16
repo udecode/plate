@@ -5,6 +5,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { usePlateEditorRef } from '@udecode/plate-core';
+import { StyledProps } from '@udecode/plate-styled-components';
 import {
   Comment,
   Contact,
@@ -17,9 +19,7 @@ import {
   upsertThread,
   upsertThreadAtSelection,
   User,
-} from '@udecode/plate-comments';
-import { usePlateEditorRef } from '@udecode/plate-core';
-import { StyledProps } from '@udecode/plate-styled-components';
+} from '@xolvio/plate-comments';
 import { FetchContacts } from '../FetchContacts';
 import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
 import { Contacts } from './Contacts';

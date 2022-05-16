@@ -6,9 +6,9 @@ import React, {
   useState,
 } from 'react';
 import ReactDOM from 'react-dom';
-import { createNullUser, findThreadNodeEntries } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { createNullUser, findThreadNodeEntries } from '@xolvio/plate-comments';
 import { determineAbsolutePosition } from '../determineAbsolutePosition';
 import { FetchContacts } from '../FetchContacts';
 import { Thread } from '../Thread';

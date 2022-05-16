@@ -2408,7 +2408,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-break@10.5.3":
+"@udecode/plate-break@10.6.1":
   version "0.0.0"
   uid ""
 
@@ -2429,18 +2429,6 @@
   uid ""
 
 "@udecode/plate-combobox@link:../packages/editor/combobox":
-  version "0.0.0"
-  uid ""
-
-"@udecode/plate-comments@https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?295a5d1b56571b24f0dd2da6294a3b045463000c":
-  version "0.0.0"
-  uid ""
-
-"@udecode/plate-comments@https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?672fae423726baa61427290f3a52fb3ec184535f":
-  version "0.0.0"
-  uid ""
-
-"@udecode/plate-comments@link:../packages/collaboration/comments":
   version "0.0.0"
   uid ""
 
@@ -2480,7 +2468,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-headless@10.6.0":
+"@udecode/plate-headless@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2624,7 +2612,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-csv@10.5.3":
+"@udecode/plate-serializer-csv@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2632,7 +2620,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-docx@10.5.3":
+"@udecode/plate-serializer-docx@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2656,7 +2644,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@10.5.3":
+"@udecode/plate-table@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2713,14 +2701,6 @@
   uid ""
 
 "@udecode/plate-ui-combobox@link:../packages/ui/combobox":
-  version "0.0.0"
-  uid ""
-
-"@udecode/plate-ui-comments@https://gitpkg.now.sh/xolvio/plate/packages/ui/collaboration/comments?502d0198d86a1a612ef494052df204d4fbc3c709":
-  version "0.0.0"
-  uid ""
-
-"@udecode/plate-ui-comments@link:../packages/ui/collaboration/comments":
   version "0.0.0"
   uid ""
 
@@ -2808,7 +2788,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-popover@10.5.3":
+"@udecode/plate-ui-popover@10.6.2":
   version "0.0.0"
   uid ""
 
@@ -2824,7 +2804,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-table@10.5.3":
+"@udecode/plate-ui-table@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2840,7 +2820,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui@10.6.0":
+"@udecode/plate-ui@10.6.3":
   version "0.0.0"
   uid ""
 
@@ -2984,6 +2964,22 @@
   version "1.9.5"
   resolved "https://registry.yarnpkg.com/@xobotyi/scrollbar-width/-/scrollbar-width-1.9.5.tgz#80224a6919272f405b87913ca13b92929bdf3c4d"
   integrity sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==
+
+"@xolvio/plate-comments@0.1.0":
+  version "0.0.0"
+  uid ""
+
+"@xolvio/plate-comments@link:../packages/collaboration/comments":
+  version "0.0.0"
+  uid ""
+
+"@xolvio/plate-ui-comments@0.1.0":
+  version "0.0.0"
+  uid ""
+
+"@xolvio/plate-ui-comments@link:../packages/ui/collaboration/comments":
+  version "0.0.0"
+  uid ""
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"

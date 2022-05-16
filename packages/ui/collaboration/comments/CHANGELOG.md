@@ -1,3 +1,3 @@
-# @udecode/plate-comments-ui
+# @xolvio/plate-comments-ui
 
-## 1.0.0
+## 0.1.0

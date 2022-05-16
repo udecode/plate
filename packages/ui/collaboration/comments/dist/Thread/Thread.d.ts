@@ -1,6 +1,6 @@
 /// <reference types="react" />
-import { Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { Thread as ThreadModel } from '@xolvio/plate-comments';
 import { FetchContacts } from '../FetchContacts';
 import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
 export interface CommonThreadAndSideThreadProps {

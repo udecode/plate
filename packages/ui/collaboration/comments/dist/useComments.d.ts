@@ -1,4 +1,4 @@
-import { Comment, Thread, User } from '@udecode/plate-comments';
+import { Comment, Thread, User } from '@xolvio/plate-comments';
 export declare type OnSubmitComment = (commentText: string) => Promise<void>;
 export interface ThreadPosition {
     left: number;

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  getAbove,
+  getPluginType,
+  usePlateEditorState,
+} from '@udecode/plate-core';
+import {
   Comment,
   deleteThread,
   ELEMENT_THREAD,
@@ -7,12 +12,7 @@ import {
   Thread,
   upsertThreadAtSelection,
   User,
-} from '@udecode/plate-comments';
-import {
-  getAbove,
-  getPluginType,
-  usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@xolvio/plate-comments';
 import { NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';

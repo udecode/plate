@@ -4,7 +4,7 @@ import { withPlateEventProvider, useEventPlateId, usePlateEditorState, usePlateE
 import { ToolbarButton } from '@udecode/plate-ui-toolbar';
 import _styled, { css } from 'styled-components';
 import ReactDOM from 'react-dom';
-import { generateThreadLink, createNullUser, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, upsertThread, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
+import { generateThreadLink, createNullUser, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, upsertThread, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@xolvio/plate-comments';
 import { MDCMenu, DefaultFocusState, Corner } from '@material/menu';
 import { createStyles, getRootProps } from '@udecode/plate-styled-components';
 import { MDCDialog } from '@material/dialog';
@@ -617,7 +617,7 @@ class ThreadLinkDialog extends React__default.Component {
 
 var _StyledButton$4 = _styled("button").withConfig({
   displayName: "ThreadLinkDialog___StyledButton",
-  componentId: "sc-c3g33i-0"
+  componentId: "sc-1wdr848-0"
 })(["", ""], p => p.$_css);
 
 var MoreVert = /*#__PURE__*/React.forwardRef(function (props, ref) {
@@ -727,7 +727,7 @@ class MenuButton extends React__default.Component {
 
 var _StyledButton$3 = _styled("button").withConfig({
   displayName: "MenuButton___StyledButton",
-  componentId: "sc-rg6b9r-0"
+  componentId: "sc-8mrdgs-0"
 })(["", ""], p => p.$_css);
 
 function createThreadCommentStyled(props) {
@@ -748,7 +748,7 @@ function createResolveThreadButtonStyles(props) {
 }
 function createReOpenThreadButtonStyles(props) {
   return createStyles({
-    prefixClassNames: 'ThreadResolveThreadButton',
+    prefixClassNames: 'ThreadReOpenThreadButton',
     ...props
   }, {
     root: css(["padding:3px;width:30px;height:30px;& .mdc-icon-button__ripple::before,& .mdc-icon-button__ripple::after{border-radius:initial;}svg{position:relative;top:-3px;}"])
@@ -818,27 +818,27 @@ function ThreadCommentEditing({
 
 var _StyledDiv$4 = _styled("div").withConfig({
   displayName: "ThreadCommentEditing___StyledDiv",
-  componentId: "sc-1g46kk-0"
+  componentId: "sc-113qphy-0"
 })(["", ""], p => p.$_css);
 
 var _StyledTextarea$1 = _styled("textarea").withConfig({
   displayName: "ThreadCommentEditing___StyledTextarea",
-  componentId: "sc-1g46kk-1"
+  componentId: "sc-113qphy-1"
 })(["", ""], p => p.$_css2);
 
 var _StyledDiv2$3 = _styled("div").withConfig({
   displayName: "ThreadCommentEditing___StyledDiv2",
-  componentId: "sc-1g46kk-2"
+  componentId: "sc-113qphy-2"
 })(["", ""], p => p.$_css3);
 
 var _StyledButton$2 = _styled("button").withConfig({
   displayName: "ThreadCommentEditing___StyledButton",
-  componentId: "sc-1g46kk-3"
+  componentId: "sc-113qphy-3"
 })(["", ""], p => p.$_css4);
 
 var _StyledButton2$2 = _styled("button").withConfig({
   displayName: "ThreadCommentEditing___StyledButton2",
-  componentId: "sc-1g46kk-4"
+  componentId: "sc-113qphy-4"
 })(["", ""], p => p.$_css5);
 
 function ThreadComment(props) {
@@ -970,52 +970,52 @@ function ThreadComment(props) {
 
 var _StyledDiv$3 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv",
-  componentId: "sc-19i857g-0"
+  componentId: "sc-klahbx-0"
 })(["", ""], p => p.$_css);
 
 var _StyledDiv2$2 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv2",
-  componentId: "sc-19i857g-1"
+  componentId: "sc-klahbx-1"
 })(["", ""], p => p.$_css2);
 
 var _StyledDiv3$2 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv3",
-  componentId: "sc-19i857g-2"
+  componentId: "sc-klahbx-2"
 })(["", ""], p => p.$_css3);
 
 var _StyledImg$1 = _styled("img").withConfig({
   displayName: "ThreadComment___StyledImg",
-  componentId: "sc-19i857g-3"
+  componentId: "sc-klahbx-3"
 })(["", ""], p => p.$_css4);
 
 var _StyledDiv4$1 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv4",
-  componentId: "sc-19i857g-4"
+  componentId: "sc-klahbx-4"
 })(["", ""], p => p.$_css5);
 
 var _StyledDiv5$1 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv5",
-  componentId: "sc-19i857g-5"
+  componentId: "sc-klahbx-5"
 })(["", ""], p => p.$_css6);
 
 var _StyledDiv6$1 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv6",
-  componentId: "sc-19i857g-6"
+  componentId: "sc-klahbx-6"
 })(["", ""], p => p.$_css7);
 
 var _StyledButton$1 = _styled("button").withConfig({
   displayName: "ThreadComment___StyledButton",
-  componentId: "sc-19i857g-7"
+  componentId: "sc-klahbx-7"
 })(["", ""], p => p.$_css8);
 
 var _StyledButton2$1 = _styled("button").withConfig({
   displayName: "ThreadComment___StyledButton2",
-  componentId: "sc-19i857g-8"
+  componentId: "sc-klahbx-8"
 })(["", ""], p => p.$_css9);
 
 var _StyledDiv7$1 = _styled("div").withConfig({
   displayName: "ThreadComment___StyledDiv7",
-  componentId: "sc-19i857g-9"
+  componentId: "sc-klahbx-9"
 })(["", ""], p => p.$_css10);
 
 function Thread({
@@ -1275,7 +1275,7 @@ function Thread({
     comment: comment,
     thread: thread,
     showResolveThreadButton: showResolveThreadButton && index === 0,
-    showReOpenThreadButton: showReOpenThreadButton,
+    showReOpenThreadButton: showReOpenThreadButton && index === 0,
     showMoreButton: showMoreButton,
     showLinkToThisComment: index === 0,
     onSaveComment: onSaveComment,
@@ -1337,57 +1337,57 @@ function Thread({
 
 var _StyledDiv$2 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv",
-  componentId: "sc-73l5zt-0"
+  componentId: "sc-7r47gf-0"
 })(["", ""], p => p.$_css);
 
 var _StyledDiv2$1 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv2",
-  componentId: "sc-73l5zt-1"
+  componentId: "sc-7r47gf-1"
 })(["", ""], p => p.$_css2);
 
 var _StyledDiv3$1 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv3",
-  componentId: "sc-73l5zt-2"
+  componentId: "sc-7r47gf-2"
 })(["", ""], p => p.$_css3);
 
 var _StyledImg = _styled("img").withConfig({
   displayName: "Thread___StyledImg",
-  componentId: "sc-73l5zt-3"
+  componentId: "sc-7r47gf-3"
 })(["", ""], p => p.$_css4);
 
 var _StyledDiv4 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv4",
-  componentId: "sc-73l5zt-4"
+  componentId: "sc-7r47gf-4"
 })(["", ""], p => p.$_css5);
 
 var _StyledDiv5 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv5",
-  componentId: "sc-73l5zt-5"
+  componentId: "sc-7r47gf-5"
 })(["", ""], p => p.$_css6);
 
 var _StyledDiv6 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv6",
-  componentId: "sc-73l5zt-6"
+  componentId: "sc-7r47gf-6"
 })(["", ""], p => p.$_css7);
 
 var _StyledTextarea = _styled("textarea").withConfig({
   displayName: "Thread___StyledTextarea",
-  componentId: "sc-73l5zt-7"
+  componentId: "sc-7r47gf-7"
 })(["", ""], p => p.$_css8);
 
 var _StyledDiv7 = _styled("div").withConfig({
   displayName: "Thread___StyledDiv7",
-  componentId: "sc-73l5zt-8"
+  componentId: "sc-7r47gf-8"
 })(["", ""], p => p.$_css9);
 
 var _StyledButton = _styled("button").withConfig({
   displayName: "Thread___StyledButton",
-  componentId: "sc-73l5zt-9"
+  componentId: "sc-7r47gf-9"
 })(["", ""], p => p.$_css10);
 
 var _StyledButton2 = _styled("button").withConfig({
   displayName: "Thread___StyledButton2",
-  componentId: "sc-73l5zt-10"
+  componentId: "sc-7r47gf-10"
 })(["", ""], p => p.$_css11);
 
 const createThreadsStyles = props => createStyles({
@@ -1489,17 +1489,17 @@ function Threads(props) {
 
 var _StyledDiv$1 = _styled("div").withConfig({
   displayName: "Threads___StyledDiv",
-  componentId: "sc-1bdnddb-0"
+  componentId: "sc-uo5vh9-0"
 })(["", ""], p => p.$_css);
 
 var _StyledDiv2 = _styled("div").withConfig({
   displayName: "Threads___StyledDiv2",
-  componentId: "sc-1bdnddb-1"
+  componentId: "sc-uo5vh9-1"
 })(["", ""], p => p.$_css2);
 
 var _StyledDiv3 = _styled("div").withConfig({
   displayName: "Threads___StyledDiv3",
-  componentId: "sc-1bdnddb-2"
+  componentId: "sc-uo5vh9-2"
 })(["", ""], p => p.$_css3);
 
 const ToggleShowThreadsButton = withPlateEventProvider(({
@@ -1586,7 +1586,7 @@ const ThreadElement = props => {
 
 var _StyledSpan = _styled("span").withConfig({
   displayName: "ThreadElement___StyledSpan",
-  componentId: "sc-1assa2q-0"
+  componentId: "sc-tqa4rw-0"
 })(["", ""], p => p.$_css);
 
 const createSideThreadStyles = props => createStyles({
@@ -1619,7 +1619,7 @@ function SideThread({
 
 var _StyledDiv = _styled("div").withConfig({
   displayName: "SideThread___StyledDiv",
-  componentId: "sc-di7ox7-0"
+  componentId: "sc-1hued7y-0"
 })(["", ""], p => p.$_css);
 
 function replaceElement(elements, newElement, doesMatch) {

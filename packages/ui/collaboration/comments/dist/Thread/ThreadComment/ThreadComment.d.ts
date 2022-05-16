@@ -1,7 +1,7 @@
 /// <reference types="react" />
 import '@material/menu-surface/dist/mdc.menu-surface.css';
-import { Comment, Thread } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { Comment, Thread } from '@xolvio/plate-comments';
 export declare function ThreadComment(props: {
     comment: Comment;
     thread: Thread;

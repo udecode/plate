@@ -2,7 +2,7 @@ import '@material/list/dist/mdc.list.css';
 import '@material/menu/dist/mdc.menu.css';
 import React, { RefObject } from 'react';
 import { Corner, DefaultFocusState, MDCMenu } from '@material/menu';
-import { Contact } from '@udecode/plate-comments';
+import { Contact } from '@xolvio/plate-comments';
 
 interface ContactsProps {
   contacts: Contact[];
