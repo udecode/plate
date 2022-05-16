@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 11.0.5
+
+### Patch Changes
+
+- [#1530](https://github.com/udecode/plate/pull/1530) by [@zbeyens](https://github.com/zbeyens) – `TEditor`: add default generic `Value`
+
 ## 11.0.4
 
 ### Patch Changes
