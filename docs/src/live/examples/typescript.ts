@@ -1,16 +1,47 @@
 import { PluginOptions } from '@babel/core';
 import {
+  createPlateEditor,
+  CreatePlateEditorOptions,
+  createPluginFactory,
+  Decorate,
+  DecorateEntry,
+  DOMHandler,
   EDescendant,
   EElement,
   EElementEntry,
   EElementOrText,
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_H1,
+  ELEMENT_IMAGE,
+  ELEMENT_LI,
+  ELEMENT_LINK,
+  ELEMENT_OL,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TR,
+  ELEMENT_UL,
   EMarks,
   ENode,
   ENodeEntry,
   EText,
   ETextEntry,
+  getPlateActions,
+  getPlateEditorRef,
   getPlateSelectors,
+  getTEditor,
+  InjectComponent,
+  InjectProps,
+  KeyboardHandler,
+  NoInfer,
+  OnChange,
+  OverrideByKey,
   PlateEditor,
+  PlatePlugin,
+  PlatePluginInsertData,
+  PlatePluginProps,
+  PlateProps,
+  SerializeHtml,
   TElement,
   TImageElement as ImageElement,
   TLinkElement as LinkElement,
@@ -21,50 +52,9 @@ import {
   useEditorState,
   usePlateEditorRef,
   usePlateEditorState,
-} from '@udecode/plate';
-import { NoInfer } from '../../../../packages/core/src/common/types/utility/NoInfer';
-import { PlateProps } from '../../../../packages/core/src/components/Plate';
-import { getTEditor } from '../../../../packages/core/src/slate/editor/TEditor';
-import {
-  getPlateActions,
   usePlateSelectors,
-} from '../../../../packages/core/src/stores/plate/platesStore';
-import { getPlateEditorRef } from '../../../../packages/core/src/stores/plate/selectors/usePlateEditorRef';
-import { OverrideByKey } from '../../../../packages/core/src/types/OverrideByKey';
-import {
-  Decorate,
-  DecorateEntry,
-} from '../../../../packages/core/src/types/plugins/Decorate';
-import { DOMHandler } from '../../../../packages/core/src/types/plugins/DOMHandlers';
-import { InjectComponent } from '../../../../packages/core/src/types/plugins/InjectComponent';
-import { InjectProps } from '../../../../packages/core/src/types/plugins/InjectProps';
-import { KeyboardHandler } from '../../../../packages/core/src/types/plugins/KeyboardHandler';
-import { OnChange } from '../../../../packages/core/src/types/plugins/OnChange';
-import { PlatePlugin } from '../../../../packages/core/src/types/plugins/PlatePlugin';
-import { PlatePluginInsertData } from '../../../../packages/core/src/types/plugins/PlatePluginInsertData';
-import { PlatePluginProps } from '../../../../packages/core/src/types/plugins/PlatePluginProps';
-import { SerializeHtml } from '../../../../packages/core/src/types/plugins/SerializeHtml';
-import { WithOverride } from '../../../../packages/core/src/types/plugins/WithOverride';
-import {
-  createPlateEditor,
-  CreatePlateEditorOptions,
-} from '../../../../packages/core/src/utils/createPlateEditor';
-import { createPluginFactory } from '../../../../packages/core/src/utils/createPluginFactory';
-import { ELEMENT_BLOCKQUOTE } from '../../../../packages/nodes/block-quote/src/createBlockquotePlugin';
-import { ELEMENT_H1 } from '../../../../packages/nodes/heading/src/constants';
-import { ELEMENT_IMAGE } from '../../../../packages/nodes/image/src/createImagePlugin';
-import { ELEMENT_LINK } from '../../../../packages/nodes/link/src/createLinkPlugin';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '../../../../packages/nodes/list/src/createListPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../packages/nodes/paragraph/src/createParagraphPlugin';
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TR,
-} from '../../../../packages/nodes/table/src/createTablePlugin';
+  WithOverride,
+} from '@udecode/plate';
 
 /**
  * Text
