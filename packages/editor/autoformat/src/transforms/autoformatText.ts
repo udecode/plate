@@ -10,7 +10,7 @@ import { AutoformatTextRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatTextOptions<V extends Value>
+export interface AutoformatTextOptions<V extends Value = Value>
   extends AutoformatTextRule<V> {
   text: string;
 }

@@ -255,7 +255,7 @@ type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-type PlatePluginInsertData<V extends Value> = {
+type PlatePluginInsertData<V extends Value = Value> = {
   /**
    * Format to get data. Example data types are text/plain and text/uri-list.
    */

@@ -3,7 +3,7 @@ import { AnyObject } from '../../common/types/utility/AnyObject';
 import { Value } from '../../slate/editor/TEditor';
 import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
 
-export interface TransformOptions<V extends Value>
+export interface TransformOptions<V extends Value = Value>
   extends GetInjectPropsOptions<V> {
   nodeValue?: any;
 }

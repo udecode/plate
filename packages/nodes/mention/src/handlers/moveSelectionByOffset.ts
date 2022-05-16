@@ -2,7 +2,7 @@ import { moveSelection, PlateEditor, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 
-export interface MoveSelectionByOffsetOptions<V extends Value> {
+export interface MoveSelectionByOffsetOptions<V extends Value = Value> {
   query?: (editor: PlateEditor<V>) => boolean;
 }
 

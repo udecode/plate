@@ -5,7 +5,7 @@ import { getNode } from '../../slate/node/getNode';
 import { ENodeEntry } from '../../slate/node/TNodeEntry';
 import { moveNodes } from '../../slate/transforms/moveNodes';
 
-export interface MoveChildrenOptions<V extends Value> {
+export interface MoveChildrenOptions<V extends Value = Value> {
   /**
    * Parent node of the children to move.
    */

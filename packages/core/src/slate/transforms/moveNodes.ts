@@ -3,7 +3,7 @@ import { Modify } from '../../common/types/utility/types';
 import { TEditor, Value } from '../editor/TEditor';
 import { NodeMatchOption } from '../types/NodeMatchOption';
 
-export type MoveNodesOptions<V extends Value> = Modify<
+export type MoveNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.moveNodes>[1]>,
   NodeMatchOption<V>
 >;

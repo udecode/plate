@@ -16,7 +16,7 @@ import { Range } from 'slate';
 import { AutoformatBlockRule } from '../types';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatBlockOptions<V extends Value>
+export interface AutoformatBlockOptions<V extends Value = Value>
   extends AutoformatBlockRule<V> {
   text: string;
 }

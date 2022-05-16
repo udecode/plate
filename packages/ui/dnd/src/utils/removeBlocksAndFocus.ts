@@ -1,6 +1,6 @@
 import {
-  EditorNodesOptions,
   focusEditor,
+  GetNodeEntriesOptions,
   removeNodes,
   TReactEditor,
   unhangRange,
@@ -14,7 +14,7 @@ import { getNodesRange } from './getNodesRange';
  */
 export const removeBlocksAndFocus = <V extends Value>(
   editor: TReactEditor<V>,
-  options: EditorNodesOptions<V>
+  options: GetNodeEntriesOptions<V>
 ) => {
   unhangRange(editor, options?.at, options);
 

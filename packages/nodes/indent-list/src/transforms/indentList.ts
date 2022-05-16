@@ -3,7 +3,7 @@ import { setIndent, SetIndentOptions } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 
-export interface IndentListOptions<V extends Value>
+export interface IndentListOptions<V extends Value = Value>
   extends SetIndentOptions<V> {
   listStyleType?: ListStyleType | string;
 }

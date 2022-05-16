@@ -15,7 +15,7 @@ export interface TCodeBlockElement extends TElement {
   lang?: string;
 }
 
-export interface CodeBlockInsertOptions<V extends Value> {
+export interface CodeBlockInsertOptions<V extends Value = Value> {
   defaultType?: string;
   level?: number;
   insertNodesOptions?: Omit<InsertNodesOptions<V>, 'match'>;

@@ -4,7 +4,7 @@ import { ENode, TNodeMatch } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
 
-export type GetPreviousNodeOptions<V extends Value> = Modify<
+export type GetPreviousNodeOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Editor.previous>[1]>,
   {
     match?: TNodeMatch<ENode<V>>;

@@ -4,7 +4,7 @@ import { TEditor, Value } from '../editor/TEditor';
 import { ENode, TNodeProps } from '../node/TNode';
 import { NodeMatchOption } from '../types/NodeMatchOption';
 
-export type SetNodesOptions<V extends Value> = Modify<
+export type SetNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.setNodes>[2]>,
   NodeMatchOption<V>
 >;

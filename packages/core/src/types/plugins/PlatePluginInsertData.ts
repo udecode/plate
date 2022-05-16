@@ -7,7 +7,7 @@ export type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-export type PlatePluginInsertData<V extends Value> = {
+export type PlatePluginInsertData<V extends Value = Value> = {
   /**
    * Format to get data. Example data types are text/plain and text/uri-list.
    */

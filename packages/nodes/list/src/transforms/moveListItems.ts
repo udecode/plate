@@ -1,7 +1,7 @@
 import {
   createPathRef,
-  EditorNodesOptions,
   getNodeEntries,
+  GetNodeEntriesOptions,
   getParentNode,
   getPluginType,
   PlateEditor,
@@ -16,7 +16,7 @@ import { moveListItemUp } from './moveListItemUp';
 
 export type MoveListItemsOptions = {
   increase?: boolean;
-  at?: EditorNodesOptions<Value>['at'];
+  at?: GetNodeEntriesOptions['at'];
 };
 
 export const moveListItems = <V extends Value>(
