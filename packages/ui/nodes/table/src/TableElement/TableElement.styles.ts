@@ -9,7 +9,9 @@ export const getTableElementStyles = <V extends Value>(
   createStyles(
     { prefixClassNames: 'TableElement', ...props },
     {
-      root: [tw`table w-full my-4 mx-0 border-collapse`],
+      root: [
+        tw`table w-full my-4 mx-0 border-collapse border border-solid border-gray-300`,
+      ],
       tbody: tw`min-w-full`,
     }
   );

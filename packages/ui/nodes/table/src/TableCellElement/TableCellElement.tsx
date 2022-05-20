@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import { useAtom } from 'jotai';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
 import { useReadOnly } from 'slate-react';
+import { useIsCellSelected } from '../hooks/useIsCellSelected';
 import { hoveredColIndexAtom, resizingColAtom } from '../table.atoms';
 import { getTableCellElementStyles } from './TableCellElement.styles';
 import { TableCellElementProps } from './TableCellElement.types';
@@ -36,6 +37,8 @@ export const TableCellElement = <V extends Value>(
   );
   const [, setResizingCol] = useAtom(resizingColAtom, ELEMENT_TABLE);
 
+  const isCellSelected = useIsCellSelected(element);
+
   const handleResize: HandleStyles | undefined =
     ignoreReadOnly || !readOnly
       ? {
@@ -57,9 +60,11 @@ export const TableCellElement = <V extends Value>(
     content,
     resizableWrapper,
     resizable,
+    selectedCell,
     handle,
   } = getTableCellElementStyles({
     ...props,
+    selected: isCellSelected,
     hovered: hoveredColIndex === colIndex,
     readOnly: !ignoreReadOnly && readOnly,
   });
@@ -89,6 +94,12 @@ export const TableCellElement = <V extends Value>(
       {...rootProps}
       {...nodeProps}
     >
+      <div
+        css={selectedCell?.css}
+        className={selectedCell?.className}
+        contentEditable={false}
+      />
+
       <div css={content?.css} className={content?.className}>
         {children}
       </div>

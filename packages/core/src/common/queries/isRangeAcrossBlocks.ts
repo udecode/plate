@@ -11,7 +11,7 @@ export const isRangeAcrossBlocks = <V extends Value>(
   {
     at,
     ...options
-  }: Omit<GetAboveNodeOptions<V>, 'at' | 'match'> & { at?: Range | null } = {}
+  }: Omit<GetAboveNodeOptions<V>, 'at'> & { at?: Range | null } = {}
 ) => {
   if (!at) at = editor.selection;
   if (!at) return false;

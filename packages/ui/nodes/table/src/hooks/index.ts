@@ -3,3 +3,5 @@
  */
 
 export * from './useTableColSizes';
+export { useIsCellSelected } from './useIsCellSelected';
+export { useSelectedCells } from './useSelectedCells';

@@ -6,6 +6,7 @@ import { CSSProp } from 'styled-components';
 export interface TableCellElementStyleProps<V extends Value>
   extends TableCellElementProps<V> {
   hovered: boolean;
+  selected?: boolean;
   readOnly: boolean;
 }
 
@@ -13,6 +14,7 @@ export interface TableCellElementStyles {
   content: CSSProp;
   resizableWrapper: CSSProp;
   resizable: CSSProp;
+  selectedCell: CSSProp;
   handle: CSSProp;
 }
 

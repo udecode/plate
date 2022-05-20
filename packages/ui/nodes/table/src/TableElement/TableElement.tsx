@@ -3,6 +3,7 @@ import { Value, withProviders } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';
+import { useSelectedCells } from '../hooks/useSelectedCells';
 import { useTableColSizes } from '../hooks/useTableColSizes';
 import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
@@ -24,6 +25,11 @@ export const TableElementBase = <V extends Value>({
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);
   }
+
+  useSelectedCells();
+
+  // const _entries = getNodeEntries(editor, {});
+  // const entries = [..._entries];
 
   return (
     <Popover {...props}>

@@ -5,6 +5,7 @@
 export * from './findDescendant';
 export * from './findNode';
 export * from './getBlockAbove';
+export * from './getEdgeBlocksAbove';
 export * from './getChildren';
 export * from './getLastChild';
 export * from './getLastNodeByLevel';

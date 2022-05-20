@@ -7,20 +7,36 @@ import { TableCellElementStyleProps } from './TableCellElement.types';
 export const getTableCellElementStyles = <V extends Value>(
   props: TableCellElementStyleProps<V>
 ) => {
-  const { hovered, hideBorder, readOnly } = props;
+  const { hovered, selected, hideBorder, readOnly } = props;
 
   return createStyles(
     { prefixClassNames: 'TableCellElement', ...props },
     {
       root: [
         tw`relative p-0 overflow-visible bg-white`,
-        hideBorder ? tw`border-none` : tw`border border-gray-300`,
+        hideBorder
+          ? tw`border-none`
+          : tw`border-t border-l border-b-0 border-r-0 border-gray-300`,
+        selected && tw`border border-blue-500`,
         css`
           min-width: 48px;
+          *::selection {
+            background: none;
+          }
         `,
       ],
       content: tw`relative px-3 py-2 z-10`,
       resizableWrapper: [tw`absolute w-full h-full top-0`],
+      selectedCell: [
+        !selected && tw`hidden`,
+        tw`absolute w-full h-full`,
+        selected &&
+          css`
+            z-index: 12;
+            background-color: rgb(179, 212, 255);
+            opacity: 0.3;
+          `,
+      ],
       handle: [
         tw`absolute`,
         !readOnly && hovered && tw`bg-blue-500`,
