@@ -94,12 +94,6 @@ export const TableCellElement = <V extends Value>(
       {...rootProps}
       {...nodeProps}
     >
-      <div
-        css={selectedCell?.css}
-        className={selectedCell?.className}
-        contentEditable={false}
-      />
-
       <div css={content?.css} className={content?.className}>
         {children}
       </div>
@@ -127,6 +121,12 @@ export const TableCellElement = <V extends Value>(
 
         <div css={handle?.css} className={handle?.className} />
       </div>
+
+      <div
+        css={selectedCell?.css}
+        className={selectedCell?.className}
+        contentEditable={false}
+      />
     </td>
   );
 };

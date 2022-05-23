@@ -20,16 +20,16 @@ export const getTableCellElementStyles = <V extends Value>(
         selected && tw`border border-blue-500`,
         css`
           min-width: 48px;
-          *::selection {
-            background: none;
-          }
         `,
       ],
       content: tw`relative px-3 py-2 z-10`,
-      resizableWrapper: [tw`absolute w-full h-full top-0`],
+      resizableWrapper: [
+        tw`absolute w-full h-full top-0`,
+        selected && tw`hidden`,
+      ],
       selectedCell: [
         !selected && tw`hidden`,
-        tw`absolute w-full h-full`,
+        tw`absolute top-0 left-0 w-full h-full pointer-events-none`,
         selected &&
           css`
             z-index: 12;

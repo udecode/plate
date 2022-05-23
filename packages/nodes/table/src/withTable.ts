@@ -1,7 +1,6 @@
 import {
   collapseSelection,
   getEndPoint,
-  getNodeChildren,
   getNodeEntries,
   getPluginType,
   getPointAfter,
@@ -10,11 +9,13 @@ import {
   isCollapsed,
   isElement,
   PlateEditor,
-  removeNodes,
   Value,
 } from '@udecode/plate-core';
 import { Node, Point } from 'slate';
+import { getSubTableAbove } from './queries/getSubTableAbove';
 import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
+import { withGetFragmentTable } from './withGetFragmentTable';
+import { withInsertFragmentTable } from './withInsertFragmentTable';
 
 export const withTable = <
   V extends Value = Value,
@@ -30,7 +31,13 @@ export const withTable = <
     );
   };
 
-  const { deleteBackward, deleteForward, deleteFragment, insertText } = editor;
+  const {
+    deleteBackward,
+    deleteForward,
+    deleteFragment,
+    insertText,
+    insertFragment,
+  } = editor;
 
   const preventDeleteCell = (
     operation: any,
@@ -68,34 +75,37 @@ export const withTable = <
   };
 
   editor.deleteFragment = () => {
-    const { selection } = editor;
-    let _nodes = getNodeEntries(editor, {
-      match: matchCells,
-      at: selection?.anchor.path,
-    });
-    const [start] = Array.from(_nodes);
-    _nodes = getNodeEntries(editor, {
-      match: matchCells,
-      at: selection?.focus.path,
-    });
-    const [end] = Array.from(_nodes);
-    // Skip deletes if they start or end in a table cell, unless start & end in the same cell
-    if ((start || end) && start?.[0] !== end?.[0]) {
-      const _cells = getNodeEntries(editor, {
-        match: matchCells,
-      });
-      // Clear cells content
-      const cells = Array.from(_cells);
-      for (const [, path] of cells) {
-        for (const [, childPath] of getNodeChildren(editor, path, {
-          reverse: true,
-        })) {
-          removeNodes(editor, { at: childPath });
-        }
-      }
-      collapseSelection(editor);
-      return;
-    }
+    const table = getSubTableAbove(editor);
+    if (table) return;
+
+    // const { selection } = editor;
+    // let _nodes = getNodeEntries(editor, {
+    //   match: matchCells,
+    //   at: selection?.anchor.path,
+    // });
+    // const [start] = Array.from(_nodes);
+    // _nodes = getNodeEntries(editor, {
+    //   match: matchCells,
+    //   at: selection?.focus.path,
+    // });
+    // const [end] = Array.from(_nodes);
+    // // Skip deletes if they start or end in a table cell, unless start & end in the same cell
+    // if ((start || end) && start?.[0] !== end?.[0]) {
+    //   const _cells = getNodeEntries(editor, {
+    //     match: matchCells,
+    //   });
+    //   // Clear cells content
+    //   const cells = Array.from(_cells);
+    //   for (const [, path] of cells) {
+    //     for (const [, childPath] of getNodeChildren(editor, path, {
+    //       reverse: true,
+    //     })) {
+    //       removeNodes(editor, { at: childPath });
+    //     }
+    //   }
+    //   collapseSelection(editor);
+    //   return;
+    // }
     deleteFragment();
   };
 
@@ -137,6 +147,9 @@ export const withTable = <
     getEndPoint,
     getPointAfter
   );
+
+  editor = withGetFragmentTable<V, E>(editor);
+  editor = withInsertFragmentTable<V, E>(editor);
 
   return editor;
 };

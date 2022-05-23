@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useEditorRef } from '@udecode/plate-core';
+import { TElement, useEditorRef } from '@udecode/plate-core';
 import { useAtom } from 'jotai';
 import { useSelected } from 'slate-react';
-import { getGridCellsAbove } from '../../../../../nodes/table/src/queries/getGridCellsAbove';
+import { getSubTableAbove } from '../../../../../nodes/table/src/queries/getSubTableAbove';
 import { selectedCellsAtom } from '../table.atoms';
 
 /**
@@ -21,7 +21,9 @@ export const useSelectedCells = () => {
   }, [selected, editor, setSelectedCells]);
 
   useEffect(() => {
-    const cells = getGridCellsAbove(editor);
+    const cells = getSubTableAbove(editor, { format: 'cell' }) as
+      | TElement[]
+      | undefined;
     if (cells && cells.length > 1) {
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);

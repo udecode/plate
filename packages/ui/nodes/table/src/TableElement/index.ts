@@ -5,4 +5,3 @@
 export * from './TableElement.styles';
 export * from './TableElement';
 export * from './TableElement.types';
-export { getGridCellsByRange } from '../../../../../nodes/table/src/queries/getGridCellsByRange';

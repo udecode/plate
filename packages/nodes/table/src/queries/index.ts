@@ -4,10 +4,10 @@
 
 export * from './getCellInNextTableRow';
 export * from './getCellInPreviousTableRow';
-export * from './getGridCellsByRange';
-export * from './getGridCellsAbove';
+export * from './getSubTableAbove';
 export * from './getNextTableCell';
 export * from './getPreviousTableCell';
 export * from './getTableCellEntry';
 export * from './getTableColumnCount';
 export * from './getTableColumnIndex';
+export { getSubTableByRange } from './getSubTableByRange';
