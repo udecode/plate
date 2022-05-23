@@ -33,7 +33,7 @@ export const getSubTableAbove = <V extends Value = Value>(
 
   if (edges) {
     const [start, end] = edges;
-    
+
     if (!Path.equals(start[1], end[1])) {
       return getSubTableByRange(editor, {
         at: {
