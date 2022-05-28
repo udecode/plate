@@ -1,5 +1,6 @@
 import {
   getBlockAbove,
+  getEndPoint,
   getNode,
   getStartPoint,
   hasNode,
@@ -9,7 +10,6 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { getEndPoint } from '../../../../core/src/slate/editor/getEndPoint';
 import { getSubTableAbove } from '../queries/getSubTableAbove';
 import { getCellTypes } from '../utils/getCellType';
 
