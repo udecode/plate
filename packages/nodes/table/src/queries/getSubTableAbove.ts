@@ -3,6 +3,7 @@ import {
   getEdgeBlocksAbove,
   PlateEditor,
   TElement,
+  TElementEntry,
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
@@ -18,12 +19,13 @@ export type GetSubTableAboveOptions<
 > = GetAboveNodeOptions<V> & Pick<GetSubTableByRangeOptions, 'format'>;
 
 /**
- * Get grid cells above a location
+ * Get sub table above anchor and focus.
+ * Format: tables or cells.
  */
 export const getSubTableAbove = <V extends Value = Value>(
   editor: PlateEditor<V>,
   { format = 'table', ...options }: GetSubTableAboveOptions<V> = {}
-) => {
+): TElementEntry[] => {
   const edges = getEdgeBlocksAbove<TElement>(editor, {
     match: {
       type: getCellTypes(editor),
@@ -53,9 +55,11 @@ export const getSubTableAbove = <V extends Value = Value>(
     if (format === 'table') {
       const table = getEmptyTableNode(editor, { rowCount: 1 });
       table.children[0].children = [start[0]];
-      return table;
+      return [[table, start[1].slice(0, -2)]];
     }
 
-    return [start[0]];
+    return [start];
   }
+
+  return [];
 };

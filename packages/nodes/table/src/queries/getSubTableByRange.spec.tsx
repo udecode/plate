@@ -34,7 +34,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -78,7 +78,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -120,7 +120,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -153,8 +153,10 @@ describe('getSubTableByRange', () => {
       const output = ((
         <htable>
           <htr>
+            <htd>11</htd>
+          </htr>
+          <htr>
             <htd>21</htd>
-            <htd>22</htd>
           </htr>
         </htable>
       ) as any) as TElement;
@@ -163,7 +165,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -209,7 +211,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -255,7 +257,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -301,7 +303,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -347,7 +349,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor);
+      const table = getSubTableAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });

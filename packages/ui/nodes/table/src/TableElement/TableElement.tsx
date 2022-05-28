@@ -34,9 +34,6 @@ export const TableElementBase = <V extends Value>({
 
   useSelectedCells();
 
-  // const _entries = getNodeEntries(editor, {});
-  // const entries = [..._entries];
-
   return (
     <Popover {...props}>
       <table

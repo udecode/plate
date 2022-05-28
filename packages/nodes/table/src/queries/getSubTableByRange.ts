@@ -1,4 +1,10 @@
-import { getNode, PlateEditor, TElement, Value } from '@udecode/plate-core';
+import {
+  getNode,
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
+} from '@udecode/plate-core';
 import { Range } from 'slate';
 import { TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
@@ -20,7 +26,7 @@ export interface GetSubTableByRangeOptions {
 export const getSubTableByRange = <V extends Value>(
   editor: PlateEditor<V>,
   { at, format = 'table' }: GetSubTableByRangeOptions
-) => {
+): TElementEntry[] => {
   const startCellPath = at.anchor.path;
   const endCellPath = at.focus.path;
 
@@ -48,17 +54,20 @@ export const getSubTableByRange = <V extends Value>(
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
 
+  const cellEntries: TElementEntry[] = [];
+
   while (true) {
-    const cell = getNode<TElement>(
-      editor,
-      tablePath.concat([rowIndex, colIndex])
-    );
+    const cellPath = tablePath.concat([rowIndex, colIndex]);
+
+    const cell = getNode<TElement>(editor, cellPath);
     if (!cell) break;
 
     const rows = table.children[rowIndex - startRowIndex]
       .children as TElement[];
 
     rows[colIndex - startColIndex] = cell;
+
+    cellEntries.push([cell, cellPath]);
 
     if (colIndex + 1 <= endColIndex) {
       colIndex += 1;
@@ -71,14 +80,8 @@ export const getSubTableByRange = <V extends Value>(
   }
 
   if (format === 'cell') {
-    const cells: TElement[] = [];
-
-    table.children.forEach((row) => {
-      cells.push(...(row.children as TElement[]));
-    });
-
-    return cells;
+    return cellEntries;
   }
 
-  return table;
+  return [[table, tablePath]];
 };

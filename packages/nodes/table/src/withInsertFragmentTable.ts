@@ -11,11 +11,16 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { cloneDeep } from 'lodash';
-import { getCellTypes } from './utils/getCellType';
+import { Path } from 'slate';
+import { getSubTableAbove } from './queries/getSubTableAbove';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
-export const tableFragmentTo = () => {};
-
+/**
+ * If inserting a table,
+ * If block above anchor is a table,
+ * - Replace each cell above by the inserted table until out of bounds.
+ * - Select the inserted cells.
+ */
 export const withInsertFragmentTable = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -25,17 +30,13 @@ export const withInsertFragmentTable = <
   const { insertFragment } = editor;
 
   editor.insertFragment = (fragment) => {
-    /**
-     * If selection in table:
-     * - delete table
-     * - delete t
-     */
     const insertedTable = fragment.find(
       (n) => n.type === getPluginType(editor, ELEMENT_TABLE)
     );
 
     if (insertedTable) {
       const tableEntry = getBlockAbove(editor, {
+        // TODO
         at: editor.selection?.anchor,
         match: {
           type: getPluginType(editor, ELEMENT_TABLE),
@@ -44,18 +45,15 @@ export const withInsertFragmentTable = <
 
       // inserting inside table
       if (tableEntry) {
-        // get anchor cell path
-        const cellEntry = getBlockAbove(editor, {
-          at: editor.selection?.anchor,
-          match: {
-            type: getCellTypes(editor),
-          },
+        const [cellEntry] = getSubTableAbove(editor, {
+          format: 'cell',
         });
 
         if (cellEntry) {
           const [, startCellPath] = cellEntry;
           const cellPath = [...startCellPath];
           const startColIndex = cellPath[cellPath.length - 1];
+          let lastCellPath: Path | null = null;
 
           const insertedRows = insertedTable.children as TElement[];
           insertedRows.forEach((row, rowIndex) => {
@@ -72,16 +70,8 @@ export const withInsertFragmentTable = <
                 insertNodes<TElement>(editor, cloneDeep(cell), {
                   at: cellPath,
                 });
-                select(editor, {
-                  anchor: {
-                    offset: 0,
-                    path: startCellPath,
-                  },
-                  focus: {
-                    offset: 0,
-                    path: cellPath,
-                  },
-                });
+
+                lastCellPath = [...cellPath];
               });
 
               if (cellIndex < insertedCells.length - 1) {
@@ -94,6 +84,19 @@ export const withInsertFragmentTable = <
               cellPath[cellPath.length - 2] += 1;
             }
           });
+
+          if (lastCellPath) {
+            select(editor, {
+              anchor: {
+                offset: 0,
+                path: startCellPath,
+              },
+              focus: {
+                offset: 0,
+                path: lastCellPath,
+              },
+            });
+          }
 
           return;
         }

@@ -9,3 +9,4 @@ export * from './deleteRow';
 export * from './deleteTable';
 export * from './insertTable';
 export * from './setTableColSize';
+export { moveSelectionFromCell } from './moveSelectionFromCell';

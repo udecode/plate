@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { TElement, useEditorRef } from '@udecode/plate-core';
+import { useEditorRef } from '@udecode/plate-core';
 import { useAtom } from 'jotai';
-import { useSelected } from 'slate-react';
+import { useReadOnly, useSelected } from 'slate-react';
 import { getSubTableAbove } from '../../../../../nodes/table/src/queries/getSubTableAbove';
 import { selectedCellsAtom } from '../table.atoms';
 
@@ -11,25 +11,28 @@ import { selectedCellsAtom } from '../table.atoms';
  * No selection -> unset
  */
 export const useSelectedCells = () => {
+  const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorRef();
 
   const [selectedCells, setSelectedCells] = useAtom(selectedCellsAtom);
 
   useEffect(() => {
-    if (!selected) setSelectedCells(null);
-  }, [selected, editor, setSelectedCells]);
+    if (!selected || readOnly) setSelectedCells(null);
+  }, [selected, editor, setSelectedCells, readOnly]);
 
   useEffect(() => {
-    const cells = getSubTableAbove(editor, { format: 'cell' }) as
-      | TElement[]
-      | undefined;
-    if (cells && cells.length > 1) {
+    if (readOnly) return;
+
+    const cellEntries = getSubTableAbove(editor, { format: 'cell' });
+    if (cellEntries.length > 1) {
+      const cells = cellEntries.map((entry) => entry[0]);
+
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
       }
     } else if (selectedCells) {
       setSelectedCells(null);
     }
-  }, [editor, editor.selection, selectedCells, setSelectedCells]);
+  }, [editor, editor.selection, readOnly, selectedCells, setSelectedCells]);
 };

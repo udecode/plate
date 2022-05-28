@@ -1,14 +1,11 @@
-import {
-  findNode,
-  getPluginType,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { getSubTableAbove } from './queries/getSubTableAbove';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
-export const tableFragmentTo = () => {};
-
+/**
+ * If selection is in a table, get subtable above.
+ * TODO: fragment with more than table
+ */
 export const withGetFragmentTable = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -17,21 +14,21 @@ export const withGetFragmentTable = <
 ) => {
   const { getFragment } = editor;
 
-  editor.getFragment = () => {
-    // TODO: fragment with more than table
-    // const fragment = getFragment();
+  editor.getFragment = (): any[] => {
+    let fragment = getFragment();
 
-    const table = findNode(editor, {
-      match: {
-        type: getPluginType(editor, ELEMENT_TABLE),
-      },
+    fragment = fragment.map((node) => {
+      if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
+        const subTable = getSubTableAbove(editor);
+        if (subTable.length) {
+          return subTable[0][0];
+        }
+      }
+
+      return node;
     });
 
-    if (table) {
-      return [getSubTableAbove(editor)] as any;
-    }
-
-    return getFragment();
+    return fragment;
   };
 
   return editor;

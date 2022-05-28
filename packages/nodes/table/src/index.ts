@@ -9,3 +9,4 @@ export * from './withTable';
 export * from './queries/index';
 export * from './transforms/index';
 export * from './utils/index';
+export { moveSelectionFromCell } from './transforms/moveSelectionFromCell';
