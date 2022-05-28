@@ -4,10 +4,10 @@
 
 export * from './getCellInNextTableRow';
 export * from './getCellInPreviousTableRow';
-export * from './getSubTableAbove';
 export * from './getNextTableCell';
 export * from './getPreviousTableCell';
+export * from './getSubTableAbove';
+export * from './getSubTableByRange';
 export * from './getTableCellEntry';
 export * from './getTableColumnCount';
 export * from './getTableColumnIndex';
-export { getSubTableByRange } from './getSubTableByRange';
