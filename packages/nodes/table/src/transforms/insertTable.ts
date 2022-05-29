@@ -21,7 +21,10 @@ export const insertTable = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    insertNodes<TTableElement>(editor, getEmptyTableNode(editor, { header }));
+    insertNodes<TTableElement>(
+      editor,
+      getEmptyTableNode(editor, { header, rowCount: 2, colCount: 2 })
+    );
     if (editor.selection) {
       const tableEntry = getAboveNode(editor, {
         match: { type: getPluginType(editor, ELEMENT_TABLE) },

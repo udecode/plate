@@ -5,7 +5,9 @@ import { PopoverProps } from '@udecode/plate-ui-popover';
 import { CSSProp } from 'styled-components';
 
 export interface TableElementStyleProps<V extends Value>
-  extends TableElementProps<V> {}
+  extends TableElementProps<V> {
+  isSelectingCell?: boolean;
+}
 
 export interface TableElementStyles {
   tbody: CSSProp;

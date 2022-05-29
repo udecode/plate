@@ -2,8 +2,10 @@ import React from 'react';
 import { Value, withProviders } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { Provider } from 'jotai';
+import { Provider, useAtom } from 'jotai';
+import { useSelectedCells } from '../hooks/useSelectedCells';
 import { useTableColSizes } from '../hooks/useTableColSizes';
+import { selectedCellsAtom } from '../table.atoms';
 import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
@@ -17,13 +19,20 @@ export const TableElementBase = <V extends Value>({
 
   const rootProps = getRootProps(props);
 
-  const { root, tbody } = getTableElementStyles(props);
+  const [selectedCells] = useAtom(selectedCellsAtom);
+
+  const { root, tbody } = getTableElementStyles({
+    ...props,
+    isSelectingCell: !!selectedCells,
+  });
 
   let colSizes = useTableColSizes(element);
 
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);
   }
+
+  useSelectedCells();
 
   return (
     <Popover {...props}>

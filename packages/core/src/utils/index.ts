@@ -16,6 +16,7 @@ export * from './getPlugin';
 export * from './getPluginInjectProps';
 export * from './getPluginOptions';
 export * from './getPluginType';
+export * from './getPluginTypes';
 export * from './getPlugins';
 export * from './getPluginsByKey';
 export * from './getRenderNodeProps';

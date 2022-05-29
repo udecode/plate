@@ -32,7 +32,7 @@ npm install @udecode/plate-ui-mention
       id="mention"
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.mentions}
-      onChange={e => console.log(e)}
+      onChange={e => console.info(e)}
       plugins={plugins}
     >
       <MentionCombobox items={CONFIG.mentionItems} />
