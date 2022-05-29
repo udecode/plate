@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-table-ui': minor
+'@udecode/plate-ui-table': minor
 ---
 
 - `TableElement`
