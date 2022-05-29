@@ -9,7 +9,7 @@ import { Range } from 'slate';
 import { TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export interface GetSubTableByRangeOptions {
+export interface GetTableGridByRangeOptions {
   at: Range;
 
   /**
@@ -23,9 +23,9 @@ export interface GetSubTableByRangeOptions {
 /**
  * Get sub table between 2 cell paths.
  */
-export const getSubTableByRange = <V extends Value>(
+export const getTableGridByRange = <V extends Value>(
   editor: PlateEditor<V>,
-  { at, format = 'table' }: GetSubTableByRangeOptions
+  { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
   const startCellPath = at.anchor.path;
   const endCellPath = at.focus.path;

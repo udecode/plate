@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-core';
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
-import { getSubTableAbove } from './queries/getSubTableAbove';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
@@ -45,7 +45,7 @@ export const withInsertFragmentTable = <
 
       // inserting inside table
       if (tableEntry) {
-        const [cellEntry] = getSubTableAbove(editor, {
+        const [cellEntry] = getTableGridAbove(editor, {
           format: 'cell',
         });
 

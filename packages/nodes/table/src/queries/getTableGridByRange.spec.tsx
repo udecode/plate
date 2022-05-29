@@ -2,12 +2,12 @@
 
 import { createPlateEditor, PlateEditor, TElement } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getSubTableAbove } from './getSubTableAbove';
+import { getTableGridAbove } from './getTableGridAbove';
 
 jsx;
 
 // https://github.com/udecode/editor-protocol/issues/12
-describe('getSubTableByRange', () => {
+describe('getTableGridByRange', () => {
   describe('when selection is in cell 1', () => {
     it('should be [cell 1]', () => {
       const input = ((
@@ -34,7 +34,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -78,7 +78,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -120,7 +120,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -165,7 +165,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -211,7 +211,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -257,7 +257,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -303,7 +303,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });
@@ -349,7 +349,7 @@ describe('getSubTableByRange', () => {
         editor: input,
       });
 
-      const table = getSubTableAbove(editor)[0][0];
+      const table = getTableGridAbove(editor)[0][0];
 
       expect(table).toEqual(output);
     });

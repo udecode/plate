@@ -10,9 +10,9 @@ import { Path } from 'slate';
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 import {
-  getSubTableByRange,
   GetSubTableByRangeOptions,
-} from './getSubTableByRange';
+  getTableGridByRange,
+} from './getTableGridByRange';
 
 export type GetSubTableAboveOptions<
   V extends Value = Value
@@ -22,7 +22,7 @@ export type GetSubTableAboveOptions<
  * Get sub table above anchor and focus.
  * Format: tables or cells.
  */
-export const getSubTableAbove = <V extends Value = Value>(
+export const getTableGridAbove = <V extends Value = Value>(
   editor: PlateEditor<V>,
   { format = 'table', ...options }: GetSubTableAboveOptions<V> = {}
 ): TElementEntry[] => {
@@ -37,7 +37,7 @@ export const getSubTableAbove = <V extends Value = Value>(
     const [start, end] = edges;
 
     if (!Path.equals(start[1], end[1])) {
-      return getSubTableByRange(editor, {
+      return getTableGridByRange(editor, {
         at: {
           anchor: {
             path: start[1],

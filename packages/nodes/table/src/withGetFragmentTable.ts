@@ -1,5 +1,5 @@
 import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
-import { getSubTableAbove } from './queries/getSubTableAbove';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
@@ -19,7 +19,7 @@ export const withGetFragmentTable = <
 
     fragment = fragment.map((node) => {
       if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
-        const subTable = getSubTableAbove(editor);
+        const subTable = getTableGridAbove(editor);
         if (subTable.length) {
           return subTable[0][0];
         }

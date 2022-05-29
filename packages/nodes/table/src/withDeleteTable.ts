@@ -14,7 +14,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
-import { getSubTableAbove } from './queries/getSubTableAbove';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
 
 /**
@@ -91,7 +91,7 @@ export const withDeleteTable = <
   };
 
   editor.deleteFragment = () => {
-    const cellEntries = getSubTableAbove(editor, { format: 'cell' });
+    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     if (cellEntries.length > 1) {
       withoutNormalizing(editor, () => {
         cellEntries.forEach(([, cellPath]) => {

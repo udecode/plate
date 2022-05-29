@@ -2,7 +2,7 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getSubTableAbove } from './queries/getSubTableAbove';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 import { withGetFragmentTable } from './withGetFragmentTable';
 
 jsx;
@@ -40,7 +40,7 @@ describe('withGetFragmentTable', () => {
 
       const fragment = editor.getFragment();
 
-      expect(fragment).toEqual(getSubTableAbove(editor)[0]);
+      expect(fragment).toEqual(getTableGridAbove(editor)[0]);
     });
   });
 });

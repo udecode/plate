@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useEditorRef } from '@udecode/plate-core';
+import { getTableGridAbove } from '@udecode/plate-table';
 import { useAtom } from 'jotai';
 import { useReadOnly, useSelected } from 'slate-react';
-import { getSubTableAbove } from '../../../../../nodes/table/src/queries/getSubTableAbove';
 import { selectedCellsAtom } from '../table.atoms';
 
 /**
@@ -24,7 +24,7 @@ export const useSelectedCells = () => {
   useEffect(() => {
     if (readOnly) return;
 
-    const cellEntries = getSubTableAbove(editor, { format: 'cell' });
+    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     if (cellEntries.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
 

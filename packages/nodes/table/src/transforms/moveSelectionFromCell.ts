@@ -10,7 +10,7 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { getSubTableAbove } from '../queries/getSubTableAbove';
+import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
 /**
@@ -34,7 +34,7 @@ export const moveSelectionFromCell = <V extends Value = Value>(
   } = {}
 ) => {
   if (edge) {
-    const cellEntries = getSubTableAbove(editor, { format: 'cell' });
+    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
     if (cellEntries.length > 0) {
       const [, firstCellPath] = cellEntries[0];
