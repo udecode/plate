@@ -813,15 +813,9 @@ const table: any = (
     </hp>
     {createTable()}
     <hp>
-      This table is just a basic example of rendering a table, and it doesn't
-      have fancy functionality. But you could augment it to add support for
-      navigating with arrow keys, displaying table headers, adding column and
-      rows, or even formulas if you wanted to get really crazy!
+      This table is an example of rendering a table spanning multiple columns:
     </hp>
     {createSpanningTable()}
-    <hp>
-      This table is an example of rendering a table spanning multiple columns.
-    </hp>
   </fragment>
 );
 
