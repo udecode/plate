@@ -40,7 +40,7 @@ describe('withGetFragmentTable', () => {
 
       const fragment = editor.getFragment();
 
-      expect(fragment).toEqual(getTableGridAbove(editor)[0]);
+      expect(fragment).toEqual([getTableGridAbove(editor)[0][0]]);
     });
   });
 });
