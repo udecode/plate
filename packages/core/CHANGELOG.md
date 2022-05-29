@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 11.1.0
+
+### Minor Changes
+
+- [#1546](https://github.com/udecode/plate/pull/1546) by [@zbeyens](https://github.com/zbeyens) –
+  - `getEdgeBlocksAbove`: Get the edge blocks above a location (default: selection).
+  - `getPluginTypes`: Get plugin types option by plugin keys.
+
 ## 11.0.6
 
 ### Patch Changes
