@@ -2,6 +2,17 @@
 '@udecode/plate-table': minor
 ---
 
+- `getTableGridAbove`: Get sub table above anchor and focus
+- `getTableGridByRange`: Get sub table between 2 cell paths.
+- `moveSelectionFromCell`: Move selection by cell unit.
+- `getCellTypes`: Get td and th types.
+- `getEmptyCellNode`, `getEmptyRowNode`, `getEmptyTableNode`: `cellChildren` option
+- `getEmptyTableNode`: `rowCount`, `colCount` options
+- `preventDeleteTableCell`
+- `withDeleteTable`: Prevent cell deletion
+- `withGetFragmentTable`: If selection is in a table, get subtable above
+- `withInsertFragmentTable`
+
 Cell selection:
 - https://github.com/udecode/editor-protocol/issues/26
 - https://github.com/udecode/editor-protocol/issues/27

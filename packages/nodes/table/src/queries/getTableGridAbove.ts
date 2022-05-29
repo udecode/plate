@@ -10,13 +10,13 @@ import { Path } from 'slate';
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 import {
-  GetSubTableByRangeOptions,
   getTableGridByRange,
+  GetTableGridByRangeOptions,
 } from './getTableGridByRange';
 
-export type GetSubTableAboveOptions<
+export type GetTableGridAboveOptions<
   V extends Value = Value
-> = GetAboveNodeOptions<V> & Pick<GetSubTableByRangeOptions, 'format'>;
+> = GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
 
 /**
  * Get sub table above anchor and focus.
@@ -24,7 +24,7 @@ export type GetSubTableAboveOptions<
  */
 export const getTableGridAbove = <V extends Value = Value>(
   editor: PlateEditor<V>,
-  { format = 'table', ...options }: GetSubTableAboveOptions<V> = {}
+  { format = 'table', ...options }: GetTableGridAboveOptions<V> = {}
 ): TElementEntry[] => {
   const edges = getEdgeBlocksAbove<TElement>(editor, {
     match: {

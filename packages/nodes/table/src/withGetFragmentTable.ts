@@ -4,7 +4,6 @@ import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
  * If selection is in a table, get subtable above.
- * TODO: fragment with more than table
  */
 export const withGetFragmentTable = <
   V extends Value = Value,

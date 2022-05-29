@@ -36,7 +36,6 @@ export const withInsertFragmentTable = <
 
     if (insertedTable) {
       const tableEntry = getBlockAbove(editor, {
-        // TODO
         at: editor.selection?.anchor,
         match: {
           type: getPluginType(editor, ELEMENT_TABLE),

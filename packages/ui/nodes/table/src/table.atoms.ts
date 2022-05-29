@@ -8,8 +8,3 @@ export const resizingColAtom = atom<{ index: number; width: number } | null>(
 );
 
 export const selectedCellsAtom = atom<TElement[] | null>(null);
-
-/**
- * Is table cell selected
- */
-// export const useTableCellSelected = () =>
