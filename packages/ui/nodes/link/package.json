@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-link",
-  "version": "11.0.6",
+  "version": "11.1.0",
   "description": "Link UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.0.6",
-    "@udecode/plate-link": "11.0.6",
-    "@udecode/plate-styled-components": "11.0.6",
-    "@udecode/plate-ui-toolbar": "11.0.6"
+    "@udecode/plate-core": "11.1.0",
+    "@udecode/plate-link": "11.1.0",
+    "@udecode/plate-styled-components": "11.1.0",
+    "@udecode/plate-ui-toolbar": "11.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

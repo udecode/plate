@@ -1,5 +1,17 @@
 # @udecode/plate-table-ui
 
+## 11.1.0
+
+### Minor Changes
+
+- [#1546](https://github.com/udecode/plate/pull/1546) by [@zbeyens](https://github.com/zbeyens) –
+  - `TableElement`
+    - set `table-layout: fixed`
+    - `useSelectedCells`: set selected cells on selection change (memo)
+  - `TableCellElement`
+    - set bg color when cell is selected
+    - `useIsCellSelected`
+
 ## 11.0.6
 
 ## 11.0.5
