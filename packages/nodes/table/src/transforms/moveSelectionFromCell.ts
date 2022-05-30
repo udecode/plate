@@ -1,7 +1,6 @@
 import {
   getBlockAbove,
   getEndPoint,
-  getNode,
   getStartPoint,
   hasNode,
   moveSelection,
@@ -55,14 +54,8 @@ export const moveSelectionFromCell = <V extends Value = Value>(
 
       if (hasNode(editor, anchorPath) && hasNode(editor, focusPath)) {
         select(editor, {
-          anchor: {
-            path: anchorPath.concat([0]),
-            offset: 0,
-          },
-          focus: {
-            path: focusPath.concat([0]),
-            offset: 0,
-          },
+          anchor: getStartPoint(editor, anchorPath),
+          focus: getStartPoint(editor, focusPath),
         });
       }
       return true;
@@ -83,9 +76,8 @@ export const moveSelectionFromCell = <V extends Value = Value>(
 
     nextCellPath[nextCellPath.length - 2] += offset;
 
-    const nextCell = getNode(editor, nextCellPath);
-    if (nextCell) {
-      select(editor, { path: nextCellPath.concat([0]), offset: 0 });
+    if (hasNode(editor, nextCellPath)) {
+      select(editor, getStartPoint(editor, nextCellPath));
     } else {
       const tablePath = cellPath.slice(0, -2);
 
