@@ -1,5 +1,12 @@
 # @udecode/plate-table
 
+## 11.1.1
+
+### Patch Changes
+
+- [#1548](https://github.com/udecode/plate/pull/1548) by [@zbeyens](https://github.com/zbeyens) –
+  - fix arrow navigation inside table cell having a block (e.g. paragraph)
+
 ## 11.1.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "11.1.0",
+  "version": "11.1.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -66,10 +66,10 @@
     "@udecode/plate-paragraph": "11.1.0",
     "@udecode/plate-reset-node": "11.1.0",
     "@udecode/plate-select": "11.1.0",
-    "@udecode/plate-serializer-csv": "11.1.0",
-    "@udecode/plate-serializer-docx": "11.1.0",
+    "@udecode/plate-serializer-csv": "11.1.1",
+    "@udecode/plate-serializer-docx": "11.1.1",
     "@udecode/plate-serializer-md": "11.1.0",
-    "@udecode/plate-table": "11.1.0",
+    "@udecode/plate-table": "11.1.1",
     "@udecode/plate-trailing-block": "11.1.0"
   },
   "peerDependencies": {
