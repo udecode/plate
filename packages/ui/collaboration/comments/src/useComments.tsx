@@ -17,7 +17,7 @@ import { NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
 
-export type OnSubmitComment = (commentText: string) => Promise<void>;
+export type OnSubmitComment = (commentText: string) => Promise<Thread>;
 
 function replaceElement<T>(
   elements: T[],
@@ -227,7 +227,7 @@ export function useComments({
   );
 
   const onSubmitComment = useCallback<OnSubmitComment>(
-    async function onSubmitComment(commentText: string) {
+    async function onSubmitComment(commentText: string): Promise<Thread> {
       const comment = {
         id: Math.floor(Math.random() * 1000), // FIXME
         text: commentText,
@@ -239,6 +239,7 @@ export function useComments({
         comments: [...thread!.comments, comment],
       };
       updateThread(newThread);
+      return newThread;
     },
     [retrieveUser, thread, updateThread]
   );
