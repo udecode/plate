@@ -22,6 +22,8 @@ export * from './getPluginsByKey';
 export * from './getRenderNodeProps';
 export * from './getSlateClass';
 export * from './hexToBase64';
+export * from './environment';
+export * from './hotkeys';
 export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepPlugins';
 export * from './mergeDeepToNodes';

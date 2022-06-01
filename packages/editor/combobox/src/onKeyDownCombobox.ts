@@ -1,8 +1,10 @@
 import {
+  Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
+import isHotkey from 'is-hotkey';
 import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
 import {
   comboboxActions,
@@ -37,7 +39,7 @@ export const onKeyDownCombobox = <
 
   const onSelectItem = store.get.onSelectItem();
 
-  if (event.key === 'ArrowDown') {
+  if (isHotkey('down', event)) {
     event.preventDefault();
 
     const newIndex = getNextWrappingIndex(
@@ -50,7 +52,7 @@ export const onKeyDownCombobox = <
     comboboxActions.highlightedIndex(newIndex);
     return;
   }
-  if (event.key === 'ArrowUp') {
+  if (isHotkey('up', event)) {
     event.preventDefault();
 
     const newIndex = getNextWrappingIndex(
@@ -63,13 +65,13 @@ export const onKeyDownCombobox = <
     comboboxActions.highlightedIndex(newIndex);
     return;
   }
-  if (event.key === 'Escape') {
+  if (isHotkey('escape', event)) {
     event.preventDefault();
     comboboxActions.reset();
     return;
   }
 
-  if (['Tab', 'Enter'].includes(event.key)) {
+  if (Hotkeys.isTab(editor, event) || isHotkey('enter', event)) {
     event.preventDefault();
     event.stopPropagation();
     if (filteredItems[highlightedIndex]) {

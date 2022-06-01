@@ -1,6 +1,12 @@
 ---
-"@udecode/plate-indent": patch
-"@udecode/plate-list": patch
+"@udecode/plate-combobox": minor
+"@udecode/plate-code-block": minor
+"@udecode/plate-table": minor
+"@udecode/plate-indent": minor
+"@udecode/plate-list": minor
 ---
 
-Fix: Indent during conversion using IME
+- fix: tab / untab when composing with IME
+- update peerDeps:
+  - `"slate": ">=0.78.0"`
+  - `"slate-react": ">=0.79.0"`

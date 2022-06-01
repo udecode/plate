@@ -1,9 +1,9 @@
 import {
+  Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
-import { ReactEditor } from 'slate-react';
 import { indent, outdent } from './transforms/index';
 
 export const onKeyDownIndent = <
@@ -12,14 +12,13 @@ export const onKeyDownIndent = <
 >(
   editor: E
 ): KeyboardHandlerReturnType => (e) => {
-  if (
-    e.key === 'Tab' &&
-    !e.altKey &&
-    !e.ctrlKey &&
-    !e.metaKey &&
-    !ReactEditor.isComposing((editor as unknown) as ReactEditor)
-  ) {
+  if (Hotkeys.isTab(editor, e)) {
     e.preventDefault();
-    e.shiftKey ? outdent(editor) : indent(editor);
+    indent(editor);
+  }
+
+  if (Hotkeys.isUntab(editor, e)) {
+    e.preventDefault();
+    outdent(editor);
   }
 };
