@@ -106,7 +106,7 @@ export function Threads(
             <Thread
               key={thread.id}
               thread={thread}
-              onSaveComment={() => undefined}
+              onSaveComment={() => undefined as any}
               onSubmitComment={() => Promise.resolve() as any}
               onCancelCreateThread={() => undefined}
               showResolveThreadButton={false}

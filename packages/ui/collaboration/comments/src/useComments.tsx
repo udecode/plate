@@ -57,7 +57,7 @@ export interface ThreadPosition {
 }
 
 export type RetrieveUser = () => User | Promise<User>;
-export type OnSaveComment = (comment: Comment) => void;
+export type OnSaveComment = (comment: Comment) => Thread;
 
 export function useComments({
   retrieveUser,
@@ -222,6 +222,7 @@ export function useComments({
         comments: replaceComment(thread!.comments, comment),
       };
       updateThread(newThread);
+      return newThread;
     },
     [thread, updateThread]
   );
