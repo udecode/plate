@@ -5464,6 +5464,25 @@
   resolved "https://registry.npmjs.org/@xobotyi/scrollbar-width/-/scrollbar-width-1.9.5.tgz"
   integrity sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==
 
+"@xolvio/plate-ui-comments@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@xolvio/plate-ui-comments/-/plate-ui-comments-0.1.0.tgz#647564c380d038e7c8ba645586776c4cf56e6fce"
+  integrity sha512-eS/zLun5EjgoLiQJZsCer8/tg31S/xgZYuTQfZHAZFy8p0DuaGHbsJ8LIJ5hzpSUqogNO/JubHGTnpnhqKYD7w==
+  dependencies:
+    "@material/button" "^13.0.0"
+    "@material/dialog" "^13.0.0"
+    "@material/icon-button" "^13.0.0"
+    "@material/menu" "^13.0.0"
+    "@material/menu-surface" "^13.0.0"
+    "@material/ripple" "^13.0.0"
+    "@material/snackbar" "^13.0.0"
+    "@material/textfield" "^13.0.0"
+    "@styled-icons/material" "^10.34.0"
+    "@udecode/plate-core" "10.5.3"
+    "@udecode/plate-styled-components" "10.5.3"
+    "@udecode/plate-ui-toolbar" "10.5.3"
+    "@xolvio/plate-comments" "0.1.0"
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.npmjs.org/@xtuc/ieee754/-/ieee754-1.2.0.tgz"
