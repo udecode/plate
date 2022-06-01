@@ -13,6 +13,7 @@ export * from './focusEditor';
 export * from './getEditorWindow';
 export * from './hasEditorDOMNode';
 export * from './insertData';
+export * from './isComposing';
 export * from './isEditorFocused';
 export * from './isEditorReadOnly';
 export * from './setFragmentData';
