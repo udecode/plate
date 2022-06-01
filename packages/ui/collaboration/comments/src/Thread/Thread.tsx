@@ -102,11 +102,70 @@ export function Thread({
         .substr(0, textArea.selectionStart)
         .indexOf('@');
       if (mentionStringStartIndex !== -1) {
-        const mentionRegExp = /@(?:\w+ ?\w* ?)?/;
-        const match = mentionRegExp.exec(value);
+        /**
+         * The email regular expression is based on the one that has been published here: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+         * Source of license: https://github.com/whatwg/html/blob/main/LICENSE
+         *
+         * Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
+         *
+         * BSD 3-Clause License
+         *
+         * Redistribution and use in source and binary forms, with or without
+         * modification, are permitted provided that the following conditions are met:
+         *
+         * 1. Redistributions of source code must retain the above copyright notice, this
+         *    list of conditions and the following disclaimer.
+         *
+         * 2. Redistributions in binary form must reproduce the above copyright notice,
+         *    this list of conditions and the following disclaimer in the documentation
+         *    and/or other materials provided with the distribution.
+         *
+         * 3. Neither the name of the copyright holder nor the names of its
+         *    contributors may be used to endorse or promote products derived from
+         *    this software without specific prior written permission.
+         *
+         * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+         * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+         * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+         * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+         * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+         * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+         * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+         * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+         * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+         * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+         */
+        const emailRegExp = new RegExp(
+          "@(?:[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?:@[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)?)?"
+        );
+        const nameRegExp = new RegExp('@(?:\\w+ \\w*)?');
+        const emailRegExpMatch = emailRegExp.exec(value);
+        const nameRegExpMatch = nameRegExp.exec(value);
+        let regExp: RegExp | null;
+        let match: RegExpExecArray | null;
+        if (
+          (emailRegExpMatch && !nameRegExpMatch) ||
+          (emailRegExpMatch &&
+            nameRegExpMatch &&
+            emailRegExpMatch[0].length >= nameRegExpMatch[0].length)
+        ) {
+          regExp = emailRegExp;
+          match = emailRegExpMatch;
+        } else if (
+          (nameRegExpMatch && !emailRegExpMatch) ||
+          (emailRegExpMatch &&
+            nameRegExpMatch &&
+            nameRegExpMatch[0].length > emailRegExpMatch[0].length)
+        ) {
+          regExp = nameRegExp;
+          match = nameRegExpMatch;
+        } else {
+          regExp = null;
+          match = null;
+        }
         if (match) {
           const indexOfLastCharacterOfMentionString =
-            mentionRegExp.lastIndex + match[0].length - 1;
+            regExp!.lastIndex + match[0].length - 1;
           if (isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)) {
             const mentionString = match[0].trim();
             const mentionStringEndIndex =
