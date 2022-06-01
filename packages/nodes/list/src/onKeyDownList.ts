@@ -8,6 +8,7 @@ import {
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
+import { ReactEditor } from 'slate-react';
 import { moveListItems, toggleList } from './transforms';
 
 export const onKeyDownList = <
@@ -17,7 +18,11 @@ export const onKeyDownList = <
   editor: E,
   { type, options: { hotkey } }: WithPlatePlugin<HotkeyPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  if (e.key === 'Tab' && editor.selection) {
+  if (
+    e.key === 'Tab' &&
+    editor.selection &&
+    !ReactEditor.isComposing((editor as unknown) as ReactEditor)
+  ) {
     const listSelected = getAboveNode(editor, {
       at: editor.selection,
       match: { type },
