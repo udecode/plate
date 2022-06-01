@@ -67,8 +67,6 @@ export const onKeyDownTable = <
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
   if (isTab || isUntab) {
-    e.preventDefault();
-    e.stopPropagation();
     const res = getTableCellEntry(editor, {});
     if (!res) return;
     const { tableRow, tableCell } = res;
@@ -85,6 +83,8 @@ export const onKeyDownTable = <
       if (previousCell) {
         const [, previousCellPath] = previousCell;
         select(editor, previousCellPath);
+        e.preventDefault();
+        e.stopPropagation();
       }
     } else if (isTab) {
       // move right with tab
@@ -97,6 +97,8 @@ export const onKeyDownTable = <
       if (nextCell) {
         const [, nextCellPath] = nextCell;
         select(editor, nextCellPath);
+        e.preventDefault();
+        e.stopPropagation();
       }
     }
   }
