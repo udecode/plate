@@ -1,6 +1,7 @@
 import {
   getAboveNode,
   HotkeyPlugin,
+  Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
@@ -17,7 +18,9 @@ export const onKeyDownList = <
   editor: E,
   { type, options: { hotkey } }: WithPlatePlugin<HotkeyPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  if (e.key === 'Tab' && editor.selection) {
+  const isTab = Hotkeys.isTab(editor, e);
+  const isUntab = Hotkeys.isUntab(editor, e);
+  if (editor.selection && (isTab || isUntab)) {
     const listSelected = getAboveNode(editor, {
       at: editor.selection,
       match: { type },
@@ -25,7 +28,7 @@ export const onKeyDownList = <
 
     if (listSelected) {
       e.preventDefault();
-      moveListItems(editor, { increase: !e.shiftKey });
+      moveListItems(editor, { increase: isTab });
       return;
     }
   }

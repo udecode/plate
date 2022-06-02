@@ -1,7 +1,7 @@
-import { KeyboardHandlerReturnType } from '@udecode/plate-core';
+import { Hotkeys, KeyboardHandlerReturnType } from '@udecode/plate-core';
 
 export const onKeyDownSingleLine = (): KeyboardHandlerReturnType => (event) => {
-  if (event.key === 'Enter') {
+  if (Hotkeys.isSplitBlock(event)) {
     event.preventDefault();
   }
 };

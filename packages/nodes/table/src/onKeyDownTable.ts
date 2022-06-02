@@ -1,5 +1,6 @@
 import {
   getAboveNode,
+  Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   PluginOptions,
@@ -8,10 +9,13 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
-import { getNextTableCell } from './queries/getNextTableCell';
-import { getPreviousTableCell } from './queries/getPreviousTableCell';
-import { getTableCellEntry } from './queries/getTableCellEntry';
-import { moveSelectionFromCell } from './transforms/moveSelectionFromCell';
+import isHotkey from 'is-hotkey';
+import {
+  getNextTableCell,
+  getPreviousTableCell,
+  getTableCellEntry,
+} from './queries/index';
+import { moveSelectionFromCell } from './transforms/index';
 
 export const onKeyDownTable = <
   P = PluginOptions,
@@ -21,11 +25,12 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  if (e.key === 'ArrowUp') {
+  const isShiftUp = isHotkey('shift+up', e);
+  if (isHotkey('up', e) || isShiftUp) {
     if (
       moveSelectionFromCell(editor, {
         reverse: true,
-        edge: e.shiftKey ? 'top' : undefined,
+        edge: isShiftUp ? 'top' : undefined,
       })
     ) {
       e.preventDefault();
@@ -33,39 +38,41 @@ export const onKeyDownTable = <
     }
   }
 
-  if (e.key === 'ArrowDown') {
+  const isShiftDown = isHotkey('shift+down', e);
+  if (isHotkey('down', e) || isShiftDown) {
     if (
-      moveSelectionFromCell(editor, { edge: e.shiftKey ? 'bottom' : undefined })
+      moveSelectionFromCell(editor, {
+        edge: isShiftDown ? 'bottom' : undefined,
+      })
     ) {
       e.preventDefault();
       e.stopPropagation();
     }
   }
 
-  if (e.shiftKey) {
-    if (e.key === 'ArrowLeft') {
-      if (moveSelectionFromCell(editor, { edge: 'left' })) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }
-
-    if (e.key === 'ArrowRight') {
-      if (moveSelectionFromCell(editor, { edge: 'right' })) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+  if (isHotkey('shift+left', e)) {
+    if (moveSelectionFromCell(editor, { edge: 'left' })) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   }
 
-  if (e.key === 'Tab') {
+  if (isHotkey('shift+right', e)) {
+    if (moveSelectionFromCell(editor, { edge: 'right' })) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  const isTab = Hotkeys.isTab(editor, e);
+  const isUntab = Hotkeys.isUntab(editor, e);
+  if (isTab || isUntab) {
     const res = getTableCellEntry(editor, {});
     if (!res) return;
     const { tableRow, tableCell } = res;
     const [, tableCellPath] = tableCell;
-    const shiftTab = e.shiftKey;
-    const tab = !e.shiftKey;
-    if (shiftTab) {
+
+    if (isUntab) {
       // move left with shift+tab
       const previousCell = getPreviousTableCell(
         editor,
@@ -79,7 +86,7 @@ export const onKeyDownTable = <
         e.preventDefault();
         e.stopPropagation();
       }
-    } else if (tab) {
+    } else if (isTab) {
       // move right with tab
       const nextCell = getNextTableCell(
         editor,
@@ -96,8 +103,7 @@ export const onKeyDownTable = <
     }
   }
 
-  // FIXME: would prefer this as mod+a, but doesn't work
-  if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+  if (isHotkey('mod+a', e)) {
     const res = getAboveNode<TElement>(editor, { match: { type } });
     if (!res) return;
 
