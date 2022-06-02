@@ -1,4 +1,5 @@
 import { Transforms } from 'slate';
+import { TextInsertTextOptions } from 'slate/dist/transforms/text';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
@@ -7,7 +8,7 @@ import { TEditor, Value } from '../editor/TEditor';
 export const insertText = <V extends Value>(
   editor: TEditor<V>,
   text: string,
-  options?: Parameters<typeof Transforms.insertText>[2]
+  options?: TextInsertTextOptions
 ) => {
   Transforms.insertText(editor as any, text, options);
 };

@@ -1,7 +1,6 @@
 import { Editor, Location } from 'slate';
+import { EditorStringOptions } from 'slate/dist/interfaces/editor';
 import { TEditor, Value } from './TEditor';
-
-export type GetEditorStringOptions = Parameters<typeof Editor.string>[2];
 
 /**
  * Get the text string content of a location.
@@ -12,5 +11,5 @@ export type GetEditorStringOptions = Parameters<typeof Editor.string>[2];
 export const getEditorString = <V extends Value>(
   editor: TEditor<V>,
   at: Location | null | undefined,
-  options?: GetEditorStringOptions
+  options?: EditorStringOptions
 ) => (at ? Editor.string(editor as any, at, options) : '');

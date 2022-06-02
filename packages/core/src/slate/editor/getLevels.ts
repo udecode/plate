@@ -1,11 +1,11 @@
-import { Editor } from 'slate';
+import { Editor, EditorLevelsOptions } from 'slate';
 import { Modify } from '../../common/types/utility/types';
-import { ENode, TNodeMatch } from '../node/TNode';
+import { ENode, TNode, TNodeMatch } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
 
 export type GetLevelsOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Editor.levels>[1]>,
+  NonNullable<EditorLevelsOptions<TNode>>,
   {
     match?: TNodeMatch<ENode<V>>;
   }

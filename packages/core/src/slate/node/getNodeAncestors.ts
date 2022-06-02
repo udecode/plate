@@ -1,4 +1,4 @@
-import { Node, Path } from 'slate';
+import { Node, NodeAncestorsOptions, Path } from 'slate';
 import { AncestorOf } from './TAncestor';
 import { TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';
@@ -15,7 +15,7 @@ export const getNodeAncestors = <
 >(
   root: R,
   path: Path,
-  options?: Parameters<typeof Node.ancestors>[2]
+  options?: NodeAncestorsOptions
 ) =>
   Node.ancestors(root, path, options) as Generator<
     TNodeEntry<N>,

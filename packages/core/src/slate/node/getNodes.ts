@@ -1,4 +1,4 @@
-import { Node } from 'slate';
+import { Node, NodeNodesOptions } from 'slate';
 import { Modify } from '../../common/types/utility/types';
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';
@@ -11,7 +11,7 @@ import { TNodeEntry } from './TNodeEntry';
 export const getNodes = <N extends NodeOf<R>, R extends TNode = TNode>(
   root: R,
   options?: Modify<
-    NonNullable<Parameters<typeof Node.nodes>[1]>,
+    NonNullable<NodeNodesOptions>,
     {
       pass?: (entry: TNodeEntry<NodeOf<N>>) => boolean;
     }

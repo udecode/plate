@@ -1,4 +1,5 @@
 import { Transforms } from 'slate';
+import { TextInsertFragmentOptions } from 'slate/dist/transforms/text';
 import { TEditor, Value } from '../editor/TEditor';
 import { EElementOrText } from '../element/TElement';
 
@@ -11,7 +12,7 @@ export const insertFragment = <
 >(
   editor: TEditor<V>,
   fragment: N[],
-  options?: Parameters<typeof Transforms.insertFragment>[2]
+  options?: TextInsertFragmentOptions
 ) => {
   Transforms.insertFragment(editor as any, fragment, options);
 };

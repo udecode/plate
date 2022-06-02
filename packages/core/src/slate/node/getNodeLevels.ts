@@ -1,4 +1,4 @@
-import { Node, Path } from 'slate';
+import { Node, NodeLevelsOptions, Path } from 'slate';
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';
 
@@ -11,6 +11,6 @@ import { TNodeEntry } from './TNodeEntry';
 export const getNodeLevels = <N extends NodeOf<R>, R extends TNode = TNode>(
   root: R,
   path: Path,
-  options?: Parameters<typeof Node.levels>[2]
+  options?: NodeLevelsOptions
 ) =>
   Node.levels(root, path, options) as Generator<TNodeEntry<N>, void, undefined>;
