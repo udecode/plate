@@ -1,7 +1,5 @@
-import { Editor, Location } from 'slate';
+import { Editor, EditorBeforeOptions, Location } from 'slate';
 import { TEditor, Value } from './TEditor';
-
-export type GetPointBeforeOptions = Parameters<typeof Editor.before>[2];
 
 /**
  * Get the point before a location.
@@ -9,5 +7,5 @@ export type GetPointBeforeOptions = Parameters<typeof Editor.before>[2];
 export const getPointBefore = <V extends Value>(
   editor: TEditor<V>,
   at: Location,
-  options?: GetPointBeforeOptions
+  options?: EditorBeforeOptions
 ) => Editor.before(editor as any, at, options);

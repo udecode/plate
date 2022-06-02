@@ -1,8 +1,15 @@
-import { Editor, Path, Point, Range, Span } from 'slate';
+import {
+  Editor,
+  EditorUnhangRangeOptions,
+  Path,
+  Point,
+  Range,
+  Span,
+} from 'slate';
 import { TRange } from '../types/interfaces';
 import { TEditor, Value } from './TEditor';
 
-export type UnhangRangeOptions = Parameters<typeof Editor.unhangRange>[2] & {
+export type UnhangRangeOptions = EditorUnhangRangeOptions & {
   unhang?: boolean;
 };
 

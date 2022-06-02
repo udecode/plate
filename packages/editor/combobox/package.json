@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-combobox",
-  "version": "11.1.0",
+  "version": "11.2.0",
   "description": "Combobox for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.1.0",
+    "@udecode/plate-core": "11.2.0",
     "@udecode/zustood": "^1.1.1",
     "downshift": "^6.1.7",
     "zustand": "^3.7.2"
@@ -40,9 +40,9 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
+    "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2"
+    "slate-react": ">=0.79.0"
   },
   "publishConfig": {
     "access": "public"

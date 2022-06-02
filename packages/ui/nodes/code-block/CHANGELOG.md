@@ -1,5 +1,7 @@
 # @udecode/plate-code-block-ui
 
+## 11.2.0
+
 ## 11.1.0
 
 ## 11.0.6

@@ -1,4 +1,5 @@
 import { Transforms } from 'slate';
+import { SelectionCollapseOptions } from 'slate/dist/transforms/selection';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
@@ -6,7 +7,7 @@ import { TEditor, Value } from '../editor/TEditor';
  */
 export const collapseSelection = <V extends Value>(
   editor: TEditor<V>,
-  options?: Parameters<typeof Transforms.collapse>[1]
+  options?: SelectionCollapseOptions
 ) => {
   Transforms.collapse(editor as any, options);
 };

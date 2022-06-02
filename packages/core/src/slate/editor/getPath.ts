@@ -1,7 +1,5 @@
-import { Editor, Location } from 'slate';
+import { Editor, EditorPathOptions, Location } from 'slate';
 import { TEditor, Value } from './TEditor';
-
-export type GetPathOptions = Parameters<typeof Editor.path>[2];
 
 /**
  * Get the path of a location.
@@ -9,5 +7,5 @@ export type GetPathOptions = Parameters<typeof Editor.path>[2];
 export const getPath = <V extends Value>(
   editor: TEditor<V>,
   at: Location,
-  options?: GetPathOptions
+  options?: EditorPathOptions
 ) => Editor.path(editor as any, at, options as any);

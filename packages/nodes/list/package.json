@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "11.1.0",
+  "version": "11.2.0",
   "description": "List plugin for Plate",
   "keywords": [
     "slate",
@@ -32,15 +32,15 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.1.0",
-    "@udecode/plate-reset-node": "11.1.0"
+    "@udecode/plate-core": "11.2.0",
+    "@udecode/plate-reset-node": "11.2.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
+    "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2"
+    "slate-react": ">=0.79.0"
   },
   "publishConfig": {
     "access": "public"

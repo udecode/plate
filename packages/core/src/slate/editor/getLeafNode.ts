@@ -1,4 +1,5 @@
 import { Editor, Location } from 'slate';
+import { EditorLeafOptions } from 'slate/dist/interfaces/editor';
 import { ETextEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
 
@@ -8,5 +9,5 @@ import { TEditor, Value } from './TEditor';
 export const getLeafNode = <V extends Value>(
   editor: TEditor<V>,
   at: Location,
-  options?: Parameters<typeof Editor.leaf>[2]
+  options?: EditorLeafOptions
 ): ETextEntry<V> => Editor.leaf(editor as any, at, options) as any;

@@ -1,6 +1,7 @@
 import {
   getNodeEntries,
   getParentNode,
+  Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   select,
@@ -8,6 +9,7 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
+import isHotkey from 'is-hotkey';
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { indentCodeLine } from './transforms/indentCodeLine';
@@ -23,9 +25,10 @@ export const onKeyDownCodeBlock = <
 >(
   editor: E
 ): KeyboardHandlerReturnType => (e) => {
-  if (e.key === 'Tab') {
-    const shiftTab = e.shiftKey;
+  const isTab = Hotkeys.isTab(editor, e);
+  const isUntab = Hotkeys.isUntab(editor, e);
 
+  if (isTab || isUntab) {
     const _codeLines = getNodeEntries<TElement>(editor, {
       match: { type: getCodeLineType(editor) },
     });
@@ -39,12 +42,12 @@ export const onKeyDownCodeBlock = <
 
       withoutNormalizing(editor, () => {
         for (const codeLine of codeLines) {
-          if (shiftTab) {
+          if (isUntab) {
             outdentCodeLine(editor, { codeBlock, codeLine });
           }
 
           // indent with tab
-          if (!shiftTab) {
+          if (isTab) {
             indentCodeLine(editor, { codeBlock, codeLine });
           }
         }
@@ -52,8 +55,7 @@ export const onKeyDownCodeBlock = <
     }
   }
 
-  // FIXME: would prefer this as mod+a, but doesn't work
-  if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+  if (isHotkey('mod+a', e)) {
     const res = getCodeLineEntry(editor, {});
     if (!res) return;
 

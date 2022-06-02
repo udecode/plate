@@ -1,5 +1,15 @@
 # @udecode/plate-list
 
+## 11.2.0
+
+### Minor Changes
+
+- [#1560](https://github.com/udecode/plate/pull/1560) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: tab / untab when composing with IME
+  - update peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
 ## 11.1.0
 
 ## 11.0.6
