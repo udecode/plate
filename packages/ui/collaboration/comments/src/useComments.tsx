@@ -57,7 +57,7 @@ export interface ThreadPosition {
 }
 
 export type RetrieveUser = () => User | Promise<User>;
-export type OnSaveComment = (comment: Comment) => Thread;
+export type OnSaveComment = (comment: Comment) => Promise<Thread>;
 
 export function useComments({
   retrieveUser,
@@ -216,7 +216,7 @@ export function useComments({
   );
 
   const onSaveComment = useCallback<OnSaveComment>(
-    function onSaveComment(comment: Comment) {
+    async function onSaveComment(comment: Comment) {
       const newThread = {
         ...thread!,
         comments: replaceComment(thread!.comments, comment),
