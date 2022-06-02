@@ -1,5 +1,11 @@
 # @udecode/plate-ui-combobox
 
+## 11.2.0
+
+### Patch Changes
+
+- [#1555](https://github.com/udecode/plate/pull/1555) by [@mlshv](https://github.com/mlshv) – `Combobox`: add `portalElement` prop which is passed to `PortalBody`
+
 ## 11.1.0
 
 ## 11.0.6

@@ -1,5 +1,19 @@
 # @udecode/plate-table
 
+## 11.2.0
+
+### Minor Changes
+
+- [#1560](https://github.com/udecode/plate/pull/1560) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: tab / untab when composing with IME
+  - update peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
+### Patch Changes
+
+- [#1554](https://github.com/udecode/plate/pull/1554) by [@mrganser](https://github.com/mrganser) – fix onKeyDownTable so it only acts with Tab key when selection is within a table, so default or others handlers can work outside
+
 ## 11.1.1
 
 ### Patch Changes
