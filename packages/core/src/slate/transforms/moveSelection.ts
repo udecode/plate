@@ -1,4 +1,5 @@
 import { Transforms } from 'slate';
+import { SelectionMoveOptions } from 'slate/dist/transforms/selection';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
@@ -6,7 +7,7 @@ import { TEditor, Value } from '../editor/TEditor';
  */
 export const moveSelection = <V extends Value>(
   editor: TEditor<V>,
-  options?: Parameters<typeof Transforms.move>[1]
+  options?: SelectionMoveOptions
 ) => {
   Transforms.move(editor as any, options);
 };

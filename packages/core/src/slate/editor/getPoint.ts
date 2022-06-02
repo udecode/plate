@@ -1,7 +1,5 @@
-import { Editor, Location } from 'slate';
+import { Editor, EditorPointOptions, Location } from 'slate';
 import { TEditor, Value } from './TEditor';
-
-export type GetPointOptions = Parameters<typeof Editor.point>[2];
 
 /**
  * Get the start or end point of a location.
@@ -9,5 +7,5 @@ export type GetPointOptions = Parameters<typeof Editor.point>[2];
 export const getPoint = <V extends Value>(
   editor: TEditor<V>,
   at: Location,
-  options?: GetPointOptions
+  options?: EditorPointOptions
 ) => Editor.point(editor as any, at, options);

@@ -1,4 +1,5 @@
 import { Transforms } from 'slate';
+import { TextDeleteOptions } from 'slate/dist/transforms/text';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
@@ -6,7 +7,7 @@ import { TEditor, Value } from '../editor/TEditor';
  */
 export const deleteText = <V extends Value>(
   editor: TEditor<V>,
-  options?: Parameters<typeof Transforms.delete>[1]
+  options?: TextDeleteOptions
 ) => {
   Transforms.delete(editor as any, options);
 };

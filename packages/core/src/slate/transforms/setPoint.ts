@@ -1,4 +1,5 @@
 import { Point, Transforms } from 'slate';
+import { SelectionSetPointOptions } from 'slate/dist/transforms/selection';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
@@ -7,7 +8,7 @@ import { TEditor, Value } from '../editor/TEditor';
 export const setPoint = <V extends Value>(
   editor: TEditor<V>,
   props: Partial<Point>,
-  options?: Parameters<typeof Transforms.setPoint>[2]
+  options?: SelectionSetPointOptions
 ) => {
   Transforms.setPoint(editor as any, props, options);
 };

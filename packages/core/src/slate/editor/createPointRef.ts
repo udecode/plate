@@ -1,7 +1,6 @@
 import { Editor, Point } from 'slate';
+import { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
 import { TEditor, Value } from './TEditor';
-
-export type CreatePointRefOptions = Parameters<typeof Editor.pointRef>[2];
 
 /**
  * Create a mutable ref for a `Point` object, which will stay in sync as new
@@ -10,5 +9,5 @@ export type CreatePointRefOptions = Parameters<typeof Editor.pointRef>[2];
 export const createPointRef = <V extends Value>(
   editor: TEditor<V>,
   point: Point,
-  options?: CreatePointRefOptions
+  options?: EditorPointRefOptions
 ) => Editor.pointRef(editor as any, point, options as any);

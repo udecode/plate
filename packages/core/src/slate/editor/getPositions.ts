@@ -1,7 +1,5 @@
-import { Editor } from 'slate';
+import { Editor, EditorPositionsOptions } from 'slate';
 import { TEditor, Value } from './TEditor';
-
-export type GetPositionsOptions = Parameters<typeof Editor.positions>[1];
 
 /**
  * Iterate through all of the positions in the document where a `Point` can be
@@ -17,5 +15,5 @@ export type GetPositionsOptions = Parameters<typeof Editor.positions>[1];
  */
 export const getPositions = <V extends Value>(
   editor: TEditor<V>,
-  options?: GetPositionsOptions
+  options?: EditorPositionsOptions
 ) => Editor.positions(editor as any, options);
