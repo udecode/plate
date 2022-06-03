@@ -72,7 +72,13 @@ export class Contacts extends React.Component<ContactsProps> {
             >
               <span className="mdc-list-item__ripple" />
               <span className="mdc-list-item__start">
-                <img src={avatarUrl} alt="Avatar" width={40} height={40} />
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  width={40}
+                  height={40}
+                  style={{ borderRadius: '50%' }}
+                />
               </span>
               <span className="mdc-list-item__content">
                 <span className="mdc-list-item__primary-text">{name}</span>
