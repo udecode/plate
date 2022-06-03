@@ -63,7 +63,7 @@ export const pluginDeserializeHtml = <V extends Value>(
         }
 
         // Ignore if the rule className is not in el class list.
-        if (validClassName && !el.className.includes(validClassName))
+        if (validClassName && !el.classList.contains(validClassName))
           return false;
 
         if (validStyle) {
