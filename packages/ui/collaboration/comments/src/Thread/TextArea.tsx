@@ -312,8 +312,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     const { root: textArea } = createTextAreaStyles(props);
 
-    console.log('defaultValue', defaultValue);
-
     return (
       <div className="mdc-menu-surface--anchor">
         <textarea
