@@ -76,5 +76,6 @@ module.exports = {
   transform: {
     '.*': ['<rootDir>/scripts/fileTransformer.js', 'ts-jest'],
   },
+  transformIgnorePatterns: ['/node_modules/(?!react-dnd|dnd-core|@react-dnd)'],
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
 };
