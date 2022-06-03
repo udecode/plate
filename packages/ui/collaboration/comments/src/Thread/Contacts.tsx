@@ -62,9 +62,9 @@ export class Contacts extends React.Component<ContactsProps> {
           aria-orientation="vertical"
           tabIndex={-1}
         >
-          {contacts.map(({ name, email, avatarUrl }, index) => (
+          {contacts.map(({ id, name, email, avatarUrl }, index) => (
             <li
-              key={email}
+              key={id}
               className={`mdc-list-item mdc-list-item--with-two-lines mdc-list-item--with-leading-avatar${
                 index === selectedIndex ? ' mdc-list-item--selected' : ''
               }`}

@@ -51,18 +51,21 @@ export function Playground() {
   const fetchContacts = useCallback(function fetchContacts() {
     return [
       {
+        id: '1',
         name: 'Jon Doe',
         email: 'jon.doe@example.com',
         avatarUrl:
           'https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg',
       },
       {
+        id: '2',
         name: 'Jon Doe2',
         email: 'jon.doe2@example.com',
         avatarUrl:
           'https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg',
       },
       {
+        id: '3',
         name: 'Jon Doe3',
         email: 'jon.doe3@example.com',
         avatarUrl:
