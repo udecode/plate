@@ -129,7 +129,7 @@ export function useComments({
     [editor, newThreadThreadNodeEntry]
   );
 
-  useEffect(
+  const handleThreadIdInURL = useCallback(
     function handleThreadIdInURL() {
       const url = new URL(window.location.href);
       const threadIdQueryParam = url.searchParams.get('thread');
@@ -145,16 +145,42 @@ export function useComments({
           Transforms.collapse(editor, { edge: 'start' });
           showThread(threadNodeEntry);
 
-          const domNode = ReactEditor.toDOMNode(editor, threadNodeEntry[0]);
-          domNode.scrollIntoView();
+          // eslint-disable-next-line no-inner-declarations
+          function position() {
+            requestAnimationFrame(() => {
+              const domNode = ReactEditor.toDOMNode(
+                editor,
+                threadNodeEntry![0]
+              );
+              domNode.scrollIntoView();
+              updateThreadPosition(threadNodeEntry);
+            });
+          }
 
-          window.addEventListener('load', () => {
-            updateThreadPosition(threadNodeEntry);
-          });
+          if (document.readyState === 'complete') {
+            position();
+          } else {
+            window.addEventListener('load', position);
+          }
         }
       }
     },
     [editor, showThread, updateThreadPosition]
+  );
+
+  const [
+    hasThreadIdInURLBeenHandled,
+    setHasThreadIdInURLBeenHandled,
+  ] = useState<boolean>(false);
+
+  useEffect(
+    function onChange() {
+      if (!hasThreadIdInURLBeenHandled && editor.children.length > 0) {
+        setHasThreadIdInURLBeenHandled(true);
+        handleThreadIdInURL();
+      }
+    },
+    [editor.children.length, handleThreadIdInURL, hasThreadIdInURLBeenHandled]
   );
 
   useEffect(
