@@ -28,6 +28,7 @@ export function upsertThread<T = {}>(
     const threadLeaf = Editor.leaf(editor, at);
     const [, inlinePath] = threadLeaf;
     Transforms.select(editor, inlinePath);
+    at = editor.selection!;
   }
 
   wrapWithThread(editor, { at, thread, elementProps });
