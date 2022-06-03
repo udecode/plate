@@ -96,7 +96,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           const nameRegExp = new RegExp('@(?:\\w+ \\w*)?');
           const emailRegExpMatch = emailRegExp.exec(value);
           const nameRegExpMatch = nameRegExp.exec(value);
-          let regExp: RegExp | null;
           let match: RegExpExecArray | null;
           if (
             (emailRegExpMatch && !nameRegExpMatch) ||
@@ -104,7 +103,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
               nameRegExpMatch &&
               emailRegExpMatch[0].length >= nameRegExpMatch[0].length)
           ) {
-            regExp = emailRegExp;
             match = emailRegExpMatch;
           } else if (
             (nameRegExpMatch && !emailRegExpMatch) ||
@@ -112,15 +110,13 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
               nameRegExpMatch &&
               nameRegExpMatch[0].length > emailRegExpMatch[0].length)
           ) {
-            regExp = nameRegExp;
             match = nameRegExpMatch;
           } else {
-            regExp = null;
             match = null;
           }
           if (match) {
             const indexOfLastCharacterOfMentionString =
-              regExp!.lastIndex + match[0].length - 1;
+              match.index + match[0].length - 1;
             if (
               isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)
             ) {
