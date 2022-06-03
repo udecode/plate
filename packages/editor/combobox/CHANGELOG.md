@@ -1,5 +1,7 @@
 # @udecode/plate-combobox
 
+## 11.2.1
+
 ## 11.2.0
 
 ### Minor Changes

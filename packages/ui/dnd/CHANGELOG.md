@@ -1,5 +1,14 @@
 # @udecode/plate-dnd
 
+## 11.2.1
+
+### Patch Changes
+
+- [#1567](https://github.com/udecode/plate/pull/1567) by [@zbeyens](https://github.com/zbeyens) –
+  - upgrade deps:
+    - `"react-dnd": "^16.0.1"`
+    - `"react-dnd-html5-backend": "^16.0.1"`
+
 ## 11.2.0
 
 ## 11.1.0

@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 11.2.1
+
+### Patch Changes
+
+- [#1566](https://github.com/udecode/plate/pull/1566) by [@armedi](https://github.com/armedi) – Fix runtime error when deserialized html contains svg element
+
 ## 11.2.0
 
 ### Minor Changes

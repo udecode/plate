@@ -1,5 +1,7 @@
 # @udecode/plate-paragraph
 
+## 11.2.1
+
 ## 11.2.0
 
 ## 11.1.0
