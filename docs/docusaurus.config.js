@@ -81,6 +81,8 @@ const alias = {
   '@udecode/plate-ui-popper': 'ui/popper',
   '@udecode/plate-ui-table': 'ui/nodes/table',
   '@udecode/plate-ui-toolbar': 'ui/toolbar',
+  'react/jsx-runtime': 'react/jsx-runtime.js',
+  'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js'
 };
 
 Object.keys(alias).forEach((key) => {
