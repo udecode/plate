@@ -6,6 +6,7 @@ import { Check } from '@styled-icons/material/Check';
 import { Unarchive } from '@styled-icons/material/Unarchive';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Comment, generateThreadLink, Thread } from '@xolvio/plate-comments';
+import { FetchContacts } from '../../FetchContacts';
 import { ThreadLinkDialog } from '../../ThreadLinkDialog';
 import {
   createAuthorTimestampStyles,
@@ -36,6 +37,7 @@ export function ThreadComment(
     onResolveThread: () => void;
     onReOpenThread: () => void;
     onDelete: (comment: Comment) => void;
+    fetchContacts: FetchContacts;
   } & StyledProps
 ) {
   const {
@@ -49,6 +51,7 @@ export function ThreadComment(
     onResolveThread,
     onReOpenThread,
     onDelete: onDeleteCallback,
+    fetchContacts,
   } = props;
 
   const [isEdited, setIsEdited] = useState(false);
@@ -160,9 +163,11 @@ export function ThreadComment(
       </div>
       {isEdited ? (
         <ThreadCommentEditing
+          thread={thread}
           defaultText={comment.text}
           onSave={onSave}
           onCancel={onCancel}
+          fetchContacts={fetchContacts}
         />
       ) : (
         <div

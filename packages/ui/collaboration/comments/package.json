@@ -42,6 +42,7 @@
     "@material/ripple": "^13.0.0",
     "@material/snackbar": "^13.0.0",
     "@material/textfield": "^13.0.0",
+    "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "10.5.3",
     "@xolvio/plate-comments": "^0.2.0",

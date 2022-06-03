@@ -1,27 +1,36 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { Thread as ThreadModel } from '@xolvio/plate-comments/dist/Thread';
+import { FetchContacts } from '../../FetchContacts';
+import { TextArea } from '../TextArea';
 import {
   createButtonsStyles,
   createCancelButtonStyles,
   createCommentButtonStyles,
   createCommentInputStyles,
-  createTextAreaStyles,
 } from '../Thread.styles';
 
 export function ThreadCommentEditing({
+  thread,
   defaultText,
   onSave: onSaveCallback,
   onCancel,
+  fetchContacts,
   ...props
 }: {
+  thread: ThreadModel;
   defaultText: string;
   onSave: (text: string) => void;
   onCancel: () => void;
+  fetchContacts: FetchContacts;
 } & StyledProps) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
+    false
+  );
+
   const { root: commentInput } = createCommentInputStyles(props);
-  const { root: textArea } = createTextAreaStyles(props);
   const { root: buttons } = createButtonsStyles(props);
   const { root: commentButton } = createCommentButtonStyles(props);
   const { root: cancelButton } = createCancelButtonStyles(props);
@@ -34,20 +43,24 @@ export function ThreadCommentEditing({
   );
 
   useEffect(
-    function focus() {
-      textAreaRef.current!.focus();
+    function onShow() {
+      const textArea = textAreaRef.current!;
+      textArea.focus();
+      const { length } = textArea.value;
+      textArea.setSelectionRange(length, length);
     },
-    [textAreaRef]
+    [textAreaRef, thread]
   );
 
   return (
     <div css={commentInput.css} className={commentInput.className}>
-      <textarea
+      <TextArea
         ref={textAreaRef}
-        rows={1}
-        css={textArea.css}
-        className={textArea.className}
         defaultValue={defaultText}
+        thread={thread}
+        fetchContacts={fetchContacts}
+        haveContactsBeenClosed={haveContactsBeenClosed}
+        setHaveContactsBeenClosed={setHaveContactsBeenClosed}
       />
       <div css={buttons.css} className={buttons.className}>
         <button
