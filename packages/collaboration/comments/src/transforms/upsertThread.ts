@@ -1,16 +1,16 @@
 import {
   findNode,
+  getAbove,
   getPluginType,
   isCollapsed,
   PlateEditor,
-  unwrapNodes,
 } from '@udecode/plate-core';
 import { Editor, Location, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { findSelectedThreadNodeEntry } from '../findSelectedThreadNodeEntry';
 import { isThread } from '../isThread';
 import { Thread } from '../Thread';
-import { ThreadNodeData } from '../types';
+import { ThreadNode, ThreadNodeData } from '../types';
 import { wrapWithThread } from './wrapWithThread';
 
 export function upsertThread<T = {}>(
@@ -31,8 +31,24 @@ export function upsertThread<T = {}>(
     at = editor.selection!;
   }
 
-  wrapWithThread(editor, { at, thread, elementProps });
-  unwrapNodes(editor, { at, match: { type } });
+  const threadNodeEntry2 = getAbove(editor, {
+    match: {
+      type,
+    },
+  });
+
+  if (threadNodeEntry2) {
+    Transforms.setNodes<ThreadNode>(
+      editor,
+      {
+        thread,
+        ...elementProps,
+      },
+      { at: threadNodeEntry2[1] }
+    );
+  } else {
+    wrapWithThread(editor, { at, thread, elementProps });
+  }
 
   if (isRange) {
     const threadNodeEntry = findNode(editor, {
