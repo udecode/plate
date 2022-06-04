@@ -13,7 +13,7 @@ import {
   upsertThreadAtSelection,
   User,
 } from '@xolvio/plate-comments';
-import { NodeEntry, Transforms } from 'slate';
+import { Editor, NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
 
@@ -186,10 +186,18 @@ export function useComments({
   useEffect(
     function onSelectionChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
-      // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
-      const threadNodeEntry = getAbove(editor, {
+      let threadNodeEntry = getAbove(editor, {
         match: { type },
       });
+      if (!threadNodeEntry && editor.selection) {
+        threadNodeEntry = getAbove(editor, {
+          at: Editor.after(editor, editor.selection.anchor, {
+            distance: 1,
+            unit: 'character',
+          }),
+          match: { type },
+        });
+      }
       const isThreadNodeTheNewThreadNode =
         threadNodeEntry &&
         newThreadThreadNodeEntry &&
