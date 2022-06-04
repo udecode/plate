@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   getAbove,
   getPluginType,
+  TAncestor,
   usePlateEditorState,
 } from '@udecode/plate-core';
 import {
@@ -10,12 +11,14 @@ import {
   ELEMENT_THREAD,
   findThreadNodeEntries,
   Thread,
+  ThreadNode,
   upsertThreadAtSelection,
   User,
 } from '@xolvio/plate-comments';
-import { Editor, NodeEntry, Transforms } from 'slate';
+import { Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
+import { determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft } from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
 
 export type OnSubmitComment = (commentText: string) => Promise<Thread>;
 
@@ -186,17 +189,25 @@ export function useComments({
   useEffect(
     function onSelectionChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
-      let threadNodeEntry = getAbove(editor, {
+      let threadNodeEntry:
+        | NodeEntry<ThreadNode & TAncestor>
+        | undefined = getAbove<ThreadNode & TAncestor>(editor, {
         match: { type },
       });
       if (!threadNodeEntry && editor.selection) {
-        threadNodeEntry = getAbove(editor, {
-          at: Editor.after(editor, editor.selection.anchor, {
-            distance: 1,
-            unit: 'character',
-          }),
-          match: { type },
-        });
+        if (Range.isCollapsed(editor.selection)) {
+          threadNodeEntry = getAbove<ThreadNode & TAncestor>(editor, {
+            at: Editor.after(editor, editor.selection.anchor, {
+              distance: 1,
+              unit: 'character',
+            }),
+            match: { type },
+          });
+        } else {
+          threadNodeEntry = determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft(
+            editor
+          );
+        }
       }
       const isThreadNodeTheNewThreadNode =
         threadNodeEntry &&
