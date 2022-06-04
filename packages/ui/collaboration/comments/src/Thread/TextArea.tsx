@@ -55,8 +55,9 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         const { value } = textArea;
         const mentionStringStartIndex = value
           .substr(0, textArea.selectionStart)
-          .indexOf('@');
+          .lastIndexOf('@');
         if (mentionStringStartIndex !== -1) {
+          const value2 = value.substr(mentionStringStartIndex);
           /**
            * The email regular expression is based on the one that has been published here: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
            * Source of license: https://github.com/whatwg/html/blob/main/LICENSE
@@ -94,8 +95,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
             "@(?:[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?:@[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)?)?"
           );
           const nameRegExp = new RegExp('@(?:\\w+ \\w*)?');
-          const emailRegExpMatch = emailRegExp.exec(value);
-          const nameRegExpMatch = nameRegExp.exec(value);
+          const emailRegExpMatch = emailRegExp.exec(value2);
+          const nameRegExpMatch = nameRegExp.exec(value2);
           let match: RegExpExecArray | null;
           if (
             (emailRegExpMatch && !nameRegExpMatch) ||
@@ -116,11 +117,11 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           }
           if (match) {
             const indexOfLastCharacterOfMentionString =
-              match.index + match[0].length - 1;
+              mentionStringStartIndex + match.index + match[0].length - 1;
             if (
               isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)
             ) {
-              const mentionString = match[0].trim();
+              const mentionString = match[0].trimEnd();
               const mentionStringEndIndex =
                 mentionStringStartIndex + mentionString.length;
               return {
