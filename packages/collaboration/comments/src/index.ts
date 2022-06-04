@@ -9,3 +9,6 @@ export * from './Comment';
 export * from './generateThreadLink';
 export * from './Contact';
 export * from './User';
+export { insertTextAtTheEndOfAThreadNode } from './insertTextAtTheEndOfAThreadNode';
+export { insertTextAtTheStartOfAThreadNode } from './insertTextAtTheStartOfAThreadNode';
+export { insertTextThreadPlugin } from './insertTextThreadPlugin';
