@@ -9,12 +9,14 @@ import {
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
+/**
+ * @deprecated - Use `insertTableColumn`
+ */
 export const addColumn = <V extends Value>(
   editor: PlateEditor<V>,
-  { header }: TablePluginOptions
+  { header }: { header?: boolean } = {}
 ) => {
   if (
     someNode(editor, {

@@ -2,7 +2,7 @@
 
 import { createPlateEditor, PlateEditor, TElement } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withDeleteTable } from './withDeleteTable';
+import { createTablePlugin } from './createTablePlugin';
 import { withInsertFragmentTable } from './withInsertFragmentTable';
 
 jsx;
@@ -57,11 +57,10 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
-
-      editor = withInsertFragmentTable(editor);
 
       editor.insertFragment(fragment);
 
@@ -116,11 +115,10 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
-
-      editor = withInsertFragmentTable(editor);
 
       editor.insertFragment(fragment);
 
@@ -182,12 +180,10 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
-
-      editor = withDeleteTable(editor);
-      editor = withInsertFragmentTable(editor);
 
       editor.deleteFragment();
       editor.insertFragment(fragment);
@@ -249,11 +245,10 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
-
-      editor = withInsertFragmentTable(editor);
 
       editor.insertFragment(fragment);
 
@@ -262,6 +257,169 @@ describe('withInsertFragmentTable', () => {
       const selection = output.selection!;
       selection.anchor.path.pop();
       selection.focus.path.pop();
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  // https://github.com/udecode/editor-protocol/issues/32
+  describe('when insert table 2x2 into cell 22', () => {
+    it('should expand the table', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+            </htr>
+            <htr>
+              <htd>21</htd>
+              <htd>
+                22
+                <cursor />
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <htable>
+            <htr>
+              <htd>aa</htd>
+              <htd>ab</htd>
+            </htr>
+            <htr>
+              <htd>ba</htd>
+              <htd>bb</htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+              <htd>
+                <htext />
+              </htd>
+            </htr>
+            <htr>
+              <htd>21</htd>
+              <htd>
+                <anchor />
+                aa
+              </htd>
+              <htd>ab</htd>
+            </htr>
+            <htr>
+              <htd>
+                <htext />
+              </htd>
+              <htd>ba</htd>
+              <htd>
+                <focus />
+                bb
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createTablePlugin({
+            options: { newCellChildren: [{ text: '' }] },
+          }),
+        ],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
+
+      const selection = output.selection!;
+      selection.anchor.path.pop();
+      selection.focus.path.pop();
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('when insert table 2x2 into cell 22 with disableExpandOnInsert', () => {
+    it('should not expand the table', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+            </htr>
+            <htr>
+              <htd>21</htd>
+              <htd>
+                22
+                <cursor />
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <htable>
+            <htr>
+              <htd>aa</htd>
+              <htd>ab</htd>
+            </htr>
+            <htr>
+              <htd>ba</htd>
+              <htd>bb</htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+            </htr>
+            <htr>
+              <htd>21</htd>
+              <htd>
+                <cursor />
+                aa
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createTablePlugin({
+            options: {
+              newCellChildren: [{ text: '' }],
+              disableExpandOnInsert: true,
+            },
+          }),
+        ],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
+
+      const selection = output.selection!;
+      selection.anchor.path.pop();
       expect(editor.selection).toEqual(output.selection);
     });
   });

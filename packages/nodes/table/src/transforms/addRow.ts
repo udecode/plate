@@ -8,12 +8,14 @@ import {
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from '../utils/getEmptyRowNode';
 
+/**
+ * deprecated - use `insertTableRow` instead
+ */
 export const addRow = <V extends Value>(
   editor: PlateEditor<V>,
-  { header }: TablePluginOptions
+  { header }: { header?: boolean } = {}
 ) => {
   if (
     someNode(editor, {

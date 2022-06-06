@@ -1,7 +1,15 @@
-import { TElement } from '@udecode/plate-core';
+import { TDescendant, TElement } from '@udecode/plate-core';
 
-export interface TablePluginOptions {
-  header?: boolean;
+export interface TablePlugin {
+  /**
+   * Disable expanding the table when inserting cells.
+   */
+  disableExpandOnInsert?: boolean;
+
+  /**
+   * @default empty paragraph
+   */
+  newCellChildren?: TDescendant[];
 }
 
 export interface TTableElement extends TElement {
