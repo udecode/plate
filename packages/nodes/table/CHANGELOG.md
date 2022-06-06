@@ -1,5 +1,15 @@
 # @udecode/plate-table
 
+## 11.3.0
+
+### Minor Changes
+
+- [#1569](https://github.com/udecode/plate/pull/1569) by [@zbeyens](https://github.com/zbeyens) –
+  - https://github.com/udecode/editor-protocol/issues/32
+  - `addRow` deprecated in favor of `insertTableRow`
+  - `addColumn` deprecated in favor of `insertTableColumn`
+  - `insertTableRow` now selects the cell below selected cell (previously it was selecting the last cell)
+
 ## 11.2.1
 
 ## 11.2.0
