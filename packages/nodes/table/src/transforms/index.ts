@@ -3,6 +3,8 @@
  */
 
 export * from './addColumn';
+export * from './insertTableRow';
+export * from './insertTableColumn';
 export * from './addRow';
 export * from './deleteColumn';
 export * from './deleteRow';

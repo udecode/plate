@@ -1,7 +1,7 @@
 import {
   getBlockAbove,
-  getNode,
   getPluginType,
+  hasNode,
   insertNodes,
   PlateEditor,
   removeNodes,
@@ -9,11 +9,15 @@ import {
   TElement,
   Value,
   withoutNormalizing,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
+import { insertTableColumn } from './transforms/insertTableColumn';
+import { insertTableRow } from './transforms/insertTableRow';
 import { ELEMENT_TABLE } from './createTablePlugin';
+import { TablePlugin } from './types';
 
 /**
  * If inserting a table,
@@ -25,9 +29,11 @@ export const withInsertFragmentTable = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
-  editor: E
+  editor: E,
+  { options }: WithPlatePlugin<TablePlugin>
 ) => {
   const { insertFragment } = editor;
+  const { disableExpandOnInsert } = options;
 
   editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
@@ -49,19 +55,57 @@ export const withInsertFragmentTable = <
         });
 
         if (cellEntry) {
-          const [, startCellPath] = cellEntry;
-          const cellPath = [...startCellPath];
-          const startColIndex = cellPath[cellPath.length - 1];
-          let lastCellPath: Path | null = null;
+          withoutNormalizing(editor, () => {
+            const [, startCellPath] = cellEntry;
+            const cellPath = [...startCellPath];
 
-          const insertedRows = insertedTable.children as TElement[];
-          insertedRows.forEach((row, rowIndex) => {
-            const insertedCells = row.children as TElement[];
+            const startColIndex = cellPath[cellPath.length - 1];
+            let lastCellPath: Path | null = null;
 
-            insertedCells.forEach((cell, cellIndex) => {
-              withoutNormalizing(editor, () => {
-                const hasNode = getNode(editor, cellPath);
-                if (!hasNode) return;
+            let initRow = true;
+            const insertedRows = insertedTable.children as TElement[];
+            insertedRows.forEach((row, rowIndex) => {
+              cellPath[cellPath.length - 1] = startColIndex;
+
+              // last inserted row
+              if (!initRow) {
+                const fromRow = cellPath.slice(0, -1);
+                cellPath[cellPath.length - 2] += 1;
+
+                if (!hasNode(editor, cellPath)) {
+                  if (!disableExpandOnInsert) {
+                    insertTableRow(editor, {
+                      fromRow,
+                      disableSelect: true,
+                    });
+                  } else {
+                    return;
+                  }
+                }
+              }
+              initRow = false;
+
+              const insertedCells = row.children as TElement[];
+              let initCell = true;
+
+              insertedCells.forEach((cell, cellIndex) => {
+                // last inserted c
+                if (!initCell) {
+                  const fromCell = [...cellPath];
+                  cellPath[cellPath.length - 1] += 1;
+
+                  if (!hasNode(editor, cellPath)) {
+                    if (!disableExpandOnInsert) {
+                      insertTableColumn(editor, {
+                        fromCell,
+                        disableSelect: true,
+                      });
+                    } else {
+                      return;
+                    }
+                  }
+                }
+                initCell = false;
 
                 removeNodes(editor, {
                   at: cellPath,
@@ -72,30 +116,21 @@ export const withInsertFragmentTable = <
 
                 lastCellPath = [...cellPath];
               });
-
-              if (cellIndex < insertedCells.length - 1) {
-                cellPath[cellPath.length - 1] += 1;
-              }
             });
 
-            if (rowIndex < insertedRows.length - 1) {
-              cellPath[cellPath.length - 1] = startColIndex;
-              cellPath[cellPath.length - 2] += 1;
+            if (lastCellPath) {
+              select(editor, {
+                anchor: {
+                  offset: 0,
+                  path: startCellPath,
+                },
+                focus: {
+                  offset: 0,
+                  path: lastCellPath,
+                },
+              });
             }
           });
-
-          if (lastCellPath) {
-            select(editor, {
-              anchor: {
-                offset: 0,
-                path: startCellPath,
-              },
-              focus: {
-                offset: 0,
-                path: lastCellPath,
-              },
-            });
-          }
 
           return;
         }

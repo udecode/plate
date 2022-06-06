@@ -48,7 +48,7 @@ export const getTableGridByRange = <V extends Value>(
   const table: TTableElement = getEmptyTableNode(editor, {
     rowCount: relativeRowIndex + 1,
     colCount: relativeColIndex + 1,
-    cellChildren: [],
+    newCellChildren: [],
   });
 
   let rowIndex = startRowIndex;

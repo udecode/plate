@@ -42,8 +42,6 @@ import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
 import {
-  addColumn,
-  addRow,
   AlignToolbarButton,
   BalloonToolbar,
   BlockToolbarButton,
@@ -145,6 +143,8 @@ import {
   insertEmptyCodeBlock,
   insertNodes,
   insertTable,
+  insertTableColumn,
+  insertTableRow,
   isBlockAboveEmpty,
   isElement,
   isSelectionAtBlockStart,
@@ -236,8 +236,8 @@ const ReactLiveScope = {
   StyledElement,
   toggleIndentList,
   React,
-  addColumn,
-  addRow,
+  insertTableColumn,
+  insertTableRow,
   BallonToolbarMarks: MarkBallonToolbar,
   BalloonToolbar,
   BorderAll,
