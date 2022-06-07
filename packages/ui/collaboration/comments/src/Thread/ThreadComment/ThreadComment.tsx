@@ -6,14 +6,13 @@ import { Check } from '@styled-icons/material/Check';
 import { Unarchive } from '@styled-icons/material/Unarchive';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Comment, generateThreadLink, Thread } from '@xolvio/plate-comments';
+import { Avatar } from '../../Avatar/Avatar';
 import { FetchContacts } from '../../FetchContacts';
 import { ThreadLinkDialog } from '../../ThreadLinkDialog';
 import {
   createAuthorTimestampStyles,
-  createAvatarHolderStyles,
   createCommenterNameStyles,
   createCommentHeaderStyles,
-  createCommentProfileImageStyles,
   createTimestampStyles,
 } from '../Thread.styles';
 import { MenuButton } from './MenuButton';
@@ -58,8 +57,6 @@ export function ThreadComment(
 
   const { root } = createThreadCommentStyled(props);
   const { root: commentHeader } = createCommentHeaderStyles(props);
-  const { root: avatarHolder } = createAvatarHolderStyles(props);
-  const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: timestamp } = createTimestampStyles(props);
@@ -112,16 +109,7 @@ export function ThreadComment(
   return (
     <div css={root.css} className={root.className}>
       <div css={commentHeader.css} className={commentHeader.className}>
-        <div css={avatarHolder.css} className={avatarHolder.className}>
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg"
-            alt="Profile"
-            width={32}
-            height={32}
-            css={commentProfileImage.css}
-            className={commentProfileImage.className}
-          />
-        </div>
+        <Avatar user={comment.createdBy} />
         <div css={authorTimestamp.css} className={authorTimestamp.className}>
           <div css={commenterName.css} className={commenterName.className}>
             {comment.createdBy.name}

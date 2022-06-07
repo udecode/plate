@@ -911,6 +911,12 @@ const comments: any = (
               createdAt: Date.now(),
               createdBy: { ...user },
             },
+            {
+              id: 2,
+              text: 'A second comment',
+              createdAt: Date.now(),
+              createdBy: { ...user, avatarUrl: null },
+            },
           ],
           isResolved: false,
         }}
@@ -924,13 +930,13 @@ const comments: any = (
           id: 2,
           comments: [
             {
-              id: 2,
+              id: 3,
               text: 'A comment',
               createdAt: Date.now(),
               createdBy: { ...user },
             },
             {
-              id: 3,
+              id: 4,
               text: 'A second comment',
               createdAt: Date.now(),
               createdBy: { ...user },
@@ -948,7 +954,7 @@ const comments: any = (
           id: 3,
           comments: [
             {
-              id: 4,
+              id: 5,
               text: 'A comment',
               createdAt: Date.now(),
               createdBy: { ...user },

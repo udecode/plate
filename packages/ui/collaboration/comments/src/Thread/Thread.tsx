@@ -12,19 +12,18 @@ import {
   upsertThreadAtSelection,
   User,
 } from '@xolvio/plate-comments';
+import { Avatar } from '../Avatar/Avatar';
 import { FetchContacts } from '../FetchContacts';
 import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
 import { TextArea } from './TextArea';
 import {
   createAuthorTimestampStyles,
-  createAvatarHolderStyles,
   createButtonsStyles,
   createCancelButtonStyles,
   createCommentButtonStyles,
   createCommenterNameStyles,
   createCommentHeaderStyles,
   createCommentInputStyles,
-  createCommentProfileImageStyles,
   createThreadStyles,
 } from './Thread.styles';
 import { ThreadComment } from './ThreadComment';
@@ -174,8 +173,6 @@ export function Thread({
 
   const { root } = createThreadStyles(props);
   const { root: commentHeader } = createCommentHeaderStyles(props);
-  const { root: avatarHolder } = createAvatarHolderStyles(props);
-  const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: commentInput, commentInputReply } = createCommentInputStyles(
@@ -214,16 +211,7 @@ export function Thread({
       <div>
         {!hasComments() && (
           <div css={commentHeader.css} className={commentHeader.className}>
-            <div css={avatarHolder.css} className={avatarHolder.className}>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg"
-                alt="Profile"
-                width={32}
-                height={32}
-                css={commentProfileImage.css}
-                className={commentProfileImage.className}
-              />
-            </div>
+            <Avatar user={user} />
             <div
               css={authorTimestamp.css}
               className={authorTimestamp.className}
