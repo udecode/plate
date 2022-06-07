@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 11.3.1
+
+### Patch Changes
+
+- [#1573](https://github.com/udecode/plate/pull/1573) by [@zbeyens](https://github.com/zbeyens) – Table plugin: add `insertRow`, `insertColumn` options
+
 ## 11.3.0
 
 ### Minor Changes
