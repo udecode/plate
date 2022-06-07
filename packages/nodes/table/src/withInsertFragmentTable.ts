@@ -14,8 +14,6 @@ import {
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
-import { insertTableColumn } from './transforms/insertTableColumn';
-import { insertTableRow } from './transforms/insertTableRow';
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { TablePlugin } from './types';
 
@@ -30,10 +28,10 @@ export const withInsertFragmentTable = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  { options }: WithPlatePlugin<TablePlugin>
+  { options }: WithPlatePlugin<TablePlugin<V>>
 ) => {
   const { insertFragment } = editor;
-  const { disableExpandOnInsert } = options;
+  const { disableExpandOnInsert, insertColumn, insertRow } = options;
 
   editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
@@ -64,7 +62,7 @@ export const withInsertFragmentTable = <
 
             let initRow = true;
             const insertedRows = insertedTable.children as TElement[];
-            insertedRows.forEach((row, rowIndex) => {
+            insertedRows.forEach((row) => {
               cellPath[cellPath.length - 1] = startColIndex;
 
               // last inserted row
@@ -74,9 +72,8 @@ export const withInsertFragmentTable = <
 
                 if (!hasNode(editor, cellPath)) {
                   if (!disableExpandOnInsert) {
-                    insertTableRow(editor, {
+                    insertRow?.(editor, {
                       fromRow,
-                      disableSelect: true,
                     });
                   } else {
                     return;
@@ -88,17 +85,15 @@ export const withInsertFragmentTable = <
               const insertedCells = row.children as TElement[];
               let initCell = true;
 
-              insertedCells.forEach((cell, cellIndex) => {
-                // last inserted c
+              insertedCells.forEach((cell) => {
                 if (!initCell) {
                   const fromCell = [...cellPath];
                   cellPath[cellPath.length - 1] += 1;
 
                   if (!hasNode(editor, cellPath)) {
                     if (!disableExpandOnInsert) {
-                      insertTableColumn(editor, {
+                      insertColumn?.(editor, {
                         fromCell,
-                        disableSelect: true,
                       });
                     } else {
                       return;
