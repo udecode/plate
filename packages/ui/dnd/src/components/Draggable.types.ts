@@ -3,10 +3,11 @@ import { EElement, TEditor, TElement, Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
+import { DropLineDirection } from '../types';
 
 export interface DraggableStyleProps<V extends Value>
   extends DraggableProps<V> {
-  direction: '' | 'top' | 'bottom';
+  direction: DropLineDirection;
   isDragging: boolean;
 
   selected?: boolean;

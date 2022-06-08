@@ -5,3 +5,6 @@
 export * from './useDndBlock';
 export * from './useDragBlock';
 export * from './useDropBlockOnEditor';
+export { useDragNode } from './useDragNode';
+export { useDropNode } from './useDropNode';
+export { UseDropNodeOptions } from './useDropNode';

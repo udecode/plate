@@ -1,12 +1,12 @@
 import { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { DragItemBlock, DropDirection } from '../types';
+import { DragItemNode, DropDirection } from '../types';
 
 /**
  * If dragging a block A over another block B:
  * get the direction of block A relative to block B.
  */
 export const getHoverDirection = (
-  dragItem: DragItemBlock,
+  dragItem: DragItemNode,
   monitor: DropTargetMonitor,
   ref: any,
   hoverId: string
