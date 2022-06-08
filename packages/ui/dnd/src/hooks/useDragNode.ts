@@ -1,14 +1,12 @@
 import { useDrag } from 'react-dnd';
 import { DragSourceHookSpec } from 'react-dnd/src/hooks/types';
-import { TEditor, Value, WithRequired } from '@udecode/plate-core';
+import { TEditor, Value } from '@udecode/plate-core';
 import { DragItemNode } from '../types';
 
-export interface UseDragNodeOptions<
-  DragItem extends DragItemNode = DragItemNode
-> extends WithRequired<
-    DragSourceHookSpec<DragItem, unknown, { isDragging: boolean }>,
-    'item'
-  > {}
+export interface UseDragNodeOptions
+  extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
+  id: string;
+}
 
 /**
  * `useDrag` hook to drag a node from the editor. `item` with `id` is required.
@@ -24,20 +22,22 @@ export interface UseDragNodeOptions<
  * Collect:
  * - isDragging: true if mouse is dragging the block
  */
-export const useDragNode = <
-  V extends Value,
-  DragItem extends DragItemNode = DragItemNode
->(
+export const useDragNode = <V extends Value>(
   editor: TEditor<V>,
-  { item, ...options }: UseDragNodeOptions<DragItem>
+  { id, item, ...options }: UseDragNodeOptions
 ) => {
-  return useDrag<DragItem, unknown, { isDragging: boolean }>(
+  return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
     () => ({
       item(monitor) {
         editor.isDragging = true;
         document.body.classList.add('dragging');
 
-        return typeof item === 'function' ? item(monitor) : item;
+        const _item = typeof item === 'function' ? item(monitor) : item;
+
+        return {
+          id,
+          ..._item,
+        };
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),

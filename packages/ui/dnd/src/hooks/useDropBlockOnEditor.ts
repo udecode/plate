@@ -3,7 +3,7 @@ import { DRAG_ITEM_BLOCK } from './useDragBlock';
 import { useDropNode, UseDropNodeOptions } from './useDropNode';
 
 /**
- * {@link useDropNode}
+ * @deprecated use {@link useDropNode}
  */
 export const useDropBlockOnEditor = <V extends Value>(
   editor: TReactEditor<V>,

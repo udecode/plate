@@ -10,7 +10,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { DragItemNode } from '../types';
+import { DragItemNode, DropLineDirection } from '../types';
 import { getHoverDirection, getNewDirection } from '../utils/index';
 
 export interface UseDropNodeOptions
@@ -19,9 +19,21 @@ export interface UseDropNodeOptions
    * The reference to the block being dragged.
    */
   blockRef: any;
+
+  /**
+   * Id of the node.
+   */
   id: string;
+
+  /**
+   * Current value of dropLine.
+   */
   dropLine: string;
-  setDropLine: Function;
+
+  /**
+   * Callback called on dropLine change.
+   */
+  onChangeDropLine: (newValue: DropLineDirection) => void;
 }
 
 /**
@@ -43,7 +55,7 @@ export interface UseDropNodeOptions
  */
 export const useDropNode = <V extends Value>(
   editor: TReactEditor<V>,
-  { blockRef, id, dropLine, setDropLine, ...options }: UseDropNodeOptions
+  { blockRef, id, dropLine, onChangeDropLine, ...options }: UseDropNodeOptions
 ) => {
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     drop: (dragItem, monitor) => {
@@ -99,7 +111,7 @@ export const useDropNode = <V extends Value>(
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       const direction = getHoverDirection(item, monitor, blockRef, id);
       const dropLineDir = getNewDirection(dropLine, direction);
-      if (dropLineDir) setDropLine(dropLineDir);
+      if (dropLineDir) onChangeDropLine(dropLineDir);
 
       if (direction && isExpanded(editor.selection)) {
         focusEditor(editor);
