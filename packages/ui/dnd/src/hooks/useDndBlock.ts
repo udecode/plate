@@ -7,10 +7,12 @@ import { useDropBlockOnEditor } from './useDropBlockOnEditor';
 export const useDndBlock = ({
   id,
   blockRef,
+  previewRef,
   removePreview,
 }: {
   id: string;
   blockRef: any;
+  previewRef?: any;
   removePreview?: boolean;
 }) => {
   const editor = useEditorRef();
@@ -25,10 +27,12 @@ export const useDndBlock = ({
     setDropLine,
   });
 
-  // TODO: previewElement option
   if (removePreview) {
     drop(blockRef);
     preview(getEmptyImage(), { captureDraggingState: true });
+  } else if (previewRef) {
+    drop(blockRef);
+    preview(previewRef);
   } else {
     preview(drop(blockRef));
   }
