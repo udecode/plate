@@ -15,6 +15,7 @@ export const useDndNode = ({
   id,
   type,
   blockRef,
+  previewRef,
   removePreview,
 }: {
   /**
@@ -32,6 +33,8 @@ export const useDndNode = ({
    */
   blockRef: UseDropNodeOptions['blockRef'];
 
+  previewRef?: any;
+  
   /**
    * Whether to remove the preview.
    */
@@ -56,10 +59,12 @@ export const useDndNode = ({
     setDropLine,
   });
 
-  // TODO: previewElement option
   if (removePreview) {
     drop(blockRef);
     preview(getEmptyImage(), { captureDraggingState: true });
+  } else if (previewRef) {
+    drop(blockRef);
+    preview(previewRef);
   } else {
     preview(drop(blockRef));
   }
