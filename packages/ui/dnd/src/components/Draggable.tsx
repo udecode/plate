@@ -21,7 +21,7 @@ export const Draggable = <V extends Value>(props: DraggableProps<V>) => {
 
   const { dropLine, dragRef, isDragging } = useDndBlock({
     id: element.id as string,
-    blockRef: rootRef,
+    nodeRef: rootRef,
   });
 
   const multiDragRef = useMergedRef(dragRef, dragWrapperRef);

@@ -6,8 +6,8 @@ import {
   unhangRange,
   Value,
 } from '@udecode/plate-core';
-import { getBlocksWithId } from './getBlocksWithId';
-import { getNodesRange } from './getNodesRange';
+import { getBlocksWithId } from '../queries/getBlocksWithId';
+import { getNodesRange } from '../queries/getNodesRange';
 
 /**
  * Remove blocks with an id and focus the editor.

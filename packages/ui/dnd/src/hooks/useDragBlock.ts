@@ -4,7 +4,7 @@ import { useDragNode } from './useDragNode';
 export const DRAG_ITEM_BLOCK = 'block';
 
 /**
- * @deprecated use {@link useDragNode}
+ * {@link useDragNode}
  */
 export const useDragBlock = <V extends Value>(editor: TEditor<V>, id: string) =>
   useDragNode<V>(editor, {

@@ -3,8 +3,8 @@
  */
 
 export * from './useDndBlock';
+export * from './useDndNode';
 export * from './useDragBlock';
-export * from './useDropBlockOnEditor';
-export { useDragNode } from './useDragNode';
-export { useDropNode } from './useDropNode';
-export { UseDropNodeOptions } from './useDropNode';
+export * from './useDragNode';
+export * from './useDropBlock';
+export * from './useDropNode';
