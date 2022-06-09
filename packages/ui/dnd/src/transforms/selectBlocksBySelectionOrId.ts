@@ -1,7 +1,7 @@
 import { focusEditor, PlateEditor, select, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
-import { getBlocksWithId } from './getBlocksWithId';
-import { getNodesRange } from './getNodesRange';
+import { getBlocksWithId } from '../queries/getBlocksWithId';
+import { getNodesRange } from '../queries/getNodesRange';
 import { selectBlockById } from './selectBlockById';
 
 /**

@@ -1,26 +1,13 @@
-import { useDrag } from 'react-dnd';
 import { TEditor, Value } from '@udecode/plate-core';
+import { useDragNode } from './useDragNode';
 
-export const useDragBlock = <V extends Value>(
-  editor: TEditor<V>,
-  id: string
-) => {
-  return useDrag(
-    () => ({
-      type: 'block',
-      item() {
-        editor.isDragging = true;
-        document.body.classList.add('dragging');
-        return { id };
-      },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      end: () => {
-        editor.isDragging = false;
-        document.body.classList.remove('dragging');
-      },
-    }),
-    []
-  );
-};
+export const DRAG_ITEM_BLOCK = 'block';
+
+/**
+ * {@link useDragNode}
+ */
+export const useDragBlock = <V extends Value>(editor: TEditor<V>, id: string) =>
+  useDragNode<V>(editor, {
+    id,
+    type: DRAG_ITEM_BLOCK,
+  });
