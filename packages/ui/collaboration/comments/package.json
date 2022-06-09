@@ -1,6 +1,6 @@
 {
   "name": "@xolvio/plate-ui-comments",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Comments UI for Plate",
   "keywords": [
     "slate",
@@ -45,7 +45,7 @@
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "10.5.3",
-    "@xolvio/plate-comments": "^0.3.0",
+    "@xolvio/plate-comments": "^0.3.1",
     "@udecode/plate-styled-components": "10.5.3",
     "@udecode/plate-ui-toolbar": "10.5.3"
   },
