@@ -1,5 +1,51 @@
 # @udecode/plate-dnd
 
+## 12.0.0
+
+### Major Changes
+
+- [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) – renamed:
+  - `useDndBlock` options:
+    - `blockRef` -> `nodeRef`
+    - `removePreview` -> `preview.disable`
+  - `useDropBlockOnEditor` -> `useDropBlock`
+  - `useDropBlock` options:
+    - `blockRef` -> `nodeRef`
+    - `setDropLine` -> `onChangeDropLine`
+      signature change:
+  - `getHoverDirection`:
+  ```tsx
+  // before
+  (
+    dragItem: DragItemBlock,
+    monitor: DropTargetMonitor,
+    ref: any,
+    hoverId: string
+  )
+  // after
+  {
+    dragItem,
+    id,
+    monitor,
+    nodeRef,
+  }: GetHoverDirectionOptions
+  ```
+
+### Minor Changes
+
+- [#1574](https://github.com/udecode/plate/pull/1574) by [@xakdog](https://github.com/xakdog) – `useDndBlock`: add `previewRef` option to customize the preview
+
+- [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode`: `useDndBlock` with:
+    - `type` option. Different types are needed to allow dnd in different structures like tables or lists.
+    - `drag` options
+    - `drop` options
+    - `preview` options
+  - `useDragNode`: `useDragBlock` with `type` option.
+  - `useDropNode`: `useDropBlock` with `accept` option:
+    - `onDropNode` called on drop
+    - `onHoverNode` called on hover
+
 ## 11.2.1
 
 ### Patch Changes
