@@ -12,3 +12,5 @@ export * from './User';
 export { insertTextAtTheEndOfAThreadNode } from './insertTextAtTheEndOfAThreadNode';
 export { insertTextAtTheStartOfAThreadNode } from './insertTextAtTheStartOfAThreadNode';
 export { insertTextThreadPlugin } from './insertTextThreadPlugin';
+export { changeSelectionToBeBasedOnTheNextNode } from './changeSelectionToBeBasedOnTheNextNode';
+export { isTextNode } from './isTextNode';

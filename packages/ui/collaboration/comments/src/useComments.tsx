@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   getAbove,
+  getNextSiblingNodes,
+  getParent,
   getPluginType,
+  isEnd,
   TAncestor,
   usePlateEditorState,
 } from '@udecode/plate-core';
 import {
+  changeSelectionToBeBasedOnTheNextNode,
   Comment,
   deleteThread,
   ELEMENT_THREAD,
   findThreadNodeEntries,
+  isTextNode,
   Thread,
   ThreadNode,
   upsertThreadAtSelection,
@@ -230,6 +235,33 @@ export function useComments({
       newThreadThreadNodeEntry,
       onCancelCreateThread,
     ]
+  );
+
+  useEffect(
+    function potentiallyCorrectSelection() {
+      if (editor.selection && Range.isCollapsed(editor.selection)) {
+        const threadType = getPluginType(editor, ELEMENT_THREAD);
+        const threadNodeEntry = getAbove<ThreadNode & TAncestor>(editor, {
+          match: {
+            type: threadType,
+          },
+        });
+        if (threadNodeEntry) {
+          const focusPoint = editor.selection.focus;
+          const [, threadPath] = threadNodeEntry;
+          if (isEnd(editor, focusPoint, threadPath)) {
+            const parent = getParent(editor, threadPath);
+            if (parent) {
+              const siblings = getNextSiblingNodes(parent, threadPath);
+              if (siblings.length >= 1 && isTextNode(siblings[0])) {
+                changeSelectionToBeBasedOnTheNextNode(editor);
+              }
+            }
+          }
+        }
+      }
+    },
+    [editor, editor.selection]
   );
 
   const onAddThread = useCallback(
