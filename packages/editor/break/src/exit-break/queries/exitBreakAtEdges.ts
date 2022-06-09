@@ -3,14 +3,15 @@ import {
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   TEditor,
+  Value,
 } from '@udecode/plate-core';
 
 /**
  * Check if the selection is at the edge of its parent block.
  * If it is and if the selection is expanded, delete its content.
  */
-export const exitBreakAtEdges = (
-  editor: TEditor,
+export const exitBreakAtEdges = <V extends Value>(
+  editor: TEditor<V>,
   {
     start,
     end,

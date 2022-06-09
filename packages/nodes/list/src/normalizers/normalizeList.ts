@@ -2,18 +2,20 @@ import {
   ELEMENT_DEFAULT,
   getChildren,
   getNode,
-  getParent,
+  getParentNode,
   getPluginType,
   getPreviousPath,
   isElement,
   match,
   PlateEditor,
-  setNodes,
-  TDescendant,
+  removeNodes,
+  setElements,
   TElement,
+  TNodeEntry,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Descendant, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries';
 import { moveListItemsToList } from '../transforms';
@@ -24,8 +26,8 @@ import { normalizeNestedList } from './normalizeNestedList';
 /**
  * Normalize list node to force the ul>li>p+ul structure.
  */
-export const normalizeList = (
-  editor: PlateEditor,
+export const normalizeList = <V extends Value>(
+  editor: PlateEditor<V>,
   { validLiChildrenTypes }: ListPlugin
 ) => {
   const { normalizeNode } = editor;
@@ -33,7 +35,7 @@ export const normalizeList = (
   const licType = getPluginType(editor, ELEMENT_LIC);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: NodeEntry) => {
+  return ([node, path]: TNodeEntry) => {
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
@@ -44,7 +46,7 @@ export const normalizeList = (
       );
 
       if (nonLiChild) {
-        return wrapNodes(
+        return wrapNodes<TElement>(
           editor,
           { type: liType, children: [] },
           { at: nonLiChild[1] }
@@ -53,18 +55,16 @@ export const normalizeList = (
     }
 
     // remove empty list
-    if (match(node, { type: getListTypes(editor) })) {
+    if (match(node, [], { type: getListTypes(editor) })) {
       if (
         !node.children.length ||
-        !node.children.find(
-          (item: Descendant) => (item as TDescendant).type === liType
-        )
+        !node.children.find((item) => item.type === liType)
       ) {
-        return Transforms.removeNodes(editor, { at: path });
+        return removeNodes(editor, { at: path });
       }
 
       const nextPath = Path.next(path);
-      const nextNode = getNode(editor, nextPath) as TElement | null;
+      const nextNode = getNode<TElement>(editor, nextPath);
 
       // Has a list afterwards with the same type
       if (nextNode?.type === node.type) {
@@ -76,7 +76,7 @@ export const normalizeList = (
       }
 
       const prevPath = getPreviousPath(path) as Path;
-      const prevNode = getNode(editor, prevPath) as TElement | null;
+      const prevNode = getNode<TElement>(editor, prevPath);
 
       // Has a list before with the same type
       if (prevNode?.type === node.type) {
@@ -104,8 +104,8 @@ export const normalizeList = (
 
     // LIC should have LI parent. If not, set LIC to DEFAULT type.
     if (node.type === licType && licType !== defaultType) {
-      if (getParent(editor, path)?.[0].type !== liType) {
-        setNodes(editor, { type: defaultType }, { at: path });
+      if (getParentNode(editor, path)?.[0].type !== liType) {
+        setElements(editor, { type: defaultType }, { at: path });
         return;
       }
     }

@@ -1,4 +1,4 @@
-import { WithOverride } from '@udecode/plate-core';
+import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-core';
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
 import { deleteFragmentList } from './deleteFragmentList';
@@ -7,9 +7,12 @@ import { insertFragmentList } from './insertFragmentList';
 import { normalizeList } from './normalizers';
 import { ListPlugin } from './types';
 
-export const withList: WithOverride<{}, ListPlugin> = (
-  editor,
-  { options: { validLiChildrenTypes } }
+export const withList = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  { options: { validLiChildrenTypes } }: WithPlatePlugin<ListPlugin, V, E>
 ) => {
   const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 

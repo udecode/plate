@@ -3,6 +3,7 @@ import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createI
 import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
 import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { Value } from '../../../slate/editor/TEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -122,7 +123,7 @@ it('serialize complex example with no type on top level node to html', () => {
           },
         ],
       },
-    ],
+    ] as Value,
   });
   expect(render).toBe(
     '<div><p class="slate-p">Some paragraph that contains, <em class="slate-italic">italicized text</em> and <strong class="slate-bold">bolded text</strong> is first.</p></div>'
@@ -169,7 +170,7 @@ it('serialize complex example with multiple no types on top level node to html',
       {
         children: [{ text: 'FOO', bold: true }],
       },
-    ],
+    ] as Value,
   });
   expect(render).toBe(
     '<div><p class="slate-p">Some paragraph that contains, <em class="slate-italic">italicized text</em> and <strong class="slate-bold">bolded text</strong> is first.</p></div><div><strong class="slate-bold">FOO</strong></div>'
@@ -197,7 +198,7 @@ it('serialize string with %', () => {
       {
         children: [{ text: 'Encoded string 100%25' }],
       },
-    ],
+    ] as Value,
   });
   expect(render).toBe(
     '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%</div>'

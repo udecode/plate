@@ -1,4 +1,4 @@
-import { createEditor } from 'slate';
+import { createTEditor } from '../../utils/createTEditor';
 import { getPreviousBlockById } from './getPreviousBlockById';
 
 const nodesFixture5 = [
@@ -56,7 +56,7 @@ const nodesFixtureWithList = [
 describe('when getPreviousNodeById', () => {
   describe('when not first block', () => {
     it('should be', () => {
-      const e = createEditor();
+      const e = createTEditor();
       e.children = nodesFixture5;
       expect(getPreviousBlockById(e, '3')?.[0]).toEqual(nodesFixture5[1]);
     });
@@ -64,7 +64,7 @@ describe('when getPreviousNodeById', () => {
 
   describe('when first block', () => {
     it('should be', () => {
-      const e = createEditor();
+      const e = createTEditor();
       e.children = nodesFixture5;
       expect(getPreviousBlockById(e, '1')).toEqual([null, [-1]]);
     });
@@ -72,7 +72,7 @@ describe('when getPreviousNodeById', () => {
 
   describe('when not found', () => {
     it('should be undefined', () => {
-      const e = createEditor();
+      const e = createTEditor();
       e.children = nodesFixture5;
       expect(getPreviousBlockById(e, '11')?.[0]).toBeUndefined();
     });
@@ -80,7 +80,7 @@ describe('when getPreviousNodeById', () => {
 
   describe('when list', () => {
     it('should return previous block', () => {
-      const e = createEditor();
+      const e = createTEditor();
       e.children = nodesFixtureWithList;
       expect(getPreviousBlockById(e, '2')?.[0]).toEqual(
         nodesFixtureWithList[0]

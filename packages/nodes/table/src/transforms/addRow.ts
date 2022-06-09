@@ -1,28 +1,33 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   PlateEditor,
   someNode,
-  TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from '../utils/getEmptyRowNode';
 
-export const addRow = (editor: PlateEditor, { header }: TablePluginOptions) => {
+/**
+ * deprecated - use `insertTableRow` instead
+ */
+export const addRow = <V extends Value>(
+  editor: PlateEditor<V>,
+  { header }: { header?: boolean } = {}
+) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentRowItem = getAbove(editor, {
+    const currentRowItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
     if (currentRowItem) {
       const [currentRowElem, currentRowPath] = currentRowItem;
-      insertNodes<TElement>(
+      insertElements(
         editor,
         getEmptyRowNode(editor, {
           header,

@@ -7,18 +7,25 @@ import {
   TComboboxItem,
 } from '@udecode/plate-combobox';
 import {
+  deleteText,
   getBlockAbove,
   getPlugin,
   insertNodes,
+  insertText,
+  isEndPoint,
+  moveSelection,
   PlatePluginKey,
+  removeNodes,
+  select,
+  TNodeProps,
+  withoutMergingHistory,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
-import { HistoryEditor } from 'slate-history';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
-import { MentionNode, MentionNodeData, MentionPlugin } from './types';
+import { MentionPlugin, TMentionElement } from './types';
 
 export interface CreateMentionNode<TData extends Data> {
-  (item: TComboboxItem<TData>): MentionNodeData;
+  (item: TComboboxItem<TData>): TNodeProps<TMentionElement>;
 }
 
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
@@ -30,41 +37,42 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
   const {
     type,
     options: { insertSpaceAfterMention, createMentionNode },
-  } = getPlugin<MentionPlugin>(editor, key);
+  } = getPlugin<MentionPlugin>(editor as any, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
     editor.selection &&
     pathAbove &&
-    Editor.isEnd(editor, editor.selection.anchor, pathAbove);
+    isEndPoint(editor, editor.selection.anchor, pathAbove);
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     // insert a space to fix the bug
     if (isBlockEnd) {
-      Transforms.insertText(editor, ' ');
+      insertText(editor, ' ');
     }
 
-    Transforms.select(editor, targetRange);
+    select(editor, targetRange);
 
-    HistoryEditor.withoutMerging(editor, () =>
-      Transforms.removeNodes(editor, {
-        // TODO: replace any
-        match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
+    withoutMergingHistory(editor, () =>
+      removeNodes(editor, {
+        match: (node) => node.type === ELEMENT_MENTION_INPUT,
       })
     );
 
-    insertNodes<MentionNode>(editor, {
+    const props = createMentionNode!(item);
+
+    insertNodes<TMentionElement>(editor, {
       type,
       children: [{ text: '' }],
-      ...createMentionNode!(item),
-    });
+      ...props,
+    } as TMentionElement);
 
     // move the selection after the element
-    Transforms.move(editor);
+    moveSelection(editor);
 
     // delete the inserted space
     if (isBlockEnd && !insertSpaceAfterMention) {
-      Transforms.delete(editor);
+      deleteText(editor);
     }
   });
   return comboboxActions.reset();

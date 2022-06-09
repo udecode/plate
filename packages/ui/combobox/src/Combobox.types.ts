@@ -36,4 +36,6 @@ export interface ComboboxProps<TData = NoData>
    * @default text
    */
   onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
+
+  portalElement?: Element;
 }

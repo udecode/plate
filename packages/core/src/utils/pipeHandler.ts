@@ -1,5 +1,6 @@
 import { SyntheticEvent } from 'react';
-import { EditableProps } from 'slate-react/dist/components/editable';
+import { Value } from '../slate/editor/TEditor';
+import { TEditableProps } from '../slate/types/TEditableProps';
 import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugins/DOMHandlers';
 
@@ -33,12 +34,12 @@ export const isEventHandled = <
  * - Return a handler calling all the plugins handlers then the prop handler.
  * - Any handler returning true will stop the next handlers to be called, including slate internal handler.
  */
-export const pipeHandler = <K extends keyof DOMHandlers>(
-  editor: PlateEditor,
+export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
+  editor: PlateEditor<V>,
   {
     editableProps,
     handlerKey,
-  }: { editableProps?: EditableProps | null; handlerKey: K }
+  }: { editableProps?: TEditableProps<V> | null; handlerKey: K }
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
   pluginsHandlers = editor.plugins.flatMap(

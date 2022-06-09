@@ -1,6 +1,20 @@
 import { comboboxActions } from '@udecode/plate-combobox';
-import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
-import { Editor, Node, Range, Transforms } from 'slate';
+import {
+  getEditorString,
+  getNodeString,
+  getPlugin,
+  getPointAfter,
+  getPointBefore,
+  getRange,
+  insertNodes,
+  PlateEditor,
+  setSelection,
+  TNode,
+  TText,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-core';
+import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -8,19 +22,24 @@ import {
   isNodeMentionInput,
   isSelectionInMentionInput,
 } from './queries';
-import { MentionInputNode, MentionPlugin } from './types';
+import { MentionPlugin, TMentionInputElement } from './types';
 
-export const withMention: WithOverride<{}, MentionPlugin> = (
-  editor,
-  { options: { id, trigger, inputCreation } }
+export const withMention = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  {
+    options: { id, trigger, inputCreation },
+  }: WithPlatePlugin<MentionPlugin, V, E>
 ) => {
-  const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
+  const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
 
   const { apply, insertBreak, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
-    if (currentMentionInput && Node.string(currentMentionInput[0]) === '') {
+    if (currentMentionInput && getNodeString(currentMentionInput[0]) === '') {
       return removeMentionInput(editor, currentMentionInput[1]);
     }
 
@@ -45,21 +64,21 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
-    const previousChar = Editor.string(
+    const previousChar = getEditorString(
       editor,
-      Editor.range(
+      getRange(
         editor,
         editor.selection,
-        Editor.before(editor, editor.selection)
+        getPointBefore(editor, editor.selection)
       )
     );
 
-    const nextChar = Editor.string(
+    const nextChar = getEditorString(
       editor,
-      Editor.range(
+      getRange(
         editor,
         editor.selection,
-        Editor.after(editor, editor.selection)
+        getPointAfter(editor, editor.selection)
       )
     );
 
@@ -72,7 +91,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       (beginningOfLine || precededByWhitespace) &&
       (endOfLine || followedByWhitespace)
     ) {
-      const data: MentionInputNode = {
+      const data: TMentionInputElement = {
         type,
         children: [{ text: '' }],
         trigger,
@@ -80,7 +99,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       if (inputCreation) {
         data[inputCreation.key] = inputCreation.value;
       }
-      return insertNodes<MentionInputNode>(editor, data);
+      return insertNodes<TMentionInputElement>(editor, data);
     }
 
     return insertText(text);
@@ -92,7 +111,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
       if (currentMentionInput) {
-        comboboxActions.text(Node.string(currentMentionInput[0]));
+        comboboxActions.text(getNodeString(currentMentionInput[0]));
       }
     } else if (operation.type === 'set_selection') {
       const previousMentionInputPath = Range.isRange(operation.properties)
@@ -112,13 +131,15 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       }
     } else if (
       operation.type === 'insert_node' &&
-      isNodeMentionInput(editor, operation.node)
+      isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if (operation.node.trigger !== trigger) {
+      if ((operation.node as TMentionInputElement).trigger !== trigger) {
         return;
       }
 
-      const text = operation.node.children[0]?.text ?? '';
+      const text =
+        ((operation.node as TMentionInputElement).children as TText[])[0]
+          ?.text ?? '';
 
       if (
         inputCreation === undefined ||
@@ -127,7 +148,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         // Needed for undo - after an undo a mention insert we only receive
         // an insert_node with the mention input, i.e. nothing indicating that it
         // was an undo.
-        Transforms.setSelection(editor, {
+        setSelection(editor, {
           anchor: { path: operation.path.concat([0]), offset: text.length },
           focus: { path: operation.path.concat([0]), offset: text.length },
         });
@@ -140,9 +161,9 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       }
     } else if (
       operation.type === 'remove_node' &&
-      isNodeMentionInput(editor, operation.node)
+      isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if (operation.node.trigger !== trigger) {
+      if ((operation.node as TMentionInputElement).trigger !== trigger) {
         return;
       }
 

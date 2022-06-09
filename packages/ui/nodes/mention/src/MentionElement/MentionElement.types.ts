@@ -1,18 +1,20 @@
-import { MentionNode, MentionNodeData } from '@udecode/plate-mention';
+import { Value } from '@udecode/plate-core';
+import { TMentionElement } from '@udecode/plate-mention';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 
-export interface MentionElementStyleProps extends MentionElementProps {
+export interface MentionElementStyleProps<V extends Value>
+  extends MentionElementProps<V> {
   selected?: boolean;
   focused?: boolean;
 }
 
 // renderElement props
-export interface MentionElementProps
-  extends Omit<StyledElementProps<MentionNode>, 'onClick'> {
+export interface MentionElementProps<V extends Value>
+  extends StyledElementProps<V, TMentionElement> {
   /**
    * Prefix rendered before mention
    */
   prefix?: string;
-  onClick?: (mentionNode: MentionNode) => void;
-  renderLabel?: (mentionable: MentionNodeData) => string;
+  onClick?: (mentionNode: any) => void;
+  renderLabel?: (mentionable: TMentionElement) => string;
 }

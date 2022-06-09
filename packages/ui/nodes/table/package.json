@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-table",
-  "version": "10.6.3",
+  "version": "11.3.1",
   "description": "Table UI for Plate",
   "keywords": [
     "slate",
@@ -32,14 +32,14 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "10.5.3",
-    "@udecode/plate-styled-components": "10.5.3",
-    "@udecode/plate-table": "10.6.3",
-    "@udecode/plate-ui-toolbar": "10.5.3",
-    "@udecode/plate-ui-button": "10.5.3",
-    "@udecode/plate-ui-popover": "10.6.2",
-    "jotai": "^1.4.0",
-    "re-resizable": "^6.9.1"
+    "@udecode/plate-core": "11.2.1",
+    "@udecode/plate-styled-components": "11.2.1",
+    "@udecode/plate-table": "11.3.1",
+    "@udecode/plate-ui-toolbar": "11.2.1",
+    "@udecode/plate-ui-button": "11.2.1",
+    "@udecode/plate-ui-popover": "11.2.1",
+    "jotai": "^1.6.6",
+    "re-resizable": "^6.9.9"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

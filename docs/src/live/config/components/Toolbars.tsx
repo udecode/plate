@@ -35,8 +35,6 @@ import { Looks6 } from '@styled-icons/material/Looks6';
 import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
-  addColumn,
-  addRow,
   AddThreadToolbarButton,
   AlignToolbarButton,
   BalloonToolbar,
@@ -59,6 +57,8 @@ import {
   getPreventDefaultHandler,
   indent,
   insertTable,
+  insertTableColumn,
+  insertTableRow,
   ListToolbarButton,
   MARK_BOLD,
   MARK_CODE,
@@ -228,9 +228,9 @@ export const TableToolbarButtons = () => (
   <>
     <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
     <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-    <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+    <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
     <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-    <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
+    <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
     <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
   </>
 );

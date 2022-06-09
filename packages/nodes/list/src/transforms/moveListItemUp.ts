@@ -1,35 +1,39 @@
 import {
-  getAbove,
+  getAboveNode,
   getNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   isLastChild,
+  moveNodes,
   PlateEditor,
   TElement,
+  TElementEntry,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: NodeEntry<TElement>;
-  listItem: NodeEntry<TElement>;
+  list: TElementEntry;
+  listItem: TElementEntry;
 }
 
 /**
  * Move a list item up.
  */
-export const moveListItemUp = (
-  editor: PlateEditor,
+export const moveListItemUp = <V extends Value>(
+  editor: PlateEditor<V>,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = getAbove<TElement>(editor, {
+    const liParent = getAboveNode<TElement>(editor, {
       at: listPath,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });
@@ -46,7 +50,7 @@ export const moveListItemUp = (
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        insertNodes<TElement>(
+        insertElements(
           editor,
           {
             type: listNode.type,
@@ -94,7 +98,7 @@ export const moveListItemUp = (
     if (!isLastChild(list, liPath)) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        insertNodes<TElement>(
+        insertElements(
           editor,
           {
             type: listNode.type,
@@ -119,7 +123,7 @@ export const moveListItemUp = (
     const movedUpLiPath = Path.next(liParentPath);
 
     // Move li one level up: next to the li parent.
-    Transforms.moveNodes(editor, {
+    moveNodes(editor, {
       at: liPath,
       to: movedUpLiPath,
     });
@@ -129,7 +133,7 @@ export const moveListItemUp = (
 
   let moved: boolean | undefined = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     moved = move();
   });
 

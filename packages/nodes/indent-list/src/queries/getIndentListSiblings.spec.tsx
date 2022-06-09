@@ -1,6 +1,11 @@
 /** @jsx jsx */
 
-import { getBlockAbove, TDescendant, TEditor } from '@udecode/plate-core';
+import {
+  getBlockAbove,
+  PlateEditor,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { getIndentListSiblings } from './getIndentListSiblings';
 
@@ -23,9 +28,9 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any) as TDescendant[];
 
-      const editor = ((<editor>{input}</editor>) as any) as TEditor;
+      const editor = ((<editor>{input}</editor>) as any) as PlateEditor;
 
-      const entry = getBlockAbove(editor);
+      const entry = getBlockAbove<TElement>(editor);
 
       const siblings = getIndentListSiblings(editor, entry!);
 
@@ -83,9 +88,9 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any) as TDescendant[];
 
-      const editor = ((<editor>{input}</editor>) as any) as TEditor;
+      const editor = ((<editor>{input}</editor>) as any) as PlateEditor;
 
-      const entry = getBlockAbove(editor);
+      const entry = getBlockAbove<TElement>(editor);
 
       const siblings = getIndentListSiblings(editor, entry!);
 

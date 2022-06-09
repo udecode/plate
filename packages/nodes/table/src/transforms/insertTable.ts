@@ -1,36 +1,48 @@
 import {
-  getAbove,
+  getBlockAbove,
   getPluginType,
+  getStartPoint,
   insertNodes,
   PlateEditor,
   selectEditor,
   someNode,
-  TElement,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
-import { getEmptyTableNode } from '../utils/getEmptyTableNode';
+import { TTableElement } from '../types';
+import {
+  getEmptyTableNode,
+  GetEmptyTableNodeOptions,
+} from '../utils/getEmptyTableNode';
 
-export const insertTable = (
-  editor: PlateEditor,
-  { header }: TablePluginOptions
+/**
+ * Insert table if selection not in table.
+ * Select start of table.
+ */
+export const insertTable = <V extends Value>(
+  editor: PlateEditor<V>,
+  { rowCount = 2, colCount = 2, header }: GetEmptyTableNodeOptions
 ) => {
-  if (
-    !someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
-    })
-  ) {
-    insertNodes<TElement>(editor, getEmptyTableNode(editor, { header }));
-    if (editor.selection) {
-      const tableEntry = getAbove(editor, {
+  withoutNormalizing(editor, () => {
+    if (
+      !someNode(editor, {
         match: { type: getPluginType(editor, ELEMENT_TABLE) },
-      });
-      if (!tableEntry) {
-        return;
+      })
+    ) {
+      insertNodes<TTableElement>(
+        editor,
+        getEmptyTableNode(editor, { header, rowCount, colCount })
+      );
+
+      if (editor.selection) {
+        const tableEntry = getBlockAbove(editor, {
+          match: { type: getPluginType(editor, ELEMENT_TABLE) },
+        });
+        if (!tableEntry) return;
+
+        selectEditor(editor, { at: getStartPoint(editor, tableEntry[1]) });
       }
-      const point = Editor.start(editor, tableEntry[1]);
-      selectEditor(editor, { at: point });
     }
-  }
+  });
 };

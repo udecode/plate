@@ -1,4 +1,9 @@
-import { isCollapsed, WithOverride } from '@udecode/plate-core';
+import {
+  isCollapsed,
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-core';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
 import { autoformatText } from './transforms/autoformatText';
@@ -8,9 +13,12 @@ import { AutoformatPlugin } from './types';
  * Enables support for autoformatting actions.
  * Once a match rule is validated, it does not check the following rules.
  */
-export const withAutoformat: WithOverride<{}, AutoformatPlugin> = (
-  editor,
-  { options: { rules } }
+export const withAutoformat = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  { options: { rules } }: WithPlatePlugin<AutoformatPlugin, V, E>
 ) => {
   const { insertText } = editor;
 
@@ -20,7 +28,7 @@ export const withAutoformat: WithOverride<{}, AutoformatPlugin> = (
     for (const rule of rules!) {
       const { mode = 'text', insertTrigger, query } = rule;
 
-      if (query && !query(editor, { ...rule, text })) continue;
+      if (query && !query(editor as any, { ...rule, text })) continue;
 
       const autoformatter: Record<typeof mode, Function> = {
         block: autoformatBlock,

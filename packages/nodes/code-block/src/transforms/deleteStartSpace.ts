@@ -1,24 +1,31 @@
-import { getText, TEditor } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import {
+  deleteText,
+  getEditorString,
+  getPointAfter,
+  getRange,
+  getStartPoint,
+  TEditor,
+  Value,
+} from '@udecode/plate-core';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
 /**
  * If there is a whitespace character at the start of the code line,
  * delete it.
  */
-export const deleteStartSpace = (
-  editor: TEditor,
+export const deleteStartSpace = <V extends Value>(
+  editor: TEditor<V>,
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = Editor.start(editor, codeLinePath);
-  const codeLineEnd = codeLineStart && Editor.after(editor, codeLineStart);
+  const codeLineStart = getStartPoint(editor, codeLinePath);
+  const codeLineEnd = codeLineStart && getPointAfter(editor, codeLineStart);
   const spaceRange =
-    codeLineEnd && Editor.range(editor, codeLineStart, codeLineEnd);
-  const spaceText = getText(editor, spaceRange);
+    codeLineEnd && getRange(editor, codeLineStart, codeLineEnd);
+  const spaceText = getEditorString(editor, spaceRange);
 
   if (/\s/.test(spaceText)) {
-    Transforms.delete(editor, { at: spaceRange });
+    deleteText(editor, { at: spaceRange });
     return true;
   }
 

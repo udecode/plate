@@ -1,6 +1,10 @@
-import { HotkeyPlugin, RangeBeforeOptions } from '@udecode/plate-core';
+import {
+  HotkeyPlugin,
+  RangeBeforeOptions,
+  TElement,
+} from '@udecode/plate-core';
 
-export interface LinkNodeData {
+export interface TLinkElement extends TElement {
   url: string;
 }
 

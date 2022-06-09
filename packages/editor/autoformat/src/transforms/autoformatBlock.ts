@@ -1,24 +1,28 @@
 import {
+  deleteText,
   ELEMENT_DEFAULT,
+  getEditorString,
   getRangeBefore,
   getRangeFromBlockStart,
-  getText,
-  setNodes,
+  isBlock,
+  isVoid,
+  PlateEditor,
+  setElements,
   someNode,
-  TEditor,
-  TElement,
+  Value,
 } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Editor, Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { AutoformatBlockRule } from '../types';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatBlockOptions extends AutoformatBlockRule {
+export interface AutoformatBlockOptions<V extends Value = Value>
+  extends AutoformatBlockRule<V> {
   text: string;
 }
 
-export const autoformatBlock = (
-  editor: TEditor,
+export const autoformatBlock = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     text,
     trigger,
@@ -28,7 +32,7 @@ export const autoformatBlock = (
     preFormat,
     format,
     triggerAtBlockStart = true,
-  }: AutoformatBlockOptions
+  }: AutoformatBlockOptions<V>
 ) => {
   const matches = castArray(_match as string | string[]);
 
@@ -48,11 +52,11 @@ export const autoformatBlock = (
       // Don't autoformat if there is void nodes.
       const hasVoidNode = someNode(editor, {
         at: matchRange,
-        match: (n) => Editor.isVoid(editor, n),
+        match: (n) => isVoid(editor, n),
       });
       if (hasVoidNode) continue;
 
-      const textFromBlockStart = getText(editor, matchRange);
+      const textFromBlockStart = getEditorString(editor, matchRange);
 
       if (end !== textFromBlockStart) continue;
     } else {
@@ -68,16 +72,18 @@ export const autoformatBlock = (
       if (isBelowSameBlockType) continue;
     }
 
-    Transforms.delete(editor, { at: matchRange });
+    deleteText(editor, { at: matchRange });
 
-    preFormat?.(editor);
+    if (preFormat) {
+      preFormat(editor);
+    }
 
     if (!format) {
-      setNodes<TElement>(
+      setElements(
         editor,
         { type },
         {
-          match: (n) => Editor.isBlock(editor, n),
+          match: (n) => isBlock(editor, n),
         }
       );
     } else {

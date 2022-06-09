@@ -1,14 +1,23 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import {
+  PlatePlugin,
+  PluginOptions,
+  WithPlatePlugin,
+} from '../types/plugins/PlatePlugin';
 import { PluginKey } from '../types/plugins/PlatePluginKey';
 import { getKeysByTypes } from './getKeysByTypes';
 
 /**
  * Map plugin inject props to injected plugin
  */
-export const mapInjectPropsToPlugin = <T = {}, P = {}>(
-  editor: PlateEditor<T>,
-  plugin: WithPlatePlugin<T, P>,
+export const mapInjectPropsToPlugin = <
+  P = PluginOptions,
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>,
   injectedPlugin: Partial<PlatePlugin>
 ) => {
   const validTypes = plugin.inject.props?.validTypes;

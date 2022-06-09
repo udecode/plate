@@ -9,3 +9,5 @@ export * from './getPreviousTableCell';
 export * from './getTableCellEntry';
 export * from './getTableColumnCount';
 export * from './getTableColumnIndex';
+export * from './getTableGridAbove';
+export * from './getTableGridByRange';

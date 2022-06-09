@@ -1,10 +1,14 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { pluginInjectProps } from './pluginInjectProps';
 
 /**
  * Inject plugin props, editor.
  */
-export const pipeInjectProps = <T,>(editor: PlateEditor, nodeProps: any): T => {
+export const pipeInjectProps = <V extends Value>(
+  editor: PlateEditor<V>,
+  nodeProps: any
+) => {
   editor.plugins.forEach((plugin) => {
     if (plugin.inject.props) {
       const props = pluginInjectProps(editor, plugin, nodeProps);

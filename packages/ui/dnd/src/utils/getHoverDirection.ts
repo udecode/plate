@@ -1,25 +1,41 @@
 import { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { DragItemBlock, DropDirection } from '../types';
+import { DragItemNode, DropDirection } from '../types';
+
+export interface GetHoverDirectionOptions {
+  dragItem: DragItemNode;
+
+  monitor: DropTargetMonitor;
+
+  /**
+   * The node ref of the node being dragged.
+   */
+  nodeRef: any;
+
+  /**
+   * Hovering node id.
+   */
+  id: string;
+}
 
 /**
- * If dragging a block A over another block B:
- * get the direction of block A relative to block B.
+ * If dragging a node A over another node B:
+ * get the direction of node A relative to node B.
  */
-export const getHoverDirection = (
-  dragItem: DragItemBlock,
-  monitor: DropTargetMonitor,
-  ref: any,
-  hoverId: string
-): DropDirection => {
-  if (!ref.current) return;
+export const getHoverDirection = ({
+  dragItem,
+  id,
+  monitor,
+  nodeRef,
+}: GetHoverDirectionOptions): DropDirection => {
+  if (!nodeRef.current) return;
 
   const dragId = dragItem.id;
 
   // Don't replace items with themselves
-  if (dragId === hoverId) return;
+  if (dragId === id) return;
 
   // Determine rectangle on screen
-  const hoverBoundingRect = ref.current?.getBoundingClientRect();
+  const hoverBoundingRect = nodeRef.current?.getBoundingClientRect();
 
   // Get vertical middle
   const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;

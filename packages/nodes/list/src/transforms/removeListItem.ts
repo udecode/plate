@@ -1,29 +1,35 @@
 import {
-  deleteFragment,
+  createPathRef,
+  deleteMerge,
+  getNodeEntry,
   getPluginType,
   getPreviousPath,
-  insertNodes,
+  insertElements,
   isExpanded,
   PlateEditor,
+  removeNodes,
   TElement,
+  TElementEntry,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
-  list: NodeEntry<TElement>;
-  listItem: NodeEntry<TElement>;
+  list: TElementEntry;
+  listItem: TElementEntry;
   reverse?: boolean;
 }
 
 /**
  * Remove list item and move its sublist to list if any.
  */
-export const removeListItem = (
-  editor: PlateEditor,
+export const removeListItem = <V extends Value>(
+  editor: PlateEditor<V>,
   { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;
@@ -37,7 +43,7 @@ export const removeListItem = (
 
   let success = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     /**
      * If there is a previous li, we need to move sub-lis to the previous li.
      * As we need to delete first, we will:
@@ -48,14 +54,11 @@ export const removeListItem = (
      * 5. remove tempLi
      */
     if (previousLiPath) {
-      const previousLi = Editor.node(
-        editor,
-        previousLiPath
-      ) as NodeEntry<TElement>;
+      const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
 
       // 1
       let tempLiPath = Path.next(liPath);
-      insertNodes<TElement>(
+      insertElements(
         editor,
         {
           type: getPluginType(editor, ELEMENT_LI),
@@ -69,8 +72,8 @@ export const removeListItem = (
         { at: tempLiPath }
       );
 
-      const tempLi = Editor.node(editor, tempLiPath) as NodeEntry<TElement>;
-      const tempLiPathRef = Editor.pathRef(editor, tempLi[1]);
+      const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
+      const tempLiPathRef = createPathRef(editor, tempLi[1]);
 
       // 2
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -79,7 +82,7 @@ export const removeListItem = (
       });
 
       // 3
-      deleteFragment(editor, {
+      deleteMerge(editor, {
         reverse,
       });
 
@@ -92,7 +95,7 @@ export const removeListItem = (
       });
 
       // 5
-      Transforms.removeNodes(editor, { at: tempLiPath });
+      removeNodes(editor, { at: tempLiPath });
 
       success = true;
       return;

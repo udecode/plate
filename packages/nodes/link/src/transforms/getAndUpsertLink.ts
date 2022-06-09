@@ -1,22 +1,23 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   isCollapsed,
   PlateEditor,
   unwrapNodes,
+  Value,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
-export const getAndUpsertLink = async <T = {}>(
-  editor: PlateEditor<T>,
+export const getAndUpsertLink = async <V extends Value>(
+  editor: PlateEditor<V>,
   getLinkUrl?: LinkPlugin['getLinkUrl']
 ) => {
   const type = getPluginType(editor, ELEMENT_LINK);
   let prevUrl = '';
 
-  const linkNode = getAbove(editor, {
+  const linkNode = getAboveNode(editor, {
     match: { type },
   });
   if (linkNode) {

@@ -1,17 +1,23 @@
 import defaultsDeep from 'lodash/defaultsDeep';
+import { NoInfer } from '../common/types/utility/NoInfer';
+import { Value } from '../slate/editor/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
-import { PlatePlugin } from '../types/plugins/PlatePlugin';
-import { NoInfer } from '../types/utility/NoInfer';
+import { PlateEditor } from '../types/PlateEditor';
+import { PlatePlugin, PluginOptions } from '../types/plugins/PlatePlugin';
 
 /**
  * Recursive deep merge of each plugin from `overrideByKey`
  * into plugin with same key (plugin > plugin.plugins).
  */
-export const overridePluginsByKey = <T = {}, P = {}>(
-  plugin: PlatePlugin<T, NoInfer<P>>,
-  overrideByKey: OverrideByKey<T> = {},
+export const overridePluginsByKey = <
+  P = PluginOptions,
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  plugin: PlatePlugin<NoInfer<P>, V, E>,
+  overrideByKey: OverrideByKey<V, E> = {},
   nested?: boolean
-): PlatePlugin<T, NoInfer<P>> => {
+): PlatePlugin<NoInfer<P>, V, E> => {
   if (overrideByKey[plugin.key]) {
     const {
       plugins: pluginOverridesPlugins,
@@ -36,7 +42,7 @@ export const overridePluginsByKey = <T = {}, P = {}>(
   if (plugin.plugins) {
     // override plugin.plugins
     plugin.plugins = plugin.plugins.map((p) =>
-      overridePluginsByKey<T, {}>(p, overrideByKey, true)
+      overridePluginsByKey<{}, V, E>(p, overrideByKey, true)
     );
   }
 

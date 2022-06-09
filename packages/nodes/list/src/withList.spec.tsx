@@ -13,7 +13,7 @@ jsx;
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: Partial<PlatePlugin<{}, ListPlugin>>
+  listPluginOptions?: Partial<PlatePlugin<ListPlugin>>
 ) => {
   const editor = createPlateUIEditor({
     editor: input,

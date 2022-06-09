@@ -95,7 +95,7 @@ const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
 ```ts
 // Example
 const createReactPlugin = {
-  withOverrides: withReact
+  withOverrides: withTReact
 };
 ```
 
@@ -255,7 +255,7 @@ type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-type PlatePluginInsertData = {
+type PlatePluginInsertData<V extends Value = Value> = {
   /**
    * Format to get data. Example data types are text/plain and text/uri-list.
    */
@@ -271,7 +271,7 @@ type PlatePluginInsertData = {
    */
   getFragment?: (
     options: PlatePluginInsertDataOptions
-  ) => TDescendant[] | undefined;
+  ) => EElementOrText<V>[] | undefined;
 
   // injected
 
@@ -282,7 +282,7 @@ type PlatePluginInsertData = {
    * @return if true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: TDescendant[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
@@ -298,9 +298,9 @@ type PlatePluginInsertData = {
    * Transform the fragment to insert.
    */
   transformFragment?: (
-    fragment: TDescendant[],
+    fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
-  ) => TDescendant[];
+  ) => EElementOrText<V>[];
 }
 ```
 
@@ -349,8 +349,8 @@ This property extends most `textarea` handlers like:
 
 The type of each handler is:
 ```ts
-type Handler<T = {}, P = {}> = (
-  editor: PlateEditor<T>, plugin: WithPlatePlugin<T, P>
+type Handler<P = PluginOptions, V extends Value, E extends PlateEditor<V> = PlateEditor<V>> = (
+  editor: E, plugin: WithPlatePlugin<P, V, E>
 ) => (event: Event) => boolean | void;
 ```
 
@@ -402,19 +402,19 @@ type Handler<T = {}, P = {}> = (
    * Transform the className.
    * @default clsx(className, classNames[value])
    */
-  transformClassName?: (options: TransformOptions) => any;
+  transformClassName?: (options: TransformOptions<V>) => any;
 
   /**
    * Transform the node value for the style or className.
    * @default nodeValue
    */
-  transformNodeValue?: (options: TransformOptions) => any;
+  transformNodeValue?: (options: TransformOptions<V>) => any;
 
   /**
    * Transform the style.
    * @default { ...style, [styleKey]: value }
    */
-  transformStyle?: (options: TransformOptions) => CSSProperties;
+  transformStyle?: (options: TransformOptions<V>) => CSSProperties;
 
   /**
    * List of supported node values.
@@ -509,9 +509,9 @@ createIndentPlugin({
 - Type is:
 ```tsx
 (
-  editor: PlateEditor<T>,
-  plugin: WithPlatePlugin<T, P>
-) => Partial<PlatePlugin<T, P>>
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
+) => Partial<PlatePlugin<P, V, E>> | void;
 ```
 
 ### `type`

@@ -1,15 +1,16 @@
-import { PlateEditor } from '@udecode/plate-core';
-import { Range, Transforms } from 'slate';
+import { moveSelection, PlateEditor, Value } from '@udecode/plate-core';
+import isHotkey from 'is-hotkey';
+import { Range } from 'slate';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 
-export interface MoveSelectionByOffsetOptions {
-  query?: (editor: PlateEditor) => boolean;
+export interface MoveSelectionByOffsetOptions<V extends Value = Value> {
+  query?: (editor: PlateEditor<V>) => boolean;
 }
 
 // TODO: move to core
-export const moveSelectionByOffset: (
-  editor: PlateEditor,
-  options?: MoveSelectionByOffsetOptions
+export const moveSelectionByOffset: <V extends Value>(
+  editor: PlateEditor<V>,
+  options?: MoveSelectionByOffsetOptions<V>
 ) => KeyboardEventHandler = (editor, { query = () => true } = {}) => (
   event
 ) => {
@@ -19,15 +20,15 @@ export const moveSelectionByOffset: (
     return false;
   }
 
-  if (event.key === 'ArrowLeft') {
+  if (isHotkey('left', event)) {
     event.preventDefault();
-    Transforms.move(editor, { unit: 'offset', reverse: true });
+    moveSelection(editor, { unit: 'offset', reverse: true });
     return true;
   }
 
-  if (event.key === 'ArrowRight') {
+  if (isHotkey('right', event)) {
     event.preventDefault();
-    Transforms.move(editor, { unit: 'offset' });
+    moveSelection(editor, { unit: 'offset' });
     return true;
   }
 };

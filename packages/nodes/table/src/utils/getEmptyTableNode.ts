@@ -1,17 +1,27 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
-import { getEmptyRowNode } from './getEmptyRowNode';
+import { TTableElement } from '../types';
+import { getEmptyRowNode, GetEmptyRowNodeOptions } from './getEmptyRowNode';
 
-export const getEmptyTableNode = (
-  editor: PlateEditor,
-  { header }: TablePluginOptions
-) => {
+export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {
+  rowCount?: number;
+}
+
+export const getEmptyTableNode = <V extends Value>(
+  editor: PlateEditor<V>,
+  {
+    header,
+    rowCount = 0,
+    colCount,
+    newCellChildren,
+  }: GetEmptyTableNodeOptions = {}
+): TTableElement => {
+  const rows = Array(rowCount)
+    .fill(rowCount)
+    .map(() => getEmptyRowNode(editor, { header, colCount, newCellChildren }));
+
   return {
     type: getPluginType(editor, ELEMENT_TABLE),
-    children: [
-      getEmptyRowNode(editor, { header, colCount: 2 }),
-      getEmptyRowNode(editor, { header: false, colCount: 2 }),
-    ],
+    children: rows,
   };
 };

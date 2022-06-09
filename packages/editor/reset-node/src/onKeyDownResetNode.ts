@@ -1,9 +1,11 @@
 import {
   isCollapsed,
-  KeyboardHandler,
-  setNodes,
+  KeyboardHandlerReturnType,
+  PlateEditor,
+  setElements,
   someNode,
-  TElement,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { ResetNodePlugin } from './types';
@@ -13,21 +15,29 @@ export const SIMULATE_BACKSPACE: any = {
   which: 8,
 };
 
-export const onKeyDownResetNode: KeyboardHandler<{}, ResetNodePlugin> = (
-  editor,
-  { options: { rules } }
-) => (event) => {
+export const onKeyDownResetNode = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  { options: { rules } }: WithPlatePlugin<ResetNodePlugin, V, E>
+): KeyboardHandlerReturnType => (event) => {
   let reset;
 
   if (editor.selection && isCollapsed(editor.selection)) {
     rules!.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
       if (hotkey && isHotkey(hotkey, event as any)) {
-        if (predicate(editor) && someNode(editor, { match: { type: types } })) {
+        if (
+          predicate(editor as any) &&
+          someNode(editor, { match: { type: types } })
+        ) {
           event.preventDefault?.();
 
-          setNodes<TElement>(editor, { type: defaultType });
+          setElements(editor, { type: defaultType });
 
-          onReset?.(editor);
+          if (onReset) {
+            onReset(editor as any);
+          }
 
           reset = true;
         }

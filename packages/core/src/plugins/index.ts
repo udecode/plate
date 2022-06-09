@@ -9,5 +9,6 @@ export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
 export * from './createReactPlugin';
 export * from './withPlate';
+export * from './withTReact';
 export * from './html-deserializer/index';
 export * from './html-serializer/index';

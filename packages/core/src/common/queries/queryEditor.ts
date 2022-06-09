@@ -1,5 +1,5 @@
 import castArray from 'lodash/castArray';
-import { TEditor } from '../../types/slate/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
 import { QueryEditorOptions } from '../types/QueryEditorOptions';
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
@@ -8,8 +8,11 @@ import { someNode } from './someNode';
 /**
  * Query the editor state.
  */
-export const queryEditor = (
-  editor: TEditor,
+export const queryEditor = <
+  V extends Value = Value,
+  E extends TEditor<V> = TEditor<V>
+>(
+  editor: E,
   {
     filter,
     selectionAtBlockStart,
@@ -17,7 +20,7 @@ export const queryEditor = (
     allow,
     exclude,
     at = editor.selection || [],
-  }: QueryEditorOptions = {}
+  }: QueryEditorOptions<V, E> = {}
 ) => {
   if (
     (filter && !filter(editor)) ||

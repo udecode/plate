@@ -1,8 +1,8 @@
 import { ELEMENT_PARAGRAPH } from '../../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { TDescendant } from '../../../../types/slate/TDescendant';
+import { Value } from '../../../../slate/editor/TEditor';
 import { createDocumentNode } from '../../../utils/index';
 
-const output: TDescendant[] = [
+const output: Value = [
   {
     children: [
       {
@@ -10,7 +10,7 @@ const output: TDescendant[] = [
         children: [{ text: '' }],
       },
     ],
-  },
+  } as any,
 ];
 
 it('should be', () => {

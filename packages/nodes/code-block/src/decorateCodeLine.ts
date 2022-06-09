@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
 import {
-  Decorate,
-  getParent,
+  DecorateEntry,
+  getNodeString,
+  getParentNode,
   getPlugin,
-  TDescendant,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-core';
-import { Node, NodeEntry, Range } from 'slate';
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_CODE_SYNTAX,
-} from './constants';
-import { CodeBlockPlugin } from './types';
 
 // noinspection ES6UnusedImports
 import Prism, { languages, Token, tokenize } from 'prismjs';
@@ -62,29 +57,41 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
+import { Range } from 'slate';
+import {
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_CODE_SYNTAX,
+} from './constants';
+import { CodeBlockPlugin, TCodeBlockElement } from './types';
 
 export interface CodeSyntaxRange extends Range {
   tokenType: string;
   [ELEMENT_CODE_SYNTAX]: true;
 }
 
-export const decorateCodeLine: Decorate = (editor) => {
-  const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
-  const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
+export const decorateCodeLine = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+): DecorateEntry => {
+  const code_block = getPlugin<CodeBlockPlugin, V>(editor, ELEMENT_CODE_BLOCK);
+  const code_line = getPlugin<{}, V>(editor, ELEMENT_CODE_LINE);
 
-  return ([node, path]: NodeEntry<TDescendant>): CodeSyntaxRange[] => {
+  return ([node, path]): CodeSyntaxRange[] => {
     const ranges: CodeSyntaxRange[] = [];
 
     if (!code_block.options.syntax || node.type !== code_line.type) {
       return ranges;
     }
 
-    const codeBlock = getParent(editor, path);
+    const codeBlock = getParentNode<TCodeBlockElement>(editor, path);
     if (!codeBlock) {
       return ranges;
     }
 
-    let langName = codeBlock[0].lang;
+    let langName = codeBlock[0].lang ?? '';
     if (langName === 'plain') {
       langName = '';
     }
@@ -94,7 +101,7 @@ export const decorateCodeLine: Decorate = (editor) => {
       return ranges;
     }
 
-    const text = Node.string(node);
+    const text = getNodeString(node);
     const tokens = tokenize(text, lang);
     let offset = 0;
 

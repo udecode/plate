@@ -25,6 +25,7 @@ module.exports = {
         'guides/styling',
         'guides/store',
         'guides/multiple-editors',
+        'guides/typescript',
       ],
       collapsed: false,
     },

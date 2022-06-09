@@ -1,19 +1,24 @@
 import {
   ELEMENT_DEFAULT,
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
-  setNodes,
+  setElements,
   unwrapNodes,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 
-export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
-  Editor.withoutNormalizing(editor, () => {
+export const unwrapList = <V extends Value>(
+  editor: PlateEditor<V>,
+  { at }: { at?: Path } = {}
+) => {
+  withoutNormalizing(editor, () => {
     do {
-      setNodes(editor, {
+      setElements(editor, {
         type: getPluginType(editor, ELEMENT_DEFAULT),
       });
 
@@ -33,6 +38,8 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
         },
         split: true,
       });
-    } while (getAbove(editor, { match: { type: getListTypes(editor), at } }));
+    } while (
+      getAboveNode(editor, { match: { type: getListTypes(editor), at } })
+    );
   });
 };

@@ -1,12 +1,12 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
-import { OnChange } from '../types/plugins/OnChange';
 
-export const pipeOnChange = (editor: PlateEditor): ReturnType<OnChange> => {
+export const pipeOnChange = <V extends Value>(editor: PlateEditor<V>) => {
   const onChanges = editor.plugins.flatMap(
     (plugin) => plugin.handlers?.onChange?.(editor, plugin) ?? []
   );
 
-  return (nodes) => {
+  return (nodes: V) => {
     return onChanges.some((handler) => {
       if (!handler) {
         return false;

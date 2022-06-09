@@ -1,41 +1,47 @@
 import {
+  EElement,
+  EElementEntry,
   getNode,
-  setNodes,
+  setElements,
   TEditor,
+  TNodeEntry,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
-export const normalizeNextIndentListStart = (
-  editor: TEditor,
-  entry: NodeEntry,
-  prevEntry?: NodeEntry
+export const normalizeNextIndentListStart = <V extends Value>(
+  editor: TEditor<V>,
+  entry: TNodeEntry,
+  prevEntry?: TNodeEntry
 ) => {
   const [node, path] = entry;
   const [prevNode] = prevEntry ?? [null];
 
-  const prevListStart = prevNode?.[KEY_LIST_START] ?? 1;
-  const currListStart = node[KEY_LIST_START] ?? 1;
+  const prevListStart = (prevNode?.[KEY_LIST_START] as number) ?? 1;
+  const currListStart = (node[KEY_LIST_START] as number) ?? 1;
 
   const listStart = prevListStart + 1;
 
   if (currListStart !== listStart) {
-    setNodes(editor, { [KEY_LIST_START]: listStart }, { at: path });
+    setElements(editor, { [KEY_LIST_START]: listStart }, { at: path });
     return true;
   }
 
   return false;
 };
 
-export const normalizeIndentListStart = (
-  editor: TEditor,
-  entry: NodeEntry,
-  options?: Partial<GetSiblingIndentListOptions>
+export const normalizeIndentListStart = <
+  N extends EElement<V>,
+  V extends Value = Value
+>(
+  editor: TEditor<V>,
+  entry: EElementEntry<V>,
+  options?: Partial<GetSiblingIndentListOptions<N, V>>
 ) => {
   return withoutNormalizing(editor, () => {
     const [node] = entry;
@@ -56,7 +62,7 @@ export const normalizeIndentListStart = (
 
     let normalizeNext = true;
 
-    let currEntry: NodeEntry | undefined = entry;
+    let currEntry: EElementEntry<V> | undefined = entry;
 
     // normalize next until current is not normalized
     while (normalizeNext) {
@@ -67,7 +73,7 @@ export const normalizeIndentListStart = (
       if (normalizeNext) normalized = true;
 
       // get the node again after setNodes
-      prevEntry = [getNode(editor, currEntry[1])!, currEntry[1]];
+      prevEntry = [getNode<N>(editor, currEntry[1])!, currEntry[1]];
       currEntry = getNextIndentList(editor, currEntry, options);
 
       if (!currEntry) break;

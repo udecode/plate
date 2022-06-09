@@ -6,16 +6,23 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { setNodes } from '@udecode/plate-core';
+import {
+  findNodePath,
+  getNodeString,
+  select,
+  setNodes,
+  TText,
+  Value,
+} from '@udecode/plate-core';
+import { TImageElement } from '@udecode/plate-image';
 import { getRootProps } from '@udecode/plate-styled-components';
-import { Resizable } from 're-resizable';
-import { Node, Transforms } from 'slate';
-import { ReactEditor, useFocused, useSelected } from 'slate-react';
+import { Resizable, ResizableProps } from 're-resizable';
+import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
 
-export const ImageElement = (props: ImageElementProps) => {
+export const ImageElement = <V extends Value>(props: ImageElementProps<V>) => {
   const {
     attributes,
     children,
@@ -28,6 +35,7 @@ export const ImageElement = (props: ImageElementProps) => {
     align = 'center',
     draggable,
     editor,
+    ignoreReadOnly = false,
   } = props;
 
   const rootProps = getRootProps(props);
@@ -41,7 +49,25 @@ export const ImageElement = (props: ImageElementProps) => {
   } = element;
   const focused = useFocused();
   const selected = useSelected();
+  const readOnly = useReadOnly();
   const [width, setWidth] = useState(nodeWidth);
+
+  const resizeProps: ResizableProps =
+    !ignoreReadOnly && readOnly
+      ? {
+          ...resizableProps,
+          enable: {
+            left: false,
+            right: false,
+            top: false,
+            bottom: false,
+            topLeft: false,
+            bottomLeft: false,
+            topRight: false,
+            bottomRight: false,
+          },
+        }
+      : { ...resizableProps };
 
   // const [captionId] = useState(nanoid());
 
@@ -53,13 +79,14 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const setNodeWidth = useCallback(
     (w: number) => {
-      const path = ReactEditor.findPath(editor, element);
+      const path = findNodePath(editor, element);
+      if (!path) return;
 
       if (w === nodeWidth) {
         // Focus the node if not resized
-        Transforms.select(editor, path);
+        select(editor, path);
       } else {
-        setNodes(editor, { width: w }, { at: path });
+        setNodes<TImageElement>(editor, { width: w }, { at: path });
       }
     },
     [editor, element, nodeWidth]
@@ -67,14 +94,19 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
-      const path = ReactEditor.findPath(editor as ReactEditor, element);
-      setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
+      const path = findNodePath(editor, element);
+      path &&
+        setNodes<TImageElement>(
+          editor,
+          { caption: [{ text: e.target.value }] },
+          { at: path }
+        );
     },
     [editor, element]
   );
 
   const captionString = useMemo(() => {
-    return Node.string(nodeCaption[0]) || '';
+    return getNodeString(nodeCaption[0] as any) || '';
   }, [nodeCaption]);
 
   return (
@@ -91,6 +123,7 @@ export const ImageElement = (props: ImageElementProps) => {
           className={`group ${styles.figure?.className}`}
         >
           <Resizable
+            data-testid="ImageElementResizable"
             // @ts-ignore
             css={styles.resizable?.css}
             className={styles.resizable?.className}
@@ -124,7 +157,7 @@ export const ImageElement = (props: ImageElementProps) => {
               setWidth(ref.offsetWidth);
             }}
             onResizeStop={(e, direction, ref) => setNodeWidth(ref.offsetWidth)}
-            {...resizableProps}
+            {...resizeProps}
           >
             <img
               data-testid="ImageElementImage"
@@ -139,16 +172,19 @@ export const ImageElement = (props: ImageElementProps) => {
 
           {!caption.disabled && (captionString.length || selected) && (
             <figcaption
+              data-testid="ImageElementCaption"
               style={{ width }}
               css={styles.figcaption?.css}
               className={styles.figcaption?.className}
             >
               <TextareaAutosize
+                data-testid="ImageElementTextArea"
                 css={styles.caption?.css}
                 className={styles.caption?.className}
-                value={nodeCaption[0].text}
+                value={(nodeCaption[0] as TText).text}
                 placeholder={placeholder}
                 onChange={onChangeCaption}
+                readOnly={(!ignoreReadOnly && readOnly) || caption.readOnly}
               />
 
               {/* <div css={styles.caption?.css}> */}

@@ -1,9 +1,12 @@
+import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { HrElementStyleProps } from './HrElement.types';
 
-export const getHrElementStyles = (props: HrElementStyleProps) => {
+export const getHrElementStyles = <V extends Value>(
+  props: HrElementStyleProps<V>
+) => {
   const { selected, focused } = props;
 
   return createStyles(

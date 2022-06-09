@@ -1,19 +1,28 @@
-import { getParent, match, PlateEditor, TElement } from '@udecode/plate-core';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import {
+  getNodeEntry,
+  getParentNode,
+  match,
+  moveNodes,
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
+} from '@udecode/plate-core';
+import { Path } from 'slate';
 import { getListTypes } from '../queries';
 
 // When pasting from e.g. Google Docs, the structure of nested lists like "ul -> ul"
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
-export const normalizeNestedList = (
-  editor: PlateEditor,
-  { nestedListItem }: { nestedListItem: NodeEntry<TElement> }
+export const normalizeNestedList = <V extends Value>(
+  editor: PlateEditor<V>,
+  { nestedListItem }: { nestedListItem: TElementEntry }
 ) => {
   const [, path] = nestedListItem;
 
-  const parentNode = getParent(editor, path);
+  const parentNode = getParentNode(editor, path);
   const hasParentList =
-    parentNode && match(parentNode[0], { type: getListTypes(editor) });
+    parentNode && match(parentNode[0], [], { type: getListTypes(editor) });
   if (!hasParentList) {
     return false;
   }
@@ -26,17 +35,17 @@ export const normalizeNestedList = (
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = Editor.node(
+  const previousSiblingItem = getNodeEntry<TElement>(
     editor,
     previousListItemPath
-  ) as NodeEntry<Ancestor>;
+  );
 
   if (previousSiblingItem) {
     const [, previousPath] = previousSiblingItem;
     const newPath = previousPath.concat([1]);
 
     // Move the current item to the sublist
-    Transforms.moveNodes(editor, {
+    moveNodes(editor, {
       at: path,
       to: newPath,
     });

@@ -1,5 +1,32 @@
 # @udecode/plate-juice
 
+## 11.2.1
+
+## 11.2.0
+
+## 11.1.0
+
+## 11.0.6
+
+## 11.0.5
+
+## 11.0.4
+
+## 11.0.3
+
+## 11.0.2
+
+## 11.0.1
+
+## 11.0.0
+
+### Patch Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "juice": "^8.0.0"
+  ```
+
 ## 10.5.3
 
 ## 10.5.2

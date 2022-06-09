@@ -1,17 +1,17 @@
-import { TEditor } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path } from 'slate';
+import { getNodeEntry, TEditor, TNodeEntry, Value } from '@udecode/plate-core';
+import { Path } from 'slate';
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
-export function getPreviousTableCell(
-  editor: TEditor,
-  currentCell: NodeEntry,
+export const getPreviousTableCell = <V extends Value>(
+  editor: TEditor<V>,
+  currentCell: TNodeEntry,
   currentPath: Path,
-  currentRow: NodeEntry
-): NodeEntry | undefined {
+  currentRow: TNodeEntry
+): TNodeEntry | undefined => {
   try {
-    return Editor.node(editor, Path.previous(currentPath));
+    return getNodeEntry(editor, Path.previous(currentPath));
   } catch (err) {
     const [, currentRowPath] = currentRow;
     return getCellInPreviousTableRow(editor, currentRowPath);
   }
-}
+};

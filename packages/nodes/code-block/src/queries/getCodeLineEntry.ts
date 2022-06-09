@@ -1,9 +1,11 @@
 import {
-  getAbove,
-  getParent,
+  EElement,
+  getAboveNode,
+  getParentNode,
   isElement,
   PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { getCodeLineType } from '../options';
@@ -11,8 +13,11 @@ import { getCodeLineType } from '../options';
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
  */
-export const getCodeLineEntry = (
-  editor: PlateEditor,
+export const getCodeLineEntry = <
+  N extends EElement<V>,
+  V extends Value = Value
+>(
+  editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (
@@ -22,15 +27,15 @@ export const getCodeLineEntry = (
       match: { type: getCodeLineType(editor) },
     })
   ) {
-    const selectionParent = getParent(editor, at);
+    const selectionParent = getParentNode(editor, at);
     if (!selectionParent) return;
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAbove(editor, {
+      getAboveNode<N>(editor, {
         at,
         match: { type: getCodeLineType(editor) },
-      }) || getParent(editor, parentPath);
+      }) || getParentNode<N>(editor, parentPath);
 
     if (!codeLine) return;
     const [codeLineNode, codeLinePath] = codeLine;
@@ -41,7 +46,7 @@ export const getCodeLineEntry = (
     )
       return;
 
-    const codeBlock = getParent(editor, codeLinePath);
+    const codeBlock = getParentNode<N>(editor, codeLinePath);
     if (!codeBlock) return;
 
     return {

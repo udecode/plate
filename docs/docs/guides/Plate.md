@@ -30,7 +30,7 @@ title: Plate
 ### `editor`
 
 - Controlled `editor`.
-- Default is `createEditor()`.
+- Default is `createTEditor()`.
 
 ### `enabled`
 

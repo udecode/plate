@@ -1,18 +1,17 @@
-import { TEditor } from '@udecode/plate-core';
-import { Ancestor, Node, NodeEntry } from 'slate';
+import { TEditor, TElementEntry, Value } from '@udecode/plate-core';
 import { deleteStartSpace } from './deleteStartSpace';
 
 export interface OutdentCodeLineOptions {
-  codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor | Node>;
+  codeBlock: TElementEntry;
+  codeLine: TElementEntry;
 }
 
 /**
  * Outdent the code line.
  * Remove 2 whitespace characters if any.
  */
-export const outdentCodeLine = (
-  editor: TEditor,
+export const outdentCodeLine = <V extends Value>(
+  editor: TEditor<V>,
   { codeBlock, codeLine }: OutdentCodeLineOptions
 ) => {
   const deleted = deleteStartSpace(editor, { codeBlock, codeLine });

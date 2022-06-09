@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@testing-library/react';
 import { isEqual, memoize } from 'lodash';
-import { Editor, NodeEntry, Transforms } from 'slate';
-import { PlatePlugin, TEditor } from '../types';
+import { isBlock } from '../slate/editor/isBlock';
+import { setNodes } from '../slate/transforms/setNodes';
+import { PlatePlugin } from '../types';
 import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {
     // it('should trigger normalize if normalizeInitialValue set', () => {
-    //   const fn = jest.fn((e: TEditor, [node, path]: NodeEntry) => {
+    //   const fn = jest.fn((e: TEditor<V>, [node, path]) => {
     //     if (
-    //       Editor.isBlock(e, node) &&
+    //       isBlock(e, node) &&
     //       path?.length &&
     //       !isEqual((node as any).path, path)
     //     ) {
-    //       Transforms.setNodes(e, { path } as any, { at: path });
+    //       setNodes(e, { path } as any, { at: path });
     //     }
     //   });
     //
@@ -24,7 +25,7 @@ describe('Plate', () => {
     //       key: 'a',
     //       withOverrides: (e) => {
     //         const { normalizeNode } = e;
-    //         e.normalizeNode = (n: NodeEntry) => {
+    //         e.normalizeNode = (n: TNodeEntry) => {
     //           fn(e, n);
     //           normalizeNode(n);
     //         };
@@ -51,13 +52,13 @@ describe('Plate', () => {
     // });
 
     it('should not trigger normalize if normalizeInitialValue is not set to true', () => {
-      const fn = jest.fn((e: TEditor, [node, path]: NodeEntry) => {
+      const fn = jest.fn((e, [node, path]) => {
         if (
-          Editor.isBlock(e, node) &&
+          isBlock(e, node) &&
           path?.length &&
           !isEqual((node as any).path, path)
         ) {
-          Transforms.setNodes(e, { path } as any, { at: path });
+          setNodes(e, { path } as any, { at: path });
         }
       });
 
@@ -66,7 +67,7 @@ describe('Plate', () => {
           key: 'a',
           withOverrides: (e) => {
             const { normalizeNode } = e;
-            e.normalizeNode = (n: NodeEntry) => {
+            e.normalizeNode = (n) => {
               fn(e, n);
               normalizeNode(n);
             };
@@ -81,7 +82,7 @@ describe('Plate', () => {
         <Plate
           editor={editor}
           plugins={plugins}
-          initialValue={[{ children: [{ text: '' }] }]}
+          initialValue={[{ children: [{ text: '' }] } as any]}
         />
       );
 

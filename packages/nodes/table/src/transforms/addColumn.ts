@@ -1,26 +1,29 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   PlateEditor,
   someNode,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
-import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
-export const addColumn = (
-  editor: PlateEditor,
-  { header }: TablePluginOptions
+/**
+ * @deprecated - Use `insertTableColumn`
+ */
+export const addColumn = <V extends Value>(
+  editor: PlateEditor<V>,
+  { header }: { header?: boolean } = {}
 ) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentCellItem = getAbove(editor, {
+    const currentCellItem = getAboveNode(editor, {
       match: {
         type: [
           getPluginType(editor, ELEMENT_TH),
@@ -29,7 +32,7 @@ export const addColumn = (
       },
     });
 
-    const currentTableItem = getAbove(editor, {
+    const currentTableItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
 
@@ -39,14 +42,15 @@ export const addColumn = (
       const replacePathPos = newCellPath.length - 2;
       const currentRowIdx = nextCellPath[replacePathPos];
 
-      currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
+      currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
         const isHeaderRow =
           header === undefined
-            ? row.children[0].type === getPluginType(editor, ELEMENT_TH)
+            ? (row as TElement).children[0].type ===
+              getPluginType(editor, ELEMENT_TH)
             : header;
 
-        insertNodes<TElement>(
+        insertElements(
           editor,
           getEmptyCellNode(editor, { header: isHeaderRow }),
           {

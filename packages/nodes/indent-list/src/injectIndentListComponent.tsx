@@ -1,25 +1,32 @@
 import React, { CSSProperties } from 'react';
-import { InjectComponent } from '@udecode/plate-core';
+import {
+  InjectComponentProps,
+  InjectComponentReturnType,
+  Value,
+} from '@udecode/plate-core';
 import clsx from 'clsx';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 import { ListStyleType } from './types';
 
-export const injectIndentListComponent: InjectComponent = (props) => {
+export const injectIndentListComponent = <V extends Value = Value>(
+  props: InjectComponentProps<V>
+): InjectComponentReturnType<V> => {
   const { element } = props;
 
-  if (element[KEY_LIST_STYLE_TYPE]) {
-    let className = clsx(
-      `slate-${KEY_LIST_STYLE_TYPE}-${element[KEY_LIST_STYLE_TYPE]}`
-    );
+  const listStyleType = element[KEY_LIST_STYLE_TYPE] as string;
+  const listStart = element[KEY_LIST_START] as number;
+
+  if (listStyleType) {
+    let className = clsx(`slate-${KEY_LIST_STYLE_TYPE}-${listStyleType}`);
     const style: CSSProperties = {
       padding: 0,
       margin: 0,
-      listStyleType: element[KEY_LIST_STYLE_TYPE],
+      listStyleType,
     };
 
     if (
       [ListStyleType.Disc, ListStyleType.Circle, ListStyleType.Square].includes(
-        element[KEY_LIST_STYLE_TYPE]
+        listStyleType as ListStyleType
       )
     ) {
       className = clsx(className, 'slate-list-bullet');
@@ -34,7 +41,7 @@ export const injectIndentListComponent: InjectComponent = (props) => {
     className = clsx(className, 'slate-list-number');
 
     return ({ children }) => (
-      <ol style={style} className={className} start={element[KEY_LIST_START]}>
+      <ol style={style} className={className} start={listStart}>
         <li>{children}</li>
       </ol>
     );

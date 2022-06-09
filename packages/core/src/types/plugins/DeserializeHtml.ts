@@ -1,4 +1,4 @@
-import { AnyObject } from '../utility/AnyObject';
+import { AnyObject } from '../../common/types/utility/AnyObject';
 
 export type DeserializeHtml = {
   /**

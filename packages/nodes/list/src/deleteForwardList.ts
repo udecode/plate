@@ -1,15 +1,22 @@
 import {
   getBlockAbove,
   getChildren,
+  getEditorString,
   getNode,
+  getNodeEntries,
+  getNodeEntry,
+  getParentNode,
   getPluginType,
-  getText,
+  getPointAfter,
   isSelectionAtBlockEnd,
   PlateEditor,
-  TDescendant,
+  removeNodes,
   TElement,
+  TElementEntry,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
 import {
@@ -19,13 +26,10 @@ import {
   removeListItem,
 } from './transforms';
 
-const pathToEntry = <T extends Node>(
-  editor: PlateEditor,
-  path: Path
-): NodeEntry<T> => Editor.node(editor, path) as NodeEntry<T>;
-
-const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
-  const pointAfterSelection = Editor.after(
+const selectionIsNotInAListHandler = <V extends Value>(
+  editor: PlateEditor<V>
+): boolean => {
+  const pointAfterSelection = getPointAfter(
     editor,
     editor.selection!.focus.path
   );
@@ -43,9 +47,9 @@ const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
         at: editor.selection!.anchor,
       });
 
-      if (!getText(editor, parentBlockEntity![1])) {
+      if (!getEditorString(editor, parentBlockEntity![1])) {
         // the selected block is empty
-        Transforms.removeNodes(editor);
+        removeNodes(editor);
 
         return true;
       }
@@ -64,26 +68,26 @@ const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
   return false;
 };
 
-const selectionIsInAListHandler = (
-  editor: PlateEditor,
-  res: { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> }
+const selectionIsInAListHandler = <V extends Value>(
+  editor: PlateEditor<V>,
+  res: { list: TElementEntry; listItem: TElementEntry }
 ): boolean => {
   const { listItem } = res;
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = getPluginType(editor, ELEMENT_LI);
-    const _nodes = Editor.nodes(editor, {
+    const _nodes = getNodeEntries(editor, {
       at: listItem[1],
       mode: 'lowest',
-      match: (node: TDescendant, path) => {
+      match: (node, path) => {
         if (path.length === 0) {
           return false;
         }
 
-        const isNodeLi = node.type === liType;
+        const isNodeLi = (node as TElement).type === liType;
         const isSiblingOfNodeLi =
-          (getNode(editor, Path.next(path)) as TDescendant)?.type === liType;
+          getNode<TElement>(editor, Path.next(path))?.type === liType;
 
         return isNodeLi && isSiblingOfNodeLi;
       },
@@ -92,7 +96,7 @@ const selectionIsInAListHandler = (
 
     if (!liWithSiblings) {
       // there are no more list item in the list
-      const pointAfterListItem = Editor.after(editor, listItem[1]);
+      const pointAfterListItem = getPointAfter(editor, listItem[1]);
 
       if (pointAfterListItem) {
         // there is a block after it
@@ -102,10 +106,7 @@ const selectionIsInAListHandler = (
 
         if (nextSiblingListRes) {
           // it is a list so we merge the lists
-          const listRoot = getListRoot(
-            editor,
-            listItem[1]
-          ) as NodeEntry<TElement>;
+          const listRoot = getListRoot(editor, listItem[1]);
 
           moveListItemsToList(editor, {
             fromList: nextSiblingListRes.list,
@@ -120,17 +121,15 @@ const selectionIsInAListHandler = (
       return false;
     }
 
-    const siblingListItem: NodeEntry<TDescendant> = pathToEntry(
+    const siblingListItem = getNodeEntry<TElement>(
       editor,
       Path.next(liWithSiblings)
     );
 
-    const siblingList: NodeEntry<TDescendant> = Editor.parent(
-      editor,
-      siblingListItem[1]
-    );
+    const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
 
     if (
+      siblingList &&
       removeListItem(editor, {
         list: siblingList,
         listItem: siblingListItem,
@@ -146,11 +145,11 @@ const selectionIsInAListHandler = (
   }
 
   // if it has children
-  const nestedList = pathToEntry<TDescendant>(
+  const nestedList = getNodeEntry<TElement>(
     editor,
     Path.next([...listItem[1], 0])
   );
-  const nestedListItem = getChildren<TDescendant>(nestedList)[0];
+  const nestedListItem = getChildren<TElement>(nestedList)[0];
 
   if (
     removeFirstListItem(editor, {
@@ -173,7 +172,7 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const deleteForwardList = (editor: PlateEditor) => {
+export const deleteForwardList = <V extends Value>(editor: PlateEditor<V>) => {
   let skipDefaultDelete = false;
 
   if (!editor?.selection) {
@@ -184,7 +183,7 @@ export const deleteForwardList = (editor: PlateEditor) => {
     return skipDefaultDelete;
   }
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     const res = getListItemEntry(editor, {});
 
     if (!res) {

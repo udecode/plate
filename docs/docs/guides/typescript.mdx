@@ -1,0 +1,293 @@
+---
+slug: /typescript
+title: Typescript
+---
+
+:::note
+
+The core types will be the default of Slate in the near future, see [this PR](https://github.com/ianstormtaylor/slate/pull/4177).
+
+These are provided by Plate core in the meantime. 
+See our full [Typescript example here](https://github.com/udecode/plate/blob/main/docs/src/live/examples/typescript.ts).
+
+:::
+
+Plate is providing a typed layer on top of Slate, using mostly [generic types](https://www.typescriptlang.org/docs/handbook/2/generics.html).
+
+Differences with Slate types:
+- `Editor` type: `TEditor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
+- Other `TEditor`-and-`TNode`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `TText` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined). `TEditor` type is not matching with Slate `Editor` type, so Plate has forked (type-only) all Slate methods that use `Editor` that you **should** use.
+- This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `TEditor` still.)
+
+
+First, let's create a new file to define our `MyValue` type, which will be the type of our `editor.children`.
+
+```tsx
+/**
+ * Text
+ */
+
+export type EmptyText = {
+  text: '';
+};
+
+export interface RichText extends TText {
+  bold?: boolean;
+  italic?: boolean;
+  code?: boolean;
+  underline?: boolean;
+}
+
+/**
+ * Inline Elements
+ */
+
+export interface TLinkElement extends LinkElement {
+  type: typeof ELEMENT_LINK;
+  children: RichText[];
+}
+
+export type MyInlineElement = TLinkElement;
+export type MyInlineDescendant = MyInlineElement | RichText;
+export type MyInlineChildren = MyInlineDescendant[];
+
+/**
+ * Blocks
+ */
+
+export interface TParagraphElement extends TElement {
+  type: typeof ELEMENT_PARAGRAPH;
+  children: MyInlineChildren;
+}
+
+export interface TBulletedListElement extends TElement {
+  type: typeof ELEMENT_UL;
+  children: TListItemElement[];
+}
+
+export interface TNumberedListElement extends TElement {
+  type: typeof ELEMENT_OL;
+  children: TListItemElement[];
+}
+
+export interface TListItemElement extends TElement {
+  type: typeof ELEMENT_LI;
+  children: MyInlineChildren;
+}
+
+export interface THeadingElement extends TElement {
+  type: typeof ELEMENT_H1;
+  children: MyInlineChildren;
+}
+
+export interface TImageElement extends ImageElement {
+  type: typeof ELEMENT_IMAGE;
+  children: [EmptyText];
+}
+
+export interface TQuoteElement extends TElement {
+  type: typeof ELEMENT_BLOCKQUOTE;
+  children: MyInlineChildren;
+}
+
+export interface TTableElement extends TElement, TableElement {
+  type: typeof ELEMENT_TABLE;
+  children: TTableRowElement[];
+}
+
+export interface TTableRowElement extends TElement {
+  type: typeof ELEMENT_TR;
+  children: TTableCellElement[];
+}
+
+export interface TTableCellElement extends TElement {
+  type: typeof ELEMENT_TD;
+  children: MyNestableBlock[];
+}
+
+export type MyNestableBlock =
+  | TParagraphElement
+  | TImageElement
+  | TBulletedListElement
+  | TNumberedListElement
+  | TQuoteElement;
+
+export type MyBlock = THeadingElement | TTableElement | MyNestableBlock;
+
+export type MyValue = MyBlock[];
+```
+
+:::note
+
+Naming convention:
+- `My` is short and explicit.
+- `T...Element` is used because `...Element` is already used by Plate UI components and we don't want naming conflicts between imports. `T...` is also a way to differenciate Plate types with Slate types.
+
+:::
+
+`MyValue` is the most important type as most of the core types are derived from it.
+
+The following types are optional but highly recommended, writing generic types are redundant so try doing it only once:
+
+```tsx
+/**
+ * Editor types
+ */
+
+export type MyEditor = PlateEditor<MyValue> & { typescript: boolean };
+export type MyReactEditor = TReactEditor<MyValue>;
+export type MyNode = ENode<MyValue>;
+export type MyNodeEntry = ENodeEntry<MyValue>;
+export type MyElement = EElement<MyValue>;
+export type MyElementEntry = EElementEntry<MyValue>;
+export type MyText = EText<MyValue>;
+export type MyTextEntry = ETextEntry<MyValue>;
+export type MyElementOrText = EElementOrText<MyValue>;
+export type MyDescendant = EDescendant<MyValue>;
+export type MyMarks = EMarks<MyValue>;
+export type MyMark = keyof MyMarks;
+
+/**
+ * Plate types
+ */
+
+export type MyDecorate<P = PluginOptions> = Decorate<P, MyValue, MyEditor>;
+export type MyDecorateEntry = DecorateEntry<MyValue>;
+export type MyDOMHandler<P = PluginOptions> = DOMHandler<P, MyValue, MyEditor>;
+export type MyInjectComponent = InjectComponent<MyValue>;
+export type MyInjectProps = InjectProps<MyValue>;
+export type MyKeyboardHandler<P = PluginOptions> = KeyboardHandler<
+  P,
+  MyValue,
+  MyEditor
+>;
+export type MyOnChange<P = PluginOptions> = OnChange<P, MyValue, MyEditor>;
+export type MyOverrideByKey = OverrideByKey<MyValue, MyEditor>;
+export type MyPlatePlugin<P = PluginOptions> = PlatePlugin<
+  P,
+  MyValue,
+  MyEditor
+>;
+export type MyPlatePluginInsertData = PlatePluginInsertData<MyValue>;
+export type MyPlatePluginProps = PlatePluginProps<MyValue>;
+export type MyPlateProps = PlateProps<MyValue, MyEditor>;
+export type MySerializeHtml = SerializeHtml<MyValue>;
+export type MyWithOverride<P = PluginOptions> = WithOverride<
+  P,
+  MyValue,
+  MyEditor
+>; 
+```
+
+Finally, let's define typed functions:
+
+```tsx
+/**
+ * Plate store, Slate context
+ */
+
+export const getMyEditor = (editor: MyEditor) =>
+  getTEditor<MyValue, MyEditor>(editor);
+export const useTEditorRef = () => useEditorRef<MyValue, MyEditor>();
+export const useTEditorState = () => useEditorState<MyValue, MyEditor>();
+export const useTPlateEditorRef = (id?: string) =>
+  usePlateEditorRef<MyValue, MyEditor>(id);
+export const getTPlateEditorRef = (id?: string) =>
+  getPlateEditorRef<MyValue, MyEditor>(id);
+export const useTPlateEditorState = (id?: string) =>
+  usePlateEditorState<MyValue, MyEditor>(id);
+export const useTPlateSelectors = (id?: string) =>
+  usePlateSelectors<MyValue, MyEditor>(id);
+export const getTPlateSelectors = (id?: string) =>
+  getPlateSelectors<MyValue, MyEditor>(id);
+export const getTPlateActions = (id?: string) =>
+  getPlateActions<MyValue, MyEditor>(id);
+
+/**
+ * Utils
+ */
+
+export const createTPlateEditor = (
+  options: CreatePlateEditorOptions<MyValue, MyEditor> = {}
+) => createPlateEditor<MyValue, MyEditor>(options);
+export const createTPluginFactory = <P = PluginOptions>(
+  defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
+) => createPluginFactory(defaultPlugin);
+```
+
+Usage example:
+
+```tsx
+import React, { useState } from 'react';
+import { Plate } from '@udecode/plate';
+import { getTPlateSelectors, MyEditor, MyValue } from './typescript';
+
+export const TypeScriptExample = () => {
+  const [value, setValue] = useState(initialValue);
+
+  // MyEditor
+  const editor = getTPlateSelectors().editor();
+
+  return (
+    // Because of the TypeScript-awareness you'll also get an error if you
+    // initialize the editor with an invalid value or other invalid props.
+    <Plate<MyValue, MyEditor> value={value} onChange={(v) => setValue(v)} />
+  );
+};
+
+// Slate is TypeScript-aware, so if you try to use any unrecognizes `type`
+// properties in this initial value you will get a compiler error.
+const initialValue: MyValue = [
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'All the Slate examples are written in TypeScript. However, ',
+      },
+      { text: 'most', italic: true },
+      { text: ' of them use ' },
+      { text: 'implicit', bold: true },
+      {
+        text:
+          " typings in many places because it makes it easier to see the actual Slate-specific code—especially for people who don't know TypeScript.",
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      { text: 'This example is written with ' },
+      { text: 'explicit', bold: true },
+      {
+        text:
+          ' typings in all places, so you can see what a more realistic TypeScript usage would look like.',
+      },
+    ],
+  },
+  {
+    type: 'h1',
+    children: [{ text: 'Quotes' }],
+  },
+  {
+    type: 'p',
+    children: [{ text: "We'll throw in a few things like quotes…" }],
+  },
+  {
+    type: 'blockquote',
+    children: [{ text: 'A wise quote.' }],
+  },
+  {
+    type: 'h1',
+    children: [{ text: 'Images' }],
+  },
+  {
+    type: 'p',
+    children: [{ text: 'And images…' }],
+  },
+  {
+    type: 'img',
+    url: 'https://source.unsplash.com/kFrdX5IeQzI',
+    children: [{ text: '' }],
+  },
+];
+```

@@ -1,14 +1,28 @@
-import { PlateEditor, TDescendant } from '@udecode/plate-core';
-import { Editor, Node, Path, Transforms } from 'slate';
+import {
+  getNode,
+  insertText,
+  PlateEditor,
+  unwrapNodes,
+  Value,
+  withoutNormalizing,
+} from '@udecode/plate-core';
+import { Path } from 'slate';
+import { TMentionInputElement } from '../types';
 
-export const removeMentionInput = (editor: PlateEditor, path: Path) =>
-  Editor.withoutNormalizing(editor, () => {
-    const { trigger } = Node.get(editor, path) as TDescendant;
+export const removeMentionInput = <V extends Value>(
+  editor: PlateEditor<V>,
+  path: Path
+) =>
+  withoutNormalizing(editor, () => {
+    const node = getNode<TMentionInputElement>(editor, path);
+    if (!node) return;
 
-    Transforms.insertText(editor, trigger, {
+    const { trigger } = node;
+
+    insertText(editor, trigger, {
       at: { path: [...path, 0], offset: 0 },
     });
-    Transforms.unwrapNodes(editor, {
+    unwrapNodes(editor, {
       at: path,
     });
   });

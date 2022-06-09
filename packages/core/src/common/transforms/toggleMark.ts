@@ -1,12 +1,16 @@
 import castArray from 'lodash/castArray';
-import { Editor } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { withoutNormalizing } from '../../slate/editor/withoutNormalizing';
+import { EMarks } from '../../slate/text/TText';
 import { isMarkActive } from '../queries/isMarkActive';
 import { ToggleMarkPlugin } from '../types/plugins/ToggleMarkPlugin';
 import { removeMark } from './removeMark';
 
-export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
-  key: string;
+export interface ToggleMarkOptions<
+  V extends Value = Value,
+  K extends keyof EMarks<V> = keyof EMarks<V>
+> extends Pick<ToggleMarkPlugin<V, K>, 'clear'> {
+  key: K;
 }
 
 /**
@@ -15,13 +19,16 @@ export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
  * @param key mark to toggle
  * @param clear marks to clear when adding mark
  */
-export const toggleMark = (
-  editor: TEditor,
-  { key, clear }: ToggleMarkOptions
+export const toggleMark = <
+  V extends Value = Value,
+  K extends keyof EMarks<V> = keyof EMarks<V>
+>(
+  editor: TEditor<V>,
+  { key, clear }: ToggleMarkOptions<V, K>
 ) => {
   if (!editor.selection) return;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     const isActive = isMarkActive(editor, key);
 
     if (isActive) {
@@ -30,10 +37,10 @@ export const toggleMark = (
     }
 
     if (clear) {
-      const clears: string[] = castArray(clear);
+      const clears: K[] = castArray(clear);
       removeMark(editor, { key: clears });
     }
 
-    editor.addMark(key, true);
+    editor.addMark(key as string, true);
   });
 };

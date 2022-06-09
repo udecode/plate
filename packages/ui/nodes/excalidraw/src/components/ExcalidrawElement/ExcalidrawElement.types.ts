@@ -2,16 +2,17 @@ import {
   ExcalidrawProps,
   LibraryItems,
 } from '@excalidraw/excalidraw-next/types/types';
+import { Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
-import { ExcalidrawNodeData } from '../../types';
+import { TExcalidrawElement } from '../../types';
 
 export interface ExcalidrawElementStyles {
   excalidrawWrapper: CSSProp;
 }
 
-export interface ExcalidrawElementProps
-  extends StyledElementProps<ExcalidrawNodeData, ExcalidrawElementStyles> {
+export interface ExcalidrawElementProps<V extends Value>
+  extends StyledElementProps<V, TExcalidrawElement, ExcalidrawElementStyles> {
   scrollToContent?: boolean;
 
   libraryItems?: LibraryItems;

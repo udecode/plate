@@ -1,8 +1,8 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
-import { EditableProps } from 'slate-react/dist/components/editable';
+import { Value } from '../slate/editor/TEditor';
+import { TEditableProps } from '../slate/types/TEditableProps';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { RenderElement } from '../types/RenderElement';
 import { pipeInjectProps } from './pipeInjectProps';
 import { pluginRenderElement } from './pluginRenderElement';
@@ -10,10 +10,10 @@ import { pluginRenderElement } from './pluginRenderElement';
 /**
  * @see {@link RenderElement}
  */
-export const pipeRenderElement = (
-  editor: PlateEditor,
-  renderElementProp?: EditableProps['renderElement']
-): EditableProps['renderElement'] => {
+export const pipeRenderElement = <V extends Value>(
+  editor: PlateEditor<V>,
+  renderElementProp?: TEditableProps<V>['renderElement']
+): TEditableProps<V>['renderElement'] => {
   const renderElements: RenderElement[] = [];
 
   editor.plugins.forEach((plugin) => {
@@ -23,7 +23,7 @@ export const pipeRenderElement = (
   });
 
   return (nodeProps) => {
-    const props = pipeInjectProps<PlateRenderElementProps>(editor, nodeProps);
+    const props = pipeInjectProps<V>(editor, nodeProps);
 
     let element;
 

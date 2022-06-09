@@ -1,17 +1,17 @@
+import { toDOMRange, TReactEditor, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
-import { ReactEditor } from 'slate-react';
 
 /**
  * Get bounding client rect by slate range
  */
-export const getRangeBoundingClientRect = (
-  editor: ReactEditor,
+export const getRangeBoundingClientRect = <V extends Value>(
+  editor: TReactEditor<V>,
   at: Range | null
 ) => {
   if (!at) return;
 
-  try {
-    const domRange = ReactEditor.toDOMRange(editor, at);
-    return domRange.getBoundingClientRect();
-  } catch (err) {}
+  const domRange = toDOMRange(editor, at);
+  if (!domRange) return;
+
+  return domRange.getBoundingClientRect();
 };

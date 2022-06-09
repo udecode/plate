@@ -1,7 +1,10 @@
-import { Text } from 'slate';
+import { Value } from '../../slate/editor/TEditor';
+import { EElement } from '../../slate/element/TElement';
+import { EDescendant } from '../../slate/node/TDescendant';
+import { isText } from '../../slate/text/isText';
+import { EText } from '../../slate/text/TText';
+import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/PlateEditor';
-import { SlateProps } from '../../types/slate/SlateProps';
-import { TDescendant } from '../../types/slate/TDescendant';
 import { isEncoded } from './utils/isEncoded';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
@@ -11,8 +14,8 @@ import { leafToHtml } from './leafToHtml';
 /**
  * Convert Slate Nodes into HTML string
  */
-export const serializeHtml = (
-  editor: PlateEditor,
+export const serializeHtml = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     nodes,
     slateProps,
@@ -23,7 +26,7 @@ export const serializeHtml = (
     /**
      * Slate nodes to convert to HTML.
      */
-    nodes: TDescendant[];
+    nodes: EDescendant<V>[];
 
     /**
      * Enable stripping data attributes
@@ -49,11 +52,11 @@ export const serializeHtml = (
 ): string => {
   let result = nodes
     .map((node) => {
-      if (Text.isText(node)) {
+      if (isText(node)) {
         return leafToHtml(editor, {
           props: {
-            leaf: node,
-            text: node,
+            leaf: node as EText<V>,
+            text: node as EText<V>,
             children: isEncoded(node.text)
               ? node.text
               : encodeURIComponent(node.text),
@@ -65,12 +68,12 @@ export const serializeHtml = (
         });
       }
 
-      return elementToHtml(editor, {
+      return elementToHtml<V>(editor, {
         props: {
-          element: node,
+          element: node as EElement<V>,
           children: encodeURIComponent(
             serializeHtml(editor, {
-              nodes: node.children,
+              nodes: node.children as EDescendant<V>[],
               preserveClassNames,
               stripWhitespace,
             })

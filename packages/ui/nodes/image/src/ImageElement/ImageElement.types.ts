@@ -1,9 +1,11 @@
-import { ImageNodeData } from '@udecode/plate-image';
+import { Value } from '@udecode/plate-core';
+import { TImageElement } from '@udecode/plate-image';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ResizableProps } from 're-resizable';
 import { CSSProp } from 'styled-components';
 
-export interface ImageElementStyleProps extends ImageElementProps {
+export interface ImageElementStyleProps<V extends Value>
+  extends ImageElementProps<V> {
   selected?: boolean;
   focused?: boolean;
 }
@@ -19,8 +21,8 @@ export interface ImageElementStyles {
   handleRight: CSSProp;
 }
 
-export interface ImageElementProps
-  extends StyledElementProps<ImageNodeData, ImageElementStyles> {
+export interface ImageElementProps<V extends Value>
+  extends StyledElementProps<V, TImageElement, ImageElementStyles> {
   resizableProps?: ResizableProps;
 
   /**
@@ -40,10 +42,20 @@ export interface ImageElementProps
      * Caption placeholder.
      */
     placeholder?: string;
+
+    /**
+     * Whether caption is read-only.
+     */
+    readOnly?: boolean;
   };
 
   /**
    * Whether the image is draggable.
    */
   draggable?: boolean;
+
+  /**
+   * Ignore editable readOnly mode
+   */
+  ignoreReadOnly?: boolean;
 }

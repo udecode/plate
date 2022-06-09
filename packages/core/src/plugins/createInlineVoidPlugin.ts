@@ -1,5 +1,5 @@
-import { WithOverride } from '../types/plugins/WithOverride';
-import { TElement } from '../types/slate/TElement';
+import { Value } from '../slate/editor/TEditor';
+import { PlateEditor } from '../types/PlateEditor';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
@@ -8,7 +8,12 @@ export const KEY_INLINE_VOID = 'inline-void';
  * Merge and register all the inline types and void types from the plugins and options,
  * using `editor.isInline` and `editor.isVoid`
  */
-export const withInlineVoid: WithOverride = (editor) => {
+export const withInlineVoid = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E
+) => {
   const { isInline } = editor;
   const { isVoid } = editor;
 
@@ -26,13 +31,11 @@ export const withInlineVoid: WithOverride = (editor) => {
   });
 
   editor.isInline = (element) => {
-    return inlineTypes.includes((element as TElement).type)
-      ? true
-      : isInline(element);
+    return inlineTypes.includes(element.type) ? true : isInline(element);
   };
 
   editor.isVoid = (element) =>
-    voidTypes.includes((element as TElement).type) ? true : isVoid(element);
+    voidTypes.includes(element.type) ? true : isVoid(element);
 
   return editor;
 };

@@ -1,18 +1,19 @@
 import {
-  deleteFragment,
+  deleteMerge,
   ELEMENT_DEFAULT,
   getPluginType,
   isFirstChild,
   isSelectionAtBlockStart,
   mockPlugin,
   PlateEditor,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,
   SIMULATE_BACKSPACE,
 } from '@udecode/plate-reset-node';
-import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
@@ -20,8 +21,8 @@ import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './createListPlugin';
 
-export const deleteBackwardList = (
-  editor: PlateEditor,
+export const deleteBackwardList = <V extends Value>(
+  editor: PlateEditor<V>,
   unit: 'character' | 'word' | 'line' | 'block'
 ) => {
   const res = getListItemEntry(editor, {});
@@ -36,7 +37,7 @@ export const deleteBackwardList = (
         match: (node) => node.type === ELEMENT_LI,
       })
     ) {
-      Editor.withoutNormalizing(editor, () => {
+      withoutNormalizing(editor, () => {
         moved = removeFirstListItem(editor, { list, listItem });
         if (moved) return true;
 
@@ -45,7 +46,7 @@ export const deleteBackwardList = (
 
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           onKeyDownResetNode(
-            editor,
+            editor as any,
             mockPlugin<ResetNodePlugin>({
               options: {
                 rules: [
@@ -64,7 +65,7 @@ export const deleteBackwardList = (
           return;
         }
 
-        deleteFragment(editor, {
+        deleteMerge(editor, {
           unit,
           reverse: true,
         });

@@ -11,5 +11,3 @@ export * from './PlateStore';
 export * from './RenderElement';
 export * from './RenderLeaf';
 export * from './plugins/index';
-export * from './slate/index';
-export * from './utility/index';

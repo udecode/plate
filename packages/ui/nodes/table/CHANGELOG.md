@@ -1,5 +1,55 @@
 # @udecode/plate-table-ui
 
+## 11.3.1
+
+## 11.3.0
+
+## 11.2.1
+
+## 11.2.0
+
+## 11.1.1
+
+## 11.1.0
+
+### Minor Changes
+
+- [#1546](https://github.com/udecode/plate/pull/1546) by [@zbeyens](https://github.com/zbeyens) –
+  - `TableElement`
+    - set `table-layout: fixed`
+    - `useSelectedCells`: set selected cells on selection change (memo)
+  - `TableCellElement`
+    - set bg color when cell is selected
+    - `useIsCellSelected`
+
+## 11.0.6
+
+## 11.0.5
+
+## 11.0.4
+
+## 11.0.3
+
+## 11.0.2
+
+## 11.0.1
+
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "jotai": "^1.6.6",
+  "re-resizable": "^6.9.9"
+  ```
+
+## 10.8.0
+
+### Minor Changes
+
+- [#1513](https://github.com/udecode/plate/pull/1513) by [@jolsen314](https://github.com/jolsen314) – Added restriction to table resize when in readOnly mode (with override prop)
+
 ## 10.6.3
 
 ## 10.6.2

@@ -36,7 +36,7 @@ const ComboboxContent = <TData extends Data = NoData>(
     | 'filter'
   >
 ) => {
-  const { component: Component, items, onRenderItem } = props;
+  const { component: Component, items, portalElement, onRenderItem } = props;
 
   const targetRange = useComboboxSelectors.targetRange();
   const filteredItems = useComboboxSelectors.filteredItems();
@@ -103,7 +103,7 @@ const ComboboxContent = <TData extends Data = NoData>(
   );
 
   return (
-    <PortalBody>
+    <PortalBody element={portalElement}>
       <ul
         {...menuProps}
         ref={popperRef}

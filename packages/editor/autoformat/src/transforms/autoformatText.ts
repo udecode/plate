@@ -1,17 +1,23 @@
-import { TEditor } from '@udecode/plate-core';
+import {
+  deleteText,
+  insertText,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Point, Range, Transforms } from 'slate';
+import { Point, Range } from 'slate';
 import { AutoformatTextRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatTextOptions extends AutoformatTextRule {
+export interface AutoformatTextOptions<V extends Value = Value>
+  extends AutoformatTextRule<V> {
   text: string;
 }
 
-export const autoformatText = (
-  editor: TEditor,
-  { text, match: _match, trigger, format }: AutoformatTextOptions
+export const autoformatText = <V extends Value>(
+  editor: PlateEditor<V>,
+  { text, match: _match, trigger, format }: AutoformatTextOptions<V>
 ) => {
   const selection = editor.selection as Range;
   const matches = castArray(_match);
@@ -40,7 +46,7 @@ export const autoformatText = (
     } = matched;
 
     if (end) {
-      Transforms.delete(editor, {
+      deleteText(editor, {
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -57,14 +63,14 @@ export const autoformatText = (
       if (beforeStartMatchPoint) {
         const formatStart = Array.isArray(format) ? format[0] : format;
 
-        Transforms.delete(editor, {
+        deleteText(editor, {
           at: {
             anchor: beforeStartMatchPoint as Point,
             focus: afterStartMatchPoint as Point,
           },
         });
 
-        Transforms.insertText(editor, formatStart, {
+        insertText(editor, formatStart, {
           at: beforeStartMatchPoint,
         });
       }

@@ -1,12 +1,13 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { getKeysByTypes } from './getKeysByTypes';
 
 /**
  * Get plugin key by type
  */
-export const getKeyByType = <T = {}>(
-  editor: PlateEditor<T>,
+export const getKeyByType = <V extends Value>(
+  editor: PlateEditor<V>,
   type: string
 ): string | undefined => {
-  return getKeysByTypes<T>(editor, type)[0];
+  return getKeysByTypes<V>(editor, type)[0];
 };

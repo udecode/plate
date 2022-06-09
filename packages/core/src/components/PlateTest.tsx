@@ -1,15 +1,16 @@
 import React from 'react';
+import { Value } from '../slate/editor/TEditor';
 import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate, PlateProps } from './Plate';
 
-export const PlateTest = ({
+export const PlateTest = <V extends Value>({
   variant = 'wordProcessor',
   editableProps,
   normalizeInitialValue,
   ...props
 }: {
   variant?: 'comment' | 'wordProcessor';
-} & PlateProps) => {
+} & PlateProps<V>) => {
   const { editor: _editor, id, plugins } = props;
 
   let editor = _editor;

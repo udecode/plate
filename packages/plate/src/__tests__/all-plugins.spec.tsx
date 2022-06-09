@@ -74,8 +74,9 @@ const PlateContainer = () => {
       createMentionPlugin(),
       createFindReplacePlugin({ options: { search } }),
       createNodeIdPlugin(),
-      createAutoformatPlugin(CONFIG.autoformat),
-      createResetNodePlugin(CONFIG.resetBlockType),
+      // TODO: fix type
+      createAutoformatPlugin(CONFIG.autoformat as any),
+      createResetNodePlugin(CONFIG.resetBlockType as any),
       createSoftBreakPlugin(CONFIG.softBreak),
       createExitBreakPlugin(CONFIG.exitBreak),
       createNormalizeTypesPlugin(CONFIG.forceLayout),

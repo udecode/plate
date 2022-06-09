@@ -4,9 +4,10 @@ import {
   isExpanded,
   isSelectionAtBlockStart,
   PlateEditor,
-  setNodes,
+  setElements,
   someNode,
   TElement,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK } from '../constants';
@@ -16,9 +17,9 @@ import { getCodeLineType } from '../options';
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
-export const insertCodeBlock = (
-  editor: PlateEditor,
-  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
+export const insertCodeBlock = <V extends Value>(
+  editor: PlateEditor<V>,
+  insertNodesOptions: Omit<InsertNodesOptions<V>, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 
@@ -38,7 +39,7 @@ export const insertCodeBlock = (
     editor.insertBreak();
   }
 
-  setNodes<TElement>(
+  setElements(
     editor,
     {
       type: getCodeLineType(editor),
@@ -47,7 +48,7 @@ export const insertCodeBlock = (
     insertNodesOptions
   );
 
-  wrapNodes(
+  wrapNodes<TElement>(
     editor,
     {
       type: getPluginType(editor, ELEMENT_CODE_BLOCK),

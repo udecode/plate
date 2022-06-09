@@ -6,9 +6,9 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ELEMENT_DEFAULT,
+  getEditorString,
   getPluginType,
   getRangeFromBlockStart,
-  getText,
   mockPlugin,
   PlateEditor,
 } from '@udecode/plate-core';
@@ -83,9 +83,9 @@ describe('when ``` at block start, but customising with query we get the most re
               type: ELEMENT_CODE_BLOCK,
               match: '```',
               triggerAtBlockStart: false,
-              preFormat: clearBlockFormat,
+              preFormat: clearBlockFormat as any,
               format: (editor) => {
-                insertEmptyCodeBlock(editor as PlateEditor, {
+                insertEmptyCodeBlock(editor, {
                   defaultType: getPluginType(
                     editor as PlateEditor,
                     ELEMENT_DEFAULT
@@ -99,7 +99,7 @@ describe('when ``` at block start, but customising with query we get the most re
                 }
 
                 const matchRange = getRangeFromBlockStart(editor) as Range;
-                const textFromBlockStart = getText(editor, matchRange);
+                const textFromBlockStart = getEditorString(editor, matchRange);
                 const currentNodeText = (textFromBlockStart || '') + rule.text;
 
                 return rule.match === currentNodeText;

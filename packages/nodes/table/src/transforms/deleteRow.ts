@@ -1,22 +1,24 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   someNode,
+  Value,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { TTableElement } from '../types';
 
-export const deleteRow = (editor: PlateEditor) => {
+export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentTableItem = getAbove(editor, {
+    const currentTableItem = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
-    const currentRowItem = getAbove(editor, {
+    const currentRowItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
     if (
@@ -25,7 +27,7 @@ export const deleteRow = (editor: PlateEditor) => {
       // Cannot delete the last row
       currentTableItem[0].children.length > 1
     ) {
-      Transforms.removeNodes(editor, {
+      removeNodes(editor, {
         at: currentRowItem[1],
       });
     }

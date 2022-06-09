@@ -1,5 +1,5 @@
 import { TElement } from '@udecode/plate-core';
 
 export const getTableColumnCount = (tableNode: TElement) => {
-  return tableNode.children[0]?.children?.length ?? 0;
+  return (tableNode.children as TElement[])[0]?.children?.length ?? 0;
 };

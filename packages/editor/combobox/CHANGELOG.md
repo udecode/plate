@@ -1,5 +1,42 @@
 # @udecode/plate-combobox
 
+## 11.2.1
+
+## 11.2.0
+
+### Minor Changes
+
+- [#1560](https://github.com/udecode/plate/pull/1560) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: tab / untab when composing with IME
+  - update peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
+## 11.1.0
+
+## 11.0.6
+
+## 11.0.5
+
+## 11.0.4
+
+## 11.0.3
+
+## 11.0.2
+
+## 11.0.1
+
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "@udecode/zustood": "^1.1.1",
+  "downshift": "^6.1.7",
+  "zustand": "^3.7.2"
+  ```
+
 ## 10.6.0
 
 ### Patch Changes

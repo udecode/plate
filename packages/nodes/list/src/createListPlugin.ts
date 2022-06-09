@@ -33,7 +33,7 @@ export const createListPlugin = createPluginFactory({
           },
         ],
       },
-    } as PlatePlugin<{}, ListPlugin>,
+    } as PlatePlugin<ListPlugin>,
     {
       key: ELEMENT_OL,
       isElement: true,
@@ -41,7 +41,7 @@ export const createListPlugin = createPluginFactory({
         onKeyDown: onKeyDownList,
       },
       deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
-    } as PlatePlugin<{}, ListPlugin>,
+    } as PlatePlugin<ListPlugin>,
     {
       key: ELEMENT_LI,
       isElement: true,

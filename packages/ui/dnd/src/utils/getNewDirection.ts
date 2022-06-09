@@ -1,7 +1,12 @@
 /**
  * Get new direction if updated
  */
-export const getNewDirection = (previousDir: string, dir?: string) => {
+import { DropLineDirection } from '../types';
+
+export const getNewDirection = (
+  previousDir: string,
+  dir?: string
+): DropLineDirection | undefined => {
   if (!dir && previousDir) {
     return '';
   }

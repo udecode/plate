@@ -1,9 +1,12 @@
+import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { MentionElementStyleProps } from './MentionElement.types';
 
-export const getMentionElementStyles = (props: MentionElementStyleProps) =>
+export const getMentionElementStyles = <V extends Value>(
+  props: MentionElementStyleProps<V>
+) =>
   createStyles(
     { prefixClassNames: 'MentionElement', ...props },
     {

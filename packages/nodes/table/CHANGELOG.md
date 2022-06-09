@@ -1,5 +1,101 @@
 # @udecode/plate-table
 
+## 11.3.1
+
+### Patch Changes
+
+- [#1573](https://github.com/udecode/plate/pull/1573) by [@zbeyens](https://github.com/zbeyens) – Table plugin: add `insertRow`, `insertColumn` options
+
+## 11.3.0
+
+### Minor Changes
+
+- [#1569](https://github.com/udecode/plate/pull/1569) by [@zbeyens](https://github.com/zbeyens) –
+  - https://github.com/udecode/editor-protocol/issues/32
+  - `addRow` deprecated in favor of `insertTableRow`
+  - `addColumn` deprecated in favor of `insertTableColumn`
+  - `insertTableRow` now selects the cell below selected cell (previously it was selecting the last cell)
+
+## 11.2.1
+
+## 11.2.0
+
+### Minor Changes
+
+- [#1560](https://github.com/udecode/plate/pull/1560) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: tab / untab when composing with IME
+  - update peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
+### Patch Changes
+
+- [#1554](https://github.com/udecode/plate/pull/1554) by [@mrganser](https://github.com/mrganser) – fix onKeyDownTable so it only acts with Tab key when selection is within a table, so default or others handlers can work outside
+
+## 11.1.1
+
+### Patch Changes
+
+- [#1548](https://github.com/udecode/plate/pull/1548) by [@zbeyens](https://github.com/zbeyens) –
+  - fix arrow navigation inside table cell having a block (e.g. paragraph)
+
+## 11.1.0
+
+### Minor Changes
+
+- [#1546](https://github.com/udecode/plate/pull/1546) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `getTableGridAbove`: Get sub table above anchor and focus
+  - `getTableGridByRange`: Get sub table between 2 cell paths.
+  - `moveSelectionFromCell`: Move selection by cell unit.
+  - `getCellTypes`: Get td and th types.
+  - `getEmptyCellNode`, `getEmptyRowNode`, `getEmptyTableNode`: `cellChildren` option
+  - `getEmptyTableNode`: `rowCount`, `colCount` options
+  - `preventDeleteTableCell`
+  - `withDeleteTable`: Prevent cell deletion
+  - `withGetFragmentTable`: If selection is in a table, get subtable above
+  - `withInsertFragmentTable`
+
+  Cell selection:
+
+  - https://github.com/udecode/editor-protocol/issues/26
+  - https://github.com/udecode/editor-protocol/issues/27
+  - https://github.com/udecode/editor-protocol/issues/28
+  - https://github.com/udecode/editor-protocol/issues/29
+  - https://github.com/udecode/editor-protocol/issues/15
+  - https://github.com/udecode/editor-protocol/issues/17
+  - https://github.com/udecode/editor-protocol/issues/30
+  - https://github.com/udecode/editor-protocol/issues/31
+  - https://github.com/udecode/editor-protocol/issues/12
+  - https://github.com/udecode/editor-protocol/issues/25
+  - https://github.com/udecode/editor-protocol/issues/20
+
+  Copy/paste:
+
+  - https://github.com/udecode/editor-protocol/issues/19
+  - https://github.com/udecode/editor-protocol/issues/13
+  - https://github.com/udecode/editor-protocol/issues/14
+
+  Delete:
+
+  - https://github.com/udecode/editor-protocol/issues/21
+  - https://github.com/udecode/editor-protocol/issues/22
+  - https://github.com/udecode/editor-protocol/issues/23
+
+## 11.0.6
+
+## 11.0.5
+
+## 11.0.4
+
+## 11.0.3
+
+## 11.0.2
+
+## 11.0.1
+
+## 11.0.0
+
 ## 10.6.3
 
 ### Patch Changes

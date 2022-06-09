@@ -1,6 +1,7 @@
 const tsJest = require('ts-jest');
 
 const tsJestTransformer = tsJest.createTransformer();
+// const tsJestTransformer = tsJest.default.createTransformer();
 
 /**
  * @todo (lucas): this is far from ideal, it removes every tailwind/tw statement to prevent errors in jest

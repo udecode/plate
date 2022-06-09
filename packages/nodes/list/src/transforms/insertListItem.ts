@@ -1,21 +1,32 @@
 import {
-  getAbove,
-  getParent,
+  collapseSelection,
+  deleteText,
+  getAboveNode,
+  getMarks,
+  getParentNode,
   getPluginType,
-  insertNodes,
+  insertElements,
   isBlockTextEmptyAfterSelection,
+  isStartPoint,
+  moveNodes,
   PlateEditor,
+  select,
+  splitNodes,
   TElement,
+  Value,
+  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Editor, Path, Range, Transforms } from 'slate';
+import { Path, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
 /**
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (editor: PlateEditor): boolean => {
+export const insertListItem = <V extends Value>(
+  editor: PlateEditor<V>
+): boolean => {
   const liType = getPluginType(editor, ELEMENT_LI);
   const licType = getPluginType(editor, ELEMENT_LIC);
 
@@ -23,11 +34,11 @@ export const insertListItem = (editor: PlateEditor): boolean => {
     return false;
   }
 
-  const licEntry = getAbove(editor, { match: { type: licType } });
+  const licEntry = getAboveNode(editor, { match: { type: licType } });
   if (!licEntry) return false;
   const [, paragraphPath] = licEntry;
 
-  const listItemEntry = getParent(editor, paragraphPath);
+  const listItemEntry = getParentNode(editor, paragraphPath);
   if (!listItemEntry) return false;
   const [listItemNode, listItemPath] = listItemEntry;
 
@@ -35,12 +46,12 @@ export const insertListItem = (editor: PlateEditor): boolean => {
 
   let success = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     if (!Range.isCollapsed(editor.selection!)) {
-      Transforms.delete(editor);
+      deleteText(editor);
     }
 
-    const isStart = Editor.isStart(
+    const isStart = isStartPoint(
       editor,
       editor.selection!.focus,
       paragraphPath
@@ -54,7 +65,7 @@ export const insertListItem = (editor: PlateEditor): boolean => {
      * If start, insert a list item before
      */
     if (isStart) {
-      insertNodes<TElement>(
+      insertElements(
         editor,
         {
           type: liType,
@@ -72,9 +83,9 @@ export const insertListItem = (editor: PlateEditor): boolean => {
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
     if (!isEnd) {
-      Editor.withoutNormalizing(editor, () => {
-        Transforms.splitNodes(editor);
-        wrapNodes(
+      withoutNormalizing(editor, () => {
+        splitNodes(editor);
+        wrapNodes<TElement>(
           editor,
           {
             type: liType,
@@ -82,12 +93,12 @@ export const insertListItem = (editor: PlateEditor): boolean => {
           },
           { at: nextParagraphPath }
         );
-        Transforms.moveNodes(editor, {
+        moveNodes(editor, {
           at: nextParagraphPath,
           to: nextListItemPath,
         });
-        Transforms.select(editor, nextListItemPath);
-        Transforms.collapse(editor, {
+        select(editor, nextListItemPath);
+        collapseSelection(editor, {
           edge: 'start',
         });
       });
@@ -95,8 +106,8 @@ export const insertListItem = (editor: PlateEditor): boolean => {
       /**
        * If end, insert a list item after and select it
        */
-      const marks = Editor.marks(editor) || {};
-      insertNodes<TElement>(
+      const marks = getMarks(editor) || {};
+      insertElements(
         editor,
         {
           type: liType,
@@ -104,14 +115,14 @@ export const insertListItem = (editor: PlateEditor): boolean => {
         },
         { at: nextListItemPath }
       );
-      Transforms.select(editor, nextListItemPath);
+      select(editor, nextListItemPath);
     }
 
     /**
      * If there is a list in the list item, move it to the next list item
      */
     if (listItemNode.children.length > 1) {
-      Transforms.moveNodes(editor, {
+      moveNodes(editor, {
         at: nextParagraphPath,
         to: nextListItemPath.concat(1),
       });

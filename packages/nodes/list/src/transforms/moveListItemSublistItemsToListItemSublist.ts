@@ -1,25 +1,29 @@
 import {
+  deleteText,
   findDescendant,
   getLastChildPath,
-  getParent,
-  insertNodes,
+  getParentNode,
+  insertElements,
   moveChildren,
   PlateEditor,
   TElement,
+  TElementEntry,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
    * The list item to merge.
    */
-  fromListItem: NodeEntry<TElement>;
+  fromListItem: TElementEntry;
 
   /**
    * The list item where to merge.
    */
-  toListItem: NodeEntry<TElement>;
+  toListItem: TElementEntry;
 
   /**
    * Move to the start of the list instead of the end.
@@ -31,8 +35,8 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * Move fromListItem sublist list items to the end of `toListItem` sublist.
  * If there is no `toListItem` sublist, insert one.
  */
-export const moveListItemSublistItemsToListItemSublist = (
-  editor: PlateEditor,
+export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     fromListItem,
     toListItem,
@@ -43,14 +47,14 @@ export const moveListItemSublistItemsToListItemSublist = (
   const [, toListItemPath] = toListItem;
   let moved = 0;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     const fromListItemSublist = findDescendant<TElement>(editor, {
       at: fromListItemPath,
       match: {
         type: getListTypes(editor),
       },
     });
-    if (!fromListItemSublist) return 0;
+    if (!fromListItemSublist) return;
 
     const [, fromListItemSublistPath] = fromListItemSublist;
 
@@ -64,17 +68,17 @@ export const moveListItemSublistItemsToListItemSublist = (
     let to: Path;
 
     if (!toListItemSublist) {
-      const fromList = getParent(editor, fromListItemPath);
-      if (!fromList) return 0;
+      const fromList = getParentNode(editor, fromListItemPath);
+      if (!fromList) return;
       const [fromListNode] = fromList;
 
       const fromListType = fromListNode.type;
 
       const toListItemSublistPath = toListItemPath.concat([1]);
 
-      insertNodes<TElement>(
+      insertElements(
         editor,
-        { type: fromListType, children: [] },
+        { type: fromListType as string, children: [] },
         { at: toListItemSublistPath }
       );
 
@@ -92,7 +96,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     });
 
     // Remove the empty list
-    Transforms.delete(editor, { at: fromListItemSublistPath });
+    deleteText(editor, { at: fromListItemSublistPath });
   });
 
   return moved;

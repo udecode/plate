@@ -3,6 +3,7 @@
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
+import { Value } from '../../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../../types/PlateEditor';
 import { createPlateEditor } from '../../../../utils/createPlateEditor';
 import { getBlockAbove } from '../../../queries/getBlockAbove';

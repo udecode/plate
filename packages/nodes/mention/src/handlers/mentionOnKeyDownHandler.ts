@@ -1,4 +1,5 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
+import isHotkey from 'is-hotkey';
 import { findMentionInput } from '../queries';
 import { removeMentionInput } from '../transforms';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
@@ -7,12 +8,12 @@ import {
   MoveSelectionByOffsetOptions,
 } from './moveSelectionByOffset';
 
-export const mentionOnKeyDownHandler: (
-  options?: MoveSelectionByOffsetOptions
-) => (editor: PlateEditor) => KeyboardEventHandler = (options) => (editor) => (
-  event
-) => {
-  if (event.key === 'Escape') {
+export const mentionOnKeyDownHandler: <V extends Value>(
+  options?: MoveSelectionByOffsetOptions<V>
+) => (editor: PlateEditor<V>) => KeyboardEventHandler = (options) => (
+  editor
+) => (event) => {
+  if (isHotkey('escape', event)) {
     event.preventDefault();
     const currentMentionInput = findMentionInput(editor)!;
     if (currentMentionInput) {

@@ -1,6 +1,6 @@
-import { TDescendant } from '@udecode/plate-core';
+import { TDescendant, TElement } from '@udecode/plate-core';
 
-export interface ImageNodeData {
+export interface TImageElement extends TElement {
   url: string;
   width?: number;
   caption?: TDescendant[];

@@ -1,5 +1,6 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
+import { Value } from '../slate/editor/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { RenderElement } from '../types/RenderElement';
@@ -10,9 +11,9 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate element type, render `options.component`.
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
-export const pluginRenderElement = (
-  editor: PlateEditor,
-  { key, type, component: _component, props }: PlatePlugin
+export const pluginRenderElement = <V extends Value>(
+  editor: PlateEditor<V>,
+  { key, type, component: _component, props }: PlatePlugin<{}, V>
 ): RenderElement => (nodeProps) => {
   const { element, children: _children } = nodeProps;
 
@@ -27,19 +28,19 @@ export const pluginRenderElement = (
     );
 
     nodeProps = getRenderNodeProps({
-      attributes: element.attributes,
-      nodeProps,
+      attributes: element.attributes as any,
+      nodeProps: nodeProps as any,
       props,
-      type,
-    });
+      type: type!,
+    }) as any;
 
     let children = _children;
 
     injectBelowComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key });
+      const hoc = withHOC({ ...nodeProps, key } as any);
 
       if (hoc) {
-        children = hoc({ ...nodeProps, children });
+        children = hoc({ ...nodeProps, children } as any);
       }
     });
 
@@ -48,10 +49,10 @@ export const pluginRenderElement = (
     );
 
     injectAboveComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key });
+      const hoc = withHOC({ ...nodeProps, key } as any);
 
       if (hoc) {
-        component = hoc({ ...nodeProps, children: component });
+        component = hoc({ ...nodeProps, children: component } as any);
       }
     });
 

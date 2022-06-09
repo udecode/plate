@@ -1,8 +1,13 @@
-import { getPluginType, PlateEditor, unwrapNodes } from '@udecode/plate-core';
+import {
+  getPluginType,
+  PlateEditor,
+  unwrapNodes,
+  Value,
+} from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options';
 
-export const unwrapCodeBlock = (editor: PlateEditor) => {
+export const unwrapCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
   unwrapNodes(editor, {
     match: { type: getCodeLineType(editor) },
   });

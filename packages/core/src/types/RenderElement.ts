@@ -1,3 +1,4 @@
+import { Value } from '../slate/editor/TEditor';
 import { PlateRenderElementProps } from './PlateRenderElementProps';
 
 /**
@@ -5,6 +6,6 @@ import { PlateRenderElementProps } from './PlateRenderElementProps';
  * If the function returns undefined then the next RenderElement function is called.
  * If the function renders a JSX element then that JSX element is rendered.
  */
-export type RenderElement = (
-  props: PlateRenderElementProps
+export type RenderElement = <V extends Value>(
+  props: PlateRenderElementProps<V>
 ) => JSX.Element | undefined;

@@ -1,8 +1,8 @@
-import { PlateRenderLeafProps } from '@udecode/plate-core';
-import { Text } from 'slate';
+import { EText, PlateRenderLeafProps, TText, Value } from '@udecode/plate-core';
 import { StyledProps } from '../types/StyledProps';
 
 export type StyledLeafProps<
-  TText = Text,
+  V extends Value = Value,
+  N extends TText = EText<V>,
   TStyles = {}
-> = PlateRenderLeafProps<TText> & StyledProps<TStyles>;
+> = PlateRenderLeafProps<V, N> & StyledProps<TStyles>;

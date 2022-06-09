@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw-next/types/types';
+import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { TExcalidrawProps } from '../../types';
 import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
 import { ExcalidrawElementProps } from './ExcalidrawElement.types';
 
-export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
+export const ExcalidrawElement = <V extends Value>(
+  props: ExcalidrawElementProps<V>
+) => {
   const {
     attributes,
     children,
@@ -40,7 +43,7 @@ export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
     },
     autoFocus: false,
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
-    // const path = ReactEditor.findPath(editor, element);
+    // const path = findNodePath(editor, element);
 
     // FIXME: setNodes triggers render loop as onChange is triggered on rerender
     // in the meantime, the prop can be used to save the data outside slate

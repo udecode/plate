@@ -2,7 +2,7 @@ import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
-import { Plate } from '@udecode/plate-core';
+import { Plate, Value } from '@udecode/plate-core';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
@@ -11,8 +11,9 @@ import { createPlateUI } from '../../../plate/src/utils/createPlateUI';
 import { withDraggable } from './withDraggable';
 
 const components = createPlateUI();
-const initialValue = [
+const initialValue: Value = [
   {
+    type: 'a',
     children: [
       {
         type: 'p',

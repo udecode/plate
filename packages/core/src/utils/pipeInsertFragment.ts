@@ -1,21 +1,22 @@
-import { Editor } from 'slate';
+import { Value } from '../slate/editor/TEditor';
+import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
+import { EElementOrText } from '../slate/element/TElement';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
-import { TDescendant } from '../types/slate/TDescendant';
 import { InjectedPlugin } from './getInjectedPlugins';
 
 /**
  * Pipe preInsert then insertFragment.
  */
-export const pipeInsertFragment = <T = {}>(
-  editor: PlateEditor<T>,
-  injectedPlugins: InjectedPlugin<T>[],
+export const pipeInsertFragment = <V extends Value>(
+  editor: PlateEditor<V>,
+  injectedPlugins: InjectedPlugin<{}, V>[],
   {
     fragment,
     ...options
-  }: PlatePluginInsertDataOptions & { fragment: TDescendant[] }
+  }: PlatePluginInsertDataOptions & { fragment: EElementOrText<V>[] }
 ) => {
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {
       return p.editor?.insertData?.preInsert?.(fragment, options) === true;
     });

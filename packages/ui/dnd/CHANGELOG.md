@@ -1,5 +1,88 @@
 # @udecode/plate-dnd
 
+## 12.0.0
+
+### Major Changes
+
+- [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) – renamed:
+  - `useDndBlock` options:
+    - `blockRef` -> `nodeRef`
+    - `removePreview` -> `preview.disable`
+  - `useDropBlockOnEditor` -> `useDropBlock`
+  - `useDropBlock` options:
+    - `blockRef` -> `nodeRef`
+    - `setDropLine` -> `onChangeDropLine`
+      signature change:
+  - `getHoverDirection`:
+  ```tsx
+  // before
+  (
+    dragItem: DragItemBlock,
+    monitor: DropTargetMonitor,
+    ref: any,
+    hoverId: string
+  )
+  // after
+  {
+    dragItem,
+    id,
+    monitor,
+    nodeRef,
+  }: GetHoverDirectionOptions
+  ```
+
+### Minor Changes
+
+- [#1574](https://github.com/udecode/plate/pull/1574) by [@xakdog](https://github.com/xakdog) – `useDndBlock`: add `previewRef` option to customize the preview
+
+- [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode`: `useDndBlock` with:
+    - `type` option. Different types are needed to allow dnd in different structures like tables or lists.
+    - `drag` options
+    - `drop` options
+    - `preview` options
+  - `useDragNode`: `useDragBlock` with `type` option.
+  - `useDropNode`: `useDropBlock` with `accept` option:
+    - `onDropNode` called on drop
+    - `onHoverNode` called on hover
+
+## 11.2.1
+
+### Patch Changes
+
+- [#1567](https://github.com/udecode/plate/pull/1567) by [@zbeyens](https://github.com/zbeyens) –
+  - upgrade deps:
+    - `"react-dnd": "^16.0.1"`
+    - `"react-dnd-html5-backend": "^16.0.1"`
+
+## 11.2.0
+
+## 11.1.0
+
+## 11.0.6
+
+## 11.0.5
+
+## 11.0.4
+
+## 11.0.3
+
+## 11.0.2
+
+## 11.0.1
+
+## 11.0.0
+
+### Minor Changes
+
+- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – updated deps:
+  ```bash
+  "@react-hook/merged-ref": "^1.3.2",
+  "@tippyjs/react": "^4.2.6",
+  "react-dnd": "^15.1.2",
+  "react-dnd-html5-backend": "^15.1.3"
+  ```
+
 ## 10.5.3
 
 ## 10.5.2

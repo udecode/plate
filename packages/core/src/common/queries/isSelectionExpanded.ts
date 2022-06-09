@@ -1,8 +1,8 @@
-import { TEditor } from '../../types/slate/TEditor';
-import { isExpanded } from './isExpanded';
+import { TEditor, Value } from '../../slate/editor/TEditor';
+import { isExpanded } from '../../slate/range/isExpanded';
 
 /**
  * Is the selection expanded.
  */
-export const isSelectionExpanded = (editor: TEditor) =>
+export const isSelectionExpanded = <V extends Value>(editor: TEditor<V>) =>
   isExpanded(editor.selection);

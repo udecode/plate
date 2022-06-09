@@ -49,16 +49,16 @@ interface Config {
   editableProps: EditableProps;
 
   align: Partial<PlatePlugin>;
-  autoformat: Partial<PlatePlugin<{}, AutoformatPlugin>>;
-  exitBreak: Partial<PlatePlugin<{}, ExitBreakPlugin>>;
-  forceLayout: Partial<PlatePlugin<{}, NormalizeTypesPlugin>>;
-  indent: Partial<PlatePlugin<{}, IndentPlugin>>;
+  autoformat: Partial<PlatePlugin<AutoformatPlugin>>;
+  exitBreak: Partial<PlatePlugin<ExitBreakPlugin>>;
+  forceLayout: Partial<PlatePlugin<NormalizeTypesPlugin>>;
+  indent: Partial<PlatePlugin<IndentPlugin>>;
   lineHeight: Partial<PlatePlugin>;
   mentionItems: any;
-  resetBlockType: Partial<PlatePlugin<{}, ResetNodePlugin>>;
-  selectOnBackspace: Partial<PlatePlugin<{}, SelectOnBackspacePlugin>>;
-  softBreak: Partial<PlatePlugin<{}, SoftBreakPlugin>>;
-  trailingBlock: Partial<PlatePlugin<{}, TrailingBlockPlugin>>;
+  resetBlockType: Partial<PlatePlugin<ResetNodePlugin>>;
+  selectOnBackspace: Partial<PlatePlugin<SelectOnBackspacePlugin>>;
+  softBreak: Partial<PlatePlugin<SoftBreakPlugin>>;
+  trailingBlock: Partial<PlatePlugin<TrailingBlockPlugin>>;
 }
 
 export const CONFIG: Config = {

@@ -1,9 +1,11 @@
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
+  focusEditor,
   getMark,
   getPluginType,
   isMarkActive,
   removeMark,
+  select,
   setMarks,
   useEventPlateId,
   usePlateEditorRef,
@@ -15,8 +17,6 @@ import {
   ToolbarButtonProps,
   ToolbarDropdown,
 } from '@udecode/plate-ui-toolbar';
-import { Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 import { ColorType } from '../ColorPicker/ColorType';
 import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
@@ -62,8 +62,8 @@ export const ColorPickerToolbarDropdown = withPlateEventProvider(
         if (editorRef && editor && editor.selection) {
           setSelectedColor(value);
 
-          Transforms.select(editorRef, editor.selection);
-          ReactEditor.focus(editorRef);
+          select(editorRef, editor.selection);
+          focusEditor(editorRef);
 
           setMarks(editor, { [type]: value });
         }
@@ -81,8 +81,8 @@ export const ColorPickerToolbarDropdown = withPlateEventProvider(
 
     const clearColor = useCallback(() => {
       if (editorRef && editor && editor.selection) {
-        Transforms.select(editorRef, editor.selection);
-        ReactEditor.focus(editorRef);
+        select(editorRef, editor.selection);
+        focusEditor(editorRef);
 
         if (selectedColor) {
           removeMark(editor, { key: type });

@@ -1,7 +1,8 @@
 import clsx from 'clsx';
+import { AnyObject } from '../common/types/utility/AnyObject';
+import { Value } from '../slate/editor/TEditor';
 import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
-import { AnyObject } from '../types/utility/AnyObject';
 import { getSlateClass } from './getSlateClass';
 
 /**
@@ -9,15 +10,15 @@ import { getSlateClass } from './getSlateClass';
  * `props.element.attributes` are passed as `nodeProps`.
  * Extend the class name with the node type.
  */
-export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
+export const getRenderNodeProps = <V extends Value>({
   attributes,
   nodeProps,
   props,
   type,
-}: Pick<WithPlatePlugin, 'type' | 'props'> & {
+}: Pick<WithPlatePlugin<V>, 'type' | 'props'> & {
   attributes?: AnyObject;
-  nodeProps: T;
-}) => {
+  nodeProps: PlateRenderNodeProps<V>;
+}): PlateRenderNodeProps<V> => {
   let newProps: AnyObject = {};
 
   if (props) {

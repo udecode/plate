@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
+import { Value } from '../../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../../types/PlateEditor';
-import { getPointBefore } from '../../../queries/getPointBefore';
+import { getPointBeforeLocation } from '../../../queries/getPointBeforeLocation';
 
 jsx;
 
@@ -21,7 +22,7 @@ describe('when skipInvalid is true', () => {
       const output = { offset: 4, path: [0, 0] };
 
       expect(
-        getPointBefore(input, input.selection as any, {
+        getPointBeforeLocation(input, input.selection as any, {
           matchString: ' ',
           skipInvalid: true,
         })
@@ -46,7 +47,7 @@ describe('when skipInvalid is true', () => {
       };
 
       expect(
-        getPointBefore(input, input.selection as any, {
+        getPointBeforeLocation(input, input.selection as any, {
           skipInvalid: true,
           matchString: '**',
         })
@@ -68,7 +69,7 @@ describe('when skipInvalid is true', () => {
       const output = undefined;
 
       expect(
-        getPointBefore(input, input.selection as any, {
+        getPointBeforeLocation(input, input.selection as any, {
           matchString: 'a',
           skipInvalid: true,
         })
@@ -95,7 +96,7 @@ describe('when skipInvalid is false', () => {
       };
 
       expect(
-        getPointBefore(input, input.selection as any, {
+        getPointBeforeLocation(input, input.selection as any, {
           matchString: '***__',
         })
       ).toEqual(output);
@@ -119,7 +120,7 @@ describe('when skipInvalid is false', () => {
       };
 
       expect(
-        getPointBefore(input, input.selection as any, {
+        getPointBeforeLocation(input, input.selection as any, {
           matchString: ['/', '***__', '/'],
         })
       ).toEqual(output);

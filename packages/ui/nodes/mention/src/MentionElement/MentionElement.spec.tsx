@@ -10,6 +10,7 @@ it('should render', () => {
 
   const { getByTestId } = render(
     <MentionElement
+      editor={{} as any}
       attributes={
         {
           'data-testid': 'MentionElement',

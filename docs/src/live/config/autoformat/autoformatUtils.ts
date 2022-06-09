@@ -2,41 +2,50 @@ import {
   AutoformatBlockRule,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-  getParent,
+  getParentNode,
   isElement,
   isType,
   PlateEditor,
-  TEditor,
   toggleList,
   unwrapList,
+  Value,
 } from '@udecode/plate';
 
 export const clearBlockFormat: AutoformatBlockRule['preFormat'] = (editor) =>
-  unwrapList(editor as PlateEditor);
+  unwrapList(editor);
 
-export const format = (editor: TEditor, customFormatting: any) => {
+export const format = <V extends Value>(
+  editor: PlateEditor<V>,
+  customFormatting: any
+) => {
   if (editor.selection) {
-    const parentEntry = getParent(editor, editor.selection);
+    const parentEntry = getParentNode(editor, editor.selection);
     if (!parentEntry) return;
     const [node] = parentEntry;
     if (
       isElement(node) &&
-      !isType(editor as PlateEditor, node, ELEMENT_CODE_BLOCK) &&
-      !isType(editor as PlateEditor, node, ELEMENT_CODE_LINE)
+      !isType(editor, node, ELEMENT_CODE_BLOCK) &&
+      !isType(editor, node, ELEMENT_CODE_LINE)
     ) {
       customFormatting();
     }
   }
 };
 
-export const formatList = (editor: TEditor, elementType: string) => {
+export const formatList = <V extends Value>(
+  editor: PlateEditor<V>,
+  elementType: string
+) => {
   format(editor, () =>
-    toggleList(editor as PlateEditor, {
+    toggleList(editor, {
       type: elementType,
     })
   );
 };
 
-export const formatText = (editor: TEditor, text: string) => {
+export const formatText = <V extends Value>(
+  editor: PlateEditor<V>,
+  text: string
+) => {
   format(editor, () => editor.insertText(text));
 };

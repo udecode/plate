@@ -1,13 +1,16 @@
 import {
+  collapseSelection,
+  getLeafNode,
   getPluginType,
   insertNodes,
   isCollapsed,
   PlateEditor,
-  TElement,
+  select,
   unwrapNodes,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../createLinkPlugin';
+import { TLinkElement } from '../types';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -15,8 +18,8 @@ import { wrapLink } from './wrapLink';
  * Then, the focus of the location is set to selection focus.
  * Then, wrap the link at the location.
  */
-export const upsertLinkAtSelection = <T = {}>(
-  editor: PlateEditor<T>,
+export const upsertLinkAtSelection = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     url,
     wrap,
@@ -33,7 +36,7 @@ export const upsertLinkAtSelection = <T = {}>(
   const type = getPluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
-    return insertNodes<TElement>(editor, {
+    return insertNodes<TLinkElement>(editor, {
       type,
       url,
       children: [{ text: url }],
@@ -42,14 +45,14 @@ export const upsertLinkAtSelection = <T = {}>(
 
   // if our cursor is inside an existing link, but don't have the text selected, select it now
   if (wrap && isCollapsed(editor.selection)) {
-    const linkLeaf = Editor.leaf(editor, editor.selection);
+    const linkLeaf = getLeafNode(editor, editor.selection);
     const [, inlinePath] = linkLeaf;
-    Transforms.select(editor, inlinePath);
+    select(editor, inlinePath);
   }
 
   unwrapNodes(editor, { at: editor.selection, match: { type } });
 
   wrapLink(editor, { at: editor.selection, url });
 
-  Transforms.collapse(editor, { edge: 'end' });
+  collapseSelection(editor, { edge: 'end' });
 };

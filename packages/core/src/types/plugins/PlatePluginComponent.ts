@@ -1,4 +1,4 @@
-import { RenderFunction } from '../utility/RenderFunction';
+import { RenderFunction } from '../../common/types/utility/RenderFunction';
 
 /**
  * The plate plugin component.

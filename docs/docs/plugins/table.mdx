@@ -3,6 +3,13 @@ slug: /plugins/table
 title: Table
 ---
 
+The table plugin enables table rendering with these behaviors:
+
+- Arrow navigation (up/down)
+- Select cells as a grid
+- Expand cell selection with ⇧ + arrow keys
+- Copy paste cells
+
 ### Installation
 
 ```bash npm2yarn
@@ -18,9 +25,9 @@ npm install @udecode/plate-ui-table
     <>
       <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
       <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-      <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+      <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
       <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-      <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
+      <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
       <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
     </>
   );

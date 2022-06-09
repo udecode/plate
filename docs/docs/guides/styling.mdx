@@ -3,11 +3,12 @@ slug: /styling
 title: Styling
 ---
 
+By default, plate plugins have no component: you'll need to plug them.
 There is multiple ways to style your editor.
 
 ## Plugins
 
-Use the plugin property `component` like this:
+To register a single component, use the plugin property `component`:
 
 ```tsx
 const plugins = [
@@ -22,8 +23,8 @@ const plugins = [
 
 ## Components
 
-Use `createPlugins` to pass all the components of your editor in one place.
-This way, the UI is decoupled from the business logic.
+To register all the components in one place, use `createPlugins` second parameter.
+This way, the UI is decoupled from the plugins. Note that there is no difference with the plugin `component` property.
 
 It's an object whose property keys are plugin keys and whose property values are React components.
 
@@ -38,12 +39,10 @@ const plugins = createPlugins(plugins, {
 
 ### Plate UI
 
-Plate provides a kit of components for all the plugins.
+Plate UI provides a component for each plugin as you can see in the examples. 
 
-You can either:
-
-- use `createPlateUI` to create all the components.
-The first parameter can be used to override default components by plugin key.
+- use `createPlateUI` to use Plate UI components.
+The first parameter can be used to override components by plugin key.
 
 ```ts
 const components = createPlateUI({
@@ -52,6 +51,7 @@ const components = createPlateUI({
   [ELEMENT_LINK]: LinkElement,
 });
 
+// can be used in `createPlugins`
 const plugins = createPlugins(plugins, { components });
 ```
 
@@ -122,8 +122,8 @@ const components = {
 
 You can create your own component.
 
-- The custom element props interface should extend `PlateRenderElementProps<TElement>` where `TElement` is the element type.
-- The custom leaf props interface should extend `PlateRenderLeafProps<TText>` where `TText` is the leaf type.
+- The custom element props interface should extend `PlateRenderElementProps<V>` where `TElement` is the element type.
+- The custom leaf props interface should extend `PlateRenderLeafProps<V>` where `TText` is the leaf type.
 
 ## CSS
 
