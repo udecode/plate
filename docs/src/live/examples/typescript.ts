@@ -43,10 +43,10 @@ import {
   PlateProps,
   SerializeHtml,
   TElement,
-  TImageElement as ImageElement,
-  TLinkElement as LinkElement,
+  TImageElement,
+  TLinkElement,
   TReactEditor,
-  TTableElement as TableElement,
+  TTableElement,
   TText,
   useEditorRef,
   useEditorState,
@@ -75,7 +75,7 @@ export interface RichText extends TText {
  * Inline Elements
  */
 
-export interface TLinkElement extends LinkElement {
+export interface MyLinkElement extends TLinkElement {
   type: typeof ELEMENT_LINK;
   children: RichText[];
 }
@@ -88,64 +88,64 @@ export type MyInlineChildren = MyInlineDescendant[];
  * Blocks
  */
 
-export interface TParagraphElement extends TElement {
+export interface MyParagraphElement extends TElement {
   type: typeof ELEMENT_PARAGRAPH;
   children: MyInlineChildren;
 }
 
-export interface TBulletedListElement extends TElement {
+export interface MyBulletedListElement extends TElement {
   type: typeof ELEMENT_UL;
-  children: TListItemElement[];
+  children: MyListItemElement[];
 }
 
-export interface TNumberedListElement extends TElement {
+export interface MyNumberedListElement extends TElement {
   type: typeof ELEMENT_OL;
-  children: TListItemElement[];
+  children: MyListItemElement[];
 }
 
-export interface TListItemElement extends TElement {
+export interface MyListItemElement extends TElement {
   type: typeof ELEMENT_LI;
   children: MyInlineChildren;
 }
 
-export interface THeadingElement extends TElement {
+export interface MyHeadingElement extends TElement {
   type: typeof ELEMENT_H1;
   children: MyInlineChildren;
 }
 
-export interface TImageElement extends ImageElement {
+export interface MyImageElement extends TImageElement {
   type: typeof ELEMENT_IMAGE;
   children: [EmptyText];
 }
 
-export interface TQuoteElement extends TElement {
+export interface MyQuoteElement extends TElement {
   type: typeof ELEMENT_BLOCKQUOTE;
   children: MyInlineChildren;
 }
 
-export interface TTableElement extends TElement, TableElement {
+export interface MyTableElement extends TTableElement {
   type: typeof ELEMENT_TABLE;
-  children: TTableRowElement[];
+  children: MyTableRowElement[];
 }
 
-export interface TTableRowElement extends TElement {
+export interface MyTableRowElement extends TElement {
   type: typeof ELEMENT_TR;
-  children: TTableCellElement[];
+  children: MyTableCellElement[];
 }
 
-export interface TTableCellElement extends TElement {
+export interface MyTableCellElement extends TElement {
   type: typeof ELEMENT_TD;
   children: MyNestableBlock[];
 }
 
 export type MyNestableBlock =
-  | TParagraphElement
-  | TImageElement
-  | TBulletedListElement
-  | TNumberedListElement
-  | TQuoteElement;
+  | MyParagraphElement
+  | MyImageElement
+  | MyBulletedListElement
+  | MyNumberedListElement
+  | MyQuoteElement;
 
-export type MyBlock = THeadingElement | TTableElement | MyNestableBlock;
+export type MyBlock = MyHeadingElement | MyTableElement | MyNestableBlock;
 
 export type MyValue = MyBlock[];
 
@@ -203,28 +203,28 @@ export type MyWithOverride<P = PluginOptions> = WithOverride<
 
 export const getMyEditor = (editor: MyEditor) =>
   getTEditor<MyValue, MyEditor>(editor);
-export const useTEditorRef = () => useEditorRef<MyValue, MyEditor>();
-export const useTEditorState = () => useEditorState<MyValue, MyEditor>();
-export const useTPlateEditorRef = (id?: string) =>
+export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
+export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
+export const useMyPlateEditorRef = (id?: string) =>
   usePlateEditorRef<MyValue, MyEditor>(id);
-export const getTPlateEditorRef = (id?: string) =>
+export const getMyPlateEditorRef = (id?: string) =>
   getPlateEditorRef<MyValue, MyEditor>(id);
-export const useTPlateEditorState = (id?: string) =>
+export const useMyPlateEditorState = (id?: string) =>
   usePlateEditorState<MyValue, MyEditor>(id);
-export const useTPlateSelectors = (id?: string) =>
+export const useMyPlateSelectors = (id?: string) =>
   usePlateSelectors<MyValue, MyEditor>(id);
-export const getTPlateSelectors = (id?: string) =>
+export const getMyPlateSelectors = (id?: string) =>
   getPlateSelectors<MyValue, MyEditor>(id);
-export const getTPlateActions = (id?: string) =>
+export const getMyPlateActions = (id?: string) =>
   getPlateActions<MyValue, MyEditor>(id);
 
 /**
  * Utils
  */
 
-export const createTPlateEditor = (
+export const createMyPlateEditor = (
   options: CreatePlateEditorOptions<MyValue, MyEditor> = {}
 ) => createPlateEditor<MyValue, MyEditor>(options);
-export const createTPluginFactory = <P = PluginOptions>(
+export const createMyPluginFactory = <P = PluginOptions>(
   defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
 ) => createPluginFactory(defaultPlugin);
