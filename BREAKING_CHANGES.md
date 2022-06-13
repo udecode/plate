@@ -1,3 +1,36 @@
+# 12.0.0
+
+## @udecode/plate-ui-dnd@12.0.0
+
+### Major Changes
+
+-   [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) – renamed:
+  -   `useDndBlock` options:
+      -   `blockRef` -> `nodeRef`
+      -   `removePreview` -> `preview.disable`
+  -   `useDropBlockOnEditor` -> `useDropBlock`
+  -   `useDropBlock` options:
+      -   `blockRef` -> `nodeRef`
+      -   `setDropLine` -> `onChangeDropLine`
+          signature change:
+  -   `getHoverDirection`:
+  ```tsx
+  // before
+  (
+    dragItem: DragItemBlock,
+    monitor: DropTargetMonitor,
+    ref: any,
+    hoverId: string
+  )
+  // after
+  {
+    dragItem,
+    id,
+    monitor,
+    nodeRef,
+  }: GetHoverDirectionOptions
+  ```
+
 # 11.0.6
 
 ## @udecode/plate-core@11.0.6
