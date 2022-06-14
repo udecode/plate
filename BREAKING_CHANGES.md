@@ -1,3 +1,26 @@
+# 13.0.0
+
+## @udecode/plate@13.0.0
+## @udecode/plate-headless@13.0.0
+
+### Major Changes
+
+-   [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Removed `@udecode/plate-juice` from `@udecode/plate`. Install it if using `@udecode/plate-serializer-docx`:
+    ```bash
+    yarn install @udecode/plate-juice
+    ```
+
+## @udecode/plate@13.0.0
+## @udecode/plate-ui@13.0.0
+## @udecode/plate-ui-dnd@13.0.0
+
+### Major Changes
+
+-   [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Moved `react-dnd react-dnd-html5-backend` deps to peer-dependencies. Install these if using `@udecode/plate-ui-dnd`:
+    ```bash
+    yarn install react-dnd react-dnd-html5-backend
+    ```
+
 # 12.0.0
 
 ## @udecode/plate-ui-dnd@12.0.0
