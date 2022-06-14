@@ -1,5 +1,14 @@
 # @udecode/plate-headless
 
+## 13.0.0
+
+### Major Changes
+
+- [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Removed `@udecode/plate-juice` from `@udecode/plate`. Install it if using `@udecode/plate-serializer-docx`:
+  ```bash
+  yarn install @udecode/plate-juice
+  ```
+
 ## 11.3.1
 
 ## 11.3.0

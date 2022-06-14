@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "11.3.1",
+  "version": "13.0.0",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
