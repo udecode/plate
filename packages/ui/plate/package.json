@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "13.0.0",
+  "version": "13.0.1",
   "description": "Plate UI",
   "keywords": [
     "wysiwyg",
@@ -37,7 +37,7 @@
     "rollup": "rollup -c=../../../rollup.config.js"
   },
   "dependencies": {
-    "@udecode/plate-headless": "13.0.0",
+    "@udecode/plate-headless": "13.0.1",
     "@udecode/plate-styled-components": "11.2.1",
     "@udecode/plate-ui-alignment": "11.2.1",
     "@udecode/plate-ui-block-quote": "11.2.1",
