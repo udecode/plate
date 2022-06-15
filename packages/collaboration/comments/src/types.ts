@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/plate-core';
+import { TElement } from '@udecode/plate-core/src';
 import { Thread } from './Thread';
 
 export interface ThreadNodeData {
@@ -6,6 +6,6 @@ export interface ThreadNodeData {
   selected: boolean;
 }
 
-export type ThreadNode = TNode & ThreadNodeData;
+export type ThreadElement = TElement & ThreadNodeData;
 
 export interface ThreadPlugin {}

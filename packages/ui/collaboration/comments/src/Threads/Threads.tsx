@@ -34,7 +34,7 @@ export function Threads(
     fetchContacts: FetchContacts;
   } & StyledProps
 ) {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
   const { parent, onClose, fetchContacts } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ThreadPosition | null>(null);

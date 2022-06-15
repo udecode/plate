@@ -1,4 +1,4 @@
-import { createPluginFactory, PlateEditor } from '@udecode/plate-core';
+import { createPluginFactory, PlateEditor, Value } from '@udecode/plate-core';
 import { insertTextThreadPlugin } from './insertTextThreadPlugin';
 import { ThreadPlugin } from './types';
 
@@ -9,7 +9,10 @@ export const createThreadPlugin = createPluginFactory<ThreadPlugin>({
   isElement: true,
   isInline: true,
   handlers: {
-    onChange(editor: PlateEditor<{}>) {
+    onChange<
+      V extends Value = Value,
+      E extends PlateEditor<V> = PlateEditor<V>
+    >(editor: E) {
       return () => {
         // const threadNodeEntries = findThreadNodeEntries(editor);
         // for (const threadNodeEntry of threadNodeEntries) {

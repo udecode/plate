@@ -1,8 +1,8 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
-  isEnd,
-  isStart,
+  isEndPoint,
+  isStartPoint,
   PlateEditor,
   TAncestor,
 } from '@udecode/plate-core';
@@ -10,7 +10,7 @@ import { Range } from 'slate';
 import { ELEMENT_THREAD } from './createThreadPlugin';
 import { insertTextAtTheEndOfAThreadNode } from './insertTextAtTheEndOfAThreadNode';
 import { insertTextAtTheStartOfAThreadNode } from './insertTextAtTheStartOfAThreadNode';
-import { ThreadNode } from './types';
+import { ThreadElement } from './types';
 
 export function insertTextThreadPlugin(
   editor: PlateEditor,
@@ -21,7 +21,7 @@ export function insertTextThreadPlugin(
 
   if (editor.selection && Range.isCollapsed(editor.selection)) {
     const threadType = getPluginType(editor, ELEMENT_THREAD);
-    const threadNodeEntry = getAbove<ThreadNode & TAncestor>(editor, {
+    const threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
       match: {
         type: threadType,
       },
@@ -29,13 +29,13 @@ export function insertTextThreadPlugin(
     if (threadNodeEntry) {
       const focusPoint = editor.selection.focus;
       const [, threadPath] = threadNodeEntry;
-      if (isStart(editor, focusPoint, threadPath)) {
+      if (isStartPoint(editor, focusPoint, threadPath)) {
         insertHasBeenHandled = insertTextAtTheStartOfAThreadNode(
           editor,
           threadPath,
           text
         );
-      } else if (isEnd(editor, focusPoint, threadPath)) {
+      } else if (isEndPoint(editor, focusPoint, threadPath)) {
         insertHasBeenHandled = insertTextAtTheEndOfAThreadNode(
           editor,
           threadPath,

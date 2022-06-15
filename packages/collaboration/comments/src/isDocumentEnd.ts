@@ -4,10 +4,10 @@ import { Editor, Path } from 'slate';
 export function isDocumentEnd(editor: PlateEditor): boolean {
   if (editor.selection) {
     const point = editor.selection.focus;
-    const endPoint = Editor.end(editor, []);
+    const endPoint = Editor.end(editor as any, []);
     return (
       endPoint.offset === 0 &&
-      Editor.isEnd(editor, point, point) &&
+      Editor.isEnd(editor as any, point, point) &&
       Path.equals(Path.next(Path.parent(point.path)), endPoint.path)
     );
   }

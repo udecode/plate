@@ -1,9 +1,9 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { Thread } from '../Thread';
 import { upsertThread } from './upsertThread';
 
-export const upsertThreadAtSelection = <T = {}>(
-  editor: PlateEditor<T>,
+export const upsertThreadAtSelection = <V extends Value>(
+  editor: PlateEditor<V>,
   thread: Thread
 ): any => {
   const { selection } = editor;

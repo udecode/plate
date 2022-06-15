@@ -1,17 +1,21 @@
 import React from 'react';
+import { Value } from '@udecode/plate-core';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
-import { Thread, ThreadNodeData } from '@xolvio/plate-comments';
+import {
+  Thread,
+  ThreadElement as TThreadElement,
+} from '@xolvio/plate-comments';
 import { createThreadElementStyles } from './ThreadElement.styles';
 
 function determineStyle(
   element: any,
   thread: Thread,
-  props: StyledElementProps<ThreadNodeData>
+  props: StyledElementProps<Value, TThreadElement>
 ): any {
-  let style = null;
+  let style;
   const { root, selected, resolved } = createThreadElementStyles(props);
   if (thread.isResolved) {
     style = resolved;
@@ -23,7 +27,9 @@ function determineStyle(
   return style;
 }
 
-export const ThreadElement = (props: StyledElementProps<ThreadNodeData>) => {
+export const ThreadElement = (
+  props: StyledElementProps<Value, TThreadElement>
+) => {
   const { attributes, children, nodeProps, element } = props;
   const { thread } = element;
 

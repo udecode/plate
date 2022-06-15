@@ -23,14 +23,14 @@ export function insertTextAtTheStartOfAThreadNode(
   } else {
     const insertPath = threadPath;
     Transforms.insertNodes(
-      editor,
+      editor as any,
       { text },
       {
         at: insertPath,
       }
     );
-    Transforms.select(editor, insertPath);
-    Transforms.collapse(editor, { edge: 'end' });
+    Transforms.select(editor as any, insertPath);
+    Transforms.collapse(editor as any, { edge: 'end' });
     insertHasBeenHandled = true;
   }
 

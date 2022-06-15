@@ -44,10 +44,10 @@
     "@material/textfield": "^13.0.0",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
-    "@udecode/plate-core": "10.5.3",
+    "@udecode/plate-core": "11.2.1",
     "@xolvio/plate-comments": "^0.3.1",
-    "@udecode/plate-styled-components": "10.5.3",
-    "@udecode/plate-ui-toolbar": "10.5.3"
+    "@udecode/plate-styled-components": "11.2.1",
+    "@udecode/plate-ui-toolbar": "11.2.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

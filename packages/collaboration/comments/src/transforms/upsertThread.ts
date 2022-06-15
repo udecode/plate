@@ -1,20 +1,21 @@
 import {
   findNode,
-  getAbove,
+  getAboveNode,
   getPluginType,
   isCollapsed,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Editor, Location, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { findSelectedThreadNodeEntry } from '../findSelectedThreadNodeEntry';
 import { isThread } from '../isThread';
 import { Thread } from '../Thread';
-import { ThreadNode, ThreadNodeData } from '../types';
+import { ThreadElement, ThreadNodeData } from '../types';
 import { wrapWithThread } from './wrapWithThread';
 
-export function upsertThread<T = {}>(
-  editor: PlateEditor<T>,
+export function upsertThread<V extends Value>(
+  editor: PlateEditor<V>,
   {
     at,
     thread,
@@ -25,21 +26,21 @@ export function upsertThread<T = {}>(
   const isRange = Range.isRange(at);
 
   if (isRange && isCollapsed(at as Range)) {
-    const threadLeaf = Editor.leaf(editor, at);
+    const threadLeaf = Editor.leaf(editor as any, at);
     const [, inlinePath] = threadLeaf;
-    Transforms.select(editor, inlinePath);
+    Transforms.select(editor as any, inlinePath);
     at = editor.selection!;
   }
 
-  const threadNodeEntry2 = getAbove(editor, {
+  const threadNodeEntry2 = getAboveNode(editor, {
     match: {
       type,
     },
   });
 
   if (threadNodeEntry2) {
-    Transforms.setNodes<ThreadNode>(
-      editor,
+    Transforms.setNodes<ThreadElement>(
+      editor as any,
       {
         thread,
         ...elementProps,
@@ -59,7 +60,7 @@ export function upsertThread<T = {}>(
     });
     const [, threadPath] = threadNodeEntry!;
 
-    Transforms.select(editor, threadPath);
+    Transforms.select(editor as any, threadPath);
   }
 
   return findSelectedThreadNodeEntry(editor);

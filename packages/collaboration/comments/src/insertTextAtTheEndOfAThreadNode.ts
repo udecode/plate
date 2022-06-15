@@ -1,6 +1,6 @@
 import {
   getNextSiblingNodes,
-  getParent,
+  getParentNode,
   PlateEditor,
 } from '@udecode/plate-core';
 import { Path, Transforms } from 'slate';
@@ -14,17 +14,17 @@ export function insertTextAtTheEndOfAThreadNode(
   text: string
 ): boolean {
   let insertHasBeenHandled = false;
-  const parent = getParent(editor, threadPath);
+  const parent = getParentNode(editor, threadPath);
   if (parent) {
     const siblings = getNextSiblingNodes(parent, threadPath);
-    if (siblings.length >= 1 && isTextNode(siblings[0])) {
+    if (siblings.length >= 1 && isTextNode(siblings[0][0])) {
       changeSelectionToBeBasedOnTheNextNode(editor);
     } else {
       const insertPath = threadPath
         .slice(0, threadPath.length - 1)
         .concat([last(threadPath) + 1]);
       Transforms.insertNodes(
-        editor,
+        editor as any,
         { text },
         {
           at: insertPath,
@@ -32,12 +32,12 @@ export function insertTextAtTheEndOfAThreadNode(
         }
       );
       Transforms.select(
-        editor,
+        editor as any,
         threadPath
           .slice(0, threadPath.length - 1)
           .concat([last(threadPath) + 2])
       );
-      Transforms.collapse(editor, { edge: 'end' });
+      Transforms.collapse(editor as any, { edge: 'end' });
       insertHasBeenHandled = true;
     }
   }

@@ -104,29 +104,33 @@ export function Thread({
 
   const onResolveThread = useCallback(
     function onResolveThread() {
-      const newThread = {
-        ...thread,
-        isResolved: true,
-      };
-      upsertThreadAtSelection(editor, newThread);
+      if (editor) {
+        const newThread = {
+          ...thread,
+          isResolved: true,
+        };
+        upsertThreadAtSelection(editor, newThread);
+      }
     },
     [editor, thread]
   );
 
   const onReOpenThread = useCallback(
     function onReOpenThread() {
-      const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
-        (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === thread.id
-      );
-      if (threadNodeEntry) {
-        const newThread = {
-          ...thread,
-          isResolved: false,
-        };
-        upsertThread(editor, {
-          at: threadNodeEntry[1],
-          thread: newThread,
-        });
+      if (editor) {
+        const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
+          (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === thread.id
+        );
+        if (threadNodeEntry) {
+          const newThread = {
+            ...thread,
+            isResolved: false,
+          };
+          upsertThread(editor, {
+            at: threadNodeEntry[1],
+            thread: newThread,
+          });
+        }
       }
     },
     [editor, thread]
@@ -134,17 +138,21 @@ export function Thread({
 
   const deleteThread = useCallback(
     function deleteThread() {
-      deleteThreadAtSelection(editor);
+      if (editor) {
+        deleteThreadAtSelection(editor);
+      }
     },
     [editor]
   );
 
   const deleteComment = useCallback(
     function deleteComment(comment) {
-      thread.comments = thread.comments.filter(
-        (comment2) => comment2 !== comment
-      );
-      upsertThreadAtSelection(editor, thread);
+      if (editor) {
+        thread.comments = thread.comments.filter(
+          (comment2) => comment2 !== comment
+        );
+        upsertThreadAtSelection(editor, thread);
+      }
     },
     [editor, thread]
   );
