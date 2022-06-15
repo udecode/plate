@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
-import { getTPlateSelectors, MyEditor, MyValue } from './typescript';
+import { getMyPlateSelectors, MyEditor, MyValue } from './typescript';
 
 /**
  * Example
@@ -10,7 +10,7 @@ export const TypeScriptExample = () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const [value, setValue] = useState(initialValue);
 
-  const editor = getTPlateSelectors().editor();
+  const editor = getMyPlateSelectors().editor();
   console.info(editor);
 
   return (

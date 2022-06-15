@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "11.3.1",
+  "version": "13.0.0",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -55,7 +55,6 @@
     "@udecode/plate-image": "11.2.1",
     "@udecode/plate-indent": "11.2.1",
     "@udecode/plate-indent-list": "11.2.1",
-    "@udecode/plate-juice": "11.2.1",
     "@udecode/plate-kbd": "11.2.1",
     "@udecode/plate-line-height": "11.2.1",
     "@udecode/plate-link": "11.2.1",
