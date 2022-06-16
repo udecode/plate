@@ -76,7 +76,6 @@ import {
   createIndentListPlugin,
   createIndentPlugin,
   createItalicPlugin,
-  createJuicePlugin,
   createKbdPlugin,
   createLineHeightPlugin,
   createLinkPlugin,
@@ -192,6 +191,7 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
+import { createJuicePlugin } from '@udecode/plate-juice';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
