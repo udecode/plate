@@ -21,7 +21,7 @@ export interface TrailingBlockPlugin extends QueryNodeOptions {
 export const KEY_TRAILING_BLOCK = 'trailingBlock';
 
 /**
- * @see {@link withTrailingNode}
+ * @see {@link withTrailingBlock}
  */
 export const createTrailingBlockPlugin = createPluginFactory<TrailingBlockPlugin>(
   {
