@@ -3,115 +3,145 @@ title: Store
 slug: /store
 ---
 
-`Plate` is using a [zustand](https://github.com/pmndrs/zustand) store with a state by **id** to support multiple editor instances.
+`Plate` is using a [zustood](https://github.com/udecode/zustood) store for each editor, stored by **id**.
 
-If rendering only one editor, the store id is optional, the default being `'main'`.
+If rendering only one editor, the store `id` is optional, the default being `'main'`.
 
-## Store
+# Plate Store
 
-### Plate Store
-
-This store is an object whose property keys are [editor ids](Plate#id) and whose property values are [PlateState](#state).
-
-The hook store [usePlateStore](https://plate-api.udecode.io/globals.html#useplatestore) can be used to subscribe to changes in React.
-
-The vanilla store [plateStore](https://plate-api.udecode.io/globals.html#platestore) can be used outside React.
-
-### Event Editor Store
-
-This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [PlateState](#state).
-This is useful to store [multiple editors](multiple-editors) and select one based on DOM events.
-
-You can extend this store with any event using [setEventEditorId](store#seteventeditorid).
-
-One of the core plugins of [Plate](Plate) will store these events:
-
-- `focus` using `onFocus`
-- `blur` using `onBlur`
-
-The hook store [useEventEditorStore](https://plate-api.udecode.io/globals.html#useeventeditorstore) can be used to subscribe to changes in React.
-
-The vanilla store [eventEditorStore](https://plate-api.udecode.io/globals.html#eventeditorstore) can be used outside React.
+Plate Store is a zustood store that implements the following [state](#state):
 
 ## State
 
-### `editor`
+### [`decorate`](/docs/plate#editable-decorate)
+### [`editableProps`](/docs/plate#editable-editableprops)
+### [`editor`](/docs/plate#editor)
+### [`enabled`](/docs/plate#enabled)
 
-- Slate editor reference.
-- Default is `pipe(createTEditor(), withPlate({ id, plugins }))`.
+### `isRendered`
 
-### `enabled`
+- Whether `Editable` is rendered so slate DOM is resolvable.
 
-- If `true`, plate will create the editor with `withPlate`.
-- If `false`, plate will remove the editor from the store.
-- Default is `true`.
+### `keyEditor`
 
-### `value`
+- A key that is incremented on each editor change.
 
-- Editor value.
-- Default is `[{ children: [{ text: '' }]}]`.
+### `keyPlugins`
 
-## Plate Actions
+- A key that is incremented on each editor.plugins change.
 
-All the actions are returned by [usePlateActions](https://plate-api.udecode.io/globals.html#useplateactions).
+### `keySelection`
 
-If using multiple stores, you should set the first parameter to the store id you want to update.
+- A key that is incremented on each editor.selection change.
 
-### `clearState`
+### [`onChange`](/docs/plate#slate-onchange)
+### [`plugins`](/docs/plate#plugins)
+### [`renderElement`](/docs/plate#editable-renderelement)
+### [`renderLeaf`](/docs/plate#editable-renderleaf)
+### [`value`](/docs/plate#value)
 
-- Remove state by id. Called by `Plate` on unmount.
+## Hook Selectors
 
-### `resetEditor`
+- Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+- Example: `usePlateSelectors(id).value()` will subscribe to `value` changes.
+- See [zustood hooks](https://github.com/udecode/zustood#hooks) 
 
-- Set a new editor with plate.
+## Getters
 
-### `setEditor`
+- Use `getPlateSelectors(id).<state property>()` when you don't need to subscribe to a value.
+- Example `getPlateSelectors(id).value()` will get `value`. 
+- See [zustood getters](https://github.com/udecode/zustood#getters)
 
-- Set `editor`.
+## Actions
 
-### `setEnabled`
+- `Plate` subscribes to the store state so you can update the store state in a flexible way.
+- Use `getPlateActions(id).<state property>(<new value>)` when you need to update the value of a store property.
+- Example: `getPlateActions(id).value(<new value>)` will update `value`.
+- See [zustood actions](https://github.com/udecode/zustood#actions) 
 
-- Set `enabled`.
+## Provider
 
-### `setInitialState`
+### `PlateProvider`
 
-- Set initial state by id. Called by Plate on mount.
+You can't access the store before it's initialized. Two ways of doing this:
+- Inside `Plate` component: the store is initialized, you can access it.
+- Outside `Plate` component (e.g. for a shared toolbar): the store is not initialized, you will need to render `PlateProvider` above your accessing component. 
 
-### `setValue`
+The only prop of `PlateProvider` is `id` which is the id of the store (defaults to `'main'`).
 
-- This is internally used by `Editable.onChange` callback when the editor value is used.
-- Except when resetting the editor with `resetEditor`, you should not use it as it would break the history.
-- If you want to update `value` with history support, you should use [Slate transforms](https://docs.slatejs.org/concepts/04-transforms) like `Transforms.setNodes`.
+### `withPlateProvider`
 
-## Event Editor Actions
+- HOC that wraps your component with `PlateProvider`.
+- Usage: `withPlateProvider(<Component>, id)`
 
-### `setEventEditorId`
+# Plates Store
 
-- Set an [editor id](Plate#id) by `event` key.
+This store is an object whose property keys are [editor ids](Plate#id) and whose property values are zustood stores (it's a "store of stores"), where the state implements [PlateState](#state).
 
-## Selectors
+In other words, `platesStore` is a store that can store many plate stores by id, looking to this:
 
-### `usePlateEventId`
+```bash
+<zustood store>({
+  'main': <zustood store>({
+    id: 'main',
+    editor: ...,
+  }),
+  'other': <zustood store>({
+    id: 'other',
+    editor: ...,
+  }),
+  ...
+})
+```
 
-- Get the editor id by `event` key.
+`Plate` is taking care of the store initialization and updates. You will not need to use this store directly.
 
-### `usePlateState`
 
-- Get the whole [state](#state) by id.
+# Event Editor Store
 
-### `usePlateEditorRef`
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
+This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
 
-- Get [editor](#editor) ref (similar to `useSlateStatic`)
+One of the core plugins of [Plate](Plate) will store the following events.
 
-### `usePlateEditorState`
+## State
 
-- Get [editor](#editor) state (similar to `useSlate`).
+### `focus`
 
-### `usePlateEnabled`
+- the last focused editor id
 
-- Get [enabled](#enabled).
+### `blur`
 
-### `usePlateValue`
+- the last blurred editor id (sets `focus` to `null`)
 
-- Get [value](#value).
+### `last`
 
+- the last defined editor id
+
+## Hooks
+
+### `useEventEditorSelectors`
+
+- Hook selectors
+- Example: `useEventEditorSelectors().focus()` will get the last focused editor id.
+- See [zustood hooks](https://github.com/udecode/zustood#hooks) 
+
+### `useEventEditorId`
+
+- Get last event editor id: focus, blur or last.
+
+### `useEventPlateId`
+
+- Get the context plate id if called in a `PlateProvider`
+- If the latter is not defined, [useEventEditorId](#useeventeditorid) will be used.
+
+## HOC
+
+### `PlateEventProvider`
+
+- `PlateProvider` where `id` is `useEventPlateId`
+
+### `withPlateEventProvider`
+
+- HOC that will add `PlateEventProvider` above a component.
+- Useful for toolbars shared between multiple editors. 

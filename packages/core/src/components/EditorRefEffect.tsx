@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditorRef } from '../hooks/useEditorRef';
-import { usePlateSelectors } from '../stores/plate/platesStore';
+import {
+  getPlateActions,
+  usePlateSelectors,
+} from '../stores/plate/platesStore';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlateProps } from './Plate';
 
@@ -19,6 +22,15 @@ export const EditorRefPluginEffect = ({
 export const EditorRefEffect = ({ id }: Pick<PlateProps, 'id'>) => {
   const editor = useEditorRef();
   usePlateSelectors(id).keyPlugins();
+
+  useEffect(() => {
+    const plateActions = getPlateActions(editor.id);
+    plateActions.isRendered(true);
+
+    return () => {
+      plateActions.isRendered(false);
+    };
+  }, [editor.id]);
 
   return (
     <>

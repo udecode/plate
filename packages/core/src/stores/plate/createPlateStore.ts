@@ -16,6 +16,7 @@ export const createPlateStore = <
     id: 'main',
     value: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
     editor: null,
+    isRendered: false,
     keyEditor: 1,
     keyPlugins: 1,
     keySelection: 1,
