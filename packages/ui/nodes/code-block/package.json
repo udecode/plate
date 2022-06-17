@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-code-block",
-  "version": "11.2.1",
+  "version": "13.1.0",
   "description": "Code block UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-code-block": "11.2.1",
-    "@udecode/plate-core": "11.2.1",
-    "@udecode/plate-styled-components": "11.2.1",
-    "@udecode/plate-ui-toolbar": "11.2.1"
+    "@udecode/plate-code-block": "13.1.0",
+    "@udecode/plate-core": "13.1.0",
+    "@udecode/plate-styled-components": "13.1.0",
+    "@udecode/plate-ui-toolbar": "13.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

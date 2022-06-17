@@ -1,5 +1,7 @@
 # @udecode/plate-docx-serializer
 
+## 13.1.0
+
 ## 11.3.1
 
 ## 11.3.0

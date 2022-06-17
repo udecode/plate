@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-autoformat",
-  "version": "11.2.1",
+  "version": "13.1.0",
   "description": "Autoformatting plugin for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "11.2.1"
+    "@udecode/plate-core": "13.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
