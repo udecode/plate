@@ -1,5 +1,7 @@
 # @udecode/plate-dnd
 
+## 13.1.0
+
 ## 13.0.0
 
 ### Major Changes
