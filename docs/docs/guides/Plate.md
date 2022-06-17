@@ -104,9 +104,10 @@ to `Slate` to unmount and mount again the component.
 
 ### Slate `onChange`
 
-1. [setValue](store#setvalue) is called
+Callback called by `Slate` on each change:
+1. The new value is stored in plate [store](/docs/store#value).
 2. Pipes `onChange` plugins.
-3. `onChange` props is called if defined.
+3. `onChange` prop is called if defined.
 
 ## Editable Props
 
