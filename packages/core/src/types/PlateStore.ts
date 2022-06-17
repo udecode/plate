@@ -50,6 +50,11 @@ export type PlateStoreState<
     enabled: boolean;
 
     /**
+     * Whether `Editable` is rendered so slate DOM is resolvable.
+     */
+    isRendered: boolean;
+
+    /**
      * A key that is incremented on each editor change.
      */
     keyEditor: number;

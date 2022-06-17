@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Ref, useEffect } from 'react';
 import { Provider } from 'jotai';
 import { Editable, Slate } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
@@ -18,7 +18,7 @@ export interface PlateProps<
     Omit<PlateStoreState<V, E>, 'keyEditor' | 'keyPlugins' | 'keySelection'>
   > {
   /**
-   * The children rendered inside `Slate` before the `Editable` component.
+   * The children rendered inside `Slate`, after `Editable`.
    */
   children?: React.ReactNode;
 
@@ -37,6 +37,17 @@ export interface PlateProps<
         react?: boolean;
       }
     | boolean;
+
+  /**
+   * Ref to the `Editable` component.
+   */
+  editableRef?: Ref<HTMLDivElement>;
+
+  /**
+   * The first children rendered inside `Slate`, before `Editable`.
+   * Slate DOM is not yet resolvable on first render, for that case use `children` instead.
+   */
+  firstChildren?: React.ReactNode;
 
   /**
    * Initial value of the editor.
@@ -63,20 +74,26 @@ export const PlateContent = <
 >({
   children,
   renderEditable,
+  editableRef,
+  firstChildren,
   ...options
 }: PlateProps<V, E>) => {
   const { slateProps, editableProps } = usePlate<V, E>(options);
 
   if (!slateProps.editor) return null;
 
-  const editable = <Editable {...(editableProps as any)} />;
+  const editable = <Editable ref={editableRef} {...(editableProps as any)} />;
 
   return (
     <Slate {...(slateProps as any)}>
-      {children}
+      {firstChildren}
+
+      {renderEditable ? renderEditable(editable) : editable}
+
       <EditorStateEffect id={options.id} />
       <EditorRefEffect id={options.id} />
-      {renderEditable ? renderEditable(editable) : editable}
+
+      {children}
     </Slate>
   );
 };
