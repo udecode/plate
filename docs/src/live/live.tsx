@@ -190,6 +190,7 @@ import {
   usePlateEditorState,
   usePlateSelection,
   usePlateSelectors,
+  withPlateEventProvider,
   withProps,
   withStyledProps,
 } from '@udecode/plate';
@@ -232,6 +233,7 @@ import { HighlightHTML } from './utils/HighlightHTML';
 const ReactLiveScope = {
   ...React,
   CursorOverlay,
+  withPlateEventProvider,
   findEventRange,
   createTextIndentPlugin,
   getPlateActions,

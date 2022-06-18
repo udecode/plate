@@ -4,7 +4,7 @@
 
 ### Major Changes
 
-- `Plate` children are now rendered as last children of `Slate` (previously first children).
+- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`  
 
 ## @udecode/plate@13.0.0
 ## @udecode/plate-headless@13.0.0

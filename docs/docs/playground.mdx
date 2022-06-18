@@ -64,38 +64,41 @@ See [Installation](/docs/installation)
     components,
   });
 
+  const Toolbar = (
+    <HeadingToolbar>
+      <BasicElementToolbarButtons />
+      <ListToolbarButtons />
+      <IndentToolbarButtons />
+      <BasicMarkToolbarButtons />
+      <ColorPickerToolbarDropdown
+        pluginKey={MARK_COLOR}
+        icon={<FormatColorText />}
+        selectedIcon={<Check />}
+        tooltip={{ content: 'Text color' }}
+      />
+      <ColorPickerToolbarDropdown
+        pluginKey={MARK_BG_COLOR}
+        icon={<FontDownload />}
+        selectedIcon={<Check />}
+        tooltip={{ content: 'Highlight color' }}
+      />
+      <AlignToolbarButtons />
+      <LineHeightToolbarDropdown icon={<LineWeight />} />
+      <LinkToolbarButton icon={<Link />} />
+      <ImageToolbarButton icon={<Image />} />
+      <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+      <TableToolbarButtons />
+    </HeadingToolbar>
+  )
+
   return (
     <Plate
       id="playground"
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.playground}
       plugins={plugins}
+      firstChildren={Toolbar}
     >
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-        <ListToolbarButtons />
-        <IndentToolbarButtons />
-        <BasicMarkToolbarButtons />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_COLOR}
-          icon={<FormatColorText />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Text color' }}
-        />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_BG_COLOR}
-          icon={<FontDownload />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Highlight color' }}
-        />
-        <AlignToolbarButtons />
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-        <LinkToolbarButton icon={<Link />} />
-        <ImageToolbarButton icon={<Image />} />
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        <TableToolbarButtons />
-      </HeadingToolbar>
-
       <BallonToolbarMarks />
 
       <MentionCombobox items={CONFIG.mentionItems} />
