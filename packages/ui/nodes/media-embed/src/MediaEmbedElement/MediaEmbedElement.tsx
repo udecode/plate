@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import { findNodePath, setNodes, Value } from '@udecode/plate-core';
 import { TMediaEmbedElement } from '@udecode/plate-media-embed';
 import { getRootProps } from '@udecode/plate-styled-components';
+import { parse } from './utils/embedParser';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
-import { parse } from './utils/embedParser';
 import { Tweet } from './Tweet';
 
 export const MediaEmbedElement = <V extends Value>(
@@ -33,7 +33,7 @@ export const MediaEmbedElement = <V extends Value>(
     >
       <div contentEditable={false}>
         {isTwitter ? (
-          <Tweet tweetID={id || ''} />
+          <Tweet tweetID={id || ''} loadingComponent="...loading" />
         ) : (
           <>
             <div

@@ -5,14 +5,14 @@ const WIDGET_SCRIPT_URL = 'https://platform.twitter.com/widgets.js';
 const hasScriptInserted = () =>
   document.querySelector(`script[src="${WIDGET_SCRIPT_URL}"]`);
 
-export type TweetComponentProps = Readonly<{
+export type TweetProps = Readonly<{
   loadingComponent?: JSX.Element | string;
   onError?: (error: string) => void;
   onLoad?: () => void;
   tweetID: string;
 }>;
 
-const Tweet = ({ tweetID, onError, onLoad }: TweetComponentProps) => {
+const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
   const previousTweetIDRef = useRef('');
@@ -31,9 +31,8 @@ const Tweet = ({ tweetID, onError, onLoad }: TweetComponentProps) => {
       if (onError) {
         onError(String(error));
       }
-      console.log(error);
     }
-  }, [tweetID]);
+  }, [onError, onLoad, tweetID]);
 
   useEffect(() => {
     if (tweetID !== previousTweetIDRef.current) {
@@ -45,7 +44,7 @@ const Tweet = ({ tweetID, onError, onLoad }: TweetComponentProps) => {
         script.async = true;
         document.body?.appendChild(script);
         script.onload = createTweet;
-        script.onerror = onError ? onError : console.error;
+        script.onerror = onError || console.error;
       } else {
         createTweet();
       }
@@ -54,9 +53,14 @@ const Tweet = ({ tweetID, onError, onLoad }: TweetComponentProps) => {
         previousTweetIDRef.current = tweetID;
       }
     }
-  }, [onError, onLoad, tweetID]);
+  }, [createTweet, onError, onLoad, tweetID]);
 
-  return <div ref={containerRef} />;
+  return (
+    <>
+      {isLoading ? loadingComponent : null}
+      <div ref={containerRef} />
+    </>
+  );
 };
 
 export { Tweet };
