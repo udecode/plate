@@ -893,6 +893,16 @@ const iframe: any = (
   </fragment>
 );
 
+const cursor: any = (
+  <fragment>
+    <hp>This example shows two static cursors in red.</hp>
+    <hp>
+      Try also to drag over text: you will see a dynamic cursor on the drop
+      target.
+    </hp>
+  </fragment>
+);
+
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
 
@@ -966,6 +976,7 @@ export const VALUES: Record<string, any> = {
   createHugeDocument,
   createSpanningTable,
   createTable,
+  cursor,
   editableVoids,
   empty,
   excalidraw,

@@ -44,12 +44,7 @@ Use the toolbar dropdowns to control font color and font background color.
 
   const Editor = () => {
     return (
-      <Plate
-        id="font"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.font}
-        plugins={plugins}
-      >
+      <>
         <HeadingToolbar>
           <ColorPickerToolbarDropdown
             pluginKey={MARK_COLOR}
@@ -65,7 +60,13 @@ Use the toolbar dropdowns to control font color and font background color.
           />
         </HeadingToolbar>
         <CopyContent />
-      </Plate>
+        <Plate
+          id="font"
+          editableProps={CONFIG.editableProps}
+          initialValue={VALUES.font}
+          plugins={plugins}
+        />
+      </>
     );
   }
 

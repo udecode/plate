@@ -103,6 +103,7 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
+  CursorOverlay,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -131,6 +132,7 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  findEventRange,
   getParentNode,
   getPlateActions,
   getPlugin,
@@ -188,6 +190,7 @@ import {
   usePlateEditorState,
   usePlateSelection,
   usePlateSelectors,
+  withPlateEventProvider,
   withProps,
   withStyledProps,
 } from '@udecode/plate';
@@ -214,7 +217,11 @@ import {
 import { withStyledDraggables } from './config/components/withStyledDraggables';
 import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
 import { CONFIG } from './config/config';
-import { PLUGINS } from './config/plugins';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from './config/plugins';
 import { VALUES } from './config/values/values';
 import {
   createEditableVoidPlugin,
@@ -229,8 +236,13 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  CursorOverlay,
+  withPlateEventProvider,
+  cursorStore,
+  findEventRange,
   createTextIndentPlugin,
   getPlateActions,
+  createDragOverCursorPlugin,
   usePlateSelectors,
   createJuicePlugin,
   StyledElement,

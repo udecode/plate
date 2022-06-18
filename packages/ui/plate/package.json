@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "13.1.0",
+  "version": "13.2.1",
   "description": "Plate UI",
   "keywords": [
     "wysiwyg",
@@ -37,12 +37,13 @@
     "rollup": "rollup -c=../../../rollup.config.js"
   },
   "dependencies": {
-    "@udecode/plate-headless": "13.1.0",
+    "@udecode/plate-headless": "13.2.1",
     "@udecode/plate-styled-components": "13.1.0",
     "@udecode/plate-ui-alignment": "13.1.0",
     "@udecode/plate-ui-block-quote": "13.1.0",
     "@udecode/plate-ui-code-block": "13.1.0",
     "@udecode/plate-ui-combobox": "13.1.0",
+    "@udecode/plate-ui-cursor": "13.2.1",
     "@udecode/plate-ui-dnd": "13.1.0",
     "@udecode/plate-ui-find-replace": "13.1.0",
     "@udecode/plate-ui-font": "13.1.0",
@@ -54,7 +55,7 @@
     "@udecode/plate-ui-mention": "13.1.0",
     "@udecode/plate-ui-placeholder": "13.1.0",
     "@udecode/plate-ui-popper": "13.1.0",
-    "@udecode/plate-ui-table": "13.1.0",
+    "@udecode/plate-ui-table": "13.2.1",
     "@udecode/plate-ui-toolbar": "13.1.0",
     "@udecode/plate-ui-button": "13.1.0",
     "@udecode/plate-ui-popover": "13.1.0"

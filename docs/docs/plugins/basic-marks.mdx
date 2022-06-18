@@ -22,7 +22,7 @@ npm install @udecode/plate-basic-marks
 
 ```ts live
 () => {
-  const BasicMarkToolbarButtons = () => {
+  const BasicMarkToolbarButtons = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
 
     return (
@@ -59,7 +59,7 @@ npm install @udecode/plate-basic-marks
         />
       </>
     );
-  };
+  });
 
   const plugins = createPlugins([
     ...PLUGINS.basicElements,

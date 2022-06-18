@@ -13,7 +13,7 @@ npm install @udecode/plate-highlight
 
 ```ts live
 () => {
-  const HighlightToolbarButton = () => {
+  const HighlightToolbarButton = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
 
     return (
@@ -22,7 +22,7 @@ npm install @udecode/plate-highlight
         icon={<Highlight />}
       />
     );
-  };
+  });
 
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,

@@ -30,9 +30,11 @@ npm install @udecode/plate-ui-media-embed
 
   return (
     <>
-      <HeadingToolbar>
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-      </HeadingToolbar>
+      <PlateProvider id="media-embed">
+        <HeadingToolbar>
+          <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+        </HeadingToolbar>
+      </PlateProvider>
    
       <Plate
         id="media-embed"
