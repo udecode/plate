@@ -24,7 +24,6 @@ export const getSelectionRects = <V extends Value>(
   const [start, end] = Range.edges(range);
   const domRange = toDOMRange(editor, range);
   if (!domRange) {
-    console.log('dom range not found');
     return [];
   }
 
@@ -37,7 +36,6 @@ export const getSelectionRects = <V extends Value>(
   for (const [textNode, textPath] of textEntries) {
     const domNode = toDOMNode(editor, textNode);
     if (!domNode) {
-      console.log('dom node not found');
       return [];
     }
 

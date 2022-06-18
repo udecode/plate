@@ -21,16 +21,3 @@ export const getCursorOverlayStyles = (props: CursorOverlayProps) =>
       ],
     }
   );
-
-// position: 'absolute',
-//             pointerEvents: 'none',
-//             zIndex: 1,
-
-// {
-//     ...position,
-//     background: data.color,
-//     position: 'absolute',
-//     width: 2,
-//     zIndex: 1,
-//     pointerEvents: 'none',
-//   }
