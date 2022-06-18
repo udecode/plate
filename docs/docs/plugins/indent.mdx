@@ -36,11 +36,10 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 
   return (
     <>
-      <PlateProvider id="indent">
-        <HeadingToolbar>
-          <IndentToolbarButtons />
-        </HeadingToolbar>
-      </PlateProvider>
+      <HeadingToolbar>
+        <IndentToolbarButtons />
+      </HeadingToolbar>
+        
       <Plate
         id="indent"
         editableProps={CONFIG.editableProps}

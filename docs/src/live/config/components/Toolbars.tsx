@@ -115,7 +115,7 @@ export const BasicElementToolbarButtons = withPlateEventProvider(() => {
   );
 });
 
-export const IndentToolbarButtons = () => {
+export const IndentToolbarButtons = withPlateEventProvider(() => {
   const editor = usePlateEditorRef()!;
 
   return (
@@ -130,7 +130,7 @@ export const IndentToolbarButtons = () => {
       />
     </>
   );
-};
+});
 
 export const ListToolbarButtons = () => {
   const editor = usePlateEditorRef()!;
