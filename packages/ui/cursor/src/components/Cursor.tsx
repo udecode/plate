@@ -13,6 +13,16 @@ export interface CursorProps<
       selectionRect: CSSProp;
     }> {
   /**
+   * Whether to disable the caret.
+   */
+  disableCaret?: boolean;
+
+  /**
+   * Whether to disable the selection rects.
+   */
+  disableSelection?: boolean;
+
+  /**
    * Custom caret component.
    * For example, you could display a label next to the caret.
    * @default styled div
@@ -35,6 +45,8 @@ export const Cursor = ({
   data,
   selectionRects,
   caretPosition,
+  disableCaret,
+  disableSelection,
   onRenderCaret: Caret,
   onRenderSelectionRect: Rect,
   ...props
@@ -49,22 +61,24 @@ export const Cursor = ({
 
   return (
     <>
-      {selectionRects.map((position, i) =>
-        Rect ? (
-          <Rect key={i} data={data} selectionRect={position} />
-        ) : (
-          <div
-            key={i}
-            className={selectionRect?.className}
-            css={selectionRect?.css}
-            style={{
-              ...selectionStyle,
-              ...position,
-            }}
-          />
-        )
-      )}
-      {caretPosition &&
+      {!disableSelection &&
+        selectionRects.map((position, i) =>
+          Rect ? (
+            <Rect key={i} data={data} selectionRect={position} />
+          ) : (
+            <div
+              key={i}
+              className={selectionRect?.className}
+              css={selectionRect?.css}
+              style={{
+                ...selectionStyle,
+                ...position,
+              }}
+            />
+          )
+        )}
+      {!disableCaret &&
+        caretPosition &&
         (Caret ? (
           <Caret data={data} caretPosition={caretPosition} />
         ) : (

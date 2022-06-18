@@ -12,6 +12,8 @@ export interface CursorOverlayProps<
   TCursorData extends UnknownObject = UnknownObject
 > extends Pick<
     CursorProps<CursorData>,
+    | 'disableCaret'
+    | 'disableSelection'
     | 'onRenderCaret'
     | 'onRenderSelectionRect'
     | 'as'
@@ -54,6 +56,8 @@ export const CursorOverlayContent = <
   onRenderCaret,
   ...props
 }: CursorOverlayProps<TCursorData>) => {
+  const { disableCaret, disableSelection } = props;
+
   const { cursors } = useCursorOverlayPositions(props);
 
   const cursorProps = {
@@ -63,6 +67,8 @@ export const CursorOverlayContent = <
     styles,
     onRenderSelectionRect,
     onRenderCaret,
+    disableCaret,
+    disableSelection,
   };
 
   return (

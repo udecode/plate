@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { UnknownObject } from '@udecode/plate';
+import { UnknownObject } from '@udecode/plate-core';
 import { Range } from 'slate';
 
 export type SelectionRect = {
