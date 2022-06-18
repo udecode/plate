@@ -19,7 +19,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ```ts live
 () => {
-  const AlignToolbarButtons = () => {
+  const AlignToolbarButtons = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
 
     return (
@@ -39,7 +39,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
         />
       </>
     );
-  };
+  });
 
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,

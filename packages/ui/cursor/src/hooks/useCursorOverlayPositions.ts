@@ -29,7 +29,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   const updateSelectionRects = useCallback(() => {
     // We have a container ref but the ref is null => container
     // isn't mounted to we can't calculate the selection rects.
-    if (containerRef?.current === null) return;
+    if (!containerRef?.current) return;
     if (!cursorStates) return;
 
     let xOffset = 0;

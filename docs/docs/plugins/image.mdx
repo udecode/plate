@@ -24,9 +24,11 @@ npm install @udecode/plate-ui-image
 
   return (
     <>
-      <HeadingToolbar>
-        <ImageToolbarButton icon={<Image />} />
-      </HeadingToolbar>
+      <PlateProvider id="image">
+        <HeadingToolbar>
+          <ImageToolbarButton icon={<Image />} />
+        </HeadingToolbar>
+      </PlateProvider>
       <Plate
         id="image"
         editableProps={CONFIG.editableProps}

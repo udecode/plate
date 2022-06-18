@@ -217,7 +217,11 @@ import {
 import { withStyledDraggables } from './config/components/withStyledDraggables';
 import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
 import { CONFIG } from './config/config';
-import { PLUGINS } from './config/plugins';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from './config/plugins';
 import { VALUES } from './config/values/values';
 import {
   createEditableVoidPlugin,
@@ -234,9 +238,11 @@ const ReactLiveScope = {
   ...React,
   CursorOverlay,
   withPlateEventProvider,
+  cursorStore,
   findEventRange,
   createTextIndentPlugin,
   getPlateActions,
+  createDragOverCursorPlugin,
   usePlateSelectors,
   createJuicePlugin,
   StyledElement,
