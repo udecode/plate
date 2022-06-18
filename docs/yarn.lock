@@ -2155,7 +2155,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-headless@13.1.0":
+"@udecode/plate-headless@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -2295,7 +2295,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-csv@13.1.0":
+"@udecode/plate-serializer-csv@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -2303,7 +2303,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-docx@13.1.0":
+"@udecode/plate-serializer-docx@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -2327,7 +2327,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@13.1.0":
+"@udecode/plate-table@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -2384,6 +2384,14 @@
   uid ""
 
 "@udecode/plate-ui-combobox@link:../packages/ui/combobox":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-ui-cursor@13.2.1":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-ui-cursor@link:../packages/ui/cursor":
   version "0.0.0"
   uid ""
 
@@ -2487,7 +2495,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-table@13.1.0":
+"@udecode/plate-ui-table@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -2503,7 +2511,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui@13.1.0":
+"@udecode/plate-ui@13.2.1":
   version "0.0.0"
   uid ""
 
@@ -6446,6 +6454,11 @@ js-cookie@^2.2.1:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
   integrity sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
+
+js-video-url-parser@0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/js-video-url-parser/-/js-video-url-parser-0.5.1.tgz#78fea9bf6944b538276af9658833e48a83054909"
+  integrity sha512-/vwqT67k0AyIGMHAvSOt+n4JfrZWF7cPKgKswDO35yr27GfW4HtjpQVlTx6JLF45QuPm8mkzFHkZgFVnFm4x/w==
 
 js-yaml@^3.13.1:
   version "3.14.1"
