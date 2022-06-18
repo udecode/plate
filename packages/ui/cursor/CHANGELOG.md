@@ -1,5 +1,11 @@
 # @udecode/plate-ui-cursor
 
+## 13.2.1
+
+### Patch Changes
+
+- [#1598](https://github.com/udecode/plate/pull/1598) by [@zbeyens](https://github.com/zbeyens) – undefined check on `containerRef` prop
+
 ## 13.2.0
 
 ### Minor Changes
