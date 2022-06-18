@@ -2,6 +2,10 @@
 
 ## 13.1.0
 
+### Major Changes
+
+- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
+
 ### Minor Changes
 
 - [#1592](https://github.com/udecode/plate/pull/1592) by [@zbeyens](https://github.com/zbeyens) –

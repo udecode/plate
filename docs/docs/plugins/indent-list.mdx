@@ -65,7 +65,7 @@ npm install @udecode/plate-indent-list
     components: CONFIG.components,
   });
   
-  const IndentToolbarButtons = () => {
+  const IndentToolbarButtons = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
   
     return (
@@ -104,20 +104,21 @@ npm install @udecode/plate-indent-list
         />
       </>
     );
-  };
+  });
 
   return (
-    <Plate
-      id="indent-list"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.indentList}
-      plugins={plugins}
-      normalizeInitialValue
-    >
+    <>
       <HeadingToolbar>
         <IndentToolbarButtons />
       </HeadingToolbar>
-    </Plate>
+      <Plate
+        id="indent-list"
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.indentList}
+        plugins={plugins}
+        normalizeInitialValue
+      />
+    </>
   );
 }
 ```

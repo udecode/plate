@@ -1,4 +1,4 @@
-# @udecode/plate-popper
+# @udecode/plate-ui-popper
 
 ## 13.1.0
 

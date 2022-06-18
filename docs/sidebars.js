@@ -110,6 +110,7 @@ module.exports = {
         'components/dnd',
         'components/placeholder',
         'components/plate',
+        'components/cursor-overlay',
       ],
       collapsed: false,
     },

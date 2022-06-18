@@ -70,6 +70,7 @@
     "@udecode/plate-ui-button": "link:../packages/ui/button",
     "@udecode/plate-ui-code-block": "link:../packages/ui/nodes/code-block",
     "@udecode/plate-ui-combobox": "link:../packages/ui/combobox",
+    "@udecode/plate-ui-cursor": "link:../packages/ui/cursor",
     "@udecode/plate-ui-dnd": "link:../packages/ui/dnd",
     "@udecode/plate-ui-find-replace": "link:../packages/decorators/find-replace",
     "@udecode/plate-ui-font": "link:../packages/ui/nodes/font",
