@@ -99,6 +99,7 @@
     "@udecode/plate": "link:../packages/plate",
     "@udecode/plate-excalidraw": "link:../packages/ui/nodes/excalidraw",
     "@udecode/plate-test-utils": "link:../packages/test-utils",
+    "@udecode/zustood": "^1.1.1",
     "clsx": "^1.1.1",
     "docusaurus-plugin-sass": "^0.1.12",
     "downshift": "^6.1.3",

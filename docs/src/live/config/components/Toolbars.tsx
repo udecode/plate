@@ -71,9 +71,10 @@ import {
   TableToolbarButton,
   ToolbarButton,
   usePlateEditorRef,
+  withPlateEventProvider,
 } from '@udecode/plate';
 
-export const BasicElementToolbarButtons = () => {
+export const BasicElementToolbarButtons = withPlateEventProvider(() => {
   const editor = usePlateEditorRef()!;
 
   return (
@@ -112,9 +113,9 @@ export const BasicElementToolbarButtons = () => {
       />
     </>
   );
-};
+});
 
-export const IndentToolbarButtons = () => {
+export const IndentToolbarButtons = withPlateEventProvider(() => {
   const editor = usePlateEditorRef()!;
 
   return (
@@ -129,7 +130,7 @@ export const IndentToolbarButtons = () => {
       />
     </>
   );
-};
+});
 
 export const ListToolbarButtons = () => {
   const editor = usePlateEditorRef()!;
@@ -159,7 +160,7 @@ export const AlignToolbarButtons = () => {
   );
 };
 
-export const BasicMarkToolbarButtons = () => {
+export const BasicMarkToolbarButtons = withPlateEventProvider(() => {
   const editor = usePlateEditorRef()!;
 
   return (
@@ -196,7 +197,7 @@ export const BasicMarkToolbarButtons = () => {
       />
     </>
   );
-};
+});
 
 export const KbdToolbarButton = () => {
   const editor = usePlateEditorRef()!;
