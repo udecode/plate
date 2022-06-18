@@ -35,7 +35,8 @@
     "@udecode/plate-core": "13.1.0",
     "@udecode/plate-media-embed": "13.1.0",
     "@udecode/plate-styled-components": "13.1.0",
-    "@udecode/plate-ui-toolbar": "13.1.0"
+    "@udecode/plate-ui-toolbar": "13.1.0",
+    "js-video-url-parser": "0.5.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -9,10 +9,15 @@ export type TweetProps = Readonly<{
   loadingComponent?: JSX.Element | string;
   onError?: (error: string) => void;
   onLoad?: () => void;
-  tweetID: string;
+  tweetId: string;
 }>;
 
-const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
+export const Tweet = ({
+  tweetId,
+  onError,
+  onLoad,
+  loadingComponent,
+}: TweetProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
   const previousTweetIDRef = useRef('');
@@ -20,7 +25,7 @@ const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
   const createTweet = useCallback(async () => {
     try {
       // @ts-expect-error Twitter is attached to the window.
-      await window.twttr.widgets.createTweet(tweetID, containerRef.current);
+      await window.twttr.widgets.createTweet(tweetId, containerRef.current);
 
       setIsLoading(false);
 
@@ -32,10 +37,10 @@ const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
         onError(String(error));
       }
     }
-  }, [onError, onLoad, tweetID]);
+  }, [onError, onLoad, tweetId]);
 
   useEffect(() => {
-    if (tweetID !== previousTweetIDRef.current) {
+    if (tweetId !== previousTweetIDRef.current) {
       setIsLoading(true);
 
       if (!hasScriptInserted()) {
@@ -50,10 +55,10 @@ const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
       }
 
       if (previousTweetIDRef) {
-        previousTweetIDRef.current = tweetID;
+        previousTweetIDRef.current = tweetId;
       }
     }
-  }, [createTweet, onError, onLoad, tweetID]);
+  }, [createTweet, onError, onLoad, tweetId]);
 
   return (
     <>
@@ -62,5 +67,3 @@ const Tweet = ({ tweetID, onError, onLoad, loadingComponent }: TweetProps) => {
     </>
   );
 };
-
-export { Tweet };
