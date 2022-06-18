@@ -66,6 +66,7 @@ const alias = {
   '@udecode/plate-ui-button': 'ui/button',
   '@udecode/plate-ui-code-block': 'ui/nodes/code-block',
   '@udecode/plate-ui-combobox': 'ui/combobox',
+  '@udecode/plate-ui-cursor': 'ui/cursor',
   '@udecode/plate-ui-dnd': 'ui/dnd',
   '@udecode/plate-ui-find-replace': 'ui/find-replace',
   '@udecode/plate-ui-font': 'ui/nodes/font',
@@ -82,7 +83,7 @@ const alias = {
   '@udecode/plate-ui-table': 'ui/nodes/table',
   '@udecode/plate-ui-toolbar': 'ui/toolbar',
   'react/jsx-runtime': 'react/jsx-runtime.js',
-  'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js'
+  'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
 };
 
 Object.keys(alias).forEach((key) => {

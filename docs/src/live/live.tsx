@@ -103,6 +103,7 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
+  CursorOverlay,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -131,6 +132,7 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  findEventRange,
   getParentNode,
   getPlateActions,
   getPlugin,
@@ -229,6 +231,8 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  CursorOverlay,
+  findEventRange,
   createTextIndentPlugin,
   getPlateActions,
   usePlateSelectors,

@@ -1,5 +1,11 @@
 # 13.0.0
 
+## @udecode/plate-core@13.1.0
+
+### Major Changes
+
+
+
 ## @udecode/plate@13.0.0
 ## @udecode/plate-headless@13.0.0
 
@@ -54,7 +60,7 @@
   }: GetHoverDirectionOptions
   ```
 
-# 11.0.6
+# 11.0.0
 
 ## @udecode/plate-core@11.0.6
 
