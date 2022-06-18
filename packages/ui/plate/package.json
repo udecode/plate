@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "13.1.0",
+  "version": "13.2.0",
   "description": "Plate UI",
   "keywords": [
     "wysiwyg",
@@ -43,7 +43,7 @@
     "@udecode/plate-ui-block-quote": "13.1.0",
     "@udecode/plate-ui-code-block": "13.1.0",
     "@udecode/plate-ui-combobox": "13.1.0",
-    "@udecode/plate-ui-cursor": "13.1.0",
+    "@udecode/plate-ui-cursor": "13.2.0",
     "@udecode/plate-ui-dnd": "13.1.0",
     "@udecode/plate-ui-find-replace": "13.1.0",
     "@udecode/plate-ui-font": "13.1.0",
