@@ -51,20 +51,6 @@ npm install @udecode/plate-portive
 }
 ```
 
-### Options
-
-```tsx
-export interface ImagePlugin {
-  /**
-   * An optional method that will upload the image to a server.
-   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
-   */
-  uploadImage?: (
-    dataUrl: string | ArrayBuffer
-  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/image/src/createImagePlugin.ts)
