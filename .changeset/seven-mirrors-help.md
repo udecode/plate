@@ -17,6 +17,8 @@
     - `tweetProps`
     - `getIframeProps`
   - `Tweet` rendered if the provider is twitter
+  - shows border when selected
+  - shows the input only when selected
 - `parseEmbedUrl`
 - `parseTwitterUrl`
 - `parseVideoUrl`
