@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 13.3.0
+
+### Patch Changes
+
+- [#1604](https://github.com/udecode/plate/pull/1604) by [@zbeyens](https://github.com/zbeyens) – fix: table generics
+
 ## 13.2.1
 
 ### Patch Changes

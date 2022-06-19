@@ -1,5 +1,31 @@
 # @udecode/plate-media-embed-ui
 
+## 13.3.0
+
+### Minor Changes
+
+- [#1601](https://github.com/udecode/plate/pull/1601) by [@zbeyens](https://github.com/zbeyens) –
+  - new dep: `js-video-url-parser`
+  - `MediaEmbedElement`
+    - supports twitter url
+    - supports these video providers:
+      - youtube
+      - vimeo
+      - dailymotion
+      - youku
+      - coub
+    - the new parser will detect the video provider and use a valid url for the iframe
+    - new props:
+      - `disableInput`
+      - `tweetProps`
+      - `getIframeProps`
+    - `Tweet` rendered if the provider is twitter
+    - shows border when selected
+    - shows the input only when selected
+  - `parseEmbedUrl`
+  - `parseTwitterUrl`
+  - `parseVideoUrl`
+
 ## 13.1.0
 
 ## 11.2.1
