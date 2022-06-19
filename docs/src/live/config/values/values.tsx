@@ -155,7 +155,7 @@ const mediaEmbed: any = (
       embedded nodes. For example, this one contains an input element that lets
       you change the video being rendered!
     </hp>
-    <hmediaembed url="https://player.vimeo.com/video/26689853">
+    <hmediaembed url="https://www.youtube.com/watch?v=4duqI8WyfqE">
       <htext />
     </hmediaembed>
     <hp>It also supports tweets:</hp>

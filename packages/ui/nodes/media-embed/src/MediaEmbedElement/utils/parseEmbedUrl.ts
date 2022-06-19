@@ -2,7 +2,7 @@ import { parseTwitterUrl } from './parseTwitterUrl';
 import { parseVideoUrl } from './parseVideoUrl';
 
 export type EmbedUrlData = {
-  url: string;
+  url?: string;
   provider?: 'twitter';
   id?: string;
 };
@@ -14,5 +14,5 @@ export const parseEmbedUrl = (url: string): EmbedUrlData => {
   const videoData = parseVideoUrl(url);
   if (videoData) return videoData;
 
-  return { url };
+  return {};
 };
