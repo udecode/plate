@@ -155,13 +155,13 @@ const mediaEmbed: any = (
       embedded nodes. For example, this one contains an input element that lets
       you change the video being rendered!
     </hp>
-    <hmediaembed url="https://player.vimeo.com/video/26689853">
+    <hmediaembed url="https://www.youtube.com/watch?v=4duqI8WyfqE">
       <htext />
     </hmediaembed>
-    <hp>
-      Try it out! This editor is built to handle Vimeo embeds, but you could
-      handle any type.
-    </hp>
+    <hp>It also supports tweets:</hp>
+    <hmediaembed url="https://twitter.com/reactjs/status/1508838714180612100">
+      <htext />
+    </hmediaembed>
   </fragment>
 );
 
