@@ -1,10 +1,7 @@
 import { PlateEditor, TDescendant, TElement, Value } from '@udecode/plate-core';
 import { Path } from 'slate';
 
-export interface TablePlugin<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
-> {
+export interface TablePlugin<V extends Value = Value> {
   /**
    * Disable expanding the table when inserting cells.
    */

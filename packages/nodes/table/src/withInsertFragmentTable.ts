@@ -28,7 +28,7 @@ export const withInsertFragmentTable = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  { options }: WithPlatePlugin<TablePlugin<V>>
+  { options }: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   const { insertFragment } = editor;
   const { disableExpandOnInsert, insertColumn, insertRow } = options;
