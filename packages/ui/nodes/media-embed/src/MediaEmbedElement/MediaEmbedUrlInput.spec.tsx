@@ -9,7 +9,7 @@ it('should render', () => {
     <MediaEmbedUrlInput
       data-testid="MediaEmbedUrlInput"
       url="test"
-      onChange={onChange}
+      onChangeValue={onChange}
     />
   );
 
