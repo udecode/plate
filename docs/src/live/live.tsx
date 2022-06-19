@@ -195,6 +195,7 @@ import {
   withStyledProps,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createPortivePlugin, PortiveImage } from '@udecode/plate-portive';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
@@ -236,6 +237,8 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  PortiveImage,
+  createPortivePlugin,
   CursorOverlay,
   withPlateEventProvider,
   cursorStore,

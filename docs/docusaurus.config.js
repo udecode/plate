@@ -54,6 +54,7 @@ const alias = {
   '@udecode/plate-node-id': 'editor/node-id',
   '@udecode/plate-normalizers': 'editor/normalizers',
   '@udecode/plate-paragraph': 'nodes/paragraph',
+  '@udecode/plate-portive': 'ui/portive',
   '@udecode/plate-reset-node': 'editor/reset-node',
   '@udecode/plate-select': 'editor/select',
   '@udecode/plate-styled-components': 'ui/styled-components',

@@ -1,0 +1,72 @@
+---
+slug: /plugins/portive
+title: Portive
+---
+
+Add beautiful and intuitive images and attachments to Slate with support for paste, drag and drop and `<input type="file">` uploads.
+
+See [Portive docs](https://slate-portive.docs.portive.com/).
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-portive
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createImagePlugin({
+      type: 'image-block'
+    }),
+    createPortivePlugin({
+      apiOriginUrl: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imo0YlpVSGFQMmtlQmNyYTQifQ.eyJwYXRoIjoiKiovKiIsImlhdCI6MTY1NTU5OTg1MSwiZXhwIjoxNjg3MTU3NDUxfQ.WQpbtMbkH5sRvWgFNZrge1qLFb7FVNkdGzumbPPkm6M',
+      path: "plate-portive",
+    }),
+  ], {
+    components: {
+      ...CONFIG.components,
+      [ELEMENT_IMAGE]: PortiveImage,
+    },
+  });
+
+  return (
+    <>
+      <PlateProvider id="image">
+        <HeadingToolbar>
+          <ImageToolbarButton icon={<Image />} />
+        </HeadingToolbar>
+      </PlateProvider>
+      <Plate
+        id="image"
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.image}
+        plugins={plugins}
+      />
+    </>
+  );
+}
+```
+
+### Options
+
+```tsx
+export interface ImagePlugin {
+  /**
+   * An optional method that will upload the image to a server.
+   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+   */
+  uploadImage?: (
+    dataUrl: string | ArrayBuffer
+  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/image/src/createImagePlugin.ts)
+- [packages/ui/nodes/image](https://github.com/udecode/plate/tree/main/packages/ui/nodes/image/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

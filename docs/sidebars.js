@@ -43,6 +43,7 @@ module.exports = {
             'plugins/excalidraw',
             'plugins/horizontal-rule',
             'plugins/image',
+            'plugins/portive',
             'plugins/indent',
             'plugins/indent-list',
             'plugins/line-height',
