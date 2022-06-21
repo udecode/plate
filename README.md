@@ -84,6 +84,8 @@ To find out more see the following Plate documentation sections:
 - [Guides](https://plate.udecode.io/docs/Plate)
 - [Playground](https://plate.udecode.io/docs/playground)
 
+See [plate-playground](https://github.com/udecode/plate-playground) for a full example.
+
 The documentation is far from being complete and will be constantly
 evolving (as will the packages).
 
