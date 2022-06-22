@@ -13,6 +13,8 @@ import {
   TText,
   Value,
   WithPlatePlugin,
+  insertText,
+  EElement,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
@@ -35,7 +37,25 @@ export const withMention = <
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
 
-  const { apply, insertBreak, insertText, deleteBackward } = editor;
+  const {
+    apply,
+    insertBreak,
+    insertText: _insertText,
+    deleteBackward,
+    insertFragment: _insertFragment,
+  } = editor;
+
+  editor.insertFragment = (fragment) => {
+    const inMentionInput = findMentionInput(editor) !== undefined;
+    if (!inMentionInput) {
+      return _insertFragment(fragment);
+    }
+
+    return insertText(
+      editor,
+      fragment.flatMap((node) => getNodeString(node)).join('')
+    );
+  };
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
@@ -60,7 +80,7 @@ export const withMention = <
       text !== trigger ||
       isSelectionInMentionInput(editor)
     ) {
-      return insertText(text);
+      return _insertText(text);
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
@@ -102,7 +122,7 @@ export const withMention = <
       return insertNodes<TMentionInputElement>(editor, data);
     }
 
-    return insertText(text);
+    return _insertText(text);
   };
 
   editor.apply = (operation) => {

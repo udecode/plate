@@ -6,7 +6,7 @@ import {
   ComboboxState,
 } from '@udecode/plate-combobox';
 import { moveSelection, PlateEditor, select, Value } from '@udecode/plate-core';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx, createDataTransfer } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -478,6 +478,41 @@ describe('withMention', () => {
       expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'a',
       });
+    });
+  });
+
+  describe('paste', () => {
+    it('should paste the clipboard contents into mention as text', () => {
+      const editor = createEditorWithMentionInput(
+        <hp>
+          <cursor />
+        </hp>
+      );
+
+      const fragment = createDataTransfer(
+        new Map([
+          [
+            'text/html',
+            '<html><head><meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body>hello</body></html>',
+          ],
+          ['text/plain', 'hello'],
+        ])
+      );
+
+      editor.insertData(fragment);
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>hello</hmentioninput>
+          <htext />
+        </hp>,
+      ]);
+
+      expect(editor.selection).toEqual<Range>({
+        anchor: { path: [0, 1, 0], offset: 5 },
+        focus: { path: [0, 1, 0], offset: 5 },
+      })
     });
   });
 });
