@@ -72,7 +72,12 @@ export const autoformatBlock = <V extends Value>(
       if (isBelowSameBlockType) continue;
     }
 
-    deleteText(editor, { at: matchRange });
+    // if the trigger is only 1 char there is nothing to delete, so we'd delete unrelated text
+    if (match.length > 1) {
+      deleteText(editor, {
+        at: matchRange,
+      });
+    }
 
     if (preFormat) {
       preFormat(editor);
