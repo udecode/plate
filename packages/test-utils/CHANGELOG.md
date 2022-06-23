@@ -1,5 +1,15 @@
 # @udecode/plate-test-utils
 
+## 13.4.0
+
+### Minor Changes
+
+- [#1615](https://github.com/udecode/plate/pull/1615) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Add support for pasting into mentions
+
+### Patch Changes
+
+- [#1619](https://github.com/udecode/plate/pull/1619) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Merge lines, strip whitespaces
+
 ## 10.1.0
 
 ### Minor Changes

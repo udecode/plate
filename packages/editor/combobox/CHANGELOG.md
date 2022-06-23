@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 13.4.0
+
+### Minor Changes
+
+- [#1617](https://github.com/udecode/plate/pull/1617) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Add sorting to Combobox
+
 ## 13.1.0
 
 ## 11.2.1
