@@ -17,7 +17,9 @@ export type ComboboxStateById<TData = NoData> = {
   /**
    * Sort filtered items before applying maxSuggestions.
    */
-  sort?: (a: TComboboxItem<TData>, b: TComboboxItem<TData>) => number;
+  sort?: (
+    search: string
+  ) => (a: TComboboxItem<TData>, b: TComboboxItem<TData>) => number;
 
   /**
    * Max number of items.
