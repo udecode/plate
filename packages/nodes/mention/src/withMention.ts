@@ -52,7 +52,7 @@ export const withMention = <
 
     return insertText(
       editor,
-      fragment.flatMap((node) => getNodeString(node)).join('')
+      fragment.map((node) => getNodeString(node)).join('')
     );
   };
 
