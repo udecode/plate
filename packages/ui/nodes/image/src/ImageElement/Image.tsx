@@ -8,7 +8,6 @@ import { HTMLPropsAs } from '../utils/types';
 import { useComposedRef } from '../utils/useComposedRef';
 import { elementAtom, SCOPE_NODE } from '../utils/useElement';
 import { useWrapElement } from '../utils/useWrapElement';
-import { imageWidthAtom } from './imageAtoms';
 
 export type ImageProps = PlateRenderElementProps<Value, TImageElement> &
   HTMLPropsAs<'div'>;
@@ -24,9 +23,7 @@ export const useImage = ({
     props,
     (el) => (
       <Provider initialValues={[[elementAtom, element]]} scope={SCOPE_NODE}>
-        <Provider initialValues={[[imageWidthAtom, 0]]} scope={ELEMENT_IMAGE}>
-          {el}
-        </Provider>
+        <Provider scope={ELEMENT_IMAGE}>{el}</Provider>
       </Provider>
     ),
     [element]
