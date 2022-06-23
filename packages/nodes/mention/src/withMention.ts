@@ -42,7 +42,15 @@ export const withMention = <
     insertText: _insertText,
     deleteBackward,
     insertFragment: _insertFragment,
+    insertTextData,
   } = editor;
+
+  const stripNewLineAndTrim: (text: string) => string = (text) => {
+    return text
+      .split(/\r\n|\r|\n/)
+      .map((line) => line.trim())
+      .join('');
+  };
 
   editor.insertFragment = (fragment) => {
     const inMentionInput = findMentionInput(editor) !== undefined;
@@ -52,8 +60,24 @@ export const withMention = <
 
     return insertText(
       editor,
-      fragment.map((node) => getNodeString(node)).join('')
+      fragment.map((node) => stripNewLineAndTrim(getNodeString(node))).join('')
     );
+  };
+
+  editor.insertTextData = (data) => {
+    const inMentionInput = findMentionInput(editor) !== undefined;
+    if (!inMentionInput) {
+      return insertTextData(data);
+    }
+
+    const text = data.getData('text/plain');
+    if (!text) {
+      return false;
+    }
+
+    editor.insertText(stripNewLineAndTrim(text));
+
+    return true;
   };
 
   editor.deleteBackward = (unit) => {
