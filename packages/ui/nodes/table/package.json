@@ -38,7 +38,7 @@
     "@udecode/plate-ui-toolbar": "13.1.0",
     "@udecode/plate-ui-button": "13.1.0",
     "@udecode/plate-ui-popover": "13.1.0",
-    "jotai": "^1.6.6",
+    "jotai": "^1.7.2",
     "re-resizable": "^6.9.9"
   },
   "peerDependencies": {

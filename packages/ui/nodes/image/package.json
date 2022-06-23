@@ -32,10 +32,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "@radix-ui/react-primitive": "^0.1.4",
+    "@radix-ui/react-slot": "^0.1.2",
     "@udecode/plate-core": "13.1.0",
     "@udecode/plate-image": "13.1.0",
     "@udecode/plate-styled-components": "13.1.0",
     "@udecode/plate-ui-toolbar": "13.1.0",
+    "jotai": "^1.7.2",
     "react-textarea-autosize": "^8.3.3",
     "re-resizable": "^6.9.9"
   },

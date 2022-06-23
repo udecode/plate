@@ -2155,7 +2155,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-headless@13.2.1":
+"@udecode/plate-headless@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2187,7 +2187,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-indent-list@13.1.0":
+"@udecode/plate-indent-list@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2231,7 +2231,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list@13.1.0":
+"@udecode/plate-list@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2295,7 +2295,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-csv@13.2.1":
+"@udecode/plate-serializer-csv@13.3.0":
   version "0.0.0"
   uid ""
 
@@ -2303,7 +2303,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-docx@13.2.1":
+"@udecode/plate-serializer-docx@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2311,7 +2311,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-md@13.1.0":
+"@udecode/plate-serializer-md@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2327,7 +2327,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@13.2.1":
+"@udecode/plate-table@13.3.0":
   version "0.0.0"
   uid ""
 
@@ -2447,7 +2447,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-list@13.1.0":
+"@udecode/plate-ui-list@13.3.1":
   version "0.0.0"
   uid ""
 
@@ -2455,7 +2455,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-media-embed@13.1.0":
+"@udecode/plate-ui-media-embed@13.3.0":
   version "0.0.0"
   uid ""
 
@@ -2495,7 +2495,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-table@13.2.1":
+"@udecode/plate-ui-table@13.3.0":
   version "0.0.0"
   uid ""
 
@@ -2511,7 +2511,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui@13.2.1":
+"@udecode/plate-ui@13.3.1":
   version "0.0.0"
   uid ""
 
