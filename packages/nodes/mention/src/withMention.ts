@@ -7,14 +7,13 @@ import {
   getPointBefore,
   getRange,
   insertNodes,
+  insertText,
   PlateEditor,
   setSelection,
   TNode,
   TText,
   Value,
   WithPlatePlugin,
-  insertText,
-  EElement,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';

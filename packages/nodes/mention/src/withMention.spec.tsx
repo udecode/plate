@@ -6,7 +6,7 @@ import {
   ComboboxState,
 } from '@udecode/plate-combobox';
 import { moveSelection, PlateEditor, select, Value } from '@udecode/plate-core';
-import { jsx, createDataTransfer } from '@udecode/plate-test-utils';
+import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -512,7 +512,7 @@ describe('withMention', () => {
       expect(editor.selection).toEqual<Range>({
         anchor: { path: [0, 1, 0], offset: 5 },
         focus: { path: [0, 1, 0], offset: 5 },
-      })
+      });
     });
   });
 });
