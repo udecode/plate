@@ -1,5 +1,9 @@
-export const createDataTransfer = (dataMap: Map<string, any> = new Map()) =>
+export type DataTransferDataType = 'text/plain' | 'text/html' | string;
+
+export type DataTransferDataMap = Map<DataTransferDataType, unknown>;
+
+export const createDataTransfer = (dataMap: DataTransferDataMap = new Map()) =>
   (({
-    getData: (key: string) => dataMap.get(key) ?? '',
-    setData: (key: string, value: string) => dataMap.set(key, value),
+    getData: (type: string) => dataMap.get(type) ?? '',
+    setData: (type: string, value: string) => dataMap.set(type, value),
   } as unknown) as DataTransfer);
