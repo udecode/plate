@@ -1,13 +1,12 @@
+import { TImageElement } from '@udecode/plate-image';
 import { createComponentAs } from '../utils/createComponentAs';
 import { createElementAs } from '../utils/createElementAs';
 import { HTMLPropsAs } from '../utils/types';
-import { imageElementAtom, useImageAtomValue } from './imageAtoms';
+import { useElement } from '../utils/useElement';
 import { useImageCaptionState } from './ImageCaption';
 
 export const useImageImg = (props?: HTMLPropsAs<'img'>): HTMLPropsAs<'img'> => {
-  const { url } = useImageAtomValue(imageElementAtom)!;
-
-  console.log(url);
+  const { url } = useElement<TImageElement>();
 
   const { captionString } = useImageCaptionState();
 

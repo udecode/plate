@@ -9,12 +9,8 @@ import { TImageElement } from '@udecode/plate-image';
 import { Resizable, ResizableProps } from 're-resizable';
 import { useReadOnly } from 'slate-react';
 import { createComponentAs } from '../utils/createComponentAs';
-import {
-  imageElementAtom,
-  imageWidthAtom,
-  useImageAtom,
-  useImageAtomValue,
-} from './imageAtoms';
+import { useElement } from '../utils/useElement';
+import { imageWidthAtom, useImageAtom } from './imageAtoms';
 
 export interface ImageResizableProps extends ResizableProps {
   /**
@@ -30,19 +26,17 @@ export const useImageResizable = ({
   align = 'center',
   ...props
 }: ImageResizableProps): ResizableProps => {
-  const element = useImageAtomValue(imageElementAtom)!;
+  const element = useElement<TImageElement>();
   const editor = useEditorRef();
   const readOnly = useReadOnly();
 
-  console.log(element);
-
-  const { width: nodeWidth = '100%' } = element;
+  const { width: nodeWidth = '100%' } = element ?? {};
 
   const [width, setWidth] = useImageAtom(imageWidthAtom);
 
   const setNodeWidth = useCallback(
     (w: number) => {
-      const path = findNodePath(editor, element);
+      const path = findNodePath(editor, element!);
       if (!path) return;
 
       if (w === nodeWidth) {

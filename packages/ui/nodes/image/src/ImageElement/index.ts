@@ -5,7 +5,7 @@
 export * from './ImageElement.styles';
 export * from './ImageElement';
 export * from './ImageElement.types';
-export * from './Box';
+export * from '../utils/Box';
 export { ImageCaption } from './ImageCaption';
 export { useImageResizable } from './ImageResizable';
 export { ImageResizableProps } from './ImageResizable';

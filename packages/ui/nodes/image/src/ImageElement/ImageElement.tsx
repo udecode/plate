@@ -2,7 +2,7 @@
 import React from 'react';
 import { Value } from '@udecode/plate-core';
 import { useFocused, useSelected } from 'slate-react';
-import { Box } from './Box';
+import { Box } from '../utils/Box';
 import { Image } from './Image';
 import { ImageCaption } from './ImageCaption';
 import { getImageElementStyles } from './ImageElement.styles';

@@ -1,18 +1,20 @@
 import { useMemo } from 'react';
 import { getNodeString } from '@udecode/plate-core';
+import { TImageElement } from '@udecode/plate-image';
 import { useSelected } from 'slate-react';
 import { createComponentAs } from '../utils/createComponentAs';
 import { createElementAs } from '../utils/createElementAs';
 import { HTMLPropsAs } from '../utils/types';
-import {
-  imageElementAtom,
-  imageWidthAtom,
-  useImageAtomValue,
-} from './imageAtoms';
+import { useElement } from '../utils/useElement';
+import { imageWidthAtom, useImageAtomValue } from './imageAtoms';
 import { ImageElementPropsCaption } from './ImageElement.types';
 
+export interface ImageCaptionProps extends HTMLPropsAs<'figcaption'> {
+  caption: ImageElementPropsCaption;
+}
+
 export const useImageCaption = (
-  props?: HTMLPropsAs<'figcaption'>
+  props?: Omit<ImageCaptionProps, 'caption'>
 ): HTMLPropsAs<'figcaption'> => {
   const width = useImageAtomValue(imageWidthAtom);
 
@@ -25,7 +27,7 @@ export const useImageCaption = (
 export const useImageCaptionState = () => {
   const {
     caption: nodeCaption = [{ children: [{ text: '' }] }],
-  } = useImageAtomValue(imageElementAtom)!;
+  } = useElement<TImageElement>();
 
   const captionString = useMemo(() => {
     return getNodeString(nodeCaption[0] as any) || '';
@@ -35,10 +37,6 @@ export const useImageCaptionState = () => {
     captionString,
   };
 };
-
-export interface ImageCaptionProps extends HTMLPropsAs<'figcaption'> {
-  caption: ImageElementPropsCaption;
-}
 
 export const ImageCaption = createComponentAs<ImageCaptionProps>(
   ({ caption, ...props }) => {

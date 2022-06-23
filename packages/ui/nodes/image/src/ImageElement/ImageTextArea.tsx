@@ -10,7 +10,7 @@ import {
 import { TImageElement } from '@udecode/plate-image';
 import { useReadOnly } from 'slate-react';
 import { createComponentAs } from '../utils/createComponentAs';
-import { imageElementAtom, useImageAtomValue } from './imageAtoms';
+import { useElement } from '../utils/useElement';
 import { ImageElementPropsCaption } from './ImageElement.types';
 
 export interface ImageTextAreaProps extends TextareaAutosizeProps {
@@ -23,7 +23,7 @@ export const useImageTextArea = ({
   caption,
   ...props
 }: ImageTextAreaProps): TextareaAutosizeProps => {
-  const element = useImageAtomValue(imageElementAtom)!;
+  const element = useElement<TImageElement>();
   const { caption: nodeCaption = [{ children: [{ text: '' }] }] } = element;
 
   const editor = useEditorRef();
