@@ -1,5 +1,13 @@
 # @udecode/plate-mention
 
+## 13.4.2
+
+### Patch Changes
+
+- [#1622](https://github.com/udecode/plate/pull/1622) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Pass search to createMentionNode as metadata
+
+## 13.4.1
+
 ## 13.4.0
 
 ### Minor Changes

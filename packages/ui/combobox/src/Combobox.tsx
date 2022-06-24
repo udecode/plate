@@ -66,7 +66,7 @@ const ComboboxContent = <TData extends Data = NoData>(
             ? filter(text)
             : (value) => value.text.toLowerCase().startsWith(text.toLowerCase())
         )
-        .sort(sort)
+        .sort(sort?.(text))
         .slice(0, maxSuggestions)
     );
   }, [filter, sort, storeItems, maxSuggestions, text]);
@@ -109,7 +109,7 @@ const ComboboxContent = <TData extends Data = NoData>(
 
         {filteredItems.map((item, index) => {
           const Item = onRenderItem
-            ? onRenderItem({ item: item as TComboboxItem<TData> })
+            ? onRenderItem({ search: text, item: item as TComboboxItem<TData> })
             : item.text;
 
           const highlighted = index === highlightedIndex;
