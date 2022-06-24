@@ -1,4 +1,4 @@
-module.exports = function plugin(context, options) {
+module.exports = function plugin() {
   return {
     name: 'docusaurus-plugin-source-maps',
     configureWebpack() {

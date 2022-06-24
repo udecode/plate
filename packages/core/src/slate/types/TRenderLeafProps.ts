@@ -1,5 +1,5 @@
 import { RenderLeafProps } from 'slate-react';
-import { Modify } from '../../common/types/utility/types';
+import { Modify } from '../../types/misc/types';
 import { Value } from '../editor/TEditor';
 import { EText, TText } from '../text/TText';
 

@@ -21,10 +21,10 @@ import {
   ListToolbarButtons,
   MarkBallonToolbar,
   TableToolbarButtons,
-} from '../../../../docs/src/live/config/components/Toolbars';
-import { CONFIG } from '../../../../docs/src/live/config/config';
-import { VALUES } from '../../../../docs/src/live/config/values/values';
-import { Plate } from '../../../core/src/components/Plate';
+} from '../../../../examples/next/src/config/components/Toolbars';
+import { CONFIG } from '../../../../examples/next/src/config/config';
+import { VALUES } from '../../../../examples/next/src/config/values/values';
+import { Plate } from '../../../core/src/components/plate/Plate';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
@@ -77,11 +77,11 @@ const PlateContainer = () => {
       // TODO: fix type
       createAutoformatPlugin(CONFIG.autoformat as any),
       createResetNodePlugin(CONFIG.resetBlockType as any),
-      createSoftBreakPlugin(CONFIG.softBreak),
-      createExitBreakPlugin(CONFIG.exitBreak),
-      createNormalizeTypesPlugin(CONFIG.forceLayout),
-      createTrailingBlockPlugin(CONFIG.trailingBlock),
-      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+      createSoftBreakPlugin(CONFIG.softBreak as any),
+      createExitBreakPlugin(CONFIG.exitBreak as any),
+      createNormalizeTypesPlugin(CONFIG.forceLayout as any),
+      createTrailingBlockPlugin(CONFIG.trailingBlock as any),
+      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace as any),
     ],
     {
       components: createPlateUI(),
@@ -90,7 +90,7 @@ const PlateContainer = () => {
 
   return (
     <Plate
-      editableProps={CONFIG.editableProps}
+      editableProps={CONFIG.editableProps as any}
       initialValue={VALUES.playground}
       plugins={plugins}
     >

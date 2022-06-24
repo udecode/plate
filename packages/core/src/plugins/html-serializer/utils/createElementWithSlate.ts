@@ -1,7 +1,7 @@
 import React from 'react';
 import { Slate } from 'slate-react';
 import { SlateProps } from '../../../slate/types/SlateProps';
-import { createTEditor } from '../../../utils/createTEditor';
+import { createTEditor } from '../../../utils/slate/createTEditor';
 import { withTReact } from '../../withTReact';
 
 /**

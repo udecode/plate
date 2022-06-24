@@ -1,7 +1,7 @@
 import { withHistory } from 'slate-history';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { THistoryEditor } from '../slate/history-editor/THistoryEditor';
-import { createPluginFactory } from '../utils/createPluginFactory';
+import { createPluginFactory } from '../utils/plate/createPluginFactory';
 
 export const withTHistory = <
   V extends Value = Value,

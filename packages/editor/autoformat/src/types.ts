@@ -143,5 +143,5 @@ export interface AutoformatPlugin<
   /**
    * A list of triggering rules.
    */
-  rules?: AutoformatRule<V>[];
+  rules?: AutoformatRule<V, E>[];
 }

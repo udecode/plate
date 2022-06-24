@@ -1,4 +1,4 @@
-import { createPluginFactory } from '../../utils/createPluginFactory';
+import { createPluginFactory } from '../../utils/plate/createPluginFactory';
 import { deserializeHtml } from './utils/deserializeHtml';
 import { parseHtmlDocument } from './utils/parseHtmlDocument';
 

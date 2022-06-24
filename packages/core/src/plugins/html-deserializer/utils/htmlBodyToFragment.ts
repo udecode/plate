@@ -1,7 +1,7 @@
 import { jsx } from 'slate-hyperscript';
 import { Value } from '../../../slate/editor/TEditor';
 import { EDescendant } from '../../../slate/node/TDescendant';
-import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
 jsx;

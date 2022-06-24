@@ -19,7 +19,10 @@
     "sourceMap": true,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017"
+    "target": "es2017",
+    "paths": {
+      "@example/*": ["./examples/next/src/*"]
+    }
   },
   "files": ["types/twin.d.ts"],
   "exclude": [

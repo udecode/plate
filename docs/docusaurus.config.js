@@ -241,7 +241,10 @@ module.exports = {
           ],
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.scss'),
+          customCss: [
+            require.resolve('../examples/next/src/styles.css'),
+            require.resolve('./src/css/custom.scss'),
+          ],
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],

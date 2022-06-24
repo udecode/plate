@@ -15,8 +15,8 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
-import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../docs/src/live/config/config';
+import { preFormat } from '../../../../../../../examples/next/src/config/autoformat/autoformatUtils';
+import { CONFIG } from '../../../../../../../examples/next/src/config/config';
 import { AutoformatPlugin } from '../../../types';
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -83,7 +83,7 @@ describe('when ``` at block start, but customising with query we get the most re
               type: ELEMENT_CODE_BLOCK,
               match: '```',
               triggerAtBlockStart: false,
-              preFormat: clearBlockFormat as any,
+              preFormat: preFormat as any,
               format: (editor) => {
                 insertEmptyCodeBlock(editor, {
                   defaultType: getPluginType(
@@ -140,7 +140,7 @@ describe('when ```', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText('`');

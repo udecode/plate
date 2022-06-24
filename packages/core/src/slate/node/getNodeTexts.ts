@@ -1,5 +1,5 @@
 import { Node, NodeTextsOptions } from 'slate';
-import { Modify } from '../../common/types/utility/types';
+import { Modify } from '../../types/misc/types';
 import { TextOf } from '../text/TText';
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';

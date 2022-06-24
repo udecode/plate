@@ -2,6 +2,9 @@
   "extends": "@tsconfig/docusaurus/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@example/*": ["../examples/next/src/*"]
+    }
   },
   "files": ["../types/twin.d.ts"],
   "include": ["src"]

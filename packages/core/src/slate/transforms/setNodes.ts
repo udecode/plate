@@ -1,5 +1,5 @@
 import { Transforms } from 'slate';
-import { Modify } from '../../common/types/utility/types';
+import { Modify } from '../../types/misc/types';
 import { TEditor, Value } from '../editor/TEditor';
 import { ENode, TNodeProps } from '../node/TNode';
 import { NodeMatchOption } from '../types/NodeMatchOption';

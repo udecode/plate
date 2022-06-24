@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { findNodePath, Value } from '@udecode/plate-core';
+import { findNodePath, useAtom, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import {
   ELEMENT_TABLE,
@@ -7,7 +7,6 @@ import {
   setTableColSize,
 } from '@udecode/plate-table';
 import clsx from 'clsx';
-import { useAtom } from 'jotai';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
 import { useReadOnly } from 'slate-react';
 import { useIsCellSelected } from '../hooks/useIsCellSelected';

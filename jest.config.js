@@ -20,7 +20,7 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.js',
     // '^@udecode/plate-ui-dnd$': '<rootDir>/packages/dnd/src',
-    // '^@udecode/plate-common$': '<rootDir>/packages/common/src',
+    '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     // '^@udecode/plate-basic-elements$':
     //   '<rootDir>/packages/nodes/basic-elements/src',
     // '^@udecode/plate-alignment$': '<rootDir>/packages/nodes/alignment/src',

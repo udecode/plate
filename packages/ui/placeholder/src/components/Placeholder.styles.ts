@@ -5,7 +5,7 @@ import tw from 'twin.macro';
 import { PlaceholderProps } from './Placeholder.types';
 
 export const getPlaceholderStyles = <V extends Value>(
-  props: PlaceholderProps<V>
+  props: PlaceholderProps<V> & { enabled?: boolean }
 ) =>
   createStyles(
     { prefixClassNames: 'Placeholder', ...props },
