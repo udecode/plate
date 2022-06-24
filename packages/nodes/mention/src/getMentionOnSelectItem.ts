@@ -25,7 +25,14 @@ import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionPlugin, TMentionElement } from './types';
 
 export interface CreateMentionNode<TData extends Data> {
-  (item: TComboboxItem<TData>): TNodeProps<TMentionElement>;
+  (
+    item: TComboboxItem<TData>,
+    meta: CreateMentionNodeMeta
+  ): TNodeProps<TMentionElement>;
+}
+
+export interface CreateMentionNodeMeta {
+  search: string;
 }
 
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
@@ -46,6 +53,13 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     isEndPoint(editor, editor.selection.anchor, pathAbove);
 
   withoutNormalizing(editor, () => {
+    // Selectors are sensitive to operations, it's better to create everything
+    // before the editor state is changed. For example, asking for text after
+    // removeNodes below will return null.
+    const props = createMentionNode!(item, {
+      search: comboboxSelectors.text() ?? '',
+    });
+
     // insert a space to fix the bug
     if (isBlockEnd) {
       insertText(editor, ' ');
@@ -58,8 +72,6 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
         match: (node) => node.type === ELEMENT_MENTION_INPUT,
       })
     );
-
-    const props = createMentionNode!(item);
 
     insertNodes<TMentionElement>(editor, {
       type,
