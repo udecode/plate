@@ -1,5 +1,7 @@
 # @udecode/plate-table-ui
 
+## 13.5.0
+
 ## 13.3.0
 
 ## 13.2.1

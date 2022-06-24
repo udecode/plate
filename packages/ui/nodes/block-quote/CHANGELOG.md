@@ -1,5 +1,7 @@
 # @udecode/plate-block-quote-ui
 
+## 13.5.0
+
 ## 13.1.0
 
 ## 11.2.1

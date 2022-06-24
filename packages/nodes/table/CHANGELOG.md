@@ -1,5 +1,7 @@
 # @udecode/plate-table
 
+## 13.5.0
+
 ## 13.3.0
 
 ### Patch Changes

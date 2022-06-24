@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 13.5.0
+
+### Minor Changes
+
+- [#1616](https://github.com/udecode/plate/pull/1616) by [@zbeyens](https://github.com/zbeyens) –
+  - `useElement`: Plate is now storing `element` in a context provided in each rendered element. Required parameter: the plugin key is used as a scope as it's needed for nested elements.
+
 ## 13.1.0
 
 ### Major Changes
