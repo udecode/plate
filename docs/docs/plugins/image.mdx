@@ -17,7 +17,7 @@ npm install @udecode/plate-ui-image
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_IMAGE] }}}),
   ], {
     components: CONFIG.components,
   });

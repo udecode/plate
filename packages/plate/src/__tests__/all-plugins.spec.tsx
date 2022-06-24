@@ -24,7 +24,7 @@ import {
 } from '../../../../docs/src/live/config/components/Toolbars';
 import { CONFIG } from '../../../../docs/src/live/config/config';
 import { VALUES } from '../../../../docs/src/live/config/values/values';
-import { Plate } from '../../../core/src/components/Plate';
+import { Plate } from '../../../core/src/components/plate/Plate';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';

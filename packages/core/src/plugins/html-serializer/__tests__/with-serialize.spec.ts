@@ -5,8 +5,8 @@ import {
   MARK_BOLD,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
-import { PlatePlugin } from '../../../types/plugins/PlatePlugin';
-import { createPlateEditor } from '../../../utils/createPlateEditor';
+import { PlatePlugin } from '../../../types/plugin/PlatePlugin';
+import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

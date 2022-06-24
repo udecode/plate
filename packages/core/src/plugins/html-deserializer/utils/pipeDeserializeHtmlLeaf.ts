@@ -1,6 +1,6 @@
-import { AnyObject } from '../../../common/types/utility/AnyObject';
 import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/PlateEditor';
+import { AnyObject } from '../../../types/misc/AnyObject';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlLeaf = <V extends Value>(

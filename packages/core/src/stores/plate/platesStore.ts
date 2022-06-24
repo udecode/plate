@@ -1,14 +1,14 @@
 import { createStore } from '@udecode/zustood';
 import { castArray } from 'lodash';
-import { isUndefined } from '../../common/utils/types.utils';
-import { PlateProps } from '../../components/Plate';
+import { PlateProps } from '../../components/plate/Plate';
 import { Value } from '../../slate/editor/TEditor';
-import { PlateEditor } from '../../types/PlateEditor';
+import { PlateEditor } from '../../types/plate/PlateEditor';
 import {
   PlatesStoreState,
   PlateStoreApi,
   PlateStoreState,
-} from '../../types/PlateStore';
+} from '../../types/plate/PlateStore';
+import { isUndefined } from '../../utils/misc/type-utils';
 import { eventEditorActions } from '../event-editor/event-editor.store';
 import { createPlateStore } from './createPlateStore';
 import { getPlateStore, usePlateStore } from './usePlateStore';

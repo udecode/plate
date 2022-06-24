@@ -29,7 +29,7 @@ const includePathOptions = {
 
 const onwarn = (warning) => {
   // Silence circular dependency warning for moment package
-  if (warning.code === 'CIRCULAR_DEPENDENCY') {
+  if (['CIRCULAR_DEPENDENCY', 'THIS_IS_UNDEFINED'].includes(warning.code)) {
     return;
   }
 

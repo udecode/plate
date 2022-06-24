@@ -1,4 +1,4 @@
-export function formatHTML(html) {
+export const formatHTML = (html) => {
   let indent = '\n';
   const tab = '\t';
   let i = 0;
@@ -74,4 +74,4 @@ export function formatHTML(html) {
   }
 
   return html.charAt(0) === '\n' ? html.substr(1, html.length - 1) : html;
-}
+};

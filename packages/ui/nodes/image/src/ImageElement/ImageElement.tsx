@@ -1,17 +1,12 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React from 'react';
-import { Value } from '@udecode/plate-core';
-import { useFocused, useSelected } from 'slate-react';
-import { Box } from '../utils/Box';
-import { Image } from './Image';
-import { ImageCaption } from './ImageCaption';
+import { Box } from '@udecode/plate-core';
+import { Image } from '@udecode/plate-image';
+import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
-import { ImageImg } from './ImageImg';
-import { ImageResizable } from './ImageResizable';
-import { ImageTextArea } from './ImageTextArea';
 
-export const ImageElement = <V extends Value>(props: ImageElementProps<V>) => {
+export const ImageElement = (props: ImageElementProps) => {
   const {
     children,
     nodeProps,
@@ -25,70 +20,66 @@ export const ImageElement = <V extends Value>(props: ImageElementProps<V>) => {
 
   const focused = useFocused();
   const selected = useSelected();
+  const readOnly = useReadOnly();
 
   const styles = getImageElementStyles({ ...props, align, focused, selected });
 
   return (
-    <Image
+    <Image.Root
       css={styles.root.css}
       className={styles.root.className}
       {...rootProps}
     >
-      <div contentEditable={false}>
-        <figure
-          css={styles.figure?.css}
-          className={`group ${styles.figure?.className}`}
+      <figure
+        css={styles.figure?.css}
+        className={`group ${styles.figure?.className}`}
+        contentEditable={false}
+      >
+        <Image.Resizable
+          // @ts-ignore
+          css={styles.resizable?.css}
+          className={styles.resizable?.className}
+          handleComponent={{
+            left: (
+              <Box
+                css={[styles.handleLeft?.css]}
+                className={styles.handleLeft?.className}
+              />
+            ),
+            right: (
+              <Box
+                css={styles.handleRight?.css}
+                className={styles.handleRight?.className}
+              />
+            ),
+          }}
+          align={align}
+          readOnly={!ignoreReadOnly && readOnly}
+          {...resizableProps}
         >
-          <ImageResizable
-            data-testid="ImageElementResizable"
-            // @ts-ignore
-            css={styles.resizable?.css}
-            className={styles.resizable?.className}
-            handleComponent={{
-              left: (
-                <Box
-                  css={[styles.handleLeft?.css]}
-                  className={styles.handleLeft?.className}
-                />
-              ),
-              right: (
-                <Box
-                  css={styles.handleRight?.css}
-                  className={styles.handleRight?.className}
-                />
-              ),
-            }}
-            ignoreReadOnly={ignoreReadOnly}
-            align={align}
-            {...resizableProps}
-          >
-            <ImageImg
-              data-testid="ImageElementImage"
-              css={styles.img?.css}
-              className={styles.img?.className}
-              {...nodeProps}
-            />
-          </ImageResizable>
+          <Image.Img
+            css={styles.img?.css}
+            className={styles.img?.className}
+            {...nodeProps}
+          />
+        </Image.Resizable>
 
-          <ImageCaption
-            data-testid="ImageElementCaption"
+        {!caption.disabled && (
+          <Image.Caption
             css={styles.figcaption?.css}
             className={styles.figcaption?.className}
-            caption={caption}
           >
-            <ImageTextArea
-              data-testid="ImageElementTextArea"
+            <Image.CaptionTextarea
               css={styles.caption?.css}
               className={styles.caption?.className}
               placeholder={caption.placeholder ?? 'Write a caption...'}
-              ignoreReadOnly={ignoreReadOnly}
-              caption={caption}
+              readOnly={(!ignoreReadOnly && readOnly) || !!caption.readOnly}
             />
-          </ImageCaption>
-        </figure>
-      </div>
+          </Image.Caption>
+        )}
+      </figure>
 
       {children}
-    </Image>
+    </Image.Root>
   );
 };

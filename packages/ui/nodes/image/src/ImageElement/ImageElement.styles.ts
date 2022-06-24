@@ -51,7 +51,7 @@ export const getImageElementStyles = <V extends Value>(
         align === 'center' && tw`mx-auto`,
         align === 'right' && tw`ml-auto`,
       ],
-      figure: ['group', tw`m-0 relative`],
+      figure: [tw`m-0 relative`],
       img: [
         tw`block max-w-full px-0 cursor-pointer w-full`,
         tw`borderRadius[3px] object-cover`,

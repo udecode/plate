@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateTestEditor } from '../../../core/src/common/__tests__/createPlateTestEditor';
+import { createPlateTestEditor } from '../../../core/src/utils/__tests__/createPlateTestEditor';
 import { createTablePlugin } from './createTablePlugin';
 
 jsx;

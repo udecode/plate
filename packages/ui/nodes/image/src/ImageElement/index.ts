@@ -5,13 +5,3 @@
 export * from './ImageElement.styles';
 export * from './ImageElement';
 export * from './ImageElement.types';
-export * from '../utils/Box';
-export { ImageCaption } from './ImageCaption';
-export { useImageResizable } from './ImageResizable';
-export { ImageResizableProps } from './ImageResizable';
-export { useImageCaption } from './ImageCaption';
-export { useImageTextArea } from './ImageTextArea';
-export { useImageImg } from './ImageImg';
-export { Image } from './Image';
-export { ImageProps } from './Image';
-export { useImage } from './Image';

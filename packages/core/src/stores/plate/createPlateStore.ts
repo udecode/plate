@@ -1,10 +1,10 @@
 import { createStore } from '@udecode/zustood';
-import { ELEMENT_DEFAULT } from '../../common/types/node.types';
 import { withPlate } from '../../plugins/withPlate';
 import { Value } from '../../slate/editor/TEditor';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
-import { createTEditor } from '../../utils/createTEditor';
+import { ELEMENT_DEFAULT } from '../../types/plate/node.types';
+import { PlateEditor } from '../../types/plate/PlateEditor';
+import { PlateChangeKey, PlateStoreState } from '../../types/plate/PlateStore';
+import { createTEditor } from '../../utils/slate/createTEditor';
 
 export const createPlateStore = <
   V extends Value = Value,

@@ -1,6 +1,6 @@
 import { Transforms } from 'slate';
-import { ENodeMatchOptions, getQueryOptions } from '../../common/queries/match';
-import { Modify } from '../../common/types/utility/types';
+import { ENodeMatchOptions, getQueryOptions } from '../../queries/match';
+import { Modify } from '../../types/misc/types';
 import { TEditor, Value } from '../editor/TEditor';
 
 export type UnwrapNodesOptions<V extends Value = Value> = Modify<

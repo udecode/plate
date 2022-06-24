@@ -4,7 +4,7 @@ import { EDescendant } from '../../slate/node/TDescendant';
 import { isText } from '../../slate/text/isText';
 import { EText } from '../../slate/text/TText';
 import { SlateProps } from '../../slate/types/SlateProps';
-import { PlateEditor } from '../../types/PlateEditor';
+import { PlateEditor } from '../../types/plate/PlateEditor';
 import { isEncoded } from './utils/isEncoded';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';

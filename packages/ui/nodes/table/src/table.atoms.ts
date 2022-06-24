@@ -1,5 +1,4 @@
-import { TElement } from '@udecode/plate-core';
-import { atom } from 'jotai';
+import { atom, TElement } from '@udecode/plate-core';
 
 export const hoveredColIndexAtom = atom<number | null>(null);
 

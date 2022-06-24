@@ -1,7 +1,7 @@
-import { normalizeDescendantsToDocumentFragment } from '../../../common/utils/normalizeDescendantsToDocumentFragment';
 import { Value } from '../../../slate/editor/TEditor';
 import { EDescendant } from '../../../slate/node/TDescendant';
-import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { normalizeDescendantsToDocumentFragment } from '../../../utils/plate/normalizeDescendantsToDocumentFragment';
 import { htmlStringToDOMNode } from '../../html-serializer/utils/htmlStringToDOMNode';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
