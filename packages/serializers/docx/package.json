@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "13.3.1",
+  "version": "13.5.0",
   "description": "Docx serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -34,13 +34,13 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "13.1.0",
-    "@udecode/plate-heading": "13.1.0",
-    "@udecode/plate-image": "13.1.0",
-    "@udecode/plate-indent": "13.1.0",
-    "@udecode/plate-indent-list": "13.3.1",
-    "@udecode/plate-paragraph": "13.1.0",
-    "@udecode/plate-table": "13.3.0",
+    "@udecode/plate-core": "13.5.0",
+    "@udecode/plate-heading": "13.5.0",
+    "@udecode/plate-image": "13.5.0",
+    "@udecode/plate-indent": "13.5.0",
+    "@udecode/plate-indent-list": "13.5.0",
+    "@udecode/plate-paragraph": "13.5.0",
+    "@udecode/plate-table": "13.5.0",
     "validator": "^13.7.0"
   },
   "peerDependencies": {

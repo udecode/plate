@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 13.5.0
+
 ## 13.4.2
 
 ### Patch Changes
