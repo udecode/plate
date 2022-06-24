@@ -28,8 +28,6 @@ describe('when #space', () => {
       </editor>
     ) as any;
 
-    console.log(input);
-
     const editor = withAutoformat(
       withReact(input),
       mockPlugin({
