@@ -17,7 +17,7 @@ export const getRootProps = <V extends Value = Value>(
     leaf,
     text,
     ...rootProps
-  } = props;
+  } = props as StyledElementProps<V, EElement<V>> & StyledLeafProps<V>;
 
   return rootProps;
 };

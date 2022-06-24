@@ -54,16 +54,14 @@ export const ElementProvider = ({
   ...props
 }: JotaiProviderProps & {
   element: TElement;
-}) => {
-  return (
-    <JotaiProvider
-      initialValues={[[elementAtom, element]]}
-      scope={scope}
-      {...props}
-    >
-      <ElementProviderChild element={element} scope={scope}>
-        {children}
-      </ElementProviderChild>
-    </JotaiProvider>
-  );
-};
+}) => (
+  <JotaiProvider
+    initialValues={[[elementAtom, element]]}
+    scope={scope}
+    {...props}
+  >
+    <ElementProviderChild element={element} scope={scope}>
+      {children}
+    </ElementProviderChild>
+  </JotaiProvider>
+);

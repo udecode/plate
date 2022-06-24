@@ -17,7 +17,6 @@ describe('ImageElement', () => {
         editor: imgInput,
         plugins: [createImagePlugin()],
       });
-      jest.spyOn(core, 'useElement').mockReturnValue(imgInput.children[0]);
       jest.spyOn(core, 'usePlateEditorRef').mockReturnValue(editor as any);
       jest.spyOn(slateReact, 'useSelected').mockReturnValue(true);
 

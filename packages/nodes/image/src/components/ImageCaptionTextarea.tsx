@@ -10,7 +10,7 @@ import {
   useEditorRef,
 } from '@udecode/plate-core';
 import { useReadOnly } from 'slate-react';
-import { useImageElement } from '../hooks/useImageElement';
+import { useImageElement } from '../hooks/index';
 import { TImageElement } from '../types';
 
 export interface ImageCaptionTextareaProps

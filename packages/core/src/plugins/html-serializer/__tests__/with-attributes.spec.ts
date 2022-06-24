@@ -42,21 +42,20 @@ it('serialize link to html with attributes', () => {
 it('serialize image with alt to html', () => {
   const plugins = [createImagePlugin()];
 
+  const element = {
+    type: 'img',
+    url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+    attributes: { alt: 'Never gonna give you up' },
+    children: [],
+  };
+
   expect(
     htmlStringToDOMNode(
       serializeHtml(createPlateUIEditor({ plugins }), {
-        nodes: [
-          {
-            type: 'img',
-            url:
-              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-            attributes: { alt: 'Never gonna give you up' },
-            children: [],
-          },
-        ],
+        nodes: [element],
       })
     ).getElementsByTagName('img')[0].outerHTML
   ).toEqual(
-    '<img class="slate-ImageElement-img" src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up">'
+    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true" class="slate-ImageElement-img">'
   );
 });

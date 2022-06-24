@@ -1,5 +1,6 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
+import { ElementProvider } from '../../atoms/index';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { RenderElement } from '../../types/plate/RenderElement';
@@ -56,6 +57,10 @@ export const pluginRenderElement = <V extends Value>(
       }
     });
 
-    return component;
+    return (
+      <ElementProvider element={element} scope={key}>
+        {component}
+      </ElementProvider>
+    );
   }
 };

@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-core';
 import { Resizable, ResizableProps } from 're-resizable';
 import { useReadOnly } from 'slate-react';
-import { useImageElement } from '../hooks/useImageElement';
+import { useImageElement } from '../hooks/index';
 import { TImageElement } from '../types';
 import { useImageStore } from './Image';
 
