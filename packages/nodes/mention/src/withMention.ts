@@ -7,6 +7,7 @@ import {
   getPointBefore,
   getRange,
   insertNodes,
+  insertText,
   PlateEditor,
   setSelection,
   TNode,
@@ -35,7 +36,49 @@ export const withMention = <
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
 
-  const { apply, insertBreak, insertText, deleteBackward } = editor;
+  const {
+    apply,
+    insertBreak,
+    insertText: _insertText,
+    deleteBackward,
+    insertFragment: _insertFragment,
+    insertTextData,
+  } = editor;
+
+  const stripNewLineAndTrim: (text: string) => string = (text) => {
+    return text
+      .split(/\r\n|\r|\n/)
+      .map((line) => line.trim())
+      .join('');
+  };
+
+  editor.insertFragment = (fragment) => {
+    const inMentionInput = findMentionInput(editor) !== undefined;
+    if (!inMentionInput) {
+      return _insertFragment(fragment);
+    }
+
+    return insertText(
+      editor,
+      fragment.map((node) => stripNewLineAndTrim(getNodeString(node))).join('')
+    );
+  };
+
+  editor.insertTextData = (data) => {
+    const inMentionInput = findMentionInput(editor) !== undefined;
+    if (!inMentionInput) {
+      return insertTextData(data);
+    }
+
+    const text = data.getData('text/plain');
+    if (!text) {
+      return false;
+    }
+
+    editor.insertText(stripNewLineAndTrim(text));
+
+    return true;
+  };
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
@@ -60,7 +103,7 @@ export const withMention = <
       text !== trigger ||
       isSelectionInMentionInput(editor)
     ) {
-      return insertText(text);
+      return _insertText(text);
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
@@ -102,7 +145,7 @@ export const withMention = <
       return insertNodes<TMentionInputElement>(editor, data);
     }
 
-    return insertText(text);
+    return _insertText(text);
   };
 
   editor.apply = (operation) => {

@@ -5,3 +5,4 @@
 export * from './getHtmlDocument';
 export * from './jsx';
 export * from './hyperscript/index';
+export * from './createDataTransfer';

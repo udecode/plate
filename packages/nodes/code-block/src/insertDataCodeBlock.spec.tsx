@@ -3,17 +3,10 @@
 import { createPlateUIEditor } from '@udecode/plate';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { jsx } from '@udecode/plate-test-utils';
+import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 
 jsx;
-
-const createDataTransfer = (dataMap: Map<string, any> = new Map()) => {
-  return ({
-    getData: (key: string) => dataMap.get(key) ?? '',
-    setData: (key: string, value: string) => dataMap.set(key, value),
-  } as unknown) as DataTransfer;
-};
 
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];

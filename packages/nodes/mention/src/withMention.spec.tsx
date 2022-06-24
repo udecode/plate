@@ -6,7 +6,11 @@ import {
   ComboboxState,
 } from '@udecode/plate-combobox';
 import { moveSelection, PlateEditor, select, Value } from '@udecode/plate-core';
-import { jsx } from '@udecode/plate-test-utils';
+import {
+  createDataTransfer,
+  DataTransferDataMap,
+  jsx,
+} from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -477,6 +481,115 @@ describe('withMention', () => {
       editor.deleteForward('character');
       expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'a',
+      });
+    });
+  });
+
+  describe('paste', () => {
+    const testPaste: (
+      data: DataTransferDataMap,
+      input: JSX.Element,
+      expected: JSX.Element
+    ) => void = (data, input, expected) => {
+      const editor = createEditorWithMentionInput(input);
+
+      editor.insertData(createDataTransfer(data));
+
+      expect(editor.children).toEqual([expected]);
+    };
+
+    const testPasteBasic: (
+      data: DataTransferDataMap,
+      expected: string
+    ) => void = (data, expected) => {
+      testPaste(
+        data,
+        <hp>
+          <cursor />
+        </hp>,
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>{expected}</hmentioninput>
+          <htext />
+        </hp>
+      );
+    };
+
+    type PasteTestCase = {
+      data: DataTransferDataMap;
+      expected: string;
+    };
+
+    const basePasteTestSuite = ({
+      simple,
+      whitespace,
+      newLine,
+      newLineAndWhitespace,
+    }: {
+      simple: PasteTestCase;
+      whitespace: PasteTestCase;
+      newLine: PasteTestCase;
+      newLineAndWhitespace: PasteTestCase;
+    }): void => {
+      it('should paste the clipboard contents into mention as text', () =>
+        testPasteBasic(simple.data, simple.expected));
+
+      it('should merge lines', () =>
+        testPasteBasic(newLine.data, newLine.expected));
+
+      it('should trim the text', () =>
+        testPasteBasic(whitespace.data, whitespace.expected));
+
+      it('should trim every line before merging', () =>
+        testPasteBasic(
+          newLineAndWhitespace.data,
+          newLineAndWhitespace.expected
+        ));
+    };
+
+    describe('html', () => {
+      basePasteTestSuite({
+        simple: {
+          data: new Map([['text/html', '<html><body>hello</body></html>']]),
+          expected: 'hello',
+        },
+        whitespace: {
+          data: new Map([['text/html', '<html><body> hello </body></html>']]),
+          expected: 'hello',
+        },
+        newLine: {
+          data: new Map([
+            ['text/html', '<html><body>hello<br>world</body></html>'],
+          ]),
+          expected: 'helloworld',
+        },
+        newLineAndWhitespace: {
+          data: new Map([
+            ['text/html', '<html><body> hello <br> world </body></html>'],
+          ]),
+          expected: 'helloworld',
+        },
+      });
+    });
+
+    describe('plain text', () => {
+      basePasteTestSuite({
+        simple: {
+          data: new Map([['text/plain', 'hello']]),
+          expected: 'hello',
+        },
+        whitespace: {
+          data: new Map([['text/plain', ' hello ']]),
+          expected: 'hello',
+        },
+        newLine: {
+          data: new Map([['text/plain', 'hello\r\nworld\n!\r!']]),
+          expected: 'helloworld!!',
+        },
+        newLineAndWhitespace: {
+          data: new Map([['text/plain', ' hello \r\n world \n ! \r ! ']]),
+          expected: 'helloworld!!',
+        },
       });
     });
   });
