@@ -49,6 +49,7 @@ import {
   OverrideByKey,
   PlateEditor,
   PlatePlugin,
+  PlatePluginComponent,
   PlatePluginInsertData,
   PlatePluginProps,
   PlateProps,
@@ -71,14 +72,12 @@ import {
   usePlateEditorState,
   usePlateSelectors,
   WithOverride,
-  PlatePluginComponent,
 } from '@udecode/plate'
 import {
   ELEMENT_EXCALIDRAW,
   TExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw'
 import { CSSProperties } from 'styled-components'
-import { PortiveEditor } from 'slate-portive';
 
 /**
  * Text
@@ -288,7 +287,7 @@ export type MyValue = MyRootBlock[]
  * Editor types
  */
 
-export type MyEditor = PlateEditor<MyValue> & { isDragging?: boolean } & PortiveEditor
+export type MyEditor = PlateEditor<MyValue> & { isDragging?: boolean }
 export type MyReactEditor = TReactEditor<MyValue>
 export type MyNode = ENode<MyValue>
 export type MyNodeEntry = ENodeEntry<MyValue>
