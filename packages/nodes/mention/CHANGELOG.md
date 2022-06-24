@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 13.4.1
+
 ## 13.4.0
 
 ### Minor Changes
