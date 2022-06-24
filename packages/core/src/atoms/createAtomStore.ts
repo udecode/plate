@@ -77,15 +77,18 @@ export const createAtomStore = <T, IT, N extends string = ''>(
   const useStoreIndex = getUseStoreIndex(name);
   const storeIndex = getStoreIndex(name);
 
-  const getAtoms = (initialStore?.[useInitialStoreIndex]().get ??
-    {}) as GetRecord<T & IT>;
-  const setAtoms = (initialStore?.[useInitialStoreIndex]().set ??
-    {}) as SetRecord<T & IT>;
-  const useAtoms = (initialStore?.[useInitialStoreIndex]().use ??
-    {}) as UseRecord<T & IT>;
-  const atoms = (initialStore?.[initialStoreIndex].atom ?? {}) as AtomRecord<
-    T & IT
-  >;
+  const getAtoms = initialStore
+    ? initialStore[useInitialStoreIndex]().get
+    : ({} as GetRecord<T & IT>);
+  const setAtoms = initialStore
+    ? initialStore[useInitialStoreIndex]().set
+    : ({} as SetRecord<T & IT>);
+  const useAtoms = initialStore
+    ? initialStore[useInitialStoreIndex]().use
+    : ({} as UseRecord<T & IT>);
+  const atoms = initialStore
+    ? initialStore[initialStoreIndex].atom
+    : ({} as AtomRecord<T & IT>);
 
   Object.keys(initialState).forEach((key) => {
     const atomConfig = atom(initialState[key]);

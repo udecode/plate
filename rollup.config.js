@@ -131,6 +131,7 @@ export default [
     external: [
       ...Object.keys(PKG_JSON.dependencies || {}),
       ...Object.keys(PKG_JSON.peerDependencies || {}),
+      'react-textarea-autosize',
     ],
     // external(id) {
     //      return Object.keys(PKG_JSON.dependencies || {})

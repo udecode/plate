@@ -5,10 +5,12 @@ module.exports = function plugin(context, options) {
       if (process.env.NODE_ENV === 'development') {
         return {
           devtool: 'source-map',
+          debug: true,
         };
       }
 
-      return {};
+      console.log('hey');
+      return { devtool: 'source-map' };
     },
   };
 };
