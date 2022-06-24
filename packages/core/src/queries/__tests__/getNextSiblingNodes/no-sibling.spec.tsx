@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { Value } from '../../../slate/editor/TEditor';
 import { TDescendant } from '../../../slate/node/TDescendant';
 import { PlateEditor } from '../../../types/plate/PlateEditor';

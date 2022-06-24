@@ -1,4 +1,4 @@
-import { getHandler } from '../../../utils/index';
+import { getHandler } from '../../index';
 
 it('should be', () => {
   getHandler(undefined)();

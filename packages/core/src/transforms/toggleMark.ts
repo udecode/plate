@@ -1,9 +1,9 @@
 import castArray from 'lodash/castArray';
+import { isMarkActive } from '../queries/isMarkActive';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
 import { EMarks } from '../slate/text/TText';
 import { ToggleMarkPlugin } from '../types/plugin/ToggleMarkPlugin';
-import { isMarkActive } from '../queries/isMarkActive';
 import { removeMark } from './removeMark';
 
 export interface ToggleMarkOptions<

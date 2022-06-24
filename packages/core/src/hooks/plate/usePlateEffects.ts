@@ -9,8 +9,8 @@ import {
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { PlateEditor } from '../../types/plate/PlateEditor';
-import { createTEditor } from '../../utils/slate/createTEditor';
 import { setPlatePlugins } from '../../utils/plate/setPlatePlugins';
+import { createTEditor } from '../../utils/slate/createTEditor';
 import { usePlateStoreEffects } from './usePlateStoreEffects';
 
 /**

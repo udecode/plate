@@ -1,6 +1,6 @@
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { TElement } from '../../../slate/element/TElement';
-import { createNode } from '../../../utils/index';
+import { createNode } from '../../index';
 
 const output: TElement = { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] };
 

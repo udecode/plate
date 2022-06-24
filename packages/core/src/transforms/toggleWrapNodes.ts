@@ -1,8 +1,8 @@
+import { someNode } from '../queries/someNode';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { TElement } from '../slate/element/TElement';
 import { unwrapNodes } from '../slate/transforms/unwrapNodes';
 import { wrapNodes } from '../slate/transforms/wrapNodes';
-import { someNode } from '../queries/someNode';
 
 /**
  * Unwrap if the node type is in selection.

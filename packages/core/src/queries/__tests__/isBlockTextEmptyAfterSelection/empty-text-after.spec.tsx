@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/plate-test-utils';
 import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { jsx } from '@udecode/plate-test-utils';
 import { Value } from '../../../slate/editor/TEditor';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { createPlateEditor } from '../../../utils/plate/createPlateEditor';

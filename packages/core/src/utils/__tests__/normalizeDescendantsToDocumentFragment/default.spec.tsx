@@ -2,7 +2,7 @@
 import { createPlateUIEditor } from '@udecode/plate/src/index';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { normalizeDescendantsToDocumentFragment } from '../../../utils/index';
+import { normalizeDescendantsToDocumentFragment } from '../../index';
 
 jsx;
 

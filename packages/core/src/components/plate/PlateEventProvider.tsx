@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
-import { withHOC } from '../../utils/react/withHOC';
 import { useEventPlateId } from '../../stores/event-editor/selectors/useEventPlateId';
+import { withHOC } from '../../utils/react/withHOC';
 import { PlateProvider } from './PlateProvider';
 
 export const PlateEventProvider = ({

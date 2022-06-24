@@ -1,8 +1,8 @@
 import { Path } from 'slate';
+import { getBlockAbove } from '../queries/index';
 import { getEndPoint } from '../slate/editor/getEndPoint';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { select } from '../slate/transforms/select';
-import { getBlockAbove } from '../queries/index';
 
 /**
  * Select the end point of the block above the selection.

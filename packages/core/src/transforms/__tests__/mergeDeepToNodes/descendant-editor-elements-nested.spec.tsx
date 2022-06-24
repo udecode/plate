@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/plate-test-utils';
 import { ELEMENT_LI } from '@udecode/plate-list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '../../../slate/node/TDescendant';
 import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
 

@@ -1,9 +1,9 @@
+import { someNode } from '../queries/someNode';
 import { GetNodeEntriesOptions } from '../slate/editor/getNodeEntries';
 import { Value } from '../slate/editor/TEditor';
 import { ELEMENT_DEFAULT } from '../types/plate/node.types';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { getPluginType } from '../utils/plate/getPluginType';
-import { someNode } from '../queries/someNode';
 import { setElements } from './setElements';
 
 export interface ToggleNodeTypeOptions {
