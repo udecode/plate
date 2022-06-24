@@ -1,3 +1,4 @@
+import React from 'react'
 import { CursorOverlay, CursorOverlayProps } from '@udecode/plate'
 import { cursorStore } from '../plugins'
 

@@ -1,3 +1,4 @@
+import React from 'react'
 import { DragIndicator } from '@styled-icons/material/DragIndicator'
 import Tippy, { TippyProps } from '@tippyjs/react'
 import {

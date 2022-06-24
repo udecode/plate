@@ -1,16 +1,14 @@
-module.exports = function plugin(context, options) {
+module.exports = function plugin() {
   return {
     name: 'docusaurus-plugin-source-maps',
     configureWebpack() {
       if (process.env.NODE_ENV === 'development') {
         return {
           devtool: 'source-map',
-          debug: true,
         };
       }
 
-      console.log('hey');
-      return { devtool: 'source-map' };
+      return {};
     },
   };
 };

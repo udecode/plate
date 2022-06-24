@@ -1,5 +1,6 @@
 import 'tippy.js/animations/scale.css'
 import 'tippy.js/dist/tippy.css'
+import React from 'react'
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt'
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock'
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight'

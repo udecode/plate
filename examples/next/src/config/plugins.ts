@@ -9,18 +9,18 @@ import {
   createItalicPlugin,
   createParagraphPlugin,
   createPlateUI,
-  createPlugins,
   createSelectOnBackspacePlugin,
   createStrikethroughPlugin,
   createSubscriptPlugin,
   createSuperscriptPlugin,
   createUnderlinePlugin,
   findEventRange,
-} from '@udecode/plate';
-import { createStore } from '@udecode/zustood';
-import { CONFIG } from './config';
+} from '@udecode/plate'
+import { createStore } from '@udecode/zustood'
+import { CONFIG } from './config'
+import { createMyPlugins, MyPlatePlugin } from './typescript'
 
-const basicElements = createPlugins(
+const basicElements = createMyPlugins(
   [
     createBlockquotePlugin(),
     createCodeBlockPlugin(),
@@ -30,9 +30,9 @@ const basicElements = createPlugins(
   {
     components: createPlateUI(),
   }
-);
+)
 
-const basicMarks = createPlugins(
+const basicMarks = createMyPlugins(
   [
     createBoldPlugin(),
     createCodePlugin(),
@@ -45,15 +45,15 @@ const basicMarks = createPlugins(
   {
     components: createPlateUI(),
   }
-);
+)
 
 export const PLUGINS = {
   basicElements,
   basicMarks,
-  basicNodes: createPlugins([...basicElements, ...basicMarks], {
+  basicNodes: createMyPlugins([...basicElements, ...basicMarks], {
     components: createPlateUI(),
   }),
-  image: createPlugins(
+  image: createMyPlugins(
     [
       createBasicElementsPlugin(),
       ...basicMarks,
@@ -64,18 +64,20 @@ export const PLUGINS = {
       components: createPlateUI(),
     }
   ),
-};
+}
 
 export const cursorStore = createStore('cursor')({
   cursors: {},
-});
+})
 
-export const createDragOverCursorPlugin = () => ({
+export const createDragOverCursorPlugin = (): MyPlatePlugin => ({
   key: 'drag-over-cursor',
   handlers: {
     onDragOver: (editor) => (event) => {
-      const range = findEventRange(editor, event);
-      if (!range) return;
+      if (editor.isDragging) return
+
+      const range = findEventRange(editor, event)
+      if (!range) return
 
       cursorStore.set.cursors({
         drag: {
@@ -89,16 +91,16 @@ export const createDragOverCursorPlugin = () => ({
           },
           selection: range,
         },
-      });
+      })
     },
     onDragLeave: () => () => {
-      cursorStore.set.cursors({});
+      cursorStore.set.cursors({})
     },
     onDragEnd: () => () => {
-      cursorStore.set.cursors({});
+      cursorStore.set.cursors({})
     },
     onDrop: () => () => {
-      cursorStore.set.cursors({});
+      cursorStore.set.cursors({})
     },
   },
-});
+})

@@ -6,9 +6,8 @@ title: Typescript
 :::note
 
 The core types will be the default of Slate in the near future, see [this PR](https://github.com/ianstormtaylor/slate/pull/4177).
-
-These are provided by Plate core in the meantime. 
-See our full [Typescript example here](https://github.com/udecode/plate/blob/main/docs/src/live/examples/typescript.ts).
+ 
+See our full [Typescript example here](https://github.com/udecode/plate/blob/main/examples/next/src/config/typescript.ts).
 
 :::
 
@@ -28,14 +27,26 @@ First, let's create a new file to define our `MyValue` type, which will be the t
  */
 
 export type EmptyText = {
-  text: '';
-};
+  text: ''
+}
+
+export type PlainText = {
+  text: string
+}
 
 export interface RichText extends TText {
-  bold?: boolean;
-  italic?: boolean;
-  code?: boolean;
-  underline?: boolean;
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  strikethrough?: boolean
+  code?: boolean
+  kbd?: boolean
+  subscript?: boolean
+  backgroundColor?: CSSProperties['backgroundColor']
+  fontFamily?: CSSProperties['fontFamily']
+  color?: CSSProperties['color']
+  fontSize?: CSSProperties['fontSize']
+  fontWeight?: CSSProperties['fontWeight']
 }
 
 /**
@@ -43,78 +54,179 @@ export interface RichText extends TText {
  */
 
 export interface MyLinkElement extends TLinkElement {
-  type: typeof ELEMENT_LINK;
-  children: RichText[];
+  type: typeof ELEMENT_LINK
+  children: RichText[]
 }
 
-export type MyInlineElement = TLinkElement;
-export type MyInlineDescendant = MyInlineElement | RichText;
-export type MyInlineChildren = MyInlineDescendant[];
+export interface MyMentionInputElement extends TMentionInputElement {
+  type: typeof ELEMENT_MENTION_INPUT
+  children: [PlainText]
+}
+
+export interface MyMentionElement extends TMentionElement {
+  type: typeof ELEMENT_MENTION
+  children: [EmptyText]
+}
+
+export type MyInlineElement =
+  | MyLinkElement
+  | MyMentionElement
+  | MyMentionInputElement
+export type MyInlineDescendant = MyInlineElement | RichText
+export type MyInlineChildren = MyInlineDescendant[]
+
+/**
+ * Block props
+ */
+
+export interface MyIndentProps {
+  indent?: number
+}
+
+export interface MyIndentListProps extends MyIndentProps {
+  listStart?: number
+  listStyleType?: string
+}
+
+export interface MyLineHeightProps {
+  lineHeight?: CSSProperties['lineHeight']
+}
+
+export interface MyAlignProps {
+  textAlign?: CSSProperties['textAlign']
+}
+
+export interface MyBlockElement
+  extends TElement,
+    MyIndentListProps,
+    MyLineHeightProps {
+  id?: string
+}
 
 /**
  * Blocks
  */
 
-export interface MyParagraphElement extends TElement {
-  type: typeof ELEMENT_PARAGRAPH;
-  children: MyInlineChildren;
+export interface MyParagraphElement extends MyBlockElement {
+  type: typeof ELEMENT_PARAGRAPH
+  children: MyInlineChildren
 }
 
-export interface MyBulletedListElement extends TElement {
-  type: typeof ELEMENT_UL;
-  children: MyListItemElement[];
+export interface MyH1Element extends MyBlockElement {
+  type: typeof ELEMENT_H1
+  children: MyInlineChildren
 }
 
-export interface MyNumberedListElement extends TElement {
-  type: typeof ELEMENT_OL;
-  children: MyListItemElement[];
+export interface MyH2Element extends MyBlockElement {
+  type: typeof ELEMENT_H2
+  children: MyInlineChildren
 }
 
-export interface MyListItemElement extends TElement {
-  type: typeof ELEMENT_LI;
-  children: MyInlineChildren;
+export interface MyH3Element extends MyBlockElement {
+  type: typeof ELEMENT_H3
+  children: MyInlineChildren
 }
 
-export interface MyHeadingElement extends TElement {
-  type: typeof ELEMENT_H1;
-  children: MyInlineChildren;
+export interface MyBlockquoteElement extends MyBlockElement {
+  type: typeof ELEMENT_BLOCKQUOTE
+  children: MyInlineChildren
 }
 
-export interface MyImageElement extends TImageElement {
-  type: typeof ELEMENT_IMAGE;
-  children: [EmptyText];
+export interface MyCodeBlockElement extends MyBlockElement {
+  type: typeof ELEMENT_CODE_BLOCK
+  children: MyCodeLineElement[]
 }
 
-export interface MyQuoteElement extends TElement {
-  type: typeof ELEMENT_BLOCKQUOTE;
-  children: MyInlineChildren;
+export interface MyCodeLineElement extends TElement {
+  type: typeof ELEMENT_CODE_LINE
+  children: PlainText[]
 }
 
-export interface MyTableElement extends TTableElement {
-  type: typeof ELEMENT_TABLE;
-  children: MyTableRowElement[];
+export interface MyTableElement extends TTableElement, MyBlockElement {
+  type: typeof ELEMENT_TABLE
+  children: MyTableRowElement[]
 }
 
 export interface MyTableRowElement extends TElement {
-  type: typeof ELEMENT_TR;
-  children: MyTableCellElement[];
+  type: typeof ELEMENT_TR
+  children: MyTableCellElement[]
 }
 
 export interface MyTableCellElement extends TElement {
-  type: typeof ELEMENT_TD;
-  children: MyNestableBlock[];
+  type: typeof ELEMENT_TD
+  children: MyNestableBlock[]
 }
 
-export type MyNestableBlock =
+export interface MyBulletedListElement extends TElement, MyBlockElement {
+  type: typeof ELEMENT_UL
+  children: MyListItemElement[]
+}
+
+export interface MyNumberedListElement extends TElement, MyBlockElement {
+  type: typeof ELEMENT_OL
+  children: MyListItemElement[]
+}
+
+export interface MyListItemElement extends TElement, MyBlockElement {
+  type: typeof ELEMENT_LI
+  children: MyInlineChildren
+}
+
+export interface MyTodoListElement
+  extends TTodoListItemElement,
+    MyBlockElement {
+  type: typeof ELEMENT_TODO_LI
+  children: MyInlineChildren
+}
+
+export interface MyImageElement extends TImageElement, MyBlockElement {
+  type: typeof ELEMENT_IMAGE
+  children: [EmptyText]
+}
+
+export interface MyMediaEmbedElement
+  extends TMediaEmbedElement,
+    MyBlockElement {
+  type: typeof ELEMENT_MEDIA_EMBED
+  children: [EmptyText]
+}
+
+export interface MyHrElement extends MyBlockElement {
+  type: typeof ELEMENT_HR
+  children: [EmptyText]
+}
+
+export interface MyExcalidrawElement
+  extends TExcalidrawElement,
+    MyBlockElement {
+  type: typeof ELEMENT_EXCALIDRAW
+  children: [EmptyText]
+}
+
+export type MyNestableBlock = MyParagraphElement
+
+export type MyBlock = Exclude<MyElement, MyInlineElement>
+export type MyBlockEntry = TNodeEntry<MyBlock>
+
+export type MyRootBlock =
   | MyParagraphElement
-  | MyImageElement
+  | MyH1Element
+  | MyH2Element
+  | MyH3Element
+  | MyBlockquoteElement
+  | MyCodeBlockElement
+  | MyTableElement
   | MyBulletedListElement
   | MyNumberedListElement
-  | MyQuoteElement;
+  | MyTodoListElement
+  | MyImageElement
+  | MyMediaEmbedElement
+  | MyHrElement
+  | MyExcalidrawElement
 
-export type MyBlock = MyHeadingElement | MyTableElement | MyNestableBlock;
+export type MyValue = MyRootBlock[]
 
-export type MyValue = MyBlock[];
+
 ```
 
 :::note
@@ -134,86 +246,90 @@ The following types are optional but highly recommended, writing generic types a
  * Editor types
  */
 
-// { typescript: boolean } is an example of extending the editor
-export type MyEditor = PlateEditor<MyValue> & { typescript: boolean };
-export type MyReactEditor = TReactEditor<MyValue>;
-export type MyNode = ENode<MyValue>;
-export type MyNodeEntry = ENodeEntry<MyValue>;
-export type MyElement = EElement<MyValue>;
-export type MyElementEntry = EElementEntry<MyValue>;
-export type MyText = EText<MyValue>;
-export type MyTextEntry = ETextEntry<MyValue>;
-export type MyElementOrText = EElementOrText<MyValue>;
-export type MyDescendant = EDescendant<MyValue>;
-export type MyMarks = EMarks<MyValue>;
-export type MyMark = keyof MyMarks;
+export type MyEditor = PlateEditor<MyValue> & { isDragging?: boolean }
+export type MyReactEditor = TReactEditor<MyValue>
+export type MyNode = ENode<MyValue>
+export type MyNodeEntry = ENodeEntry<MyValue>
+export type MyElement = EElement<MyValue>
+export type MyElementEntry = EElementEntry<MyValue>
+export type MyText = EText<MyValue>
+export type MyTextEntry = ETextEntry<MyValue>
+export type MyElementOrText = EElementOrText<MyValue>
+export type MyDescendant = EDescendant<MyValue>
+export type MyMarks = EMarks<MyValue>
+export type MyMark = keyof MyMarks
 
 /**
  * Plate types
  */
 
-export type MyDecorate<P = PluginOptions> = Decorate<P, MyValue, MyEditor>;
-export type MyDecorateEntry = DecorateEntry<MyValue>;
-export type MyDOMHandler<P = PluginOptions> = DOMHandler<P, MyValue, MyEditor>;
-export type MyInjectComponent = InjectComponent<MyValue>;
-export type MyInjectProps = InjectProps<MyValue>;
+export type MyDecorate<P = PluginOptions> = Decorate<P, MyValue, MyEditor>
+export type MyDecorateEntry = DecorateEntry<MyValue>
+export type MyDOMHandler<P = PluginOptions> = DOMHandler<P, MyValue, MyEditor>
+export type MyInjectComponent = InjectComponent<MyValue>
+export type MyInjectProps = InjectProps<MyValue>
 export type MyKeyboardHandler<P = PluginOptions> = KeyboardHandler<
   P,
   MyValue,
   MyEditor
->;
-export type MyOnChange<P = PluginOptions> = OnChange<P, MyValue, MyEditor>;
-export type MyOverrideByKey = OverrideByKey<MyValue, MyEditor>;
-export type MyPlatePlugin<P = PluginOptions> = PlatePlugin<
-  P,
-  MyValue,
-  MyEditor
->;
-export type MyPlatePluginInsertData = PlatePluginInsertData<MyValue>;
-export type MyPlatePluginProps = PlatePluginProps<MyValue>;
-export type MyPlateProps = PlateProps<MyValue, MyEditor>;
-export type MySerializeHtml = SerializeHtml<MyValue>;
+>
+export type MyOnChange<P = PluginOptions> = OnChange<P, MyValue, MyEditor>
+export type MyOverrideByKey = OverrideByKey<MyValue, MyEditor>
+export type MyPlatePlugin<P = PluginOptions> = PlatePlugin<P, MyValue, MyEditor>
+export type MyPlatePluginInsertData = PlatePluginInsertData<MyValue>
+export type MyPlatePluginProps = PlatePluginProps<MyValue>
+export type MyPlateProps = PlateProps<MyValue, MyEditor>
+export type MySerializeHtml = SerializeHtml<MyValue>
 export type MyWithOverride<P = PluginOptions> = WithOverride<
   P,
   MyValue,
   MyEditor
->; 
+>
+export type MyAutoformatRule = AutoformatRule<MyValue, MyEditor>
 ```
 
 Finally, let's define typed functions:
 
 ```tsx
+
 /**
  * Plate store, Slate context
  */
 
 export const getMyEditor = (editor: MyEditor) =>
-  getTEditor<MyValue, MyEditor>(editor);
-export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
-export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
+  getTEditor<MyValue, MyEditor>(editor)
+export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>()
+export const useMyEditorState = () => useEditorState<MyValue, MyEditor>()
 export const useMyPlateEditorRef = (id?: string) =>
-  usePlateEditorRef<MyValue, MyEditor>(id);
+  usePlateEditorRef<MyValue, MyEditor>(id)
 export const getMyPlateEditorRef = (id?: string) =>
-  getPlateEditorRef<MyValue, MyEditor>(id);
+  getPlateEditorRef<MyValue, MyEditor>(id)
 export const useMyPlateEditorState = (id?: string) =>
-  usePlateEditorState<MyValue, MyEditor>(id);
+  usePlateEditorState<MyValue, MyEditor>(id)
 export const useMyPlateSelectors = (id?: string) =>
-  usePlateSelectors<MyValue, MyEditor>(id);
+  usePlateSelectors<MyValue, MyEditor>(id)
 export const getMyPlateSelectors = (id?: string) =>
-  getPlateSelectors<MyValue, MyEditor>(id);
+  getPlateSelectors<MyValue, MyEditor>(id)
 export const getMyPlateActions = (id?: string) =>
-  getPlateActions<MyValue, MyEditor>(id);
+  getPlateActions<MyValue, MyEditor>(id)
 
 /**
  * Utils
  */
-
+export const createMyEditor = () => createTEditor() as MyEditor
 export const createMyPlateEditor = (
   options: CreatePlateEditorOptions<MyValue, MyEditor> = {}
-) => createPlateEditor<MyValue, MyEditor>(options);
+) => createPlateEditor<MyValue, MyEditor>(options)
 export const createMyPluginFactory = <P = PluginOptions>(
   defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
-) => createPluginFactory(defaultPlugin);
+) => createPluginFactory(defaultPlugin)
+export const createMyPlugins = (
+  plugins: MyPlatePlugin[],
+  options?: {
+    components?: Record<string, PlatePluginComponent>
+    overrideByKey?: MyOverrideByKey
+  }
+) => createPlugins<MyValue, MyEditor>(plugins, options)) => createPluginFactory(defaultPlugin);
 ```
 
 Usage example:

@@ -17,6 +17,7 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
 () => {
   let components = createPlateUI();
   components = withStyledPlaceHolders(components);
+  components = withStyledDraggables(components);
 
   const plugins = createPlugins(
     [
@@ -107,7 +108,7 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
     const containerRef = useRef()
 
     return (
-      <>
+      <DndProvider backend={HTML5Backend}>
         <Toolbar />
         
         <div ref={containerRef} style={{ position: 'relative' }}>
@@ -124,7 +125,7 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
             <CursorOverlayContainer containerRef={containerRef} />
           </Plate>
         </div>
-      </>
+      </DndProvider>
     );
   }
 

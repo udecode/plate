@@ -2,6 +2,35 @@ import 'prismjs/themes/prism.css';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { preFormat } from '@example/config/autoformat/autoformatUtils';
+import {
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  HighlightToolbarButton,
+  IndentToolbarButtons,
+  KbdToolbarButton,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
+} from '@example/config/components/Toolbars';
+import { withStyledDraggables } from '@example/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '@example/config/components/withStyledPlaceHolders';
+import { CONFIG } from '@example/config/config';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from '@example/config/plugins';
+import { VALUES } from '@example/config/values/values';
+import {
+  createEditableVoidPlugin,
+  EDITABLE_VOID,
+} from '@example/examples/editable-voids/createEditableVoidPlugin';
+import { EditableVoidElement } from '@example/examples/editable-voids/EditableVoidElement';
+import { IFrame } from '@example/examples/iframe/IFrame';
+import { createPreviewPlugin } from '@example/examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from '@example/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
@@ -202,35 +231,6 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { clearBlockFormat } from './config/autoformat/autoformatUtils';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  HighlightToolbarButton,
-  IndentToolbarButtons,
-  KbdToolbarButton,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from './config/components/Toolbars';
-import { withStyledDraggables } from './config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
-import { CONFIG } from './config/config';
-import {
-  createDragOverCursorPlugin,
-  cursorStore,
-  PLUGINS,
-} from './config/plugins';
-import { VALUES } from './config/values/values';
-import {
-  createEditableVoidPlugin,
-  EDITABLE_VOID,
-} from './examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
-import { IFrame } from './examples/iframe/IFrame';
-import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from './examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { HighlightHTML } from './utils/HighlightHTML';
 
 // Add react-live imports you need here
@@ -260,7 +260,7 @@ const ReactLiveScope = {
   BorderRight,
   BorderTop,
   Check,
-  clearBlockFormat,
+  preFormat,
   CodeAlt,
   CodeBlock,
   CodeBlockElement,

@@ -1,5 +1,5 @@
 import 'tippy.js/dist/tippy.css'
-import { useMemo, useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import {

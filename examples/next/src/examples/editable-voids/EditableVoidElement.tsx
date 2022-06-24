@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
@@ -7,9 +7,9 @@ import {
   createSoftBreakPlugin,
   Plate,
   PlateRenderElementProps,
-} from '@udecode/plate';
-import { CONFIG } from '../../config/config';
-import { VALUES } from '../../config/values/values';
+} from '@udecode/plate'
+import { CONFIG } from '../../config/config'
+import { VALUES } from '../../config/values/values'
 
 const plugins = createPlugins(
   [
@@ -21,13 +21,13 @@ const plugins = createPlugins(
   {
     components: CONFIG.components,
   }
-);
+)
 
 export const EditableVoidElement = <V extends Value>({
   attributes,
   children,
 }: PlateRenderElementProps<V, TElement>) => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState('')
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
@@ -39,7 +39,7 @@ export const EditableVoidElement = <V extends Value>({
           type="text"
           value={inputValue}
           onChange={(e) => {
-            setInputValue(e.target.value);
+            setInputValue(e.target.value)
           }}
         />
         <h4>Left or right handed:</h4>
@@ -70,5 +70,5 @@ export const EditableVoidElement = <V extends Value>({
       </div>
       {children}
     </div>
-  );
-};
+  )
+}
