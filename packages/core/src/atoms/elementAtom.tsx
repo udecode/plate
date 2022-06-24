@@ -1,22 +1,22 @@
 import React, { useEffect } from 'react';
-import { useAtom } from 'jotai';
 import { Scope } from 'jotai/core/atom';
 import { TElement } from '../slate/index';
-import {
-  atom,
-  JotaiProvider,
-  JotaiProviderProps,
-  useAtomValue,
-} from '../utils/index';
-
-export const elementAtom = atom<TElement | null>(null);
+import { JotaiProvider, JotaiProviderProps } from '../utils/index';
+import { createAtomStore } from './createAtomStore';
 
 export const SCOPE_ELEMENT = Symbol('element');
+
+export const { elementStore, useElementStore } = createAtomStore(
+  {
+    element: (null as unknown) as TElement,
+  },
+  { scope: SCOPE_ELEMENT, name: 'element' as const }
+);
 
 export const useElement = <T extends TElement = TElement>(
   pluginKey: string
 ) => {
-  const value = useAtomValue(elementAtom, pluginKey);
+  const value = useElementStore().get.element(pluginKey);
 
   if (!value)
     throw new Error(
@@ -25,9 +25,6 @@ export const useElement = <T extends TElement = TElement>(
 
   return value as T;
 };
-
-export const useSetElement = (pluginKey: string) =>
-  useAtom(elementAtom, pluginKey)[1];
 
 export const ElementProviderChild = ({
   element,
@@ -38,7 +35,7 @@ export const ElementProviderChild = ({
   scope: Scope;
   children: any;
 }) => {
-  const setElement = useSetElement(scope as string);
+  const setElement = useElementStore().set.element(scope);
 
   useEffect(() => {
     setElement(element);
@@ -56,7 +53,7 @@ export const ElementProvider = ({
   element: TElement;
 }) => (
   <JotaiProvider
-    initialValues={[[elementAtom, element]]}
+    initialValues={[[elementStore.atom.element, element]]}
     scope={scope}
     {...props}
   >

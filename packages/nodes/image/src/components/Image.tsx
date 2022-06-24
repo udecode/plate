@@ -1,25 +1,24 @@
 import { CSSProperties } from 'react';
 import {
-  createAtomStore,
   createComponentAs,
   createElementAs,
+  elementStore,
   HTMLPropsAs,
   PlateRenderElementProps,
   useComposedRef,
   Value,
 } from '@udecode/plate-core';
-import { ELEMENT_IMAGE } from '../createImagePlugin';
 import { TImageElement } from '../types';
 import { ImageCaption } from './ImageCaption';
 import { ImageCaptionTextarea } from './ImageCaptionTextarea';
 import { ImageImg } from './ImageImg';
 import { ImageResizable } from './ImageResizable';
 
-export const useImageStore = createAtomStore(
+export const { imageStore, useImageStore } = elementStore.extend(
   {
     width: 0 as CSSProperties['width'],
   },
-  ELEMENT_IMAGE
+  { name: 'image' as const }
 );
 
 export type ImageProps = PlateRenderElementProps<Value, TImageElement> &
