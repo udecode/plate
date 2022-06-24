@@ -65,8 +65,8 @@ export const testDocxDeserializer = ({
         createBasicElementsPlugin(),
         createBasicMarksPlugin(),
         createTablePlugin(),
-        createLineHeightPlugin(CONFIG.lineHeight),
-        createAlignPlugin(CONFIG.align),
+        createLineHeightPlugin(CONFIG.lineHeight as any),
+        createAlignPlugin(CONFIG.align as any),
         createIndentPlugin({
           inject: {
             props: {

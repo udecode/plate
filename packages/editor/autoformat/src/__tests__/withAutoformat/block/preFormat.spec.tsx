@@ -31,7 +31,7 @@ const output = (
 it('should autoformat', () => {
   const editor = withAutoformat(
     withReact(input),
-    mockPlugin(CONFIG.autoformat)
+    mockPlugin(CONFIG.autoformat as any)
   );
 
   editor.insertText(' ');

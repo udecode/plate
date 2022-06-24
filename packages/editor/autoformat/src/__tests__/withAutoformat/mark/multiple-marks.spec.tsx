@@ -34,7 +34,7 @@ describe('when inserting ***', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText('*');

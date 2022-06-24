@@ -32,7 +32,7 @@ describe('when --space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText('-');
@@ -65,7 +65,7 @@ describe('when (tm)', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText(')');
@@ -98,7 +98,7 @@ describe('when &sect', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText(';');
@@ -131,7 +131,7 @@ describe('when //', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText('/');
@@ -174,7 +174,7 @@ describe('when typing %%%', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText('%');

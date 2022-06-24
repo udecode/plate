@@ -77,11 +77,11 @@ const PlateContainer = () => {
       // TODO: fix type
       createAutoformatPlugin(CONFIG.autoformat as any),
       createResetNodePlugin(CONFIG.resetBlockType as any),
-      createSoftBreakPlugin(CONFIG.softBreak),
-      createExitBreakPlugin(CONFIG.exitBreak),
-      createNormalizeTypesPlugin(CONFIG.forceLayout),
-      createTrailingBlockPlugin(CONFIG.trailingBlock),
-      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+      createSoftBreakPlugin(CONFIG.softBreak as any),
+      createExitBreakPlugin(CONFIG.exitBreak as any),
+      createNormalizeTypesPlugin(CONFIG.forceLayout as any),
+      createTrailingBlockPlugin(CONFIG.trailingBlock as any),
+      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace as any),
     ],
     {
       components: createPlateUI(),
@@ -90,7 +90,7 @@ const PlateContainer = () => {
 
   return (
     <Plate
-      editableProps={CONFIG.editableProps}
+      editableProps={CONFIG.editableProps as any}
       initialValue={VALUES.playground}
       plugins={plugins}
     >
