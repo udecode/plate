@@ -1,0 +1,38 @@
+---
+slug: /plugins/excalidraw
+title: Excalidraw
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-excalidraw
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createExcalidrawPlugin({
+      component: ExcalidrawElement
+    }),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_EXCALIDRAW] }}}),
+  ];
+     
+  return (
+    <Plate
+      id="excalidraw"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.excalidraw}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/ui/nodes/excalidraw/src/createExcalidrawPlugin.ts)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

@@ -1,0 +1,61 @@
+---
+slug: /plugins/image
+title: Image
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-image
+npm install @udecode/plate-ui-image
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createImagePlugin(),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_IMAGE] }}}),
+  ], {
+    components: CONFIG.components,
+  });
+
+  return (
+    <>
+      <PlateProvider id="image">
+        <HeadingToolbar>
+          <ImageToolbarButton icon={<Image />} />
+        </HeadingToolbar>
+      </PlateProvider>
+      <Plate
+        id="image"
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.image}
+        plugins={plugins}
+      />
+    </>
+  );
+}
+```
+
+### Options
+
+```tsx
+export interface ImagePlugin {
+  /**
+   * An optional method that will upload the image to a server.
+   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+   */
+  uploadImage?: (
+    dataUrl: string | ArrayBuffer
+  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/image/src/createImagePlugin.ts)
+- [packages/ui/nodes/image](https://github.com/udecode/plate/tree/main/packages/ui/nodes/image/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

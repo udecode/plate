@@ -1,0 +1,66 @@
+---
+slug: /plugins/link
+title: Link
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-link
+npm install @udecode/plate-ui-link
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createLinkPlugin()
+  ], {
+    components: CONFIG.components,
+  });
+
+  return (
+    <>
+      <HeadingToolbar>
+        <LinkToolbarButton icon={<Link />} />
+      </HeadingToolbar>
+      <Plate
+        id="link"
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.link}
+        plugins={plugins}
+      />
+    </>
+  );
+}
+```
+
+### Options
+
+```tsx
+interface LinkPlugin extends HotkeyPlugin {
+  /**
+   * Allow custom config for rangeBeforeOptions.
+   */
+  rangeBeforeOptions?: RangeBeforeOptions;
+
+  /**
+   * Callback to validate an url.
+   */
+  isUrl?: (text: string) => boolean;
+
+  /**
+   * On keyboard shortcut or toolbar mousedown, get the link url by calling this promise. The
+   * default behavior is to use the browser's native `prompt`.
+   */
+  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/link/src/createLinkPlugin.ts)
+- [packages/ui/nodes/link](https://github.com/udecode/plate/tree/main/packages/ui/nodes/link/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

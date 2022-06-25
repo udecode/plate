@@ -1,0 +1,54 @@
+---
+slug: /serializing-docx
+title: Docx
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-serializer-docx @udecode/plate-juice
+```
+
+Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
+
+### Deserializer Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createImagePlugin(),
+    createHorizontalRulePlugin(),
+    createLineHeightPlugin(CONFIG.lineHeight),
+    // createLinkPlugin(),
+    createTablePlugin(),
+    createAlignPlugin(CONFIG.align),
+    createFontBackgroundColorPlugin(),
+    createFontFamilyPlugin(),
+    createFontColorPlugin(),
+    createFontSizePlugin(),
+    createFontWeightPlugin(),
+    createIndentListPlugin(),
+    createIndentPlugin(CONFIG.indent),
+    createTextIndentPlugin(),
+    createDeserializeDocxPlugin(),
+    createJuicePlugin(),
+  ], {
+    components: CONFIG.components,
+  });
+  
+  return (
+    <Plate
+      id="deserialize-docx"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.pasteDocx}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/docx/src/deserializer/createDeserializeDocxPlugin.ts)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

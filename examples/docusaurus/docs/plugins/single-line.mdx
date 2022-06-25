@@ -1,0 +1,41 @@
+---
+slug: /plugins/single-line
+title: Single Line
+---
+
+Allows you to force the editor to only have one line.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-break
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createListPlugin(),
+    createTablePlugin(),
+    createSingleLinePlugin(),
+  ], {
+    components: CONFIG.components,
+  });
+
+  return (
+    <Plate
+      id="single-line"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.singleLine}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/single-line/createSingleLinePlugin.ts)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

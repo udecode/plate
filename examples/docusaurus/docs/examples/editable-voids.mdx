@@ -1,0 +1,28 @@
+---
+slug: /examples/editable-voids
+title: Editable Voids
+---
+
+```ts live
+() => {
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createEditableVoidPlugin({
+      component: EditableVoidElement
+    }),
+  ];
+
+  return (
+    <Plate
+      id="editable-voids"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.editableVoids}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

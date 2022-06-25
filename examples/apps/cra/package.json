@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "name": "@udecode/examples-cra",
+  "description": "A simple CRA app with Plate",
+  "scripts": {
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "eject": "react-scripts eject",
+    "start": "GENERATE_SOURCEMAP=false react-scripts start",
+    "test": "react-scripts test --env=jsdom"
+  },
+  "dependencies": {
+    "@udecode/examples": "link:../../src",
+    "react-scripts": "4.0.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  }
+}

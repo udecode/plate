@@ -5,10 +5,8 @@
     "outDir": "build/dist",
     "paths": {
       "@udecode/examples/*": ["../../src/*"]
-    },
-    "incremental": true,
-    "jsx": "preserve"
+    }
   },
-  "include": ["next-env.d.ts", "src"],
+  "include": ["src"],
   "exclude": [".next"]
 }

@@ -1,0 +1,62 @@
+---
+slug: /plugins/horizontal-rule
+title: Horizontal Rule
+---
+
+Use this plugin to render a `<hr>` HTML tag.
+
+Type three dashes (`---`) or three underscores and a space (`___ `) at the beginning of a new line and it will magically transform to a horizontal rule.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-horizontal-rule
+npm install @udecode/plate-ui-horizontal-rule
+npm install @udecode/plate-autoformat
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createHorizontalRulePlugin(),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_HR] }}}),
+    createAutoformatPlugin({
+      options: {
+        rules: [{
+          mode: 'block',
+          type: ELEMENT_HR,
+          match: ['---', '—-', '___ '],
+`          preFormat,
+          format: (editor) => {
+            setNodes(editor, { type: ELEMENT_HR });
+            insertNodes(editor, {
+              type: ELEMENT_DEFAULT,
+              children: [{ text: '' }],
+            });
+          },
+        }],
+      },
+    }),
+  ], {
+    components: CONFIG.components,
+  });
+
+  return (
+    <Plate
+      id="horizontal-rule"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.horizontalRule}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/horizontal-rule/src/createHorizontalRulePlugin.ts)
+- [packages/ui/nodes/horizontal-rule](https://github.com/udecode/plate/tree/main/packages/ui/nodes/horizontal-rule/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

@@ -1,7 +1,7 @@
 # @udecode/examples
 
 Shares code and dependencies amongst apps in the monorepo:
-- [docs](docs)
+- [docs](docusaurus)
 - [apps/next](apps/next)
 - [apps/cra](apps/cra)
 
