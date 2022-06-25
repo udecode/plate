@@ -2,35 +2,6 @@ import 'prismjs/themes/prism.css';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { preFormat } from '@example/../../../examples/common/src/config/autoformat/autoformatUtils';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  HighlightToolbarButton,
-  IndentToolbarButtons,
-  KbdToolbarButton,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from '@example/../../../examples/common/src/config/components/Toolbars';
-import { withStyledDraggables } from '@example/../../../examples/common/src/config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from '@example/../../../examples/common/src/config/components/withStyledPlaceHolders';
-import { CONFIG } from '@example/../../../examples/common/src/config/config';
-import {
-  createDragOverCursorPlugin,
-  cursorStore,
-  PLUGINS,
-} from '@example/../../../examples/common/src/config/plugins';
-import { VALUES } from '@example/../../../examples/common/src/config/values/values';
-import {
-  createEditableVoidPlugin,
-  EDITABLE_VOID,
-} from '@example/../../../examples/common/src/examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from '@example/../../../examples/common/src/examples/editable-voids/EditableVoidElement';
-import { IFrame } from '@example/../../../examples/common/src/examples/iframe/IFrame';
-import { createPreviewPlugin } from '@example/../../../examples/common/src/examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from '@example/../../../examples/common/src/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
@@ -223,6 +194,35 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
+import { preFormat } from '@udecode/plate-example/src/config/autoformat/autoformatUtils';
+import {
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  HighlightToolbarButton,
+  IndentToolbarButtons,
+  KbdToolbarButton,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
+} from '@udecode/plate-example/src/config/components/Toolbars';
+import { withStyledDraggables } from '@udecode/plate-example/src/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '@udecode/plate-example/src/config/components/withStyledPlaceHolders';
+import { CONFIG } from '@udecode/plate-example/src/config/config';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from '@udecode/plate-example/src/config/plugins';
+import { VALUES } from '@udecode/plate-example/src/config/values/values';
+import {
+  createEditableVoidPlugin,
+  EDITABLE_VOID,
+} from '@udecode/plate-example/src/examples/editable-voids/createEditableVoidPlugin';
+import { EditableVoidElement } from '@udecode/plate-example/src/examples/editable-voids/EditableVoidElement';
+import { IFrame } from '@udecode/plate-example/src/examples/iframe/IFrame';
+import { createPreviewPlugin } from '@udecode/plate-example/src/examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from '@udecode/plate-example/src/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import {
   createExcalidrawPlugin,

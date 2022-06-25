@@ -21,9 +21,9 @@ import {
   ListToolbarButtons,
   MarkBallonToolbar,
   TableToolbarButtons,
-} from '../../../../examples/common/src/config/components/Toolbars';
-import { CONFIG } from '../../../../examples/common/src/config/config';
-import { VALUES } from '../../../../examples/common/src/config/values/values';
+} from '../../../../examples/src/config/components/Toolbars';
+import { CONFIG } from '../../../../examples/src/config/config';
+import { VALUES } from '../../../../examples/src/config/values/values';
 import { Plate } from '../../../core/src/components/plate/Plate';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';

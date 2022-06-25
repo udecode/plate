@@ -17,8 +17,7 @@ Add an alias in tsconfig.js to enable fast-refresh.
 {
   "compilerOptions": {
     "paths": {
-      "@udecode/example": ["../examples/common/src/index"],
-      "@udecode/example/*": ["../examples/common/src/*"]
+      "@udecode/example/*": ["../examples/common/*"]
     },
   },
 }

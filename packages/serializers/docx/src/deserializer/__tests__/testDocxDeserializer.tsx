@@ -8,7 +8,7 @@ import {
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { CONFIG } from '../../../../../../examples/common/src/config/config';
+import { CONFIG } from '../../../../../../examples/src/config/config';
 import { createBasicElementsPlugin } from '../../../../../nodes/basic-elements/src/createBasicElementsPlugin';
 import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import {

@@ -1,12 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "src",
     "outDir": "build/dist",
     "paths": {
-      "@udecode/example": ["../examples/common/src/index"],
-      "@udecode/example/*": ["../examples/common/src/*"],
-      "@udecode/plate": ["../../packages/plate/src/index"]
+      "@udecode/example/*": ["../../src/*"],
+      "@udecode/plate": ["../../../packages/plate/src/index"]
     },
     "incremental": true,
     "jsx": "preserve"
