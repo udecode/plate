@@ -2,24 +2,18 @@
   "name": "@udecode/plate-basic-elements",
   "version": "13.5.0",
   "description": "Basic elements plugin for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/nodes/basic-elements"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -27,10 +21,11 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../../cti.sh",
-    "rollup": "rollup -c=../../../rollup.config.js",
+    "cti": "sh ../../../scripts/cti.sh",
+    "rollup": "rollup -c=../../../config/rollup.config.js",
     "test": "jest"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-block-quote": "13.5.0",
     "@udecode/plate-code-block": "13.5.0",
@@ -45,6 +40,11 @@
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.74.2"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

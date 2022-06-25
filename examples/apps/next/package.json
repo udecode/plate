@@ -1,15 +1,16 @@
 {
   "private": true,
   "name": "@udecode/examples-next",
+  "version": "0.0.607",
   "description": "A simple NextJS app with Plate",
-  "dependencies": {
-    "@udecode/examples": "workspace:^",
-    "next": "^12.1.6"
-  },
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start"
+  },
+  "dependencies": {
+    "@udecode/examples": "link:../../src",
+    "next": "^12.1.6"
   },
   "browserslist": {
     "production": [
@@ -22,6 +23,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "version": "0.0.607"
+  }
 }

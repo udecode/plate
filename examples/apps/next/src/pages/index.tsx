@@ -1,23 +1,23 @@
 import React, { useMemo, useRef } from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { CursorOverlayContainer } from '@udecode/examples/src/config/components/CursorOverlayContainer'
+import { CursorOverlayContainer } from '@udecode/examples/config/components/CursorOverlayContainer'
 import {
   MarkBallonToolbar,
   ToolbarButtons,
-} from '@udecode/examples/src/config/components/Toolbars'
-import { withStyledDraggables } from '@udecode/examples/src/config/components/withStyledDraggables'
-import { withStyledPlaceHolders } from '@udecode/examples/src/config/components/withStyledPlaceHolders'
-import { CONFIG } from '@udecode/examples/src/config/config'
-import { MENTIONABLES } from '@udecode/examples/src/config/mentionables'
-import { createDragOverCursorPlugin } from '@udecode/examples/src/config/plugins'
+} from '@udecode/examples/config/components/Toolbars'
+import { withStyledDraggables } from '@udecode/examples/config/components/withStyledDraggables'
+import { withStyledPlaceHolders } from '@udecode/examples/config/components/withStyledPlaceHolders'
+import { CONFIG } from '@udecode/examples/config/config'
+import { MENTIONABLES } from '@udecode/examples/config/mentionables'
+import { createDragOverCursorPlugin } from '@udecode/examples/config/plugins'
 import {
   createMyPlugins,
   MyEditor,
   MyPlatePlugin,
   MyValue,
-} from '@udecode/examples/src/config/typescript'
-import { VALUES } from '@udecode/examples/src/config/values/values'
+} from '@udecode/examples/config/typescript'
+import { VALUES } from '@udecode/examples/config/values/values'
 import {
   AutoformatPlugin,
   createAlignPlugin,

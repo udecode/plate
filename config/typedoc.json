@@ -9,7 +9,8 @@
   ],
   "includeVersion": true,
   "name": "@udecode/plate",
-  "entryPoints": ["packages/plate/src/index.tsx"],
+  "entryPoints": ["../packages/plate/src/index.tsx"],
+  "tsconfig": "../packages/plate/tsconfig.json",
   "out": "./typedoc",
-  "readme": "./README.md"
+  "readme": "../README.md"
 }

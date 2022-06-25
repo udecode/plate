@@ -2,30 +2,18 @@
   "name": "@udecode/plate",
   "version": "13.5.0",
   "description": "Plate – a plugin system for slate",
-  "keywords": [
-    "wysiwyg",
-    "rich text",
-    "editor",
-    "html",
-    "contentEditable",
-    "framework",
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/plate"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -33,9 +21,10 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../cti.sh below",
-    "rollup": "rollup -c=../../rollup.config.js"
+    "cti": "sh ../../scripts/cti.sh below",
+    "rollup": "rollup -c=../../config/rollup.config.js"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-headless": "13.5.0",
     "@udecode/plate-ui": "13.5.0"
@@ -49,6 +38,17 @@
     "slate-react": ">=0.74.2",
     "styled-components": ">=5.0.0"
   },
+  "keywords": [
+    "contentEditable",
+    "editor",
+    "framework",
+    "html",
+    "plate",
+    "plugin",
+    "rich text",
+    "slate",
+    "wysiwyg"
+  ],
   "publishConfig": {
     "access": "public"
   },

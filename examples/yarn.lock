@@ -3109,16 +3109,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hoist-non-react-statics@npm:*":
-  version: 3.3.1
-  resolution: "@types/hoist-non-react-statics@npm:3.3.1"
-  dependencies:
-    "@types/react": "npm:*"
-    hoist-non-react-statics: "npm:^3.3.0"
-  checksum: 6e252131d90ced0948b559b187bac10185040dbb0e2dcfb5c40d065003ea94c79d483e82b5961100e2e021057be3b1087fbbe34d55a302ca7aba6d059470fb33
-  languageName: node
-  linkType: hard
-
 "@types/html-minifier-terser@npm:^6.0.0":
   version: 6.1.0
   resolution: "@types/html-minifier-terser@npm:6.1.0"
@@ -3214,48 +3204,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*":
-  version: 15.7.5
-  resolution: "@types/prop-types@npm:15.7.5"
-  checksum: a6e04a01e1f632cc3fa5fffd79779f2f83a8fec1293cdf29b5a02aa4e1a1b38a124e824205a40de4e66532a0fa33c4f60337b55cec635080ea2571e55910460f
-  languageName: node
-  linkType: hard
-
 "@types/q@npm:^1.5.1":
   version: 1.5.5
   resolution: "@types/q@npm:1.5.5"
   checksum: 9afae55e9061d51ed44fb3e4c925c4c2ded3bc792771ba3c5224d9e56068c83349d924606a210518827ac8f65600935122e0e2d45d36f612745e682cfc9a8a3e
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:17.0.17":
-  version: 17.0.17
-  resolution: "@types/react-dom@npm:17.0.17"
-  dependencies:
-    "@types/react": "npm:^17"
-  checksum: 71b755bbc253c77a5a9c1c79cde91a1fda8224e26f4be20e56b5ebd4cb700281f60255b08cbaaab4f92608af1642b5caa46193843deeed163d519e51e953747a
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:*":
-  version: 18.0.14
-  resolution: "@types/react@npm:18.0.14"
-  dependencies:
-    "@types/prop-types": "npm:*"
-    "@types/scheduler": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: cdd28c5c509bb4040c4a0ffc9ee9428b5ca94964172bd3f7cfe9e08ffe72179d166c4457e7afc472cfad6c8f5e17729a518cdf76cb257f1728a03be4ba8186a2
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:17.0.47, @types/react@npm:^17":
-  version: 17.0.47
-  resolution: "@types/react@npm:17.0.47"
-  dependencies:
-    "@types/prop-types": "npm:*"
-    "@types/scheduler": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: 9f9b6b73890e83407686d10a28251cf23d71a4c6ba21295e9701194ed58c94895dc2eac19303b419a294c4c4aff0d7d4e5eb458270ee0fa90dbb0b5a37ec3b88
   languageName: node
   linkType: hard
 
@@ -3277,24 +3229,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/scheduler@npm:*":
-  version: 0.16.2
-  resolution: "@types/scheduler@npm:0.16.2"
-  checksum: 223d9b12d1eff3fe857e7eb967d640707c2a76ba1126633bae88dce7693301ea8edcce83586a17134a1822f01265f715809860085547b01db8de6a90f5165706
-  languageName: node
-  linkType: hard
-
-"@types/styled-components@npm:5.1.25":
-  version: 5.1.25
-  resolution: "@types/styled-components@npm:5.1.25"
-  dependencies:
-    "@types/hoist-non-react-statics": "npm:*"
-    "@types/react": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: 96b09fe31259320265bcb5fb0264a1d9193ae2266ee4612f65233989f344ecca88e71295062cb08492855691723f2c50f4368bd210c774d32483d089cb95bbef
-  languageName: node
-  linkType: hard
-
 "@types/unist@npm:*, @types/unist@npm:^2.0.0, @types/unist@npm:^2.0.2, @types/unist@npm:^2.0.3":
   version: 2.0.6
   resolution: "@types/unist@npm:2.0.6"
@@ -3306,18 +3240,24 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/examples-next@workspace:apps/next"
   dependencies:
-    "@udecode/examples": "workspace:^"
+    "@udecode/examples": "link:../../src"
     next: "npm:^12.1.6"
   languageName: unknown
   linkType: soft
 
-"@udecode/examples@link:../src::locator=plate-docs%40workspace%3Adocs":
+"@udecode/examples@link:../../src::locator=%40udecode%2Fexamples-next%40workspace%3Aapps%2Fnext":
   version: 0.0.0-use.local
-  resolution: "@udecode/examples@link:../src::locator=plate-docs%40workspace%3Adocs"
+  resolution: "@udecode/examples@link:../../src::locator=%40udecode%2Fexamples-next%40workspace%3Aapps%2Fnext"
   languageName: node
   linkType: soft
 
-"@udecode/examples@workspace:., @udecode/examples@workspace:^":
+"@udecode/examples@link:../src::locator=%40udecode%2Fplate-docs%40workspace%3Adocs":
+  version: 0.0.0-use.local
+  resolution: "@udecode/examples@link:../src::locator=%40udecode%2Fplate-docs%40workspace%3Adocs"
+  languageName: node
+  linkType: soft
+
+"@udecode/examples@workspace:.":
   version: 0.0.0-use.local
   resolution: "@udecode/examples@workspace:."
   dependencies:
@@ -3326,9 +3266,6 @@ __metadata:
     "@styled-icons/foundation": "npm:10.28.0"
     "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
-    "@types/react": "npm:17.0.47"
-    "@types/react-dom": "npm:17.0.17"
-    "@types/styled-components": "npm:5.1.25"
     "@udecode/plate": "link:../packages/plate"
     "@udecode/plate-juice": "link:../packages/serializers/juice"
     "@udecode/plate-test-utils": "link:../packages/test-utils"
@@ -3338,7 +3275,35 @@ __metadata:
     slate-history: "npm:0.66.0"
     slate-react: "npm:0.79.0"
     styled-components: "npm:5.3.1"
-    typescript: "npm:4.5.5"
+    typescript: "npm:^4.7.4"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-docs@workspace:docs":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-docs@workspace:docs"
+  dependencies:
+    "@babel/plugin-transform-modules-commonjs": "npm:^7.14.0"
+    "@codesandbox/sandpack-react": "npm:^1.2.0"
+    "@docusaurus/core": "npm:2.0.0-beta.0"
+    "@docusaurus/module-type-aliases": "npm:2.0.0-beta.0"
+    "@docusaurus/preset-classic": "npm:2.0.0-beta.0"
+    "@docusaurus/remark-plugin-npm2yarn": "npm:2.0.0-beta.0"
+    "@docusaurus/theme-common": "npm:2.0.0-beta.0"
+    "@docusaurus/theme-live-codeblock": "npm:2.0.0-beta.0"
+    "@mdx-js/react": "npm:^1.6.21"
+    "@tsconfig/docusaurus": "npm:^1.0.2"
+    "@udecode/examples": "link:../src"
+    clsx: "npm:^1.1.1"
+    docusaurus-plugin-sass: "npm:^0.1.12"
+    nodemon: "npm:^2.0.7"
+    postcss-import: "npm:^12.0.1"
+    prism-react-renderer: "npm:^1.2.0"
+    prismjs: "npm:^1.23.0"
+    react-icons: "npm:^4.2.0"
+    sass: "npm:^1.32.12"
+    tailwindcss: "npm:3.0.2"
+    zustand: "npm:3.7.0"
   languageName: unknown
   linkType: soft
 
@@ -4444,7 +4409,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserslist@npm:^4.0.0, browserslist@npm:^4.14.5, browserslist@npm:^4.16.6, browserslist@npm:^4.20.2, browserslist@npm:^4.20.3, browserslist@npm:^4.20.4":
+"browserslist@npm:^4.0.0, browserslist@npm:^4.14.5, browserslist@npm:^4.16.6, browserslist@npm:^4.20.2, browserslist@npm:^4.20.3, browserslist@npm:^4.21.0":
   version: 4.21.0
   resolution: "browserslist@npm:4.21.0"
   dependencies:
@@ -5235,26 +5200,26 @@ __metadata:
   linkType: hard
 
 "core-js-compat@npm:^3.21.0, core-js-compat@npm:^3.22.1":
-  version: 3.23.2
-  resolution: "core-js-compat@npm:3.23.2"
+  version: 3.23.3
+  resolution: "core-js-compat@npm:3.23.3"
   dependencies:
-    browserslist: "npm:^4.20.4"
+    browserslist: "npm:^4.21.0"
     semver: "npm:7.0.0"
-  checksum: 47bd706a916f04a4fb2620786f597dd57aefd3722deb9599ce19858bbbfe9cb22157757e9ce6305e801cf3e31f01651610398146871805a7ac00c8576f8d91f8
+  checksum: 4a6e6a112158d6c1c476c0623a6d0fb39fee57dac1fd6c08693e4c4a0156a1150588a9edf175bfffcad5da7e9db234d0ce8d32cd5ff03c8af7ae7770f7d0be36
   languageName: node
   linkType: hard
 
 "core-js-pure@npm:^3.20.2":
-  version: 3.23.2
-  resolution: "core-js-pure@npm:3.23.2"
-  checksum: 1eccb269420ca72006fdabe9557945100a72873cdf6e03491fda8a5d91f09fe37715662f3de2102b628d30db2411df35f4cea01a838d86d466973602157faf02
+  version: 3.23.3
+  resolution: "core-js-pure@npm:3.23.3"
+  checksum: d5fb9a2ccbaafcf3a5a3be3507fce941a4cc532e9e1dcff09e6b4443577871413b1270ae170f16656253d53aebfa4fe1adbadd10297ba01d3b061f376c0cf408
   languageName: node
   linkType: hard
 
 "core-js@npm:^3.14.0, core-js@npm:^3.9.1":
-  version: 3.23.2
-  resolution: "core-js@npm:3.23.2"
-  checksum: f94cc8366a34a8a41e98a2b46185b2467b37493b4c072c367e222ad317a74b04ee790ba13a04a864c1ba7e1d83be56d2b51d76520a1d33277a0329e092fa9728
+  version: 3.23.3
+  resolution: "core-js@npm:3.23.3"
+  checksum: b89cb53fa8e32519c18dd9a69bafc6747072e52dd40872ae4df2e6a7880ac3b96a2a33c6b0d49ba592a32895cc83df65f52a5ff37e536aed5dbc3a0c47aecc1e
   languageName: node
   linkType: hard
 
@@ -5578,13 +5543,6 @@ __metadata:
   dependencies:
     css-tree: "npm:^1.1.2"
   checksum: 761d240a35d850e3fde3ca0caa0fccaa3379552c25d42b49b9994f375e04ee935464db84d34c47aaa295aa582d7ef90f10e9e4146b8056f528ff2b88c3e994ee
-  languageName: node
-  linkType: hard
-
-"csstype@npm:^3.0.2":
-  version: 3.1.0
-  resolution: "csstype@npm:3.1.0"
-  checksum: fbe7e1dfc64482b370e5ceead6158636dc1eb76b4e6a6d328360548c1951c14e6bbc0516533b58faba4d40ced409324393ffd843febc4bb60302a64692e46788
   languageName: node
   linkType: hard
 
@@ -7632,7 +7590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.1.0, hoist-non-react-statics@npm:^3.3.0":
+"hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.1.0":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -10767,34 +10725,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"plate-docs@workspace:docs":
-  version: 0.0.0-use.local
-  resolution: "plate-docs@workspace:docs"
-  dependencies:
-    "@babel/plugin-transform-modules-commonjs": "npm:^7.14.0"
-    "@codesandbox/sandpack-react": "npm:^1.2.0"
-    "@docusaurus/core": "npm:2.0.0-beta.0"
-    "@docusaurus/module-type-aliases": "npm:2.0.0-beta.0"
-    "@docusaurus/preset-classic": "npm:2.0.0-beta.0"
-    "@docusaurus/remark-plugin-npm2yarn": "npm:2.0.0-beta.0"
-    "@docusaurus/theme-common": "npm:2.0.0-beta.0"
-    "@docusaurus/theme-live-codeblock": "npm:2.0.0-beta.0"
-    "@mdx-js/react": "npm:^1.6.21"
-    "@tsconfig/docusaurus": "npm:^1.0.2"
-    "@udecode/examples": "link:../src"
-    clsx: "npm:^1.1.1"
-    docusaurus-plugin-sass: "npm:^0.1.12"
-    nodemon: "npm:^2.0.7"
-    postcss-import: "npm:^12.0.1"
-    prism-react-renderer: "npm:^1.2.0"
-    prismjs: "npm:^1.23.0"
-    react-icons: "npm:^4.2.0"
-    sass: "npm:^1.32.12"
-    tailwindcss: "npm:3.0.2"
-    zustand: "npm:3.7.0"
-  languageName: unknown
-  linkType: soft
-
 "portfinder@npm:^1.0.26":
   version: 1.0.28
   resolution: "portfinder@npm:1.0.28"
@@ -11695,10 +11625,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-error-overlay@npm:^6.0.9":
-  version: 6.0.11
-  resolution: "react-error-overlay@npm:6.0.11"
-  checksum: 6895a094484a767fb77f4c8dac084d1ce1cc8f0505dbd94244eadd6f6d8765bf4d4990546a67eccfd2f2204a803e3fec5a548b036fa27fe4a89a10c382e15682
+"react-error-overlay@npm:6.0.9":
+  version: 6.0.9
+  resolution: "react-error-overlay@npm:6.0.9"
+  checksum: 79c4966d2539cf951fbc745e6dea2e92886d0ad9719553cfc4e902eacca950baa4c946649675f98c3394379b09110de262b30db32b45c5d38b2e4d3c3f8a816b
   languageName: node
   linkType: hard
 
@@ -14075,23 +14005,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.5.5":
-  version: 4.5.5
-  resolution: "typescript@npm:4.5.5"
+"typescript@npm:^4.7.4":
+  version: 4.7.4
+  resolution: "typescript@npm:4.7.4"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: d2d7724f3a75ff831b39b9086cec2cbfeb54279c3c4e75f8dabdb1b3fcb837922fe26d09c1db396c33d0c023f20c50bfe2bc5d46c51537d633cf8e6f3ca4cb5e
+  checksum: 0cec8f1c0fb0c6a9b437ee4e17819510eb294aad85291e940188fc4542a5554ffe1f73e4bc396c77d0a4d7dd1c17fd795634d50938fc3558e34f32d8a682118b
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A4.5.5#optional!builtin<compat/typescript>":
-  version: 4.5.5
-  resolution: "typescript@patch:typescript@npm%3A4.5.5#optional!builtin<compat/typescript>::version=4.5.5&hash=f456af"
+"typescript@patch:typescript@npm%3A^4.7.4#optional!builtin<compat/typescript>":
+  version: 4.7.4
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#optional!builtin<compat/typescript>::version=4.7.4&hash=f456af"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 71310a426dc2d8c8bef6d26e707c85c0588463ec9c61637045acc899e9942e50d94eced53d72d264615074476a55173979a76bf002ef5c70606580c82557c4e4
+  checksum: 19bcd9153bbacaabed753b39fbd6adb5417690230b07db63f02e22588865b444b7504da9b9fcdcca5b4ac34be19904271a266bfa54d75fcfb0f5d699cb1e2314
   languageName: node
   linkType: hard
 

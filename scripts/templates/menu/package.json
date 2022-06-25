@@ -1,25 +1,19 @@
 {
-  "name": "@udecode/plate-template",
-  "version": "1.0.0",
-  "description": "Template plugin for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "name": "@udecode/plate-ui-menu",
+  "version": "6.1.0",
+  "description": "Menu UI for Plate",
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/template"
+    "directory": "packages/ui/menu"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -27,12 +21,16 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../cti.sh",
-    "rollup": "rollup -c=../../rollup.config.js",
+    "cti": "sh ../../../scripts/cti.sh below",
+    "rollup": "rollup -c=../../../config/rollup.config.js",
     "test": "jest"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "1.0.0"
+    "@szhsin/react-menu": "^2.1.0",
+    "@udecode/plate-core": "6.0.0",
+    "@udecode/plate-styled-components": "6.0.0",
+    "@udecode/plate-ui-button": "6.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -41,6 +39,11 @@
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.74.2"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

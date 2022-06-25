@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-docs",
   "private": true,
+  "name": "@udecode/plate-docs",
   "scripts": {
     "build": "docusaurus build",
     "build:dev": "yarn clear && yarn build --no-minify && yarn serve",

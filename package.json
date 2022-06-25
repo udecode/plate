@@ -1,15 +1,12 @@
 {
-  "version": "0.0.0",
   "private": true,
+  "version": "0.0.0",
   "license": "MIT",
-  "workspaces": [
-    "packages/**"
-  ],
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "lerna exec -- yarn build",
     "build:all": "yarn && yarn build && yarn build:docs",
-    "build:docs": "cd docs && yarn && yarn build",
+    "build:docs": "cd examples/docs && yarn && yarn build",
     "build:main": "lerna exec --since main -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "clean": "lerna run prebuild && yarn workspace @udecode/plate-test-utils build",
@@ -17,11 +14,11 @@
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",
-    "dev": "cd docs && yarn && yarn start",
+    "dev": "cd examples/docs && yarn && yarn start",
+    "postinstall": "patch-package",
     "internal:release:next": "yarn prerelease && yarn changeset publish --tag next",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
-    "postinstall": "patch-package",
     "prerelease": "yarn build && yarn test && yarn lint",
     "release:experimental": "yarn prerelease && lerna publish --dist-tag experimental",
     "release:latest": "yarn prerelease && lerna publish --force-publish",
@@ -35,13 +32,16 @@
     "test:covwa": "yarn test:cov --watchAll",
     "test:w": "yarn test --watch",
     "test:wa": "yarn test --watchAll",
-    "typedoc": "npx typedoc --tsconfig packages/plate/tsconfig.json",
+    "typedoc": "npx typedoc --tsconfig packages/plate/tsconfig.json --options config/typedoc.json",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --no-git-tag-version",
     "postversionup": "yarn commit-version && git push",
     "versionup:graduate": "lerna version --conventional-graduate --force-publish",
     "versionup:pre": "lerna version prerelease"
   },
+  "workspaces": [
+    "packages/**"
+  ],
   "resolutions": {
     "eslint-plugin-prettier": "3.3.1",
     "prettier": "2.2.1",
@@ -145,18 +145,18 @@
     "ts-jest": "^26.5.6",
     "twin.macro": "2.8.2",
     "typedoc": "^0.21.0-beta.2",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.4"
+  },
+  "engines": {
+    "node": "^14.13.1 || >=16.0.0",
+    "npm": "please-use-yarn",
+    "yarn": ">=1.22.0"
   },
   "babelMacros": {
     "twin": {
       "config": "./docs/tailwind.config.js",
       "preset": "styled-components"
     }
-  },
-  "engines": {
-    "node": "^14.13.1 || >=16.0.0",
-    "yarn": ">=1.22.0",
-    "npm": "please-use-yarn"
   },
   "packageManager": "yarn@4.0.0-rc.10"
 }

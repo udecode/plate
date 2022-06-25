@@ -21,10 +21,10 @@
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2017",
     "paths": {
-      "@udecode/examples/*": ["./examples/common/src/*"]
+      "@udecode/examples/*": ["./examples/src/*"]
     }
   },
-  "files": ["types/twin.d.ts"],
+  "files": ["scripts/types/twin.d.ts"],
   "exclude": [
     "node_modules",
     "**/node_modules",
