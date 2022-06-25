@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@udecode/example",
+  "name": "@udecode/examples",
   "workspaces": [
     "apps/**"
   ],

@@ -242,7 +242,7 @@ module.exports = {
         },
         theme: {
           customCss: [
-            require.resolve('../examples/next/src/styles.css'),
+            require.resolve('../examples/src/styles/styles.css'),
             require.resolve('./src/css/custom.scss'),
           ],
           remarkPlugins: [

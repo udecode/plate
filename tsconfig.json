@@ -21,7 +21,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2017",
     "paths": {
-      "@udecode/example/*": ["./examples/common/src/*"]
+      "@udecode/examples/*": ["./examples/common/src/*"]
     }
   },
   "files": ["types/twin.d.ts"],

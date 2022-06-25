@@ -41,6 +41,35 @@ import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
+import { preFormat } from '@udecode/examples/config/autoformat/autoformatUtils';
+import {
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  HighlightToolbarButton,
+  IndentToolbarButtons,
+  KbdToolbarButton,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
+} from '@udecode/examples/config/components/Toolbars';
+import { withStyledDraggables } from '@udecode/examples/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '@udecode/examples/config/components/withStyledPlaceHolders';
+import { CONFIG } from '@udecode/examples/config/config';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from '@udecode/examples/config/plugins';
+import { VALUES } from '@udecode/examples/config/values/values';
+import {
+  createEditableVoidPlugin,
+  EDITABLE_VOID,
+} from '@udecode/examples/examples/editable-voids/createEditableVoidPlugin';
+import { EditableVoidElement } from '@udecode/examples/examples/editable-voids/EditableVoidElement';
+import { IFrame } from '@udecode/examples/examples/iframe/IFrame';
+import { createPreviewPlugin } from '@udecode/examples/examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from '@udecode/examples/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import {
   AlignToolbarButton,
   BalloonToolbar,
@@ -194,35 +223,6 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
-import { preFormat } from '@udecode/plate-example/src/config/autoformat/autoformatUtils';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  HighlightToolbarButton,
-  IndentToolbarButtons,
-  KbdToolbarButton,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from '@udecode/plate-example/src/config/components/Toolbars';
-import { withStyledDraggables } from '@udecode/plate-example/src/config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from '@udecode/plate-example/src/config/components/withStyledPlaceHolders';
-import { CONFIG } from '@udecode/plate-example/src/config/config';
-import {
-  createDragOverCursorPlugin,
-  cursorStore,
-  PLUGINS,
-} from '@udecode/plate-example/src/config/plugins';
-import { VALUES } from '@udecode/plate-example/src/config/values/values';
-import {
-  createEditableVoidPlugin,
-  EDITABLE_VOID,
-} from '@udecode/plate-example/src/examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from '@udecode/plate-example/src/examples/editable-voids/EditableVoidElement';
-import { IFrame } from '@udecode/plate-example/src/examples/iframe/IFrame';
-import { createPreviewPlugin } from '@udecode/plate-example/src/examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from '@udecode/plate-example/src/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import {
   createExcalidrawPlugin,
@@ -231,7 +231,7 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { HighlightHTML } from './utils/HighlightHTML';
+import { HighlightHTML } from './utils/HighlightHTML'; // Add react-live imports you need here
 
 // Add react-live imports you need here
 const ReactLiveScope = {

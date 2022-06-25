@@ -3135,9 +3135,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@udecode/plate-example@link:../examples::locator=plate-docs%40workspace%3A.":
+"@udecode/examples@link:../examples/src::locator=plate-docs%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-example@link:../examples::locator=plate-docs%40workspace%3A."
+  resolution: "@udecode/examples@link:../examples/src::locator=plate-docs%40workspace%3A."
   languageName: node
   linkType: soft
 
@@ -10513,8 +10513,8 @@ __metadata:
     "@types/react": "npm:^17.0.2"
     "@types/react-helmet": "npm:^6.1.0"
     "@types/react-router-dom": "npm:^5.1.7"
+    "@udecode/examples": "link:../examples/src"
     "@udecode/plate": "link:../packages/plate"
-    "@udecode/plate-example": "link:../examples"
     "@udecode/plate-excalidraw": "link:../packages/ui/nodes/excalidraw"
     "@udecode/plate-test-utils": "link:../packages/test-utils"
     "@udecode/zustood": "npm:^1.1.1"

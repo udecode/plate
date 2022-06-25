@@ -1,9 +1,9 @@
 {
   "private": true,
-  "name": "@udecode/plate-example-next",
+  "name": "@udecode/examples-next",
   "description": "A simple NextJS app with Plate",
   "dependencies": {
-    "@udecode/example": "workspace:^",
+    "@udecode/examples": "workspace:^",
     "next": "^12.1.6"
   },
   "scripts": {

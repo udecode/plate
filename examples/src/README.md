@@ -1,4 +1,4 @@
-# @udecode/example
+# @udecode/examples
 
 
 Shares code amongst apps in the monorepo.
@@ -8,7 +8,7 @@ Shares code amongst apps in the monorepo.
 Add the workspace dependency to the consuming app or package.
 
 ```bash
-yarn add @udecode/example:"workspace:^"
+yarn add @udecode/examples:"workspace:^"
 ```
 
 Add an alias in tsconfig.js to enable fast-refresh.
@@ -17,7 +17,7 @@ Add an alias in tsconfig.js to enable fast-refresh.
 {
   "compilerOptions": {
     "paths": {
-      "@udecode/example/*": ["../examples/common/*"]
+      "@udecode/examples/*": ["../examples/common/*"]
     },
   },
 }

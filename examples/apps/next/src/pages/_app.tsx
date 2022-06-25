@@ -1,6 +1,6 @@
+import '@udecode/examples/src/styles/styles.css'
 import 'tippy.js/animations/scale.css'
 import 'tippy.js/dist/tippy.css'
-import '../styles.css'
 import React from 'react'
 
 // This default export is required in a new `pages/_app.js` file.
