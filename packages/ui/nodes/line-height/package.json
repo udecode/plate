@@ -32,8 +32,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-line-height": "13.5.0",
     "@udecode/plate-core": "13.5.0",
+    "@udecode/plate-line-height": "13.5.0",
     "@udecode/plate-styled-components": "13.5.0",
     "@udecode/plate-ui-toolbar": "13.5.0"
   },

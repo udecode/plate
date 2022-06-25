@@ -13,6 +13,7 @@
     "build:main": "lerna exec --since main -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "clean": "lerna run prebuild && yarn workspace @udecode/plate-test-utils build",
+    "clean:modules": "rimraf '**/node_modules' yarn.lock",
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",
@@ -152,5 +153,10 @@
       "preset": "styled-components"
     }
   },
-  "packageManager": "yarn@3.2.1"
+  "engines": {
+    "node": "^14.13.1 || >=16.0.0",
+    "yarn": ">=1.22.0",
+    "npm": "please-use-yarn"
+  },
+  "packageManager": "yarn@4.0.0-rc.10"
 }

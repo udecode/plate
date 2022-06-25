@@ -1,5 +1,12 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 .history
 node_modules/

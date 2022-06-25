@@ -41,6 +41,7 @@
     "@udecode/plate-styled-components": "13.5.0",
     "@udecode/plate-ui-alignment": "13.5.0",
     "@udecode/plate-ui-block-quote": "13.5.0",
+    "@udecode/plate-ui-button": "13.5.0",
     "@udecode/plate-ui-code-block": "13.5.0",
     "@udecode/plate-ui-combobox": "13.5.0",
     "@udecode/plate-ui-cursor": "13.5.0",
@@ -54,11 +55,10 @@
     "@udecode/plate-ui-media-embed": "13.5.0",
     "@udecode/plate-ui-mention": "13.5.0",
     "@udecode/plate-ui-placeholder": "13.5.0",
+    "@udecode/plate-ui-popover": "13.5.0",
     "@udecode/plate-ui-popper": "13.5.0",
     "@udecode/plate-ui-table": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0",
-    "@udecode/plate-ui-button": "13.5.0",
-    "@udecode/plate-ui-popover": "13.5.0"
+    "@udecode/plate-ui-toolbar": "13.5.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

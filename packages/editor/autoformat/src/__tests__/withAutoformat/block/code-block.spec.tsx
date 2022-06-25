@@ -15,8 +15,8 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../../examples/next/src/config/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../examples/next/src/config/config';
+import { preFormat } from '../../../../../../../examples/common/src/config/autoformat/autoformatUtils';
+import { CONFIG } from '../../../../../../../examples/common/src/config/config';
 import { AutoformatPlugin } from '../../../types';
 import { withAutoformat } from '../../../withAutoformat';
 

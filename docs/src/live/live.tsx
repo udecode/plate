@@ -2,7 +2,7 @@ import 'prismjs/themes/prism.css';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { preFormat } from '@example/config/autoformat/autoformatUtils';
+import { preFormat } from '@example/../../../examples/common/src/config/autoformat/autoformatUtils';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
@@ -13,24 +13,24 @@ import {
   ListToolbarButtons,
   MarkBallonToolbar,
   TableToolbarButtons,
-} from '@example/config/components/Toolbars';
-import { withStyledDraggables } from '@example/config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from '@example/config/components/withStyledPlaceHolders';
-import { CONFIG } from '@example/config/config';
+} from '@example/../../../examples/common/src/config/components/Toolbars';
+import { withStyledDraggables } from '@example/../../../examples/common/src/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '@example/../../../examples/common/src/config/components/withStyledPlaceHolders';
+import { CONFIG } from '@example/../../../examples/common/src/config/config';
 import {
   createDragOverCursorPlugin,
   cursorStore,
   PLUGINS,
-} from '@example/config/plugins';
-import { VALUES } from '@example/config/values/values';
+} from '@example/../../../examples/common/src/config/plugins';
+import { VALUES } from '@example/../../../examples/common/src/config/values/values';
 import {
   createEditableVoidPlugin,
   EDITABLE_VOID,
-} from '@example/examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from '@example/examples/editable-voids/EditableVoidElement';
-import { IFrame } from '@example/examples/iframe/IFrame';
-import { createPreviewPlugin } from '@example/examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from '@example/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
+} from '@example/../../../examples/common/src/examples/editable-voids/createEditableVoidPlugin';
+import { EditableVoidElement } from '@example/../../../examples/common/src/examples/editable-voids/EditableVoidElement';
+import { IFrame } from '@example/../../../examples/common/src/examples/iframe/IFrame';
+import { createPreviewPlugin } from '@example/../../../examples/common/src/examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from '@example/../../../examples/common/src/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';

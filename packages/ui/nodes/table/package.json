@@ -35,9 +35,9 @@
     "@udecode/plate-core": "13.5.0",
     "@udecode/plate-styled-components": "13.5.0",
     "@udecode/plate-table": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0",
     "@udecode/plate-ui-button": "13.5.0",
     "@udecode/plate-ui-popover": "13.5.0",
+    "@udecode/plate-ui-toolbar": "13.5.0",
     "re-resizable": "^6.9.9"
   },
   "peerDependencies": {

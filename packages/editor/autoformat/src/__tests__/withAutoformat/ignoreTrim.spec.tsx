@@ -3,7 +3,7 @@
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { CONFIG } from '../../../../../../examples/next/src/config/config';
+import { CONFIG } from '../../../../../../examples/common/src/config/config';
 import { MARK_ITALIC } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
 import { withAutoformat } from '../../withAutoformat';
 

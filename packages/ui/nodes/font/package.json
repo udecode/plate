@@ -35,8 +35,8 @@
     "@udecode/plate-core": "13.5.0",
     "@udecode/plate-font": "13.5.0",
     "@udecode/plate-styled-components": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0",
-    "@udecode/plate-ui-button": "13.5.0"
+    "@udecode/plate-ui-button": "13.5.0",
+    "@udecode/plate-ui-toolbar": "13.5.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
