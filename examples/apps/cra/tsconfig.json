@@ -3,10 +3,14 @@
   "compilerOptions": {
     "baseUrl": "src",
     "outDir": "build/dist",
-    "paths": {
-      "@udecode/examples/*": ["../../src/*"]
-    }
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src"],
-  "exclude": [".next"]
+  "include": [
+    "src",
+    "../../src"
+  ],
+  "exclude": [
+    ".next"
+  ]
 }

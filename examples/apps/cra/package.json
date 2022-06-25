@@ -3,12 +3,12 @@
   "name": "@udecode/examples-cra",
   "description": "A simple CRA app with Plate",
   "scripts": {
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
-    "eject": "react-scripts eject",
-    "start": "GENERATE_SOURCEMAP=false react-scripts start",
-    "test": "react-scripts test --env=jsdom"
+    "build": "GENERATE_SOURCEMAP=false craco build",
+    "start": "GENERATE_SOURCEMAP=false craco start",
+    "test": "craco test --env=jsdom"
   },
   "dependencies": {
+    "@craco/craco": "^6.4.3",
     "@udecode/examples": "link:../../src",
     "react-scripts": "4.0.3"
   },
