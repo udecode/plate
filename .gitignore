@@ -110,7 +110,7 @@ storybook-static/
 
 # Local
 packages/plate/docs/
-typedoc/
-!typedoc/_redirects
+config/typedoc/
+!config/typedoc/_redirects
 # Local Netlify folder
 .netlify
