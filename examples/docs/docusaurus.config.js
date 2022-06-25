@@ -87,7 +87,7 @@ const alias = {
 };
 
 Object.keys(alias).forEach((key) => {
-  alias[key] = path.resolve(__dirname, `../packages/${alias[key]}/src`);
+  alias[key] = path.resolve(__dirname, `../../packages/${alias[key]}/src`);
 });
 
 module.exports = {
@@ -242,7 +242,7 @@ module.exports = {
         },
         theme: {
           customCss: [
-            require.resolve('../examples/src/styles/styles.css'),
+            require.resolve('../src/styles/styles.css'),
             require.resolve('./src/css/custom.scss'),
           ],
           remarkPlugins: [

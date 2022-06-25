@@ -2,7 +2,8 @@
   "private": true,
   "name": "@udecode/examples",
   "workspaces": [
-    "apps/**"
+    "apps/**",
+    "docs"
   ],
   "resolutions": {
     "@udecode/plate": "link:../packages/plate",
