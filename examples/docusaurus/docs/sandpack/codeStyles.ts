@@ -1,4 +1,4 @@
-html {
+export const codeStyles = `html {
   font-family: 'Roboto', sans-serif;
   line-height: 1.4;
 }
@@ -36,11 +36,4 @@ td {
   min-width: 18px;
   min-height: 18px;
 }
-
-/* .slate-code_block {
-  background-color: #111827 !important;
-}
-
-.slate-code_block code {
-  color: white;
-} */
+`;
