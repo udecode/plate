@@ -1,17 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
-  createPlugins,
   createResetNodePlugin,
   createSoftBreakPlugin,
   Plate,
   PlateRenderElementProps,
-} from '@udecode/plate'
-import { CONFIG } from '../../config/config'
-import { VALUES } from '../../config/values/values'
+  TElement,
+} from '@udecode/plate';
+import { CONFIG } from '../../config/config';
+import { createMyPlugins, MyEditor, MyValue } from '../../config/typescript';
 
-const plugins = createPlugins(
+const plugins = createMyPlugins(
   [
     createBasicElementsPlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
@@ -21,13 +21,13 @@ const plugins = createPlugins(
   {
     components: CONFIG.components,
   }
-)
+);
 
-export const EditableVoidElement = <V extends Value>({
+export const EditableVoidElement = ({
   attributes,
   children,
-}: PlateRenderElementProps<V, TElement>) => {
-  const [inputValue, setInputValue] = useState('')
+}: PlateRenderElementProps<MyValue, TElement>) => {
+  const [inputValue, setInputValue] = useState('');
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
@@ -39,7 +39,7 @@ export const EditableVoidElement = <V extends Value>({
           type="text"
           value={inputValue}
           onChange={(e) => {
-            setInputValue(e.target.value)
+            setInputValue(e.target.value);
           }}
         />
         <h4>Left or right handed:</h4>
@@ -60,15 +60,15 @@ export const EditableVoidElement = <V extends Value>({
         Right
         <h4>Tell us about yourself:</h4>
         <div style={{ padding: '20px', border: '2px solid #ddd' }}>
-          <Plate
+          <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={plugins}
             editableProps={CONFIG.editableProps}
-            initialValue={VALUES.basicElements}
+            // initialValue={VALUES.basicElements}
           />
         </div>
       </div>
       {children}
     </div>
-  )
-}
+  );
+};

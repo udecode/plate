@@ -31,6 +31,7 @@
     "@udecode/zustood": "1.1.1",
     "slate": "0.78.0",
     "slate-history": "0.66.0",
+    "slate-hyperscript": "0.77.0",
     "slate-react": "0.79.0",
     "styled-components": "5.3.1"
   },

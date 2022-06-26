@@ -4286,6 +4286,7 @@ __metadata:
     "@udecode/zustood": "npm:1.1.1"
     slate: "npm:0.78.0"
     slate-history: "npm:0.66.0"
+    slate-hyperscript: "npm:0.77.0"
     slate-react: "npm:0.79.0"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"
@@ -18792,6 +18793,17 @@ __metadata:
   peerDependencies:
     slate: ">=0.65.3"
   checksum: f649e0c0c037c23fb069c17af8f7082ccb7773da6da47ee62dc9bab6116d6a113776673b461c5d7d0bb863e76c86a4dfaeaec5439000d63535d3116be82e71fc
+  languageName: node
+  linkType: hard
+
+"slate-hyperscript@npm:0.77.0":
+  version: 0.77.0
+  resolution: "slate-hyperscript@npm:0.77.0"
+  dependencies:
+    is-plain-object: "npm:^5.0.0"
+  peerDependencies:
+    slate: ">=0.65.3"
+  checksum: f4f3f4d8750b2537c9015a7e7a1e372a58dc7d68fea49b00937caec034aec85a678b2c018f6b0e232337b83ec1e2680e08212363a67745b44607d91a83a6f90b
   languageName: node
   linkType: hard
 

@@ -61,7 +61,7 @@ import {
   cursorStore,
   PLUGINS,
 } from '@udecode/examples/config/plugins';
-import { VALUES } from '@udecode/examples/config/values/values';
+// import { VALUES } from '@udecode/examples/config/values/values';
 import {
   createEditableVoidPlugin,
   EDITABLE_VOID,
@@ -459,7 +459,7 @@ const ReactLiveScope = {
   usePlateEditorRef,
   usePlateSelection,
   usePlateEditorState,
-  VALUES,
+  // VALUES,
   withProps,
   withReact,
   withStyledDraggables,
