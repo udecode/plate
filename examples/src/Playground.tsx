@@ -56,30 +56,30 @@ import {
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
-import { VALUES } from '../common/values';
-import { alignPlugin } from './align/alignPlugin';
-import { autoformatPlugin } from './autoformat/autoformatPlugin';
-import { MarkBallonToolbar } from './balloon-toolbar/MarkBallonToolbar';
-import { CursorOverlayContainer } from './cursor-overlay/CursorOverlayContainer';
-import { dragOverCursorPlugin } from './cursor-overlay/dragOverCursorPlugin';
-import { withStyledDraggables } from './dnd/withStyledDraggables';
-import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
-import { forcedLayoutPlugin } from './forced-layout/forcedLayoutPlugin';
-import { indentPlugin } from './indent/indentPlugin';
-import { MENTIONABLES } from './mention/mentionables';
-import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
-import { resetNodePlugin } from './reset-node/resetNodePlugin';
-import { selectOnBackspacePlugin } from './select-on-backspace/selectOnBackspacePlugin';
-import { softBreakPlugin } from './soft-break/softBreakPlugin';
-import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';
 import {
+  alignPlugin,
+  autoformatPlugin,
   createMyPlugins,
+  CursorOverlayContainer,
+  dragOverCursorPlugin,
+  exitBreakPlugin,
+  forcedLayoutPlugin,
+  indentPlugin,
+  MarkBallonToolbar,
+  MENTIONABLES,
   MyEditor,
   MyPlatePlugin,
   MyValue,
-} from './typescript/plate.types';
-import { plateProps } from './plateProps';
-import { ToolbarButtons } from './ToolbarButtons';
+  plateProps,
+  playgroundValue,
+  resetBlockTypePlugin,
+  selectOnBackspacePlugin,
+  softBreakPlugin,
+  ToolbarButtons,
+  trailingBlockPlugin,
+  withStyledDraggables,
+  withStyledPlaceHolders,
+} from '.';
 
 const id = 'Playground';
 
@@ -137,7 +137,7 @@ export const Playground = () => {
             MyValue,
             MyEditor
           >(autoformatPlugin),
-          createResetNodePlugin(resetNodePlugin),
+          createResetNodePlugin(resetBlockTypePlugin),
           createSoftBreakPlugin(softBreakPlugin),
           createExitBreakPlugin(exitBreakPlugin),
           createNormalizeTypesPlugin(forcedLayoutPlugin),
@@ -169,7 +169,7 @@ export const Playground = () => {
         <Plate<MyValue, MyEditor>
           id={id}
           editableProps={plateProps.editableProps}
-          initialValue={VALUES.playground}
+          initialValue={playgroundValue}
           plugins={plugins}
         >
           <MarkBallonToolbar />

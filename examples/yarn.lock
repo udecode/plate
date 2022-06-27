@@ -3135,6 +3135,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yargs@npm:^17.0.10":
+  version: 17.0.10
+  resolution: "@types/yargs@npm:17.0.10"
+  dependencies:
+    "@types/yargs-parser": "npm:*"
+  checksum: 790de59e36d1fae23807ad6d08a9b5a4cb4aa036f076b8ab7125bb01dfefee1f0fe9d07208bda77119602a75522d6e2e417281bdc837cefc213374a8dd53fea6
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/eslint-plugin@npm:^4.5.0":
   version: 4.33.0
   resolution: "@typescript-eslint/eslint-plugin@npm:4.33.0"
@@ -3331,6 +3340,7 @@ __metadata:
     "@udecode/plate-test-utils": "link:../packages/test-utils"
     "@udecode/plate-ui-excalidraw": "link:../packages/ui/nodes/excalidraw"
     "@udecode/zustood": "npm:1.1.1"
+    barrelsby: "npm:^2.3.4"
     plop: "npm:^3.1.1"
     slate: "npm:0.78.0"
     slate-history: "npm:0.66.0"
@@ -4457,6 +4467,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"barrelsby@npm:^2.3.4":
+  version: 2.3.4
+  resolution: "barrelsby@npm:2.3.4"
+  dependencies:
+    "@types/yargs": "npm:^17.0.10"
+    signale: "npm:^1.4.0"
+    yargs: "npm:^17.4.1"
+  bin:
+    barrelsby: bin/cli.js
+  checksum: 9514c82dac392c4417e04135c1dc0b9b7a3b870321f76ad1ff56e7d78582427f9eb0b01803e65577dce34a5e6793219c0b3318b93d59954fed4af90d27a8cf79
+  languageName: node
+  linkType: hard
+
 "base64-js@npm:^1.0.2, base64-js@npm:^1.3.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
@@ -5080,7 +5103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:2.4.2, chalk@npm:^2.0.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
+"chalk@npm:2.4.2, chalk@npm:^2.0.0, chalk@npm:^2.3.2, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -5322,6 +5345,17 @@ __metadata:
     strip-ansi: "npm:^6.0.0"
     wrap-ansi: "npm:^6.2.0"
   checksum: 50996766627ca59eb561a2fec3adc18dbfd1456929b3d6779dceb5226e4b6a289435bf722439a4abf4bd65ebaafdc988542709b0a440d4784feb7372f9e9a6ad
+  languageName: node
+  linkType: hard
+
+"cliui@npm:^7.0.2":
+  version: 7.0.4
+  resolution: "cliui@npm:7.0.4"
+  dependencies:
+    string-width: "npm:^4.2.0"
+    strip-ansi: "npm:^6.0.0"
+    wrap-ansi: "npm:^7.0.0"
+  checksum: 11f16da76b7dc4a78bce29ea89445e2ad30cc7cf78954813095d187cc17924461cf42f941d481cd920ab1672221c709af677436179d6cb87f6176139117664aa
   languageName: node
   linkType: hard
 
@@ -7653,6 +7687,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"figures@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "figures@npm:2.0.0"
+  dependencies:
+    escape-string-regexp: "npm:^1.0.5"
+  checksum: 235be6fc127fdaeb58be608ac345061e5892b4f9c7b258f3c2282bf2891398c313f59535b903497a7303988685a4d27abc8c0d6d5765ec7a83e233b965ee0f1a
+  languageName: node
+  linkType: hard
+
 "figures@npm:^3.0.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
@@ -7765,7 +7808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-up@npm:^2.1.0":
+"find-up@npm:^2.0.0, find-up@npm:^2.1.0":
   version: 2.1.0
   resolution: "find-up@npm:2.1.0"
   dependencies:
@@ -8092,7 +8135,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-caller-file@npm:^2.0.1":
+"get-caller-file@npm:^2.0.1, get-caller-file@npm:^2.0.5":
   version: 2.0.5
   resolution: "get-caller-file@npm:2.0.5"
   checksum: 24c1eb494b27c789e9267d7220bb131e409427b793f9e2b07f772f8d84c44eb0b42b90c258d858ee758ec6a21092c16a1c78c5fac02c0df7c156bb7113307192
@@ -10574,6 +10617,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"load-json-file@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "load-json-file@npm:4.0.0"
+  dependencies:
+    graceful-fs: "npm:^4.1.2"
+    parse-json: "npm:^4.0.0"
+    pify: "npm:^3.0.0"
+    strip-bom: "npm:^3.0.0"
+  checksum: 118d155c8ad6f80a10d30023e4a4dcc0e4bad65377cc8a9ca998af30861762ba2c8e376f4d09bef54c263f77e6f70d26f2a5943a1fb95af8f97e67ac77ac52b5
+  languageName: node
+  linkType: hard
+
 "loader-runner@npm:^2.4.0":
   version: 2.4.0
   resolution: "loader-runner@npm:2.4.0"
@@ -12394,6 +12449,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pify@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "pify@npm:3.0.0"
+  checksum: ed76e8cbc9a929d14a4e5c84c444811af336daf2f8b8298722e331b7f1d0671da71f7df63fcd78ce304f330b7b90750af9064aa02a1e38ff3e7f4c0885a02360
+  languageName: node
+  linkType: hard
+
 "pify@npm:^4.0.1":
   version: 4.0.1
   resolution: "pify@npm:4.0.1"
@@ -12421,6 +12483,16 @@ __metadata:
   version: 4.0.5
   resolution: "pirates@npm:4.0.5"
   checksum: 1ade661dec736ffce6976c3430d37412bb75d7ba7caeb36ce3142de9b8bea4f756f0b317a2a24a28dd9e84adbf7a7819bfdca719126ccc44bf27b62d4a880eda
+  languageName: node
+  linkType: hard
+
+"pkg-conf@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "pkg-conf@npm:2.1.0"
+  dependencies:
+    find-up: "npm:^2.0.0"
+    load-json-file: "npm:^4.0.0"
+  checksum: 7b85cdcb9cf9a05d6516815a8701394974e994c805a16b7d0e290caa56bb3cc3a402ebfee519fc3da66b23562b22bf49d5f5dd5339f07e84f2e9d0f835f17cc6
   languageName: node
   linkType: hard
 
@@ -14843,6 +14915,17 @@ __metadata:
   version: 3.0.7
   resolution: "signal-exit@npm:3.0.7"
   checksum: 5cf7525c55a72d8d104d914acf2e470f74b2c156197277ad7b331bc5de3d8790170fed3c82ff98c7c31adaa8ff941bfd5ba44f55171cbe8ed0e939fa82a8322a
+  languageName: node
+  linkType: hard
+
+"signale@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "signale@npm:1.4.0"
+  dependencies:
+    chalk: "npm:^2.3.2"
+    figures: "npm:^2.0.0"
+    pkg-conf: "npm:^2.1.0"
+  checksum: 93c64963b154bc7df147784e55590b056e1a8780227592300af2cf667850d59afe4c8b1df0a4ca77eebd8b515b5692a3497d8a52cf2b97836b39b358b0907daa
   languageName: node
   linkType: hard
 
@@ -17286,6 +17369,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"y18n@npm:^5.0.5":
+  version: 5.0.8
+  resolution: "y18n@npm:5.0.8"
+  checksum: 10a6a4dcab8518b72a500520664b686bffe79d8e756af1a7eedf49fa72ab35e40f508896e0baa534f7f92e08193a6dad4283298c11ea7885e710c76b7e2bcc7a
+  languageName: node
+  linkType: hard
+
 "yallist@npm:^3.0.2":
   version: 3.1.1
   resolution: "yallist@npm:3.1.1"
@@ -17327,6 +17417,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"yargs-parser@npm:^21.0.0":
+  version: 21.0.1
+  resolution: "yargs-parser@npm:21.0.1"
+  checksum: acaedd6c21306da55dfabb5ea5967012a322bb103eab6034cee3ace61cefda1faaac89ea10bdee3bdfed2904f43cf71f346ccecf72e85b5005e6b2b2d17201d5
+  languageName: node
+  linkType: hard
+
 "yargs@npm:^13.3.2":
   version: 13.3.2
   resolution: "yargs@npm:13.3.2"
@@ -17361,6 +17458,21 @@ __metadata:
     y18n: "npm:^4.0.0"
     yargs-parser: "npm:^18.1.2"
   checksum: 3b8d70457bed79dccdca3bab53b1139e2733887aa7af1887b161968e296e886909d024d7d14800e71186cf747309f32d3e9ca4eef4e7392f96f0eed78203d907
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^17.4.1":
+  version: 17.5.1
+  resolution: "yargs@npm:17.5.1"
+  dependencies:
+    cliui: "npm:^7.0.2"
+    escalade: "npm:^3.1.1"
+    get-caller-file: "npm:^2.0.5"
+    require-directory: "npm:^2.1.1"
+    string-width: "npm:^4.2.3"
+    y18n: "npm:^5.0.5"
+    yargs-parser: "npm:^21.0.0"
+  checksum: 73e3e3f22a5e278bd335bd2c61bbfdae8181ecb178c304ca8438a3f34065e63885639b81e01c6ffee44dfeee7172f224c857feaec0ac2a940580b93b626f5080
   languageName: node
   linkType: hard
 

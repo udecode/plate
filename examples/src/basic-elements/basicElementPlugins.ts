@@ -21,7 +21,7 @@ export const basicElementPlugins = createMyPlugins(
 );
 
 // TODO
-export const basicNodes = createMyPlugins(
+export const basicNodePlugins = createMyPlugins(
   [...basicElementPlugins, ...basicMarkPlugins],
   {
     components: createPlateUI(),

@@ -13,7 +13,7 @@ const resetBlockTypesCommonRule = {
   defaultType: ELEMENT_PARAGRAPH,
 };
 
-export const resetNodePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
+export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
   options: {
     rules: [
       {

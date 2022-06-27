@@ -2,24 +2,28 @@ import React, { useState } from 'react';
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
+  createPlateUI,
   createResetNodePlugin,
   createSoftBreakPlugin,
   Plate,
   PlateRenderElementProps,
   TElement,
 } from '@udecode/plate';
-import { CONFIG } from '../../common/config';
-import { createMyPlugins, MyEditor, MyValue } from '../typescript/plate.types';
+import { exitBreakPlugin } from '../exit-break/index';
+import { plateProps } from '../plateProps';
+import { resetBlockTypePlugin } from '../reset-node/index';
+import { softBreakPlugin } from '../soft-break/index';
+import { createMyPlugins, MyEditor, MyValue } from '../typescript/index';
 
 const plugins = createMyPlugins(
   [
     createBasicElementsPlugin(),
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
+    createResetNodePlugin(resetBlockTypePlugin),
+    createSoftBreakPlugin(softBreakPlugin),
+    createExitBreakPlugin(exitBreakPlugin),
   ],
   {
-    components: CONFIG.components,
+    components: createPlateUI(),
   }
 );
 
@@ -63,7 +67,7 @@ export const EditableVoidElement = ({
           <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={plugins}
-            editableProps={CONFIG.editableProps}
+            editableProps={plateProps.editableProps}
             // initialValue={VALUES.basicElements}
           />
         </div>

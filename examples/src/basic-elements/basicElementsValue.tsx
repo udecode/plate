@@ -24,4 +24,4 @@ export const basicElementsValue: any = (
   </fragment>
 );
 
-export const basicNodes = [...basicElementsValue, ...basicMarksValue];
+export const basicNodesValue = [...basicElementsValue, ...basicMarksValue];

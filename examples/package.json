@@ -3,8 +3,7 @@
   "name": "@udecode/examples",
   "version": "0.0.607",
   "scripts": {
-    "clean": "rimraf '**/node_modules' yarn.lock && touch yarn.lock",
-    "plop": "TS_NODE_PROJECT='./ts-node.tsconfig.json' plop"
+    "cti": "sh ../scripts/cti.sh"
   },
   "workspaces": [
     "apps/**"
@@ -34,11 +33,9 @@
     "zustand": "3.7.2"
   },
   "devDependencies": {
+    "barrelsby": "^2.3.4",
     "plop": "^3.1.1",
     "typescript": "4.6.4"
-  },
-  "scripts": {
-    "cti": "sh ../scripts/cti.sh"
   },
   "browserslist": {
     "production": [
