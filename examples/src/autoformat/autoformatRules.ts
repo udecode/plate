@@ -6,7 +6,7 @@ import {
   autoformatPunctuation,
   autoformatSmartQuotes,
 } from '@udecode/plate';
-import { MyAutoformatRule } from '../typescript/plate.types';
+import { MyAutoformatRule } from '../typescript/plateTypes';
 import { autoformatBlocks } from './autoformatBlocks';
 import { autoformatLists } from './autoformatLists';
 import { autoformatMarks } from './autoformatMarks';

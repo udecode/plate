@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@udecode/examples": "link:../../src",
+    "@udecode/examples": "workspace:^",
     "next": "^12.1.6"
   },
   "browserslist": {

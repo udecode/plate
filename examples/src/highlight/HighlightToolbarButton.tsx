@@ -5,7 +5,7 @@ import {
   MARK_HIGHLIGHT,
   MarkToolbarButton,
 } from '@udecode/plate';
-import { useMyPlateEditorRef } from '../typescript/plate.types';
+import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const HighlightToolbarButton = () => {
   const editor = useMyPlateEditorRef()!;

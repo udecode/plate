@@ -40,7 +40,9 @@
     "versionup:pre": "lerna version prerelease"
   },
   "workspaces": [
-    "packages/**"
+    "packages/**",
+    "examples",
+    "examples/apps/**"
   ],
   "resolutions": {
     "@types/react": "17.0.47",

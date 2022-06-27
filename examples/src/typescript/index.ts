@@ -3,4 +3,4 @@
  */
 
 export * from './TypeScriptExample';
-export * from './plate.types';
+export * from './plateTypes';

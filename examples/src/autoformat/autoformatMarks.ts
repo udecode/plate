@@ -8,7 +8,7 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
 } from '@udecode/plate';
-import { MyAutoformatRule } from '../typescript/plate.types';
+import { MyAutoformatRule } from '../typescript/plateTypes';
 
 export const autoformatMarks: MyAutoformatRule[] = [
   {

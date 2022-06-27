@@ -6,7 +6,7 @@ import {
   createPlateUI,
 } from '@udecode/plate';
 import { basicMarkPlugins } from '../basic-marks/basicMarkPlugins';
-import { createMyPlugins } from '../typescript/plate.types';
+import { createMyPlugins } from '../typescript/plateTypes';
 
 export const basicElementPlugins = createMyPlugins(
   [

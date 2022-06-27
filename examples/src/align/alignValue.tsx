@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import { faker } from '@faker-js/faker';
 import { jsx } from '@udecode/plate-test-utils';
-import * as faker from 'faker';
 
 jsx;
 

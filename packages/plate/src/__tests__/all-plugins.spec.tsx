@@ -7,6 +7,7 @@ import {
   Search,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
+import { exitBreakPlugin, softBreakPlugin } from '@udecode/examples/src/index';
 import { Plate } from '@udecode/plate-core/src/index';
 import {
   createBasicElementsPlugin,

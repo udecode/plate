@@ -2,7 +2,7 @@ import React from 'react';
 import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease';
 import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
 import { indent, outdent, ToolbarButton } from '@udecode/plate';
-import { useMyPlateEditorRef } from '../typescript/plate.types';
+import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const IndentToolbarButtons = () => {
   const editor = useMyPlateEditorRef()!;

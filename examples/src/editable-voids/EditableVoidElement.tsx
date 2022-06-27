@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
@@ -9,8 +9,8 @@ import {
   PlateRenderElementProps,
   TElement,
 } from '@udecode/plate';
+import { editableProps } from '../common/editableProps';
 import { exitBreakPlugin } from '../exit-break/index';
-import { plateProps } from '../plateProps';
 import { resetBlockTypePlugin } from '../reset-node/index';
 import { softBreakPlugin } from '../soft-break/index';
 import { createMyPlugins, MyEditor, MyValue } from '../typescript/index';
@@ -27,6 +27,13 @@ const plugins = createMyPlugins(
   }
 );
 
+const styles: Record<string, CSSProperties> = {
+  box: { boxShadow: '0 0 0 3px #ddd', padding: '8px' },
+  input: { margin: '8px 0' },
+  radio: { width: 'unset' },
+  editor: { padding: '20px', border: '2px solid #ddd' },
+};
+
 export const EditableVoidElement = ({
   attributes,
   children,
@@ -36,10 +43,10 @@ export const EditableVoidElement = ({
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
     <div {...attributes} contentEditable={false}>
-      <div style={{ boxShadow: '0 0 0 3px #ddd', padding: '8px' }}>
+      <div style={styles.box}>
         <h4>Name:</h4>
         <input
-          style={{ margin: '8px 0' }}
+          style={styles.input}
           type="text"
           value={inputValue}
           onChange={(e) => {
@@ -48,7 +55,7 @@ export const EditableVoidElement = ({
         />
         <h4>Left or right handed:</h4>
         <input
-          style={{ width: 'unset' }}
+          style={styles.radio}
           type="radio"
           name="handedness"
           value="left"
@@ -56,18 +63,18 @@ export const EditableVoidElement = ({
         Left
         <br />
         <input
-          style={{ width: 'unset' }}
+          style={styles.radio}
           type="radio"
           name="handedness"
           value="right"
         />{' '}
         Right
         <h4>Tell us about yourself:</h4>
-        <div style={{ padding: '20px', border: '2px solid #ddd' }}>
+        <div style={styles.editor}>
           <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={plugins}
-            editableProps={plateProps.editableProps}
+            editableProps={editableProps}
             // initialValue={VALUES.basicElements}
           />
         </div>

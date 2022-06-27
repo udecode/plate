@@ -10,7 +10,7 @@ import {
   ELEMENT_PARAGRAPH,
   IndentPlugin,
 } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 
 export const indentPlugin: Partial<MyPlatePlugin<IndentPlugin>> = {
   inject: {

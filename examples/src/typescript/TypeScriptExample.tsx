@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
-import { getMyPlateSelectors, MyEditor, MyValue } from './plate.types';
+import { getMyPlateSelectors, MyEditor, MyValue } from './plateTypes';
 
 /**
  * Example

@@ -1,8 +1,8 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
+import { createList } from '../list/createList';
 import { createTable } from '../table/tableValue';
-import { createList } from '../utils';
 
 jsx;
 

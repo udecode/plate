@@ -1,5 +1,5 @@
 import { ELEMENT_H1, NormalizeTypesPlugin } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 
 export const forcedLayoutPlugin: Partial<
   MyPlatePlugin<NormalizeTypesPlugin>

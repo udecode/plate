@@ -17,7 +17,7 @@ import {
   MARK_UNDERLINE,
   MarkToolbarButton,
 } from '@udecode/plate';
-import { useMyPlateEditorRef } from '../typescript/plate.types';
+import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const BasicMarkToolbarButtons = () => {
   const editor = useMyPlateEditorRef()!;

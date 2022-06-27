@@ -14,7 +14,7 @@ import {
   insertNodes,
   setNodes,
 } from '@udecode/plate';
-import { MyAutoformatRule } from '../typescript/plate.types';
+import { MyAutoformatRule } from '../typescript/plateTypes';
 import { preFormat } from './autoformatUtils';
 
 export const autoformatBlocks: MyAutoformatRule[] = [

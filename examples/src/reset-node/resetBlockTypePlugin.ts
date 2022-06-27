@@ -6,7 +6,7 @@ import {
   isSelectionAtBlockStart,
   ResetNodePlugin,
 } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],

@@ -7,7 +7,7 @@ import {
   getPluginType,
   ListToolbarButton,
 } from '@udecode/plate';
-import { useMyPlateEditorRef } from '../typescript/plate.types';
+import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const ListToolbarButtons = () => {
   const editor = useMyPlateEditorRef()!;

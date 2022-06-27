@@ -41,29 +41,29 @@ import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
-import { preFormat } from '@udecode/examples/config/autoformat/autoformatUtils';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  HighlightToolbarButton,
-  IndentToolbarButtons,
-  KbdToolbarButton,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from '@udecode/examples/config/components/Toolbars';
-import { withStyledDraggables } from '@udecode/examples/config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from '@udecode/examples/config/components/withStyledPlaceHolders';
-import { CONFIG } from '@udecode/examples/config/config';
-import {
-  createEditableVoidPlugin,
-  EDITABLE_VOID,
-} from '@udecode/examples/examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from '@udecode/examples/examples/editable-voids/EditableVoidElement';
-import { IFrame } from '@udecode/examples/examples/iframe/IFrame';
-import { createPreviewPlugin } from '@udecode/examples/examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from '@udecode/examples/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
+// import { preFormat } from '@udecode/examples/config/autoformat/autoformatUtils';
+// import {
+//   AlignToolbarButtons,
+//   BasicElementToolbarButtons,
+//   BasicMarkToolbarButtons,
+//   HighlightToolbarButton,
+//   IndentToolbarButtons,
+//   KbdToolbarButton,
+//   ListToolbarButtons,
+//   MarkBallonToolbar,
+//   TableToolbarButtons,
+// } from '@udecode/examples/config/components/Toolbars';
+// import { withStyledDraggables } from '@udecode/examples/config/components/withStyledDraggables';
+// import { withStyledPlaceHolders } from '@udecode/examples/config/components/withStyledPlaceHolders';
+// import { CONFIG } from '@udecode/examples/config/config';
+// import {
+//   createEditableVoidPlugin,
+//   EDITABLE_VOID,
+// } from '@udecode/examples/examples/editable-voids/createEditableVoidPlugin';
+// import { EditableVoidElement } from '@udecode/examples/examples/editable-voids/EditableVoidElement';
+// import { IFrame } from '@udecode/examples/examples/iframe/IFrame';
+// import { createPreviewPlugin } from '@udecode/examples/examples/preview-markdown/createPreviewPlugin';
+// import { PreviewLeaf } from '@udecode/examples/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import {
   AlignToolbarButton,
   BalloonToolbar,
@@ -225,12 +225,12 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { VALUES } from '../src/config/values';
-import {
-  createDragOverCursorPlugin,
-  cursorStore,
-  PLUGINS,
-} from '../src/plugins/plugins';
+// import { VALUES } from '../src/config/values';
+// import {
+//   createDragOverCursorPlugin,
+//   cursorStore,
+//   PLUGINS,
+// } from '../src/plugins/plugins';
 import { HighlightHTML } from './utils/HighlightHTML'; // Add react-live imports you need here
 
 // Add react-live imports you need here
@@ -238,11 +238,9 @@ const ReactLiveScope = {
   ...React,
   CursorOverlay,
   withPlateEventProvider,
-  cursorStore,
   findEventRange,
   createTextIndentPlugin,
   getPlateActions,
-  createDragOverCursorPlugin,
   usePlateSelectors,
   createJuicePlugin,
   StyledElement,
@@ -250,7 +248,6 @@ const ReactLiveScope = {
   React,
   insertTableColumn,
   insertTableRow,
-  BallonToolbarMarks: MarkBallonToolbar,
   BalloonToolbar,
   BorderAll,
   BorderBottom,
@@ -260,12 +257,10 @@ const ReactLiveScope = {
   BorderRight,
   BorderTop,
   Check,
-  preFormat,
   CodeAlt,
   CodeBlock,
   CodeBlockElement,
   Combobox,
-  CONFIG,
   createAlignPlugin,
   createAutoformatPlugin,
   createBasicElementsPlugin,
@@ -278,7 +273,6 @@ const ReactLiveScope = {
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
-  createEditableVoidPlugin,
   createEditor,
   createTEditor,
   createPlateUIEditor,
@@ -309,8 +303,6 @@ const ReactLiveScope = {
   createParagraphPlugin,
   createPlateUI,
   createPlugins,
-  PreviewLeaf,
-  createPreviewPlugin,
   createReactPlugin,
   createResetNodePlugin,
   createSelectOnBackspacePlugin,
@@ -328,8 +320,6 @@ const ReactLiveScope = {
   deleteTable,
   DndProvider,
   Editable,
-  EDITABLE_VOID,
-  EditableVoidElement,
   Editor,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
@@ -381,7 +371,6 @@ const ReactLiveScope = {
   Highlight,
   HighlightHTML,
   HTML5Backend,
-  IFrame,
   Image,
   indent,
   indentList,
@@ -420,7 +409,6 @@ const ReactLiveScope = {
   outdent,
   outdentList,
   Plate,
-  PLUGINS,
   ReactEditor,
   Search,
   serializeHtml,
@@ -432,18 +420,10 @@ const ReactLiveScope = {
   toggleList,
   AlignToolbarButton,
   ToolbarButton,
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  IndentToolbarButtons,
-  ListToolbarButtons,
-  TableToolbarButtons,
   CodeBlockToolbarButton,
   ColorPickerToolbarDropdown,
   BlockToolbarButton,
-  HighlightToolbarButton,
   ImageToolbarButton,
-  KbdToolbarButton,
   LineHeightToolbarDropdown,
   LinkToolbarButton,
   ListToolbarButton,
@@ -459,11 +439,8 @@ const ReactLiveScope = {
   usePlateEditorRef,
   usePlateSelection,
   usePlateEditorState,
-  VALUES,
   withProps,
   withReact,
-  withStyledDraggables,
-  withStyledPlaceHolders,
   withStyledProps,
 };
 

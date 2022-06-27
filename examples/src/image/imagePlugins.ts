@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate';
 import { basicMarkPlugins } from '../basic-marks/basicMarkPlugins';
 import { selectOnBackspacePlugin } from '../select-on-backspace/selectOnBackspacePlugin';
-import { createMyPlugins } from '../typescript/plate.types';
+import { createMyPlugins } from '../typescript/plateTypes';
 
 export const imagePlugins = createMyPlugins(
   [

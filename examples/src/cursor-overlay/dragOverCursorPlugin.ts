@@ -1,5 +1,5 @@
 import { findEventRange } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 import { cursorStore } from './cursorStore';
 
 export const dragOverCursorPlugin: MyPlatePlugin = {

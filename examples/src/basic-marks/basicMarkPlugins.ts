@@ -8,7 +8,7 @@ import {
   createSuperscriptPlugin,
   createUnderlinePlugin,
 } from '@udecode/plate';
-import { createMyPlugins } from '../typescript/plate.types';
+import { createMyPlugins } from '../typescript/plateTypes';
 
 export const basicMarkPlugins = createMyPlugins(
   [

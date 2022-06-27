@@ -4,7 +4,7 @@ import {
   ELEMENT_TD,
   SoftBreakPlugin,
 } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 
 export const softBreakPlugin: Partial<MyPlatePlugin<SoftBreakPlugin>> = {
   options: {

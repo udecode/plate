@@ -2,6 +2,7 @@ import { alignValue } from './align/alignValue';
 import { autoformatValue } from './autoformat/autoformatValue';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
+import { getNodesWithRandomId } from './dnd/getNodesWithRandomId';
 import { excalidrawValue } from './excalidraw/excalidrawValue';
 import { exitBreakValue } from './exit-break/exitBreakValue';
 import { fontValue } from './font/fontValue';
@@ -21,7 +22,6 @@ import { deserializeHtmlValue } from './serializing-html/deserializeHtmlValue';
 import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { softBreakValue } from './soft-break/softBreakValue';
 import { tableValue } from './table/tableValue';
-import { getNodesWithRandomId } from './utils';
 
 // TODO: dnd example
 export const playgroundValue: any = getNodesWithRandomId([

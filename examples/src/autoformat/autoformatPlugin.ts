@@ -1,5 +1,5 @@
 import { AutoformatPlugin } from '@udecode/plate';
-import { MyEditor, MyPlatePlugin, MyValue } from '../typescript/plate.types';
+import { MyEditor, MyPlatePlugin, MyValue } from '../typescript/plateTypes';
 import { autoformatRules } from './autoformatRules';
 
 export const autoformatPlugin: Partial<

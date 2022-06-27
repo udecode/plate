@@ -7,7 +7,7 @@ import {
   ELEMENT_H6,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plate.types';
+import { MyPlatePlugin } from '../typescript/plateTypes';
 
 export const alignPlugin: Partial<MyPlatePlugin> = {
   inject: {
