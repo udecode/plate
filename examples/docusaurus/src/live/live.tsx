@@ -57,12 +57,6 @@ import { withStyledDraggables } from '@udecode/examples/config/components/withSt
 import { withStyledPlaceHolders } from '@udecode/examples/config/components/withStyledPlaceHolders';
 import { CONFIG } from '@udecode/examples/config/config';
 import {
-  createDragOverCursorPlugin,
-  cursorStore,
-  PLUGINS,
-} from '@udecode/examples/config/plugins';
-import { VALUES } from '@udecode/examples/config/values/values';
-import {
   createEditableVoidPlugin,
   EDITABLE_VOID,
 } from '@udecode/examples/examples/editable-voids/createEditableVoidPlugin';
@@ -231,6 +225,12 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
+import { VALUES } from '../src/config/values';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from '../src/plugins/plugins';
 import { HighlightHTML } from './utils/HighlightHTML'; // Add react-live imports you need here
 
 // Add react-live imports you need here

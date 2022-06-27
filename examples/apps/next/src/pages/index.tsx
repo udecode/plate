@@ -1,3 +1,3 @@
-import { Playground } from '@udecode/examples/playground/Playground'
+import { Playground } from '../../../../src/Playground';
 
-export default Playground
+export default Playground;

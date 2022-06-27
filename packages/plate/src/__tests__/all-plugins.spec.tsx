@@ -7,24 +7,14 @@ import {
   Search,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
+import { Plate } from '@udecode/plate-core/src/index';
 import {
   createBasicElementsPlugin,
   createFindReplacePlugin,
   createHeadingPlugin,
   createPlugins,
 } from '@udecode/plate-headless';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  IndentToolbarButtons,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from '../../../../examples/src/config/components/Toolbars';
-import { CONFIG } from '../../../../examples/src/config/config';
-import { VALUES } from '../../../../examples/src/config/values/values';
-import { Plate } from '../../../core/src/components/plate/Plate';
+import { autoformatPlugin } from '../../../../examples/src/autoformat/autoformatPlugin';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
@@ -75,13 +65,13 @@ const PlateContainer = () => {
       createFindReplacePlugin({ options: { search } }),
       createNodeIdPlugin(),
       // TODO: fix type
-      createAutoformatPlugin(CONFIG.autoformat as any),
-      createResetNodePlugin(CONFIG.resetBlockType as any),
-      createSoftBreakPlugin(CONFIG.softBreak as any),
-      createExitBreakPlugin(CONFIG.exitBreak as any),
-      createNormalizeTypesPlugin(CONFIG.forceLayout as any),
-      createTrailingBlockPlugin(CONFIG.trailingBlock as any),
-      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace as any),
+      createAutoformatPlugin(autoformatPlugin as any),
+      createResetNodePlugin(resetBlockTypePlugin as any),
+      createSoftBreakPlugin(softBreakPlugin as any),
+      createExitBreakPlugin(exitBreakPlugin as any),
+      createNormalizeTypesPlugin(forcedLayoutPlugin as any),
+      createTrailingBlockPlugin(trailingBlockPlugin as any),
+      createSelectOnBackspacePlugin(selectOnBackspacePlugin as any),
     ],
     {
       components: createPlateUI(),
@@ -90,7 +80,7 @@ const PlateContainer = () => {
 
   return (
     <Plate
-      editableProps={CONFIG.editableProps as any}
+      editableProps={editableProps as any}
       initialValue={VALUES.playground}
       plugins={plugins}
     >

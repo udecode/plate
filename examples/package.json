@@ -3,10 +3,8 @@
   "name": "@udecode/examples",
   "version": "0.0.607",
   "scripts": {
-    "build": "next build",
     "clean": "rimraf '**/node_modules' yarn.lock && touch yarn.lock",
-    "dev": "next dev",
-    "start": "next start"
+    "plop": "TS_NODE_PROJECT='./ts-node.tsconfig.json' plop"
   },
   "workspaces": [
     "apps/**"
@@ -28,8 +26,6 @@
     "@udecode/plate-test-utils": "link:../packages/test-utils",
     "@udecode/plate-ui-excalidraw": "link:../packages/ui/nodes/excalidraw",
     "@udecode/zustood": "1.1.1",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
     "slate": "0.78.0",
     "slate-history": "0.66.0",
     "slate-hyperscript": "0.77.0",
@@ -38,7 +34,11 @@
     "zustand": "3.7.2"
   },
   "devDependencies": {
+    "plop": "^3.1.1",
     "typescript": "4.6.4"
+  },
+  "scripts": {
+    "cti": "sh ../scripts/cti.sh"
   },
   "browserslist": {
     "production": [
