@@ -18,6 +18,7 @@ import { createTextAreaStyles } from './Thread.styles';
 
 interface TextAreaProps {
   value: string;
+  setValue: React.Dispatch<React.SetStateAction<string>>;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
   thread: ThreadModel;
   fetchContacts: FetchContacts;
@@ -29,6 +30,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   function TextArea(
     {
       value,
+      setValue,
       onChange,
       thread,
       fetchContacts,
@@ -126,7 +128,9 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
                 const indexOfLastCharacterOfMentionString =
                   mentionStringStartIndex + match.index + match[0].length - 1;
                 if (
-                  isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)
+                  isMentionStringNextToCaret(
+                    indexOfLastCharacterOfMentionString
+                  )
                 ) {
                   const mentionString = match[0].trimEnd();
                   const mentionStringEndIndex =
@@ -215,17 +219,18 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         if (mentionString) {
           const textArea = textAreaRef.current!;
           const mentionInsertString = `@${mentionedContact.email} `;
-          textArea.value = `${value.substr(
+          const newValue = `${value.substr(
             0,
             mentionString.startIndex
           )}${mentionInsertString}${value.substr(mentionString.endIndex + 1)}`;
+          setValue(newValue);
           const selectionIndex =
             mentionString.startIndex + mentionInsertString.length;
           textArea.focus();
           textArea.setSelectionRange(selectionIndex, selectionIndex);
         }
       },
-      [retrieveMentionStringAtCaretPosition, value]
+      [retrieveMentionStringAtCaretPosition, value, setValue]
     );
 
     const onContactSelected = useCallback(

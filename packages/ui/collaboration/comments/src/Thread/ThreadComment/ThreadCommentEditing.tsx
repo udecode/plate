@@ -63,6 +63,7 @@ export function ThreadCommentEditing({
       <TextArea
         ref={textAreaRef}
         value={value}
+        setValue={setValue}
         onChange={onChange}
         thread={thread}
         fetchContacts={fetchContacts}
