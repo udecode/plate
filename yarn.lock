@@ -3761,11 +3761,6 @@
   dependencies:
     "@udecode/plate-core" "10.5.3"
 
-"@xolvio/plate-comments@file:packages/collaboration/comments":
-  version "0.4.0"
-  dependencies:
-    "@udecode/plate-core" "^13.5.0"
-
 "@xolvio/plate-ui-comments@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@xolvio/plate-ui-comments/-/plate-ui-comments-0.1.0.tgz#647564c380d038e7c8ba645586776c4cf56e6fce"
