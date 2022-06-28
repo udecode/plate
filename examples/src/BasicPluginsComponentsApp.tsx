@@ -6,14 +6,15 @@ import {
   createHeadingPlugin,
   createItalicPlugin,
   createParagraphPlugin,
-  createPlateUI,
   createPlugins,
   createStrikethroughPlugin,
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
-import { basicNodesValue } from './basic-nodes/basicNodesValue';
+import { basicElementsValue } from './basic-elements/basicElementsValue';
+import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { MyValue } from './typescript/plateTypes';
 
 // try to remove a few plugins!
@@ -35,14 +36,14 @@ const plugins = createPlugins<MyValue>(
   ],
   {
     // Or pass all components at once
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <Plate
     editableProps={editableProps}
-    initialValue={basicNodesValue}
+    initialValue={[...basicElementsValue, ...basicMarksValue]}
     plugins={plugins}
   />
 );

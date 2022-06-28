@@ -4,12 +4,12 @@ import {
   createImagePlugin,
   createLinkPlugin,
   createListPlugin,
-  createPlateUI,
   createTablePlugin,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
@@ -23,7 +23,7 @@ const plugins = createMyPlugins(
     createDeserializeMdPlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

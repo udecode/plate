@@ -45,10 +45,8 @@ import {
   createTrailingBlockPlugin,
   createUnderlinePlugin,
   ELEMENT_CODE_BLOCK,
-  HeadingToolbar,
   MentionCombobox,
   Plate,
-  PlateEventProvider,
   StyledElement,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
@@ -72,6 +70,7 @@ import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from './select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
+import { Toolbar } from './toolbar/Toolbar';
 import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';
 import {
   createMyPlugins,
@@ -158,11 +157,9 @@ const App = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <PlateEventProvider>
-        <HeadingToolbar>
-          <ToolbarButtons />
-        </HeadingToolbar>
-      </PlateEventProvider>
+      <Toolbar>
+        <ToolbarButtons />
+      </Toolbar>
 
       <div ref={containerRef} style={styles.container}>
         <Plate<MyValue, MyEditor>

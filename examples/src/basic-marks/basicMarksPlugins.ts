@@ -2,12 +2,12 @@ import {
   createBoldPlugin,
   createCodePlugin,
   createItalicPlugin,
-  createPlateUI,
   createStrikethroughPlugin,
   createSubscriptPlugin,
   createSuperscriptPlugin,
   createUnderlinePlugin,
 } from '@udecode/plate';
+import { plateUI } from '../common/plateUI';
 import { createMyPlugins } from '../typescript/plateTypes';
 
 export const basicMarksPlugins = createMyPlugins(
@@ -21,6 +21,6 @@ export const basicMarksPlugins = createMyPlugins(
     createUnderlinePlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );

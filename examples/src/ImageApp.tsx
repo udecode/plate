@@ -2,17 +2,16 @@ import React from 'react';
 import { Image } from '@styled-icons/material/Image';
 import {
   createImagePlugin,
-  createPlateUI,
   createSelectOnBackspacePlugin,
   ELEMENT_IMAGE,
-  HeadingToolbar,
   ImageToolbarButton,
   Plate,
-  PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { imageValue } from './image/imageValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -24,17 +23,15 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <PlateProvider>
-      <HeadingToolbar>
-        <ImageToolbarButton icon={<Image />} />
-      </HeadingToolbar>
-    </PlateProvider>
+    <Toolbar>
+      <ImageToolbarButton icon={<Image />} />
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

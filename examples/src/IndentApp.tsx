@@ -1,29 +1,26 @@
 import React from 'react';
-import {
-  createIndentPlugin,
-  createPlateUI,
-  HeadingToolbar,
-  Plate,
-} from '@udecode/plate';
+import { createIndentPlugin, Plate } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { indentPlugin } from './indent/indentPlugin';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { indentValue } from './indent/indentValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createIndentPlugin(indentPlugin)],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <IndentToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

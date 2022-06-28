@@ -11,7 +11,8 @@ import {
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
-import { basicNodesValue } from './basic-nodes/basicNodesValue';
+import { basicElementsValue } from './basic-elements/basicElementsValue';
+import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { editableProps } from './common/editableProps';
 import { MyPlatePlugin, MyValue } from './typescript/plateTypes';
 
@@ -31,7 +32,7 @@ const plugins: MyPlatePlugin[] = [
 export default () => (
   <Plate<MyValue>
     editableProps={editableProps}
-    initialValue={basicNodesValue}
+    initialValue={[...basicElementsValue, ...basicMarksValue]}
     plugins={plugins}
   />
 );

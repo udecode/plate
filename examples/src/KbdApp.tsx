@@ -2,24 +2,23 @@ import React from 'react';
 import { Keyboard } from '@styled-icons/material/Keyboard';
 import {
   createKbdPlugin,
-  createPlateUI,
   getPluginType,
-  HeadingToolbar,
   MARK_KBD,
   MarkToolbarButton,
   Plate,
-  withPlateEventProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { kbdValue } from './kbd/kbdValue';
+import { Toolbar } from './toolbar/Toolbar';
 import {
   createMyPlugins,
   MyValue,
   useMyPlateEditorRef,
 } from './typescript/plateTypes';
 
-const KbdToolbarButton = withPlateEventProvider(() => {
+const KbdToolbarButton = () => {
   const editor = useMyPlateEditorRef()!;
 
   return (
@@ -28,17 +27,17 @@ const KbdToolbarButton = withPlateEventProvider(() => {
       icon={<Keyboard />}
     />
   );
-});
+};
 
 const plugins = createMyPlugins([...basicNodesPlugins, createKbdPlugin()], {
-  components: createPlateUI(),
+  components: plateUI,
 });
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <KbdToolbarButton />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

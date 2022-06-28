@@ -12,7 +12,6 @@ import {
   createIndentListPlugin,
   createIndentPlugin,
   createLineHeightPlugin,
-  createPlateUI,
   createTablePlugin,
   createTextIndentPlugin,
   Plate,
@@ -21,6 +20,7 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { alignPlugin } from './align/alignPlugin';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { indentPlugin } from './indent/indentPlugin';
 import { lineHeightPlugin } from './line-height/lineHeightPlugin';
 import { deserializeDocxValue } from './serializing-docx/deserializeDocxValue';
@@ -47,7 +47,7 @@ const plugins = createMyPlugins(
     createJuicePlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

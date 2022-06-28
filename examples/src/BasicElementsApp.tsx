@@ -5,7 +5,6 @@ import {
   createPlateUI,
   createResetNodePlugin,
   createSoftBreakPlugin,
-  HeadingToolbar,
   Plate,
 } from '@udecode/plate';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
@@ -14,6 +13,7 @@ import { editableProps } from './common/editableProps';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -30,12 +30,11 @@ const plugins = createMyPlugins(
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <BasicElementToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate
-      id="basic-elements"
       editableProps={editableProps}
       initialValue={basicElementsValue}
       plugins={plugins}

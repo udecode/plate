@@ -1,22 +1,28 @@
+import 'tippy.js/dist/tippy.css';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   createBasicElementsPlugin,
+  createDndPlugin,
   createNodeIdPlugin,
-  createPlateUI,
   Plate,
 } from '@udecode/plate';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
+import { createNodesWithId } from './dnd/createNodesWithId';
 import { withStyledDraggables } from './dnd/withStyledDraggables';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-let components = createPlateUI();
-components = withStyledDraggables(components);
+// set drag handle next to each block
+const components = withStyledDraggables(plateUI);
+
+// set id to each block
+const initialValue = createNodesWithId(basicElementsValue);
 
 const plugins = createMyPlugins(
-  [createBasicElementsPlugin(), createNodeIdPlugin()],
+  [createBasicElementsPlugin(), createNodeIdPlugin(), createDndPlugin()],
   {
     components,
   }
@@ -27,7 +33,7 @@ export default () => (
     <Plate<MyValue>
       editableProps={editableProps}
       plugins={plugins}
-      initialValue={basicElementsValue}
+      initialValue={initialValue}
     />
   </DndProvider>
 );

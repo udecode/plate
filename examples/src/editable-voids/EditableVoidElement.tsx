@@ -2,7 +2,6 @@ import React, { CSSProperties, useState } from 'react';
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
-  createPlateUI,
   createResetNodePlugin,
   createSoftBreakPlugin,
   Plate,
@@ -10,10 +9,11 @@ import {
   TElement,
 } from '@udecode/plate';
 import { editableProps } from '../common/editableProps';
-import { exitBreakPlugin } from '../exit-break/index';
-import { resetBlockTypePlugin } from '../reset-node/index';
-import { softBreakPlugin } from '../soft-break/index';
-import { createMyPlugins, MyEditor, MyValue } from '../typescript/index';
+import { plateUI } from '../common/plateUI';
+import { exitBreakPlugin } from '../exit-break/exitBreakPlugin';
+import { resetBlockTypePlugin } from '../reset-node/resetBlockTypePlugin';
+import { softBreakPlugin } from '../soft-break/softBreakPlugin';
+import { createMyPlugins, MyEditor, MyValue } from '../typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
@@ -23,7 +23,7 @@ const plugins = createMyPlugins(
     createExitBreakPlugin(exitBreakPlugin),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

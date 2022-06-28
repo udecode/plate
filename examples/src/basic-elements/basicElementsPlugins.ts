@@ -3,8 +3,8 @@ import {
   createCodeBlockPlugin,
   createHeadingPlugin,
   createParagraphPlugin,
-  createPlateUI,
 } from '@udecode/plate';
+import { plateUI } from '../common/plateUI';
 import { createMyPlugins } from '../typescript/plateTypes';
 
 export const basicElementsPlugins = createMyPlugins(
@@ -15,6 +15,6 @@ export const basicElementsPlugins = createMyPlugins(
     createParagraphPlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );

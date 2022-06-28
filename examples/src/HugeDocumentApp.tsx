@@ -17,7 +17,6 @@ const initialValue = createHugeDocumentValue() as MyValue;
 
 const WithPlate = () => (
   <Plate
-    id="huge-document"
     editableProps={editableProps}
     initialValue={initialValue}
     plugins={basicNodesPlugins}

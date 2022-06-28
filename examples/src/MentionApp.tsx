@@ -2,13 +2,13 @@ import React from 'react';
 import {
   createComboboxPlugin,
   createMentionPlugin,
-  createPlateUI,
   MentionCombobox,
   MentionElement,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { MENTIONABLES } from './mention/mentionables';
 import { mentionValue } from './mention/mentionValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
@@ -33,7 +33,7 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

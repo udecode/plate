@@ -2,20 +2,20 @@ import React from 'react';
 import {
   createExitBreakPlugin,
   createListPlugin,
-  createPlateUI,
   createResetNodePlugin,
   createSoftBreakPlugin,
   createTodoListPlugin,
-  HeadingToolbar,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { listValue } from './list/listValue';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -28,15 +28,15 @@ const plugins = createMyPlugins(
     createTodoListPlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <ListToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

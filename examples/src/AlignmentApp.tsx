@@ -6,7 +6,6 @@ import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import {
   AlignToolbarButton,
   createAlignPlugin,
-  createPlateUI,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -14,23 +13,23 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_PARAGRAPH,
-  HeadingToolbar,
   Plate,
-  withPlateEventProvider,
 } from '@udecode/plate';
 import { alignValue } from './align/alignValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-const AlignToolbarButtons = withPlateEventProvider(() => (
+const AlignToolbarButtons = () => (
   <>
     <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
     <AlignToolbarButton value="center" icon={<FormatAlignCenter />} />
     <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
     <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
   </>
-));
+);
 
 const plugins = createMyPlugins(
   [
@@ -52,15 +51,16 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <AlignToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
+
     <Plate<MyValue>
       editableProps={editableProps}
       initialValue={alignValue}

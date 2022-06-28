@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeadingToolbar, Plate, PlateProps } from '@udecode/plate';
+import { Plate, PlateProps } from '@udecode/plate';
 import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
@@ -8,6 +8,7 @@ import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { imagePlugins } from './image/imagePlugins';
 import { imageValue } from './image/imageValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { MyValue } from './typescript/plateTypes';
 
 const styles = {
@@ -24,10 +25,10 @@ const Editor = (props: PlateProps<MyValue>) => (
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <BasicElementToolbarButtons />
       <BasicMarkToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
 
     <div style={styles.wrapper}>
       <Editor

@@ -2,16 +2,16 @@ import React from 'react';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import {
   createMediaEmbedPlugin,
-  createPlateUI,
   createSelectOnBackspacePlugin,
   ELEMENT_MEDIA_EMBED,
-  HeadingToolbar,
   MediaEmbedToolbarButton,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { mediaEmbedValue } from './media-embed/mediaEmbedValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -27,15 +27,15 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

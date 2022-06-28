@@ -7,7 +7,6 @@ import {
   createListPlugin,
   createMediaEmbedPlugin,
   createMentionPlugin,
-  createPlateUI,
   createSoftBreakPlugin,
   createTablePlugin,
   createTodoListPlugin,
@@ -16,6 +15,7 @@ import {
 import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { deserializeCsvValue } from './serializing-csv/deserializeCsvValue';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
@@ -36,7 +36,7 @@ const plugins = createMyPlugins(
     createDeserializeCsvPlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

@@ -8,15 +8,15 @@ import {
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
   createFontSizePlugin,
-  createPlateUI,
-  HeadingToolbar,
   MARK_BG_COLOR,
   MARK_COLOR,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { fontValue } from './font/fontValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const styles: Record<string, CSSProperties> = {
@@ -43,7 +43,7 @@ const plugins = createMyPlugins(
     createFontSizePlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
@@ -55,7 +55,7 @@ const CopyContent = () => (
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <ColorPickerToolbarDropdown
         pluginKey={MARK_COLOR}
         icon={<FormatColorText />}
@@ -68,7 +68,7 @@ export default () => (
         selectedIcon={<Check />}
         tooltip={tooltips.bg}
       />
-    </HeadingToolbar>
+    </Toolbar>
 
     <CopyContent />
 

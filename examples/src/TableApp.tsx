@@ -1,18 +1,18 @@
 import React from 'react';
 import {
   createExitBreakPlugin,
-  createPlateUI,
   createSoftBreakPlugin,
   createTablePlugin,
-  HeadingToolbar,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
 import { tableValue } from './table/tableValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -23,15 +23,15 @@ const plugins = createMyPlugins(
     createTablePlugin(),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <TableToolbarButtons />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

@@ -2,12 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { Search } from '@styled-icons/material/Search';
 import {
   createFindReplacePlugin,
-  createPlateUI,
   Plate,
   SearchHighlightToolbar,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { findReplaceValue } from './find-replace/findReplaceValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
@@ -22,7 +22,7 @@ export default () => {
           createFindReplacePlugin({ options: { search } }),
         ],
         {
-          components: createPlateUI(),
+          components: plateUI,
         }
       ),
     [search]

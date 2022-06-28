@@ -1,10 +1,10 @@
 import {
   createBasicElementsPlugin,
   createImagePlugin,
-  createPlateUI,
   createSelectOnBackspacePlugin,
 } from '@udecode/plate';
 import { basicMarksPlugins } from '../basic-marks/basicMarksPlugins';
+import { plateUI } from '../common/plateUI';
 import { selectOnBackspacePlugin } from '../select-on-backspace/selectOnBackspacePlugin';
 import { createMyPlugins } from '../typescript/plateTypes';
 
@@ -16,6 +16,6 @@ export const imagePlugins = createMyPlugins(
     createSelectOnBackspacePlugin(selectOnBackspacePlugin),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );

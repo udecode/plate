@@ -6,7 +6,6 @@ import {
   createListPlugin,
   createMediaEmbedPlugin,
   createMentionPlugin,
-  createPlateUI,
   createSoftBreakPlugin,
   createTablePlugin,
   createTodoListPlugin,
@@ -18,6 +17,7 @@ import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { deserializeHtmlValue } from './serializing-html/deserializeHtmlValue';
 import { HighlightHTML } from './serializing-html/HighlightHTML';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
@@ -38,7 +38,7 @@ const plugins = createMyPlugins(
     createSoftBreakPlugin(softBreakPlugin),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

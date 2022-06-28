@@ -1,28 +1,25 @@
 import React from 'react';
-import {
-  createHighlightPlugin,
-  createPlateUI,
-  HeadingToolbar,
-  Plate,
-} from '@udecode/plate';
+import { createHighlightPlugin, Plate } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { HighlightToolbarButton } from './highlight/HighlightToolbarButton';
 import { highlightValue } from './highlight/highlightValue';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createHighlightPlugin()],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 
 export default () => (
   <>
-    <HeadingToolbar>
+    <Toolbar>
       <HighlightToolbarButton />
-    </HeadingToolbar>
+    </Toolbar>
 
     <Plate<MyValue>
       editableProps={editableProps}

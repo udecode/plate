@@ -3,7 +3,6 @@ import {
   AutoformatPlugin,
   createAutoformatPlugin,
   createHorizontalRulePlugin,
-  createPlateUI,
   createSelectOnBackspacePlugin,
   ELEMENT_DEFAULT,
   ELEMENT_HR,
@@ -14,6 +13,7 @@ import {
 import { preFormat } from './autoformat/autoformatUtils';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { horizontalRuleValue } from './horizontal-rule/horizontalRuleValue';
 import { createMyPlugins, MyEditor, MyValue } from './typescript/plateTypes';
 
@@ -45,7 +45,7 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

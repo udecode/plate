@@ -2,7 +2,7 @@ import { alignValue } from './align/alignValue';
 import { autoformatValue } from './autoformat/autoformatValue';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
-import { getNodesWithRandomId } from './dnd/getNodesWithRandomId';
+import { createNodesWithId } from './dnd/createNodesWithId';
 import { excalidrawValue } from './excalidraw/excalidrawValue';
 import { exitBreakValue } from './exit-break/exitBreakValue';
 import { fontValue } from './font/fontValue';
@@ -25,7 +25,7 @@ import { softBreakValue } from './soft-break/softBreakValue';
 import { tableValue } from './table/tableValue';
 
 // TODO: dnd example
-export const playgroundValue: any = getNodesWithRandomId([
+export const playgroundValue: any = createNodesWithId([
   ...forcedLayoutValue,
   ...basicMarksValue,
   ...kbdValue,
