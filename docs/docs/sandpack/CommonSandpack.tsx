@@ -42,8 +42,8 @@ export const CommonSandpack = ({
         editorHeight: height,
         classes: {
           'sp-stack': clsx(
-            direction === 'vertical' &&
-              'sp-stack-vertical'`sp-preview-h${previewSize}`
+            direction === 'vertical' && 'sp-stack-vertical',
+            `sp-preview-h${previewSize}`
           ),
         },
       }}

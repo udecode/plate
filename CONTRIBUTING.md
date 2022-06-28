@@ -42,7 +42,8 @@ package manager. See
 
 Development: 
 
-- `cd examples/docusaurus`
+- `cd docs`
+- `yarn install`
 - `yarn start`
 - Open [localhost:3000](localhost:3000)
 
@@ -74,15 +75,25 @@ Build:
         - add `export * from '@udecode/plate-x';`
 - `yarn install`
 - `yarn build`
-- go to `/examples/docusaurus`
-    - edit `docusaurus.config.js`
-        - add `'@udecode/plate-x': x/src'` to `alias` variable
-    - `yarn install`
-    - can have an example?
-        - `go to /docs`
-            - create a new doc example in `/docs`
-        - `go to sidebars.js`
-            - add the example doc
+
+#### How to: Create an example
+
+- Did you create a new package?
+    - edit `next.config.js`
+        - add `'@udecode/plate-x': x/src'` to `alias` object to watch file changes
+- Create an example app in `/examples/src`
+- Run the example app: 
+  - Go to `/examples/apps/next`
+      - `yarn dev`
+- Once you've finished the example app:
+  - go back to the root of the repository
+  - run `yarn codegen` to generate the sandpack files
+- Create an example in the docs:
+    - go to `/docs/docs`
+        - create a new sandpack file for the demo using the generated files
+        - create a new mdx file for the docs, importing the sandpack file
+    - edit `/docs/docs/sidebars.js`
+        - add the example doc so it appears in the sidebar
 
 #### How to: Create a plate plugin
 

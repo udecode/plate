@@ -28,7 +28,7 @@ jspm_packages/
 /dist
 /tmp
 /out-tsc
-/build
+**/build
 
 # Runtime data
 pids
