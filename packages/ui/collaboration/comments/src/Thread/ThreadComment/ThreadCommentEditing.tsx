@@ -54,8 +54,8 @@ export function ThreadCommentEditing({
 
   const [value, setValue] = useState<string>(defaultText);
 
-  const onChange = useCallback(function onChange(event) {
-    setValue(event.target.value);
+  const onChange = useCallback(function onChange(newValue) {
+    setValue(newValue);
   }, []);
 
   return (
@@ -63,7 +63,6 @@ export function ThreadCommentEditing({
       <TextArea
         ref={textAreaRef}
         value={value}
-        setValue={setValue}
         onChange={onChange}
         thread={thread}
         fetchContacts={fetchContacts}

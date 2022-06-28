@@ -16,10 +16,11 @@ import { FetchContacts } from '../FetchContacts';
 import { Contacts } from './Contacts';
 import { createTextAreaStyles } from './Thread.styles';
 
+type OnChange = (newValue: string) => void;
+
 interface TextAreaProps {
   value: string;
-  setValue: React.Dispatch<React.SetStateAction<string>>;
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  onChange: OnChange;
   thread: ThreadModel;
   fetchContacts: FetchContacts;
   haveContactsBeenClosed: boolean;
@@ -30,7 +31,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   function TextArea(
     {
       value,
-      setValue,
       onChange,
       thread,
       fetchContacts,
@@ -223,14 +223,14 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
             0,
             mentionString.startIndex
           )}${mentionInsertString}${value.substr(mentionString.endIndex + 1)}`;
-          setValue(newValue);
+          onChange(newValue);
           const selectionIndex =
             mentionString.startIndex + mentionInsertString.length;
           textArea.focus();
           textArea.setSelectionRange(selectionIndex, selectionIndex);
         }
       },
-      [retrieveMentionStringAtCaretPosition, value, setValue]
+      [retrieveMentionStringAtCaretPosition, value, onChange]
     );
 
     const onContactSelected = useCallback(
@@ -323,12 +323,19 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     const { root: textArea } = createTextAreaStyles(props);
 
+    const onChange2 = useCallback(
+      function onChange2(event) {
+        onChange(event.target.value);
+      },
+      [onChange]
+    );
+
     return (
       <div className="mdc-menu-surface--anchor">
         <textarea
           ref={composeRefs(textAreaRef, ref)}
           value={value}
-          onChange={onChange}
+          onChange={onChange2}
           rows={1}
           css={textArea.css}
           className={textArea.className}
