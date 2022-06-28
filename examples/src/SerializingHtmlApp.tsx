@@ -1,26 +1,25 @@
 import React from 'react';
 import {
+  createHighlightPlugin,
   createImagePlugin,
-  createPlateUI,
-  createTablePlugin,
-  Plate,
-} from '@udecode/plate';
-import { createSoftBreakPlugin } from '@udecode/plate-break/src/index';
-import { serializeHtml, useEditorState } from '@udecode/plate-core/src/index';
-import { createHighlightPlugin } from '@udecode/plate-highlight/src/index';
-import { createLinkPlugin } from '@udecode/plate-link/src/index';
-import {
+  createLinkPlugin,
   createListPlugin,
+  createMediaEmbedPlugin,
+  createMentionPlugin,
+  createPlateUI,
+  createSoftBreakPlugin,
+  createTablePlugin,
   createTodoListPlugin,
-} from '@udecode/plate-list/src/index';
-import { createMediaEmbedPlugin } from '@udecode/plate-media-embed/src/index';
-import { createMentionPlugin } from '@udecode/plate-mention/src/index';
+  Plate,
+  serializeHtml,
+  useEditorState,
+} from '@udecode/plate';
 import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
-import { HighlightHTML } from '../docusaurus/src/live/utils/HighlightHTML';
-import { basicNodesValue } from './basic-elements/basicElementsValue';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
+import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
 import { deserializeHtmlValue } from './serializing-html/deserializeHtmlValue';
+import { HighlightHTML } from './serializing-html/HighlightHTML';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 

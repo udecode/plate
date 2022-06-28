@@ -1,9 +1,13 @@
 import React from 'react';
 import { LineWeight } from '@styled-icons/material/LineWeight';
-import { createPlateUI, HeadingToolbar, Plate } from '@udecode/plate';
-import { createLineHeightPlugin } from '@udecode/plate-line-height/src/index';
-import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import {
+  createLineHeightPlugin,
+  createPlateUI,
+  HeadingToolbar,
+  LineHeightToolbarDropdown,
+  Plate,
+} from '@udecode/plate';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { lineHeightPlugin } from './line-height/lineHeightPlugin';
 import { lineHeightValue } from './line-height/lineHeightValue';

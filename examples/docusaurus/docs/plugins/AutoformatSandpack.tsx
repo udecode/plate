@@ -3,7 +3,6 @@ import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { autoformatFiles } from '../sandpack/files/autoformat/code-autoformatFiles';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
 import { autoformatAppCode } from '../sandpack/files/code-AutoformatApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
@@ -23,7 +22,7 @@ export const AutoformatSandpack = () => (
     appCode={autoformatAppCode}
     files={{
       ...autoformatFiles,
-      ...basicNodesPluginsFile,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,

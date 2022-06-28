@@ -1,31 +1,33 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  plateTestUtilsDeps,
+  zustandDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { cursorOverlayAppCode } from '../sandpack/files/code-CursorOverlayApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { cursorOverlayFiles } from '../sandpack/files/cursor-overlay/code-cursorOverlayFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const CursorOverlaySandpack = () => (
   <CommonSandpack
     height={722}
-    previewSize={7}
+    previewSize={3}
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...zustandDeps,
     }}
-    appCode={}
+    appCode={cursorOverlayAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...cursorOverlayFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

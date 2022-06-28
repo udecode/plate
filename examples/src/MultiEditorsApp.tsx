@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Plate } from '@udecode/plate';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createMultiEditorsValue } from './multiple-editors/createMultiEditorsValue';
 
@@ -11,11 +11,7 @@ const initialValues = createMultiEditorsValue();
 const WithPlate = ({ initialValue, id }: any) => (
   <Plate
     id={id}
-    editableProps={{
-      ...editableProps,
-      // spellcheck adds some lag so we disable it
-      spellCheck: false,
-    }}
+    editableProps={editableProps}
     initialValue={initialValue}
     plugins={basicNodesPlugins}
   />
@@ -46,14 +42,15 @@ const WithoutPlate = ({ initialValue }: any) => {
   );
 };
 
+const styles = {
+  wrapper: { border: '1px solid cyan', marginBottom: '20px' },
+};
+
 export default () => (
   <div className="flex">
     {initialValues.map((initialValue, idx) => {
       return (
-        <div
-          style={{ border: '1px solid cyan', marginBottom: '20px' }}
-          key={idx}
-        >
+        <div style={styles.wrapper} key={idx}>
           <div>{idx}</div>
           <WithPlate initialValue={initialValue} id={idx} />
           {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}

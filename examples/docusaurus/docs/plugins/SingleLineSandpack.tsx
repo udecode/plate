@@ -2,30 +2,27 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { singleLineAppCode } from '../sandpack/files/code-SingleLineApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { singleLineFiles } from '../sandpack/files/single-line/code-singleLineFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const SingleLineSandpack = () => (
   <CommonSandpack
     height={722}
-    previewSize={7}
+    previewSize={3}
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={singleLineAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...singleLineFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

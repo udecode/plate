@@ -4,8 +4,8 @@ import {
   getPluginType,
   MARK_HIGHLIGHT,
   MarkToolbarButton,
+  withPlateEventProvider,
 } from '@udecode/plate';
-import { withPlateEventProvider } from '@udecode/plate-core/src/index';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const HighlightToolbarButton = withPlateEventProvider(() => {

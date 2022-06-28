@@ -1,7 +1,7 @@
-import { markBallonToolbarFile } from './code-MarkBallonToolbar';
+import { markBalloonToolbarFile } from './code-MarkBalloonToolbar';
 import { balloonToolbarValueFile } from './code-balloonToolbarValue';
 
 export const balloonToolbarFiles = {
-  ...markBallonToolbarFile,
+  ...markBalloonToolbarFile,
   ...balloonToolbarValueFile,
 };

@@ -5,6 +5,7 @@ import { balloonToolbarFiles } from './balloon-toolbar/code-balloonToolbarFiles'
 import { basicEditorFiles } from './basic-editor/code-basicEditorFiles';
 import { basicElementsFiles } from './basic-elements/code-basicElementsFiles';
 import { basicMarksFiles } from './basic-marks/code-basicMarksFiles';
+import { basicNodesFiles } from './basic-nodes/code-basicNodesFiles';
 import { basicPluginsFiles } from './basic-plugins/code-basicPluginsFiles';
 import { commonFiles } from './common/code-commonFiles';
 import { cursorOverlayFiles } from './cursor-overlay/code-cursorOverlayFiles';
@@ -52,6 +53,7 @@ export const rootFiles = {
   ...basicEditorFiles,
   ...basicElementsFiles,
   ...basicMarksFiles,
+  ...basicNodesFiles,
   ...basicPluginsFiles,
   ...commonFiles,
   ...cursorOverlayFiles,

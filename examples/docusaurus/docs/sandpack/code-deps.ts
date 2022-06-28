@@ -23,11 +23,24 @@ export const toolbarDeps = {
   '@tippyjs/react': '4.2.5',
 };
 
+export const excalidrawDeps = {
+  '@udecode/plate-ui-excalidraw': '*',
+};
+
+export const juiceDeps = {
+  '@udecode/plate-juice': '*',
+};
+
+export const zustandDeps = {
+  '@udecode/zustood': '1.1.1',
+  zustand: '^3.7.2',
+};
+
 export const playgroundDeps = {
   ...commonDeps,
   ...plateTestUtilsDeps,
   ...toolbarDeps,
-  '@udecode/plate-juice': '*',
-  '@udecode/plate-ui-excalidraw': '*',
-  '@udecode/zustood': '1.1.1',
+  ...excalidrawDeps,
+  ...juiceDeps,
+  ...zustandDeps,
 };

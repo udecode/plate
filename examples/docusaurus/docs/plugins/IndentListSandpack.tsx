@@ -1,13 +1,15 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  plateTestUtilsDeps,
+  toolbarDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
-import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { indentListAppCode } from '../sandpack/files/code-IndentListApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { indentFiles } from '../sandpack/files/indent/code-indentFiles';
+import { indentListFiles } from '../sandpack/files/indent-list/code-indentListFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const IndentListSandpack = () => (
@@ -17,15 +19,13 @@ export const IndentListSandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...toolbarDeps,
     }}
-    appCode={}
+    appCode={indentListAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...indentListFiles,
+      ...indentFiles,
       ...basicElementsPluginsFile,
-      ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

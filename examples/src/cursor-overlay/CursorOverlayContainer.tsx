@@ -8,7 +8,7 @@ export const CursorOverlayContainer = ({
 }: CursorOverlayProps) => {
   const dynamicCursors = cursorStore.use.cursors();
 
-  return (
-    <CursorOverlay {...props} cursors={{ ...cursors, ...dynamicCursors }} />
-  );
+  const allCursors = { ...cursors, ...dynamicCursors };
+
+  return <CursorOverlay {...props} cursors={allCursors} />;
 };

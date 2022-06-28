@@ -2,8 +2,9 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { multiEditorsAppCode } from '../sandpack/files/code-MultiEditorsApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
 import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
@@ -18,9 +19,9 @@ export const MultiSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={multiEditorsAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,

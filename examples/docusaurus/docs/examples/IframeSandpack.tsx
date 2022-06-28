@@ -2,10 +2,12 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { iframeAppCode } from '../sandpack/files/code-IframeApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
+import { iframeFiles } from '../sandpack/files/iframe/code-iframeFiles';
 import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
@@ -18,9 +20,10 @@ export const IframeSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={iframeAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...iframeFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,

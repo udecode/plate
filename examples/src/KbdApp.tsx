@@ -5,12 +5,12 @@ import {
   createPlateUI,
   getPluginType,
   HeadingToolbar,
+  MARK_KBD,
+  MarkToolbarButton,
   Plate,
   withPlateEventProvider,
 } from '@udecode/plate';
-import { MARK_KBD } from '@udecode/plate-kbd/src/index';
-import { MarkToolbarButton } from '@udecode/plate-ui-toolbar/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { kbdValue } from './kbd/kbdValue';
 import {

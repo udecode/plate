@@ -4,12 +4,12 @@ import {
   createMediaEmbedPlugin,
   createPlateUI,
   createSelectOnBackspacePlugin,
+  ELEMENT_MEDIA_EMBED,
   HeadingToolbar,
+  MediaEmbedToolbarButton,
   Plate,
 } from '@udecode/plate';
-import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed/src/index';
-import { MediaEmbedToolbarButton } from '@udecode/plate-ui-media-embed/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { mediaEmbedValue } from './media-embed/mediaEmbedValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';

@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const MarkBallonToolbar = () => {
+export const MarkBalloonToolbar = () => {
   const editor = useMyPlateEditorRef()!;
 
   const arrow = false;

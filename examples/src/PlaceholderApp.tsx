@@ -6,7 +6,7 @@ import {
   Plate,
 } from '@udecode/plate';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { placeholderValue } from './placeholder/placeholderValue';

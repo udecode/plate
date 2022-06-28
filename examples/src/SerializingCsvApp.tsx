@@ -14,7 +14,7 @@ import {
   Plate,
 } from '@udecode/plate';
 import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { deserializeCsvValue } from './serializing-csv/deserializeCsvValue';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';

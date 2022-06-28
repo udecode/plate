@@ -1,17 +1,19 @@
-export const formatHTML = (html) => {
-  let indent = '\n';
+/* eslint-disable prefer-template */
+export const formatHTML = (html: string) => {
+  let indent = `
+`;
   const tab = '\t';
   let i = 0;
-  const pre = [];
+  const pre: Record<string, string>[] = [];
 
   html = html
     .replace(new RegExp('<pre>((.|\\t|\\n|\\r)+)?</pre>'), (x) => {
       pre.push({ indent: '', tag: x });
-      return `<--TEMPPRE${i++}/-->`;
+      return '<--TEMPPRE' + i++ + '/-->';
     })
     .replace(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
       let ret;
-      const tag = /<\/?([^\s/>]+)/.exec(x)[1];
+      const tag = new RegExp(`<\\/?([^\\s/>]+)`).exec(x)?.[1];
       const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);
 
       if (p) pre[p[1]].indent = indent;
@@ -35,7 +37,7 @@ export const formatHTML = (html) => {
           'source',
           'track',
           'wbr',
-        ].indexOf(tag) >= 0
+        ].indexOf(tag!) >= 0
       )
         // self closing tag
         ret = indent + x;
@@ -66,12 +68,20 @@ export const formatHTML = (html) => {
 
   for (i = pre.length; i--; ) {
     html = html.replace(
-      `<--TEMPPRE${i}/-->`,
+      '<--TEMPPRE' + i + '/-->',
       pre[i].tag
-        .replace('<pre>', '<pre>\n')
-        .replace('</pre>', `${pre[i].indent}</pre>`)
+        .replace(
+          '<pre>',
+          `<pre>
+`
+        )
+        .replace('</pre>', pre[i].indent + '</pre>')
     );
   }
 
-  return html.charAt(0) === '\n' ? html.substr(1, html.length - 1) : html;
+  return html.charAt(0) ===
+    `
+`
+    ? html.substr(1, html.length - 1)
+    : html;
 };

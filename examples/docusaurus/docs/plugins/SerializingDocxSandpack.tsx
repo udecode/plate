@@ -1,13 +1,19 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  juiceDeps,
+  plateTestUtilsDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
+import { alignPluginFile } from '../sandpack/files/align/code-alignPlugin';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { serializingDocxAppCode } from '../sandpack/files/code-SerializingDocxApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { indentPluginFile } from '../sandpack/files/indent/code-indentPlugin';
+import { lineHeightPluginFile } from '../sandpack/files/line-height/code-lineHeightPlugin';
+import { serializingDocxFiles } from '../sandpack/files/serializing-docx/code-serializingDocxFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const SerializingDocxSandpack = () => (
@@ -17,15 +23,17 @@ export const SerializingDocxSandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...juiceDeps,
     }}
-    appCode={}
+    appCode={serializingDocxAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...serializingDocxFiles,
+      ...alignPluginFile,
+      ...indentPluginFile,
+      ...lineHeightPluginFile,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

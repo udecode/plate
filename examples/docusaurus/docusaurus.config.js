@@ -100,7 +100,6 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'udecode', // Usually your GitHub org/user name.
   projectName, // Usually your repo name.
-  themes: ['@docusaurus/theme-live-codeblock'],
   customFields: { ...customFields },
   themeConfig: {
     algolia: {

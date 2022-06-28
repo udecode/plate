@@ -1,7 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { basicMarksValue } from '../basic-marks/basicMarksValue';
 
 jsx;
 
@@ -23,5 +22,3 @@ export const basicElementsValue: any = (
     </hcodeblock>
   </fragment>
 );
-
-export const basicNodesValue = [...basicElementsValue, ...basicMarksValue];

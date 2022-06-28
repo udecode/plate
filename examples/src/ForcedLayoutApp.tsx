@@ -3,10 +3,10 @@ import {
   createNormalizeTypesPlugin,
   createPlateUI,
   createTrailingBlockPlugin,
+  ELEMENT_H1,
   Plate,
 } from '@udecode/plate';
-import { ELEMENT_H1 } from '@udecode/plate-heading/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { forcedLayoutValue } from './forced-layout/forcedLayoutValue';
 import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';

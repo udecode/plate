@@ -1,10 +1,10 @@
 import React from 'react';
-import { Plate } from '@udecode/plate';
 import {
   getPlateActions,
+  Plate,
   PlateProvider,
   usePlateSelectors,
-} from '@udecode/plate-core/src/index';
+} from '@udecode/plate';
 import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';

@@ -1,29 +1,25 @@
 import React from 'react';
 import {
-  createImagePlugin,
-  createPlateUI,
-  createTablePlugin,
-  Plate,
-} from '@udecode/plate';
-import { createAlignPlugin } from '@udecode/plate-alignment/src/index';
-import {
+  createAlignPlugin,
+  createDeserializeDocxPlugin,
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
   createFontFamilyPlugin,
   createFontSizePlugin,
   createFontWeightPlugin,
-} from '@udecode/plate-font/src/index';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule/src/index';
-import {
+  createHorizontalRulePlugin,
+  createImagePlugin,
+  createIndentListPlugin,
   createIndentPlugin,
+  createLineHeightPlugin,
+  createPlateUI,
+  createTablePlugin,
   createTextIndentPlugin,
-} from '@udecode/plate-indent/src/index';
-import { createIndentListPlugin } from '@udecode/plate-indent-list/src/index';
+  Plate,
+} from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
-import { createLineHeightPlugin } from '@udecode/plate-line-height/src/index';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx/src/index';
 import { alignPlugin } from './align/alignPlugin';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { indentPlugin } from './indent/indentPlugin';
 import { lineHeightPlugin } from './line-height/lineHeightPlugin';

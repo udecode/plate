@@ -3,12 +3,14 @@ import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { Image } from '@styled-icons/material/Image';
+import { LineWeight } from '@styled-icons/material/LineWeight';
 import { Link } from '@styled-icons/material/Link';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { TippyProps } from '@tippyjs/react';
 import {
   ColorPickerToolbarDropdown,
   ImageToolbarButton,
+  LineHeightToolbarDropdown,
   LinkToolbarButton,
   MARK_BG_COLOR,
   MARK_COLOR,
@@ -43,6 +45,7 @@ export const ToolbarButtons = () => {
         selectedIcon={<Check />}
         tooltip={bgTooltip}
       />
+      <LineHeightToolbarDropdown icon={<LineWeight />} />
       <AlignToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
       <ImageToolbarButton icon={<Image />} />

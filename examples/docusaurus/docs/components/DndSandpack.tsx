@@ -2,9 +2,11 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { dndAppCode } from '../sandpack/files/code-DndApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
+import { dndFiles } from '../sandpack/files/dnd/code-dndFiles';
 import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
 import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
@@ -18,9 +20,10 @@ export const DndSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={dndAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...dndFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,

@@ -10,12 +10,12 @@ import { TippyProps } from '@tippyjs/react';
 import {
   ColorPickerToolbarDropdown,
   ImageToolbarButton,
+  LineHeightToolbarDropdown,
   LinkToolbarButton,
   MARK_BG_COLOR,
   MARK_COLOR,
   MediaEmbedToolbarButton,
 } from '@udecode/plate';
-import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height/src/index';
 import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';

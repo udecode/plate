@@ -10,7 +10,7 @@ import {
   Plate,
 } from '@udecode/plate';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
@@ -24,9 +24,9 @@ const plugins = createMyPlugins(
     createListPlugin(),
     createTablePlugin(),
     createTrailingBlockPlugin(trailingBlockPlugin),
+    createResetNodePlugin(resetBlockTypePlugin),
     createSoftBreakPlugin(softBreakPlugin),
     createExitBreakPlugin(exitBreakPlugin),
-    createResetNodePlugin(resetBlockTypePlugin),
   ],
   {
     components: createPlateUI(),

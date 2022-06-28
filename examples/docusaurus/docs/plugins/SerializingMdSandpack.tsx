@@ -2,12 +2,11 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { serializingMdAppCode } from '../sandpack/files/code-SerializingMdApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { serializingMdFiles } from '../sandpack/files/serializing-md/code-serializingMdFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const SerializingMdSandpack = () => (
@@ -18,14 +17,12 @@ export const SerializingMdSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={serializingMdAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...serializingMdFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

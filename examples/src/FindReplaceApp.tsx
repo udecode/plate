@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Search } from '@styled-icons/material/Search';
-import { createPlateUI, Plate } from '@udecode/plate';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace/src/index';
-import { SearchHighlightToolbar } from '@udecode/plate-ui-find-replace/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import {
+  createFindReplacePlugin,
+  createPlateUI,
+  Plate,
+  SearchHighlightToolbar,
+} from '@udecode/plate';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { findReplaceValue } from './find-replace/findReplaceValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';

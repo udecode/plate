@@ -4,9 +4,11 @@ import {
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
-import { basicNodesFiles } from '../sandpack/code-files';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
-import { markBallonToolbarFile } from '../sandpack/files/balloon-toolbar/code-MarkBallonToolbar';
+import { markBalloonToolbarFile } from '../sandpack/files/balloon-toolbar/code-MarkBalloonToolbar';
+import { basicElementsFiles } from '../sandpack/files/basic-elements/code-basicElementsFiles';
+import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
+import { basicMarksFiles } from '../sandpack/files/basic-marks/code-basicMarksFiles';
 import { multipleEditorsAppCode } from '../sandpack/files/code-MultipleEditorsApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { imageFiles } from '../sandpack/files/image/code-imageFiles';
@@ -20,10 +22,12 @@ export const MultipleEditorsSandpack = () => (
     deps={{ ...commonDeps, ...plateTestUtilsDeps, ...toolbarDeps }}
     appCode={multipleEditorsAppCode}
     files={{
-      ...markBallonToolbarFile,
+      ...markBalloonToolbarFile,
       ...imageFiles,
       ...selectOnBackspacePluginFile,
-      ...basicNodesFiles,
+      ...basicNodesPluginsFile,
+      ...basicElementsFiles,
+      ...basicMarksFiles,
       ...commonFiles,
       ...typescriptFiles,
     }}

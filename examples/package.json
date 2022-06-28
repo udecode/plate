@@ -20,6 +20,7 @@
     "@udecode/plate-test-utils": "workspace:^",
     "@udecode/plate-ui-excalidraw": "workspace:^",
     "@udecode/zustood": "1.1.1",
+    "prism-react-renderer": "^1.2.0",
     "styled-components": "5.3.1",
     "zustand": "3.7.2"
   },

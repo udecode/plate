@@ -12,7 +12,7 @@ import {
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
-import { basicNodesValue } from './basic-elements/basicElementsValue';
+import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 

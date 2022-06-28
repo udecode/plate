@@ -1,12 +1,16 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  excalidrawDeps,
+  plateTestUtilsDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
-import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
-import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicElementsFiles } from '../sandpack/files/basic-elements/code-basicElementsFiles';
+import { basicMarksFiles } from '../sandpack/files/basic-marks/code-basicMarksFiles';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { serializingHtmlAppCode } from '../sandpack/files/code-SerializingHtmlApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
+import { serializingHtmlFiles } from '../sandpack/files/serializing-html/code-serializingHtmlFiles';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
@@ -17,14 +21,15 @@ export const SerializingHtmlSandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...excalidrawDeps,
+      'prism-react-renderer': '^1.2.0',
     }}
-    appCode={}
+    appCode={serializingHtmlAppCode}
     files={{
-      ...basicNodesPluginsFile,
-      ...basicElementsPluginsFile,
-      ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
+      ...serializingHtmlFiles,
+      ...basicNodesFiles,
+      ...basicElementsFiles,
+      ...basicMarksFiles,
       ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,

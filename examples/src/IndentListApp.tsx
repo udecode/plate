@@ -3,22 +3,20 @@ import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
 import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
 import {
   createHeadingPlugin,
+  createIndentListPlugin,
   createIndentPlugin,
   createParagraphPlugin,
   createPlateUI,
+  ELEMENT_H1,
+  ELEMENT_PARAGRAPH,
   HeadingToolbar,
   Plate,
   StyledElement,
-  withPlateEventProvider,
-} from '@udecode/plate';
-import { withProps } from '@udecode/plate-core/src/index';
-import { ELEMENT_H1 } from '@udecode/plate-heading/src/index';
-import {
-  createIndentListPlugin,
   toggleIndentList,
-} from '@udecode/plate-indent-list/src/index';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/index';
-import { ToolbarButton } from '@udecode/plate-ui-toolbar/src/index';
+  ToolbarButton,
+  withPlateEventProvider,
+  withProps,
+} from '@udecode/plate';
 import { editableProps } from './common/editableProps';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { indentListPlugin } from './indent-list/indentListPlugin';

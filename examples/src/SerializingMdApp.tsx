@@ -1,14 +1,14 @@
 import React from 'react';
 import {
+  createDeserializeMdPlugin,
   createImagePlugin,
+  createLinkPlugin,
+  createListPlugin,
   createPlateUI,
   createTablePlugin,
   Plate,
 } from '@udecode/plate';
-import { createLinkPlugin } from '@udecode/plate-link/src/index';
-import { createListPlugin } from '@udecode/plate-list/src/index';
-import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Plate } from '@udecode/plate';
 import { balloonToolbarValue } from './balloon-toolbar/balloonToolbarValue';
-import { MarkBallonToolbar } from './balloon-toolbar/MarkBallonToolbar';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
@@ -12,6 +12,6 @@ export default () => (
     plugins={basicNodesPlugins}
     initialValue={balloonToolbarValue}
   >
-    <MarkBallonToolbar />
+    <MarkBalloonToolbar />
   </Plate>
 );

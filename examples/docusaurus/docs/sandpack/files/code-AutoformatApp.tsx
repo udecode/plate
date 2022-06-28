@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
 import { autoformatValue } from './autoformat/autoformatValue';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';

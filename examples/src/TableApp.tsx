@@ -7,7 +7,7 @@ import {
   HeadingToolbar,
   Plate,
 } from '@udecode/plate';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';

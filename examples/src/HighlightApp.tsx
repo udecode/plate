@@ -5,7 +5,7 @@ import {
   HeadingToolbar,
   Plate,
 } from '@udecode/plate';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { HighlightToolbarButton } from './highlight/HighlightToolbarButton';
 import { highlightValue } from './highlight/highlightValue';

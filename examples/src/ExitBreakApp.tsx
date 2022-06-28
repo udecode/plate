@@ -9,9 +9,9 @@ import {
   createTrailingBlockPlugin,
   Plate,
 } from '@udecode/plate';
-import { KEYS_HEADING } from '@udecode/plate-heading/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { exitBreakValue } from './exit-break/exitBreakValue';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
@@ -26,27 +26,7 @@ const plugins = createMyPlugins(
     createResetNodePlugin(resetBlockTypePlugin),
     createSoftBreakPlugin(softBreakPlugin),
     createTrailingBlockPlugin(trailingBlockPlugin),
-    createExitBreakPlugin({
-      options: {
-        rules: [
-          {
-            hotkey: 'mod+enter',
-          },
-          {
-            hotkey: 'mod+shift+enter',
-            before: true,
-          },
-          {
-            hotkey: 'enter',
-            query: {
-              start: true,
-              end: true,
-              allow: KEYS_HEADING,
-            },
-          },
-        ],
-      },
-    }),
+    createExitBreakPlugin(exitBreakPlugin),
   ],
   {
     components: createPlateUI(),

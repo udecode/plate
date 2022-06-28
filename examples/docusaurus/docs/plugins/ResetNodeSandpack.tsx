@@ -2,12 +2,15 @@ import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
+import { basicElementsValueFile } from '../sandpack/files/basic-elements/code-basicElementsValue';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { resetNodeAppCode } from '../sandpack/files/code-ResetNodeApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
+import { resetNodeFiles } from '../sandpack/files/reset-node/code-resetNodeFiles';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { trailingBlockPluginFile } from '../sandpack/files/trailing-block/code-trailingBlockPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const ResetNodeSandpack = () => (
@@ -18,14 +21,16 @@ export const ResetNodeSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={}
+    appCode={resetNodeAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...resetNodeFiles,
+      ...basicNodesFiles,
+      ...basicElementsValueFile,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
       ...softBreakPluginFile,
+      ...trailingBlockPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

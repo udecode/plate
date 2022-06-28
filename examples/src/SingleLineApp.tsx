@@ -2,11 +2,11 @@ import React from 'react';
 import {
   createListPlugin,
   createPlateUI,
+  createSingleLinePlugin,
   createTablePlugin,
   Plate,
 } from '@udecode/plate';
-import { createSingleLinePlugin } from '@udecode/plate-break/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { singleLineValue } from './single-line/singleLineValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';

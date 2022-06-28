@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Plate } from '@udecode/plate';
-import { TElement } from '@udecode/plate-core/src/index';
+import { Plate, TElement } from '@udecode/plate';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -9,7 +8,7 @@ import {
   Slate,
   withReact,
 } from 'slate-react';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createHugeDocumentValue } from './huge-document/createHugeDocumentValue';
 import { MyValue } from './typescript/plateTypes';
@@ -19,11 +18,7 @@ const initialValue = createHugeDocumentValue() as MyValue;
 const WithPlate = () => (
   <Plate
     id="huge-document"
-    editableProps={{
-      ...editableProps,
-      // spellcheck adds some lag so we disable it
-      spellCheck: false,
-    }}
+    editableProps={editableProps}
     initialValue={initialValue}
     plugins={basicNodesPlugins}
   />

@@ -1,13 +1,17 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  plateTestUtilsDeps,
+  toolbarDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { imageAppCode } from '../sandpack/files/code-ImageApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
-import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
-import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
+import { imageFiles } from '../sandpack/files/image/code-imageFiles';
+import { selectOnBackspacePluginFile } from '../sandpack/files/select-on-backspace/code-selectOnBackspacePlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const ImageSandpack = () => (
@@ -17,15 +21,15 @@ export const ImageSandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...toolbarDeps,
     }}
-    appCode={}
+    appCode={imageAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...imageFiles,
+      ...selectOnBackspacePluginFile,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
-      ...exitBreakPluginFile,
-      ...resetBlockTypePluginFile,
-      ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
     }}

@@ -4,10 +4,10 @@ import {
   createLinkPlugin,
   createPlateUI,
   HeadingToolbar,
+  LinkToolbarButton,
   Plate,
 } from '@udecode/plate';
-import { LinkToolbarButton } from '@udecode/plate-ui-link/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { linkValue } from './link/linkValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';

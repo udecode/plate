@@ -19,7 +19,7 @@ import {
   withPlateEventProvider,
 } from '@udecode/plate';
 import { alignValue } from './align/alignValue';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 

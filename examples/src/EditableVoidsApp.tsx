@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPlateUI, Plate } from '@udecode/plate';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createEditableVoidPlugin } from './editable-voids/createEditableVoidPlugin';
 import { EditableVoidElement } from './editable-voids/EditableVoidElement';

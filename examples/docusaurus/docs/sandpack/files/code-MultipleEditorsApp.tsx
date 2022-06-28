@@ -1,11 +1,11 @@
 export const multipleEditorsAppCode = `import React from 'react';
 import { HeadingToolbar, Plate, PlateProps } from '@udecode/plate';
-import { MarkBallonToolbar } from './balloon-toolbar/MarkBallonToolbar';
+import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { imagePlugins } from './image/imagePlugins';
 import { imageValue } from './image/imageValue';
 import { MyValue } from './typescript/plateTypes';
@@ -18,7 +18,7 @@ const styles = {
 
 const Editor = (props: PlateProps<MyValue>) => (
   <Plate {...props}>
-    <MarkBallonToolbar />
+    <MarkBalloonToolbar />
   </Plate>
 );
 

@@ -4,10 +4,10 @@ import {
   createMentionPlugin,
   createPlateUI,
   MentionCombobox,
+  MentionElement,
   Plate,
 } from '@udecode/plate';
-import { MentionElement } from '@udecode/plate-ui-mention/src/index';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { MENTIONABLES } from './mention/mentionables';
 import { mentionValue } from './mention/mentionValue';

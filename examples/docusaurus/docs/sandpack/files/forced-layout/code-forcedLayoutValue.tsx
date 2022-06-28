@@ -6,9 +6,7 @@ jsx;
 
 export const forcedLayoutValue: any = (
   <fragment>
-    <hh1>
-      <htext />
-    </hh1>
+    <hh1>Plate</hh1>
     <hp>
       This example shows how to enforce your layout with domain-specific
       constraints. This document will always have a title block at the top and a

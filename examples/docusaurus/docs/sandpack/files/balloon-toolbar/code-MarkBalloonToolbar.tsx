@@ -1,4 +1,4 @@
-export const markBallonToolbarCode = `import React from 'react';
+export const markBalloonToolbarCode = `import React from 'react';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const MarkBallonToolbar = () => {
+export const MarkBalloonToolbar = () => {
   const editor = useMyPlateEditorRef()!;
 
   const arrow = false;
@@ -56,6 +56,6 @@ export const MarkBallonToolbar = () => {
 };
 `;
 
-export const markBallonToolbarFile = {
-  '/balloon-toolbar/MarkBallonToolbar.tsx': markBallonToolbarCode,
+export const markBalloonToolbarFile = {
+  '/balloon-toolbar/MarkBalloonToolbar.tsx': markBalloonToolbarCode,
 };

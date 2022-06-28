@@ -59,7 +59,7 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { alignPlugin } from './align/alignPlugin';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
-import { MarkBallonToolbar } from './balloon-toolbar/MarkBallonToolbar';
+import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
 import { editableProps } from './common/editableProps';
 import { CursorOverlayContainer } from './cursor-overlay/CursorOverlayContainer';
 import { dragOverCursorPlugin } from './cursor-overlay/dragOverCursorPlugin';
@@ -170,7 +170,7 @@ const App = () => {
           initialValue={playgroundValue}
           plugins={plugins}
         >
-          <MarkBallonToolbar />
+          <MarkBalloonToolbar />
 
           <MentionCombobox items={MENTIONABLES} />
 

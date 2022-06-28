@@ -1,4 +1,3 @@
-import 'tippy.js/dist/tippy.css';
 import React from 'react';
 import {
   createBasicElementsPlugin,
@@ -34,6 +33,7 @@ export default () => (
     <HeadingToolbar>
       <BasicElementToolbarButtons />
     </HeadingToolbar>
+
     <Plate
       id="basic-elements"
       editableProps={editableProps}

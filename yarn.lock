@@ -2257,13 +2257,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@faker-js/faker@npm:7.3.0"
-  checksum: 69a2046fe113c1300feebafa2924a785c2b53bcea658647ba196ce33bdea213c59025d2aa25fb138a84ccacd1cb63b38024b215b90f2af2e44f5c930c4b917ac
-  languageName: node
-  linkType: hard
-
 "@gar/promisify@npm:^1.0.1, @gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -4510,13 +4503,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/faker@npm:^5.1.7":
-  version: 5.5.9
-  resolution: "@types/faker@npm:5.5.9"
-  checksum: a4613a94b2b62ed9549d338fd5db6626fc47c16cdbf53e842ab03d0ff8e305df7a63060d8bdd21b1ffa28a3c882d8f53e525cca3df695137a1d54dc165d4c660
-  languageName: node
-  linkType: hard
-
 "@types/fined@npm:*":
   version: 1.1.3
   resolution: "@types/fined@npm:1.1.3"
@@ -5235,7 +5221,6 @@ __metadata:
   dependencies:
     "@codesandbox/sandpack-react": "npm:^1.2.0"
     "@codesandbox/sandpack-themes": "npm:1.0.0"
-    "@faker-js/faker": "npm:7.3.0"
     "@styled-icons/boxicons-regular": "npm:10.23.0"
     "@styled-icons/foundation": "npm:10.28.0"
     "@styled-icons/material": "npm:10.28.0"
@@ -5248,6 +5233,7 @@ __metadata:
     barrelsby: "npm:^2.3.4"
     change-case: "npm:^4.1.2"
     plop: "npm:^3.1.1"
+    prism-react-renderer: "npm:^1.2.0"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"
     zustand: "npm:3.7.2"
@@ -11945,13 +11931,6 @@ __metadata:
   version: 1.4.1
   resolution: "extsprintf@npm:1.4.1"
   checksum: 376d6b312a7196c0f4547afd2e9741c40bd173f8b507155366e8b94dd8f4efe61be424c65e95ad71e0525acb26bc16c39414c147b449649c39d46ba6e356fa83
-  languageName: node
-  linkType: hard
-
-"faker@npm:^5.5.3":
-  version: 5.5.3
-  resolution: "faker@npm:5.5.3"
-  checksum: b955216a4f1057ff65ca25927ee44bb0f25809da6679d529ef7879251d28659f6bb15fed7cd1c2bc89b1238a2cd527a0d453568e5aed4f8df5bf1d99faac43f3
   languageName: node
   linkType: hard
 
@@ -19800,6 +19779,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prism-react-renderer@npm:^1.2.0":
+  version: 1.3.3
+  resolution: "prism-react-renderer@npm:1.3.3"
+  peerDependencies:
+    react: ">=0.14.9"
+  checksum: 8792b00c5de61b48953eaa09d3cd104263bf1ba3974cc64ac358f445b4c440f1f75fc0762b67e3e73cb376c911359a7adf3715594056168f27ecd2fa97e4ac03
+  languageName: node
+  linkType: hard
+
 "prismjs@npm:^1.25.0":
   version: 1.28.0
   resolution: "prismjs@npm:1.28.0"
@@ -21568,7 +21556,6 @@ __metadata:
     "@testing-library/react": "npm:^11.2.7"
     "@testing-library/react-hooks": "npm:^8.0.0"
     "@testing-library/user-event": "npm:^13.5.0"
-    "@types/faker": "npm:^5.1.7"
     "@types/is-hotkey": "npm:^0.1.7"
     "@types/jest": "npm:^27.5.0"
     "@types/lodash": "npm:^4.14.182"
@@ -21610,7 +21597,6 @@ __metadata:
     eslint-plugin-react: "npm:^7.29.4"
     eslint-plugin-react-hooks: "npm:^4.5.0"
     eslint-plugin-simple-import-sort: "npm:7.0.0"
-    faker: "npm:^5.5.3"
     jest: "npm:^26.6.3"
     lerna: "npm:^4.0.0"
     patch-package: "npm:^6.4.7"

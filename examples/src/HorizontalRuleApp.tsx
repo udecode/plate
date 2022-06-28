@@ -1,4 +1,3 @@
-import 'tippy.js/dist/tippy.css';
 import React from 'react';
 import {
   AutoformatPlugin,
@@ -6,16 +5,14 @@ import {
   createHorizontalRulePlugin,
   createPlateUI,
   createSelectOnBackspacePlugin,
-  Plate,
-} from '@udecode/plate';
-import {
   ELEMENT_DEFAULT,
+  ELEMENT_HR,
   insertNodes,
+  Plate,
   setNodes,
-} from '@udecode/plate-core/src/index';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule/src/index';
+} from '@udecode/plate';
 import { preFormat } from './autoformat/autoformatUtils';
-import { basicNodesPlugins } from './basic-elements/basicNodesPlugins';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { horizontalRuleValue } from './horizontal-rule/horizontalRuleValue';
 import { createMyPlugins, MyEditor, MyValue } from './typescript/plateTypes';

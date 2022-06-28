@@ -1,11 +1,17 @@
 import React from 'react';
-import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
+import {
+  commonDeps,
+  plateTestUtilsDeps,
+  toolbarDeps,
+} from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicNodesPluginsFile } from '../sandpack/files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { listAppCode } from '../sandpack/files/code-ListApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { exitBreakPluginFile } from '../sandpack/files/exit-break/code-exitBreakPlugin';
+import { listFiles } from '../sandpack/files/list/code-listFiles';
 import { resetBlockTypePluginFile } from '../sandpack/files/reset-node/code-resetBlockTypePlugin';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
@@ -17,10 +23,12 @@ export const ListSandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
+      ...toolbarDeps,
     }}
-    appCode={}
+    appCode={listAppCode}
     files={{
-      ...basicNodesPluginsFile,
+      ...listFiles,
+      ...basicNodesFiles,
       ...basicElementsPluginsFile,
       ...basicMarksPluginsFile,
       ...exitBreakPluginFile,
