@@ -35,7 +35,9 @@
   },
   "dependencies": {
     "@material/button": "^13.0.0",
+    "@material/checkbox": "^14.0.0",
     "@material/dialog": "^13.0.0",
+    "@material/form-field": "^14.0.0",
     "@material/icon-button": "^13.0.0",
     "@material/menu": "^13.0.0",
     "@material/menu-surface": "^13.0.0",
@@ -45,9 +47,9 @@
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "^13.5.0",
-    "@xolvio/plate-comments": "^0.4.0",
     "@udecode/plate-styled-components": "^13.5.0",
-    "@udecode/plate-ui-toolbar": "^13.5.0"
+    "@udecode/plate-ui-toolbar": "^13.5.0",
+    "@xolvio/plate-comments": "link:../../../collaboration/comments"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -3,7 +3,7 @@ import 'tippy.js/dist/tippy.css'
 import React from 'react'
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt'
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock'
-import { CommentAdd } from '@styled-icons/boxicons-regular/CommentAdd';
+import { CommentAdd } from '@styled-icons/boxicons-regular/CommentAdd'
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight'
 import { Subscript } from '@styled-icons/foundation/Subscript'
 import { Superscript } from '@styled-icons/foundation/Superscript'
@@ -14,7 +14,7 @@ import { BorderLeft } from '@styled-icons/material/BorderLeft'
 import { BorderRight } from '@styled-icons/material/BorderRight'
 import { BorderTop } from '@styled-icons/material/BorderTop'
 import { Check } from '@styled-icons/material/Check'
-import { Comment } from '@styled-icons/material/Comment';
+import { Comment } from '@styled-icons/material/Comment'
 import { FontDownload } from '@styled-icons/material/FontDownload'
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter'
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify'
@@ -42,7 +42,6 @@ import { LooksTwo } from '@styled-icons/material/LooksTwo'
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo'
 import { TippyProps } from '@tippyjs/react'
 import {
-  AddThreadToolbarButton,
   addColumn,
   addRow,
   AlignToolbarButton,
@@ -84,9 +83,14 @@ import {
   MediaEmbedToolbarButton,
   outdent,
   TableToolbarButton,
-  ToggleShowThreadsButton,
   ToolbarButton,
 } from '@udecode/plate'
+import {
+  AddThreadToolbarButton,
+  FetchContacts,
+  OnAddThread,
+  ToggleShowThreadsButton,
+} from '@xolvio/plate-ui-comments'
 import { useMyPlateEditorRef } from '../typescript'
 
 export const BasicElementToolbarButtons = () => {
@@ -257,12 +261,18 @@ export const TableToolbarButtons = () => (
   </>
 )
 
-export const CollaborationToolbarButtons = ({ onAddThread, fetchContacts }) => (
+export const CollaborationToolbarButtons = ({
+  onAddThread,
+  fetchContacts,
+}: {
+  onAddThread: OnAddThread
+  fetchContacts: FetchContacts
+}) => (
   <>
     <AddThreadToolbarButton icon={<CommentAdd />} onAddThread={onAddThread} />
     <ToggleShowThreadsButton icon={<Comment />} fetchContacts={fetchContacts} />
   </>
-);
+)
 
 export const MarkBallonToolbar = () => {
   const editor = useMyPlateEditorRef()!

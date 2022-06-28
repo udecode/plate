@@ -1,13 +1,13 @@
 /** @jsxRuntime classic */
-/** @jsx jsx */
+/** @jsx hjsx */
 import { ELEMENT_HR, TDescendant } from '@udecode/plate'
-import { jsx } from '@udecode/plate-test-utils'
+import { hjsx } from '@udecode/plate-test-utils'
 import * as faker from 'faker'
-import { user } from '../../../user';
 import { initialDataExcalidraw } from './initialDataExcalidraw'
+import { user } from './user'
 import { createList, getNodesWithRandomId } from './utils'
 
-jsx
+hjsx
 
 const align: any = (
   <fragment>

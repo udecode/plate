@@ -15,7 +15,9 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
 
 ```ts live
 () => {
-  let components = createPlateUI();
+  let components = createPlateUI({
+    [ELEMENT_THREAD]: ThreadElement,
+  });
   components = withStyledPlaceHolders(components);
   components = withStyledDraggables(components);
 
@@ -72,7 +74,12 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
     }
   );
 
-	const Toolbar = withPlateEventProvider(() => (
+  const [onAddThread, setOnAddThread] = useState(() =>
+    Promise.resolve()
+  )
+  const fetchContacts = useFetchContacts()
+
+  const Toolbar = withPlateEventProvider(() => (
     <HeadingToolbar>
       <BasicElementToolbarButtons />
       <ListToolbarButtons />
@@ -96,6 +103,10 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
       <ImageToolbarButton icon={<Image />} />
       <MediaEmbedToolbarButton icon={<OndemandVideo />} />
       <TableToolbarButtons />
+      <CollaborationToolbarButtons
+				onAddThread={onAddThread}
+				fetchContacts={fetchContacts}
+			/>
     </HeadingToolbar>
   ))
 
@@ -113,7 +124,7 @@ See the full source code in the [sandbox](https://codesandbox.io/s/github/udecod
             initialValue={VALUES.playground}
             plugins={plugins}
           >
-            <Playground containerRef={containerRef} />
+            <Playground containerRef={containerRef} setOnAddThread={setOnAddThread} />
           </Plate>
         </div>
       </DndProvider>

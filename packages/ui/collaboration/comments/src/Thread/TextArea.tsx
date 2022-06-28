@@ -7,14 +7,18 @@ import React, {
   useState,
 } from 'react';
 import composeRefs from '@seznam/compose-react-refs';
-import { Contact, doesContactMatchString } from '@xolvio/plate-comments';
-import { Thread as ThreadModel } from '@xolvio/plate-comments/dist/Thread';
+import {
+  Contact,
+  doesContactMatchString,
+  Thread as ThreadModel,
+} from '@xolvio/plate-comments';
 import { FetchContacts } from '../FetchContacts';
 import { Contacts } from './Contacts';
 import { createTextAreaStyles } from './Thread.styles';
 
 interface TextAreaProps {
-  defaultValue?: string;
+  value: string;
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
   thread: ThreadModel;
   fetchContacts: FetchContacts;
   haveContactsBeenClosed: boolean;
@@ -24,7 +28,8 @@ interface TextAreaProps {
 export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   function TextArea(
     {
-      defaultValue,
+      value,
+      onChange,
       thread,
       fetchContacts,
       haveContactsBeenClosed,
@@ -54,83 +59,84 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
             );
           };
 
-          const { value } = textArea;
-          const mentionStringStartIndex = value
-            .substr(0, textArea.selectionStart)
-            .lastIndexOf('@');
-          if (mentionStringStartIndex !== -1) {
-            const value2 = value.substr(mentionStringStartIndex);
-            /**
-             * The email regular expression is based on the one that has been published here: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
-             * Source of license: https://github.com/whatwg/html/blob/main/LICENSE
-             *
-             * Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
-             *
-             * BSD 3-Clause License
-             *
-             * Redistribution and use in source and binary forms, with or without
-             * modification, are permitted provided that the following conditions are met:
-             *
-             * 1. Redistributions of source code must retain the above copyright notice, this
-             *    list of conditions and the following disclaimer.
-             *
-             * 2. Redistributions in binary form must reproduce the above copyright notice,
-             *    this list of conditions and the following disclaimer in the documentation
-             *    and/or other materials provided with the distribution.
-             *
-             * 3. Neither the name of the copyright holder nor the names of its
-             *    contributors may be used to endorse or promote products derived from
-             *    this software without specific prior written permission.
-             *
-             * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-             * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-             * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-             * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-             * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-             * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-             * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-             * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-             * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-             * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-             */
-            const emailRegExp = new RegExp(
-              "@(?:[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?:@[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)?)?"
-            );
-            const nameRegExp = new RegExp('@(?:\\w+ \\w*)?');
-            const emailRegExpMatch = emailRegExp.exec(value2);
-            const nameRegExpMatch = nameRegExp.exec(value2);
-            let match: RegExpExecArray | null;
-            if (
-              (emailRegExpMatch && !nameRegExpMatch) ||
-              (emailRegExpMatch &&
-                nameRegExpMatch &&
-                emailRegExpMatch[0].length >= nameRegExpMatch[0].length)
-            ) {
-              match = emailRegExpMatch;
-            } else if (
-              (nameRegExpMatch && !emailRegExpMatch) ||
-              (emailRegExpMatch &&
-                nameRegExpMatch &&
-                nameRegExpMatch[0].length > emailRegExpMatch[0].length)
-            ) {
-              match = nameRegExpMatch;
-            } else {
-              match = null;
-            }
-            if (match) {
-              const indexOfLastCharacterOfMentionString =
-                mentionStringStartIndex + match.index + match[0].length - 1;
+          if (textArea) {
+            const mentionStringStartIndex = value
+              .substr(0, textArea.selectionStart)
+              .lastIndexOf('@');
+            if (mentionStringStartIndex !== -1) {
+              const value2 = value.substr(mentionStringStartIndex);
+              /**
+               * The email regular expression is based on the one that has been published here: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+               * Source of license: https://github.com/whatwg/html/blob/main/LICENSE
+               *
+               * Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
+               *
+               * BSD 3-Clause License
+               *
+               * Redistribution and use in source and binary forms, with or without
+               * modification, are permitted provided that the following conditions are met:
+               *
+               * 1. Redistributions of source code must retain the above copyright notice, this
+               *    list of conditions and the following disclaimer.
+               *
+               * 2. Redistributions in binary form must reproduce the above copyright notice,
+               *    this list of conditions and the following disclaimer in the documentation
+               *    and/or other materials provided with the distribution.
+               *
+               * 3. Neither the name of the copyright holder nor the names of its
+               *    contributors may be used to endorse or promote products derived from
+               *    this software without specific prior written permission.
+               *
+               * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+               * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+               * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+               * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+               * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+               * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+               * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+               * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+               * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+               * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+               */
+              const emailRegExp = new RegExp(
+                "@(?:[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(?:@[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9]?(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)?)?"
+              );
+              const nameRegExp = new RegExp('@(?:\\w+ \\w*)?');
+              const emailRegExpMatch = emailRegExp.exec(value2);
+              const nameRegExpMatch = nameRegExp.exec(value2);
+              let match: RegExpExecArray | null;
               if (
-                isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)
+                (emailRegExpMatch && !nameRegExpMatch) ||
+                (emailRegExpMatch &&
+                  nameRegExpMatch &&
+                  emailRegExpMatch[0].length >= nameRegExpMatch[0].length)
               ) {
-                const mentionString = match[0].trimEnd();
-                const mentionStringEndIndex =
-                  mentionStringStartIndex + mentionString.length;
-                return {
-                  string: mentionString,
-                  startIndex: mentionStringStartIndex,
-                  endIndex: mentionStringEndIndex,
-                };
+                match = emailRegExpMatch;
+              } else if (
+                (nameRegExpMatch && !emailRegExpMatch) ||
+                (emailRegExpMatch &&
+                  nameRegExpMatch &&
+                  nameRegExpMatch[0].length > emailRegExpMatch[0].length)
+              ) {
+                match = nameRegExpMatch;
+              } else {
+                match = null;
+              }
+              if (match) {
+                const indexOfLastCharacterOfMentionString =
+                  mentionStringStartIndex + match.index + match[0].length - 1;
+                if (
+                  isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)
+                ) {
+                  const mentionString = match[0].trimEnd();
+                  const mentionStringEndIndex =
+                    mentionStringStartIndex + mentionString.length;
+                  return {
+                    string: mentionString,
+                    startIndex: mentionStringStartIndex,
+                    endIndex: mentionStringEndIndex,
+                  };
+                }
               }
             }
           }
@@ -138,7 +144,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
         return null;
       },
-      [textAreaRef]
+      [textAreaRef, value]
     );
 
     const retrieveMentionStringAfterAtCharacter = useCallback(
@@ -208,7 +214,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         const mentionString = retrieveMentionStringAtCaretPosition();
         if (mentionString) {
           const textArea = textAreaRef.current!;
-          const { value } = textArea;
           const mentionInsertString = `@${mentionedContact.email} `;
           textArea.value = `${value.substr(
             0,
@@ -220,7 +225,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           textArea.setSelectionRange(selectionIndex, selectionIndex);
         }
       },
-      [retrieveMentionStringAtCaretPosition]
+      [retrieveMentionStringAtCaretPosition, value]
     );
 
     const onContactSelected = useCallback(
@@ -317,7 +322,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <div className="mdc-menu-surface--anchor">
         <textarea
           ref={composeRefs(textAreaRef, ref)}
-          defaultValue={defaultValue}
+          value={value}
+          onChange={onChange}
           rows={1}
           css={textArea.css}
           className={textArea.className}
@@ -339,7 +345,3 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     );
   }
 );
-
-TextArea.defaultProps = {
-  defaultValue: '',
-};

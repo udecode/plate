@@ -69,7 +69,7 @@ export interface ThreadPosition {
 export type RetrieveUser = () => User | Promise<User>;
 export type OnAddThread = () => Promise<void>;
 export type OnSaveComment = (comment: Comment) => Promise<Thread>;
-export type OnSubmitComment = (commentText: string) => Promise<Thread>;
+export type OnSubmitComment = (commentText: string, assignedTo?: User) => Promise<Thread>;
 export type OnCancelCreateThread = () => void;
 
 export function useComments({
@@ -342,7 +342,10 @@ export function useComments({
   );
 
   const onSubmitComment = useCallback<OnSubmitComment>(
-    async function onSubmitComment(commentText: string): Promise<Thread> {
+    async function onSubmitComment(
+      commentText: string,
+      assignedTo = undefined
+    ): Promise<Thread> {
       const comment = {
         id: Math.floor(Math.random() * 1000), // FIXME
         text: commentText,
@@ -353,6 +356,9 @@ export function useComments({
         ...thread!,
         comments: [...thread!.comments, comment],
       };
+      if (assignedTo) {
+        newThread.assignedTo = assignedTo;
+      }
       updateThread(newThread);
       return newThread;
     },

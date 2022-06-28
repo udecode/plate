@@ -114,6 +114,7 @@ export function Threads(
               showMoreButton={false}
               fetchContacts={fetchContacts}
               retrieveUser={() => createNullUser()}
+              retrieveUserByEmailAddress={() => createNullUser()}
             />
           );
         })}

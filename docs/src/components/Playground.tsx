@@ -1,48 +1,40 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { MarkBallonToolbar as BallonToolbarMarks } from '@example/config/components/Toolbars';
+import { CONFIG } from '@example/config/config';
 import { cursorStore } from '@example/config/plugins';
+import { CursorOverlay, MentionCombobox } from '@udecode/plate';
+import { useEditorRef } from '@udecode/plate-core';
+import { User } from '@xolvio/plate-comments';
 import {
-  Check,
-  FontDownload,
-  FormatColorText,
-  LineWeight,
-  Link,
-  OndemandVideo,
-} from '@styled-icons/material';
-import { Image } from '@styled-icons/material/Image';
-import {
-  ColorPickerToolbarDropdown,
-  HeadingToolbar,
-  ImageToolbarButton,
-  LineHeightToolbarDropdown,
-  LinkToolbarButton,
-  MARK_BG_COLOR,
-  MARK_COLOR,
-  MediaEmbedToolbarButton,
-  MentionCombobox,
+  OnAddThread,
   SideThread,
   useComments,
-} from '@udecode/plate';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  CollaborationToolbarButtons,
-  IndentToolbarButtons,
-  ListToolbarButtons,
-  MarkBallonToolbar as BallonToolbarMarks,
-  TableToolbarButtons,
-} from '../live/config/components/Toolbars';
-import { CONFIG } from '../live/config/config';
+} from '@xolvio/plate-ui-comments';
 import { user } from '../user';
+import { useFetchContacts } from './useFetchContacts';
+
+const userMap = new Map([[user.email, user]]);
 
 export function Playground({
   containerRef,
+  setOnAddThread,
 }: {
   containerRef: React.MutableRefObject<HTMLDivElement>;
+  setOnAddThread: React.Dispatch<React.SetStateAction<OnAddThread>>;
 }) {
+  // @ts-ignore
+  window.editor = useEditorRef();
+
   const retrieveUser = useCallback(function retrieveUser() {
     return { ...user };
   }, []);
+
+  const retrieveUserByEmailAddress = useCallback(
+    function retrieveUserByEmailAddress(emailAddress: string): User | null {
+      return userMap.get(emailAddress) ?? null;
+    },
+    []
+  );
 
   const {
     thread,
@@ -53,28 +45,14 @@ export function Playground({
     onCancelCreateThread,
   } = useComments({ retrieveUser });
 
-  const fetchContacts = useCallback(function fetchContacts() {
-    return [
-      {
-        id: '1',
-        name: 'Jon Doe',
-        email: 'jon.doe@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-      {
-        id: '2',
-        name: 'Jon Doe2',
-        email: 'jon.doe2@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-      {
-        id: '3',
-        name: 'Jon Doe3',
-        email: 'jon.doe3@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-    ];
-  }, []);
+  useEffect(
+    function setSetOnAddThread() {
+      setOnAddThread(() => onAddThread);
+    },
+    [setOnAddThread, onAddThread]
+  );
+
+  const fetchContacts = useFetchContacts();
 
   const CursorOverlayContainer = (props) => {
     const cursors = cursorStore.use.cursors();
@@ -84,35 +62,6 @@ export function Playground({
 
   return (
     <>
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-        <ListToolbarButtons />
-        <IndentToolbarButtons />
-        <BasicMarkToolbarButtons />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_COLOR}
-          icon={<FormatColorText />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Text color' }}
-        />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_BG_COLOR}
-          icon={<FontDownload />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Highlight color' }}
-        />
-        <AlignToolbarButtons />
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-        <LinkToolbarButton icon={<Link />} />
-        <ImageToolbarButton icon={<Image />} />
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        <TableToolbarButtons />
-        <CollaborationToolbarButtons
-          onAddThread={onAddThread}
-          fetchContacts={fetchContacts}
-        />
-      </HeadingToolbar>
-
       <BallonToolbarMarks />
 
       <MentionCombobox items={CONFIG.mentionItems} />
@@ -128,6 +77,7 @@ export function Playground({
           onCancelCreateThread={onCancelCreateThread}
           fetchContacts={fetchContacts}
           retrieveUser={retrieveUser}
+          retrieveUserByEmailAddress={retrieveUserByEmailAddress}
         />
       ) : null}
     </>

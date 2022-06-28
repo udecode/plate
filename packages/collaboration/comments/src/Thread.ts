@@ -6,6 +6,7 @@ export interface Thread {
   comments: Comment[];
   isResolved: boolean;
   createdBy: User;
+  assignedTo?: User;
 }
 
 export function isFirstComment(thread: Thread, comment: Comment): boolean {

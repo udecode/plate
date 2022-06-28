@@ -52,11 +52,18 @@ export function ThreadCommentEditing({
     [textAreaRef, thread]
   );
 
+  const [value, setValue] = useState<string>(defaultText);
+
+  const onChange = useCallback(function onChange(event) {
+    setValue(event.target.value);
+  }, []);
+
   return (
     <div css={commentInput.css} className={commentInput.className}>
       <TextArea
         ref={textAreaRef}
-        defaultValue={defaultText}
+        value={value}
+        onChange={onChange}
         thread={thread}
         fetchContacts={fetchContacts}
         haveContactsBeenClosed={haveContactsBeenClosed}

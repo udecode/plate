@@ -21,7 +21,6 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
-  ELEMENT_THREAD,
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
@@ -45,7 +44,6 @@ import {
   CodeLineElement,
   CodeSyntaxLeaf,
 } from '@udecode/plate-ui-code-block';
-import { ThreadElement } from '@xolvio/plate-ui-comments';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { ImageElement } from '@udecode/plate-ui-image';
 import { LinkElement } from '@udecode/plate-ui-link';
@@ -71,7 +69,6 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
-    [ELEMENT_THREAD]: ThreadElement,
     [ELEMENT_HR]: HrElement,
     [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',

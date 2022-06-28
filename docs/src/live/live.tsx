@@ -7,6 +7,7 @@ import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
   BasicMarkToolbarButtons,
+  CollaborationToolbarButtons,
   HighlightToolbarButton,
   IndentToolbarButtons,
   KbdToolbarButton,
@@ -129,7 +130,6 @@ import {
   createTablePlugin,
   createTEditor,
   createTextIndentPlugin,
-  createThreadPlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
@@ -159,7 +159,6 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
-  ELEMENT_THREAD,
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
@@ -209,7 +208,6 @@ import {
   SearchHighlightToolbar,
   serializeHtml,
   setNodes,
-  SideThread,
   StyledElement,
   StyledLeaf,
   TableToolbarButton,
@@ -217,8 +215,6 @@ import {
   toggleList,
   ToolbarButton,
   unwrapList,
-  upsertThread,
-  useComments,
   usePlate,
   usePlateEditorRef,
   usePlateEditorState,
@@ -234,34 +230,20 @@ import {
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
+import {
+  createThreadPlugin,
+  ELEMENT_THREAD,
+  upsertThread,
+} from '@xolvio/plate-comments';
+import {
+  SideThread,
+  ThreadElement,
+  useComments,
+} from '@xolvio/plate-ui-comments';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { Playground } from '../components/Playground';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  CollaborationToolbarButtons,
-  HighlightToolbarButton,
-  IndentToolbarButtons,
-  KbdToolbarButton,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from './config/components/Toolbars';
-import { withStyledDraggables } from './config/components/withStyledDraggables';
-import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
-import { CONFIG } from './config/config';
-import { PLUGINS } from './config/plugins';
-import { VALUES } from './config/values/values';
-import {
-  createEditableVoidPlugin,
-  EDITABLE_VOID,
-} from './examples/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
-import { IFrame } from './examples/iframe/IFrame';
-import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
-import { PreviewLeaf } from './examples/preview-markdown/PreviewLeaf/PreviewLeaf';
+import { useFetchContacts } from '../components/useFetchContacts';
 import { HighlightHTML } from './utils/HighlightHTML';
 
 // Add react-live imports you need here
@@ -500,9 +482,11 @@ const ReactLiveScope = {
   CollaborationToolbarButtons,
   upsertThread,
   ELEMENT_THREAD,
+  ThreadElement,
   useComments,
   SideThread,
   Playground,
+  useFetchContacts,
 };
 
 export default ReactLiveScope;

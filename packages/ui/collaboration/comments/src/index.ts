@@ -7,3 +7,4 @@ export { determineAbsolutePosition } from './determineAbsolutePosition';
 export { determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft } from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
 export { createAvatarStyles } from './Avatar/Avatar.styles';
 export { createAvatarHolderStyles } from './Avatar/Avatar.styles';
+export * from './FetchContacts';
