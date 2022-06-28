@@ -5,7 +5,6 @@ import { autoformatPluginFile } from './code-autoformatPlugin';
 import { autoformatRulesFile } from './code-autoformatRules';
 import { autoformatUtilsFile } from './code-autoformatUtils';
 import { autoformatValueFile } from './code-autoformatValue';
-import { indexFile } from './code-index';
 
 export const autoformatFiles = {
   ...autoformatBlocksFile,
@@ -15,5 +14,4 @@ export const autoformatFiles = {
   ...autoformatRulesFile,
   ...autoformatUtilsFile,
   ...autoformatValueFile,
-  ...indexFile,
 };

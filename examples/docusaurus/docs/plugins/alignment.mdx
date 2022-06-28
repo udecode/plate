@@ -9,6 +9,8 @@ You can use it to align your content to left, right, center or to justify it.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-alignment
 npm install @udecode/plate-ui-alignment
 ```
@@ -17,66 +19,9 @@ npm install @udecode/plate-ui-alignment
 
 Click inside a paragraph or a header and click on a toolbar button to apply the desired text alignment.
 
-```ts live
-() => {
-  const AlignToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
+import { AlignmentSandpack } from './AlignmentSandpack'
 
-    return (
-      <>
-        <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
-        <AlignToolbarButton
-          value="center"
-          icon={<FormatAlignCenter />}
-        />
-        <AlignToolbarButton
-          value="right"
-          icon={<FormatAlignRight />}
-        />
-        <AlignToolbarButton
-          value="justify"
-          icon={<FormatAlignJustify />}
-        />
-      </>
-    );
-  });
-
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createAlignPlugin({
-      inject: {
-        props: {
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1,
-            ELEMENT_H2,
-            ELEMENT_H3,
-            ELEMENT_H4,
-            ELEMENT_H5,
-            ELEMENT_H6,
-          ],
-        }
-      }
-    })
-  ], {
-    components: CONFIG.components,
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <AlignToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="alignment"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.align}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<AlignmentSandpack />
 
 ### Source Code
 

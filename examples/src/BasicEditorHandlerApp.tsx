@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
-import { plainTextValue } from './basic-editor/index';
-import { editableProps } from './common/index';
+import { plainTextValue } from './basic-editor/plainTextValue';
+import { editableProps } from './common/editableProps';
+import { MyValue } from './typescript/plateTypes';
 
 export default () => {
-  const [debugValue, setDebugValue] = useState(null);
+  const [debugValue, setDebugValue] = useState<MyValue | null>(null);
 
   return (
-    <Plate
+    <Plate<MyValue>
       editableProps={editableProps}
       initialValue={plainTextValue}
       onChange={(newValue) => {

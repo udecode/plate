@@ -16,6 +16,8 @@ The list plugin has strict rules between parent and children
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-indent-list
 ```
 
@@ -25,6 +27,10 @@ npm install @udecode/plate-indent-list
 - `createIndentPlugin` sets the indentation style (margin left).
 - `createIndentListPlugin` sets the list style (`display: list-item`)
 - Use the indent or outdent toolbar buttons in the editor below to control the level of indentation of the content, both for paragraph text and headers.
+
+import { IndentListSandpack } from './IndentListSandpack'
+
+<IndentListSandpack />
 
 ```ts live
 () => {
@@ -62,7 +68,7 @@ npm install @udecode/plate-indent-list
       },
     }),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
   
   const IndentToolbarButtons = withPlateEventProvider(() => {
@@ -113,8 +119,8 @@ npm install @udecode/plate-indent-list
       </HeadingToolbar>
       <Plate
         id="indent-list"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.indentList}
+        editableProps={editableProps}
+        initialValue={indentListValue}
         plugins={plugins}
         normalizeInitialValue
       />

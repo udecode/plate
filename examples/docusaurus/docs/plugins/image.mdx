@@ -6,20 +6,26 @@ title: Image
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-image
 npm install @udecode/plate-ui-image
 ```
 
 ### Usage
 
+import { ImageSandpack } from './ImageSandpack'
+
+<ImageSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createImagePlugin(),
     createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_IMAGE] }}}),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -31,8 +37,8 @@ npm install @udecode/plate-ui-image
       </PlateProvider>
       <Plate
         id="image"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.image}
+        editableProps={editableProps}
+        initialValue={imageValue}
         plugins={plugins}
       />
     </>

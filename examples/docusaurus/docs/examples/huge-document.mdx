@@ -3,20 +3,24 @@ slug: /examples/huge-document
 title: Huge Document
 ---
 
+import { HugeDocumentSandpack } from './HugeDocumentSandpack'
+
+<HugeDocumentSandpack />
+
 ```ts live
 () => {
-  const initialValue = VALUES.createHugeDocument();
+  const initialValue = createHugeDocument();
 
   const WithPlate = () => (
     <Plate
       id="huge-document"
       editableProps={{
-        ...CONFIG.editableProps,
+        ...editableProps,
         // spellcheck adds some lag so we disable it
         spellCheck: false,
       }}
       initialValue={initialValue}
-      plugins={PLUGINS.basicNodes}
+      plugins={basicNodesPlugins}
     />
   );
 
@@ -40,7 +44,7 @@ title: Huge Document
         value={value}
         onChange={useCallback((v) => setValue(v), [])}
       >
-        <Editable renderElement={renderElement} {...CONFIG.editableProps} />
+        <Editable renderElement={renderElement} {...editableProps} />
       </Slate>
     );
   }

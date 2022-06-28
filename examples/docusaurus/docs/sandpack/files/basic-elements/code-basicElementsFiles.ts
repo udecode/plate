@@ -1,11 +1,11 @@
 import { basicElementToolbarButtonsFile } from './code-BasicElementToolbarButtons';
-import { basicElementPluginsFile } from './code-basicElementPlugins';
+import { basicElementsPluginsFile } from './code-basicElementsPlugins';
 import { basicElementsValueFile } from './code-basicElementsValue';
-import { indexFile } from './code-index';
+import { basicNodesPluginsFile } from './code-basicNodesPlugins';
 
 export const basicElementsFiles = {
   ...basicElementToolbarButtonsFile,
-  ...basicElementPluginsFile,
+  ...basicElementsPluginsFile,
   ...basicElementsValueFile,
-  ...indexFile,
+  ...basicNodesPluginsFile,
 };

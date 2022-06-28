@@ -9,6 +9,8 @@ You can use it to set the line height for the selected element as required.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-line-height
 npm install @udecode/plate-ui-line-height
 ```
@@ -17,10 +19,14 @@ npm install @udecode/plate-ui-line-height
 
 Click inside a paragraph or a header and click on a toolbar button to apply the desired line height.
 
+import { LineHeightSandpack } from './LineHeightSandpack'
+
+<LineHeightSandpack />
+
 ```ts live
 () => {
   const plugins = [
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createLineHeightPlugin({
       inject: {
         props: {
@@ -42,8 +48,8 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
       </HeadingToolbar>
       <Plate
         id="alignment"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.lineHeight}
+        editableProps={editableProps}
+        initialValue={lineHeightValue}
         plugins={plugins}
       />
     </>

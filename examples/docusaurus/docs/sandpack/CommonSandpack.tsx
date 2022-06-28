@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sandpack } from '@codesandbox/sandpack-react';
 import { monokaiPro } from '@codesandbox/sandpack-themes';
-import { stylesFile } from './files/common/code-styles';
+import { stylesFile } from './files/code-styles';
 import { rootFile } from './code-root';
 
 export const CommonSandpack = ({
@@ -33,6 +33,7 @@ export const CommonSandpack = ({
       }}
       options={{
         showLineNumbers: true,
+        showInlineErrors: true,
         editorHeight: height,
         classes: {
           'sp-stack': `sp-preview-h${previewSize}`,

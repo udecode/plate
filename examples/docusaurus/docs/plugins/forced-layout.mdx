@@ -8,17 +8,23 @@ Allows you to enforce document structure. For example, you can require that the 
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-normalizers
 npm install @udecode/plate-trailing-block
 ```
 
 ### Usage
 
+import { ForcedLayoutSandpack } from './ForcedLayoutSandpack'
+
+<ForcedLayoutSandpack />
+
 ```ts live
 () => {
   const plugins = [
-    ...PLUGINS.basicNodes,
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    ...basicNodesPlugins,
+    createTrailingBlockPlugin(trailingBlockPlugin),
     createNormalizeTypesPlugin({
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     }),
@@ -27,8 +33,8 @@ npm install @udecode/plate-trailing-block
   return (
     <Plate
       id="forced-layout"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.forcedLayout}
+      editableProps={editableProps}
+      initialValue={forcedLayoutValue}
       plugins={plugins}
     />
   );

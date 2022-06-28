@@ -1,4 +1,4 @@
-export const rootCode = `import './common/styles.css'
+export const rootCode = `import './styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'

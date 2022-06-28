@@ -6,29 +6,35 @@ title: Markdown
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-serializer-md
 ```
 
 ### Deserializer Usage
 
+import { SerializingMdSandpack } from './SerializingMdSandpack'
+
+<SerializingMdSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
     createTablePlugin(),
     createDeserializeMdPlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="deserialize-md"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteMd}
+      editableProps={editableProps}
+      initialValue={pasteMdValue}
       plugins={plugins}
     />
   );

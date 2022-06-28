@@ -6,19 +6,25 @@ title: Link
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-link
 npm install @udecode/plate-ui-link
 ```
 
 ### Usage
 
+import { LinkSandpack } from './LinkSandpack'
+
+<LinkSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createLinkPlugin()
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -28,8 +34,8 @@ npm install @udecode/plate-ui-link
       </HeadingToolbar>
       <Plate
         id="link"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.link}
+        editableProps={editableProps}
+        initialValue={linkValue}
         plugins={plugins}
       />
     </>

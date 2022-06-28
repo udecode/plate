@@ -8,6 +8,8 @@ The mention plugin is using the [combobox plugin](docs/plugins/combobox).
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-combobox
 npm install @udecode/plate-mention
 npm install @udecode/plate-ui-mention
@@ -15,29 +17,33 @@ npm install @udecode/plate-ui-mention
 
 ### Usage
 
+import { MentionSandpack } from './MentionSandpack'
+
+<MentionSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createComboboxPlugin(),
     createMentionPlugin(),
     createMentionPlugin({ key: '#', component: MentionElement, options: { trigger: '#', inputCreation: {key: 'creationId', value: 'main'} } }),
     createMentionPlugin({ key: '/', component: MentionElement, options: { trigger: '/' } }),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="mention"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.mentions}
+      editableProps={editableProps}
+      initialValue={mentionsValue}
       onChange={e => console.info(e)}
       plugins={plugins}
     >
-      <MentionCombobox items={CONFIG.mentionItems} />
-      <MentionCombobox items={CONFIG.mentionItems} pluginKey="#" />
-      <MentionCombobox items={[CONFIG.mentionItems[0], CONFIG.mentionItems[1]]} pluginKey="/" />
+      <MentionCombobox items={MENTIONABLES} />
+      <MentionCombobox items={MENTIONABLES} pluginKey="#" />
+      <MentionCombobox items={[MENTIONABLES[0], MENTIONABLES[1]]} pluginKey="/" />
     </Plate>
   );
 }

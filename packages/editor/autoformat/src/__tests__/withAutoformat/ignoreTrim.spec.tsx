@@ -3,7 +3,6 @@
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { CONFIG } from '../../../../../../examples/src/common/config';
 import { MARK_ITALIC } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
 import { withAutoformat } from '../../withAutoformat';
 
@@ -70,7 +69,7 @@ describe('when ignoreTrim is false', () => {
 
       const editor = withAutoformat(
         withReact(input),
-        mockPlugin(CONFIG.autoformat as any)
+        mockPlugin(autoformatPlugin as any)
       );
 
       editor.insertText(' ');

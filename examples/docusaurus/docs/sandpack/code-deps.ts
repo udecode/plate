@@ -12,10 +12,6 @@ export const commonDeps = {
   'react-dnd-html5-backend': '15.1.3',
 };
 
-export const fakerDeps = {
-  '@faker-js/faker': '7.3.0',
-};
-
 export const plateTestUtilsDeps = {
   '@udecode/plate-test-utils': '*',
 };
@@ -29,7 +25,6 @@ export const toolbarDeps = {
 
 export const playgroundDeps = {
   ...commonDeps,
-  ...fakerDeps,
   ...plateTestUtilsDeps,
   ...toolbarDeps,
   '@udecode/plate-juice': '*',

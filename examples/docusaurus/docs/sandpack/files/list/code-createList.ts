@@ -1,4 +1,12 @@
-export const createListCode = `export const createList = (
+export const createListCode = `import {
+  ELEMENT_LI,
+  ELEMENT_LIC,
+  ELEMENT_UL,
+  TElement,
+  TText,
+} from '@udecode/plate';
+
+export const createList = (
   items: string[],
   { splitSeparator = '\`' }: { splitSeparator?: string } = {}
 ): TElement[] => {

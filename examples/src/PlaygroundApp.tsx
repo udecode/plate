@@ -57,31 +57,30 @@ import {
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
+import { alignPlugin } from './align/alignPlugin';
+import { autoformatPlugin } from './autoformat/autoformatPlugin';
+import { MarkBallonToolbar } from './balloon-toolbar/MarkBallonToolbar';
 import { editableProps } from './common/editableProps';
-import { alignPlugin } from './align';
-import { autoformatPlugin } from './autoformat';
-import { MarkBallonToolbar } from './balloon-toolbar';
-import { CursorOverlayContainer, dragOverCursorPlugin } from './cursor-overlay';
-import { withStyledDraggables } from './dnd';
-import { exitBreakPlugin } from './exit-break';
-import { forcedLayoutPlugin } from './forced-layout';
-import { indentPlugin } from './indent';
-import { MENTIONABLES } from './mention';
-import { withStyledPlaceHolders } from './placeholder';
-import { playgroundValue } from './playgroundValue';
-import { resetBlockTypePlugin } from './reset-node';
-import { selectOnBackspacePlugin } from './select-on-backspace';
-import { softBreakPlugin } from './soft-break';
-import { ToolbarButtons } from './ToolbarButtons';
-import { trailingBlockPlugin } from './trailing-block';
+import { CursorOverlayContainer } from './cursor-overlay/CursorOverlayContainer';
+import { dragOverCursorPlugin } from './cursor-overlay/dragOverCursorPlugin';
+import { withStyledDraggables } from './dnd/withStyledDraggables';
+import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
+import { forcedLayoutPlugin } from './forced-layout/forcedLayoutPlugin';
+import { indentPlugin } from './indent/indentPlugin';
+import { MENTIONABLES } from './mention/mentionables';
+import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
+import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from './select-on-backspace/selectOnBackspacePlugin';
+import { softBreakPlugin } from './soft-break/softBreakPlugin';
+import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';
 import {
   createMyPlugins,
   MyEditor,
   MyPlatePlugin,
   MyValue,
-} from './typescript';
-
-const id = 'Playground';
+} from './typescript/plateTypes';
+import { playgroundValue } from './playgroundValue';
+import { ToolbarButtons } from './ToolbarButtons';
 
 let components = createPlateUI({
   [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
@@ -167,7 +166,6 @@ const App = () => {
 
       <div ref={containerRef} style={styles.container}>
         <Plate<MyValue, MyEditor>
-          id={id}
           editableProps={editableProps}
           initialValue={playgroundValue}
           plugins={plugins}

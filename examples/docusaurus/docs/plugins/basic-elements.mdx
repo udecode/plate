@@ -12,10 +12,10 @@ Includes the following plugins:
 ### Installation
 
 ```bash npm2yarn
-npm install @udecode/plate-basic-elements
-
+npm install @udecode/plate
 # or
-
+npm install @udecode/plate-basic-elements
+# or
 npm install @udecode/plate-block-quote
 npm install @udecode/plate-code-block
 npm install @udecode/plate-heading
@@ -24,73 +24,9 @@ npm install @udecode/plate-paragraph
 
 ### Usage
 
-```ts live
-() => {
-  const BasicElementToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
+import { BasicElementsSandpack } from './BasicElementsSandpack'
 
-    return (
-      <>
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H1)}
-          icon={<LooksOne />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H2)}
-          icon={<LooksTwo />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H3)}
-          icon={<Looks3 />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H4)}
-          icon={<Looks4 />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H5)}
-          icon={<Looks5 />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_H6)}
-          icon={<Looks6 />}
-        />
-        <BlockToolbarButton
-          type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
-          icon={<FormatQuote />}
-        />
-        <CodeBlockToolbarButton
-          type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
-          icon={<CodeBlock />}
-        />
-      </>
-    );
-  });
-
-  const plugins = createPlugins([
-    createBasicElementsPlugin(),
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
-  ], {
-    components: CONFIG.components,
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="basic-elements"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.basicElements}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<BasicElementsSandpack />
 
 ### Options
 

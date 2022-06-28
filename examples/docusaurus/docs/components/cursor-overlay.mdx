@@ -10,10 +10,16 @@ It's the strategy used by [slate-yjs](https://github.com/BitPhinix/slate-yjs) to
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-cursor
 ```
 
 ### Usage
+
+import { CursorOverlaySandpack } from './CursorOverlaySandpack'
+
+<CursorOverlaySandpack />
 
 ```ts live
 () => {
@@ -91,9 +97,9 @@ npm install @udecode/plate-ui-cursor
     <div ref={ref} style={{ position: 'relative' }}>
       <Plate
         id="cursor-overlay"
-        plugins={PLUGINS.basicNodes}
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.cursor}
+        plugins={basicNodesPlugins}
+        editableProps={editableProps}
+        initialValue={cursorValue}
         plugins={plugins}
       >
         <CursorOverlay containerRef={ref} cursors={cursors} />

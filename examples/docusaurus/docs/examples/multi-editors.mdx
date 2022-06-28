@@ -3,20 +3,24 @@ slug: /examples/multi-editors
 title: Huge Multi Editors
 ---
 
+import { MultiSandpack } from './MultiSandpack'
+
+<MultiSandpack />
+
 ```ts live
 () => {
-  const initialValues = VALUES.createMultiEditors();
+  const initialValues = createMultiEditors();
 
   const WithPlate = ({initialValue, id}) => (
     <Plate
       id={id}
       editableProps={{
-        ...CONFIG.editableProps,
+        ...editableProps,
         // spellcheck adds some lag so we disable it
         spellCheck: false,
       }}
       initialValue={initialValue}
-      plugins={PLUGINS.basicNodes}
+      plugins={basicNodesPlugins}
     />
   );
 
@@ -40,7 +44,7 @@ title: Huge Multi Editors
         value={value}
         onChange={useCallback((v) => setValue(v), [])}
       >
-        <Editable renderElement={renderElement} {...CONFIG.editableProps} />
+        <Editable renderElement={renderElement} {...editableProps} />
       </Slate>
     );
   }

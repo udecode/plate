@@ -9,49 +9,6 @@ Plate support multiple editor instances by using the [id](Plate#id) prop.
 
 Let's render 3 editors with common heading and balloon toolbars.
 
-```tsx live
-() => {
-  const MultipleEditor = ({
-    id,
-    initialValue,
-    plugins,
-  }) => (
-    <div className="flex-1 border border-gray-200 rounded-md m-2 p-4">
-      <Plate
-        id={id}
-        plugins={plugins}
-        initialValue={initialValue}
-      >
-        <BallonToolbarMarks />
-      </Plate>
-    </div>
-  );
+import { MultipleEditorsSandpack } from './MultipleEditorsSandpack'
 
-  return (
-    <div>
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-        <BasicMarkToolbarButtons />
-      </HeadingToolbar>
-
-      <div className="flex">
-        <MultipleEditor
-          id="multiple-editors-basic"
-          plugins={PLUGINS.basicNodes}
-          initialValue={VALUES.basicElements}
-        />
-        <MultipleEditor
-          id="multiple-editors-marks"
-          plugins={PLUGINS.basicNodes}
-          initialValue={VALUES.basicMarks}
-        />
-        <MultipleEditor
-          id="multiple-editors-image"
-          plugins={PLUGINS.image}
-          initialValue={VALUES.image}
-        />
-      </div>
-    </div>
-  )
-}
-```
+<MultipleEditorsSandpack />

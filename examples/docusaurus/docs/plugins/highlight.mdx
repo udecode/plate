@@ -6,10 +6,16 @@ title: Highlight
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-highlight
 ```
 
 ### Usage
+
+import { HighlightSandpack } from './HighlightSandpack'
+
+<HighlightSandpack />
 
 ```ts live
 () => {
@@ -25,10 +31,10 @@ npm install @udecode/plate-highlight
   });
 
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createHighlightPlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -38,8 +44,8 @@ npm install @udecode/plate-highlight
       </HeadingToolbar>
       <Plate
         id="highlight"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.highlight}
+        editableProps={editableProps}
+        initialValue={highlightValue}
         plugins={plugins}
       />
     </>

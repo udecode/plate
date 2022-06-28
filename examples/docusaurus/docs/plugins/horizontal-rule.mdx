@@ -10,6 +10,8 @@ Type three dashes (`---`) or three underscores and a space (`___ `) at the begin
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-horizontal-rule
 npm install @udecode/plate-ui-horizontal-rule
 npm install @udecode/plate-autoformat
@@ -17,10 +19,14 @@ npm install @udecode/plate-autoformat
 
 ### Usage
 
+import { HorizontalRuleSandpack } from './HorizontalRuleSandpack'
+
+<HorizontalRuleSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createHorizontalRulePlugin(),
     createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_HR] }}}),
     createAutoformatPlugin({
@@ -41,14 +47,14 @@ npm install @udecode/plate-autoformat
       },
     }),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="horizontal-rule"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.horizontalRule}
+      editableProps={editableProps}
+      initialValue={horizontalRuleValue}
       plugins={plugins}
     />
   );

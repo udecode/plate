@@ -1,4 +1,4 @@
-import '@udecode/examples/src/common/styles.css';
+import '@udecode/examples/src/styles.css';
 import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
 import React from 'react';

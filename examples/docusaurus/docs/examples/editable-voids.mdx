@@ -3,10 +3,14 @@ slug: /examples/editable-voids
 title: Editable Voids
 ---
 
+import { EditableVoidsSandpack } from './EditableVoidsSandpack'
+
+<EditableVoidsSandpack />
+
 ```ts live
 () => {
   const plugins = [
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createEditableVoidPlugin({
       component: EditableVoidElement
     }),
@@ -15,8 +19,8 @@ title: Editable Voids
   return (
     <Plate
       id="editable-voids"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.editableVoids}
+      editableProps={editableProps}
+      initialValue={editableVoidsValue}
       plugins={plugins}
     />
   );

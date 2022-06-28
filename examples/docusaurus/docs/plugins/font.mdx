@@ -13,6 +13,8 @@ Includes the following plugins:
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-font
 npm install @udecode/plate-ui-font
 ```
@@ -21,10 +23,14 @@ npm install @udecode/plate-ui-font
 
 Use the toolbar dropdowns to control font color and font background color.
 
+import { FontSandpack } from './FontSandpack'
+
+<FontSandpack />
+
 ```ts live
 () => {
   const plugins = [
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createFontColorPlugin(),
     createFontBackgroundColorPlugin(),
     createFontSizePlugin(),
@@ -62,8 +68,8 @@ Use the toolbar dropdowns to control font color and font background color.
         <CopyContent />
         <Plate
           id="font"
-          editableProps={CONFIG.editableProps}
-          initialValue={VALUES.font}
+          editableProps={editableProps}
+          initialValue={fontValue}
           plugins={plugins}
         />
       </>

@@ -6,6 +6,8 @@ title: Docx
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate @udecode/plate-juice
+# or
 npm install @udecode/plate-serializer-docx @udecode/plate-juice
 ```
 
@@ -13,35 +15,39 @@ Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into 
 
 ### Deserializer Usage
 
+import { SerializingDocxSandpack } from './SerializingDocxSandpack'
+
+<SerializingDocxSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createImagePlugin(),
     createHorizontalRulePlugin(),
-    createLineHeightPlugin(CONFIG.lineHeight),
+    createLineHeightPlugin(lineHeightPlugin),
     // createLinkPlugin(),
     createTablePlugin(),
-    createAlignPlugin(CONFIG.align),
+    createAlignPlugin(alignPlugin),
     createFontBackgroundColorPlugin(),
     createFontFamilyPlugin(),
     createFontColorPlugin(),
     createFontSizePlugin(),
     createFontWeightPlugin(),
     createIndentListPlugin(),
-    createIndentPlugin(CONFIG.indent),
+    createIndentPlugin(indentPlugin),
     createTextIndentPlugin(),
     createDeserializeDocxPlugin(),
     createJuicePlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
   
   return (
     <Plate
       id="deserialize-docx"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteDocx}
+      editableProps={editableProps}
+      initialValue={pasteDocxValue}
       plugins={plugins}
     />
   );

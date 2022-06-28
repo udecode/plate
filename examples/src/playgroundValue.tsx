@@ -11,6 +11,7 @@ import { highlightValue } from './highlight/highlightValue';
 import { horizontalRuleValue } from './horizontal-rule/horizontalRuleValue';
 import { imageValue } from './image/imageValue';
 import { indentValue } from './indent/indentValue';
+import { kbdValue } from './kbd/kbdValue';
 import { lineHeightValue } from './line-height/lineHeightValue';
 import { linkValue } from './link/linkValue';
 import { listValue } from './list/listValue';
@@ -27,6 +28,7 @@ import { tableValue } from './table/tableValue';
 export const playgroundValue: any = getNodesWithRandomId([
   ...forcedLayoutValue,
   ...basicMarksValue,
+  ...kbdValue,
   ...fontValue,
   ...highlightValue,
   ...basicElementsValue,

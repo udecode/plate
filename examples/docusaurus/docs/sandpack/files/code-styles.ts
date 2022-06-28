@@ -4,19 +4,19 @@ export const stylesCode = `html {
 }
 
 body {
-  margin: 40px;
+  margin: 0;
 }
 
 td {
   border: 1px solid;
 }
 
-#root {
-  padding: 30px;
+[data-slate-editor] {
+  padding: 40px;
 }
 
-.MuiSvgIcon-root {
-  font-size: 18px !important;
+.slate-HeadingToolbar {
+  padding: 17px 60px !important;
 }
 
 .tippy-box[data-theme~='tomato'] {
@@ -35,6 +35,10 @@ td {
 
   min-width: 18px;
   min-height: 18px;
+}
+
+.MuiSvgIcon-root {
+  font-size: 18px !important;
 }
 
 /* .slate-code_block {

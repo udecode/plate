@@ -8,27 +8,33 @@ Allows you to force the editor to only have one line.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-break
 ```
 
 ### Usage
 
+import { SingleLineSandpack } from './SingleLineSandpack'
+
+<SingleLineSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createListPlugin(),
     createTablePlugin(),
     createSingleLinePlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="single-line"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.singleLine}
+      editableProps={editableProps}
+      initialValue={singleLineValue}
       plugins={plugins}
     />
   );

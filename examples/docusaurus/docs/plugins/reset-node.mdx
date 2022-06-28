@@ -10,10 +10,16 @@ In the following example, you can press `Enter` in an empty block quote or `Back
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-reset-node
 ```
 
 ### Usage
+
+import { ResetNodeSandpack } from './ResetNodeSandpack'
+
+<ResetNodeSandpack />
 
 ```ts live
 () => {
@@ -23,10 +29,10 @@ npm install @udecode/plate-reset-node
   };
 
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createListPlugin(),
     createTablePlugin(),
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createTrailingBlockPlugin(trailingBlockPlugin),
     createResetNodePlugin({
       options: {
         rules: [
@@ -43,17 +49,17 @@ npm install @udecode/plate-reset-node
         ],
       }
     }),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
+    createSoftBreakPlugin(softBreakPlugin),
+    createExitBreakPlugin(exitBreakPlugin),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="reset-node"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.basicElements}
+      editableProps={editableProps}
+      initialValue={basicElementsValue}
       plugins={plugins}
     />
   );

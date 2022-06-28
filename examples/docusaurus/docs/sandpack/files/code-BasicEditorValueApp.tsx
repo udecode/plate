@@ -1,6 +1,7 @@
 export const basicEditorValueAppCode = `import React from 'react';
 import { Plate } from '@udecode/plate';
 import { editableProps } from './common/editableProps';
+import { MyParagraphElement, MyValue } from './typescript/plateTypes';
 
 const initialValue = [
   {
@@ -11,11 +12,11 @@ const initialValue = [
           'This is editable plain text with react and history plugins, just like a <textarea>!',
       },
     ],
-  },
+  } as MyParagraphElement,
 ];
 
 export default () => (
-  <Plate editableProps={editableProps} initialValue={initialValue} />
+  <Plate<MyValue> editableProps={editableProps} initialValue={initialValue} />
 );
 `;
 

@@ -16,16 +16,22 @@ Media providers supported by this plugin:
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-media-embed
 npm install @udecode/plate-ui-media-embed
 ```
 
 ### Usage
 
+import { MediaEmbedSandpack } from './MediaEmbedSandpack'
+
+<MediaEmbedSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createMediaEmbedPlugin(),
     createSelectOnBackspacePlugin({
       options: {
@@ -35,7 +41,7 @@ npm install @udecode/plate-ui-media-embed
       },
     }),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -48,8 +54,8 @@ npm install @udecode/plate-ui-media-embed
    
       <Plate
         id="media-embed"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.mediaEmbed}
+        editableProps={editableProps}
+        initialValue={mediaEmbedValue}
         plugins={plugins}
       />
     </>

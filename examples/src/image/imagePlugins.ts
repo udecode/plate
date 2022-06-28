@@ -4,14 +4,14 @@ import {
   createPlateUI,
   createSelectOnBackspacePlugin,
 } from '@udecode/plate';
-import { basicMarkPlugins } from '../basic-marks/basicMarkPlugins';
+import { basicMarksPlugins } from '../basic-marks/basicMarksPlugins';
 import { selectOnBackspacePlugin } from '../select-on-backspace/selectOnBackspacePlugin';
 import { createMyPlugins } from '../typescript/plateTypes';
 
 export const imagePlugins = createMyPlugins(
   [
     createBasicElementsPlugin(),
-    ...basicMarkPlugins,
+    ...basicMarksPlugins,
     createImagePlugin(),
     createSelectOnBackspacePlugin(selectOnBackspacePlugin),
   ],

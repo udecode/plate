@@ -6,15 +6,19 @@ title: HTML
 ### Installation
 
 ```bash npm2yarn
-npm install @udecode/plate-core
+npm install @udecode/plate# ornpm install @udecode/plate-core
 ```
 
 ### Deserializer Usage
 
+import { SerializingHtmlSandpack } from './SerializingHtmlSandpack'
+
+<SerializingHtmlSandpack />
+
 ```ts live
 () => {
   let plugins = [
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
@@ -24,18 +28,18 @@ npm install @udecode/plate-core
     createExcalidrawPlugin(),
     createHighlightPlugin(),
     createMentionPlugin(),
-    createSoftBreakPlugin(CONFIG.softBreak),
+    createSoftBreakPlugin(softBreakPlugin),
   ]
 
   plugins = createPlugins(plugins, {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="deserialize-html"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteHtml}
+      editableProps={editableProps}
+      initialValue={pasteHtmlValue}
       plugins={plugins}
     />
   );
@@ -49,12 +53,12 @@ Use `serializeHtml`:
 ```ts live
 () => {
   const editor = createPlateEditor({
-    plugins: PLUGINS.basicNodes,
-    components: CONFIG.components
+    plugins: basicNodesPlugins,
+    components: createPlateUI()
   });
 
   const html = serializeHtml(editor, {
-    nodes: VALUES.basicNodes,
+    nodes: basicNodesValue,
   });
 
   return (

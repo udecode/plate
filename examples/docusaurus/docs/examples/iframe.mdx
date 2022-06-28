@@ -3,10 +3,14 @@ slug: /examples/iframe
 title: IFrame
 ---
 
+import { IframeSandpack } from './IframeSandpack'
+
+<IframeSandpack />
+
 ```ts live
 () => {
   const plugins = [
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createEditableVoidPlugin({
       component: EditableVoidElement
     }),
@@ -16,8 +20,8 @@ title: IFrame
     <IFrame>
       <Plate
         id="iframe"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.iframe}
+        editableProps={editableProps}
+        initialValue={iframeValue}
         plugins={plugins}
       />
     </IFrame>

@@ -4,6 +4,7 @@ export const basicElementPluginsCode = `import {
   createHeadingPlugin,
   createParagraphPlugin,
   createPlateUI,
+  ELEMENT_CODE_BLOCK,
 } from '@udecode/plate';
 import { basicMarkPlugins } from '../basic-marks/basicMarkPlugins';
 import { createMyPlugins } from '../typescript/plateTypes';
@@ -24,7 +25,9 @@ export const basicElementPlugins = createMyPlugins(
 export const basicNodePlugins = createMyPlugins(
   [...basicElementPlugins, ...basicMarkPlugins],
   {
-    components: createPlateUI(),
+    components: createPlateUI({
+      [ELEMENT_CODE_BLOCK]: null,
+    }),
   }
 );
 `;

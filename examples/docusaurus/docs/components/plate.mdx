@@ -6,10 +6,16 @@ title: Plate
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-core
 ```
 
 ### Usage
+
+import { PlateSandpack } from './PlateSandpack'
+
+<PlateSandpack />
 
 ```ts live
 () => {
@@ -42,8 +48,8 @@ npm install @udecode/plate-core
         <p />
         <Plate
           id={id}
-          editableProps={CONFIG.editableProps}
-          initialValue={VALUES.plainText}
+          editableProps={editableProps}
+          initialValue={plainTextValue}
         />
       </>
     )

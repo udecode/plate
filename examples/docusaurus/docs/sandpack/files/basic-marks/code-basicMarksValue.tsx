@@ -1,7 +1,6 @@
 export const basicMarksValueCode = `/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { kbdValue } from '../kbd/kbdValue';
 
 jsx;
 
@@ -39,8 +38,6 @@ export const basicMarksValue: any = (
     </hp>
   </fragment>
 );
-
-export const marksValue = [...basicMarksValue, ...kbdValue];
 `;
 
 export const basicMarksValueFile = {

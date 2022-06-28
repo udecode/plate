@@ -3,7 +3,6 @@
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { CONFIG } from '../../../../../../examples/src/common/config';
 import { withAutoformat } from '../../withAutoformat';
 
 jsx;
@@ -32,7 +31,7 @@ describe('when --space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('-');
@@ -65,7 +64,7 @@ describe('when (tm)', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(')');
@@ -98,7 +97,7 @@ describe('when &sect', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(';');
@@ -131,7 +130,7 @@ describe('when //', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('/');
@@ -174,7 +173,7 @@ describe('when typing %%%', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('%');

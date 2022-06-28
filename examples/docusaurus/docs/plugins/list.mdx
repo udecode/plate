@@ -6,11 +6,17 @@ title: List
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-list
 npm install @udecode/plate-ui-list
 ```
 
 ### Usage
+
+import { ListSandpack } from './ListSandpack'
+
+<ListSandpack />
 
 ```ts live
 () => {
@@ -32,14 +38,14 @@ npm install @udecode/plate-ui-list
   });
 
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
+    ...basicNodesPlugins,
+    createResetNodePlugin(resetBlockTypePlugin),
+    createSoftBreakPlugin(softBreakPlugin),
+    createExitBreakPlugin(exitBreakPlugin),
     createListPlugin(),
     createTodoListPlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -49,8 +55,8 @@ npm install @udecode/plate-ui-list
       </HeadingToolbar>
       <Plate
         id="list"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.list}
+        editableProps={editableProps}
+        initialValue={listValue}
         plugins={plugins}
       />
     </>

@@ -73,10 +73,10 @@ export const plateTypesCode = `import {
   usePlateSelectors,
   WithOverride,
 } from '@udecode/plate';
-import {
-  ELEMENT_EXCALIDRAW,
-  TExcalidrawElement,
-} from '@udecode/plate-ui-excalidraw';
+// import {
+//   ELEMENT_EXCALIDRAW,
+//   TExcalidrawElement,
+// } from '@udecode/plate-ui-excalidraw';
 import { CSSProperties } from 'styled-components';
 
 /**
@@ -253,12 +253,12 @@ export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
 }
 
-export interface MyExcalidrawElement
-  extends TExcalidrawElement,
-    MyBlockElement {
-  type: typeof ELEMENT_EXCALIDRAW;
-  children: [EmptyText];
-}
+// export interface MyExcalidrawElement
+//   extends TExcalidrawElement,
+//     MyBlockElement {
+//   type: typeof ELEMENT_EXCALIDRAW;
+//   children: [EmptyText];
+// }
 
 export type MyNestableBlock = MyParagraphElement;
 
@@ -278,8 +278,8 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyImageElement
   | MyMediaEmbedElement
-  | MyHrElement
-  | MyExcalidrawElement;
+  | MyHrElement;
+// | MyExcalidrawElement;
 
 export type MyValue = MyRootBlock[];
 

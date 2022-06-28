@@ -6,38 +6,41 @@ import { basicEditorDefaultAppCode } from '../sandpack/files/code-BasicEditorDef
 import { basicEditorHandlerAppCode } from '../sandpack/files/code-BasicEditorHandlerApp';
 import { basicEditorValueAppCode } from '../sandpack/files/code-BasicEditorValueApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
+import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const BasicEditorDefaultSandpack = () => (
   <CommonSandpack
+    height={342}
+    previewSize={1}
     deps={commonDeps}
     appCode={basicEditorDefaultAppCode}
-    height={342}
-    previewSize={2}
     files={{}}
   />
 );
 
 export const BasicEditorValueSandpack = () => (
   <CommonSandpack
+    height={542}
+    previewSize={1}
     deps={commonDeps}
     appCode={basicEditorValueAppCode}
-    height={542}
-    previewSize={2}
     files={{
       ...commonFiles,
+      ...typescriptFiles,
     }}
   />
 );
 
 export const BasicEditorHandlerSandpack = () => (
   <CommonSandpack
-    deps={{ ...commonDeps, ...plateTestUtilsDeps }}
-    appCode={basicEditorHandlerAppCode}
     height={542}
     previewSize={2}
+    deps={{ ...commonDeps, ...plateTestUtilsDeps }}
+    appCode={basicEditorHandlerAppCode}
     files={{
       ...commonFiles,
       ...basicEditorFiles,
+      ...typescriptFiles,
     }}
   />
 );

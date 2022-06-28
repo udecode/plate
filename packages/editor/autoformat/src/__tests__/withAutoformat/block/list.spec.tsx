@@ -32,7 +32,7 @@ describe('when -space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -65,7 +65,7 @@ describe('when 1.space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -94,7 +94,7 @@ describe('when [].space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -123,7 +123,7 @@ describe('when [x].space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');

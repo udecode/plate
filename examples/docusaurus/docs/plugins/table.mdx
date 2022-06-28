@@ -13,11 +13,17 @@ The table plugin enables table rendering with these behaviors:
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-table
 npm install @udecode/plate-ui-table
 ```
 
 ### Usage
+
+import { TableSandpack } from './TableSandpack'
+
+<TableSandpack />
 
 ```ts live
 () => {
@@ -33,12 +39,12 @@ npm install @udecode/plate-ui-table
   );
 
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
+    ...basicNodesPlugins,
+    createSoftBreakPlugin(softBreakPlugin),
+    createExitBreakPlugin(exitBreakPlugin),
     createTablePlugin(),
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
@@ -48,8 +54,8 @@ npm install @udecode/plate-ui-table
       </HeadingToolbar>
       <Plate
         id="table"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.table}
+        editableProps={editableProps}
+        initialValue={tableValue}
         plugins={plugins}
       />
     </>

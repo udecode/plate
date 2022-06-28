@@ -75,7 +75,7 @@ export const EditableVoidElement = ({
             id="editable-void-basic-elements"
             plugins={plugins}
             editableProps={editableProps}
-            // initialValue={VALUES.basicElements}
+            // initialValue={basicElementsValue}
           />
         </div>
       </div>

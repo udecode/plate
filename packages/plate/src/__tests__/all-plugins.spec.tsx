@@ -82,7 +82,7 @@ const PlateContainer = () => {
   return (
     <Plate
       editableProps={editableProps as any}
-      initialValue={VALUES.playground}
+      initialValue={playgroundValue}
       plugins={plugins}
     >
       <SearchHighlightToolbar icon={Search} setSearch={setSearch} />

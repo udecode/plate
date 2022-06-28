@@ -6,15 +6,21 @@ title: CSV
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-serializer-csv
 ```
 
 ### Deserializer Usage
 
+import { SerializingCsvSandpack } from './SerializingCsvSandpack'
+
+<SerializingCsvSandpack />
+
 ```ts live
 () => {
   const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+    ...basicNodesPlugins,
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
@@ -24,17 +30,17 @@ npm install @udecode/plate-serializer-csv
     createExcalidrawPlugin(),
     createHighlightPlugin(),
     createMentionPlugin(),
-    createSoftBreakPlugin(CONFIG.softBreak),
+    createSoftBreakPlugin(softBreakPlugin),
     createDeserializeCsvPlugin()
   ], {
-    components: CONFIG.components,
+    components: createPlateUI(),
   });
 
   return (
     <Plate
       id="deserialize-csv"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteCsv}
+      editableProps={editableProps}
+      initialValue={pasteCsvValue}
       plugins={plugins}
     />
   );

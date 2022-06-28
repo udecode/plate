@@ -4,7 +4,6 @@ import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { preFormat } from '../../../../../../../examples/src/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../examples/src/common/config';
 import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -70,7 +69,7 @@ describe('when ##space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
