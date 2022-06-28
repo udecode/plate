@@ -227,8 +227,8 @@ sequence is as follows:
     automatically update the index files.
   - Lint, test, build should pass.
 - Open a PR against `main` and
-  [add a changeset](https://github.com/atlassian/changesets/blob/main/examples/docusaurus/adding-a-changeset.md).
-- To create a [snapshot release](https://github.com/atlassian/changesets/blob/main/examples/docusaurus/snapshot-releases.md), maintainers can comment a GitHub
+  [add a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md).
+- To create a [snapshot release](https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md), maintainers can comment a GitHub
   issue starting with `/release:next`.
 - Merge the PR, triggering the bot to create a PR release.
 - Review the final changesets.

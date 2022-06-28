@@ -1,9 +1,6 @@
 {
   "private": true,
   "name": "examples",
-  "scripts": {
-    "cti": "sh ../scripts/cti.sh"
-  },
   "workspaces": [
     "apps/**"
   ],
