@@ -9,12 +9,14 @@ import {
   usePlateEditorState,
   usePlateId,
   usePlateSelection,
+  usePlateSelectors,
 } from '@udecode/plate-core';
 import {
   changeSelectionToBeBasedOnTheNextNode,
   Comment,
   deleteThread,
   ELEMENT_THREAD,
+  findSelectedThreadNodeEntry,
   findThreadNodeEntries,
   isTextNode,
   Thread,
@@ -83,6 +85,7 @@ export function useComments({
   onCancelCreateThread: OnCancelCreateThread;
 } {
   const id = usePlateId() ?? undefined;
+  const editorKey = usePlateSelectors(id).keyEditor();
   const editor = usePlateEditorState(id);
 
   const selection = usePlateSelection(id);
@@ -194,16 +197,28 @@ export function useComments({
 
   useEffect(
     function onChange() {
-      if (
-        !hasThreadIdInURLBeenHandled &&
-        editor &&
-        editor.children.length > 0
-      ) {
-        setHasThreadIdInURLBeenHandled(true);
-        handleThreadIdInURL();
+      if (editor && editor.children.length > 0) {
+        if (!hasThreadIdInURLBeenHandled) {
+          setHasThreadIdInURLBeenHandled(true);
+          handleThreadIdInURL();
+        }
+
+        if (thread) {
+          const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+          const threadFromNode = threadNodeEntry
+            ? threadNodeEntry[0].thread
+            : null;
+          setThread(threadFromNode);
+        }
       }
     },
-    [editor, handleThreadIdInURL, hasThreadIdInURLBeenHandled]
+    [
+      editorKey,
+      editor,
+      handleThreadIdInURL,
+      hasThreadIdInURLBeenHandled,
+      thread,
+    ]
   );
 
   useEffect(
