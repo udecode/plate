@@ -3705,32 +3705,12 @@
     use-deep-compare "1.1.0"
     zustand "3.7.0"
 
-"@udecode/plate-core@11.2.1":
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-core/-/plate-core-11.2.1.tgz#e5fa5587e3a95fe3787b3f4a8aadd612cb4548f5"
-  integrity sha512-+XjnmgQ0Si9qoQiEBrgUxrihkTQnNpU0l/Tyo8lsFLQGAy77CpJ7k6eojrl3sW08kc1d+hDWmf0SF8x3p6lWKA==
-  dependencies:
-    "@udecode/zustood" "^1.1.1"
-    clsx "^1.1.1"
-    jotai "^1.6.6"
-    lodash "^4.17.21"
-    use-deep-compare "^1.1.0"
-    zustand "^3.7.2"
-
 "@udecode/plate-styled-components@10.5.3":
   version "10.5.3"
   resolved "https://registry.yarnpkg.com/@udecode/plate-styled-components/-/plate-styled-components-10.5.3.tgz#21c9d0a26c4a9855a296946804b031270e5cc3d1"
   integrity sha512-FYgC53IWat68MNZ4ZN4t/e7aZi0aY/pV/95VKtbWfJlCeBecJr4HLmNWP9PPZRfBeIUFpLyawf6y1yxRFkCv/A==
   dependencies:
     "@udecode/plate-core" "10.5.3"
-    clsx "^1.1.1"
-
-"@udecode/plate-styled-components@11.2.1":
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-styled-components/-/plate-styled-components-11.2.1.tgz#7e83279dad9c624499c2d7f8adfd9cde5d0326a2"
-  integrity sha512-miEExEL7oOaLV6ryV45ebGI2y4rHEMV3px8IyrTZOqfoc6UMBrM/pxbZ3oVUT7CzH1gxL6panJ0UnqmOIBC4Tg==
-  dependencies:
-    "@udecode/plate-core" "11.2.1"
     clsx "^1.1.1"
 
 "@udecode/plate-ui-popper@10.5.3":
@@ -3741,15 +3721,6 @@
     "@popperjs/core" "2.10.2"
     "@udecode/plate-core" "10.5.3"
     react-popper "2.2.5"
-
-"@udecode/plate-ui-popper@11.2.1":
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-ui-popper/-/plate-ui-popper-11.2.1.tgz#190e18a1f695b260e45be4885046efc3209f1cde"
-  integrity sha512-T2ZHRUWXV4bEoS8kwHtEGreNGLSPUnLP1FdtZGnqs1r9ZcoWedYoTLaZo8BntVwlaxSiEG5VOnzhulrS26Z7XA==
-  dependencies:
-    "@popperjs/core" "^2.11.5"
-    "@udecode/plate-core" "11.2.1"
-    react-popper "^2.3.0"
 
 "@udecode/plate-ui-toolbar@10.5.3":
   version "10.5.3"
@@ -3762,18 +3733,6 @@
     "@udecode/plate-ui-popper" "10.5.3"
     react-popper "^2.2.4"
     react-use "^17.1.1"
-
-"@udecode/plate-ui-toolbar@11.2.1":
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-ui-toolbar/-/plate-ui-toolbar-11.2.1.tgz#b66a04f17c942bc1ebf6382063cad3ad771a7817"
-  integrity sha512-QpqyKA5PRbPZyDRIdGwRpdR/rvuLzLEY+w+/S58lmt59fXrWzJtWXGtUetlypcuSr0PWQx5Rx4jEVEF/K59dvg==
-  dependencies:
-    "@tippyjs/react" "^4.2.6"
-    "@udecode/plate-core" "11.2.1"
-    "@udecode/plate-styled-components" "11.2.1"
-    "@udecode/plate-ui-popper" "11.2.1"
-    react-popper "^2.3.0"
-    react-use "^17.3.2"
 
 "@udecode/zustood@0.4.4":
   version "0.4.4"
@@ -3801,6 +3760,11 @@
   integrity sha512-YbKPZojJyyAMqWHhq/hEzzElbG5gYFCf/Ytf48mbgcK+V1S0sElJauelUGiXb1ImHbc55Htn8KgWUAEP9GqtHg==
   dependencies:
     "@udecode/plate-core" "10.5.3"
+
+"@xolvio/plate-comments@file:packages/collaboration/comments":
+  version "0.3.1"
+  dependencies:
+    "@udecode/plate-core" "^13.5.0"
 
 "@xolvio/plate-ui-comments@0.1.0":
   version "0.1.0"
@@ -8697,7 +8661,7 @@ jotai@1.5.3:
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.5.3.tgz#0157f962c6cd7d28389f9606a1eefebf223801ed"
   integrity sha512-iD8MkbehxTjfRUtIJJdyQcjbAe2MqjW1+oFc5lvfgRjLHwjRQyWnZC3gdGAOQCOqUSPZHOBGgWyP/8gBDckaNQ==
 
-jotai@^1.6.6, jotai@^1.7.2:
+jotai@^1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.7.2.tgz#80587cf10f51a614c2028688e12d2abc6ac0b00c"
   integrity sha512-ksvpW1Wu+/HwW1iDYq23PpXLu2df5Vv+eWw70jRAx7IEY4c+qRsORULnqPFurSy/X8LSoPcRhVDJx/cyf8jjMg==

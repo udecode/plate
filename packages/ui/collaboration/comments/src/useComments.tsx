@@ -5,10 +5,9 @@ import {
   getParentNode,
   getPluginType,
   isEndPoint,
-  platesStore,
   TAncestor,
-  useEventEditorSelectors,
   usePlateEditorState,
+  usePlateId,
   usePlateSelection,
 } from '@udecode/plate-core';
 import {
@@ -27,8 +26,6 @@ import { Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
 import { determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft } from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
-
-export type OnSubmitComment = (commentText: string) => Promise<Thread>;
 
 function replaceElement<T>(
   elements: T[],
@@ -68,29 +65,10 @@ export interface ThreadPosition {
 }
 
 export type RetrieveUser = () => User | Promise<User>;
+export type OnAddThread = () => Promise<void>;
 export type OnSaveComment = (comment: Comment) => Promise<Thread>;
-
-export function useTestABC() {
-  // debugger;
-  //
-  // // @ts-ignore
-  // window.platesStore = platesStore;
-  //
-  // const selection = usePlateSelection('50745bb0-299b-4e79-8aa6-0011da8fcee6');
-  // console.log('selection AA', selection);
-  // return 1;
-}
-
-export function useTestABCD() {
-  debugger;
-
-  // @ts-ignore
-  window.platesStore = platesStore;
-
-  const selection = usePlateSelection('50745bb0-299b-4e79-8aa6-0011da8fcee7');
-  console.log('selection AB', selection);
-  return 1;
-}
+export type OnSubmitComment = (commentText: string) => Promise<Thread>;
+export type OnCancelCreateThread = () => void;
 
 export function useComments({
   retrieveUser,
@@ -99,23 +77,15 @@ export function useComments({
 }): {
   thread: Thread | null;
   position: ThreadPosition;
-  onAddThread: () => void;
+  onAddThread: OnAddThread;
   onSaveComment: OnSaveComment;
   onSubmitComment: OnSubmitComment;
-  onCancelCreateThread: () => void;
+  onCancelCreateThread: OnCancelCreateThread;
 } {
-  const lastFocusedEditorId = useEventEditorSelectors.focus() ?? undefined;
-  console.log('lastFocusedEditorId', lastFocusedEditorId);
-  const editor = usePlateEditorState(lastFocusedEditorId);
-  // @ts-ignore
-  window.editor2 = editor;
+  const id = usePlateId() ?? undefined;
+  const editor = usePlateEditorState(id);
 
-  // @ts-ignore
-  window.platesStore = platesStore;
-
-  const selection = usePlateSelection(lastFocusedEditorId);
-  console.log('useComments', editor, editor?.selection);
-  console.log('selection', selection);
+  const selection = usePlateSelection(id);
   const [thread, setThread] = useState<Thread | null>(null);
   const [threadPosition, setThreadPosition] = useState({ left: 0, top: 0 });
   const [
@@ -165,7 +135,7 @@ export function useComments({
     setThread(null);
   }, []);
 
-  const onCancelCreateThread = useCallback(
+  const onCancelCreateThread = useCallback<OnCancelCreateThread>(
     function onCancelCreateThread() {
       if (editor && newThreadThreadNodeEntry) {
         deleteThread(editor, newThreadThreadNodeEntry[1]);
@@ -238,7 +208,6 @@ export function useComments({
 
   useEffect(
     function onSelectionChange() {
-      console.log('onSelectionChange', editor, selection);
       if (editor) {
         const type = getPluginType(editor, ELEMENT_THREAD);
         let threadNodeEntry:
@@ -315,7 +284,7 @@ export function useComments({
     [editor, selection]
   );
 
-  const onAddThread = useCallback(
+  const onAddThread = useCallback<OnAddThread>(
     async function onAddThread() {
       if (editor && selection) {
         const newThread: Thread = {

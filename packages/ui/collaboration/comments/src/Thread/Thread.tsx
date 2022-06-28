@@ -14,7 +14,12 @@ import {
 } from '@xolvio/plate-comments';
 import { Avatar } from '../Avatar/Avatar';
 import { FetchContacts } from '../FetchContacts';
-import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
+import {
+  OnCancelCreateThread,
+  OnSaveComment,
+  OnSubmitComment,
+  RetrieveUser,
+} from '../useComments';
 import { TextArea } from './TextArea';
 import {
   createAuthorTimestampStyles,
@@ -32,7 +37,7 @@ export interface CommonThreadAndSideThreadProps {
   thread: ThreadModel;
   onSaveComment: OnSaveComment;
   onSubmitComment: OnSubmitComment;
-  onCancelCreateThread: () => void;
+  onCancelCreateThread: OnCancelCreateThread;
   fetchContacts: FetchContacts;
   retrieveUser: RetrieveUser;
 }

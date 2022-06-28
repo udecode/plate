@@ -45,9 +45,9 @@
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "^13.5.0",
-    "@xolvio/plate-comments": "^0.3.1",
-    "@udecode/plate-styled-components": "11.2.1",
-    "@udecode/plate-ui-toolbar": "11.2.1"
+    "@xolvio/plate-comments": "file:///home/jonas/plate-comments/packages/collaboration/comments",
+    "@udecode/plate-styled-components": "^13.5.0",
+    "@udecode/plate-ui-toolbar": "^13.5.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
