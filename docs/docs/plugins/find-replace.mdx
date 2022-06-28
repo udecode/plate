@@ -10,39 +10,17 @@ title: Find & Replace
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-find-replace
 npm install @udecode/plate-ui-find-replace
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const [search, setSearch] = useState('');
+import { FindReplaceSandpack } from './FindReplaceSandpack'
 
-  const plugins = useMemo(
-    () => createPlugins([
-      ...PLUGINS.basicNodes,
-      createFindReplacePlugin({ options: { search } }),
-    ], {
-      components: CONFIG.components,
-    }),
-    [search]
-  );
-  
-  return (
-    <>
-      <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
-      <Plate
-        id="find-replace"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.findReplace}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<FindReplaceSandpack />
 
 ### Options
 
@@ -59,4 +37,4 @@ export interface FindReplacePlugin {
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/decorators/find-replace/src/createFindReplacePlugin.ts)
 - [packages/ui/find-replace](https://github.com/udecode/plate/tree/main/packages/ui/find-replace/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

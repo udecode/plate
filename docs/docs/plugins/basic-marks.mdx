@@ -15,74 +15,16 @@ Includes the following plugins:
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-basic-marks
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const BasicMarkToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
+import { BasicMarksSandpack } from './BasicMarksSandpack'
 
-    return (
-      <>
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_BOLD)}
-          icon={<FormatBold />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_ITALIC)}
-          icon={<FormatItalic />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_UNDERLINE)}
-          icon={<FormatUnderlined />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_STRIKETHROUGH)}
-          icon={<FormatStrikethrough />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_CODE)}
-          icon={<CodeAlt />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_SUPERSCRIPT)}
-          clear={getPluginType(editor, MARK_SUBSCRIPT)}
-          icon={<Superscript />}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_SUBSCRIPT)}
-          clear={getPluginType(editor, MARK_SUPERSCRIPT)}
-          icon={<Subscript />}
-        />
-      </>
-    );
-  });
-
-  const plugins = createPlugins([
-    ...PLUGINS.basicElements,
-    createBasicMarksPlugin(),
-  ], {
-    components: CONFIG.components,
-  });
-  
-  return (
-    <>
-      <HeadingToolbar>
-        <BasicMarkToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="basic-marks"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.basicMarks}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<BasicMarksSandpack />
 
 ### Options
 
@@ -112,4 +54,4 @@ export interface ToggleMarkPlugin extends HotkeyPlugin {
 - [Subscript Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createSubscriptPlugin.ts)
 - [Superscript Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createSuperscriptPlugin.ts)
 - [Code Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createCodePlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

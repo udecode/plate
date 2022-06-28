@@ -3,28 +3,10 @@ slug: /examples/iframe
 title: IFrame
 ---
 
-```ts live
-() => {
-  const plugins = [
-    ...PLUGINS.basicNodes,
-    createEditableVoidPlugin({
-      component: EditableVoidElement
-    }),
-  ];
+import { IframeSandpack } from './IframeSandpack'
 
-  return (
-    <IFrame>
-      <Plate
-        id="iframe"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.iframe}
-        plugins={plugins}
-      />
-    </IFrame>
-  );
-}
-```
+<IframeSandpack />
 
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

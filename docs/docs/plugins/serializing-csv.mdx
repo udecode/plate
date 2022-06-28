@@ -6,40 +6,16 @@ title: CSV
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-serializer-csv
 ```
 
 ### Deserializer Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createTodoListPlugin(),
-    createMediaEmbedPlugin(),
-    createExcalidrawPlugin(),
-    createHighlightPlugin(),
-    createMentionPlugin(),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createDeserializeCsvPlugin()
-  ], {
-    components: CONFIG.components,
-  });
+import { SerializingCsvSandpack } from './SerializingCsvSandpack'
 
-  return (
-    <Plate
-      id="deserialize-csv"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteCsv}
-      plugins={plugins}
-    />
-  );
-}
-```
+<SerializingCsvSandpack />
 
 ### Options
 
@@ -57,4 +33,4 @@ export interface DeserializeCsvPlugin {
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/csv/src/deserializer/createDeserializeCsvPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

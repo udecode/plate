@@ -2,30 +2,18 @@
   "name": "@udecode/plate-ui",
   "version": "13.5.0",
   "description": "Plate UI",
-  "keywords": [
-    "wysiwyg",
-    "rich text",
-    "editor",
-    "html",
-    "contentEditable",
-    "framework",
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/ui/plate"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -33,14 +21,16 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../../cti.sh below",
-    "rollup": "rollup -c=../../../rollup.config.js"
+    "cti": "sh ../../../scripts/cti.sh below",
+    "rollup": "rollup -c=../../../config/rollup.config.js"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-headless": "13.5.0",
     "@udecode/plate-styled-components": "13.5.0",
     "@udecode/plate-ui-alignment": "13.5.0",
     "@udecode/plate-ui-block-quote": "13.5.0",
+    "@udecode/plate-ui-button": "13.5.0",
     "@udecode/plate-ui-code-block": "13.5.0",
     "@udecode/plate-ui-combobox": "13.5.0",
     "@udecode/plate-ui-cursor": "13.5.0",
@@ -54,11 +44,10 @@
     "@udecode/plate-ui-media-embed": "13.5.0",
     "@udecode/plate-ui-mention": "13.5.0",
     "@udecode/plate-ui-placeholder": "13.5.0",
+    "@udecode/plate-ui-popover": "13.5.0",
     "@udecode/plate-ui-popper": "13.5.0",
     "@udecode/plate-ui-table": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0",
-    "@udecode/plate-ui-button": "13.5.0",
-    "@udecode/plate-ui-popover": "13.5.0"
+    "@udecode/plate-ui-toolbar": "13.5.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -71,6 +60,17 @@
     "slate-react": ">=0.74.2",
     "styled-components": ">=5.0.0"
   },
+  "keywords": [
+    "contentEditable",
+    "editor",
+    "framework",
+    "html",
+    "plate",
+    "plugin",
+    "rich text",
+    "slate",
+    "wysiwyg"
+  ],
   "publishConfig": {
     "access": "public"
   },

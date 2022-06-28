@@ -80,11 +80,13 @@ queries, transforms, components and so on.
 To find out more see the following Plate documentation sections:
 
 - [API documentation](https://plate-api.udecode.io/globals.html)
-- [Quick start](https://plate.udecode.io/docs/installation)
-- [Guides](https://plate.udecode.io/docs/Plate)
-- [Playground](https://plate.udecode.io/docs/playground)
-
-See [plate-playground](https://github.com/udecode/plate-playground) for a full example.
+- [Docs](https://plate.udecode.io)
+  - [Quick start](https://plate.udecode.io/docs/installation)
+  - [Guides](https://plate.udecode.io/docs/Plate)
+  - [Playground](https://plate.udecode.io/docs/playground)
+- [Examples](examples)
+  - [NextJS](examples/apps/next)
+  - [CRA](examples/apps/cra)
 
 The documentation is far from being complete and will be constantly
 evolving (as will the packages).

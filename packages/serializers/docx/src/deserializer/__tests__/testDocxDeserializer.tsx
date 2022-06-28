@@ -8,7 +8,8 @@ import {
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { CONFIG } from '../../../../../../examples/next/src/config/config';
+import { alignPlugin } from 'examples/src/align/alignPlugin';
+import { lineHeightPlugin } from 'examples/src/line-height/lineHeightPlugin';
 import { createBasicElementsPlugin } from '../../../../../nodes/basic-elements/src/createBasicElementsPlugin';
 import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import {
@@ -65,8 +66,8 @@ export const testDocxDeserializer = ({
         createBasicElementsPlugin(),
         createBasicMarksPlugin(),
         createTablePlugin(),
-        createLineHeightPlugin(CONFIG.lineHeight as any),
-        createAlignPlugin(CONFIG.align as any),
+        createLineHeightPlugin(lineHeightPlugin as any),
+        createAlignPlugin(alignPlugin as any),
         createIndentPlugin({
           inject: {
             props: {

@@ -42,23 +42,25 @@ package manager. See
 
 Development: 
 
-- `yarn dev`
-- `Open [localhost:3000](localhost:3000)`
+- `cd docs`
+- `yarn install`
+- `yarn start`
+- Open [localhost:3000](localhost:3000)
 
 Build:
 
 - `yarn build:docs` if you've already built the packages or 
 - `yarn build:all` to build both the packages and the docs
 
-### Editing
+### Development
 
 #### How to: Create a plate package
 
 - `packages/`
-    - copy paste `templates/package` or `templates/nested/packages`
+    - copy paste `scripts/templates/package` or `scripts/templates/nested/packages`
     - find & replace all `template` or `ntemplate` by `x`
-    - `README.md`
-    - `package.json`: update
+    - edit `README.md`
+    - edit `package.json`
         - `version`
         - `description`
         - `dependencies`
@@ -67,146 +69,83 @@ Build:
     - plate plugin?
         - *How to: Create a plate plugin*
 - `packages/plate`
-    - `package.json`
+    - edit `package.json`
         - add the package to dependencies
-    - `src/index.tsx`
+    - edit `src/index.tsx`
         - add `export * from '@udecode/plate-x';`
 - `yarn install`
 - `yarn build`
-- `/docs`
-    - `package.json`
-        - add `"@udecode/plate-x": "file:../packages/x",`
-    - `docusaurus.config`
-        - add `'@udecode/plate-x': path.resolve(__dirname, '../packages/x/src'),` to alias plugin
-    - `yarn install`
-    - can have an example?
-        - `/docs`
-            - create a new doc example in `/docs`
-        - `sidebars`
-            - add the example doc
+
+#### How to: Create an example
+
+- Did you create a new package?
+    - edit `next.config.js`
+        - add `'@udecode/plate-x': x/src'` to `alias` object to watch file changes
+- Create an example app in `/examples/src`
+- Run the example app: 
+  - Go to `/examples/apps/next`
+      - `yarn dev`
+- Once you've finished the example app:
+  - go back to the root of the repository
+  - run `yarn codegen` to generate the sandpack files
+- Create an example in the docs:
+    - go to `/docs/docs`
+        - create a new sandpack file for the demo using the generated files
+        - create a new mdx file for the docs, importing the sandpack file
+    - edit `/docs/docs/sidebars.js`
+        - add the example doc so it appears in the sidebar
 
 #### How to: Create a plate plugin
 
 - create file `createXPlugin.ts`
     
     ```tsx
-    import { PlatePlugin } from '@udecode/plate-core';
+    import { createPluginFactory } from '@udecode/plate-core';
     
-    export const createXPlugin = (): PlatePlugin => ({
+    export const createXPlugin = createPluginFactory({
     
     });
     ```
     
 - is node?
-    
-    
-    - create file `defaults.ts`
-        
-        
-        ```tsx
-        // for elements
-        export const ELEMENT_X = 'x';
-        
-        // for marks
-        export const MARK_X = 'x';
-        
-        // for options
-        export const DEFAULTS_X: Partial<PlatePluginOptions> = {}
-        ```
-        
+  - create file `constants.ts`
+```tsx
+// for elements
+export const ELEMENT_X = 'x';
+
+// for marks
+export const MARK_X = 'x';
+```
+  - has node data?
+      - create file `types.ts`
+```tsx
+export interface TXElement extends TElement {
+
+}
+```
+- is element?
     - add to plugin:
+            
+```tsx
+isElement: true
+```
+- is inline?
+  - add to plugin:
+```tsx
+isInline: true
+```
+- create the components in `/components`
         
-        ```tsx
-        pluginKeys: ELEMENT_X,
-        ```
-        
-    - has node data?
-        - create file `types.ts`
-            
-            
-            ```tsx
-            export interface XNodeData {
-              
-            }
-            ```
-            
-    
-    - is element?
-        - add to plugin:
-            
-            ```tsx
-            renderElement: getRenderElement(ELEMENT_X),
-            ```
-            
-        - inline?
-            
-            add to plugin:
-            
-            ```tsx
-            inlineTypes: getPluginTypes(ELEMENT_X),
-            ```
-            
-        - create `/components/XElement`
-            
-            ```tsx
-            export const XElement = (props: PlateRenderElementProps) => {
-              const { attributes, children } = props;
-            
-              return (
-                <div {...attributes}>
-                  {children}
-                </div>
-              );
-            };
-            ```
-            
-    - is void?
-        
-        add to plugin:
-        
-        ```tsx
-        voidTypes: getPluginTypes(ELEMENT_X),
-        ```
-        
-    - deserializer?
-        - create `getXDeserialize` file
-        
-        ```tsx
-        export const getXDeserialize = (): Deserialize => (editor) => {
-          const options = getPlatePluginOptions(editor, ELEMENT_X);
-        
-          return {
-            element: getNodeDeserializer({
-              type: options.type,
-              getNode: (el) => ({
-                type: options.type,
-                value: el.getAttribute('data-slate-value'),
-              }),
-              rules: [{ className: getSlateClass(options.type) }],
-              ...options.deserialize,
-            }),
-          };
-        };
-        ```
-        
-        ```tsx
-        // add to plugin
-        deserializeHtml: getXDeserialize(),
-        ```
-        
-    - `createPlateUI`
-        - add the plugin component to `components` object
-            
-            ```tsx
-            [ELEMENT_X]: XElement,
-            ```
-            
-    - `createPlateOptions`
-        - add the plugin options to `options` object
-            
-            ```tsx
-            [ELEMENT_X]: DEFAULTS_X,
-            ```
+- is void?
+  - add to plugin: 
+```tsx
+isVoid: true
+```
+- go to `createPlateUI`
+    - add the plugin component to `components` object
+```tsx
+[ELEMENT_X]: XElement,
+```
 
 #### Run Linter
 
@@ -223,6 +162,8 @@ yarn lint --fix
 This command will list all the suites and options for running tests.
 
 ```sh
+yarn build # only once
+
 yarn test
 ```
 
@@ -231,8 +172,6 @@ to `yarn test` with specific parameters. Available modes include
 `--watch`, `--coverage`, and `--runInBand`, which will respectively run
 tests in watch mode, output code coverage, and run selected test suites
 serially in the current process.
-
-You need to `yarn build` before you run tests 
 
 #### Updating Tests
 
@@ -303,7 +242,7 @@ is few of those ways:
 
 Before you submit a new PR, please run `yarn prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `plate` channel](https://slate-js.slack.com/messages/plate).
+[join slate's Slack and ask in the #plate channel](https://slate-js.slack.com/messages/plate).
 
 You miss time/knowledge but still want to contribute? Just open a PR or
 a gist on Slack and we'll try to help.

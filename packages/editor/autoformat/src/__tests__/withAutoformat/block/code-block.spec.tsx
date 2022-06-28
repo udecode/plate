@@ -13,10 +13,10 @@ import {
   PlateEditor,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../../examples/next/src/config/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../examples/next/src/config/config';
+import { preFormat } from '../../../../../../../examples/src/autoformat/autoformatUtils';
 import { AutoformatPlugin } from '../../../types';
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -43,7 +43,7 @@ describe('when ``` at block start', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(withReact(input), CONFIG.autoformat as any);
+    const editor = withAutoformat(withReact(input), autoformatPlugin as any);
 
     editor.insertText('`');
     editor.insertText('new');
@@ -140,7 +140,7 @@ describe('when ```', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('`');

@@ -6,57 +6,17 @@ title: List
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-list
 npm install @udecode/plate-ui-list
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const ListToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
+import { ListSandpack } from './ListSandpack'
 
-    return (
-      <>
-        <ListToolbarButton
-          type={getPluginType(editor, ELEMENT_UL)}
-          icon={<FormatListBulleted />}
-        />
-        <ListToolbarButton
-          type={getPluginType(editor, ELEMENT_OL)}
-          icon={<FormatListNumbered />}
-        />
-      </>
-    );
-  });
-
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
-    createListPlugin(),
-    createTodoListPlugin(),
-  ], {
-    components: CONFIG.components,
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <ListToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="list"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.list}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<ListSandpack />
 
 ### Options
 
@@ -73,4 +33,4 @@ export interface ListPlugin extends HotkeyPlugin {
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/list/src/createListPlugin.ts)
 - [packages/ui/nodes/list](https://github.com/udecode/plate/tree/main/packages/ui/nodes/list/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)
