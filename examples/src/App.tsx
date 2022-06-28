@@ -78,5 +78,6 @@ export default () => (
   <Plate<MyValue>
     editableProps={editableProps}
     plugins={plugins}
+    
   />
 );

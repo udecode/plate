@@ -5,9 +5,10 @@ import {
   MARK_HIGHLIGHT,
   MarkToolbarButton,
 } from '@udecode/plate';
+import { withPlateEventProvider } from '@udecode/plate-core/src/index';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const HighlightToolbarButton = () => {
+export const HighlightToolbarButton = withPlateEventProvider(() => {
   const editor = useMyPlateEditorRef()!;
 
   return (
@@ -16,4 +17,4 @@ export const HighlightToolbarButton = () => {
       icon={<Highlight />}
     />
   );
-};
+});

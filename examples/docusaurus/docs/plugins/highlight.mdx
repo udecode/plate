@@ -17,42 +17,6 @@ import { HighlightSandpack } from './HighlightSandpack'
 
 <HighlightSandpack />
 
-```ts live
-() => {
-  const HighlightToolbarButton = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
-
-    return (
-      <MarkToolbarButton
-        type={getPluginType(editor, MARK_HIGHLIGHT)}
-        icon={<Highlight />}
-      />
-    );
-  });
-
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createHighlightPlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <HighlightToolbarButton />
-      </HeadingToolbar>
-      <Plate
-        id="highlight"
-        editableProps={editableProps}
-        initialValue={highlightValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/highlight/src/createHighlightPlugin.ts)

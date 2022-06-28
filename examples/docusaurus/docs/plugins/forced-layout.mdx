@@ -20,27 +20,6 @@ import { ForcedLayoutSandpack } from './ForcedLayoutSandpack'
 
 <ForcedLayoutSandpack />
 
-```ts live
-() => {
-  const plugins = [
-    ...basicNodesPlugins,
-    createTrailingBlockPlugin(trailingBlockPlugin),
-    createNormalizeTypesPlugin({
-      rules: [{ path: [0], strictType: ELEMENT_H1 }],
-    }),
-  ];
-
-  return (
-    <Plate
-      id="forced-layout"
-      editableProps={editableProps}
-      initialValue={forcedLayoutValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Options
 
 ```tsx
