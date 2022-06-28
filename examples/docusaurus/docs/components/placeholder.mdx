@@ -17,30 +17,6 @@ import { PlaceholderSandpack } from './PlaceholderSandpack'
 
 <PlaceholderSandpack />
 
-```ts live
-() => {
-  const components = withStyledPlaceHolders(createPlateUI());
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createExitBreakPlugin(exitBreakPlugin),
-  ], { components });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="placeholder"
-        editableProps={editableProps}
-        initialValue={placeholderValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [packages/ui/placeholder](https://github.com/udecode/plate/tree/main/packages/ui/placeholder/src)

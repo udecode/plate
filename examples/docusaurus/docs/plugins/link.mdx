@@ -18,31 +18,6 @@ import { LinkSandpack } from './LinkSandpack'
 
 <LinkSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createLinkPlugin()
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <LinkToolbarButton icon={<Link />} />
-      </HeadingToolbar>
-      <Plate
-        id="link"
-        editableProps={editableProps}
-        initialValue={linkValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Options
 
 ```tsx

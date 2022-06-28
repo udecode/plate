@@ -17,97 +17,11 @@ npm install @udecode/plate-ui-cursor
 
 ### Usage
 
+The following example shows a cursor when dragging over the editor.
+
 import { CursorOverlaySandpack } from './CursorOverlaySandpack'
 
 <CursorOverlaySandpack />
-
-```ts live
-() => {
-  const ref = useRef(null)
-
-  const staticCursors = {
-    one: {
-      key: 'one',
-      data: { style: { backgroundColor: 'red' } },
-      selection: {
-        anchor: {
-          path: [0, 0],
-          offset: 5,
-        },
-        focus: {
-          path: [0, 0],
-          offset: 12,
-        },
-      },
-    },
-    two: {
-      key: 'two',
-      data: { style: { backgroundColor: 'red' } },
-      selection: {
-        anchor: {
-          path: [0, 0],
-          offset: 18,
-        },
-        focus: {
-          path: [0, 0],
-          offset: 18,
-        },
-      },
-    }
-  }
-
-  const [cursors, setCursors] = useState(staticCursors)
-  
-  // example of plugin that updates the cursor on drag over the editor
-  const plugins = [{
-    key: 'drag-over-cursor',
-    handlers: {
-      onDragOver: (editor) => (event) => {
-        const range = findEventRange(editor, event);
-        if (!range) return;
-        
-        setCursors({
-          ...staticCursors,
-          drag: {
-            key: 'drag',
-            data: { 
-              style: { 
-                backgroundColor: '#fc00ff',
-                backgroundImage: 'linear-gradient(0deg, #fc00ff, #00dbde)',
-                width: 3
-              }
-            },
-            selection: range,
-          }
-        })
-      },
-      onDragLeave: () => () => {
-        setCursors(staticCursors)
-      },
-      onDragEnd: () => () => {
-        setCursors(staticCursors)
-      },
-      onDrop: () => () => {
-        setCursors(staticCursors)
-      },
-    }
-  }]
-
-  return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <Plate
-        id="cursor-overlay"
-        plugins={basicNodesPlugins}
-        editableProps={editableProps}
-        initialValue={cursorValue}
-        plugins={plugins}
-      >
-        <CursorOverlay containerRef={ref} cursors={cursors} />
-      </Plate>
-    </div>
-  );
-}
-```
 
 ### Source Code
 

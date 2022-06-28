@@ -7,28 +7,6 @@ import { IframeSandpack } from './IframeSandpack'
 
 <IframeSandpack />
 
-```ts live
-() => {
-  const plugins = [
-    ...basicNodesPlugins,
-    createEditableVoidPlugin({
-      component: EditableVoidElement
-    }),
-  ];
-
-  return (
-    <IFrame>
-      <Plate
-        id="iframe"
-        editableProps={editableProps}
-        initialValue={iframeValue}
-        plugins={plugins}
-      />
-    </IFrame>
-  );
-}
-```
-
 ### Source Code
 
 - [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

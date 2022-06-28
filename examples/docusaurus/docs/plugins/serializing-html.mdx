@@ -9,63 +9,11 @@ title: HTML
 npm install @udecode/plate# ornpm install @udecode/plate-core
 ```
 
-### Deserializer Usage
+### Usage
 
 import { SerializingHtmlSandpack } from './SerializingHtmlSandpack'
 
 <SerializingHtmlSandpack />
-
-```ts live
-() => {
-  let plugins = [
-    ...basicNodesPlugins,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createTodoListPlugin(),
-    createMediaEmbedPlugin(),
-    createExcalidrawPlugin(),
-    createHighlightPlugin(),
-    createMentionPlugin(),
-    createSoftBreakPlugin(softBreakPlugin),
-  ]
-
-  plugins = createPlugins(plugins, {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="deserialize-html"
-      editableProps={editableProps}
-      initialValue={pasteHtmlValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
-### Serializer Usage
-
-Use `serializeHtml`:
-
-```ts live
-() => {
-  const editor = createPlateEditor({
-    plugins: basicNodesPlugins,
-    components: createPlateUI()
-  });
-
-  const html = serializeHtml(editor, {
-    nodes: basicNodesValue,
-  });
-
-  return (
-    <HighlightHTML code={html} />
-  );
-}
-```
 
 ### Source Code
 

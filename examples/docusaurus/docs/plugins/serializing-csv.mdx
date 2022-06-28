@@ -17,36 +17,6 @@ import { SerializingCsvSandpack } from './SerializingCsvSandpack'
 
 <SerializingCsvSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createTodoListPlugin(),
-    createMediaEmbedPlugin(),
-    createExcalidrawPlugin(),
-    createHighlightPlugin(),
-    createMentionPlugin(),
-    createSoftBreakPlugin(softBreakPlugin),
-    createDeserializeCsvPlugin()
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="deserialize-csv"
-      editableProps={editableProps}
-      initialValue={pasteCsvValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Options
 
 ```tsx

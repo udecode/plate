@@ -17,30 +17,6 @@ import { SerializingMdSandpack } from './SerializingMdSandpack'
 
 <SerializingMdSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createDeserializeMdPlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="deserialize-md"
-      editableProps={editableProps}
-      initialValue={pasteMdValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Serializer Usage
 
 Use [remark-slate](https://github.com/hanford/remark-slate).

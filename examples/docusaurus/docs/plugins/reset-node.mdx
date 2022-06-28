@@ -21,51 +21,6 @@ import { ResetNodeSandpack } from './ResetNodeSandpack'
 
 <ResetNodeSandpack />
 
-```ts live
-() => {
-  const resetBlockTypesCommonRule = {
-    types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
-    defaultType: ELEMENT_PARAGRAPH,
-  };
-
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createListPlugin(),
-    createTablePlugin(),
-    createTrailingBlockPlugin(trailingBlockPlugin),
-    createResetNodePlugin({
-      options: {
-        rules: [
-          {
-            ...resetBlockTypesCommonRule,
-            hotkey: 'Enter',
-            predicate: isBlockAboveEmpty,
-          },
-          {
-            ...resetBlockTypesCommonRule,
-            hotkey: 'Backspace',
-            predicate: isSelectionAtBlockStart,
-          },
-        ],
-      }
-    }),
-    createSoftBreakPlugin(softBreakPlugin),
-    createExitBreakPlugin(exitBreakPlugin),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="reset-node"
-      editableProps={editableProps}
-      initialValue={basicElementsValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Options
 
 ```tsx

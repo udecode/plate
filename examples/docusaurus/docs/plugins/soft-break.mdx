@@ -19,43 +19,6 @@ import { SoftBreakSandpack } from './SoftBreakSandpack'
 
 <SoftBreakSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createListPlugin(),
-    createTablePlugin(),
-    createResetNodePlugin(resetBlockTypePlugin),
-    createExitBreakPlugin(exitBreakPlugin),
-    createTrailingBlockPlugin(trailingBlockPlugin),
-    createSoftBreakPlugin({
-      options: {
-        rules: [
-          { hotkey: 'shift+enter' },
-          {
-            hotkey: 'enter',
-            query: {
-              allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
-            },
-          },
-        ],
-      }
-    }),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="soft-break"
-      editableProps={editableProps}
-      initialValue={softBreakValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Options
 
 ```tsx

@@ -19,41 +19,6 @@ import { SerializingDocxSandpack } from './SerializingDocxSandpack'
 
 <SerializingDocxSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createImagePlugin(),
-    createHorizontalRulePlugin(),
-    createLineHeightPlugin(lineHeightPlugin),
-    // createLinkPlugin(),
-    createTablePlugin(),
-    createAlignPlugin(alignPlugin),
-    createFontBackgroundColorPlugin(),
-    createFontFamilyPlugin(),
-    createFontColorPlugin(),
-    createFontSizePlugin(),
-    createFontWeightPlugin(),
-    createIndentListPlugin(),
-    createIndentPlugin(indentPlugin),
-    createTextIndentPlugin(),
-    createDeserializeDocxPlugin(),
-    createJuicePlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-  
-  return (
-    <Plate
-      id="deserialize-docx"
-      editableProps={editableProps}
-      initialValue={pasteDocxValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/docx/src/deserializer/createDeserializeDocxPlugin.ts)

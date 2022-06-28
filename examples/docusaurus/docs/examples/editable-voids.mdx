@@ -7,26 +7,6 @@ import { EditableVoidsSandpack } from './EditableVoidsSandpack'
 
 <EditableVoidsSandpack />
 
-```ts live
-() => {
-  const plugins = [
-    ...basicNodesPlugins,
-    createEditableVoidPlugin({
-      component: EditableVoidElement
-    }),
-  ];
-
-  return (
-    <Plate
-      id="editable-voids"
-      editableProps={editableProps}
-      initialValue={editableVoidsValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Source Code
 
 - [Variables](https://github.com/udecode/plate/blob/main/examples/docusaurus/src/live/live.tsx)

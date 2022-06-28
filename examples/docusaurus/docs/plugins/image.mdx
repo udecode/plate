@@ -18,34 +18,6 @@ import { ImageSandpack } from './ImageSandpack'
 
 <ImageSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createImagePlugin(),
-    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_IMAGE] }}}),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <PlateProvider id="image">
-        <HeadingToolbar>
-          <ImageToolbarButton icon={<Image />} />
-        </HeadingToolbar>
-      </PlateProvider>
-      <Plate
-        id="image"
-        editableProps={editableProps}
-        initialValue={imageValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Options
 
 ```tsx

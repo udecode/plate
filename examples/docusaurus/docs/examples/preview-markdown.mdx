@@ -6,24 +6,3 @@ title: Preview Markdown
 import { PreviewMdSandpack } from './PreviewMdSandpack'
 
 <PreviewMdSandpack />
-
-```ts live
-() => {
-  const plugins = [
-    ...basicNodesPlugins,
-    createPreviewPlugin(),
-  ];
-
-  return (
-    <Plate
-      id="editable-voids"
-      editableProps={{
-        ...editableProps,
-        renderLeaf: PreviewLeaf,  
-      }}
-      initialValue={previewMdValue}
-      plugins={plugins}
-    />
-  );
-}
-```

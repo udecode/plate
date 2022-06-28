@@ -25,44 +25,6 @@ import { TableSandpack } from './TableSandpack'
 
 <TableSandpack />
 
-```ts live
-() => {
-  const TableToolbarButtons = () => (
-    <>
-      <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
-      <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-      <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
-      <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-      <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
-      <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
-    </>
-  );
-
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createSoftBreakPlugin(softBreakPlugin),
-    createExitBreakPlugin(exitBreakPlugin),
-    createTablePlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <TableToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="table"
-        editableProps={editableProps}
-        initialValue={tableValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/table/src/createTablePlugin.ts)

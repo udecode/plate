@@ -23,40 +23,6 @@ import { LineHeightSandpack } from './LineHeightSandpack'
 
 <LineHeightSandpack />
 
-```ts live
-() => {
-  const plugins = [
-    ...basicNodesPlugins,
-    createLineHeightPlugin({
-      inject: {
-        props: {
-          defaultNodeValue: 1.5,
-          validNodeValues: [1, 1.2, 1.5, 2, 3],
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1
-          ],
-        },
-      },
-    })
-  ]
-
-  return (
-    <>
-      <HeadingToolbar>
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-      </HeadingToolbar>
-      <Plate
-        id="alignment"
-        editableProps={editableProps}
-        initialValue={lineHeightValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/line-height/src/createLineHeightPlugin.ts)

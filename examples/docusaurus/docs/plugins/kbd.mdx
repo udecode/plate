@@ -17,42 +17,6 @@ import { KbdSandpack } from './KbdSandpack'
 
 <KbdSandpack />
 
-```ts live
-() => {
-  const KbdToolbarButton = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
-
-    return (
-      <MarkToolbarButton
-        type={getPluginType(editor, MARK_KBD)}
-        icon={<Keyboard />}
-      />
-    );
-  });
-
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createKbdPlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <KbdToolbarButton />
-      </HeadingToolbar>
-      <Plate
-        id="kbd"
-        editableProps={editableProps}
-        initialValue={kbdValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/kbd/src/createKbdPlugin.ts)

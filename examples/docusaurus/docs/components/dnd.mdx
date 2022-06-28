@@ -22,31 +22,3 @@ npm install @udecode/plate-ui-dnd react-dnd react-dnd-html5-backend
 import { DndSandpack } from './DndSandpack'
 
 <DndSandpack />
-
-```ts live
-() => {
-  let components = createPlateUI();
-  components = withStyledDraggables(components);
-
-  const plugins = createPlugins(
-    [
-      createBasicElementsPlugin(),
-      createNodeIdPlugin(),
-    ], 
-    {
-      components,
-    }
-  );
-
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Plate
-        id="dnd"
-        editableProps={editableProps}
-        initialValue={basicElementsValue}
-        plugins={plugins}
-      />
-    </DndProvider>
-  )
-}
-```

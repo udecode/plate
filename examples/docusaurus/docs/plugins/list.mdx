@@ -18,52 +18,6 @@ import { ListSandpack } from './ListSandpack'
 
 <ListSandpack />
 
-```ts live
-() => {
-  const ListToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
-
-    return (
-      <>
-        <ListToolbarButton
-          type={getPluginType(editor, ELEMENT_UL)}
-          icon={<FormatListBulleted />}
-        />
-        <ListToolbarButton
-          type={getPluginType(editor, ELEMENT_OL)}
-          icon={<FormatListNumbered />}
-        />
-      </>
-    );
-  });
-
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createResetNodePlugin(resetBlockTypePlugin),
-    createSoftBreakPlugin(softBreakPlugin),
-    createExitBreakPlugin(exitBreakPlugin),
-    createListPlugin(),
-    createTodoListPlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <HeadingToolbar>
-        <ListToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="list"
-        editableProps={editableProps}
-        initialValue={listValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Options
 
 ```tsx

@@ -1,4 +1,3 @@
-import 'tippy.js/dist/tippy.css';
 import React, { CSSProperties, useMemo, useRef } from 'react';
 import {
   createPlateUI,

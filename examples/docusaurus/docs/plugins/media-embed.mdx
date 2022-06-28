@@ -28,41 +28,6 @@ import { MediaEmbedSandpack } from './MediaEmbedSandpack'
 
 <MediaEmbedSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createMediaEmbedPlugin(),
-    createSelectOnBackspacePlugin({
-      options: {
-        query: {
-          allow: [ELEMENT_MEDIA_EMBED],
-        },
-      },
-    }),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <>
-      <PlateProvider id="media-embed">
-        <HeadingToolbar>
-          <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        </HeadingToolbar>
-      </PlateProvider>
-   
-      <Plate
-        id="media-embed"
-        editableProps={editableProps}
-        initialValue={mediaEmbedValue}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/media-embed/src/createMediaEmbedPlugin.ts)

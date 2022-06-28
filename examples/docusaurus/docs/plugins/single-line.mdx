@@ -19,28 +19,6 @@ import { SingleLineSandpack } from './SingleLineSandpack'
 
 <SingleLineSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createListPlugin(),
-    createTablePlugin(),
-    createSingleLinePlugin(),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="single-line"
-      editableProps={editableProps}
-      initialValue={singleLineValue}
-      plugins={plugins}
-    />
-  );
-}
-```
-
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/single-line/createSingleLinePlugin.ts)

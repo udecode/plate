@@ -3,6 +3,7 @@ import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { Image } from '@styled-icons/material/Image';
+import { LineWeight } from '@styled-icons/material/LineWeight';
 import { Link } from '@styled-icons/material/Link';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { TippyProps } from '@tippyjs/react';
@@ -14,6 +15,7 @@ import {
   MARK_COLOR,
   MediaEmbedToolbarButton,
 } from '@udecode/plate';
+import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height/src/index';
 import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
@@ -43,6 +45,7 @@ export const ToolbarButtons = () => {
         selectedIcon={<Check />}
         tooltip={bgTooltip}
       />
+      <LineHeightToolbarDropdown icon={<LineWeight />} />
       <AlignToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
       <ImageToolbarButton icon={<Image />} />

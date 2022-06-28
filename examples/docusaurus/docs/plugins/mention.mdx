@@ -21,34 +21,6 @@ import { MentionSandpack } from './MentionSandpack'
 
 <MentionSandpack />
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...basicNodesPlugins,
-    createComboboxPlugin(),
-    createMentionPlugin(),
-    createMentionPlugin({ key: '#', component: MentionElement, options: { trigger: '#', inputCreation: {key: 'creationId', value: 'main'} } }),
-    createMentionPlugin({ key: '/', component: MentionElement, options: { trigger: '/' } }),
-  ], {
-    components: createPlateUI(),
-  });
-
-  return (
-    <Plate
-      id="mention"
-      editableProps={editableProps}
-      initialValue={mentionsValue}
-      onChange={e => console.info(e)}
-      plugins={plugins}
-    >
-      <MentionCombobox items={MENTIONABLES} />
-      <MentionCombobox items={MENTIONABLES} pluginKey="#" />
-      <MentionCombobox items={[MENTIONABLES[0], MENTIONABLES[1]]} pluginKey="/" />
-    </Plate>
-  );
-}
-```
-
 ### Options
 
 ```ts
