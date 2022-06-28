@@ -2,9 +2,8 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "src",
     "paths": {
-      "@udecode/plate": ["../../packages/plate/index"]
+      "@udecode/plate": ["../packages/plate/index"]
     }
   },
   "include": ["src"],

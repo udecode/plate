@@ -4,7 +4,7 @@
     "baseUrl": "src",
     "outDir": "build/dist",
     "paths": {
-      "@udecode/examples/*": ["../../src/*"]
+      "examples/*": ["../../src/*"]
     },
     "incremental": true,
     "jsx": "preserve"

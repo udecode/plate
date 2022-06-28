@@ -8,6 +8,8 @@ import {
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { alignPlugin } from 'examples/src/align/alignPlugin';
+import { lineHeightPlugin } from 'examples/src/line-height/lineHeightPlugin';
 import { createBasicElementsPlugin } from '../../../../../nodes/basic-elements/src/createBasicElementsPlugin';
 import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import {

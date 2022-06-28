@@ -66,7 +66,7 @@ title: Plate
 ### `plugins`
 
 - Plate plugins.
-- See [Plugins](/docs1/plugins).
+- See [Plugins](/docs/plugins).
 
 ### `renderEditable`
 
@@ -105,7 +105,7 @@ to `Slate` to unmount and mount again the component.
 ### Slate `onChange`
 
 Callback called by `Slate` on each change:
-1. The new value is stored in plate [store](/docs1/store#value).
+1. The new value is stored in plate [store](/docs/store#value).
 2. Pipes `onChange` plugins.
 3. `onChange` prop is called if defined.
 

@@ -1,7 +1,6 @@
 {
   "private": true,
-  "name": "@udecode/examples",
-  "version": "0.0.607",
+  "name": "examples",
   "scripts": {
     "cti": "sh ../scripts/cti.sh"
   },

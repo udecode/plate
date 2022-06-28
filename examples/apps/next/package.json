@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@udecode/examples-next",
+  "name": "examples-next",
   "version": "0.0.607",
   "description": "A simple NextJS app with Plate",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@udecode/examples": "workspace:^",
+    "examples": "workspace:^",
     "next": "^12.1.6"
   },
   "browserslist": {

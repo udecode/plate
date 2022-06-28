@@ -7,7 +7,6 @@ import {
   Search,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
-import { exitBreakPlugin, softBreakPlugin } from '@udecode/examples/src/index';
 import { Plate } from '@udecode/plate-core/src/index';
 import {
   createBasicElementsPlugin,
@@ -15,6 +14,21 @@ import {
   createHeadingPlugin,
   createPlugins,
 } from '@udecode/plate-headless';
+import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
+import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
+import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
+import { BasicMarkToolbarButtons } from 'examples/src/basic-marks/BasicMarkToolbarButtons';
+import { editableProps } from 'examples/src/common/editableProps';
+import { exitBreakPlugin } from 'examples/src/exit-break/exitBreakPlugin';
+import { forcedLayoutPlugin } from 'examples/src/forced-layout/forcedLayoutPlugin';
+import { IndentToolbarButtons } from 'examples/src/indent/IndentToolbarButtons';
+import { ListToolbarButtons } from 'examples/src/list/ListToolbarButtons';
+import { playgroundValue } from 'examples/src/playgroundValue';
+import { resetBlockTypePlugin } from 'examples/src/reset-node/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from 'examples/src/select-on-backspace/selectOnBackspacePlugin';
+import { softBreakPlugin } from 'examples/src/soft-break/softBreakPlugin';
+import { TableToolbarButtons } from 'examples/src/table/TableToolbarButtons';
+import { trailingBlockPlugin } from 'examples/src/trailing-block/trailingBlockPlugin';
 import { autoformatPlugin } from '../../../../examples/src/autoformat/autoformatPlugin';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
@@ -99,7 +113,7 @@ const PlateContainer = () => {
         <TableToolbarButtons />
       </HeadingToolbar>
 
-      <MarkBallonToolbar />
+      <MarkBalloonToolbar />
 
       <MentionCombobox />
     </Plate>

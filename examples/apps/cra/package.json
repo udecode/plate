@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@udecode/examples-cra",
+  "name": "examples-cra",
   "description": "A simple CRA app with Plate",
   "scripts": {
     "build": "GENERATE_SOURCEMAP=false craco build",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@craco/craco": "^6.4.3",
-    "@udecode/examples": "link:../../src",
+    "examples": "link:../../src",
     "react-scripts": "4.0.3"
   },
   "browserslist": {

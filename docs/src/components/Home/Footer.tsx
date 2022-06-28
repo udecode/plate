@@ -13,14 +13,14 @@ export const Footer = () => (
           </h4>
           <ul tw="mt-4 list-none pl-0">
             <li>
-              <Link href="/docs1">
+              <Link href="/docs">
                 <a tw="text-base leading-6 text-gray-500 dark:text-gray-300 hover:text-gray-900">
                   Docs
                 </a>
               </Link>
             </li>
             <li tw="mt-4">
-              <Link href="/docs1/examples/introduction">
+              <Link href="/docs/examples/introduction">
                 <a tw="text-base leading-6 text-gray-500 dark:text-gray-300 hover:text-gray-900">
                   Examples
                 </a>

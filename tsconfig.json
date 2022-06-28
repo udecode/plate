@@ -19,10 +19,7 @@
     "sourceMap": true,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017",
-    "paths": {
-      "@udecode/examples/*": ["./examples/src/*"]
-    }
+    "target": "es2017"
   },
   "files": ["scripts/types/twin.d.ts"],
   "exclude": [

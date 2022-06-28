@@ -2,6 +2,7 @@
 
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
 import { preFormat } from '../../../../../../../examples/src/autoformat/autoformatUtils';
 import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';

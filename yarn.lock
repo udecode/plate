@@ -4831,51 +4831,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@udecode/examples-cra@workspace:examples/apps/cra":
-  version: 0.0.0-use.local
-  resolution: "@udecode/examples-cra@workspace:examples/apps/cra"
-  dependencies:
-    "@craco/craco": "npm:^6.4.3"
-    "@udecode/examples": "link:../../src"
-    react-scripts: "npm:4.0.3"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/examples-next@workspace:examples/apps/next":
-  version: 0.0.0-use.local
-  resolution: "@udecode/examples-next@workspace:examples/apps/next"
-  dependencies:
-    "@udecode/examples": "workspace:^"
-    next: "npm:^12.1.6"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/examples@link:../../src::locator=%40udecode%2Fexamples-cra%40workspace%3Aexamples%2Fapps%2Fcra":
-  version: 0.0.0-use.local
-  resolution: "@udecode/examples@link:../../src::locator=%40udecode%2Fexamples-cra%40workspace%3Aexamples%2Fapps%2Fcra"
-  languageName: node
-  linkType: soft
-
-"@udecode/examples@workspace:^, @udecode/examples@workspace:examples":
-  version: 0.0.0-use.local
-  resolution: "@udecode/examples@workspace:examples"
-  dependencies:
-    "@styled-icons/boxicons-regular": "npm:10.23.0"
-    "@styled-icons/foundation": "npm:10.28.0"
-    "@styled-icons/material": "npm:10.28.0"
-    "@tippyjs/react": "npm:4.2.5"
-    "@udecode/plate": "workspace:^"
-    "@udecode/plate-juice": "workspace:^"
-    "@udecode/plate-test-utils": "workspace:^"
-    "@udecode/plate-ui-excalidraw": "workspace:^"
-    "@udecode/zustood": "npm:1.1.1"
-    prism-react-renderer: "npm:^1.2.0"
-    styled-components: "npm:5.3.1"
-    typescript: "npm:4.6.4"
-    zustand: "npm:3.7.2"
-  languageName: unknown
-  linkType: soft
-
 "@udecode/plate-alignment@npm:13.5.0, @udecode/plate-alignment@workspace:packages/nodes/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/nodes/alignment"
@@ -11300,6 +11255,51 @@ __metadata:
   checksum: 9422e1f77eb9507d587d94390108d5ab0c0e10189adca0164b88dd8a22821fd8eda74b4299b9faf40cd6578992a8e66a3db581ac7d02be3635d8048d08724670
   languageName: node
   linkType: hard
+
+"examples-cra@workspace:examples/apps/cra":
+  version: 0.0.0-use.local
+  resolution: "examples-cra@workspace:examples/apps/cra"
+  dependencies:
+    "@craco/craco": "npm:^6.4.3"
+    examples: "link:../../src"
+    react-scripts: "npm:4.0.3"
+  languageName: unknown
+  linkType: soft
+
+"examples-next@workspace:examples/apps/next":
+  version: 0.0.0-use.local
+  resolution: "examples-next@workspace:examples/apps/next"
+  dependencies:
+    examples: "workspace:^"
+    next: "npm:^12.1.6"
+  languageName: unknown
+  linkType: soft
+
+"examples@link:../../src::locator=examples-cra%40workspace%3Aexamples%2Fapps%2Fcra":
+  version: 0.0.0-use.local
+  resolution: "examples@link:../../src::locator=examples-cra%40workspace%3Aexamples%2Fapps%2Fcra"
+  languageName: node
+  linkType: soft
+
+"examples@workspace:^, examples@workspace:examples":
+  version: 0.0.0-use.local
+  resolution: "examples@workspace:examples"
+  dependencies:
+    "@styled-icons/boxicons-regular": "npm:10.23.0"
+    "@styled-icons/foundation": "npm:10.28.0"
+    "@styled-icons/material": "npm:10.28.0"
+    "@tippyjs/react": "npm:4.2.5"
+    "@udecode/plate": "workspace:^"
+    "@udecode/plate-juice": "workspace:^"
+    "@udecode/plate-test-utils": "workspace:^"
+    "@udecode/plate-ui-excalidraw": "workspace:^"
+    "@udecode/zustood": "npm:1.1.1"
+    prism-react-renderer: "npm:^1.2.0"
+    styled-components: "npm:5.3.1"
+    typescript: "npm:4.6.4"
+    zustand: "npm:3.7.2"
+  languageName: unknown
+  linkType: soft
 
 "exec-sh@npm:^0.3.2":
   version: 0.3.6
