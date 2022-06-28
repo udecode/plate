@@ -2,6 +2,35 @@ import 'prismjs/themes/prism.css';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { preFormat } from '@example/config/autoformat/autoformatUtils';
+import {
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  HighlightToolbarButton,
+  IndentToolbarButtons,
+  KbdToolbarButton,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
+} from '@example/config/components/Toolbars';
+import { withStyledDraggables } from '@example/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '@example/config/components/withStyledPlaceHolders';
+import { CONFIG } from '@example/config/config';
+import {
+  createDragOverCursorPlugin,
+  cursorStore,
+  PLUGINS,
+} from '@example/config/plugins';
+import { VALUES } from '@example/config/values/values';
+import {
+  createEditableVoidPlugin,
+  EDITABLE_VOID,
+} from '@example/examples/editable-voids/createEditableVoidPlugin';
+import { EditableVoidElement } from '@example/examples/editable-voids/EditableVoidElement';
+import { IFrame } from '@example/examples/iframe/IFrame';
+import { createPreviewPlugin } from '@example/examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from '@example/examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
@@ -76,7 +105,6 @@ import {
   createIndentListPlugin,
   createIndentPlugin,
   createItalicPlugin,
-  createJuicePlugin,
   createKbdPlugin,
   createLineHeightPlugin,
   createLinkPlugin,
@@ -105,6 +133,7 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
+  CursorOverlay,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -134,6 +163,7 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  findEventRange,
   getParentNode,
   getPlateActions,
   getPlugin,
@@ -194,9 +224,11 @@ import {
   usePlateEditorState,
   usePlateSelection,
   usePlateSelectors,
+  withPlateEventProvider,
   withProps,
   withStyledProps,
 } from '@udecode/plate';
+import { createJuicePlugin } from '@udecode/plate-juice';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
@@ -205,7 +237,6 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { Playground } from '../components/Playground';
-import { clearBlockFormat } from './config/autoformat/autoformatUtils';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
@@ -236,8 +267,13 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  CursorOverlay,
+  withPlateEventProvider,
+  cursorStore,
+  findEventRange,
   createTextIndentPlugin,
   getPlateActions,
+  createDragOverCursorPlugin,
   usePlateSelectors,
   createJuicePlugin,
   StyledElement,
@@ -255,7 +291,7 @@ const ReactLiveScope = {
   BorderRight,
   BorderTop,
   Check,
-  clearBlockFormat,
+  preFormat,
   CodeAlt,
   CodeBlock,
   CodeBlockElement,

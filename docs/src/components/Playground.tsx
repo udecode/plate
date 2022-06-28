@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
+import { cursorStore } from '@example/config/plugins';
 import {
   Check,
   FontDownload,
@@ -34,7 +35,11 @@ import {
 import { CONFIG } from '../live/config/config';
 import { user } from '../user';
 
-export function Playground() {
+export function Playground({
+  containerRef,
+}: {
+  containerRef: React.MutableRefObject<HTMLDivElement>;
+}) {
   const retrieveUser = useCallback(function retrieveUser() {
     return { ...user };
   }, []);
@@ -71,6 +76,12 @@ export function Playground() {
     ];
   }, []);
 
+  const CursorOverlayContainer = (props) => {
+    const cursors = cursorStore.use.cursors();
+
+    return <CursorOverlay {...props} cursors={cursors} />;
+  };
+
   return (
     <>
       <HeadingToolbar>
@@ -105,6 +116,8 @@ export function Playground() {
       <BallonToolbarMarks />
 
       <MentionCombobox items={CONFIG.mentionItems} />
+
+      <CursorOverlayContainer containerRef={containerRef} />
 
       {thread ? (
         <SideThread

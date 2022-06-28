@@ -1,5 +1,5 @@
 import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { getPlateSelectors, usePlateSelectors } from '../platesStore';
 
 export const getPlateEditorRef = <

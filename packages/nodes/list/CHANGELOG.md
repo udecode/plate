@@ -1,5 +1,15 @@
 # @udecode/plate-list
 
+## 13.5.0
+
+## 13.3.1
+
+### Patch Changes
+
+- [#1607](https://github.com/udecode/plate/pull/1607) by [@dylans](https://github.com/dylans) – Fix list deleteBackward with custom type
+
+## 13.1.0
+
 ## 11.2.1
 
 ## 11.2.0

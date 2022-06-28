@@ -20,6 +20,7 @@ export interface ComboboxStyles {
 
 export interface ComboboxItemProps<TData> {
   item: TComboboxItem<TData>;
+  search: string;
 }
 
 export interface ComboboxProps<TData = NoData>

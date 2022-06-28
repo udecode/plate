@@ -4,7 +4,7 @@ import { withProps } from '@udecode/plate-core';
 import { createTablePlugin, ELEMENT_TD } from '@udecode/plate-table';
 import { createPlateUI, TableCellElement } from '@udecode/plate-ui';
 import * as resizeable from 're-resizable';
-import { createPlateTestEditor } from '../../../../../core/src/common/__tests__/createPlateTestEditor';
+import { createPlateTestEditor } from '../../../../../core/src/utils/__tests__/createPlateTestEditor';
 import { tableInput } from './TableCellElement.fixtures';
 
 jest.mock('re-resizable');

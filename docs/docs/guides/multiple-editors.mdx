@@ -55,13 +55,3 @@ Let's render 3 editors with common heading and balloon toolbars.
   )
 }
 ```
-
-### Focus editor
-
-The toolbar actions require an `editor` with a defined `selection`, so it needs to be focused.
-
-[Plate](Plate) stores the [id](Plate#id) of the last focused editor in [eventEditorStore](store#event-editor-store),
-which can then be used by the toolbar actions (or any component outside [Plate](Plate))
-to get the [editor](store#editor) from [plateStore](store#plate-store).
-
-By default, the last focused editor id is used.

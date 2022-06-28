@@ -1,5 +1,11 @@
 # 13.0.0
 
+## @udecode/plate-core@13.1.0
+
+### Major Changes
+
+- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`  
+
 ## @udecode/plate@13.0.0
 ## @udecode/plate-headless@13.0.0
 
@@ -54,7 +60,7 @@
   }: GetHoverDirectionOptions
   ```
 
-# 11.0.6
+# 11.0.0
 
 ## @udecode/plate-core@11.0.6
 

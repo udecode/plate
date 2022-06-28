@@ -1,5 +1,21 @@
 # @udecode/plate-table
 
+## 13.5.0
+
+## 13.3.0
+
+### Patch Changes
+
+- [#1604](https://github.com/udecode/plate/pull/1604) by [@zbeyens](https://github.com/zbeyens) – fix: table generics
+
+## 13.2.1
+
+### Patch Changes
+
+- [#1600](https://github.com/udecode/plate/pull/1600) by [@dylans](https://github.com/dylans) – apply missing generic
+
+## 13.1.0
+
 ## 11.3.1
 
 ### Patch Changes

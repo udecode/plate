@@ -68,6 +68,7 @@ const alias = {
   '@udecode/plate-ui-code-block': 'ui/nodes/code-block',
   '@udecode/plate-ui-combobox': 'ui/combobox',
   '@xolvio/plate-ui-comments': 'ui/collaboration/comments',
+  '@udecode/plate-ui-cursor': 'ui/cursor',
   '@udecode/plate-ui-dnd': 'ui/dnd',
   '@udecode/plate-ui-find-replace': 'ui/find-replace',
   '@udecode/plate-ui-font': 'ui/nodes/font',
@@ -84,7 +85,7 @@ const alias = {
   '@udecode/plate-ui-table': 'ui/nodes/table',
   '@udecode/plate-ui-toolbar': 'ui/toolbar',
   'react/jsx-runtime': 'react/jsx-runtime.js',
-  'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js'
+  'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
 };
 
 Object.keys(alias).forEach((key) => {
@@ -242,7 +243,10 @@ module.exports = {
           ],
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.scss'),
+          customCss: [
+            require.resolve('../examples/next/src/styles.css'),
+            require.resolve('./src/css/custom.scss'),
+          ],
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],

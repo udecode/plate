@@ -1,5 +1,27 @@
 # @udecode/plate-mention
 
+## 13.5.0
+
+## 13.4.2
+
+### Patch Changes
+
+- [#1622](https://github.com/udecode/plate/pull/1622) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Pass search to createMentionNode as metadata
+
+## 13.4.1
+
+## 13.4.0
+
+### Minor Changes
+
+- [#1615](https://github.com/udecode/plate/pull/1615) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Add support for pasting into mentions
+
+### Patch Changes
+
+- [#1619](https://github.com/udecode/plate/pull/1619) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Merge lines, strip whitespaces
+
+## 13.1.0
+
 ## 11.2.1
 
 ## 11.2.0

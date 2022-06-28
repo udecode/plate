@@ -20,7 +20,6 @@ export * from '@udecode/plate-horizontal-rule';
 export * from '@udecode/plate-image';
 export * from '@udecode/plate-indent';
 export * from '@udecode/plate-indent-list';
-export * from '@udecode/plate-juice';
 export * from '@udecode/plate-kbd';
 export * from '@udecode/plate-line-height';
 export * from '@udecode/plate-link';

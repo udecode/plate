@@ -18,7 +18,7 @@ npm install @udecode/plate-excalidraw
     createExcalidrawPlugin({
       component: ExcalidrawElement
     }),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_EXCALIDRAW] }),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_EXCALIDRAW] }}}),
   ];
      
   return (

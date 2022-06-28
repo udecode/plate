@@ -16,7 +16,7 @@ title: Plate
 
 ### `children`
 
-- The children rendered inside `Slate` before the `Editable` component.
+- The last children rendered inside `Slate`, after `Editable`.
 
 ### `disableCorePlugins`
 
@@ -27,15 +27,26 @@ title: Plate
 
 - The props for the `Editable` component.
 
+### `editableRef`
+
+- Ref to the `Editable` component.
+
 ### `editor`
 
 - Controlled `editor`.
-- Default is `createTEditor()`.
+- Default is `pipe(createTEditor(), withPlate({ id, plugins }))`.
 
 ### `enabled`
 
-- When `false`, the editor is not rendering.
+- When `true`, Plate will set the editor.
+- When updating to `false`, Plate will remove the editor from the store.
+- When `false`, Plate will not render `Editable`.
 - Default is `true`.
+
+### `firstChildren`
+
+- The first children rendered inside `Slate`, before `Editable`.
+- Slate DOM is not yet resolvable on first render, for that case use `children` instead.
 
 ### `initialValue`
 
@@ -50,11 +61,12 @@ title: Plate
 
 ### `onChange`
 
-- See [onChange](#onchange).
+- See [onChange](#slate-onchange).
 
 ### `plugins`
 
 - Plate plugins.
+- See [Plugins](/docs/plugins).
 
 ### `renderEditable`
 
@@ -63,46 +75,51 @@ title: Plate
 
 ### `renderElement`
 
-- See [renderElement](#renderelement).
+- See [renderElement](#editable-renderelement).
 
 ### `renderLeaf`
 
-- See [renderLeaf](#renderleaf).
+- See [renderLeaf](#editable-renderleaf).
 
 ### `value`
 
-- Controlled `value`.
-- Default is the store value.
+- Editor `value`.
+- Stored in the store on each change (`Editable.onChange`).
+- Except when resetting the editor with `resetEditor`, you should not directly update the value as it would break the history.
+- If you want to update `value` with history support, you should use [Slate transforms](https://docs.slatejs.org/concepts/04-transforms) like `Transforms.setNodes`.
+- Default is `[{ children: [{ text: '' }]}]`.
 
 ## Slate Props
 
 `Plate` computes the `Slate` props:
 
-### `key`
+### Slate `key`
 
 - Each time the editor reference updates, a new random key is set
 to `Slate` to unmount and mount again the component.
 
-### `editor`
+### Slate `editor`
 
 - `Slate` needs an `editor` object to apply its operations on it.
 
-### `onChange`
+### Slate `onChange`
 
-1. [setValue](store#setvalue) is called
+Callback called by `Slate` on each change:
+1. The new value is stored in plate [store](/docs/store#value).
 2. Pipes `onChange` plugins.
-3. `onChange` props is called if defined.
+3. `onChange` prop is called if defined.
 
 ## Editable Props
 
 In addition to `editableProps`, `Plate` computes the `Editable`
 props if `editor` is defined.
 
-### `decorate`
+### Editable `decorate`
 
 - Pipes `decorate` plugins.
+- Adds `editableProps.decorate` if defined.
 
-### `renderElement`
+### Editable `renderElement`
 
 - If plugin `isElement` is `true` and if plugin `type` equals `props.element.type`,  it will render an element using the following plugin properties:
   - `inject.props` to inject rendering props.
@@ -110,27 +127,16 @@ props if `editor` is defined.
   - `inject.aboveComponent` to inject a component above `component`.
   - `inject.belowComponent` to inject a component below `component`.
 - If no plugin is found for a node type, `editableProps.renderElement` is used if defined.
-- If `editableProps.renderElement` is not defined, `DefaultElement` is used (unstyled `div`).
+- If the latter is not defined, `DefaultElement` is used (unstyled `div`).
 
-### `renderLeaf`
+### Editable `renderLeaf`
 
 - If plugin `isLeaf` is `true` and if plugin `type` equals `props.leaf.type`,  it will render a leaf using the following plugin properties:
   - `inject.props` to inject rendering props.
   - `component` to render the leaf.
 - If no plugin is found for a node type, `editableProps.renderLeaf` is used if defined.
-- If `editableProps.renderLeaf` is not defined, `DefaultLeaf` is used (unstyled `span`).
+- If the latter is not defined, `DefaultLeaf` is used (unstyled `span`).
 
 ### Handlers
 
 - Pipes DOM handlers plugins, e.g. `onDOMBeforeInput`, `onKeyDown`,` etc.
-
-## Store updates
-
-- On `Plate` mount, [setInitialState](store#setinitialstate) is called.
-- If defined, set `enabled`, `initialValue` or `value` into the
-  store.
-  - If `enabled` is `true`, set `editor` with `withPlate` into the
-    store.
-  - If `enabled` is `false`, set `editor` to `undefined`.
-- `editor` is set only once (if not defined) as required by slate. You'll need to call [resetEditor](store/#reseteditor) to reset it.
-- On `Plate` unmount, [clearState](store#clearstate) is called.

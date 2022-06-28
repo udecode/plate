@@ -1,5 +1,5 @@
 import { Editor, EditorNextOptions } from 'slate';
-import { Modify } from '../../common/types/utility/types';
+import { Modify } from '../../types/misc/types';
 import { TDescendant } from '../node/index';
 import { ENode, TNodeMatch } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';

@@ -8,6 +8,7 @@ export * from '@udecode/plate-ui-block-quote';
 export * from '@udecode/plate-ui-code-block';
 export * from '@udecode/plate-ui-combobox';
 export * from '@xolvio/plate-ui-comments';
+export * from '@udecode/plate-ui-cursor';
 export * from '@udecode/plate-ui-dnd';
 export * from '@udecode/plate-ui-find-replace';
 export * from '@udecode/plate-ui-font';

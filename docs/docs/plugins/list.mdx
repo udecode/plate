@@ -14,7 +14,7 @@ npm install @udecode/plate-ui-list
 
 ```ts live
 () => {
-  const ListToolbarButtons = () => {
+  const ListToolbarButtons = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
 
     return (
@@ -29,7 +29,7 @@ npm install @udecode/plate-ui-list
         />
       </>
     );
-  };
+  });
 
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,

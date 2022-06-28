@@ -1,4 +1,4 @@
-import { usePlateId } from '../../plate/selectors/usePlateId';
+import { usePlateId } from '../../../atoms/plateIdAtom';
 import { useEventEditorId } from './useEventEditorId';
 
 export const useEventPlateId = (id?: string) => {

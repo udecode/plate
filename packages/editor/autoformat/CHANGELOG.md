@@ -1,5 +1,15 @@
 # @udecode/plate-autoformat
 
+## 13.5.0
+
+## 13.3.2
+
+### Patch Changes
+
+- [#1612](https://github.com/udecode/plate/pull/1612) by [@jeysal](https://github.com/jeysal) – fix(autoformat): block mode single character trigger losing the character before the trigger
+
+## 13.1.0
+
 ## 11.2.1
 
 ## 11.2.0

@@ -1,3 +1,1 @@
-export function filterBreaklines(item: any): boolean {
-  return !item.text;
-}
+export const filterBreaklines = (item: any): boolean => !item.text;

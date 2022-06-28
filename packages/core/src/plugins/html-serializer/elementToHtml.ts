@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlateRenderElementProps } from '../../types/PlateRenderElementProps';
-import { pipeInjectProps } from '../../utils/pipeInjectProps';
-import { pluginRenderElement } from '../../utils/pluginRenderElement';
+import { PlateEditor } from '../../types/plate/PlateEditor';
+import { PlateRenderElementProps } from '../../types/plate/PlateRenderElementProps';
+import { pipeInjectProps } from '../../utils/plate/pipeInjectProps';
+import { pluginRenderElement } from '../../utils/plate/pluginRenderElement';
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 

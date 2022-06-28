@@ -29,7 +29,7 @@ npm install @udecode/plate-autoformat
           mode: 'block',
           type: ELEMENT_HR,
           match: ['---', '—-', '___ '],
-          preFormat: clearBlockFormat,
+`          preFormat,
           format: (editor) => {
             setNodes(editor, { type: ELEMENT_HR });
             insertNodes(editor, {

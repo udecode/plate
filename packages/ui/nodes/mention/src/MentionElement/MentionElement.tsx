@@ -14,7 +14,6 @@ export const MentionElement = <V extends Value>(
     nodeProps,
     element,
     prefix,
-    as,
     onClick,
     renderLabel,
   } = props;
@@ -29,7 +28,6 @@ export const MentionElement = <V extends Value>(
   return (
     <span
       {...attributes}
-      as={as}
       data-slate-value={element.value}
       className={styles.root.className}
       css={styles.root.css}

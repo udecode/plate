@@ -6,3 +6,5 @@ export * from './MediaEmbedElement.styles';
 export * from './MediaEmbedElement';
 export * from './MediaEmbedElement.types';
 export * from './MediaEmbedUrlInput';
+export * from './Tweet';
+export * from './utils/index';

@@ -3,8 +3,8 @@
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../docs/src/live/config/config';
+import { preFormat } from '../../../../../../../examples/next/src/config/autoformat/autoformatUtils';
+import { CONFIG } from '../../../../../../../examples/next/src/config/config';
 import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -37,7 +37,7 @@ describe('when #space', () => {
               mode: 'block',
               type: ELEMENT_H1,
               match: '# ',
-              preFormat: clearBlockFormat,
+              preFormat,
             },
           ],
         },
@@ -70,7 +70,7 @@ describe('when ##space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(CONFIG.autoformat as any)
     );
 
     editor.insertText(' ');

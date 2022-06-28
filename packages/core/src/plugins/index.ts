@@ -8,6 +8,8 @@ export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
 export * from './createReactPlugin';
+export * from './onKeyDownToggleElement';
+export * from './onKeyDownToggleMark';
 export * from './withPlate';
 export * from './withTReact';
 export * from './html-deserializer/index';

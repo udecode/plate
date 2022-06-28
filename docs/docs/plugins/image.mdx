@@ -17,16 +17,18 @@ npm install @udecode/plate-ui-image
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_IMAGE] }}}),
   ], {
     components: CONFIG.components,
   });
 
   return (
     <>
-      <HeadingToolbar>
-        <ImageToolbarButton icon={<Image />} />
-      </HeadingToolbar>
+      <PlateProvider id="image">
+        <HeadingToolbar>
+          <ImageToolbarButton icon={<Image />} />
+        </HeadingToolbar>
+      </PlateProvider>
       <Plate
         id="image"
         editableProps={CONFIG.editableProps}

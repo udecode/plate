@@ -6,8 +6,8 @@ import { createHeadingPlugin } from '../../../../nodes/heading/src/createHeading
 import { createLinkPlugin } from '../../../../nodes/link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '../../../../nodes/media-embed/src/createMediaEmbedPlugin';
 import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlatePlugin } from '../../types/plugins/PlatePlugin';
+import { PlateEditor } from '../../types/plate/PlateEditor';
+import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 
 jsx;
 

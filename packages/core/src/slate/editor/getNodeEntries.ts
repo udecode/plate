@@ -1,6 +1,6 @@
 import { Editor, EditorNodesOptions } from 'slate';
-import { ENodeMatchOptions, getQueryOptions } from '../../common/queries/match';
-import { Modify } from '../../common/types/utility/types';
+import { ENodeMatchOptions, getQueryOptions } from '../../queries/match';
+import { Modify } from '../../types/misc/types';
 import { ENode, TNode } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';

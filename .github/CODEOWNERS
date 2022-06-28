@@ -3,14 +3,10 @@
 
 # More details are here: https://help.github.com/articles/about-codeowners/
 
-# The '*' pattern is global owners.
+# These owners will be the default owners for everything in the repo.
+*          @zbeyens @dylans 
 
 # Order is important. The last matching pattern has the most precedence.
-# The folders are ordered as follows:
-
-# In each subsection folders are ordered first by depth, then alphabetically.
-# This should make it easy to add new rules without breaking existing ones.
-
-# Global rule:
-*           @zbeyens
-*           @dylans
+# So if a pull request only touches javascript files, only these owners
+# will be requested to review.
+# *.js    @octocat @github/js

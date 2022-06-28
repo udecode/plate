@@ -1,5 +1,29 @@
 # @udecode/plate-headless
 
+## 13.5.0
+
+## 13.4.2
+
+## 13.4.1
+
+## 13.4.0
+
+## 13.3.2
+
+## 13.3.1
+
+## 13.3.0
+
+## 13.2.1
+
+## 13.1.0
+
+## 13.0.1
+
+### Patch Changes
+
+- [#1588](https://github.com/udecode/plate/pull/1588) by [@zbeyens](https://github.com/zbeyens) – remove @udecode/plate-juice from exports
+
 ## 13.0.0
 
 ### Major Changes

@@ -13,7 +13,7 @@ npm install @udecode/plate-kbd
 
 ```ts live
 () => {
-  const KbdToolbarButton = () => {
+  const KbdToolbarButton = withPlateEventProvider(() => {
     const editor = usePlateEditorRef();
 
     return (
@@ -22,7 +22,7 @@ npm install @udecode/plate-kbd
         icon={<Keyboard />}
       />
     );
-  };
+  });
 
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,

@@ -1,5 +1,28 @@
 # @udecode/plate-core
 
+## 13.5.0
+
+### Minor Changes
+
+- [#1616](https://github.com/udecode/plate/pull/1616) by [@zbeyens](https://github.com/zbeyens) –
+  - `useElement`: Plate is now storing `element` in a context provided in each rendered element. Required parameter: the plugin key is used as a scope as it's needed for nested elements.
+
+## 13.1.0
+
+### Major Changes
+
+- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
+
+### Minor Changes
+
+- [#1592](https://github.com/udecode/plate/pull/1592) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: `Plate` children were rendered before `Editable`, making slate DOM not resolvable on first render. Fixed by moving `Editable` as the first child of `Slate` and `children` as the last children of `Slate`.
+  - `Plate` new props:
+    - `firstChildren`: replaces the previous behavior of `children`, rendered as the first children of `Slate`
+    - `editableRef`: Ref to the `Editable` component.
+  - Plate store - new field:
+    - `isRendered`: Whether `Editable` is rendered so slate DOM is resolvable. Subscribe to this value when you query the slate DOM outside `Plate`.
+
 ## 11.2.1
 
 ### Patch Changes

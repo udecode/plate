@@ -22,7 +22,7 @@ No software is bug-free. So, if you got an issue, follow these steps:
 
 The best way to help figure out an issue you are having is to produce a
 minimal reproduction using
-[our CodeSandbox](https://codesandbox.io/s/plate-playground-v1-2mh1c)
+[our CodeSandbox](https://codesandbox.io/s/github/udecode/plate-playground)
 
 ## Development Guide
 

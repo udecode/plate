@@ -9,7 +9,7 @@ export const withTable = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  plugin: WithPlatePlugin<TablePlugin<V>>
+  plugin: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   editor = withDeleteTable<V, E>(editor);
   editor = withGetFragmentTable<V, E>(editor);

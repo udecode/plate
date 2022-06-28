@@ -34,7 +34,7 @@ export const deleteBackwardList = <V extends Value>(
 
     if (
       isSelectionAtBlockStart(editor, {
-        match: (node) => node.type === ELEMENT_LI,
+        match: (node) => node.type === getPluginType(editor, ELEMENT_LI),
       })
     ) {
       withoutNormalizing(editor, () => {
