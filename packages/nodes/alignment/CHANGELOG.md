@@ -1,5 +1,7 @@
 # @udecode/plate-alignment
 
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.1.0
