@@ -21185,6 +21185,7 @@ __metadata:
     react-dom: "npm:17.0.2"
     react-is: "npm:17.0.2"
     react-test-renderer: "npm:17.0.2"
+    rimraf: "npm:^3.0.2"
     rollup: "npm:^2.72.1"
     rollup-plugin-babel: "npm:^4.4.0"
     rollup-plugin-commonjs: "npm:^10.1.0"
