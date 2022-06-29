@@ -30,7 +30,7 @@ jobs:
         run: yarn
 
       - name: Prepare release
-        run: yarn prerelease
+        run: yarn g:prerelease
 
       # https://github.com/changesets/action
       - name: Create release pull request

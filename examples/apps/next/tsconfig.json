@@ -9,6 +9,6 @@
     "incremental": true,
     "jsx": "preserve"
   },
-  "include": ["next-env.d.ts", "src"],
+  "include": ["next-env.d.ts", "src", "../../src"],
   "exclude": [".next"]
 }

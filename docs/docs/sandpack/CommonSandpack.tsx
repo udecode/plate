@@ -3,13 +3,14 @@ import { Sandpack } from '@codesandbox/sandpack-react';
 import { monokaiPro } from '@codesandbox/sandpack-themes';
 import clsx from 'clsx';
 import { stylesFile } from './files/code-styles';
-import { rootFile } from './code-root';
+import { rootCode } from './code-root';
 
 export interface CommonSandpackProps {
-  height?: number;
   deps: Record<string, string>;
   appCode: string;
   files: Record<string, string>;
+  height?: number;
+  cssCode?: string;
   direction?: 'horizontal' | 'vertical';
   previewSize?: number;
 }
@@ -19,6 +20,7 @@ export const CommonSandpack = ({
   files,
   appCode,
   previewSize,
+  cssCode = '',
   direction = 'vertical',
   height = 722,
 }: CommonSandpackProps) => {
@@ -29,7 +31,7 @@ export const CommonSandpack = ({
       files={{
         '/App.tsx': appCode,
         ...files,
-        ...rootFile,
+        '/index.tsx': cssCode + rootCode,
         ...stylesFile,
       }}
       customSetup={{

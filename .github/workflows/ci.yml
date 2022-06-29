@@ -21,8 +21,8 @@ jobs:
     strategy:
       matrix:
         command:
-          - 'lint'
-          - 'test'
+          - 'g:lint'
+          - 'g:test'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -33,6 +33,6 @@ jobs:
           node-version: 14
 
       - name: Run ${{ matrix.command }}
-        run: yarn && yarn build && yarn ${{ matrix.command }}
+        run: yarn && yarn g:build && yarn ${{ matrix.command }}
         env:
           CI: true

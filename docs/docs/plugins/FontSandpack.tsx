@@ -4,6 +4,7 @@ import {
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
+import { tippyCode } from '../sandpack/code-files';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
@@ -24,6 +25,7 @@ export const FontSandpack = () => (
       ...toolbarDeps,
     }}
     appCode={fontAppCode}
+    cssCode={tippyCode}
     files={{
       ...fontFiles,
       ...toolbarFile,

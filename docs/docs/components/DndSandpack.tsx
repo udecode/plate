@@ -4,6 +4,7 @@ import {
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
+import { tippyCode } from '../sandpack/code-files';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsValueFile } from '../sandpack/files/basic-elements/code-basicElementsValue';
 import { dndAppCode } from '../sandpack/files/code-DndApp';
@@ -21,6 +22,7 @@ export const DndSandpack = () => (
       ...toolbarDeps,
     }}
     appCode={dndAppCode}
+    cssCode={tippyCode}
     files={{
       ...dndFiles,
       ...basicElementsValueFile,

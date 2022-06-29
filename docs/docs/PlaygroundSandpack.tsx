@@ -1,4 +1,5 @@
 import React from 'react';
+import { tippyCode } from '@site/docs/sandpack/code-files';
 import { playgroundDeps } from './sandpack/code-deps';
 import { rootFile } from './sandpack/code-root';
 import { CommonSandpack, CommonSandpackProps } from './sandpack/CommonSandpack';
@@ -19,6 +20,7 @@ export const PlaygroundSandpack = (props: CommonSandpackProps) => (
       ...toolbarButtonsFile,
       ...playgroundValueFile,
     }}
+    cssCode={tippyCode}
     {...props}
   />
 );

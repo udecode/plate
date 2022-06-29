@@ -31,16 +31,10 @@ export const juiceDeps = {
   '@udecode/plate-juice': '*',
 };
 
-export const zustandDeps = {
-  '@udecode/zustood': '1.1.1',
-  zustand: '^3.7.2',
-};
-
 export const playgroundDeps = {
   ...commonDeps,
   ...plateTestUtilsDeps,
   ...toolbarDeps,
   ...excalidrawDeps,
   ...juiceDeps,
-  ...zustandDeps,
 };
