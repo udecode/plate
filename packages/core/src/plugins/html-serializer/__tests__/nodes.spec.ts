@@ -201,6 +201,6 @@ it('serialize string with %', () => {
     ] as Value,
   });
   expect(render).toBe(
-    '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%</div>'
+    '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%25</div>'
   );
 });
