@@ -4958,6 +4958,7 @@ __metadata:
     "@radix-ui/react-slot": "npm:^0.1.2"
     "@udecode/zustood": "npm:^1.1.1"
     clsx: "npm:^1.1.1"
+    html-entities: "npm:^2.3.3"
     jotai: "npm:^1.7.2"
     lodash: "npm:^4.17.21"
     use-deep-compare: "npm:^1.1.0"
@@ -12854,6 +12855,13 @@ __metadata:
   version: 1.4.0
   resolution: "html-entities@npm:1.4.0"
   checksum: 8ef6432b856e6b82c6d5362af3df8f05dbe87db1a02e008d16090c609ba0ac53c0cf220f61be4cc515e03184e8fe5fdcfd7bb3f6334e1bc98d0135e1ee76fe44
+  languageName: node
+  linkType: hard
+
+"html-entities@npm:^2.3.3":
+  version: 2.3.3
+  resolution: "html-entities@npm:2.3.3"
+  checksum: cad32c60fce7137f0b3aefc30ba3b0438d6881299230f5a40aec720829ff00d2277ac5f9be4701615d3484c5cfd8260681c6b8f7947021bda294650f38c65e9f
   languageName: node
   linkType: hard
 
