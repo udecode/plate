@@ -407,6 +407,7 @@ export function Thread({
             fetchContacts={fetchContacts}
             haveContactsBeenClosed={haveContactsBeenClosed}
             setHaveContactsBeenClosed={setHaveContactsBeenClosed}
+            onSubmit={onSubmitComment}
           />
           {userThatCanBeAssignedTo && (
             <div className="mdc-form-field">

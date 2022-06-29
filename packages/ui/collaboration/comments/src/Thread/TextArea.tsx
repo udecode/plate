@@ -25,6 +25,7 @@ interface TextAreaProps {
   fetchContacts: FetchContacts;
   haveContactsBeenClosed: boolean;
   setHaveContactsBeenClosed: React.Dispatch<React.SetStateAction<boolean>>;
+  onSubmit: () => void;
 }
 
 export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
@@ -36,6 +37,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       fetchContacts,
       haveContactsBeenClosed,
       setHaveContactsBeenClosed,
+      onSubmit,
       ...props
     }: TextAreaProps,
     ref: ForwardedRef<HTMLTextAreaElement>
@@ -261,6 +263,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           setSelectedContactIndex(
             Math.min(selectedContactIndex + 1, filteredContacts.length - 1)
           );
+        } else if (event.code === 'Enter' && event.ctrlKey) {
+          onSubmit();
         } else if (event.code === 'Enter') {
           const selectedContact = filteredContacts[selectedContactIndex];
           onContactSelected(selectedContact);
@@ -271,6 +275,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         areContactsShown,
         filteredContacts,
         onContactSelected,
+        onSubmit,
         selectedContactIndex,
         showContacts,
       ]

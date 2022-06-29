@@ -68,6 +68,7 @@ export function ThreadCommentEditing({
         fetchContacts={fetchContacts}
         haveContactsBeenClosed={haveContactsBeenClosed}
         setHaveContactsBeenClosed={setHaveContactsBeenClosed}
+        onSubmit={onSave}
       />
       <div css={buttons.css} className={buttons.className}>
         <button
