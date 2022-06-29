@@ -107,6 +107,10 @@ export function useComments({
     newThreadThreadNodeEntry,
     setNewThreadThreadNodeEntry,
   ] = useState<NodeEntry | null>(null);
+  const [
+    previousThreadNode,
+    setPreviousThreadNode,
+  ] = useState<ThreadElement | null>(null);
 
   const updateThreadPosition = useCallback(
     function updateThreadPosition(threadNodeEntry) {
@@ -278,10 +282,36 @@ export function useComments({
         if (!isThreadNodeTheNewThreadNode) {
           onCancelCreateThread();
         }
+        if (previousThreadNode) {
+          let previousThreadNodeDomNode;
+          try {
+            previousThreadNodeDomNode = ReactEditor.toDOMNode(
+              editor as any,
+              previousThreadNode
+            );
+          } catch (error) {}
+
+          if (previousThreadNodeDomNode) {
+            previousThreadNodeDomNode.style.backgroundColor = '';
+          }
+        }
         if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
+          // a
+          const threadNode = threadNodeEntry[0];
+          let domNode;
+          try {
+            domNode = ReactEditor.toDOMNode(editor as any, threadNode);
+          } catch (error) {}
+          if (domNode) {
+            domNode.style.backgroundColor = '#fcc934';
+          }
           showThread(threadNodeEntry);
         } else {
           hideThread();
+        }
+        if (threadNodeEntry) {
+          const threadNode = threadNodeEntry[0];
+          setPreviousThreadNode(threadNode);
         }
       }
     },
@@ -292,6 +322,7 @@ export function useComments({
       selection,
       newThreadThreadNodeEntry,
       onCancelCreateThread,
+      previousThreadNode,
     ]
   );
 
