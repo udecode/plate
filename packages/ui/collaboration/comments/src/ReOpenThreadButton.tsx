@@ -22,6 +22,7 @@ export function ReOpenThreadButton(
       css={root.css}
       className={`${root.className} mdc-icon-button`}
       onClick={onReOpenThread}
+      title="Re-open"
     >
       <div className="mdc-icon-button__ripple" />
       <Unarchive css={icon!.css} className={icon!.className} />
