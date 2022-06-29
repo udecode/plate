@@ -27,6 +27,7 @@ import {
 } from '@xolvio/plate-comments';
 import { Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { v4 as createV4UUID } from 'uuid';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
 import { determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft } from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
 
@@ -331,7 +332,7 @@ export function useComments({
     async function onAddThread() {
       if (editor && selection) {
         const newThread: Thread = {
-          id: Math.floor(Math.random() * 1000), // FIXME
+          id: createV4UUID(),
           comments: [],
           isResolved: false,
           createdBy: await retrieveUser(),
@@ -375,7 +376,7 @@ export function useComments({
       assignedTo = undefined
     ): Promise<Thread> {
       const comment = {
-        id: Math.floor(Math.random() * 1000), // FIXME
+        id: createV4UUID(),
         text: commentText,
         createdAt: Date.now(),
         createdBy: await retrieveUser(),
