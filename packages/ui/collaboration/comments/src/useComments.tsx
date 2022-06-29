@@ -6,6 +6,7 @@ import {
   getPluginType,
   isEndPoint,
   TAncestor,
+  TDescendant,
   usePlateEditorState,
   usePlateId,
   usePlateSelection,
@@ -309,8 +310,11 @@ export function useComments({
           if (isEndPoint(editor, focusPoint, threadPath)) {
             const parent = getParentNode(editor, threadPath);
             if (parent) {
-              const siblings = getNextSiblingNodes(parent, threadPath);
-              if (siblings.length >= 1 && isTextNode(siblings[0][0])) {
+              const siblings = (getNextSiblingNodes(
+                parent,
+                threadPath
+              ) as any) as TDescendant[];
+              if (siblings.length >= 1 && isTextNode(siblings[0])) {
                 changeSelectionToBeBasedOnTheNextNode(editor);
               }
             }
