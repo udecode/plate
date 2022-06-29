@@ -296,7 +296,6 @@ export function useComments({
           }
         }
         if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
-          // a
           const threadNode = threadNodeEntry[0];
           let domNode;
           try {
