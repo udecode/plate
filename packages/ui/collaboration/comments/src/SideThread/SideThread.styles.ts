@@ -12,6 +12,7 @@ export const createSideThreadStyles = (props: StyledProps) =>
         position: absolute;
         z-index: 6;
         width: 418px;
+        padding-bottom: 1rem;
       `,
     }
   );
