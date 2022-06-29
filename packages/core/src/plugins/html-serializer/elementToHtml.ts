@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { decode } from 'html-entities';
 import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/plate/PlateEditor';
@@ -39,13 +40,15 @@ export const elementToHtml = <V extends Value>(
       return false;
 
     // Render element using picked plugins renderElement function and ReactDOM
-    html = renderToStaticMarkup(
-      createElementWithSlate({
-        ...slateProps,
-        children:
-          plugin.serializeHtml?.(props as any) ??
-          pluginRenderElement(editor, plugin)(props),
-      })
+    html = decode(
+      renderToStaticMarkup(
+        createElementWithSlate({
+          ...slateProps,
+          children:
+            plugin.serializeHtml?.(props as any) ??
+            pluginRenderElement(editor, plugin)(props),
+        })
+      )
     );
 
     html = stripClassNames(html, { preserveClassNames });

@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { decode } from 'html-entities';
 import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/plate/PlateEditor';
@@ -27,7 +28,7 @@ export const leafToHtml = <V extends Value>(
 
     props = {
       ...pipeInjectProps<V>(editor, props),
-      children: encodeURIComponent(result),
+      children: result,
     };
 
     const serialized =
@@ -36,7 +37,7 @@ export const leafToHtml = <V extends Value>(
 
     if (serialized === children) return result;
 
-    let html = decodeURIComponent(
+    let html = decode(
       renderToStaticMarkup(
         createElementWithSlate({
           ...slateProps,

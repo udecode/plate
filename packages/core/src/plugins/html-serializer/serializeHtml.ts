@@ -1,3 +1,4 @@
+import { encode } from 'html-entities';
 import { Value } from '../../slate/editor/TEditor';
 import { EElement } from '../../slate/element/TElement';
 import { EDescendant } from '../../slate/node/TDescendant';
@@ -5,7 +6,7 @@ import { isText } from '../../slate/text/isText';
 import { EText } from '../../slate/text/TText';
 import { SlateProps } from '../../slate/types/SlateProps';
 import { PlateEditor } from '../../types/plate/PlateEditor';
-import { isEncoded } from './utils/isEncoded';
+import { newLinesToHtmlBr } from './utils/newLinesToHtmlBr';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
 import { elementToHtml } from './elementToHtml';
@@ -22,6 +23,7 @@ export const serializeHtml = <V extends Value>(
     stripDataAttributes = true,
     preserveClassNames,
     stripWhitespace = true,
+    convertNewLinesToHtmlBr = false,
   }: {
     /**
      * Slate nodes to convert to HTML.
@@ -48,18 +50,26 @@ export const serializeHtml = <V extends Value>(
      * @default true
      */
     stripWhitespace?: boolean;
+
+    /**
+     * Optionally convert new line chars (\n) to HTML <br /> tags
+     * @default false
+     */
+    convertNewLinesToHtmlBr?: boolean;
   }
 ): string => {
   let result = nodes
     .map((node) => {
       if (isText(node)) {
+        const children = encode(node.text);
+
         return leafToHtml(editor, {
           props: {
             leaf: node as EText<V>,
             text: node as EText<V>,
-            children: isEncoded(node.text)
-              ? node.text
-              : encodeURIComponent(node.text),
+            children: convertNewLinesToHtmlBr
+              ? newLinesToHtmlBr(children)
+              : children,
             attributes: { 'data-slate-leaf': true },
             editor,
           },
@@ -71,13 +81,11 @@ export const serializeHtml = <V extends Value>(
       return elementToHtml<V>(editor, {
         props: {
           element: node as EElement<V>,
-          children: encodeURIComponent(
-            serializeHtml(editor, {
-              nodes: node.children as EDescendant<V>[],
-              preserveClassNames,
-              stripWhitespace,
-            })
-          ) as any,
+          children: serializeHtml(editor, {
+            nodes: node.children as EDescendant<V>[],
+            preserveClassNames,
+            stripWhitespace,
+          }),
           attributes: { 'data-slate-node': 'element', ref: null },
           editor,
         },
@@ -85,7 +93,6 @@ export const serializeHtml = <V extends Value>(
         preserveClassNames,
       });
     })
-    .map((e) => (isEncoded(e) ? decodeURIComponent(e) : e))
     .join('');
 
   if (stripWhitespace) {
