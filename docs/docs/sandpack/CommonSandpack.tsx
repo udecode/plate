@@ -6,21 +6,21 @@ import { stylesFile } from './files/code-styles';
 import { rootCode } from './code-root';
 
 export interface CommonSandpackProps {
-  cssCode?: string;
-  height?: number;
   deps: Record<string, string>;
   appCode: string;
   files: Record<string, string>;
+  height?: number;
+  cssCode?: string;
   direction?: 'horizontal' | 'vertical';
   previewSize?: number;
 }
 
 export const CommonSandpack = ({
-  cssCode,
   deps,
   files,
   appCode,
   previewSize,
+  cssCode = '',
   direction = 'vertical',
   height = 722,
 }: CommonSandpackProps) => {
