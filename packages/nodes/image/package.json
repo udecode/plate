@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-image",
-  "version": "13.5.0",
+  "version": "13.6.0",
   "description": "Image plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -27,7 +27,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.5.0",
+    "@udecode/plate-core": "13.6.0",
     "re-resizable": "^6.9.9",
     "react-textarea-autosize": "^8.3.3"
   },

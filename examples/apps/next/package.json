@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "examples-next",
-  "version": "0.0.607",
+  "version": "0.0.608",
   "description": "A simple NextJS app with Plate",
   "scripts": {
     "build": "next build",
