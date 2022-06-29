@@ -115,7 +115,7 @@ export function ThreadComment(
           </div>
         </div>
         {showResolveThreadButton && (
-          <ResolveButton onResolveThread={onResolveThread} />
+          <ResolveButton thread={thread} onResolveThread={onResolveThread} />
         )}
         {showReOpenThreadButton && (
           <ReOpenThreadButton onReOpenThread={onReOpenThread} />

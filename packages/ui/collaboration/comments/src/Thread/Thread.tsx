@@ -358,6 +358,7 @@ export function Thread({
     <div css={root.css} className={root.className}>
       {thread.assignedTo && (
         <AssignedToHeader
+          thread={thread}
           assignedTo={thread.assignedTo}
           showResolveThreadButton={showResolveThreadButton}
           showReOpenThreadButton={showReOpenThreadButton}

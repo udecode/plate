@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '@xolvio/plate-comments';
+import { Thread, User } from '@xolvio/plate-comments';
 import { css } from 'styled-components';
 import { Avatar } from '../Avatar/Avatar';
 import { capitalizeFirstLetter } from '../capitalizeFirstLetter';
@@ -17,6 +17,7 @@ import { generateUserDisplayIdentifier } from './generateUserDisplayIdentifier';
 
 export function AssignedToHeader(
   props: {
+    thread: Thread;
     assignedTo: User;
     showResolveThreadButton: boolean;
     showReOpenThreadButton: boolean;
@@ -26,6 +27,7 @@ export function AssignedToHeader(
   } & AssignedToHeaderStyledProps
 ) {
   const {
+    thread,
     assignedTo,
     showResolveThreadButton,
     showReOpenThreadButton,
@@ -77,6 +79,7 @@ export function AssignedToHeader(
       <div css={done!.css} className={done!.className}>
         {showResolveThreadButton && (
           <ResolveButton
+            thread={thread}
             onResolveThread={onResolveThread}
             styles={{
               icon: css`
