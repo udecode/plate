@@ -11,7 +11,7 @@ import { EAncestorEntry } from '../slate/node/TNodeEntry';
 export const getNextSiblingNodes = <V extends Value>(
   ancestorEntry: EAncestorEntry<V>,
   path: Path
-) => {
+): EElementOrText<V>[] => {
   const [ancestor, ancestorPath] = ancestorEntry;
 
   const leafIndex = path[ancestorPath.length];

@@ -1,15 +1,19 @@
-import React, { ChangeEventHandler, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { TextareaAutosizeProps } from 'react-textarea-autosize/dist/declarations/src/index';
 import {
   AsProps,
   createComponentAs,
   findNodePath,
+  focusEditor,
   getNodeString,
+  getPointAfter,
+  select,
   setNodes,
   TElement,
   useEditorRef,
 } from '@udecode/plate-core';
+import isHotkey from 'is-hotkey';
 import { useReadOnly } from 'slate-react';
 import { useImageElement } from '../hooks/index';
 import { TImageElement } from '../types';
@@ -27,14 +31,14 @@ export const useImageCaptionTextarea = (
     caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
   } = element;
 
-  const [captionValue, setCaptionValue] = useState(
-    getNodeString(nodeCaption[0])
-  );
+  const [captionValue, setCaptionValue] = useState<
+    TextareaAutosizeProps['value']
+  >(getNodeString(nodeCaption[0]));
 
   const editor = useEditorRef();
   const readOnly = useReadOnly();
 
-  const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
+  const onChange: TextareaAutosizeProps['onChange'] = useCallback(
     (e) => {
       const newValue = e.target.value;
 
@@ -42,23 +46,49 @@ export const useImageCaptionTextarea = (
       setCaptionValue(newValue);
 
       const path = findNodePath(editor, element);
+      if (!path) return;
 
       // saved state
-      if (path) {
-        setNodes<TImageElement>(
-          editor,
-          { caption: [{ text: newValue }] },
-          { at: path }
-        );
-      }
+      setNodes<TImageElement>(
+        editor,
+        { caption: [{ text: newValue }] },
+        { at: path }
+      );
     },
     [editor, element]
   );
 
+  const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
+    if (isHotkey('up', e)) {
+      const path = findNodePath(editor, element);
+      if (!path) return;
+
+      focusEditor(editor);
+      select(editor, path);
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (isHotkey('down', e)) {
+      const path = findNodePath(editor, element);
+      if (!path) return;
+
+      const nextNodePath = getPointAfter(editor, path);
+      if (!nextNodePath) return;
+
+      focusEditor(editor);
+      select(editor, nextNodePath);
+
+      e.preventDefault();
+    }
+  };
+
   return {
     value: captionValue,
-    onChange: onChangeCaption,
     readOnly,
+    onChange,
+    onKeyDown,
     ...props,
   };
 };
