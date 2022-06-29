@@ -1,27 +1,9 @@
 import { useCallback } from 'react';
+import { users } from './users';
 
 export function useFetchContacts() {
   const fetchContacts = useCallback(function fetchContacts() {
-    return [
-      {
-        id: '1',
-        name: 'Jon Doe',
-        email: 'jon.doe@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-      {
-        id: '2',
-        name: 'Jon Doe2',
-        email: 'jon.doe2@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-      {
-        id: '3',
-        name: 'Jon Doe3',
-        email: 'jon.doe3@example.com',
-        avatarUrl: '/img/avatar.svg',
-      },
-    ];
+    return users;
   }, []);
 
   return fetchContacts;

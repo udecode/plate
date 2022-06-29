@@ -26,8 +26,6 @@ export const createAvatarStyles = (props: StyledProps) =>
         display: block;
         position: relative;
         border-radius: 50%;
-        margin-left: 2px;
-        margin-top: 2px;
       `,
     }
   );
@@ -50,10 +48,8 @@ export const createAvatarHolderStyles = (props: StyledProps) =>
         cursor: default;
         -webkit-user-select: text;
         white-space: nowrap;
-        height: 38px;
-        margin-top: 2px;
-        max-width: 36px;
-        width: 36px;
+        height: 32px;
+        width: 32px;
       `,
     }
   );

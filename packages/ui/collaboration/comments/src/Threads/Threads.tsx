@@ -109,6 +109,7 @@ export function Threads(
               onSaveComment={() => undefined as any}
               onSubmitComment={() => Promise.resolve() as any}
               onCancelCreateThread={() => undefined}
+              onResolveThread={() => undefined}
               showResolveThreadButton={false}
               showReOpenThreadButton
               showMoreButton={false}

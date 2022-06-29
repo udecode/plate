@@ -15,14 +15,19 @@ import {
   upsertThreadAtSelection,
   User,
 } from '@xolvio/plate-comments';
+import { AssignedToHeader } from '../AssignedToHeader/AssignedToHeader';
+import { generateUserDisplayIdentifier } from '../AssignedToHeader/generateUserDisplayIdentifier';
 import { Avatar } from '../Avatar/Avatar';
+import { determineAssigningVerb as determineAssigningVerbBase } from '../determineAssigningVerb';
 import { FetchContacts } from '../FetchContacts';
 import {
   OnCancelCreateThread,
+  OnResolveThread,
   OnSaveComment,
   OnSubmitComment,
   RetrieveUser,
 } from '../useComments';
+import { useLoggedInUser } from '../useLoggedInUser';
 import { TextArea } from './TextArea';
 import {
   createAuthorTimestampStyles,
@@ -36,15 +41,19 @@ import {
 } from './Thread.styles';
 import { ThreadComment } from './ThreadComment';
 
+type RetrieveUserByEmailAddressReturnType = User | null;
 type RetrieveUserByEmailAddress = (
   emailAddress: string
-) => User | null | Promise<User | null>;
+) =>
+  | RetrieveUserByEmailAddressReturnType
+  | Promise<RetrieveUserByEmailAddressReturnType>;
 
 export interface CommonThreadAndSideThreadProps {
   thread: ThreadModel;
   onSaveComment: OnSaveComment;
   onSubmitComment: OnSubmitComment;
   onCancelCreateThread: OnCancelCreateThread;
+  onResolveThread: OnResolveThread;
   fetchContacts: FetchContacts;
   retrieveUser: RetrieveUser;
   retrieveUserByEmailAddress: RetrieveUserByEmailAddress;
@@ -108,18 +117,6 @@ function hasAMention(text: string): boolean {
   return findMentionedUsers(text).length >= 1;
 }
 
-async function findFirstMentionedUser(
-  text: string,
-  retrieveUserByEmailAddress: RetrieveUserByEmailAddress
-): Promise<User | null> {
-  const mentionedUsersEmailAddresses = findMentionedUsers(text);
-  if (mentionedUsersEmailAddresses.length >= 1) {
-    const firstMentionedUserEmailAddress = mentionedUsersEmailAddresses[0];
-    return await retrieveUserByEmailAddress(firstMentionedUserEmailAddress);
-  }
-  return null;
-}
-
 export function Thread({
   thread,
   showResolveThreadButton,
@@ -128,6 +125,7 @@ export function Thread({
   onSaveComment,
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
+  onResolveThread,
   fetchContacts,
   retrieveUser,
   retrieveUserByEmailAddress,
@@ -139,9 +137,13 @@ export function Thread({
     false
   );
 
+  const loggedInUser = useLoggedInUser({ retrieveUser });
   const [user, setUser] = useState<User>(createNullUser());
 
-  const [showAssign, setShowAssign] = useState<boolean>(false);
+  const [
+    userThatCanBeAssignedTo,
+    setUserThatCanBeAssignedTo,
+  ] = useState<User | null>(null);
   const [assignedTo, setAssignedTo] = useState<User | undefined>(undefined);
 
   const isAssigned = useCallback(
@@ -151,34 +153,72 @@ export function Thread({
     [assignedTo]
   );
 
+  const determineAssigningVerb = useCallback(
+    function determineAssigningVerb() {
+      return determineAssigningVerbBase({
+        assignedTo: thread.assignedTo ?? null,
+        userThatCanBeAssignedTo,
+      });
+    },
+    [thread.assignedTo, userThatCanBeAssignedTo]
+  );
+
   const [value, setValue] = useState<string>('');
+
+  const retrieveUserThatCanBeAssignedTo = useCallback(
+    async function retrieveUserThatCanBeAssignedTo(text: string) {
+      const mentionedUsersEmailAddresses = findMentionedUsers(text);
+      const unassignedMentionedUsersEmailAddresses = thread.assignedTo
+        ? mentionedUsersEmailAddresses.filter(
+            (emailAddress) => emailAddress !== thread.assignedTo!.email
+          )
+        : mentionedUsersEmailAddresses;
+      if (unassignedMentionedUsersEmailAddresses.length >= 1) {
+        const emailAddress = unassignedMentionedUsersEmailAddresses[0];
+        const user2 = await retrieveUserByEmailAddress(emailAddress);
+        return user2;
+      }
+      return null;
+    },
+    [retrieveUserByEmailAddress, thread.assignedTo]
+  );
 
   const onToggleAssign = useCallback(
     async function onToggleAssign() {
       if (isAssigned()) {
         setAssignedTo(undefined);
-      } else {
-        const firstMentionedUser =
-          (await findFirstMentionedUser(value, retrieveUserByEmailAddress)) ??
-          undefined;
-        setAssignedTo(firstMentionedUser);
+      } else if (userThatCanBeAssignedTo) {
+        setAssignedTo(userThatCanBeAssignedTo);
       }
     },
-    [isAssigned, retrieveUserByEmailAddress, value]
+    [isAssigned, userThatCanBeAssignedTo]
   );
 
   const onChange = useCallback(function onChange(newValue) {
-    const text = newValue;
-
-    setValue(text);
-
-    if (hasAMention(text)) {
-      setShowAssign(true);
-    } else {
-      setShowAssign(false);
-      setAssignedTo(undefined);
-    }
+    setValue(newValue);
   }, []);
+
+  const handleValueChange = useCallback(
+    async function handleValueChange(newValue) {
+      const userThatCanBeAssignedTo2 = await retrieveUserThatCanBeAssignedTo(
+        newValue
+      );
+      if (userThatCanBeAssignedTo2) {
+        setUserThatCanBeAssignedTo(userThatCanBeAssignedTo2);
+      } else {
+        setUserThatCanBeAssignedTo(null);
+        setAssignedTo(undefined);
+      }
+    },
+    [retrieveUserThatCanBeAssignedTo]
+  );
+
+  useEffect(
+    function onValueChange() {
+      handleValueChange(value).catch(console.error);
+    },
+    [value, handleValueChange]
+  );
 
   useEffect(() => {
     (async () => {
@@ -189,6 +229,7 @@ export function Thread({
   const onSubmitComment = useCallback(
     async function onSubmitComment() {
       onSubmitCommentCallback(textAreaRef.current!.value, assignedTo);
+      setValue('');
     },
     [assignedTo, onSubmitCommentCallback]
   );
@@ -216,19 +257,6 @@ export function Thread({
       onCancelCreateThread();
     },
     [hasComments, onCancelCreateThread, clearTextArea]
-  );
-
-  const onResolveThread = useCallback(
-    function onResolveThread() {
-      if (editor) {
-        const newThread = {
-          ...thread,
-          isResolved: true,
-        };
-        upsertThreadAtSelection(editor, newThread);
-      }
-    },
-    [editor, thread]
   );
 
   const onReOpenThread = useCallback(
@@ -322,15 +350,22 @@ export function Thread({
   const determineSubmitButtonText = useCallback(
     function determineSubmitButtonText() {
       if (isAssigned()) {
-        return 'Assign';
+        return determineAssigningVerb();
       }
       return thread.comments.length === 0 ? 'Comment' : 'Reply';
     },
-    [isAssigned, thread.comments.length]
+    [determineAssigningVerb, isAssigned, thread.comments.length]
   );
 
   return (
     <div css={root.css} className={root.className}>
+      {thread.assignedTo && (
+        <AssignedToHeader
+          assignedTo={thread.assignedTo}
+          retrieveUser={retrieveUser}
+          onResolveThread={onResolveThread}
+        />
+      )}
       {thread.comments.map((comment: Comment, index) => (
         <ThreadComment
           key={comment.id}
@@ -372,7 +407,7 @@ export function Thread({
             haveContactsBeenClosed={haveContactsBeenClosed}
             setHaveContactsBeenClosed={setHaveContactsBeenClosed}
           />
-          {showAssign && (
+          {userThatCanBeAssignedTo && (
             <div className="mdc-form-field">
               <div
                 ref={initializeCheckbox}
@@ -397,7 +432,17 @@ export function Thread({
                 </div>
                 <div className="mdc-checkbox__ripple" />
               </div>
-              <label htmlFor="assign">Assign to you</label>
+              <label htmlFor="assign">
+                {userThatCanBeAssignedTo
+                  ? `${determineAssigningVerb()} to ${generateUserDisplayIdentifier(
+                      {
+                        user: userThatCanBeAssignedTo,
+                        isLoggedInUser:
+                          userThatCanBeAssignedTo.id === loggedInUser.id,
+                      }
+                    )}`
+                  : `${determineAssigningVerb()}`}
+              </label>
             </div>
           )}
           <div css={buttons.css} className={buttons.className}>

@@ -1,13 +1,14 @@
 import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React, { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
-import { Check } from '@styled-icons/material/Check';
 // eslint-disable-next-line no-restricted-imports
 import { Unarchive } from '@styled-icons/material/Unarchive';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Comment, generateThreadLink, Thread } from '@xolvio/plate-comments';
 import { Avatar } from '../../Avatar/Avatar';
 import { FetchContacts } from '../../FetchContacts';
+import { OnResolveThread } from '../../OnResolveThread';
+import { ResolveButton } from '../../ResolveButton';
 import { ThreadLinkDialog } from '../../ThreadLinkDialog';
 import {
   createAuthorTimestampStyles,
@@ -18,7 +19,6 @@ import {
 import { MenuButton } from './MenuButton';
 import {
   createReOpenThreadButtonStyles,
-  createResolveThreadButtonStyles,
   createThreadCommentStyled,
   createThreadCommentTextStyles,
 } from './ThreadComment.styles';
@@ -33,7 +33,7 @@ export function ThreadComment(
     showMoreButton: boolean;
     showLinkToThisComment: boolean;
     onSaveComment: (comment: Comment) => void;
-    onResolveThread: () => void;
+    onResolveThread: OnResolveThread;
     onReOpenThread: () => void;
     onDelete: (comment: Comment) => void;
     fetchContacts: FetchContacts;
@@ -60,7 +60,6 @@ export function ThreadComment(
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: timestamp } = createTimestampStyles(props);
-  const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
   const { root: reOpenThreadButton } = createReOpenThreadButtonStyles(props);
   const { root: threadCommentText } = createThreadCommentTextStyles(props);
 
@@ -118,17 +117,9 @@ export function ThreadComment(
             {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>
-        {showResolveThreadButton ? (
-          <button
-            type="button"
-            css={resolveThreadButton.css}
-            className={`${resolveThreadButton.className} mdc-icon-button`}
-            onClick={onResolveThread}
-          >
-            <div className="mdc-icon-button__ripple" />
-            <Check style={{ color: '#2196f3' }} />
-          </button>
-        ) : null}
+        {showResolveThreadButton && (
+          <ResolveButton onResolveThread={onResolveThread} />
+        )}
         {showReOpenThreadButton ? (
           <button
             type="button"

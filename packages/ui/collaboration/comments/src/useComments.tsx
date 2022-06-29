@@ -66,11 +66,18 @@ export interface ThreadPosition {
   top: number;
 }
 
-export type RetrieveUser = () => User | Promise<User>;
+export type RetrieveUserReturnType = User;
+export type RetrieveUser = () =>
+  | RetrieveUserReturnType
+  | Promise<RetrieveUserReturnType>;
 export type OnAddThread = () => Promise<void>;
 export type OnSaveComment = (comment: Comment) => Promise<Thread>;
-export type OnSubmitComment = (commentText: string, assignedTo?: User) => Promise<Thread>;
+export type OnSubmitComment = (
+  commentText: string,
+  assignedTo?: User
+) => Promise<Thread>;
 export type OnCancelCreateThread = () => void;
+export type OnResolveThread = () => void;
 
 export function useComments({
   retrieveUser,
@@ -83,6 +90,7 @@ export function useComments({
   onSaveComment: OnSaveComment;
   onSubmitComment: OnSubmitComment;
   onCancelCreateThread: OnCancelCreateThread;
+  onResolveThread: OnResolveThread;
 } {
   const id = usePlateId() ?? undefined;
   const editorKey = usePlateSelectors(id).keyEditor();
@@ -146,6 +154,20 @@ export function useComments({
       }
     },
     [editor, newThreadThreadNodeEntry]
+  );
+
+  const onResolveThread = useCallback(
+    function onResolveThread() {
+      if (editor && thread) {
+        const newThread = {
+          ...thread,
+          isResolved: true,
+        };
+        upsertThreadAtSelection(editor, newThread);
+        hideThread();
+      }
+    },
+    [editor, hideThread, thread]
   );
 
   const handleThreadIdInURL = useCallback(
@@ -323,7 +345,7 @@ export function useComments({
       if (editor) {
         upsertThreadAtSelection(editor, newThread);
         setNewThreadThreadNodeEntry(null);
-        setThread(null);
+        setThread(newThread);
       }
     },
     [editor]
@@ -372,5 +394,6 @@ export function useComments({
     onSaveComment,
     onSubmitComment,
     onCancelCreateThread,
+    onResolveThread,
   };
 }

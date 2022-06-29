@@ -8,3 +8,4 @@ export { determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft } 
 export { createAvatarStyles } from './Avatar/Avatar.styles';
 export { createAvatarHolderStyles } from './Avatar/Avatar.styles';
 export * from './FetchContacts';
+export { determineAssigningVerb } from './determineAssigningVerb';

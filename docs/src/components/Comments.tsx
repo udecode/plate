@@ -7,8 +7,9 @@ import {
 } from '@xolvio/plate-ui-comments';
 import { user } from '../user';
 import { useFetchContacts } from './useFetchContacts';
+import { users } from './users';
 
-const userMap = new Map([[user.email, user]]);
+const userMap = new Map(users.map((user2) => [user2.email, user2]));
 
 export function Comments({
   setOnAddThread,
@@ -35,6 +36,7 @@ export function Comments({
     onSaveComment,
     onSubmitComment,
     onCancelCreateThread,
+    onResolveThread,
   } = useComments({ retrieveUser });
 
   useEffect(
@@ -51,6 +53,7 @@ export function Comments({
       onSaveComment={onSaveComment}
       onSubmitComment={onSubmitComment}
       onCancelCreateThread={onCancelCreateThread}
+      onResolveThread={onResolveThread}
       fetchContacts={fetchContacts}
       retrieveUser={retrieveUser}
       retrieveUserByEmailAddress={retrieveUserByEmailAddress}
