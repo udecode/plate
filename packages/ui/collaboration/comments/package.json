@@ -49,7 +49,7 @@
     "@udecode/plate-core": "^13.5.0",
     "@udecode/plate-styled-components": "^13.5.0",
     "@udecode/plate-ui-toolbar": "^13.5.0",
-    "@xolvio/plate-comments": "link:../../../collaboration/comments"
+    "@xolvio/plate-comments": "^0.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
