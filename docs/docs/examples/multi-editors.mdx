@@ -3,64 +3,10 @@ slug: /examples/multi-editors
 title: Huge Multi Editors
 ---
 
-```ts live
-() => {
-  const initialValues = VALUES.createMultiEditors();
+import { MultiSandpack } from './MultiSandpack'
 
-  const WithPlate = ({initialValue, id}) => (
-    <Plate
-      id={id}
-      editableProps={{
-        ...CONFIG.editableProps,
-        // spellcheck adds some lag so we disable it
-        spellCheck: false,
-      }}
-      initialValue={initialValue}
-      plugins={PLUGINS.basicNodes}
-    />
-  );
-
-   const Element = ({ attributes, children, element }) => {
-    switch (element.type) {
-      case 'h1':
-        return <h1 {...attributes}>{children}</h1>;
-      default:
-        return <p {...attributes}>{children}</p>;
-    }
-  };
-
-  const WithoutPlate = ({initialValue, id}) => {
-    const [value, setValue] = useState(initialValue);
-    const renderElement = useCallback((p) => <Element {...p} />, []);
-    const editor = useMemo(() => withReact(createEditor()), []);
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={useCallback((v) => setValue(v), [])}
-      >
-        <Editable renderElement={renderElement} {...CONFIG.editableProps} />
-      </Slate>
-    );
-  }
-
-  return (
-    <div className="flex">
-      {initialValues.map((initialValue, idx) => {
-          return (
-            <div style={{border: '1px solid cyan', marginBottom: '20px'}} key={idx}>
-              <div>{idx}</div>
-              <WithPlate initialValue={initialValue} id={idx} />
-            </div>
-          )
-      })}
-    </div>
-  );
-              // <WithoutPlate initialValue={initialValue} id={idx} />
-}
-```
+<MultiSandpack />
 
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

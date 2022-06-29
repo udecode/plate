@@ -5,114 +5,45 @@ slug: /basic-editor
 
 :::note
 
-We're using flexible playgrounds for live editing React code.
+Each example is using [Sandpack](https://sandpack.codesandbox.io/), a live-running coding environment leveraging CodeSandbox.
 
 :::
 
 ### Default Editor
 
-Let's start with the smallest editor implementation.
+Let's start with a minimal editor using [Plate](/docs/Plate) and [editableProps](/docs/Plate#editableprops).
 
-```tsx
-import React from 'react';
-import { Plate } from '@udecode/plate'
-```
+import { BasicEditorDefaultSandpack } from './BasicEditorSandpack'
 
-```tsx live
-() => <Plate />
-```
-
-This looks the same than a `<textarea>`.
-
-### Styling
-
-Let's add a placeholder and some padding using `editableProps` props.
-
-```tsx live
-() => {
-  // Stored in CONFIG.editableProps
-  const editableProps = {
-    placeholder: 'Type…',
-    style: {
-      padding: '15px',
-    },
-  };
-
-  return <Plate id="1" editableProps={editableProps} />;
-}
-```
-
-:::note
-
-Once you render multiple `Plate`, you'll need to pass unique `id` to each.
-This is optional for the first one.
-
-:::
+<BasicEditorDefaultSandpack />
 
 ### Value
 
-Let's set the initial value of the editor to one block of text.
+Let's set the initial value of the editor: one paragraph.
 
-```tsx live
-() => {
-  // Stored in VALUES.plainText
-  const initialValue = [
-    {
-      type: 'p',
-      children: [
-        {
-          text:
-            'This is editable plain text with react and history plugins, just like a <textarea>!',
-        },
-      ],
-    },
-  ];
+import { BasicEditorValueSandpack } from './BasicEditorSandpack'
 
-  return (
-    <Plate
-      id="2"
-      editableProps={CONFIG.editableProps}
-      initialValue={initialValue}
-    />
-  );
-}
-```
+<BasicEditorValueSandpack />
 
 :::note
 
-For readability, we're storing common constants in `CONFIG`, `VALUES`,...
-See all the imported [variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx).
+Once you render multiple `Plate`, you'll need to pass unique `id` prop to each.
+This is optional for the first instance.
 
 :::
 
 ### Change Handler
 
 Now we would like to listen to editor changes so we can save the value somewhere.
-Let's use `onChange` props.
+Let's use `onChange` prop.
 
-```tsx live
-() => {
-  const [debugValue, setDebugValue] = useState(null);
+import { BasicEditorHandlerSandpack } from './BasicEditorSandpack'
 
-  return (
-    <Plate
-      id="3"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.plainText}
-      onChange={(newValue) => {
-        setDebugValue(newValue);
-        // save newValue...
-      }}
-    >
-      value: {JSON.stringify(debugValue)}
-    </Plate>
-  );
-}
-```
+<BasicEditorHandlerSandpack />
 
 :::note
 
-`Plate` children are rendered just before the editable component.
+`Plate` children are rendered just after the editable component.
 
 :::
 

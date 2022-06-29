@@ -7,24 +7,29 @@ import {
   Search,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
+import { Plate } from '@udecode/plate-core/src/index';
 import {
   createBasicElementsPlugin,
   createFindReplacePlugin,
   createHeadingPlugin,
   createPlugins,
 } from '@udecode/plate-headless';
-import {
-  AlignToolbarButtons,
-  BasicElementToolbarButtons,
-  BasicMarkToolbarButtons,
-  IndentToolbarButtons,
-  ListToolbarButtons,
-  MarkBallonToolbar,
-  TableToolbarButtons,
-} from '../../../../examples/next/src/config/components/Toolbars';
-import { CONFIG } from '../../../../examples/next/src/config/config';
-import { VALUES } from '../../../../examples/next/src/config/values/values';
-import { Plate } from '../../../core/src/components/plate/Plate';
+import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
+import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
+import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
+import { BasicMarkToolbarButtons } from 'examples/src/basic-marks/BasicMarkToolbarButtons';
+import { editableProps } from 'examples/src/common/editableProps';
+import { exitBreakPlugin } from 'examples/src/exit-break/exitBreakPlugin';
+import { forcedLayoutPlugin } from 'examples/src/forced-layout/forcedLayoutPlugin';
+import { IndentToolbarButtons } from 'examples/src/indent/IndentToolbarButtons';
+import { ListToolbarButtons } from 'examples/src/list/ListToolbarButtons';
+import { playgroundValue } from 'examples/src/playgroundValue';
+import { resetBlockTypePlugin } from 'examples/src/reset-node/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from 'examples/src/select-on-backspace/selectOnBackspacePlugin';
+import { softBreakPlugin } from 'examples/src/soft-break/softBreakPlugin';
+import { TableToolbarButtons } from 'examples/src/table/TableToolbarButtons';
+import { trailingBlockPlugin } from 'examples/src/trailing-block/trailingBlockPlugin';
+import { autoformatPlugin } from '../../../../examples/src/autoformat/autoformatPlugin';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
@@ -75,13 +80,13 @@ const PlateContainer = () => {
       createFindReplacePlugin({ options: { search } }),
       createNodeIdPlugin(),
       // TODO: fix type
-      createAutoformatPlugin(CONFIG.autoformat as any),
-      createResetNodePlugin(CONFIG.resetBlockType as any),
-      createSoftBreakPlugin(CONFIG.softBreak as any),
-      createExitBreakPlugin(CONFIG.exitBreak as any),
-      createNormalizeTypesPlugin(CONFIG.forceLayout as any),
-      createTrailingBlockPlugin(CONFIG.trailingBlock as any),
-      createSelectOnBackspacePlugin(CONFIG.selectOnBackspace as any),
+      createAutoformatPlugin(autoformatPlugin as any),
+      createResetNodePlugin(resetBlockTypePlugin as any),
+      createSoftBreakPlugin(softBreakPlugin as any),
+      createExitBreakPlugin(exitBreakPlugin as any),
+      createNormalizeTypesPlugin(forcedLayoutPlugin as any),
+      createTrailingBlockPlugin(trailingBlockPlugin as any),
+      createSelectOnBackspacePlugin(selectOnBackspacePlugin as any),
     ],
     {
       components: createPlateUI(),
@@ -90,8 +95,8 @@ const PlateContainer = () => {
 
   return (
     <Plate
-      editableProps={CONFIG.editableProps as any}
-      initialValue={VALUES.playground}
+      editableProps={editableProps as any}
+      initialValue={playgroundValue}
       plugins={plugins}
     >
       <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
@@ -108,7 +113,7 @@ const PlateContainer = () => {
         <TableToolbarButtons />
       </HeadingToolbar>
 
-      <MarkBallonToolbar />
+      <MarkBalloonToolbar />
 
       <MentionCombobox />
     </Plate>

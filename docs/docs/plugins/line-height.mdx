@@ -9,6 +9,8 @@ You can use it to set the line height for the selected element as required.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-line-height
 npm install @udecode/plate-ui-line-height
 ```
@@ -17,42 +19,12 @@ npm install @udecode/plate-ui-line-height
 
 Click inside a paragraph or a header and click on a toolbar button to apply the desired line height.
 
-```ts live
-() => {
-  const plugins = [
-    ...PLUGINS.basicNodes,
-    createLineHeightPlugin({
-      inject: {
-        props: {
-          defaultNodeValue: 1.5,
-          validNodeValues: [1, 1.2, 1.5, 2, 3],
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1
-          ],
-        },
-      },
-    })
-  ]
+import { LineHeightSandpack } from './LineHeightSandpack'
 
-  return (
-    <>
-      <HeadingToolbar>
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-      </HeadingToolbar>
-      <Plate
-        id="alignment"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.lineHeight}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<LineHeightSandpack />
 
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/line-height/src/createLineHeightPlugin.ts)
 - [packages/ui/nodes/line-height](https://github.com/udecode/plate/tree/main/packages/ui/nodes/line-height/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

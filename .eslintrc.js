@@ -286,26 +286,5 @@ module.exports = {
         'import/order': ['error', { 'newlines-between': 'never' }],
       },
     },
-    // local
-    {
-      files: 'packages/**/*',
-      excludedFiles: '**/*.spec.*',
-      rules: {
-        'no-restricted-imports': [
-          'error',
-          {
-            paths: [
-              {
-                name: '@styled-icons',
-                message:
-                  '@styled-icons package is meant to be used in stories only',
-              },
-            ],
-            // The no-restricted-imports rule does not support custom messages for pattern imports yet: https://github.com/eslint/eslint/issues/11843
-            patterns: ['@styled-icons/*'],
-          },
-        ],
-      },
-    },
   ],
 };

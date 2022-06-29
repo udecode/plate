@@ -2,9 +2,9 @@
 
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../../examples/next/src/config/autoformat/autoformatUtils';
-import { CONFIG } from '../../../../../../../examples/next/src/config/config';
+import { preFormat } from '../../../../../../../examples/src/autoformat/autoformatUtils';
 import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -70,7 +70,7 @@ describe('when ##space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat as any)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');

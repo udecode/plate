@@ -16,6 +16,8 @@ The list plugin has strict rules between parent and children
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-indent-list
 ```
 
@@ -26,102 +28,9 @@ npm install @udecode/plate-indent-list
 - `createIndentListPlugin` sets the list style (`display: list-item`)
 - Use the indent or outdent toolbar buttons in the editor below to control the level of indentation of the content, both for paragraph text and headers.
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    createHeadingPlugin(),
-    createParagraphPlugin({
-      component: withProps(StyledElement, {
-        as: 'div',
-        styles: {
-          root: {
-            margin: 0,
-            padding: '4px 0',
-          }
-        }
-      })
-    }),
-    createIndentListPlugin({
-      inject: {
-        props: {
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1
-          ],
-        },
-      },
-    }),
-    createIndentPlugin({
-      inject: {
-        props: {
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1
-          ],
-        },
-      },
-    }),
-  ], {
-    components: CONFIG.components,
-  });
-  
-  const IndentToolbarButtons = withPlateEventProvider(() => {
-    const editor = usePlateEditorRef();
-  
-    return (
-      <>
-        <ToolbarButton
-          onMouseDown={(e) => {
-            e.preventDefault();
-            toggleIndentList(editor, {
-              listStyleType: 'disc',
-            });
-          }}
-          icon={<FormatListBulleted />}
-        />
-        <ToolbarButton
-          onMouseDown={(e) => {
-            e.preventDefault();
-            toggleIndentList(editor, {
-              listStyleType: 'decimal',
-            });
-          }}
-          icon={<FormatListNumbered />}
-        />
-        <ToolbarButton
-          onMouseDown={(e) => {
-            e.preventDefault();
-            outdentList(editor);
-          }}
-          icon={<FormatIndentIncrease />}
-        />
-        <ToolbarButton
-          onMouseDown={(e) => {
-            e.preventDefault();
-            indent(editor);
-          }}
-          icon={<FormatIndentDecrease />}
-        />
-      </>
-    );
-  });
+import { IndentListSandpack } from './IndentListSandpack'
 
-  return (
-    <>
-      <HeadingToolbar>
-        <IndentToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="indent-list"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.indentList}
-        plugins={plugins}
-        normalizeInitialValue
-      />
-    </>
-  );
-}
-```
+<IndentListSandpack />
 
 ### Commands
 
@@ -136,4 +45,4 @@ npm install @udecode/plate-indent-list
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/indent-list/src/createIndentListPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

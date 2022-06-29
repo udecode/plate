@@ -10,55 +10,16 @@ In the following example, you can press `Enter` in an empty block quote or `Back
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-reset-node
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const resetBlockTypesCommonRule = {
-    types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
-    defaultType: ELEMENT_PARAGRAPH,
-  };
+import { ResetNodeSandpack } from './ResetNodeSandpack'
 
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createListPlugin(),
-    createTablePlugin(),
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
-    createResetNodePlugin({
-      options: {
-        rules: [
-          {
-            ...resetBlockTypesCommonRule,
-            hotkey: 'Enter',
-            predicate: isBlockAboveEmpty,
-          },
-          {
-            ...resetBlockTypesCommonRule,
-            hotkey: 'Backspace',
-            predicate: isSelectionAtBlockStart,
-          },
-        ],
-      }
-    }),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
-  ], {
-    components: CONFIG.components,
-  });
-
-  return (
-    <Plate
-      id="reset-node"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.basicElements}
-      plugins={plugins}
-    />
-  );
-}
-```
+<ResetNodeSandpack />
 
 ### Options
 
@@ -90,4 +51,4 @@ export interface ResetNodePlugin<V extends Value = Value, E extends PlateEditor<
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/reset-node/src/createResetNodePlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

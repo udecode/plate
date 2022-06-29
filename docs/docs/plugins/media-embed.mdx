@@ -16,49 +16,20 @@ Media providers supported by this plugin:
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-media-embed
 npm install @udecode/plate-ui-media-embed
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createMediaEmbedPlugin(),
-    createSelectOnBackspacePlugin({
-      options: {
-        query: {
-          allow: [ELEMENT_MEDIA_EMBED],
-        },
-      },
-    }),
-  ], {
-    components: CONFIG.components,
-  });
+import { MediaEmbedSandpack } from './MediaEmbedSandpack'
 
-  return (
-    <>
-      <PlateProvider id="media-embed">
-        <HeadingToolbar>
-          <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        </HeadingToolbar>
-      </PlateProvider>
-   
-      <Plate
-        id="media-embed"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.mediaEmbed}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+<MediaEmbedSandpack />
 
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/media-embed/src/createMediaEmbedPlugin.ts)
 - [packages/ui/nodes/media-embed](https://github.com/udecode/plate/tree/main/packages/ui/nodes/media-embed/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

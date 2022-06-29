@@ -8,32 +8,17 @@ Allows you to enforce document structure. For example, you can require that the 
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-normalizers
 npm install @udecode/plate-trailing-block
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = [
-    ...PLUGINS.basicNodes,
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
-    createNormalizeTypesPlugin({
-      rules: [{ path: [0], strictType: ELEMENT_H1 }],
-    }),
-  ];
+import { ForcedLayoutSandpack } from './ForcedLayoutSandpack'
 
-  return (
-    <Plate
-      id="forced-layout"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.forcedLayout}
-      plugins={plugins}
-    />
-  );
-}
-```
+<ForcedLayoutSandpack />
 
 ### Options
 
@@ -84,4 +69,4 @@ export interface NormalizeTypesPlugin extends ErrorHandler {
 
 - [Trailing Block Plugin](https://github.com/udecode/plate/blob/main/packages/editor/trailing-block/src/createTrailingBlockPlugin.ts)
 - [Normalize Types Plugin](https://github.com/udecode/plate/blob/main/packages/editor/normalizers/src/createNormalizeTypesPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

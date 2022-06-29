@@ -2,26 +2,18 @@
   "name": "@udecode/plate-serializer-docx",
   "version": "13.5.0",
   "description": "Docx serializer plugin for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin",
-    "serializer",
-    "docx"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/serializers/docx"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -29,10 +21,11 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../../cti.sh",
-    "rollup": "rollup -c=../../../rollup.config.js",
+    "cti": "sh ../../../scripts/cti.sh",
+    "rollup": "rollup -c=../../../config/rollup.config.js",
     "test": "jest"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-core": "13.5.0",
     "@udecode/plate-heading": "13.5.0",
@@ -51,6 +44,13 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.74.2"
   },
+  "keywords": [
+    "docx",
+    "plate",
+    "plugin",
+    "serializer",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

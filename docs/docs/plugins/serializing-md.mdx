@@ -6,34 +6,16 @@ title: Markdown
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-serializer-md
 ```
 
 ### Deserializer Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createDeserializeMdPlugin(),
-  ], {
-    components: CONFIG.components,
-  });
+import { SerializingMdSandpack } from './SerializingMdSandpack'
 
-  return (
-    <Plate
-      id="deserialize-md"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteMd}
-      plugins={plugins}
-    />
-  );
-}
-```
+<SerializingMdSandpack />
 
 ### Serializer Usage
 
@@ -42,4 +24,4 @@ Use [remark-slate](https://github.com/hanford/remark-slate).
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/md/src/deserializer/createDeserializeMdPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

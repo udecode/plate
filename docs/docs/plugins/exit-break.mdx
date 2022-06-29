@@ -8,53 +8,16 @@ Allows you to create hotkeys which exit the current block.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-break
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createListPlugin(),
-    createTablePlugin(),
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
-    createExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: KEYS_HEADING,
-          },
-        },
-      ],
-    }),
-  ], {
-    components: CONFIG.components,
-  });
+import { ExitBreakSandpack } from './ExitBreakSandpack'
 
-  return (
-    <Plate
-      id="exit-break"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.exitBreak}
-      plugins={plugins}
-    />
-  );
-}
-```
+<ExitBreakSandpack />
 
 ### Options
 
@@ -101,4 +64,4 @@ export interface ExitBreakPlugin {
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/exit-break/createExitBreakPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

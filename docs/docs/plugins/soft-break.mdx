@@ -8,47 +8,16 @@ Allows you to create hotkeys which insert a line break, without exiting the curr
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-break
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createListPlugin(),
-    createTablePlugin(),
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createExitBreakPlugin(CONFIG.exitBreak),
-    createTrailingBlockPlugin(CONFIG.trailingBlock),
-    createSoftBreakPlugin({
-      options: {
-        rules: [
-          { hotkey: 'shift+enter' },
-          {
-            hotkey: 'enter',
-            query: {
-              allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
-            },
-          },
-        ],
-      }
-    }),
-  ], {
-    components: CONFIG.components,
-  });
+import { SoftBreakSandpack } from './SoftBreakSandpack'
 
-  return (
-    <Plate
-      id="soft-break"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.softBreak}
-      plugins={plugins}
-    />
-  );
-}
-```
+<SoftBreakSandpack />
 
 ### Options
 
@@ -70,4 +39,4 @@ export interface SoftBreakPlugin {
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/soft-break/createSoftBreakPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)
