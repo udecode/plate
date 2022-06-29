@@ -3,9 +3,10 @@ import { Sandpack } from '@codesandbox/sandpack-react';
 import { monokaiPro } from '@codesandbox/sandpack-themes';
 import clsx from 'clsx';
 import { stylesFile } from './files/code-styles';
-import { rootFile } from './code-root';
+import { rootCode } from './code-root';
 
 export interface CommonSandpackProps {
+  cssCode?: string;
   height?: number;
   deps: Record<string, string>;
   appCode: string;
@@ -15,6 +16,7 @@ export interface CommonSandpackProps {
 }
 
 export const CommonSandpack = ({
+  cssCode,
   deps,
   files,
   appCode,
@@ -29,7 +31,7 @@ export const CommonSandpack = ({
       files={{
         '/App.tsx': appCode,
         ...files,
-        ...rootFile,
+        '/index.tsx': cssCode + rootCode,
         ...stylesFile,
       }}
       customSetup={{

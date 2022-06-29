@@ -79,12 +79,11 @@ Build:
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `next.config.js`
+    - edit `/examples/apps/next/next.config.js`
         - add `'@udecode/plate-x': x/src'` to `alias` object to watch file changes
-- Create an example app in `/examples/src`
 - Run the example app: 
-  - Go to `/examples/apps/next`
-      - `yarn dev`
+  - run `yarn dev`
+- Create an example app in `/examples/src`
 - Once you've finished the example app:
   - go back to the root of the repository
   - run `yarn codegen` to generate the sandpack files

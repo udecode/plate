@@ -1,3 +1,3 @@
-import { Playground } from 'examples/src';
+import Playground from 'examples/src/PlaygroundApp';
 
 export default Playground;

@@ -1,4 +1,3 @@
-import 'tippy.js/dist/tippy.css';
 import React, { CSSProperties } from 'react';
 import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';

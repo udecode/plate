@@ -12,6 +12,7 @@
     "codegen": "yarn plop --plopfile ./config/plopfile.js",
     "cti": "yarn workspaces foreach -p --exclude 'examples*' run cti",
     "cti:clean": "yarn workspaces foreach -p --exclude 'examples*' run cti clean ./src",
+    "dev": "yarn workspace examples-next dev",
     "docs": "cd docs && yarn && yarn start",
     "postinstall": "patch-package",
     "internal:release:next": "yarn prerelease && yarn changeset publish --tag next",
