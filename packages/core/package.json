@@ -41,6 +41,7 @@
     "@radix-ui/react-slot": "^0.1.2",
     "@udecode/zustood": "^1.1.1",
     "clsx": "^1.1.1",
+    "html-entities": "^2.3.3",
     "jotai": "^1.7.2",
     "lodash": "^4.17.21",
     "use-deep-compare": "^1.1.0",
