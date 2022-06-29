@@ -383,6 +383,7 @@ export function useComments({
       };
       const newThread = {
         ...thread!,
+        isResolved: false,
         comments: [...thread!.comments, comment],
       };
       if (assignedTo) {
