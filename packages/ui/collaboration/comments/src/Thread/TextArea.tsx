@@ -321,6 +321,15 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       [fetchContacts, filterContacts, setFilteredContacts]
     );
 
+    useEffect(
+      function focusOnShow() {
+        requestAnimationFrame(() => {
+          textAreaRef.current!.focus();
+        });
+      },
+      [textAreaRef]
+    );
+
     const { root: textArea } = createTextAreaStyles(props);
 
     const onChange2 = useCallback(
