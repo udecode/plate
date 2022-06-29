@@ -75,6 +75,9 @@ export function ThreadCommentEditing({
           css={commentButton.css}
           className={commentButton.className}
           onClick={onSave}
+          disabled={
+            value.trim().length === 0 || value.trim() === defaultText.trim()
+          }
         >
           Save
         </button>

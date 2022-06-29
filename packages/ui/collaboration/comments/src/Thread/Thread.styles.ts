@@ -260,6 +260,13 @@ export const createCommentButtonStyles = (props: StyledProps) =>
           box-shadow: 0 2px 6px 2px rgb(66 133 244 / 15%);
           color: #fff;
         }
+
+        &[disabled] {
+          background-color: #f1f3f4;
+          color: #3c4043;
+          opacity: 0.38;
+          cursor: default;
+        }
       `,
     }
   );

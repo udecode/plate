@@ -452,6 +452,7 @@ export function Thread({
               css={commentButton.css}
               className={commentButton.className}
               onClick={onSubmitComment}
+              disabled={value.trim().length === 0}
             >
               {determineSubmitButtonText()}
             </button>
