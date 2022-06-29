@@ -329,7 +329,9 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     useEffect(
       function focusOnShow() {
         requestAnimationFrame(() => {
-          textAreaRef.current!.focus();
+          if (textAreaRef.current) {
+            textAreaRef.current.focus();
+          }
         });
       },
       [textAreaRef]
