@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  commonDeps,
-  plateTestUtilsDeps,
-  zustandDeps,
-} from '../sandpack/code-deps';
+import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
@@ -20,7 +16,6 @@ export const CursorOverlaySandpack = () => (
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
-      ...zustandDeps,
     }}
     appCode={cursorOverlayAppCode}
     files={{

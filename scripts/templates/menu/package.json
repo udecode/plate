@@ -18,9 +18,9 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
+    "build": "yarn clean && tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "clean": "rimraf dist",
     "cti": "sh ../../../scripts/cti.sh below",
     "rollup": "rollup -c=../../../config/rollup.config.js",
     "test": "jest"

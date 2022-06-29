@@ -1,9 +1,9 @@
-import { createStore } from '@udecode/zustood';
 import { withPlate } from '../../plugins/withPlate';
 import { Value } from '../../slate/editor/TEditor';
 import { ELEMENT_DEFAULT } from '../../types/plate/node.types';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateChangeKey, PlateStoreState } from '../../types/plate/PlateStore';
+import { createStore } from '../../utils/index';
 import { createTEditor } from '../../utils/slate/createTEditor';
 
 export const createPlateStore = <
