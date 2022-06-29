@@ -4,7 +4,6 @@
 
 export * from './createElementWithSlate';
 export * from './htmlStringToDOMNode';
-export * from './isEncoded';
 export * from './newLinesToHtmlBr';
 export * from './stripClassNames';
 export * from './stripSlateDataAttributes';
