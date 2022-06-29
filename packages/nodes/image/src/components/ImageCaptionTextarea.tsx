@@ -1,12 +1,13 @@
-import React, { ChangeEventHandler, useCallback } from 'react';
+import React, { ChangeEventHandler, useCallback, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { TextareaAutosizeProps } from 'react-textarea-autosize/dist/declarations/src/index';
 import {
   AsProps,
   createComponentAs,
   findNodePath,
+  getNodeString,
   setNodes,
-  TText,
+  TElement,
   useEditorRef,
 } from '@udecode/plate-core';
 import { useReadOnly } from 'slate-react';
@@ -22,26 +23,40 @@ export const useImageCaptionTextarea = (
 ): TextareaAutosizeProps => {
   const element = useImageElement();
 
-  const { caption: nodeCaption = [{ children: [{ text: '' }] }] } = element;
+  const {
+    caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
+  } = element;
+
+  const [captionValue, setCaptionValue] = useState(
+    getNodeString(nodeCaption[0])
+  );
 
   const editor = useEditorRef();
   const readOnly = useReadOnly();
 
   const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
+      const newValue = e.target.value;
+
+      // local state
+      setCaptionValue(newValue);
+
       const path = findNodePath(editor, element);
-      path &&
+
+      // saved state
+      if (path) {
         setNodes<TImageElement>(
           editor,
-          { caption: [{ text: e.target.value }] },
+          { caption: [{ text: newValue }] },
           { at: path }
         );
+      }
     },
     [editor, element]
   );
 
   return {
-    value: (nodeCaption[0] as TText).text,
+    value: captionValue,
     onChange: onChangeCaption,
     readOnly,
     ...props,

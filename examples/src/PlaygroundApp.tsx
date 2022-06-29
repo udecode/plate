@@ -102,9 +102,7 @@ const App = () => {
           createBlockquotePlugin(),
           createTodoListPlugin(),
           createHeadingPlugin(),
-          createImagePlugin({
-            type: 'image-block',
-          }),
+          createImagePlugin(),
           createHorizontalRulePlugin(),
           createLinkPlugin(),
           createListPlugin(),
