@@ -91,6 +91,7 @@ import {
   OnAddThread,
   ToggleShowThreadsButton,
 } from '@xolvio/plate-ui-comments'
+import { RetrieveUser } from '@xolvio/plate-ui-comments/src'
 import { useMyPlateEditorRef } from '../typescript'
 
 export const BasicElementToolbarButtons = () => {
@@ -264,13 +265,19 @@ export const TableToolbarButtons = () => (
 export const CollaborationToolbarButtons = ({
   onAddThread,
   fetchContacts,
+  retrieveUser,
 }: {
   onAddThread: OnAddThread
   fetchContacts: FetchContacts
+  retrieveUser: RetrieveUser
 }) => (
   <>
     <AddThreadToolbarButton icon={<CommentAdd />} onAddThread={onAddThread} />
-    <ToggleShowThreadsButton icon={<Comment />} fetchContacts={fetchContacts} />
+    <ToggleShowThreadsButton
+      icon={<Comment />}
+      fetchContacts={fetchContacts}
+      retrieveUser={retrieveUser}
+    />
   </>
 )
 

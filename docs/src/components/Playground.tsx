@@ -102,8 +102,13 @@ import {
   OnAddThread,
   ThreadElement,
 } from '@xolvio/plate-ui-comments';
+import {
+  RetrieveUser,
+  UseCommentsReturnType,
+} from '@xolvio/plate-ui-comments/src';
 import { Comments } from './Comments';
 import { useFetchContacts } from './useFetchContacts';
+import { useRetrieveUser } from './useRetrieveUser';
 
 const CursorOverlayContainer = (props) => {
   const cursors = cursorStore.use.cursors();
@@ -115,9 +120,11 @@ const Toolbar = withPlateEventProvider(
   ({
     onAddThread,
     fetchContacts,
+    retrieveUser,
   }: {
     onAddThread: OnAddThread;
     fetchContacts: FetchContacts;
+    retrieveUser: RetrieveUser;
   }) => (
     <HeadingToolbar>
       <BasicElementToolbarButtons />
@@ -145,6 +152,7 @@ const Toolbar = withPlateEventProvider(
       <CollaborationToolbarButtons
         onAddThread={onAddThread}
         fetchContacts={fetchContacts}
+        retrieveUser={retrieveUser}
       />
     </HeadingToolbar>
   )
@@ -221,16 +229,19 @@ export function Playground() {
     [components]
   );
 
-  const [onAddThread, setOnAddThread] = useState<OnAddThread>(() =>
-    Promise.resolve()
-  );
+  const [comments, setComments] = useState<UseCommentsReturnType | null>(null);
   const fetchContacts = useFetchContacts();
+  const retrieveUser = useRetrieveUser();
 
   const containerRef = useRef();
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Toolbar onAddThread={onAddThread} fetchContacts={fetchContacts} />
+      <Toolbar
+        onAddThread={comments?.onAddThread}
+        fetchContacts={fetchContacts}
+        retrieveUser={retrieveUser}
+      />
 
       <div ref={containerRef} style={{ position: 'relative' }}>
         <Plate
@@ -245,7 +256,7 @@ export function Playground() {
 
           <CursorOverlayContainer containerRef={containerRef} />
 
-          <Comments setOnAddThread={setOnAddThread} />
+          <Comments setComments={setComments} />
         </Plate>
       </div>
     </DndProvider>

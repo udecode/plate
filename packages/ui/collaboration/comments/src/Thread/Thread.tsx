@@ -20,6 +20,7 @@ import { generateUserDisplayIdentifier } from '../AssignedToHeader/generateUserD
 import { Avatar } from '../Avatar/Avatar';
 import { determineAssigningVerb as determineAssigningVerbBase } from '../determineAssigningVerb';
 import { FetchContacts } from '../FetchContacts';
+import { OnReOpenThread } from '../OnReOpenThread';
 import {
   OnCancelCreateThread,
   OnResolveThread,
@@ -111,10 +112,6 @@ function findMentionedUsers(commentText: string): string[] {
     mentionedUserIdentifiers.push(mentionedUser);
   }
   return mentionedUserIdentifiers;
-}
-
-function hasAMention(text: string): boolean {
-  return findMentionedUsers(text).length >= 1;
 }
 
 export function Thread({
@@ -259,7 +256,7 @@ export function Thread({
     [hasComments, onCancelCreateThread, clearTextArea]
   );
 
-  const onReOpenThread = useCallback(
+  const onReOpenThread = useCallback<OnReOpenThread>(
     function onReOpenThread() {
       if (editor) {
         const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
@@ -362,8 +359,11 @@ export function Thread({
       {thread.assignedTo && (
         <AssignedToHeader
           assignedTo={thread.assignedTo}
+          showResolveThreadButton={showResolveThreadButton}
+          showReOpenThreadButton={showReOpenThreadButton}
           retrieveUser={retrieveUser}
           onResolveThread={onResolveThread}
+          onReOpenThread={onReOpenThread}
         />
       )}
       {thread.comments.map((comment: Comment, index) => (

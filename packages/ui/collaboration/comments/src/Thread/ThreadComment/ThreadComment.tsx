@@ -1,13 +1,12 @@
 import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React, { useCallback, useState } from 'react';
-// eslint-disable-next-line no-restricted-imports
-// eslint-disable-next-line no-restricted-imports
-import { Unarchive } from '@styled-icons/material/Unarchive';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Comment, generateThreadLink, Thread } from '@xolvio/plate-comments';
 import { Avatar } from '../../Avatar/Avatar';
 import { FetchContacts } from '../../FetchContacts';
+import { OnReOpenThread } from '../../OnReOpenThread';
 import { OnResolveThread } from '../../OnResolveThread';
+import { ReOpenThreadButton } from '../../ReOpenThreadButton';
 import { ResolveButton } from '../../ResolveButton';
 import { ThreadLinkDialog } from '../../ThreadLinkDialog';
 import {
@@ -18,7 +17,6 @@ import {
 } from '../Thread.styles';
 import { MenuButton } from './MenuButton';
 import {
-  createReOpenThreadButtonStyles,
   createThreadCommentStyled,
   createThreadCommentTextStyles,
 } from './ThreadComment.styles';
@@ -34,7 +32,7 @@ export function ThreadComment(
     showLinkToThisComment: boolean;
     onSaveComment: (comment: Comment) => void;
     onResolveThread: OnResolveThread;
-    onReOpenThread: () => void;
+    onReOpenThread: OnReOpenThread;
     onDelete: (comment: Comment) => void;
     fetchContacts: FetchContacts;
   } & StyledProps
@@ -60,7 +58,6 @@ export function ThreadComment(
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: timestamp } = createTimestampStyles(props);
-  const { root: reOpenThreadButton } = createReOpenThreadButtonStyles(props);
   const { root: threadCommentText } = createThreadCommentTextStyles(props);
 
   const [threadLink, setThreadLink] = useState<string | null>(null);
@@ -120,17 +117,9 @@ export function ThreadComment(
         {showResolveThreadButton && (
           <ResolveButton onResolveThread={onResolveThread} />
         )}
-        {showReOpenThreadButton ? (
-          <button
-            type="button"
-            css={reOpenThreadButton.css}
-            className={`${reOpenThreadButton.className} mdc-icon-button`}
-            onClick={onReOpenThread}
-          >
-            <div className="mdc-icon-button__ripple" />
-            <Unarchive />
-          </button>
-        ) : null}
+        {showReOpenThreadButton && (
+          <ReOpenThreadButton onReOpenThread={onReOpenThread} />
+        )}
         {showMoreButton ? (
           <MenuButton
             showLinkToThisComment={showLinkToThisComment}

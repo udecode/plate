@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getAboveNode,
   getNextSiblingNodes,
@@ -80,11 +80,7 @@ export type OnSubmitComment = (
 export type OnCancelCreateThread = () => void;
 export type OnResolveThread = () => void;
 
-export function useComments({
-  retrieveUser,
-}: {
-  retrieveUser: RetrieveUser;
-}): {
+export type UseCommentsReturnType = {
   thread: Thread | null;
   position: ThreadPosition;
   onAddThread: OnAddThread;
@@ -92,7 +88,13 @@ export function useComments({
   onSubmitComment: OnSubmitComment;
   onCancelCreateThread: OnCancelCreateThread;
   onResolveThread: OnResolveThread;
-} {
+};
+
+export function useComments({
+  retrieveUser,
+}: {
+  retrieveUser: RetrieveUser;
+}): UseCommentsReturnType {
   const id = usePlateId() ?? undefined;
   const editorKey = usePlateSelectors(id).keyEditor();
   const editor = usePlateEditorState(id);
@@ -391,13 +393,26 @@ export function useComments({
     [retrieveUser, thread, updateThread]
   );
 
-  return {
-    thread,
-    position: threadPosition,
-    onAddThread,
-    onSaveComment,
-    onSubmitComment,
-    onCancelCreateThread,
-    onResolveThread,
-  };
+  const returnValue = useMemo(
+    () => ({
+      thread,
+      position: threadPosition,
+      onAddThread,
+      onSaveComment,
+      onSubmitComment,
+      onCancelCreateThread,
+      onResolveThread,
+    }),
+    [
+      onAddThread,
+      onCancelCreateThread,
+      onResolveThread,
+      onSaveComment,
+      onSubmitComment,
+      thread,
+      threadPosition,
+    ]
+  );
+
+  return returnValue;
 }

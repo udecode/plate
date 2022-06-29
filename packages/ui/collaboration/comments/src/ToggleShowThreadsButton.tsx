@@ -7,14 +7,17 @@ import {
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { Threads } from './Threads/Threads';
 import { FetchContacts } from './FetchContacts';
+import { RetrieveUser } from './useComments';
 
 export const ToggleShowThreadsButton = withPlateEventProvider(
   ({
     id,
     fetchContacts,
+    retrieveUser,
     ...props
   }: ToolbarButtonProps & {
     fetchContacts: FetchContacts;
+    retrieveUser: RetrieveUser;
   }) => {
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
@@ -53,6 +56,7 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
             parent={ref}
             onClose={onCloseThreads}
             fetchContacts={fetchContacts}
+            retrieveUser={retrieveUser}
           />
         ) : null}
       </div>

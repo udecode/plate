@@ -1,26 +1,20 @@
 import React, { useCallback, useEffect } from 'react';
 import { User } from '@xolvio/plate-comments';
-import {
-  OnAddThread,
-  SideThread,
-  useComments,
-} from '@xolvio/plate-ui-comments';
-import { user } from '../user';
+import { SideThread, useComments } from '@xolvio/plate-ui-comments';
+import { UseCommentsReturnType } from '@xolvio/plate-ui-comments/src';
 import { useFetchContacts } from './useFetchContacts';
+import { useRetrieveUser } from './useRetrieveUser';
 import { users } from './users';
 
 const userMap = new Map(users.map((user2) => [user2.email, user2]));
 
 export function Comments({
-  setOnAddThread,
+  setComments,
 }: {
-  setOnAddThread: React.Dispatch<React.SetStateAction<OnAddThread>>;
+  setComments: React.Dispatch<React.SetStateAction<UseCommentsReturnType>>;
 }) {
   const fetchContacts = useFetchContacts();
-
-  const retrieveUser = useCallback(function retrieveUser() {
-    return { ...user };
-  }, []);
+  const retrieveUser = useRetrieveUser();
 
   const retrieveUserByEmailAddress = useCallback(
     function retrieveUserByEmailAddress(emailAddress: string): User | null {
@@ -28,6 +22,8 @@ export function Comments({
     },
     []
   );
+
+  const comments = useComments({ retrieveUser });
 
   const {
     thread,
@@ -37,13 +33,13 @@ export function Comments({
     onSubmitComment,
     onCancelCreateThread,
     onResolveThread,
-  } = useComments({ retrieveUser });
+  } = comments;
 
   useEffect(
     function setSetOnAddThread() {
-      setOnAddThread(() => onAddThread);
+      setComments(comments);
     },
-    [setOnAddThread, onAddThread]
+    [comments, setComments]
   );
 
   return thread ? (

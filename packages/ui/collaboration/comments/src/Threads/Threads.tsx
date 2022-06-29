@@ -12,7 +12,7 @@ import { createNullUser, findThreadNodeEntries } from '@xolvio/plate-comments';
 import { determineAbsolutePosition } from '../determineAbsolutePosition';
 import { FetchContacts } from '../FetchContacts';
 import { Thread } from '../Thread';
-import { ThreadPosition } from '../useComments';
+import { RetrieveUser, ThreadPosition } from '../useComments';
 import {
   createBodyStyles,
   createHeaderStyles,
@@ -32,10 +32,11 @@ export function Threads(
     parent: RefObject<HTMLElement>;
     onClose: () => void;
     fetchContacts: FetchContacts;
+    retrieveUser: RetrieveUser;
   } & StyledProps
 ) {
   const editor = usePlateEditorRef()!;
-  const { parent, onClose, fetchContacts } = props;
+  const { parent, onClose, fetchContacts, retrieveUser } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<ThreadPosition | null>(null);
 
@@ -114,7 +115,7 @@ export function Threads(
               showReOpenThreadButton
               showMoreButton={false}
               fetchContacts={fetchContacts}
-              retrieveUser={() => createNullUser()}
+              retrieveUser={retrieveUser}
               retrieveUserByEmailAddress={() => createNullUser()}
             />
           );
