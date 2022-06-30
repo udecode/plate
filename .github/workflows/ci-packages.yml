@@ -84,7 +84,7 @@ jobs:
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
-        run: yarn g:build-changed
+        run: yarn g:build
 
       # Lint packages that have changed (--include & --since)
       - name: Lint
@@ -92,6 +92,6 @@ jobs:
 
       # Test packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:test-changed
+        run: yarn g:test
         env:
           CI: true
