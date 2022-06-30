@@ -13,7 +13,11 @@ import { PlateEditor } from './PlateEditor';
  */
 export type EditorId = string | null | undefined;
 
-export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
+export type PlateChangeKey =
+  | 'keyEditor'
+  | 'keyPlugins'
+  | 'keySelection'
+  | 'keyDecorate';
 
 export type PlateStoreState<
   V extends Value = Value,
@@ -68,6 +72,12 @@ export type PlateStoreState<
      * A key that is incremented on each editor.selection change.
      */
     keySelection: number;
+
+    /**
+     * A key that is a incremented when calling `redecorate`.
+     * This is a dependency of the `decorate` function.
+     */
+    keyDecorate: number;
 
     /**
      * Controlled callback called when the editor state changes.
