@@ -39,7 +39,8 @@ jobs:
             yarn-cache-folder-
 
       - name: Install Dependencies
-        run: yarn install --immutable
+#        run: yarn install --immutable
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
       - name: Prepare Release
         run: yarn g:prerelease
