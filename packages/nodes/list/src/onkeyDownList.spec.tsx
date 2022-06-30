@@ -8,18 +8,26 @@ import * as isHotkey from 'is-hotkey';
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;
+/*
+input:
+1. E1
+2. |E2
 
-it('should indent single list item', () => {
+output:
+1. E1
+  1. |E2
+*/
+it('should indent single list item (start of item)', () => {
   const input = (
     <editor>
       <hul>
         <hli>
-          <hlic>some text</hlic>
+          <hlic>E1</hlic>
         </hli>
         <hli>
           <hlic>
             <cursor />
-            some text
+            E2
           </hlic>
         </hli>
       </hul>
@@ -30,12 +38,12 @@ it('should indent single list item', () => {
     <editor>
       <hul>
         <hli>
-          <hlic>some text</hlic>
+          <hlic>E1</hlic>
           <hul>
             <hli>
               <hlic>
                 <cursor />
-                some text
+                E2
               </hlic>
             </hli>
           </hul>
@@ -54,22 +62,26 @@ it('should indent single list item', () => {
   expect(editor.children).toEqual(output.children);
 });
 
-it('should indent multiple list items', () => {
+/*
+input:
+1. E1
+2. E2|
+
+output:
+1. E1
+  1. E2|
+*/
+it('should indent single list item (end of item)', () => {
   const input = (
     <editor>
       <hul>
         <hli>
-          <hlic>first element</hlic>
+          <hlic>E1</hlic>
         </hli>
         <hli>
           <hlic>
-            <focus />
-            second element
-          </hlic>
-        </hli>
-        <hli>
-          <hlic>
-            third element <anchor />
+            E2
+            <cursor />
           </hlic>
         </hli>
       </hul>
@@ -80,17 +92,12 @@ it('should indent multiple list items', () => {
     <editor>
       <hul>
         <hli>
-          <hlic>first element</hlic>
+          <hlic>E1</hlic>
           <hul>
             <hli>
               <hlic>
-                <focus />
-                second element
-              </hlic>
-            </hli>
-            <hli>
-              <hlic>
-                third element <anchor />
+                E2
+                <cursor />
               </hlic>
             </hli>
           </hul>
@@ -109,22 +116,101 @@ it('should indent multiple list items', () => {
   expect(editor.children).toEqual(output.children);
 });
 
-it('should un-indent multiple list items', () => {
+/*
+input:
+1. E1
+2. |E2
+3. E3|
+
+output:
+1. E1
+  1. |E2
+  2. E3|
+*/
+it('should indent multiple list items (start/end)', () => {
   const input = (
     <editor>
       <hul>
         <hli>
-          <hlic>first element</hlic>
+          <hlic>E1</hlic>
+        </hli>
+        <hli>
+          <hlic>
+            <focus />
+            E2
+          </hlic>
+        </hli>
+        <hli>
+          <hlic>
+            E3
+            <anchor />
+          </hlic>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const output = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
           <hul>
             <hli>
               <hlic>
                 <focus />
-                second element
+                E2
               </hlic>
             </hli>
             <hli>
               <hlic>
-                third element <anchor />
+                E3<anchor />
+              </hlic>
+            </hli>
+          </hul>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
+  expect(editor.children).toEqual(output.children);
+});
+
+/*
+input:
+1. E1
+  1. |E2
+  2. E3|
+
+output:
+1. E1
+2. |E2
+3. E3|
+*/
+it('should un-indent multiple list items (start/end)', () => {
+  const input = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+          <hul>
+            <hli>
+              <hlic>
+                <focus />
+                E2
+              </hlic>
+            </hli>
+            <hli>
+              <hlic>
+                E3
+                <anchor />
               </hlic>
             </hli>
           </hul>
@@ -137,17 +223,18 @@ it('should un-indent multiple list items', () => {
     <editor>
       <hul>
         <hli>
-          <hlic>first element</hlic>
+          <hlic>E1</hlic>
         </hli>
         <hli>
           <hlic>
             <focus />
-            second element
+            E2
           </hlic>
         </hli>
         <hli>
           <hlic>
-            third element <anchor />
+            E3
+            <anchor />
           </hlic>
         </hli>
       </hul>
@@ -163,6 +250,77 @@ it('should un-indent multiple list items', () => {
     plugins: [createListPlugin()],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
+  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  expect(editor.children).toEqual(output.children);
+});
+
+/*
+input:
+1. E1
+  1. |E2
+  2. E3
+|
+
+output:
+1. E1
+2. |E2
+3. E3
+|
+*/
+it('should un-indent multiple list items (start/out)', () => {
+  const input = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+          <hul>
+            <hli>
+              <hlic>
+                <focus />
+                E2
+              </hlic>
+            </hli>
+            <hli>
+              <hlic>E3</hlic>
+            </hli>
+            <anchor />
+          </hul>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const output = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+        </hli>
+        <hli>
+          <hlic>
+            <focus />
+            E2
+          </hlic>
+        </hli>
+        <hli>
+          <hlic>
+            E3
+            <anchor />
+          </hlic>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const event = new KeyboardEvent('keydown', {
+    shiftKey: true,
+    key: 'Tab',
+  }) as any;
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
   expect(editor.children).toEqual(output.children);
 });
