@@ -15,7 +15,7 @@
     "g:changeset": "changeset",
     "g:clean": "rimraf '.cache/*' && yarn workspaces foreach -ptv run p:clean",
     "gen:docs": "yarn plop --plopfile scripts/plopfile.js sandpack",
-    "gen:v": "yarn plop --plopfile scripts/plopfile.js test",
+    "gen:v": "yarn plop --plopfile scripts/plopfile.js version",
     "g:dev": "yarn workspace examples-next dev",
     "g:lint": "yarn workspaces foreach -ptv --no-private run p:lint --color",
     "g:lint-changed": "yarn workspaces foreach -ptv --no-private --since=origin/main --recursive run p:lint --color",

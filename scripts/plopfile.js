@@ -10,7 +10,8 @@ const packageJsonJuice = require('../packages/serializers/juice/package.json');
 const templateVersions = `export const plateVersion = '${packageJsonPlate.version}';
 export const testUtilsVersion = '${packageJsonTestUtils.version}';
 export const excalidrawVersion = '${packageJsonExcalidraw.version}';
-export const juiceVersion = '${packageJsonJuice.version}';`;
+export const juiceVersion = '${packageJsonJuice.version}';
+`;
 
 const inputPath = path.resolve(__dirname, '../examples/src');
 const sandpackPath = '../docs/docs/sandpack';
@@ -201,8 +202,8 @@ export const rootFiles = {
     actions,
   });
 
-  plop.setGenerator('test', {
-    description: 'test',
+  plop.setGenerator('version', {
+    description: 'Update Sandpack dependencies',
     prompts: [],
     actions: [
       {
