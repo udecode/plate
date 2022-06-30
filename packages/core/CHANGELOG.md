@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 13.7.0
+
+### Minor Changes
+
+- [#1648](https://github.com/udecode/plate/pull/1648) by [@zbeyens](https://github.com/zbeyens) –
+  - new plate action:
+    - `redecorate` - triggers a redecoration of the editor.
+
 ## 13.6.0
 
 ### Minor Changes
