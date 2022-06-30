@@ -81,11 +81,6 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
-      # Typecheck packages that have changed + packages and apps that depends on them (--from & --since)
-      # That allows to see if we're introducing "surface" regressions (just the types)
-      - name: Typecheck
-        run: yarn g:typecheck-changed
-
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
