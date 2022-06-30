@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "13.6.0",
+  "version": "13.7.0",
   "description": "List plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -28,8 +28,8 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.6.0",
-    "@udecode/plate-reset-node": "13.6.0"
+    "@udecode/plate-core": "13.7.0",
+    "@udecode/plate-reset-node": "13.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

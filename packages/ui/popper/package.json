@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-popper",
-  "version": "13.6.0",
+  "version": "13.7.0",
   "description": "Popper utilities for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -29,7 +29,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@popperjs/core": "^2.11.5",
-    "@udecode/plate-core": "13.6.0",
+    "@udecode/plate-core": "13.7.0",
     "react-popper": "^2.3.0"
   },
   "peerDependencies": {
