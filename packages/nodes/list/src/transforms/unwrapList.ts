@@ -18,7 +18,7 @@ export const unwrapList = <V extends Value>(
   editor: PlateEditor<V>,
   { at }: { at?: Path } = {}
 ) => {
-  const anyAncestorIsListType = () => {
+  const ancestorListTypeCheck = () => {
     if (getAboveNode(editor, { match: { type: getListTypes(editor), at } })) {
       return true;
     }
@@ -63,6 +63,6 @@ export const unwrapList = <V extends Value>(
         },
         split: true,
       });
-    } while (anyAncestorIsListType());
+    } while (ancestorListTypeCheck());
   });
 };
