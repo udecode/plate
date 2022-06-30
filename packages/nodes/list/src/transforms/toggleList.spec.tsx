@@ -379,4 +379,54 @@ describe('toggle over', () => {
 
     expect(input.children).toEqual(output.children);
   });
+
+  it('should fully toggle a nested list when the selection contains a p', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <anchor />1
+            </hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+        <hp>
+          body
+          <focus />
+        </hp>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <hol>
+          <hli>
+            <hlic>1</hlic>
+            <hol>
+              <hli>
+                <hlic>11</hlic>
+              </hli>
+            </hol>
+          </hli>
+          <hli>
+            <hlic>body</hlic>
+          </hli>
+        </hol>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+
+    expect(input.children).toEqual(output.children);
+  });
 });
