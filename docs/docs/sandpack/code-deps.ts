@@ -1,5 +1,23 @@
+import { plateVersion } from './plate-version';
+
+const testUtilsVersion = '13.4.0';
+const excalidrawVersion = '13.6.0';
+const juiceVersion = '13.6.0';
+
+export const plateTestUtilsDeps = {
+  '@udecode/plate-test-utils': testUtilsVersion,
+};
+
+export const excalidrawDeps = {
+  '@udecode/plate-ui-excalidraw': excalidrawVersion,
+};
+
+export const juiceDeps = {
+  '@udecode/plate-juice': juiceVersion,
+};
+
 export const commonDeps = {
-  '@udecode/plate': '*',
+  '@udecode/plate': plateVersion,
   react: '17.0.2',
   'react-dom': '17.0.2',
   'react-scripts': '4.0.3',
@@ -12,23 +30,11 @@ export const commonDeps = {
   'react-dnd-html5-backend': '15.1.3',
 };
 
-export const plateTestUtilsDeps = {
-  '@udecode/plate-test-utils': '*',
-};
-
 export const toolbarDeps = {
   '@styled-icons/boxicons-regular': '10.23.0',
   '@styled-icons/foundation': '10.28.0',
   '@styled-icons/material': '10.28.0',
   '@tippyjs/react': '4.2.5',
-};
-
-export const excalidrawDeps = {
-  '@udecode/plate-ui-excalidraw': '*',
-};
-
-export const juiceDeps = {
-  '@udecode/plate-juice': '*',
 };
 
 export const playgroundDeps = {
