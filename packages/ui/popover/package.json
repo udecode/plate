@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-popover",
-  "version": "13.6.0",
+  "version": "13.5.0",
   "description": "Popover UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -28,8 +28,8 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@tippyjs/react": "^4.2.6",
-    "@udecode/plate-core": "13.6.0",
-    "@udecode/plate-styled-components": "13.6.0"
+    "@udecode/plate-core": "13.5.0",
+    "@udecode/plate-styled-components": "13.5.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

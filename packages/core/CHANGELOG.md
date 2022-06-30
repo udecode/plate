@@ -1,22 +1,5 @@
 # @udecode/plate-core
 
-## 13.6.0
-
-### Minor Changes
-
-- [#1630](https://github.com/udecode/plate/pull/1630) by [@zbeyens](https://github.com/zbeyens) –
-  - `focusEditor` new option to set selection before focusing the editor
-    - `target`: if defined:
-      - deselect the editor (otherwise it will focus the start of the editor)
-      - select the editor
-      - focus the editor
-  - re-exports `createStore` from `@udecode/zustood`, so the other packages don't have to install it
-
-### Patch Changes
-
-- [#1630](https://github.com/udecode/plate/pull/1630) by [@zbeyens](https://github.com/zbeyens) –
-  - fix returned type: `getNextSiblingNodes`
-
 ## 13.5.0
 
 ### Minor Changes

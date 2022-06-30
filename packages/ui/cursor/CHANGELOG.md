@@ -1,7 +1,5 @@
 # @udecode/plate-ui-cursor
 
-## 13.6.0
-
 ## 13.5.0
 
 ## 13.2.1
