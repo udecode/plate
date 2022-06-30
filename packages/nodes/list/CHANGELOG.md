@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 13.6.1
+
+### Patch Changes
+
+- [#1641](https://github.com/udecode/plate/pull/1641) by [@davisg123](https://github.com/davisg123) – Toggling a nested list that includes paragraph content should toggle all nested list elements
+
 ## 13.6.0
 
 ## 13.5.0
