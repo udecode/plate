@@ -17,13 +17,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "yarn clean && tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "clean": "rimraf dist",
-    "cti": "sh ${PROJECT_CWD}/scripts/cti.sh below",
-    "rollup": "rollup -c=${PROJECT_CWD}/config/rollup.config.js"
-  },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-alignment": "13.6.0",

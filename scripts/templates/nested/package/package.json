@@ -17,15 +17,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "yarn clean && tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "clean": "rimraf dist",
-    "cti": "sh ../../../scripts/cti.sh",
-    "rollup": "rollup -c=../../../config/rollup.config.js",
-    "test": "jest",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-core": "1.0.0"

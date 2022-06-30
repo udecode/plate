@@ -17,15 +17,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "yarn clean && tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "clean": "rimraf dist",
-    "cti": "sh ${PROJECT_CWD}/scripts/cti.sh",
-    "rollup": "rollup -c=${PROJECT_CWD}/config/rollup.config.js",
-    "test": "jest",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
