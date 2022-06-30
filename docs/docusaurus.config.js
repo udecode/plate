@@ -226,7 +226,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./docs/sidebars.js'),
           // Please change this to your repo.
-          editUrl: `${githubUrl}/edit/docs/docs`,
+          editUrl: `${githubUrl}/edit/main/docs`,
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
