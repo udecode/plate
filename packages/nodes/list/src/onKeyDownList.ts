@@ -23,7 +23,6 @@ export const onKeyDownList = <
   if (editor.selection && (isTab || isUntab)) {
     const listSelected = getAboveNode(editor, {
       at: editor.selection,
-      match: { type },
     });
 
     if (listSelected) {
