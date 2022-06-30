@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
  
       - name: Update Code in Sandpack
-        run: yarn gen:docs
+        run: yarn gen:code
         
       - name: Update Version in Sandpack
         run: yarn gen:v
