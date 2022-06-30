@@ -301,7 +301,7 @@ For example, here is the list of
 [open, untyped issues](https://github.com/udecode/plate/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
 For more info see
 [searching issues](https://help.github.com/articles/searching-issues/)
-in the Github docs.
+in the GitHub docs.
 
 If an issue is a `bug`, and it doesn't have a clear reproduction that
 you have personally confirmed, label it `needs reproduction` and ask the
