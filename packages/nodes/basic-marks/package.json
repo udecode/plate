@@ -22,7 +22,8 @@
     "clean": "rimraf dist",
     "cti": "sh ../../../scripts/cti.sh",
     "rollup": "rollup -c=../../../config/rollup.config.js",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
