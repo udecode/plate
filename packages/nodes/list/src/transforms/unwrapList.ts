@@ -1,7 +1,9 @@
 import {
   ELEMENT_DEFAULT,
   getAboveNode,
+  getCommonNode,
   getPluginType,
+  isElement,
   PlateEditor,
   setElements,
   unwrapNodes,
@@ -16,6 +18,29 @@ export const unwrapList = <V extends Value>(
   editor: PlateEditor<V>,
   { at }: { at?: Path } = {}
 ) => {
+  const anyAncestorIsListType = () => {
+    if (getAboveNode(editor, { match: { type: getListTypes(editor), at } })) {
+      return true;
+    }
+
+    // The selection's common node might be a list type
+    if (!at && editor.selection) {
+      const commonNode = getCommonNode(
+        editor,
+        editor.selection.anchor.path,
+        editor.selection.focus.path
+      );
+      if (
+        isElement(commonNode[0]) &&
+        getListTypes(editor).includes(commonNode[0].type)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   withoutNormalizing(editor, () => {
     do {
       setElements(editor, {
@@ -38,8 +63,6 @@ export const unwrapList = <V extends Value>(
         },
         split: true,
       });
-    } while (
-      getAboveNode(editor, { match: { type: getListTypes(editor), at } })
-    );
+    } while (anyAncestorIsListType());
   });
 };
