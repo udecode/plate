@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-juice",
-  "version": "13.6.0",
+  "version": "13.7.0",
   "description": "HTML juice plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -28,7 +28,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.6.0",
+    "@udecode/plate-core": "13.7.0",
     "juice": "^8.0.0"
   },
   "peerDependencies": {
