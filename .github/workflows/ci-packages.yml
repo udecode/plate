@@ -92,6 +92,6 @@ jobs:
 
       # Test packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:test
+        run: yarn g:test:root
         env:
           CI: true

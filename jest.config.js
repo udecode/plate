@@ -21,7 +21,7 @@ const getTsConfigBasePaths = () => {
 
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
-  displayName: `${packageJson.name}:unit`,
+  displayName: `${packageJson.name}`,
   cacheDirectory: getJestCachePath(packageJson.name),
   // TODO
   collectCoverageFrom: [
