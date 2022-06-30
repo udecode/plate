@@ -17,7 +17,7 @@ jobs:
           # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
  
-      - name: Update Code in Sandpack
+      - name: Install
         run: yarn add -D plop@3.1.1
  
       - name: Update Code in Sandpack
@@ -31,9 +31,7 @@ jobs:
         with:
           title: 'Version Sandpack'
           body: |
-            Update Plate versions in Sandpack examples. Merge if it has no errors:
-            
-            - [Playground](https://plate.udecode.io/docs/playground) 
+            Update Sandpack dependencies. Check the preview before merging.
           commit-message: docs
           committer: GitHub <noreply@github.com>
           branch: docs/sandpack

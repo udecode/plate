@@ -235,7 +235,6 @@ Thanks goes to these wonderful people
   </tr>
 </table>
 
-
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
