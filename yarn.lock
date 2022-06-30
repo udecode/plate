@@ -18384,7 +18384,7 @@ __metadata:
     jest: "npm:^26.6.3"
     lerna: "npm:^4.0.0"
     patch-package: "npm:^6.4.7"
-    plop: "npm:^3.1.1"
+    plop: "npm:3.1.1"
     prettier: "npm:^2.6.2"
     react: "npm:17.0.2"
     react-dnd: "npm:^15.1.2"
@@ -18419,7 +18419,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"plop@npm:^3.1.1":
+"plop@npm:3.1.1":
   version: 3.1.1
   resolution: "plop@npm:3.1.1"
   dependencies:

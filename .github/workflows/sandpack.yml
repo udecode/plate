@@ -18,6 +18,9 @@ jobs:
           fetch-depth: 0
  
       - name: Update Code in Sandpack
+        run: yarn add -D plop@3.1.1
+ 
+      - name: Update Code in Sandpack
         run: yarn gen:code
         
       - name: Update Version in Sandpack
