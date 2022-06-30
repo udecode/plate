@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 13.8.0
+
+### Minor Changes
+
+- [#1650](https://github.com/udecode/plate/pull/1650) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin` has a new option:
+  - `normalizeInitialValue`: filter the value before it's passed into the editor
+
 ## 13.7.0
 
 ### Minor Changes

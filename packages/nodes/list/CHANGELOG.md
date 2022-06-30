@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 13.8.0
+
+### Patch Changes
+
+- [#1651](https://github.com/udecode/plate/pull/1651) by [@davisg123](https://github.com/davisg123) – Some types of nested lists are not unwrapped completely
+
 ## 13.7.0
 
 ## 13.6.0
