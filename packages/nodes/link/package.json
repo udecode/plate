@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "13.5.0",
+  "version": "13.6.0",
   "description": "Link plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -27,8 +27,8 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.5.0",
-    "@udecode/plate-normalizers": "13.5.0"
+    "@udecode/plate-core": "13.6.0",
+    "@udecode/plate-normalizers": "13.6.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

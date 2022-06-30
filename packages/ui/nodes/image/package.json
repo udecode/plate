@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-image",
-  "version": "13.5.0",
+  "version": "13.6.0",
   "description": "Image UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -27,10 +27,10 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.5.0",
-    "@udecode/plate-image": "13.5.0",
-    "@udecode/plate-styled-components": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0"
+    "@udecode/plate-core": "13.6.0",
+    "@udecode/plate-image": "13.6.0",
+    "@udecode/plate-styled-components": "13.6.0",
+    "@udecode/plate-ui-toolbar": "13.6.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
