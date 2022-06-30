@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PlateProps } from '../../components/plate/Plate';
 import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
@@ -7,6 +7,7 @@ import {
   usePlateSelectors,
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { normalizeInitialValue } from '../../utils/plate/normalizeInitialValue';
 import { pipeOnChange } from '../../utils/plate/pipeOnChange';
 
 /**
@@ -19,6 +20,15 @@ export const useSlateProps = <V extends Value>({
   const keyPlugins = usePlateSelectors(id).keyPlugins();
   const value = usePlateSelectors(id).value();
   const onChangeProp = usePlateSelectors(id).onChange();
+  const [normalizedInitialValue, setNormalizedInitialValue] = useState(false);
+
+  useEffect(() => {
+    if (!editor || !value || normalizedInitialValue) return;
+
+    normalizeInitialValue(editor, value);
+
+    setNormalizedInitialValue(true);
+  }, [editor, id, normalizedInitialValue, value]);
 
   const onChange = useCallback(
     (newValue: V) => {
@@ -36,7 +46,7 @@ export const useSlateProps = <V extends Value>({
   );
 
   return useMemo(() => {
-    if (!editor) return {};
+    if (!editor || !normalizedInitialValue) return {};
 
     return {
       key: editor.key,
@@ -44,5 +54,5 @@ export const useSlateProps = <V extends Value>({
       onChange,
       value,
     };
-  }, [editor, onChange, value]);
+  }, [editor, normalizedInitialValue, onChange, value]);
 };
