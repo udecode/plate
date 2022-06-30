@@ -21,6 +21,7 @@ export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepPlugins';
 export * from './mockPlugin';
 export * from './normalizeDescendantsToDocumentFragment';
+export * from './normalizeInitialValue';
 export * from './overridePluginsByKey';
 export * from './pipeDecorate';
 export * from './pipeHandler';

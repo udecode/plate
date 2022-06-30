@@ -120,6 +120,12 @@ export type PlatePlugin<
     deserializeHtml?: Nullable<DeserializeHtml>;
 
     /**
+     * Normalize initial value before passing it into the editor.
+     * @return normalized value
+     */
+    normalizeInitialValue?: (initialValue: V) => V;
+
+    /**
      * Property used by Plate to deeply override plugins by key.
      */
     overrideByKey?: Record<
