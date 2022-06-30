@@ -19,7 +19,7 @@
     "g:lint": "yarn workspaces foreach -ptv --no-private run p:lint --color",
     "g:lint-changed": "yarn workspaces foreach -ptv --no-private --since=origin/main --recursive run p:lint --color",
     "g:lint:all": "eslint packages/**/src --ext .js,.jsx,.ts,.tsx --cache --cache-location .cache/eslint/core-lib.eslintcache --color",
-    "g:prerelease": "yarn g:build && yarn g:test && yarn g:lint",
+    "g:prerelease": "yarn g:build && yarn g:test:root && yarn g:lint",
     "g:release:next": "yarn g:prerelease && yarn changeset publish --tag next",
     "g:test": "yarn workspaces foreach -ptv --no-private run p:test",
     "g:test-changed": "yarn workspaces foreach -ptv --no-private --since=origin/main --recursive run p:test",
