@@ -1,4 +1,5 @@
 module.exports = {
+  // TODO
   collectCoverageFrom: [
     'packages/**/src/**/*.{ts,tsx}',
     '!**/*.styles.ts*',
@@ -9,10 +10,9 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
-  rootDir: '.',
   globals: {
     'ts-jest': {
-      tsconfig: 'config/tsconfig.test.json',
+      tsconfig: '<rootDir>/config/tsconfig.test.json',
     },
   },
   moduleDirectories: ['node_modules'],

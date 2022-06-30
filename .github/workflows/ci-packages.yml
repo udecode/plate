@@ -91,10 +91,12 @@ jobs:
       - name: Build
         run: yarn g:build-changed
 
+      # Lint packages that have changed (--include & --since)
       - name: Lint
-        run: yarn g:lint
+        run: yarn g:lint-changed
 
+      # Test packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:test
+        run: yarn g:test:all
         env:
           CI: true
