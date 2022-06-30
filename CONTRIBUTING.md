@@ -83,7 +83,7 @@ Build:
 - Create an example app in `/examples/src`
 - Once you've finished the example app:
   - go back to the root of the repository
-  - run `yarn g:codegen` to generate the sandpack files
+  - run `yarn gen:docs` to generate the sandpack files
 - Create an example in the docs:
     - go to `/docs/docs`
         - create a new sandpack file for the demo using the generated files

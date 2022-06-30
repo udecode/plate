@@ -2,8 +2,19 @@ const path = require('path');
 const fs = require('fs');
 const { camelCase } = require('change-case');
 
+const packageJsonPlate = require('../packages/plate/package.json');
+const packageJsonExcalidraw = require('../packages/ui/nodes/excalidraw/package.json');
+const packageJsonTestUtils = require('../packages/test-utils/package.json');
+const packageJsonJuice = require('../packages/serializers/juice/package.json');
+
+const templateVersions = `export const plateVersion = '${packageJsonPlate.version}';
+export const testUtilsVersion = '${packageJsonTestUtils.version}';
+export const excalidrawVersion = '${packageJsonExcalidraw.version}';
+export const juiceVersion = '${packageJsonJuice.version}';`;
+
 const inputPath = path.resolve(__dirname, '../examples/src');
-const sandpackPath = '../docs/docs/sandpack/files';
+const sandpackPath = '../docs/docs/sandpack';
+const filesPath = `${sandpackPath}/files`;
 
 function* walkSync(dir) {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -56,7 +67,7 @@ export const ${camelCase(`${dirName}Files`)} = {
     actions.push({
       type: 'add',
       template: fileContent,
-      path: `${sandpackPath}/${prevDir}code-${camelCase(`${dirName}Files`)}.ts`,
+      path: `${filesPath}/${prevDir}code-${camelCase(`${dirName}Files`)}.ts`,
       force: true,
     });
 
@@ -109,7 +120,7 @@ export const ${camelCase(`${dirName}Files`)} = {
         {
           type: 'add',
           template: `export const ${camelCase(`${fileName}Code`)} = \`{1}`,
-          path: `${sandpackPath}/${outputPath}`,
+          path: `${filesPath}/${outputPath}`,
           force: true,
         },
         {
@@ -126,7 +137,7 @@ export const ${camelCase(`${fileName}File`)} = {
 `;
             return content;
           },
-          path: `${sandpackPath}/${outputPath}`,
+          path: `${filesPath}/${outputPath}`,
           templateFile: templatePath,
         },
       ]
@@ -171,7 +182,7 @@ export const rootFiles = {
   actions.push({
     type: 'add',
     template: rootFiles,
-    path: `${sandpackPath}/code-files.ts`,
+    path: `${filesPath}/code-files.ts`,
     force: true,
   });
 
@@ -188,5 +199,18 @@ export const rootFiles = {
     description: 'generate sandpack files',
     prompts: [],
     actions,
+  });
+
+  plop.setGenerator('test', {
+    description: 'test',
+    prompts: [],
+    actions: [
+      {
+        type: 'add',
+        template: templateVersions,
+        path: `${sandpackPath}/plate-versions.ts`,
+        force: true,
+      },
+    ],
   });
 };

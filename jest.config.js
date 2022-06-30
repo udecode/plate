@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 const { pathsToModuleNameMapper } = require('ts-jest');
 const appRoot = require('app-root-path');
 

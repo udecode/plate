@@ -1,8 +1,9 @@
-import { plateVersion } from './plate-version';
-
-const testUtilsVersion = '13.4.0';
-const excalidrawVersion = '13.6.0';
-const juiceVersion = '13.6.0';
+import {
+  excalidrawVersion,
+  juiceVersion,
+  plateVersion,
+  testUtilsVersion,
+} from './plate-versions';
 
 export const plateTestUtilsDeps = {
   '@udecode/plate-test-utils': testUtilsVersion,
