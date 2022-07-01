@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 14.0.0
+
+### Minor Changes
+
+- [#1642](https://github.com/udecode/plate/pull/1642) by [@zakishaheen](https://github.com/zakishaheen) – Improved list item indentation when selection spans across different elements
+
 ## 13.8.0
 
 ### Patch Changes
