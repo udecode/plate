@@ -49,6 +49,73 @@ describe('li list unwrapping', () => {
     expect(input.children).toEqual(output.children);
   });
 
+  it('should unwrap only the selected part of a nested list ul > single li', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <anchor />1
+            </hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+                <hlic>
+                  12
+                  <focus />
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+        <hul>
+          <hli>
+            <hlic>1</hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+                <hlic>12</hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <hp>1</hp>
+        <hp>11</hp>
+        <hp>12</hp>
+        <hul>
+          <hli>
+            <hlic>
+              <anchor />1
+            </hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+                <hlic>
+                  12
+                  <focus />
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    unwrapList(editor);
+
+    expect(input.children).toEqual(output.children);
+  });
+
   it('should unwrap a nested list ul > single li, collapsed selection', () => {
     const input = ((
       <editor>
