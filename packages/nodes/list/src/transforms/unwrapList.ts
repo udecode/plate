@@ -2,6 +2,7 @@ import {
   ELEMENT_DEFAULT,
   getAboveNode,
   getCommonNode,
+  getNodeEntries,
   getPluginType,
   isElement,
   PlateEditor,
@@ -12,33 +13,24 @@ import {
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
-import { getListTypes } from '../queries';
 
 export const unwrapList = <V extends Value>(
   editor: PlateEditor<V>,
   { at }: { at?: Path } = {}
 ) => {
-  const ancestorListTypeCheck = () => {
-    if (getAboveNode(editor, { match: { type: getListTypes(editor), at } })) {
-      return true;
-    }
-
-    // The selection's common node might be a list type
-    if (!at && editor.selection) {
-      const commonNode = getCommonNode(
-        editor,
-        editor.selection.anchor.path,
-        editor.selection.focus.path
-      );
-      if (
-        isElement(commonNode[0]) &&
-        getListTypes(editor).includes(commonNode[0].type)
-      ) {
-        return true;
+  const foundAnyListNodes = () => {
+    const listNodes = getNodeEntries(editor, {
+      at,
+      match: {
+        type: [
+          getPluginType(editor, ELEMENT_LI),
+          getPluginType(editor, ELEMENT_UL),
+          getPluginType(editor, ELEMENT_OL),
+        ],
       }
-    }
+    });
 
-    return false;
+    return Array.from(listNodes).length;
   };
 
   withoutNormalizing(editor, () => {
@@ -63,6 +55,6 @@ export const unwrapList = <V extends Value>(
         },
         split: true,
       });
-    } while (ancestorListTypeCheck());
+    } while (foundAnyListNodes());
   });
 };

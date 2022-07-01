@@ -130,6 +130,50 @@ describe('li list unwrapping', () => {
     expect(input.children).toEqual(output.children);
   });
 
+  it('should unwrap a nested list ul > multiple li with a p', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <anchor />1
+            </hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+              </hli>
+            </hul>
+          </hli>
+          <hli>
+            <hlic>2</hlic>
+          </hli>
+        </hul>
+        <hp>
+          body
+          <focus />
+        </hp>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <hp>1</hp>
+        <hp>11</hp>
+        <hp>2</hp>
+        <hp>body</hp>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    unwrapList(editor);
+
+    expect(input.children).toEqual(output.children);
+  });
+
   it('should unwrap a nested list ul > multiple li, collapsed selection', () => {
     const input = ((
       <editor>
