@@ -1,5 +1,7 @@
 # @udecode/plate-ui-combobox
 
+## 13.8.0
+
 ## 13.7.0
 
 ## 13.6.0
