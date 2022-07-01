@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 14.0.0
+
+### Major Changes
+
+- [#1633](https://github.com/udecode/plate/pull/1633) by [@tjramage](https://github.com/tjramage) – Moved `serializeHtml` and its utils to `@udecode/plate-serializer-html` as it has a new dependency: [html-entities](https://www.npmjs.com/package/html-entities).
+  - If you're using `@udecode/plate`, no migration is needed
+  - Otherwise, import it from `@udecode/plate-serializer-html`
+
 ## 13.8.0
 
 ### Minor Changes

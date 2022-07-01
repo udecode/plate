@@ -1,5 +1,7 @@
 # @udecode/plate-media-embed
 
+## 14.0.0
+
 ## 13.8.0
 
 ## 13.7.0

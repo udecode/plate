@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-mention",
-  "version": "13.8.0",
+  "version": "14.0.0",
   "description": "Media embed UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,11 +19,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-combobox": "13.8.0",
-    "@udecode/plate-core": "13.8.0",
-    "@udecode/plate-mention": "13.8.0",
-    "@udecode/plate-styled-components": "13.8.0",
-    "@udecode/plate-ui-combobox": "13.8.0"
+    "@udecode/plate-combobox": "14.0.0",
+    "@udecode/plate-core": "14.0.0",
+    "@udecode/plate-mention": "14.0.0",
+    "@udecode/plate-styled-components": "14.0.0",
+    "@udecode/plate-ui-combobox": "14.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
