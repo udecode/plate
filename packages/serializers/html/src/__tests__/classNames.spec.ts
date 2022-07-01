@@ -1,9 +1,9 @@
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
 import {
+  createBoldPlugin,
   createParagraphPlugin,
+  createPlateUIEditor,
   ELEMENT_PARAGRAPH,
-} from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+} from '@udecode/plate';
 import { serializeHtml } from '../serializeHtml';
 
 it('serialize with slate className', () => {

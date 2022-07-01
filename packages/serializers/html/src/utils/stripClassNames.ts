@@ -16,9 +16,9 @@ export const stripClassNames = (
       preserveClassNames.map((cn) => `${cn}[^"\\s]*`).join('|'),
       'g'
     );
-    const slateClassNames = item.match(preserveRegExp);
-    if (slateClassNames) {
-      filteredHtml += `class="${slateClassNames.join(' ')}"`;
+    const classNames = item.split('"')[1].match(preserveRegExp);
+    if (classNames) {
+      filteredHtml += `class="${classNames.join(' ')}"`;
     }
   });
 

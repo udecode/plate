@@ -1,10 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Value } from '../../slate/editor/TEditor';
-import { SlateProps } from '../../slate/types/SlateProps';
-import { PlateEditor } from '../../types/plate/PlateEditor';
-import { PlateRenderElementProps } from '../../types/plate/PlateRenderElementProps';
-import { pipeInjectProps } from '../../utils/plate/pipeInjectProps';
-import { pluginRenderElement } from '../../utils/plate/pluginRenderElement';
+import {
+  pipeInjectProps,
+  PlateEditor,
+  PlateRenderElementProps,
+  pluginRenderElement,
+  SlateProps,
+  Value,
+} from '@udecode/plate-core';
+import { decode } from 'html-entities';
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 
@@ -39,13 +42,15 @@ export const elementToHtml = <V extends Value>(
       return false;
 
     // Render element using picked plugins renderElement function and ReactDOM
-    html = renderToStaticMarkup(
-      createElementWithSlate({
-        ...slateProps,
-        children:
-          plugin.serializeHtml?.(props as any) ??
-          pluginRenderElement(editor, plugin)(props),
-      })
+    html = decode(
+      renderToStaticMarkup(
+        createElementWithSlate({
+          ...slateProps,
+          children:
+            plugin.serializeHtml?.(props as any) ??
+            pluginRenderElement(editor, plugin)(props),
+        })
+      )
     );
 
     html = stripClassNames(html, { preserveClassNames });

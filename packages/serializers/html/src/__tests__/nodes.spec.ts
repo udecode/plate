@@ -1,11 +1,11 @@
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
-import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
-import { Value } from '../../../slate/editor/TEditor';
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { htmlStringToDOMNode } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-core/src/slate/editor/TEditor';
+import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
-import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [
@@ -201,6 +201,6 @@ it('serialize string with %', () => {
     ] as Value,
   });
   expect(render).toBe(
-    '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%</div>'
+    '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%25</div>'
   );
 });

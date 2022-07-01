@@ -1,10 +1,8 @@
-import {
-  createImagePlugin,
-  createLinkPlugin,
-} from '../../../../../plate/src/index';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createImagePlugin } from '@udecode/plate-image/src/index';
+import { createLinkPlugin } from '@udecode/plate-link/src/index';
+import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
-import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize link to html with attributes', () => {
   const plugins = [

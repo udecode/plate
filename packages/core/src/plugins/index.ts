@@ -13,4 +13,3 @@ export * from './onKeyDownToggleMark';
 export * from './withPlate';
 export * from './withTReact';
 export * from './html-deserializer/index';
-export * from './html-serializer/index';
