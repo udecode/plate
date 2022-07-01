@@ -1,11 +1,13 @@
+import {
+  EDescendant,
+  EElement,
+  EText,
+  isText,
+  PlateEditor,
+  SlateProps,
+  Value,
+} from '@udecode/plate-core';
 import { encode } from 'html-entities';
-import { Value } from '../../slate/editor/TEditor';
-import { EElement } from '../../slate/element/TElement';
-import { EDescendant } from '../../slate/node/TDescendant';
-import { isText } from '../../slate/text/isText';
-import { EText } from '../../slate/text/TText';
-import { SlateProps } from '../../slate/types/SlateProps';
-import { PlateEditor } from '../../types/plate/PlateEditor';
 import { newLinesToHtmlBr } from './utils/newLinesToHtmlBr';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';

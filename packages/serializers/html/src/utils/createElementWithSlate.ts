@@ -1,8 +1,6 @@
 import React from 'react';
+import { createTEditor, SlateProps, withTReact } from '@udecode/plate-core';
 import { Slate } from 'slate-react';
-import { SlateProps } from '../../../slate/types/SlateProps';
-import { createTEditor } from '../../../utils/slate/createTEditor';
-import { withTReact } from '../../withTReact';
 
 /**
  * Create a React element wrapped in a Slate provider.

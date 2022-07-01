@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-core",
+  "name": "@udecode/plate-serializer-html",
   "version": "13.8.0",
-  "description": "The core architecture of Plate – a plugin system for slate",
+  "description": "HTML serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/core"
+    "directory": "packages/serializers/html"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,31 +19,25 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@radix-ui/react-slot": "^0.1.2",
-    "@udecode/zustood": "^1.1.1",
-    "clsx": "^1.1.1",
-    "jotai": "^1.7.2",
-    "lodash": "^4.17.21",
-    "use-deep-compare": "^1.1.0",
-    "zustand": "^3.7.2"
+    "@udecode/plate-core": "13.8.0",
+    "html-entities": "^2.3.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
-    "slate-history": ">=0.66.0",
+    "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.74.2"
   },
+  "devDependencies": {
+    "@types/papaparse": "^5"
+  },
   "keywords": [
-    "contentEditable",
-    "editor",
-    "framework",
     "html",
     "plate",
     "plugin",
-    "rich text",
-    "slate",
-    "wysiwyg"
+    "serializer",
+    "slate"
   ],
   "publishConfig": {
     "access": "public"

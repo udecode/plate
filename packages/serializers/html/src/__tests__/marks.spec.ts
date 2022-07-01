@@ -1,9 +1,9 @@
-import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
-import { createHighlightPlugin } from '../../../../../nodes/highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '../../../../../nodes/kbd/src/createKbdPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
+import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
+import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
-import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
   createBasicMarksPlugin(),

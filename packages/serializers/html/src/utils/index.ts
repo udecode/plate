@@ -3,7 +3,6 @@
  */
 
 export * from './createElementWithSlate';
-export * from './htmlStringToDOMNode';
 export * from './newLinesToHtmlBr';
 export * from './stripClassNames';
 export * from './stripSlateDataAttributes';
