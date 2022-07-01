@@ -164,7 +164,8 @@ it('should indent multiple list items (start/end)', () => {
             </hli>
             <hli>
               <hlic>
-                E3<anchor />
+                E3
+                <anchor />
               </hlic>
             </hli>
           </hul>
@@ -281,9 +282,11 @@ it('should un-indent multiple list items (start/out)', () => {
               </hlic>
             </hli>
             <hli>
-              <hlic>E3</hlic>
+              <hlic>
+                E3
+                <anchor />
+              </hlic>
             </hli>
-            <anchor />
           </hul>
         </hli>
       </hul>
@@ -314,6 +317,71 @@ it('should un-indent multiple list items (start/out)', () => {
 
   const event = new KeyboardEvent('keydown', {
     shiftKey: true,
+    key: 'Tab',
+  }) as any;
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  expect(editor.children).toEqual(output.children);
+});
+
+it('should unhang before indentation', () => {
+  const input = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+        </hli>
+        <hli>
+          <hlic>
+            <focus />
+            E2
+          </hlic>
+        </hli>
+        <hli>
+          <hlic>E3</hlic>
+        </hli>
+      </hul>
+      <hp>
+        <htext>
+          <anchor />
+          paragraph
+        </htext>
+      </hp>
+    </editor>
+  ) as any;
+
+  const output = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+          <hul>
+            <hli>
+              <hlic>
+                <focus />
+                E2
+              </hlic>
+            </hli>
+            <hli>
+              <hlic>E3</hlic>
+            </hli>
+          </hul>
+        </hli>
+      </hul>
+      <hp>
+        <htext>
+          <anchor />
+          paragraph
+        </htext>
+      </hp>
+    </editor>
+  ) as any;
+
+  const event = new KeyboardEvent('keydown', {
     key: 'Tab',
   }) as any;
   const editor = createPlateUIEditor({
