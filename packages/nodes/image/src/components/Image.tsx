@@ -2,9 +2,11 @@ import { CSSProperties } from 'react';
 import {
   createComponentAs,
   createElementAs,
+  createStore,
   elementStore,
   HTMLPropsAs,
   PlateRenderElementProps,
+  TPath,
   useComposedRef,
   Value,
 } from '@udecode/plate-core';
@@ -20,6 +22,18 @@ export const { imageStore, useImageStore } = elementStore.extend(
   },
   { name: 'image' as const }
 );
+
+export const imageGlobalStore = createStore('image')({
+  /**
+   * When defined, focus end of caption textarea of the image with the same path.
+   */
+  focusEndCaptionPath: null as TPath | null,
+
+  /**
+   * When defined, focus start of caption textarea of the image with the same path.
+   */
+  focusStartCaptionPath: null as TPath | null,
+});
 
 export type ImageProps = PlateRenderElementProps<Value, TImageElement> &
   HTMLPropsAs<'div'>;

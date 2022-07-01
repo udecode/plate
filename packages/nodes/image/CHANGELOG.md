@@ -1,5 +1,28 @@
 # @udecode/plate-image
 
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `imageGlobalStore`: zustood store
+    - `focusEndCaptionPath`: When defined, focus end of caption textarea of the image with the same path
+    - `focusStartCaptionPath`: When defined, focus start of caption textarea of the image with the same path
+  - `ImageCaptionTextarea`:
+    - key `up` from the caption will focus the image
+    - key `down` from the caption will focus the next block
+    - key `down` from the image will focus the caption
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `ImageCaptionTextarea`:
+    - fix cursor bugs in the caption
+
 ## 13.5.0
 
 ### Minor Changes

@@ -1,8 +1,8 @@
 import { basicElementsPluginsFile } from './files/basic-elements/code-basicElementsPlugins';
 import { basicElementsValueFile } from './files/basic-elements/code-basicElementsValue';
-import { basicNodesPluginsFile } from './files/basic-elements/code-basicNodesPlugins';
 import { basicMarksPluginsFile } from './files/basic-marks/code-basicMarksPlugins';
 import { basicMarksValueFile } from './files/basic-marks/code-basicMarksValue';
+import { basicNodesPluginsFile } from './files/basic-nodes/code-basicNodesPlugins';
 
 export const basicNodesPluginsFiles = {
   ...basicNodesPluginsFile,
@@ -14,3 +14,6 @@ export const basicNodesValueFiles = {
   ...basicElementsValueFile,
   ...basicMarksValueFile,
 };
+
+export const tippyCode = `import 'tippy.js/dist/tippy.css'
+`;

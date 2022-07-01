@@ -1,5 +1,4 @@
-export const fontAppCode = `import 'tippy.js/dist/tippy.css';
-import React, { CSSProperties } from 'react';
+export const fontAppCode = `import React, { CSSProperties } from 'react';
 import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-line-height",
-  "version": "13.5.0",
+  "version": "13.8.0",
   "description": "Line height plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -17,17 +17,9 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../scripts/cti.sh",
-    "rollup": "rollup -c=../../../config/rollup.config.js",
-    "test": "jest"
-  },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.5.0"
+    "@udecode/plate-core": "13.8.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

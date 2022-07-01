@@ -24,7 +24,6 @@ import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { softBreakValue } from './soft-break/softBreakValue';
 import { tableValue } from './table/tableValue';
 
-// TODO: dnd example
 export const playgroundValue: any = createNodesWithId([
   ...forcedLayoutValue,
   ...basicMarksValue,

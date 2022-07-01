@@ -1,4 +1,28 @@
+const { pathsToModuleNameMapper } = require('ts-jest');
+const appRoot = require('app-root-path');
+
+const { getJestCachePath } = require(`${appRoot}/config/cache.config`);
+
+const packageJson = require(`${process.cwd()}/package.json`);
+const {
+  compilerOptions: baseTsConfig,
+} = require(`${process.cwd()}/tsconfig.json`);
+
+// Take the paths from tsconfig automatically from base tsconfig.json
+// @link https://kulshekhar.github.io/ts-jest/docs/paths-mapping
+const getTsConfigBasePaths = () => {
+  return baseTsConfig.paths
+    ? pathsToModuleNameMapper(baseTsConfig.paths, {
+        prefix: '<rootDir>/',
+      })
+    : {};
+};
+
+/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
+  displayName: `${packageJson.name}`,
+  cacheDirectory: getJestCachePath(packageJson.name),
+  // TODO
   collectCoverageFrom: [
     'packages/**/src/**/*.{ts,tsx}',
     '!**/*.styles.ts*',
@@ -9,16 +33,17 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
-  rootDir: '.',
   globals: {
     'ts-jest': {
-      tsconfig: 'config/tsconfig.test.json',
+      diagnostics: true,
+      tsconfig: '<rootDir>/config/tsconfig.test.json',
     },
   },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.js',
+    ...getTsConfigBasePaths(),
     // '^@udecode/plate-ui-dnd$': '<rootDir>/packages/dnd/src',
     '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     // '^@udecode/plate-basic-elements$':

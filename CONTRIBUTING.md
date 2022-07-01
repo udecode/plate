@@ -36,21 +36,18 @@ package manager. See
 2. `git clone https://github.com/udecode/plate.git` _bonus_: use your own fork for this step
 3. `cd plate`
 4. `yarn install`
-5. `yarn build`
+5. `yarn g:build`
 
 ### Docs
 
 Development: 
 
-- `cd docs`
-- `yarn install`
-- `yarn start`
+- `yarn docs:start`
 - Open [localhost:3000](localhost:3000)
 
 Build:
 
-- `yarn build:docs` if you've already built the packages or 
-- `yarn build:all` to build both the packages and the docs
+- `yarn docs:build` if you've already built the packages
 
 ### Development
 
@@ -74,20 +71,19 @@ Build:
     - edit `src/index.tsx`
         - add `export * from '@udecode/plate-x';`
 - `yarn install`
-- `yarn build`
+- `yarn g:build`
 
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `next.config.js`
+    - edit `/examples/apps/next/next.config.js`
         - add `'@udecode/plate-x': x/src'` to `alias` object to watch file changes
-- Create an example app in `/examples/src`
 - Run the example app: 
-  - Go to `/examples/apps/next`
-      - `yarn dev`
+  - run `yarn g:dev`
+- Create an example app in `/examples/src`
 - Once you've finished the example app:
   - go back to the root of the repository
-  - run `yarn codegen` to generate the sandpack files
+  - run `yarn gen:code` to generate the sandpack files
 - Create an example in the docs:
     - go to `/docs/docs`
         - create a new sandpack file for the demo using the generated files
@@ -154,7 +150,7 @@ We use eslint as a linter for all code (including typescript code).
 All you have to run is:
 
 ```sh
-yarn lint --fix
+yarn g:lint --fix
 ```
 
 #### Run unit tests
@@ -162,13 +158,13 @@ yarn lint --fix
 This command will list all the suites and options for running tests.
 
 ```sh
-yarn build # only once
+yarn g:build # only once
 
-yarn test
+yarn g:test
 ```
 
 The options for running tests can be selected from the cli or be passed
-to `yarn test` with specific parameters. Available modes include
+to `yarn g:test` with specific parameters. Available modes include
 `--watch`, `--coverage`, and `--runInBand`, which will respectively run
 tests in watch mode, output code coverage, and run selected test suites
 serially in the current process.
@@ -240,7 +236,7 @@ sequence is as follows:
 We welcome all contributions. There are many ways you can help us. This
 is few of those ways:
 
-Before you submit a new PR, please run `yarn prerelease`. Do not submit
+Before you submit a new PR, please run `yarn g:prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
 [join slate's Slack and ask in the #plate channel](https://slate-js.slack.com/messages/plate).
 
@@ -305,7 +301,7 @@ For example, here is the list of
 [open, untyped issues](https://github.com/udecode/plate/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
 For more info see
 [searching issues](https://help.github.com/articles/searching-issues/)
-in the Github docs.
+in the GitHub docs.
 
 If an issue is a `bug`, and it doesn't have a clear reproduction that
 you have personally confirmed, label it `needs reproduction` and ask the

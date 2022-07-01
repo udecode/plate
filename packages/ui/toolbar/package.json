@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-toolbar",
-  "version": "13.5.0",
+  "version": "13.8.0",
   "description": "Toolbar UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -17,20 +17,12 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../scripts/cti.sh",
-    "rollup": "rollup -c=../../../config/rollup.config.js",
-    "test": "jest"
-  },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@tippyjs/react": "^4.2.6",
-    "@udecode/plate-core": "13.5.0",
-    "@udecode/plate-styled-components": "13.5.0",
-    "@udecode/plate-ui-popper": "13.5.0",
+    "@udecode/plate-core": "13.8.0",
+    "@udecode/plate-styled-components": "13.8.0",
+    "@udecode/plate-ui-popper": "13.8.0",
     "react-popper": "^2.3.0",
     "react-use": "^17.3.2"
   },

@@ -1,5 +1,37 @@
 # @udecode/plate-core
 
+## 13.8.0
+
+### Minor Changes
+
+- [#1650](https://github.com/udecode/plate/pull/1650) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin` has a new option:
+  - `normalizeInitialValue`: filter the value before it's passed into the editor
+
+## 13.7.0
+
+### Minor Changes
+
+- [#1648](https://github.com/udecode/plate/pull/1648) by [@zbeyens](https://github.com/zbeyens) –
+  - new plate action:
+    - `redecorate` - triggers a redecoration of the editor.
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `focusEditor` new option to set selection before focusing the editor
+    - `target`: if defined:
+      - deselect the editor (otherwise it will focus the start of the editor)
+      - select the editor
+      - focus the editor
+  - re-exports `createStore` from `@udecode/zustood`, so the other packages don't have to install it
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - fix returned type: `getNextSiblingNodes`
+
 ## 13.5.0
 
 ### Minor Changes

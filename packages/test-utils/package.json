@@ -17,14 +17,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../scripts/cti.sh",
-    "rollup": "rollup -c=../../config/rollup.config.js",
-    "test": "jest"
-  },
   "types": "dist/index.d.ts",
   "peerDependencies": {
     "slate": ">=0.66.1",
