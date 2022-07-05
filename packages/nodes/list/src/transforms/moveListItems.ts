@@ -69,9 +69,8 @@ export const moveListItems = <V extends Value>(
 
       const listItem = getParentNode(editor, licPath);
       if (!listItem) return;
-      const parentList = getParentNode(editor, listItem[1]);
 
-      // this shouldn't happen
+      const parentList = getParentNode(editor, listItem[1]);
       if (!parentList) return;
 
       if (increase) {
@@ -87,11 +86,10 @@ export const moveListItems = <V extends Value>(
         });
       } else {
         // unindenting a top level list item, effectively breaking apart the list.
-        const moved = removeFirstListItem(editor, {
+        removeFirstListItem(editor, {
           list: parentList as any,
           listItem: listItem as any,
         });
-        if (moved) return true;
       }
     });
   });

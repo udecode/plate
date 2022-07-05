@@ -392,3 +392,54 @@ it('should unhang before indentation', () => {
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
   expect(editor.children).toEqual(output.children);
 });
+
+it('should convert top-level list item into body upon unindent', () => {
+  const input = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+        </hli>
+        <hli>
+          <hlic>
+            <cursor />
+            E2
+          </hlic>
+        </hli>
+        <hli>
+          <hlic>E3</hlic>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const output = (
+    <editor>
+      <hul>
+        <hli>
+          <hlic>E1</hlic>
+        </hli>
+      </hul>
+      <hp>
+        <htext>E2</htext>
+      </hp>
+      <hul>
+        <hli>
+          <hlic>E3</hlic>
+        </hli>
+      </hul>
+    </editor>
+  ) as any;
+
+  const event = new KeyboardEvent('keydown', {
+    key: 'Tab',
+    shiftKey: true,
+  }) as any;
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  expect(editor.children).toEqual(output.children);
+});
