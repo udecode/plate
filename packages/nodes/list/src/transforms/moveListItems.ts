@@ -13,6 +13,7 @@ import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
+import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
   increase?: boolean;
@@ -68,18 +69,29 @@ export const moveListItems = <V extends Value>(
 
       const listItem = getParentNode(editor, licPath);
       if (!listItem) return;
-      const listEntry = getParentNode(editor, listItem[1]);
+      const parentList = getParentNode(editor, listItem[1]);
+
+      // this shouldn't happen
+      if (!parentList) return;
 
       if (increase) {
         moveListItemDown(editor, {
-          list: listEntry as any,
+          list: parentList as any,
           listItem: listItem as any,
         });
-      } else if (listEntry && isListNested(editor, listEntry[1])) {
+      } else if (isListNested(editor, parentList[1])) {
+        // un-indent a sub-list item
         moveListItemUp(editor, {
-          list: listEntry as any,
+          list: parentList as any,
           listItem: listItem as any,
         });
+      } else {
+        // unindenting a top level list item, effectively breaking apart the list.
+        const moved = removeFirstListItem(editor, {
+          list: parentList as any,
+          listItem: listItem as any,
+        });
+        if (moved) return true;
       }
     });
   });
