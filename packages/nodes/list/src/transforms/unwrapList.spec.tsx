@@ -177,4 +177,46 @@ describe('li list unwrapping', () => {
 
     expect(input.children).toEqual(output.children);
   });
+
+  it('should unwrap mixed mode list', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <cursor />
+              unordered item
+            </hlic>
+            <hol>
+              <hli>
+                <hlic>ordered item</hlic>
+              </hli>
+            </hol>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <hp>
+          <htext>unordered item</htext>
+        </hp>
+        <hol>
+          <hli>
+            <hlic>ordered item</hlic>
+          </hli>
+        </hol>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    unwrapList(editor);
+
+    expect(input.children).toEqual(output.children);
+  });
 });
