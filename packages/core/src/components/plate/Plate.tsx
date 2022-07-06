@@ -124,7 +124,7 @@ export const Plate = <
   if (!hasId) return null;
 
   return (
-    <JotaiProvider initialValues={[[plateIdAtom, id]]}>
+    <JotaiProvider initialValues={[[plateIdAtom, id]]} scope={id}>
       <PlateContent {...props} />
     </JotaiProvider>
   );

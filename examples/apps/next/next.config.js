@@ -89,6 +89,13 @@ const config = {
     };
     return cfg;
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = config;

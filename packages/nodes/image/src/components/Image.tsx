@@ -1,9 +1,9 @@
 import { CSSProperties } from 'react';
 import {
+  createAtomStore,
   createComponentAs,
   createElementAs,
   createStore,
-  elementStore,
   HTMLPropsAs,
   PlateRenderElementProps,
   TPath,
@@ -16,7 +16,7 @@ import { ImageCaptionTextarea } from './ImageCaptionTextarea';
 import { ImageImg } from './ImageImg';
 import { ImageResizable } from './ImageResizable';
 
-export const { imageStore, useImageStore } = elementStore.extend(
+export const { imageStore, useImageStore } = createAtomStore(
   {
     width: 0 as CSSProperties['width'],
   },

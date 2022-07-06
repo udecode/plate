@@ -19,7 +19,7 @@ export const PlateProvider = ({
   if (!hasId) return null;
 
   return (
-    <JotaiProvider key={id} initialValues={[[plateIdAtom, id]]}>
+    <JotaiProvider key={id} initialValues={[[plateIdAtom, id]]} scope={id}>
       {children}
     </JotaiProvider>
   );
