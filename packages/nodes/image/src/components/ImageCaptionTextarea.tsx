@@ -6,8 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import TextareaAutosize from 'react-textarea-autosize';
-import { TextareaAutosizeProps } from 'react-textarea-autosize/dist/declarations/src/index';
+import { TextareaAutosizeProps } from 'react-textarea-autosize';
 import {
   AsProps,
   createComponentAs,
@@ -26,6 +25,7 @@ import { useReadOnly } from 'slate-react';
 import { useImageElement } from '../hooks/index';
 import { TImageElement } from '../types';
 import { imageGlobalStore } from './Image';
+import { TextareaAutosize } from './TextareaAutosize';
 
 export interface ImageCaptionTextareaProps
   extends TextareaAutosizeProps,

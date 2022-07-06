@@ -3,15 +3,18 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { useSelected } from 'slate-react';
+import { useReadOnly, useSelected } from 'slate-react';
 import { useImageCaptionString } from '../hooks/useImageCaptionString';
 import { useImageStore } from './Image';
 
-export interface ImageCaptionProps extends HTMLPropsAs<'figcaption'> {}
+export interface ImageCaptionProps extends HTMLPropsAs<'figcaption'> {
+  readOnly?: boolean;
+}
 
-export const useImageCaption = (
-  props?: ImageCaptionProps
-): HTMLPropsAs<'figcaption'> => {
+export const useImageCaption = ({
+  readOnly,
+  ...props
+}: ImageCaptionProps = {}): HTMLPropsAs<'figcaption'> => {
   const width = useImageStore().get.width();
 
   return {
@@ -20,22 +23,25 @@ export const useImageCaption = (
   };
 };
 
-export const useImageCaptionState = () => {
+export const useImageCaptionState = (props: ImageCaptionProps) => {
   const captionString = useImageCaptionString();
 
   const selected = useSelected();
+  const _readOnly = useReadOnly();
+  const readOnly = props.readOnly || _readOnly;
 
   return {
     captionString,
     selected,
+    readOnly,
   };
 };
 
 export const ImageCaption = createComponentAs<ImageCaptionProps>((props) => {
   const htmlProps = useImageCaption(props);
-  const { captionString, selected } = useImageCaptionState();
+  const { captionString, selected, readOnly } = useImageCaptionState(props);
 
-  if (!captionString.length && !selected) {
+  if (!captionString.length && (readOnly || !selected)) {
     return null;
   }
 

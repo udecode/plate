@@ -7,3 +7,4 @@ export * from './ImageCaption';
 export * from './ImageCaptionTextarea';
 export * from './ImageImg';
 export * from './ImageResizable';
+export * from './TextareaAutosize';
