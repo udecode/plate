@@ -1,5 +1,11 @@
 # @udecode/plate-image
 
+## 14.0.2
+
+### Patch Changes
+
+- [#1669](https://github.com/udecode/plate/pull/1669) by [@zbeyens](https://github.com/zbeyens) – fix: image resizing (bis)
+
 ## 14.0.1
 
 ### Patch Changes

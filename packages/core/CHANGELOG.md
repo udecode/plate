@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 14.0.2
+
+### Patch Changes
+
+- [#1669](https://github.com/udecode/plate/pull/1669) by [@zbeyens](https://github.com/zbeyens) – fix: use jotai scope to Plate provider
+
 ## 14.0.0
 
 ### Major Changes
