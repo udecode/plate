@@ -1,6 +1,6 @@
 import React, { Ref, useEffect } from 'react';
 import { Editable, Slate } from 'slate-react';
-import { plateIdAtom } from '../../atoms/plateIdAtom';
+import { plateIdAtom, SCOPE_PLATE } from '../../atoms/plateIdAtom';
 import { usePlate } from '../../hooks/plate/usePlate';
 import { usePlatesStoreEffect } from '../../hooks/plate/usePlatesStoreEffect';
 import { Value } from '../../slate/editor/TEditor';
@@ -10,7 +10,7 @@ import {
 } from '../../stores/plate/platesStore';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
-import { JotaiProvider } from '../../utils/misc/jotai';
+import { JotaiProvider, Scope } from '../../utils/misc/jotai';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
@@ -69,6 +69,8 @@ export interface PlateProps<
    * Custom `Editable` node.
    */
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
+
+  scope?: Scope;
 }
 
 export const PlateContent = <
@@ -107,7 +109,7 @@ export const Plate = <
 >(
   props: PlateProps<V, E>
 ) => {
-  const { id = 'main', ...state } = props;
+  const { id = 'main', scope = SCOPE_PLATE, ...state } = props;
   const hasId = usePlatesSelectors.has(id);
 
   // Clear the state on unmount.
@@ -124,7 +126,7 @@ export const Plate = <
   if (!hasId) return null;
 
   return (
-    <JotaiProvider initialValues={[[plateIdAtom, id]]}>
+    <JotaiProvider initialValues={[[plateIdAtom, id]]} scope={scope}>
       <PlateContent {...props} />
     </JotaiProvider>
   );

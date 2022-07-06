@@ -19,8 +19,6 @@ const getTsConfigBasePaths = () => {
     : {};
 };
 
-console.log(`${process.cwd()}/package.json`);
-
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
   displayName: packageName,
