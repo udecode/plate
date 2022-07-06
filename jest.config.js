@@ -4,6 +4,7 @@ const appRoot = require('app-root-path');
 const { getJestCachePath } = require(`${appRoot}/config/cache.config`);
 
 const packageJson = require(`${process.cwd()}/package.json`);
+const packageName = packageJson.name ?? 'plate';
 const {
   compilerOptions: baseTsConfig,
 } = require(`${process.cwd()}/tsconfig.json`);
@@ -18,10 +19,12 @@ const getTsConfigBasePaths = () => {
     : {};
 };
 
+console.log(`${process.cwd()}/package.json`);
+
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
-  displayName: `${packageJson.name}`,
-  cacheDirectory: getJestCachePath(packageJson.name),
+  displayName: packageName,
+  cacheDirectory: getJestCachePath(packageName),
   // TODO
   collectCoverageFrom: [
     'packages/**/src/**/*.{ts,tsx}',
