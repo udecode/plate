@@ -23,16 +23,8 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../cti.sh",
-    "rollup": "rollup -c=../../../rollup.config.js",
-    "test": "jest"
-  },
   "dependencies": {
-    "@udecode/plate-core": "13.1.0",
+    "@udecode/plate-core": "14.0.0",
     "slate-portive": "^1.0.9"
   },
   "peerDependencies": {

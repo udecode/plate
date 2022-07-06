@@ -2,7 +2,6 @@ import { createPluginFactory, PlateEditor, Value } from '@udecode/plate-core';
 import { OverrideByKey, PlatePlugin } from '@udecode/plate-core/src/index';
 import {
   createImageBlock,
-  handleDropFile,
   withPortive,
   WithPortiveOptions,
 } from 'slate-portive';
@@ -32,6 +31,6 @@ export const createPortivePlugin = (
       }),
     handlers: {
       onPaste: (editor) => editor.portive.handlePaste,
-      onDrop: (editor) => (e) => handleDropFile(editor as any, e),
+      onDrop: (editor) => editor.portive.handleDrop,
     },
   })(override, overrideByKey);
