@@ -1,5 +1,11 @@
 # @udecode/plate-image
 
+## 14.0.1
+
+### Patch Changes
+
+- [#1664](https://github.com/udecode/plate/pull/1664) by [@zbeyens](https://github.com/zbeyens) – fix: resizing one image should not resize all images
+
 ## 14.0.0
 
 ## 13.8.0
