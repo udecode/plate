@@ -2,6 +2,8 @@ import {
   ELEMENT_DEFAULT,
   getAboveNode,
   getCommonNode,
+  getNodeEntry,
+  getParentNode,
   getPluginType,
   isElement,
   PlateEditor,
@@ -11,7 +13,6 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 
 export const unwrapList = <V extends Value>(
@@ -43,24 +44,40 @@ export const unwrapList = <V extends Value>(
 
   withoutNormalizing(editor, () => {
     do {
-      setElements(editor, {
-        type: getPluginType(editor, ELEMENT_DEFAULT),
-      });
+      const location = at ?? editor.selection;
+      if (!location) return;
 
+      // Convert parent LIC node to ELEMENT_DEFAULT
+      const textNode = getNodeEntry(editor, location);
+      const licNode = getParentNode(editor, textNode[1]);
+      if (!licNode) {
+        return;
+      }
+      setElements(
+        editor,
+        {
+          type: getPluginType(editor, ELEMENT_DEFAULT),
+        },
+        { at: licNode[1] }
+      );
+
+      // Unwrap the LI node
+      const liNode = getParentNode(editor, licNode[1]);
+      if (!liNode) {
+        return;
+      }
       unwrapNodes(editor, {
-        at,
-        match: { type: getPluginType(editor, ELEMENT_LI) },
+        at: liNode[1],
         split: true,
       });
 
+      // Unwrap the ol/ul node
+      const ulolNode = getParentNode(editor, liNode[1]);
+      if (!ulolNode) {
+        return;
+      }
       unwrapNodes(editor, {
-        at,
-        match: {
-          type: [
-            getPluginType(editor, ELEMENT_UL),
-            getPluginType(editor, ELEMENT_OL),
-          ],
-        },
+        at: ulolNode[1],
         split: true,
       });
     } while (ancestorListTypeCheck());
