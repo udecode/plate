@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-list",
-  "version": "14.0.0",
+  "version": "14.0.2",
   "description": "List UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,10 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "14.0.0",
-    "@udecode/plate-list": "14.0.0",
-    "@udecode/plate-styled-components": "14.0.0",
-    "@udecode/plate-ui-toolbar": "14.0.0"
+    "@udecode/plate-core": "14.0.2",
+    "@udecode/plate-list": "14.0.2",
+    "@udecode/plate-styled-components": "14.0.2",
+    "@udecode/plate-ui-toolbar": "14.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

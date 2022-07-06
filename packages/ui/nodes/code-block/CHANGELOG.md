@@ -1,5 +1,7 @@
 # @udecode/plate-code-block-ui
 
+## 14.0.2
+
 ## 14.0.0
 
 ## 13.8.0
