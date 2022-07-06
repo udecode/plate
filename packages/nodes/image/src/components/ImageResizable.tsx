@@ -37,7 +37,9 @@ export const useImageResizable = ({
 
   const { width: nodeWidth = '100%' } = element ?? {};
 
-  const [width, setWidth] = useImageStore().use.width();
+  const [width, setWidth] = useImageStore().use.width('img');
+
+  console.log(width);
 
   const setNodeWidth = useCallback(
     (w: number) => {
