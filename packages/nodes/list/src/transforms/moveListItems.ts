@@ -18,6 +18,7 @@ import { removeFirstListItem } from './removeFirstListItem';
 export type MoveListItemsOptions = {
   increase?: boolean;
   at?: GetNodeEntriesOptions['at'];
+  enableResetOnShiftTab?: boolean;
 };
 
 export const moveListItems = <V extends Value>(
@@ -25,6 +26,7 @@ export const moveListItems = <V extends Value>(
   {
     increase = true,
     at = editor.selection ?? undefined,
+    enableResetOnShiftTab,
   }: MoveListItemsOptions = {}
 ) => {
   const _nodes = getNodeEntries(editor, {
@@ -84,7 +86,7 @@ export const moveListItems = <V extends Value>(
           list: parentList as any,
           listItem: listItem as any,
         });
-      } else {
+      } else if (enableResetOnShiftTab) {
         // unindenting a top level list item, effectively breaking apart the list.
         removeFirstListItem(editor, {
           list: parentList as any,
