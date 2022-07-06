@@ -20,7 +20,7 @@ export const { imageStore, useImageStore } = elementStore.extend(
   {
     width: 0 as CSSProperties['width'],
   },
-  { name: 'image' as const }
+  { name: 'image' as const, scope: 'img' }
 );
 
 export const imageGlobalStore = createStore('image')({
