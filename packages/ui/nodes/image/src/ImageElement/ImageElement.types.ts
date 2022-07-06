@@ -1,10 +1,10 @@
 import { Value } from '@udecode/plate-core';
-import { TImageElement } from '@udecode/plate-image';
+import { ImageResizableProps, TImageElement } from '@udecode/plate-image';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ResizableProps } from 're-resizable';
 import { CSSProp } from 'styled-components';
 
-export interface ImageElementStyleProps<V extends Value>
+export interface ImageElementStyleProps<V extends Value = Value>
   extends ImageElementProps<V> {
   selected?: boolean;
   focused?: boolean;
@@ -21,33 +21,31 @@ export interface ImageElementStyles {
   handleRight: CSSProp;
 }
 
-export interface ImageElementProps<V extends Value>
-  extends StyledElementProps<V, TImageElement, ImageElementStyles> {
-  resizableProps?: ResizableProps;
+export interface ImageElementPropsCaption {
+  disabled?: boolean;
 
   /**
-   * Image alignment.
+   * Caption alignment.
    */
   align?: 'left' | 'center' | 'right';
 
-  caption?: {
-    disabled?: boolean;
+  /**
+   * Caption placeholder.
+   */
+  placeholder?: string;
 
-    /**
-     * Caption alignment.
-     */
-    align?: 'left' | 'center' | 'right';
+  /**
+   * Whether caption is read-only.
+   */
+  readOnly?: boolean;
+}
 
-    /**
-     * Caption placeholder.
-     */
-    placeholder?: string;
+export interface ImageElementProps<V extends Value = Value>
+  extends StyledElementProps<V, TImageElement, ImageElementStyles>,
+    Pick<Partial<ImageResizableProps>, 'align'> {
+  resizableProps?: Omit<ResizableProps, 'as'>;
 
-    /**
-     * Whether caption is read-only.
-     */
-    readOnly?: boolean;
-  };
+  caption?: ImageElementPropsCaption;
 
   /**
    * Whether the image is draggable.

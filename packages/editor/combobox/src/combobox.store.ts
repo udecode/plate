@@ -1,4 +1,4 @@
-import { createStore, StateActions, StoreApi } from '@udecode/zustood';
+import { createStore, StateActions, StoreApi } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 
@@ -13,6 +13,13 @@ export type ComboboxStateById<TData = NoData> = {
    * @default (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
    */
   filter?: (search: string) => (item: TComboboxItem<TData>) => boolean;
+
+  /**
+   * Sort filtered items before applying maxSuggestions.
+   */
+  sort?: (
+    search: string
+  ) => (a: TComboboxItem<TData>, b: TComboboxItem<TData>) => number;
 
   /**
    * Max number of items.

@@ -21,7 +21,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2017"
   },
-  "files": ["types/twin.d.ts"],
+  "files": ["scripts/types/twin.d.ts"],
   "exclude": [
     "node_modules",
     "**/node_modules",

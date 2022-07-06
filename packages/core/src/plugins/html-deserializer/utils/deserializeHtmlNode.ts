@@ -1,6 +1,6 @@
 import { Value } from '../../../slate/editor/TEditor';
 import { EDescendant } from '../../../slate/node/TDescendant';
-import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { htmlBrToNewLine } from './htmlBrToNewLine';

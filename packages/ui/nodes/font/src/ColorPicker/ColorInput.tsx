@@ -1,11 +1,11 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { ColorInputProps, getColorInputStyles } from './ColorInput.styles';
 
-export function ColorInput({
+export const ColorInput = ({
   value = '#000000',
   onChange,
   children,
-}: React.PropsWithChildren<ColorInputProps>) {
+}: React.PropsWithChildren<ColorInputProps>) => {
   const ref = useRef<HTMLInputElement | null>(null);
 
   const styles = getColorInputStyles();
@@ -38,4 +38,4 @@ export function ColorInput({
       />
     </div>
   );
-}
+};

@@ -9,35 +9,16 @@ into an H1. This package also provides predefined rules.
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-autoformat
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createListPlugin(),
-    createHorizontalRulePlugin(),
-    createResetNodePlugin(CONFIG.resetBlockType),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
-    createAutoformatPlugin(CONFIG.autoformat),
-  ], {
-    components: CONFIG.components,
-  });
+import { AutoformatSandpack } from './AutoformatSandpack'
 
-  return (
-    <Plate
-      id="autoformat"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.autoformat}
-      plugins={plugins}
-    />
-  );
-}
-```
+<AutoformatSandpack />
 
 ### Rules
 
@@ -235,4 +216,4 @@ export interface AutoformatPlugin {
 ### Source code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/autoformat/src/createAutoformatPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

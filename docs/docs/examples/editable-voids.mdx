@@ -3,26 +3,10 @@ slug: /examples/editable-voids
 title: Editable Voids
 ---
 
-```ts live
-() => {
-  const plugins = [
-    ...PLUGINS.basicNodes,
-    createEditableVoidPlugin({
-      component: EditableVoidElement
-    }),
-  ];
+import { EditableVoidsSandpack } from './EditableVoidsSandpack'
 
-  return (
-    <Plate
-      id="editable-voids"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.editableVoids}
-      plugins={plugins}
-    />
-  );
-}
-```
+<EditableVoidsSandpack />
 
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

@@ -19,6 +19,7 @@ export * from './htmlBodyToFragment';
 export * from './htmlBrToNewLine';
 export * from './htmlElementToElement';
 export * from './htmlElementToLeaf';
+export * from './htmlStringToDOMNode';
 export * from './htmlTextNodeToString';
 export * from './isHtmlBlockElement';
 export * from './isHtmlComment';

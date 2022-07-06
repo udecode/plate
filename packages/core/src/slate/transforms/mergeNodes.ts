@@ -1,6 +1,6 @@
 import { Editor, Element, Path, Range, Text, Transforms } from 'slate';
-import { hasSingleChild } from '../../common/queries/hasSingleChild';
-import { Modify } from '../../common/types/utility/types';
+import { hasSingleChild } from '../../queries/hasSingleChild';
+import { Modify } from '../../types/misc/types';
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';

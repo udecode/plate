@@ -2,8 +2,8 @@
 
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
-import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../withAutoformat';
 
 jsx;
@@ -27,7 +27,7 @@ describe('when the start match is not present and the end match is present', () 
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -55,7 +55,7 @@ describe('when there is a character before match', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('*');
@@ -84,7 +84,7 @@ describe('when there is a character before match', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('*');
@@ -110,7 +110,7 @@ describe('when selection is null', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(CONFIG.autoformat)
+      mockPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');

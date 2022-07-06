@@ -1,5 +1,52 @@
 # @udecode/plate-core
 
+## 14.0.0
+
+### Major Changes
+
+- [#1633](https://github.com/udecode/plate/pull/1633) by [@tjramage](https://github.com/tjramage) – Moved `serializeHtml` and its utils to `@udecode/plate-serializer-html` as it has a new dependency: [html-entities](https://www.npmjs.com/package/html-entities).
+  - If you're using `@udecode/plate`, no migration is needed
+  - Otherwise, import it from `@udecode/plate-serializer-html`
+
+## 13.8.0
+
+### Minor Changes
+
+- [#1650](https://github.com/udecode/plate/pull/1650) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin` has a new option:
+  - `normalizeInitialValue`: filter the value before it's passed into the editor
+
+## 13.7.0
+
+### Minor Changes
+
+- [#1648](https://github.com/udecode/plate/pull/1648) by [@zbeyens](https://github.com/zbeyens) –
+  - new plate action:
+    - `redecorate` - triggers a redecoration of the editor.
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `focusEditor` new option to set selection before focusing the editor
+    - `target`: if defined:
+      - deselect the editor (otherwise it will focus the start of the editor)
+      - select the editor
+      - focus the editor
+  - re-exports `createStore` from `@udecode/zustood`, so the other packages don't have to install it
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - fix returned type: `getNextSiblingNodes`
+
+## 13.5.0
+
+### Minor Changes
+
+- [#1616](https://github.com/udecode/plate/pull/1616) by [@zbeyens](https://github.com/zbeyens) –
+  - `useElement`: Plate is now storing `element` in a context provided in each rendered element. Required parameter: the plugin key is used as a scope as it's needed for nested elements.
+
 ## 13.1.0
 
 ### Major Changes

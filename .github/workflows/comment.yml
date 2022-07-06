@@ -52,7 +52,7 @@ jobs:
         run: yarn
 
       - name: Prepare release
-        run: yarn prerelease
+        run: yarn g:prerelease
 
       # https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md
       - name: Release to @pr channel

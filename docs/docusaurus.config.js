@@ -88,7 +88,7 @@ const alias = {
 };
 
 Object.keys(alias).forEach((key) => {
-  alias[key] = path.resolve(__dirname, `../packages/${alias[key]}/src`);
+  alias[key] = path.resolve(__dirname, `../../packages/${alias[key]}/src`);
 });
 
 module.exports = {
@@ -101,7 +101,6 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'udecode', // Usually your GitHub org/user name.
   projectName, // Usually your repo name.
-  themes: ['@docusaurus/theme-live-codeblock'],
   customFields: { ...customFields },
   themeConfig: {
     algolia: {
@@ -226,9 +225,9 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve('./docs/sidebars.js'),
           // Please change this to your repo.
-          editUrl: `${githubUrl}/edit/docs/docs`,
+          editUrl: `${githubUrl}/edit/main/docs`,
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
@@ -242,7 +241,7 @@ module.exports = {
           ],
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.scss'),
+          customCss: [require.resolve('./src/css/custom.scss')],
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],

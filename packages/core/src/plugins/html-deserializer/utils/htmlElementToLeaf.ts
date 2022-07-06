@@ -3,8 +3,8 @@ import { Value } from '../../../slate/editor/TEditor';
 import { isElement } from '../../../slate/element/isElement';
 import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
 import { isText } from '../../../slate/text/isText';
-import { PlateEditor } from '../../../types/PlateEditor';
-import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
+import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 

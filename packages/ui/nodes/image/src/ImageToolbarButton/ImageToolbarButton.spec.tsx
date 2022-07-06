@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
-import { Plate } from '../../../../../core/src/components/Plate';
+import { Plate } from '../../../../../core/src/components/plate/Plate';
 import { ImageToolbarButton } from './ImageToolbarButton';
 import { input1, input2, output2 } from './ImageToolbarButton.fixtures';
 

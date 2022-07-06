@@ -8,6 +8,8 @@ The mention plugin is using the [combobox plugin](docs/plugins/combobox).
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-combobox
 npm install @udecode/plate-mention
 npm install @udecode/plate-ui-mention
@@ -15,33 +17,9 @@ npm install @udecode/plate-ui-mention
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createComboboxPlugin(),
-    createMentionPlugin(),
-    createMentionPlugin({ key: '#', component: MentionElement, options: { trigger: '#', inputCreation: {key: 'creationId', value: 'main'} } }),
-    createMentionPlugin({ key: '/', component: MentionElement, options: { trigger: '/' } }),
-  ], {
-    components: CONFIG.components,
-  });
+import { MentionSandpack } from './MentionSandpack'
 
-  return (
-    <Plate
-      id="mention"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.mentions}
-      onChange={e => console.info(e)}
-      plugins={plugins}
-    >
-      <MentionCombobox items={CONFIG.mentionItems} />
-      <MentionCombobox items={CONFIG.mentionItems} pluginKey="#" />
-      <MentionCombobox items={[CONFIG.mentionItems[0], CONFIG.mentionItems[1]]} pluginKey="/" />
-    </Plate>
-  );
-}
-```
+<MentionSandpack />
 
 ### Options
 
@@ -58,4 +36,4 @@ interface MentionPlugin<TData extends Data = NoData> {
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/mention/src/createMentionPlugin.ts)
 - [packages/ui/nodes/mention](https://github.com/udecode/plate/tree/main/packages/ui/nodes/mention/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

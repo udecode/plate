@@ -1,4 +1,4 @@
-import { createStore } from '@udecode/zustood';
+import { createStore } from '../../utils/index';
 
 export type EventEditorState = {
   /**

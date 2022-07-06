@@ -17,7 +17,7 @@ export const Header = () => {
   return (
     <header tw="relative bg-white dark:bg-gray-800 overflow-hidden">
       <div tw="py-24 mx-auto container px-4 relative">
-        <div tw="hidden lg:block w-96 h-auto absolute transform right-20 top-1/2 -translate-y-1/2">
+        <div tw="hidden lg:block w-96 h-auto absolute transform right-20 top-[12%] -translate-y-1/2">
           {!isDarkTheme ? (
             <Logo tw="w-full h-full" />
           ) : (

@@ -1,5 +1,27 @@
 # @udecode/plate-ui-combobox
 
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
+## 13.5.0
+
+## 13.4.1
+
+### Patch Changes
+
+- [#1620](https://github.com/udecode/plate/pull/1620) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Add search to sort and onRenderItem to be able to highlight items based on search.
+
+## 13.4.0
+
+### Minor Changes
+
+- [#1617](https://github.com/udecode/plate/pull/1617) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Add sorting to Combobox
+
 ## 13.1.0
 
 ## 11.2.1

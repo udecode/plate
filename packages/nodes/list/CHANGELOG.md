@@ -1,5 +1,33 @@
 # @udecode/plate-list
 
+## 14.0.0
+
+### Minor Changes
+
+- [#1642](https://github.com/udecode/plate/pull/1642) by [@zakishaheen](https://github.com/zakishaheen) – Improved list item indentation when selection spans across different elements
+
+## 13.8.0
+
+### Patch Changes
+
+- [#1651](https://github.com/udecode/plate/pull/1651) by [@davisg123](https://github.com/davisg123) – Some types of nested lists are not unwrapped completely
+
+## 13.7.0
+
+## 13.6.0
+
+### Patch Changes
+
+- [`42c5ed1`](https://github.com/udecode/plate/commit/42c5ed1a15dfecb7e64fc39ba328c16733472112) by [@zbeyens](https://github.com/zbeyens) – Toggling a nested list that includes paragraph content should toggle all nested list elements
+
+## 13.5.0
+
+## 13.3.1
+
+### Patch Changes
+
+- [#1607](https://github.com/udecode/plate/pull/1607) by [@dylans](https://github.com/dylans) – Fix list deleteBackward with custom type
+
 ## 13.1.0
 
 ## 11.2.1

@@ -27,11 +27,11 @@ assignees: ''
 
 **Sandbox**
 
-https://codesandbox.io/s/plate-playground-v1-2mh1c
+https://codesandbox.io/s/github/udecode/plate-playground
 
 <!-- A link to a sandbox where the error can be reproduced. (You can start
 from the
-[base sandbox here](https://codesandbox.io/s/plate-playground-v1-2mh1c)
+[base sandbox here](https://codesandbox.io/s/github/udecode/plate-playground)
 or refer to the examples too.) -->
 
 

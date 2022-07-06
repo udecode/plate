@@ -126,7 +126,16 @@ export const toggleList = <V extends Value>(
 
         nodes.forEach((n) => {
           if (getListTypes(editor).includes(n[0].type)) {
-            setElements(editor, { type }, { at: n[1] });
+            setElements(
+              editor,
+              { type },
+              {
+                at: n[1],
+                match: (_n) =>
+                  isElement(_n) && getListTypes(editor).includes(_n.type),
+                mode: 'all',
+              }
+            );
           } else {
             setElements(
               editor,

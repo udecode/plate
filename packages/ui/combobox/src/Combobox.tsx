@@ -10,11 +10,7 @@ import {
   useComboboxControls,
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
-import {
-  isDefined,
-  useEditorState,
-  useEventEditorSelectors,
-} from '@udecode/plate-core';
+import { useEditorState, useEventEditorSelectors } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
 import {
   getRangeBoundingClientRect,
@@ -34,6 +30,7 @@ const ComboboxContent = <TData extends Data = NoData>(
     | 'controlled'
     | 'maxSuggestions'
     | 'filter'
+    | 'sort'
   >
 ) => {
   const { component: Component, items, portalElement, onRenderItem } = props;
@@ -46,9 +43,10 @@ const ComboboxContent = <TData extends Data = NoData>(
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;
-  const text = useComboboxSelectors.text();
+  const text = useComboboxSelectors.text() ?? '';
   const storeItems = useComboboxSelectors.items();
   const filter = activeComboboxStore.use.filter?.();
+  const sort = activeComboboxStore.use.sort?.();
   const maxSuggestions =
     activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
 
@@ -61,22 +59,17 @@ const ComboboxContent = <TData extends Data = NoData>(
 
   // Filter items
   useEffect(() => {
-    if (!isDefined(text)) return;
-
-    if (text.length === 0) {
-      return comboboxActions.filteredItems(storeItems.slice(0, maxSuggestions));
-    }
-
-    const _filteredItems = storeItems
-      .filter(
-        filter
-          ? filter(text)
-          : (value) => value.text.toLowerCase().startsWith(text.toLowerCase())
-      )
-      .slice(0, maxSuggestions);
-
-    comboboxActions.filteredItems(_filteredItems);
-  }, [filter, storeItems, maxSuggestions, text]);
+    comboboxActions.filteredItems(
+      storeItems
+        .filter(
+          filter
+            ? filter(text)
+            : (value) => value.text.toLowerCase().startsWith(text.toLowerCase())
+        )
+        .sort(sort?.(text))
+        .slice(0, maxSuggestions)
+    );
+  }, [filter, sort, storeItems, maxSuggestions, text]);
 
   // Get target range rect
   const getBoundingClientRect = useCallback(
@@ -116,7 +109,7 @@ const ComboboxContent = <TData extends Data = NoData>(
 
         {filteredItems.map((item, index) => {
           const Item = onRenderItem
-            ? onRenderItem({ item: item as TComboboxItem<TData> })
+            ? onRenderItem({ search: text, item: item as TComboboxItem<TData> })
             : item.text;
 
           const highlighted = index === highlightedIndex;
@@ -162,6 +155,7 @@ export const Combobox = <TData extends Data = NoData>({
   controlled,
   maxSuggestions,
   filter,
+  sort,
   ...props
 }: ComboboxProps<TData>) => {
   const editor = useEditorState();
@@ -178,6 +172,7 @@ export const Combobox = <TData extends Data = NoData>({
       onSelectItem,
       maxSuggestions,
       filter,
+      sort,
     });
   }, [
     id,
@@ -187,6 +182,7 @@ export const Combobox = <TData extends Data = NoData>({
     onSelectItem,
     maxSuggestions,
     filter,
+    sort,
   ]);
 
   if (

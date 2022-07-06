@@ -1,38 +1,25 @@
 {
   "name": "@udecode/plate-indent",
-  "version": "13.1.0",
+  "version": "14.0.0",
   "description": "Indent plugin for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/indent"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../cti.sh",
-    "rollup": "rollup -c=../../../rollup.config.js",
-    "test": "jest"
-  },
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.1.0"
+    "@udecode/plate-core": "14.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -41,6 +28,11 @@
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.79.0"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

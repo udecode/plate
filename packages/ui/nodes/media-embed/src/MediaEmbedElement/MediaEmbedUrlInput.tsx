@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { HTMLAttributes } from 'react';
 import { CSSProp } from 'styled-components';
 
-export const MediaEmbedUrlInput = ({
-  url,
-  onChange,
-  ...props
-}: {
+export interface MediaEmbedUrlInputProps
+  extends HTMLAttributes<HTMLInputElement> {
   className?: string;
   css?: CSSProp;
   url: string;
-  onChange: Function;
-}) => {
+  onChangeValue: (value: string) => void;
+}
+
+export const MediaEmbedUrlInput = ({
+  url,
+  onChangeValue,
+  ...props
+}: MediaEmbedUrlInputProps) => {
   const [value, setValue] = React.useState(url);
 
   const validateUrl = (newUrl: string) => {
@@ -31,13 +34,15 @@ export const MediaEmbedUrlInput = ({
 
   return (
     <input
+      style={{ width: 276 }}
       value={value}
+      placeholder="Paste the embed link..."
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => {
         const newUrl = e.target.value;
         validateUrl(newUrl);
         setValue(newUrl);
-        onChange(newUrl);
+        onChangeValue?.(newUrl);
       }}
       {...props}
     />

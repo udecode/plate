@@ -1,5 +1,59 @@
 # @udecode/plate-image
 
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `imageGlobalStore`: zustood store
+    - `focusEndCaptionPath`: When defined, focus end of caption textarea of the image with the same path
+    - `focusStartCaptionPath`: When defined, focus start of caption textarea of the image with the same path
+  - `ImageCaptionTextarea`:
+    - key `up` from the caption will focus the image
+    - key `down` from the caption will focus the next block
+    - key `down` from the image will focus the caption
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `ImageCaptionTextarea`:
+    - fix cursor bugs in the caption
+
+## 13.5.0
+
+### Minor Changes
+
+- [#1616](https://github.com/udecode/plate/pull/1616) by [@zbeyens](https://github.com/zbeyens) – We're extracting unstyled components from the existing components in ui packages, following the composition principle, props hooks and state hooks. The goal is to improve reusability. We're starting the process with the image element.
+
+  ### @udecode/plate-image
+
+  ```tsx
+  export const Image = {
+    Root: ImageRoot,
+    Caption: ImageCaption,
+    Img: ImageImg,
+    Resizable: ImageResizable,
+    CaptionTextarea: ImageCaptionTextarea,
+  };
+  ```
+
+  - each of the above components has a "props hook" (pattern: `useImage`, `useImageCaption`, etc.) so you could use these in your own component.
+  - `useImageStore`: atom with `width`
+  - `useImageElement`
+  - move these deps from `plate-ui-image` to `plate-image`:
+    - `"react-textarea-autosize": "^8.3.3"`
+    - `"re-resizable": "^6.9.9"`
+
+  ### @udecode/plate-ui-image
+
+  - `ImageElement` is only a composition of the above components with styling. The goal is to allow you to replace it with your own styles / composition.
+
 ## 13.1.0
 
 ## 11.2.1

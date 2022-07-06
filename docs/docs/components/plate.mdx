@@ -6,59 +6,18 @@ title: Plate
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-core
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const id = 'plate';
-  
-  const Component = () => {
-    const useSelectors = usePlateSelectors(id);
-    const enabled = useSelectors ? useSelectors.enabled() : null;
-    
-    return (
-      <>
-        <button
-          className="cursor-pointer"
-          type="button"
-          onClick={() => {
-            getPlateActions(id).enabled(!enabled);
-          }}
-        >
-          {enabled ? 'Disable editor' : 'Enable editor'}
-        </button>
-        <button
-          className="ml-2 cursor-pointer"
-          type="button"
-          onClick={() => {
-            getPlateActions(id).resetEditor();
-          }}
-        >
-          Reset editor (history)
-        </button>
-        <p />
-        <Plate
-          id={id}
-          editableProps={CONFIG.editableProps}
-          initialValue={VALUES.plainText}
-        />
-      </>
-    )
-  }
-  
+import { PlateSandpack } from './PlateSandpack'
 
-  return (
-    <PlateProvider id={id}>
-      <Component />
-    </PlateProvider>
-  );
-}
-```
+<PlateSandpack />
 
 ### Source Code
 
 - [packages/core](https://github.com/udecode/plate/tree/main/packages/core/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

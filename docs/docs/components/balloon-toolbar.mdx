@@ -6,71 +6,18 @@ title: Balloon Toolbar
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-toolbar
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const BallonToolbarMarks = () => {
-    const editor = usePlateEditorRef();
+import { BalloonToolbarSandpack } from './BalloonToolbarSandpack'
 
-    const arrow = false;
-    const theme = 'dark';
-    const popperOptions = {
-      placement: 'top'
-    };
-    const tooltip = {
-      arrow: true,
-      delay: 0,
-      duration: [200, 0],
-      hideOnClick: false,
-      offset: [0, 17],
-      placement: 'top',
-    };
-
-    return (
-      <BalloonToolbar
-        popperOptions={popperOptions}
-        theme={theme}
-        arrow={arrow}
-      >
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_BOLD)}
-          icon={<FormatBold />}
-          tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_ITALIC)}
-          icon={<FormatItalic />}
-          tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
-        />
-        <MarkToolbarButton
-          type={getPluginType(editor, MARK_UNDERLINE)}
-          icon={<FormatUnderlined />}
-          tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
-        />
-      </BalloonToolbar>
-    );
-  };
-
-  return (
-    <>
-      <Plate
-        id="balloon-toolbar"
-        plugins={PLUGINS.basicNodes}
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.balloonToolbar}
-      >
-        <BallonToolbarMarks />
-      </Plate>
-    </>
-  );
-}
-```
+<BalloonToolbarSandpack />
 
 ### Source Code
 
 - [packages/ui/toolbar](https://github.com/udecode/plate/tree/main/packages/ui/toolbar/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

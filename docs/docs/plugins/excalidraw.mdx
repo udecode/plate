@@ -6,33 +6,16 @@ title: Excalidraw
 ### Installation
 
 ```bash npm2yarn
-npm install @udecode/plate-excalidraw
+npm install @udecode/plate-ui-excalidraw
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const plugins = [
-    ...PLUGINS.basicNodes,
-    createExcalidrawPlugin({
-      component: ExcalidrawElement
-    }),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_EXCALIDRAW] }),
-  ];
-     
-  return (
-    <Plate
-      id="excalidraw"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.excalidraw}
-      plugins={plugins}
-    />
-  );
-}
-```
+import { ExcalidrawSandpack } from './ExcalidrawSandpack'
+
+<ExcalidrawSandpack />
 
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/ui/nodes/excalidraw/src/createExcalidrawPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

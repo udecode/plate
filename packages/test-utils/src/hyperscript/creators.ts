@@ -83,69 +83,53 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 /**
  * Create an anchor token.
  */
-
-export function createAnchor(
+export const createAnchor = (
   tagName: string,
   attributes: { [key: string]: any }
-): AnchorToken {
-  return new AnchorToken(attributes);
-}
+): AnchorToken => new AnchorToken(attributes);
 
 /**
  * Create an anchor and a focus token.
  */
-
-export function createCursor(
+export const createCursor = (
   tagName: string,
   attributes: { [key: string]: any }
-): Token[] {
-  return [new AnchorToken(attributes), new FocusToken(attributes)];
-}
+): Token[] => [new AnchorToken(attributes), new FocusToken(attributes)];
 
 /**
  * Create an `Element` object.
  */
-
-export function createElement(
+export const createElement = (
   tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Element {
-  return { ...attributes, children: resolveDescendants(children) };
-}
+): Element => ({ ...attributes, children: resolveDescendants(children) });
 
 /**
  * Create a focus token.
  */
-
-export function createFocus(
+export const createFocus = (
   tagName: string,
   attributes: { [key: string]: any }
-): FocusToken {
-  return new FocusToken(attributes);
-}
+): FocusToken => new FocusToken(attributes);
 
 /**
  * Create a fragment.
  */
-
-export function createFragment(
+export const createFragment = (
   tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Descendant[] {
-  return resolveDescendants(children);
-}
+): Descendant[] => resolveDescendants(children);
 
 /**
  * Create a `Selection` object.
  */
-
-export function createSelection(
+export const createSelection = (
   tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Range {
+): Range => {
   const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken);
   const focus: FocusToken = children.find((c) => c instanceof FocusToken);
 
@@ -172,17 +156,16 @@ export function createSelection(
     },
     ...attributes,
   };
-}
+};
 
 /**
  * Create a `Text` object.
  */
-
-export function createText(
+export const createText = (
   tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Text {
+): Text => {
   const nodes = resolveDescendants(children);
 
   if (nodes.length > 1) {
@@ -208,17 +191,16 @@ export function createText(
 
   Object.assign(node, attributes);
   return node;
-}
+};
 
 /**
  * Create a top-level `Editor` object.
  */
-
-export function createEditor(
+export const createEditor = (
   tagName: string,
   attributes: { [key: string]: any },
   children: any[]
-): Editor {
+): Editor => {
   const otherChildren: any[] = [];
   let selectionChild: Range | undefined;
 
@@ -272,4 +254,4 @@ export function createEditor(
   }
 
   return editor;
-}
+};
