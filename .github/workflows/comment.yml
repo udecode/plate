@@ -45,7 +45,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version: 16.x
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
@@ -65,7 +65,7 @@ jobs:
 
       - name: Get released version
         id: version
-        run: echo ::set-output name=version::$(node -p "require('./lerna.json').version")
+        run: echo ::set-output name=version::$(node -p "require('./packages/plate/package.json').version")
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
