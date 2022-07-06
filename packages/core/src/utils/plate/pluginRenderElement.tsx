@@ -57,8 +57,6 @@ export const pluginRenderElement = <V extends Value>(
       }
     });
 
-    console.log('scope', key);
-
     return (
       <ElementProvider element={element} scope={key}>
         {component}

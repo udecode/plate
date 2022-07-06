@@ -95,17 +95,12 @@ export const createAtomStore = <T, IT, N extends string = ''>(
 
     atoms[key] = atomConfig;
     getAtoms[key] = (scope?: Scope) => {
-      console.log('GET SCOPE', scope, storeScope);
       return useAtomValue(atomConfig, scope ?? storeScope);
     };
     setAtoms[key] = (scope?: Scope) => {
-      console.log('SET SCOPE', scope, storeScope);
-      
       return useSetAtom(atomConfig, scope ?? storeScope);
     };
     useAtoms[key] = (scope?: Scope) => {
-      console.log('USE SCOPE', scope, storeScope);
-      
       return useAtom(atomConfig, scope ?? storeScope);
     };
   });

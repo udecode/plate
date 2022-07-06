@@ -4,13 +4,11 @@ import { TElement } from '../slate/index';
 import { JotaiProvider, JotaiProviderProps } from '../utils/index';
 import { createAtomStore } from './createAtomStore';
 
-export const SCOPE_ELEMENT = Symbol('element');
-
 export const { elementStore, useElementStore } = createAtomStore(
   {
     element: (null as unknown) as TElement,
   },
-  { scope: SCOPE_ELEMENT, name: 'element' as const }
+  { name: 'element' as const }
 );
 
 export const useElement = <T extends TElement = TElement>(
@@ -46,7 +44,7 @@ export const ElementProviderChild = ({
 
 export const ElementProvider = ({
   element,
-  scope = SCOPE_ELEMENT,
+  scope,
   children,
   ...props
 }: JotaiProviderProps & {
@@ -57,7 +55,7 @@ export const ElementProvider = ({
     scope={scope}
     {...props}
   >
-    <ElementProviderChild element={element} scope={scope}>
+    <ElementProviderChild element={element} scope={scope!}>
       {children}
     </ElementProviderChild>
   </JotaiProvider>
