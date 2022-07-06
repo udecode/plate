@@ -217,8 +217,6 @@ describe('li list unwrapping', () => {
 
     unwrapList(editor);
 
-    // console.log(JSON.stringify(input.children, null, 1));
-
     expect(input.children).toEqual(output.children);
   });
 });
