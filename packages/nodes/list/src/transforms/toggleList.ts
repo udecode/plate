@@ -32,7 +32,6 @@ export const toggleList = <V extends Value>(
       // selection is collapsed
       const res = getListItemEntry(editor);
 
-      // already a list, so unlist it.
       if (res) {
         const { list } = res;
         if (list[0].type !== type) {
