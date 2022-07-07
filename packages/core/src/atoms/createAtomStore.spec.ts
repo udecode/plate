@@ -23,10 +23,12 @@ describe('createAtomStore', () => {
         },
         {
           name: 'named',
+          scope: 'named',
         }
       );
 
       expect(name).toBe('named');
+      expect(namedStore.scope).toBe('named');
       expect(namedStore.atom.b).toBeDefined();
       expect(useNamedStore().get.b).toBeDefined();
       expect(useNamedStore().use.b).toBeDefined();
@@ -51,11 +53,12 @@ describe('createAtomStore', () => {
         },
         {
           name: 'renamed',
+          scope: 'renamed',
         }
       );
 
       expect(name).toBe('renamed');
-      expect(renamedStore.atom.b).toBeDefined();
+      expect(renamedStore.scope).toBe('renamed');
       expect(useRenamedStore().get.b).toBeDefined();
       expect(useRenamedStore().use.b).toBeDefined();
       expect(useRenamedStore().set.b).toBeDefined();

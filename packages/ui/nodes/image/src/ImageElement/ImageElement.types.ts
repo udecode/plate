@@ -4,8 +4,7 @@ import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ResizableProps } from 're-resizable';
 import { CSSProp } from 'styled-components';
 
-export interface ImageElementStyleProps<V extends Value = Value>
-  extends ImageElementProps<V> {
+export interface ImageElementStyleProps extends ImageElementProps {
   selected?: boolean;
   focused?: boolean;
 }
@@ -40,8 +39,8 @@ export interface ImageElementPropsCaption {
   readOnly?: boolean;
 }
 
-export interface ImageElementProps<V extends Value = Value>
-  extends StyledElementProps<V, TImageElement, ImageElementStyles>,
+export interface ImageElementProps
+  extends StyledElementProps<Value, TImageElement, ImageElementStyles>,
     Pick<Partial<ImageResizableProps>, 'align'> {
   resizableProps?: Omit<ResizableProps, 'as'>;
 

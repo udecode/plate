@@ -1,5 +1,11 @@
 import React, { HTMLAttributes } from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react';
+import { createComponentAs } from '@udecode/plate-core';
+import {
+  ImageCaptionTextareaProps,
+  TextareaAutosize,
+  useImageCaptionTextarea,
+} from '@udecode/plate-image/src/index';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { useReadOnly, useSelected } from 'slate-react';
 import { getPopoverStyles } from './Popover.styles';
@@ -46,3 +52,11 @@ export const Popover = ({ rootProps, content, ...props }: PopoverProps) => {
 
   return <Tippy {...tippyProps} {...props} />;
 };
+
+export const ImageCaptionTextarea = createComponentAs<ImageCaptionTextareaProps>(
+  ({ as, ...props }) => {
+    const htmlProps = useImageCaptionTextarea({ as: as as any, ...props });
+
+    return <TextareaAutosize {...htmlProps} />;
+  }
+);

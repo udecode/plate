@@ -3,6 +3,7 @@
  */
 
 export * from './createPlateEditor';
+export * from './createPlateElementComponent';
 export * from './createPluginFactory';
 export * from './createPlugins';
 export * from './flattenDeepPlugins';

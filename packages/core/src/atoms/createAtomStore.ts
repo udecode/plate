@@ -23,6 +23,7 @@ export type AtomStoreApi<T, N extends string = ''> = {
 } & {
   [key in keyof Record<NameStore<N>, {}>]: {
     atom: AtomRecord<T>;
+    scope?: Scope;
     extend: <ET, EN>(
       extendedState: ET,
       options?: Omit<
@@ -121,6 +122,7 @@ export const createAtomStore = <T, IT, N extends string = ''>(
     ...api,
     [storeIndex]: {
       ...api[storeIndex],
+      scope: storeScope,
       extend: (extendedState: any, options: any) =>
         createAtomStore(extendedState, {
           scope: storeScope,
