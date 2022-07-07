@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 14.1.0
+
+### Minor Changes
+
+- [#1663](https://github.com/udecode/plate/pull/1663) by [@zakishaheen](https://github.com/zakishaheen) – Allow un-indenting top level list items
+
 ## 14.0.2
 
 ## 14.0.0
