@@ -1,5 +1,14 @@
 # @udecode/plate-image
 
+## 14.2.0
+
+### Minor Changes
+
+- [#1673](https://github.com/udecode/plate/pull/1673) by [@zbeyens](https://github.com/zbeyens) –
+  - `withImage` includes:
+    - `withImageUpload`: can be disabled using the new plugin option `disableUploadInsert`
+    - `withImageEmbed`: can be disabled using the new plugin option `disableEmbedInsert`. It inserts image when inserting an image url text.
+
 ## 14.0.2
 
 ### Patch Changes
