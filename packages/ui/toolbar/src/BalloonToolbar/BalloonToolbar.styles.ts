@@ -17,7 +17,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
     borderColor = 'rgb(196, 196, 196)';
   }
 
-  const { placement = 'top' } = props.popperOptions ?? {};
+  const { placement = 'top' } = props;
 
   const arrowStyle: CSSProp = [
     props.arrow &&

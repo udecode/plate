@@ -15,6 +15,7 @@ const alias = {
   '@udecode/plate-serializer-docx': 'serializers/docx',
   '@udecode/plate-excalidraw': 'ui/nodes/excalidraw',
   '@udecode/plate-find-replace': 'decorators/find-replace',
+  '@udecode/plate-floating': 'floating',
   '@udecode/plate-font': 'nodes/font',
   '@udecode/plate-headless': 'headless',
   '@udecode/plate-heading': 'nodes/heading',

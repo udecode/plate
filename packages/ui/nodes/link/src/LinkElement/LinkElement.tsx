@@ -9,9 +9,5 @@ export const LinkElement = (props: StyledElementProps<Value, TLinkElement>) => {
 
   const { root } = getLinkElementStyles(props);
 
-  return (
-    <Popover>
-      <Link.Root {...rootProps} css={root.css} className={root.className} />
-    </Popover>
-  );
+  return <Link.Root {...rootProps} css={root.css} className={root.className} />;
 };

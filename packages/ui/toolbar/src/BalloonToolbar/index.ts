@@ -5,4 +5,4 @@
 export * from './BalloonToolbar.styles';
 export * from './BalloonToolbar';
 export * from './BalloonToolbar.types';
-export * from './useBalloonToolbarPopper';
+export * from './useFloatingToolbar';

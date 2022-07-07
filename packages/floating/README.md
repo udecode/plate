@@ -1,10 +1,10 @@
-# Plate menu UI
+# Plate floating UI
 
-This package implements the menu UI for Plate.
+This package implements the floating UI for Plate.
 
 ## Documentation
 
-See [@szhsin/react-menu](https://github.com/szhsin/react-menu).
+WIP
 
 ## API
 

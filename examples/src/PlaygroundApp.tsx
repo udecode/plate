@@ -316,7 +316,7 @@ const App = () => {
           initialValue={playgroundValue}
           plugins={plugins}
         >
-          <A />
+          {/* <A /> */}
 
           <MarkBalloonToolbar />
 

@@ -1,13 +1,13 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "6.1.0",
+  "version": "14.0.2",
   "description": "Floating UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/ui/menu"
+    "directory": "packages/floating"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,10 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@szhsin/react-menu": "^2.1.0",
-    "@udecode/plate-core": "6.0.0",
-    "@udecode/plate-styled-components": "6.0.0",
-    "@udecode/plate-ui-button": "6.1.0"
+    "@floating-ui/react-dom-interactions": "^0.6.6",
+    "@udecode/plate-core": "14.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
