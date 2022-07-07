@@ -6,14 +6,11 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { insertImage } from './transforms/insertImage';
-import { isImageUrl } from './utils/isImageUrl';
 import { ImagePlugin } from './types';
 
 /**
  * Allows for pasting images from clipboard.
  * Not yet: dragging and dropping images, selecting them through a file system dialog.
- * @param options.type
- * @param options.uploadImage
  */
 export const withImageUpload = <
   V extends Value = Value,
@@ -30,6 +27,7 @@ export const withImageUpload = <
   editor.insertData = (dataTransfer: DataTransfer) => {
     const text = dataTransfer.getData('text/plain');
     const { files } = dataTransfer;
+
     if (files && files.length > 0) {
       const injectedPlugins = getInjectedPlugins<{}, V, E>(editor, plugin);
       if (
@@ -60,8 +58,6 @@ export const withImageUpload = <
           reader.readAsDataURL(file);
         }
       }
-    } else if (isImageUrl(text)) {
-      insertImage(editor, text);
     } else {
       insertData(dataTransfer);
     }
