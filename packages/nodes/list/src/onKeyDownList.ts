@@ -14,13 +14,17 @@ import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
 import { moveListItems, toggleList } from './transforms';
+import { ListPlugin } from './types';
 
 export const onKeyDownList = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  { type, options: { hotkey } }: WithPlatePlugin<HotkeyPlugin, V, E>
+  {
+    type,
+    options: { hotkey, enableResetOnShiftTab },
+  }: WithPlatePlugin<ListPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
@@ -53,7 +57,11 @@ export const onKeyDownList = <
 
     if (workRange && listSelected) {
       e.preventDefault();
-      moveListItems(editor, { at: workRange, increase: isTab });
+      moveListItems(editor, {
+        at: workRange,
+        increase: isTab,
+        enableResetOnShiftTab,
+      });
       return true;
     }
   }
