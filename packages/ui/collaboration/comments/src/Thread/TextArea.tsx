@@ -266,7 +266,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         } else if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
           onSubmit();
           event.preventDefault();
-        } else if (event.code === 'Enter') {
+        } else if (areContactsShown && event.code === 'Enter') {
           const selectedContact = filteredContacts[selectedContactIndex];
           onContactSelected(selectedContact);
           event.preventDefault();
