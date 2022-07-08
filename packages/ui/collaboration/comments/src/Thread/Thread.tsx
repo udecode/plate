@@ -310,11 +310,10 @@ export function Thread({
   );
 
   useEffect(
-    function onShow() {
-      const textArea = textAreaRef.current!;
-      textArea.value = '';
+    function resetValueWhenSwitchingToDifferentThread() {
+      setValue('');
     },
-    [textAreaRef, thread]
+    [thread]
   );
 
   const { root } = createThreadStyles(props);
