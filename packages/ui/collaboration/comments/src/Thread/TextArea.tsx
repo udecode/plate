@@ -328,16 +328,14 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     useEffect(
       function focusOnShowWhenNewThread() {
-        if (thread.comments.length === 0) {
-          setTimeout(() => {
-            const textArea = textAreaRef.current;
-            if (textArea) {
-              textArea.focus();
-            }
-          }, 0);
-        }
+        setTimeout(() => {
+          const textArea = textAreaRef.current;
+          if (textArea) {
+            textArea.focus();
+          }
+        }, 0);
       },
-      [textAreaRef, thread.comments.length]
+      [textAreaRef]
     );
 
     const { root: textArea } = createTextAreaStyles(props);
