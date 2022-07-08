@@ -328,11 +328,11 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     useEffect(
       function focusOnShow() {
-        requestAnimationFrame(() => {
+        setTimeout(() => {
           if (textAreaRef.current) {
             textAreaRef.current.focus();
           }
-        });
+        }, 0);
       },
       [textAreaRef]
     );
