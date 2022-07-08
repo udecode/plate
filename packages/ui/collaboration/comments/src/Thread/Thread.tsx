@@ -313,9 +313,6 @@ export function Thread({
     function onShow() {
       const textArea = textAreaRef.current!;
       textArea.value = '';
-      if (thread.comments.length === 0) {
-        textArea.focus();
-      }
     },
     [textAreaRef, thread]
   );
