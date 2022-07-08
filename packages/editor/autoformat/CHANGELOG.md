@@ -1,5 +1,11 @@
 # @udecode/plate-autoformat
 
+## 14.3.0
+
+### Minor Changes
+
+- [#1679](https://github.com/udecode/plate/pull/1679) by [@zakishaheen](https://github.com/zakishaheen) – Add ability to escape text autoformat rule with backspace
+
 ## 14.0.2
 
 ## 14.0.0
