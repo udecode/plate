@@ -223,12 +223,16 @@ export function Thread({
     })();
   }, [retrieveUser]);
 
+  const clearTextArea = useCallback(function clearTextArea() {
+    setValue('');
+  }, []);
+
   const onSubmitComment = useCallback(
     async function onSubmitComment() {
-      onSubmitCommentCallback(textAreaRef.current!.value, assignedTo);
-      setValue('');
+      onSubmitCommentCallback(value, assignedTo);
+      clearTextArea();
     },
-    [assignedTo, onSubmitCommentCallback]
+    [assignedTo, clearTextArea, onSubmitCommentCallback, value]
   );
 
   const hasComments = useCallback(
@@ -236,13 +240,6 @@ export function Thread({
       return thread.comments.length >= 1;
     },
     [thread]
-  );
-
-  const clearTextArea = useCallback(
-    function clearTextArea() {
-      textAreaRef.current!.value = '';
-    },
-    [textAreaRef]
   );
 
   const onCancel = useCallback(
@@ -310,10 +307,10 @@ export function Thread({
   );
 
   useEffect(
-    function resetValueWhenSwitchingToDifferentThread() {
-      setValue('');
+    function clearTextAreaWhenSwitchingToDifferentThread() {
+      clearTextArea();
     },
-    [thread]
+    [clearTextArea, thread]
   );
 
   const { root } = createThreadStyles(props);

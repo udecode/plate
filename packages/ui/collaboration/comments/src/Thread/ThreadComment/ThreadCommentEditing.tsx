@@ -26,6 +26,8 @@ export function ThreadCommentEditing({
 } & StyledProps) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [value, setValue] = useState<string>(defaultText);
+
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
     false
   );
@@ -37,9 +39,9 @@ export function ThreadCommentEditing({
 
   const onSave = useCallback(
     async function onSave() {
-      await onSaveCallback(textAreaRef.current!.value);
+      await onSaveCallback(value);
     },
-    [onSaveCallback, textAreaRef]
+    [onSaveCallback, value]
   );
 
   useEffect(
@@ -51,8 +53,6 @@ export function ThreadCommentEditing({
     },
     [textAreaRef, thread]
   );
-
-  const [value, setValue] = useState<string>(defaultText);
 
   const onChange = useCallback(function onChange(newValue) {
     setValue(newValue);
