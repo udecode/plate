@@ -9,13 +9,7 @@ jsx;
 const input = (
   <editor>
     <hp>
-      link:{' '}
-      <element type="a" url="http://google.com">
-        google.com
-      </element>
-    </hp>
-    <hp>
-      test
+      link: google.com
       <cursor />
     </hp>
   </editor>
@@ -29,23 +23,19 @@ const output = (
       link:{' '}
       <element type="a" url="http://google.com">
         google.com
-      </element>
-    </hp>
-    <hp>
-      {'test '}
-      {/* keep above as string in quotes to force trailing space */}
-      <cursor />
+      </element>{' '}
     </hp>
   </editor>
 ) as any;
 
-describe('when inserting a space with a link element in a preceeding block and using a custom href', () => {
-  it('should run default insertText', () => {
+describe('when inserting a space with a link element and using a custom href', () => {
+  it('should wrap the url in a link', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
         createLinkPlugin({
           options: {
+            isUrl: (url) => url === 'google.com',
             getUrlHref: (url) => {
               return 'http://google.com';
             },
