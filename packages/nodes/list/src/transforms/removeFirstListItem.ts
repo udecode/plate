@@ -1,9 +1,4 @@
-import {
-  isFirstChild,
-  PlateEditor,
-  TElementEntry,
-  Value,
-} from '@udecode/plate-core';
+import { PlateEditor, TElementEntry, Value } from '@udecode/plate-core';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
@@ -21,9 +16,8 @@ export const removeFirstListItem = <V extends Value>(
   }
 ) => {
   const [, listPath] = list;
-  const [, listItemPath] = listItem;
 
-  if (!isListNested(editor, listPath) && !isFirstChild(listItemPath)) {
+  if (!isListNested(editor, listPath)) {
     moveListItemUp(editor, { list, listItem });
 
     return true;
