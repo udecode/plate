@@ -24,6 +24,7 @@ export function createThreadCommentTextStyles(props: StyledProps) {
         padding-left: 12px;
         padding-right: 12px;
         font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        white-space: pre-wrap;
       `,
     }
   );
