@@ -263,7 +263,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           setSelectedContactIndex(
             Math.min(selectedContactIndex + 1, filteredContacts.length - 1)
           );
-        } else if (event.code === 'Enter' && event.ctrlKey) {
+        } else if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
           onSubmit();
         } else if (event.code === 'Enter') {
           const selectedContact = filteredContacts[selectedContactIndex];
