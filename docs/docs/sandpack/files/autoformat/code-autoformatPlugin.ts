@@ -7,6 +7,7 @@ export const autoformatPlugin: Partial<
 > = {
   options: {
     rules: autoformatRules as any,
+    enableUndoOnDelete: true,
   },
 };
 `;
