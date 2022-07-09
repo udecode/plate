@@ -1,5 +1,11 @@
 # @udecode/plate-media-embed-ui
 
+## 14.4.0
+
+### Patch Changes
+
+- [#1682](https://github.com/udecode/plate/pull/1682) by [@horacioh](https://github.com/horacioh) – fix: type `provider`
+
 ## 14.0.2
 
 ## 14.0.0
