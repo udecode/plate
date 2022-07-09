@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 14.4.0
+
+### Minor Changes
+
+- [#1676](https://github.com/udecode/plate/pull/1676) by [@zakishaheen](https://github.com/zakishaheen) – Allow escape unindent of the first element of a list
+
 ## 14.1.0
 
 ### Minor Changes
