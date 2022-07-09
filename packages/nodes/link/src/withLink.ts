@@ -74,7 +74,7 @@ export const withLink = <
   editor: E,
   {
     type,
-    options: { isUrl, rangeBeforeOptions },
+    options: { isUrl, getUrlHref, rangeBeforeOptions },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
   const { insertData, insertText } = editor;
@@ -96,9 +96,13 @@ export const withLink = <
 
       if (beforeWordRange) {
         const beforeWordText = getEditorString(editor, beforeWordRange);
+        const beforeWordHref = getUrlHref?.(beforeWordText);
 
         if (isUrl!(beforeWordText)) {
-          upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
+          upsertLink(editor, {
+            url: beforeWordHref || beforeWordText,
+            at: beforeWordRange,
+          });
           moveSelection(editor, { unit: 'offset' });
         }
       }
@@ -109,10 +113,11 @@ export const withLink = <
 
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
+    const textHref = getUrlHref?.(text);
 
     if (text) {
       if (isUrl!(text)) {
-        return upsertLinkAtSelection(editor, { url: text });
+        return upsertLinkAtSelection(editor, { url: textHref || text });
       }
 
       if (someNode(editor, { match: { type } })) {
