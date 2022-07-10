@@ -29,6 +29,7 @@
     "@udecode/plate-combobox": "14.0.2",
     "@udecode/plate-core": "14.0.2",
     "@udecode/plate-find-replace": "14.0.2",
+    "@udecode/plate-floating": "14.0.2",
     "@udecode/plate-font": "14.0.2",
     "@udecode/plate-heading": "14.0.2",
     "@udecode/plate-highlight": "14.0.2",

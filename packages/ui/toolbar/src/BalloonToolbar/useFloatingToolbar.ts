@@ -73,11 +73,9 @@ export const useFloatingToolbar = ({
       {
         middleware: [
           flip({
-            padding: 8,
+            padding: 12,
           }),
-          offset({
-            mainAxis: 12,
-          }),
+          offset(12),
           hide(),
         ],
         placement: 'top',

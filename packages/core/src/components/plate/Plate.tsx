@@ -1,4 +1,4 @@
-import React, { Ref, useEffect } from 'react';
+import React, { ReactNode, Ref, useEffect } from 'react';
 import { Editable, Slate } from 'slate-react';
 import { plateIdAtom, SCOPE_PLATE } from '../../atoms/plateIdAtom';
 import { usePlate } from '../../hooks/plate/usePlate';
@@ -85,22 +85,74 @@ export const PlateContent = <
 }: PlateProps<V, E>) => {
   const { slateProps, editableProps } = usePlate<V, E>(options);
 
-  if (!slateProps.editor) return null;
+  const editor = slateProps.editor as E | undefined;
+
+  if (!editor) return null;
+
+  const { plugins } = editor;
 
   const editable = <Editable ref={editableRef} {...(editableProps as any)} />;
 
-  return (
-    <Slate {...(slateProps as any)}>
+  let afterEditable: ReactNode = null;
+  let beforeEditable: ReactNode = null;
+
+  plugins.forEach((plugin) => {
+    const { renderBeforeEditable, renderAfterEditable } = plugin;
+
+    if (renderAfterEditable) {
+      afterEditable = (
+        <>
+          {afterEditable}
+          {renderAfterEditable({
+            editor,
+            plugin,
+          })}
+        </>
+      );
+    }
+
+    if (renderBeforeEditable) {
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          {renderBeforeEditable({
+            editor,
+            plugin,
+          })}
+        </>
+      );
+    }
+  });
+
+  let aboveEditable: ReactNode = (
+    <>
       {firstChildren}
+
+      {beforeEditable}
 
       {renderEditable ? renderEditable(editable) : editable}
 
       <EditorStateEffect id={options.id} />
       <EditorRefEffect id={options.id} />
 
+      {afterEditable}
+
       {children}
-    </Slate>
+    </>
   );
+
+  plugins.forEach((plugin) => {
+    const { renderAboveEditable } = plugin;
+
+    if (renderAboveEditable)
+      aboveEditable = renderAboveEditable({
+        editor,
+        plugin,
+        children: aboveEditable,
+      });
+  });
+
+  return <Slate {...(slateProps as any)}>{aboveEditable}</Slate>;
 };
 
 export const Plate = <

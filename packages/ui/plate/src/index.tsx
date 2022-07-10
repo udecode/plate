@@ -19,7 +19,6 @@ export * from '@udecode/plate-ui-list';
 export * from '@udecode/plate-ui-media-embed';
 export * from '@udecode/plate-ui-mention';
 export * from '@udecode/plate-ui-placeholder';
-export * from '@udecode/plate-ui-popper';
 export * from '@udecode/plate-ui-table';
 export * from '@udecode/plate-ui-toolbar';
 export * from '@udecode/plate-ui-button';

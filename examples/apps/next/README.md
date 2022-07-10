@@ -133,8 +133,6 @@ yarn dev
 
 [//]: # (      "@udecode/plate-ui-popover": ["../../packages/ui/popover"],)
 
-[//]: # (      "@udecode/plate-ui-popper": ["../../packages/ui/popper"],)
-
 [//]: # (      "@udecode/plate-ui-table": ["../../packages/ui/nodes/table"],)
 
 [//]: # (      "@udecode/plate-ui-toolbar": ["../../packages/ui/toolbar"]&#41;)

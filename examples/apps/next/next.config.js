@@ -60,7 +60,6 @@ const alias = {
   '@udecode/plate-ui-mention': 'ui/nodes/mention',
   '@udecode/plate-ui-placeholder': 'ui/placeholder',
   '@udecode/plate-ui-popover': 'ui/popover',
-  '@udecode/plate-ui-popper': 'ui/popper',
   '@udecode/plate-ui-table': 'ui/nodes/table',
   '@udecode/plate-ui-toolbar': 'ui/toolbar',
 };

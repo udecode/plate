@@ -19,9 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@popperjs/core": "^2.11.5",
-    "@udecode/plate-core": "14.0.2",
-    "react-popper": "^2.3.0"
+    "@udecode/plate-core": "14.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

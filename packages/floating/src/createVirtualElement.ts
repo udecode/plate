@@ -1,6 +1,7 @@
+import { ClientRectObject } from '@floating-ui/core';
 import { VirtualElement } from '@floating-ui/react-dom-interactions';
 
-export const getDefaultBoundingClientRect = () => ({
+export const getDefaultBoundingClientRect = (): ClientRectObject => ({
   width: 0,
   height: 0,
   x: 0,

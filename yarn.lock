@@ -3606,7 +3606,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.11.5, @popperjs/core@npm:^2.9.0":
+"@popperjs/core@npm:^2.9.0":
   version: 2.11.5
   resolution: "@popperjs/core@npm:2.11.5"
   checksum: 868c9c5fc2765417d55e8a0a2449b9b8ec3f613b626a12905b9700f8413b433a1ee37ec581a929e0c51ea00a32a7fe5b58ea75d3772d7d85146ecdbd0288331b
@@ -5102,6 +5102,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:14.0.2"
     "@udecode/plate-core": "npm:14.0.2"
     "@udecode/plate-find-replace": "npm:14.0.2"
+    "@udecode/plate-floating": "npm:14.0.2"
     "@udecode/plate-font": "npm:14.0.2"
     "@udecode/plate-heading": "npm:14.0.2"
     "@udecode/plate-highlight": "npm:14.0.2"
@@ -5590,8 +5591,8 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:14.0.2"
     "@udecode/plate-core": "npm:14.0.2"
+    "@udecode/plate-floating": "npm:14.0.2"
     "@udecode/plate-styled-components": "npm:14.0.2"
-    "@udecode/plate-ui-popper": "npm:14.0.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -5851,13 +5852,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-popper@npm:14.0.2, @udecode/plate-ui-popper@workspace:packages/ui/popper":
+"@udecode/plate-ui-popper@workspace:packages/ui/popper":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-popper@workspace:packages/ui/popper"
   dependencies:
-    "@popperjs/core": "npm:^2.11.5"
     "@udecode/plate-core": "npm:14.0.2"
-    react-popper: "npm:^2.3.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -5896,8 +5895,6 @@ __metadata:
     "@udecode/plate-core": "npm:14.0.2"
     "@udecode/plate-floating": "npm:14.0.2"
     "@udecode/plate-styled-components": "npm:14.0.2"
-    "@udecode/plate-ui-popper": "npm:14.0.2"
-    react-popper: "npm:^2.3.0"
     react-use: "npm:^17.3.2"
   peerDependencies:
     react: ">=16.8.0"
@@ -5932,7 +5929,6 @@ __metadata:
     "@udecode/plate-ui-mention": "npm:14.0.2"
     "@udecode/plate-ui-placeholder": "npm:14.0.2"
     "@udecode/plate-ui-popover": "npm:14.0.2"
-    "@udecode/plate-ui-popper": "npm:14.0.2"
     "@udecode/plate-ui-table": "npm:14.0.2"
     "@udecode/plate-ui-toolbar": "npm:14.0.2"
   peerDependencies:
@@ -15849,7 +15845,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -19991,13 +19987,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-fast-compare@npm:^3.0.1":
-  version: 3.2.0
-  resolution: "react-fast-compare@npm:3.2.0"
-  checksum: 83b544e0c35aa1db9d815a22d6a56ae53c619752488e3d989629ed078091a4182fe79c8c2a93aa67a61abcc56b91b9def57da1522670be9016bd54f508196258
-  languageName: node
-  linkType: hard
-
 "react-is@npm:17.0.2, react-is@npm:^17.0.1, react-is@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
@@ -20016,20 +20005,6 @@ __metadata:
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 0c9adc5d984db733fb1dd298f3e94cdec66bc328d27fb11df65971d2cc9a299008bc64baab8fe8e79943df85b445a1008b2cc9e270825d0fd056e5a0d2df8de6
-  languageName: node
-  linkType: hard
-
-"react-popper@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "react-popper@npm:2.3.0"
-  dependencies:
-    react-fast-compare: "npm:^3.0.1"
-    warning: "npm:^4.0.2"
-  peerDependencies:
-    "@popperjs/core": ^2.0.0
-    react: ^16.8.0 || ^17 || ^18
-    react-dom: ^16.8.0 || ^17 || ^18
-  checksum: c90b40f0a7b2e95e411cb444786f4b17abc03ad4d75c2a9700858ce2d2665c8545c0e5bf3ba17d271ce67f87001ce6fb902319a94d1b6915f85604862aa8332c
   languageName: node
   linkType: hard
 
@@ -24572,15 +24547,6 @@ __metadata:
   dependencies:
     makeerror: "npm:1.0.12"
   checksum: 584bd2a543de771451a60c91866be059e0e0728f5d4744a1225e7b9b7c9bcb87fd03f573a8d95fbdb8b553c13ad5913db19b7b91a86af6b8fb170254a5d18b7a
-  languageName: node
-  linkType: hard
-
-"warning@npm:^4.0.2":
-  version: 4.0.3
-  resolution: "warning@npm:4.0.3"
-  dependencies:
-    loose-envify: "npm:^1.0.0"
-  checksum: a8a2ebdd8fb207ea69d9db8f5e02e2b74399cd3b6df3b0cc8c536ea3b8bd4d1c6da6605ea30eee25f5cd1acb44ceecf9b0a1eb7f1d3537e20212f4b3f218d688
   languageName: node
   linkType: hard
 

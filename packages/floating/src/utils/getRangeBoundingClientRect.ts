@@ -1,5 +1,7 @@
+import { ClientRectObject } from '@floating-ui/core';
 import { toDOMRange, TReactEditor, Value } from '@udecode/plate-core';
 import { Range } from 'slate';
+import { getDefaultBoundingClientRect } from '../createVirtualElement';
 
 /**
  * Get bounding client rect by slate range
@@ -7,11 +9,11 @@ import { Range } from 'slate';
 export const getRangeBoundingClientRect = <V extends Value>(
   editor: TReactEditor<V>,
   at: Range | null
-) => {
-  if (!at) return;
+): ClientRectObject => {
+  if (!at) return getDefaultBoundingClientRect();
 
   const domRange = toDOMRange(editor, at);
-  if (!domRange) return;
+  if (!domRange) return getDefaultBoundingClientRect();
 
   return domRange.getBoundingClientRect();
 };
