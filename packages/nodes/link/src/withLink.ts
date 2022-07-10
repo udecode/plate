@@ -47,13 +47,17 @@ const upsertLink = <V extends Value>(
 
 const upsertLinkIfValid = <V extends Value>(
   editor: PlateEditor<V>,
-  { isUrl }: { isUrl: any }
+  { isUrl, getUrlHref }: { isUrl: any; getUrlHref: any }
 ) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getEditorString(editor, rangeFromBlockStart);
+  const hrefFromBlockStart = getUrlHref?.(textFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-    upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
+    upsertLink(editor, {
+      url: hrefFromBlockStart || textFromBlockStart,
+      at: rangeFromBlockStart,
+    });
     return true;
   }
 };
@@ -83,7 +87,7 @@ export const withLink = <
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
-      if (upsertLinkIfValid(editor, { isUrl })) {
+      if (upsertLinkIfValid(editor, { isUrl, getUrlHref })) {
         moveSelection(editor, { unit: 'offset' });
         return insertText(text);
       }
