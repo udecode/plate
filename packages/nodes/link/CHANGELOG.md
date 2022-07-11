@@ -1,5 +1,7 @@
 # @udecode/plate-link
 
+## 14.4.2
+
 ## 14.4.1
 
 ### Patch Changes

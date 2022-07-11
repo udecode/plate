@@ -1,5 +1,7 @@
 # @udecode/plate-image
 
+## 14.4.2
+
 ## 14.2.0
 
 ### Minor Changes
