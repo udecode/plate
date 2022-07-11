@@ -9,6 +9,7 @@ import {
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { PlateEditor } from '../../types/plate/PlateEditor';
+import { normalizeInitialValue } from '../../utils/index';
 import { setPlatePlugins } from '../../utils/plate/setPlatePlugins';
 import { createTEditor } from '../../utils/slate/createTEditor';
 import { usePlateStoreEffects } from './usePlateStoreEffects';
@@ -24,17 +25,19 @@ export const usePlateEffects = <
   id = 'main',
   editor: editorProp,
   initialValue,
-  normalizeInitialValue,
+  normalizeInitialValue: normalizeInitialValueProp,
   plugins: pluginsProp,
   disableCorePlugins,
   editableProps,
   onChange,
-  value,
+  value: valueProp,
   enabled: enabledProp,
 }: PlateProps<V, E>) => {
   const editor = usePlateEditorRef<V, E>(id);
   const enabled = usePlateSelectors(id).enabled();
   const plugins = usePlateSelectors<V>(id).plugins();
+  const value = usePlateSelectors<V>(id).value();
+  const isReady = usePlateSelectors<V>(id).isReady();
 
   const prevEditor = useRef(editor);
   const prevPlugins = useRef(plugins);
@@ -51,10 +54,18 @@ export const usePlateEffects = <
     editableProps,
     onChange,
     id,
-    value,
+    value: valueProp,
     enabled: enabledProp,
     plugins: pluginsProp,
   });
+
+  useEffect(() => {
+    if (!editor || !value || isReady) return;
+
+    normalizeInitialValue?.(editor, value);
+
+    plateActions.isReady(true);
+  }, [editor, isReady, plateActions, value]);
 
   // Unset the editor if enabled gets false
   useEffect(() => {
@@ -100,10 +111,10 @@ export const usePlateEffects = <
 
   // Force editor normalization
   useEffect(() => {
-    if (editor && normalizeInitialValue) {
+    if (editor && normalizeInitialValueProp && isReady) {
       normalizeEditor(editor, { force: true });
     }
-  }, [editor, normalizeInitialValue]);
+  }, [editor, isReady, normalizeInitialValueProp]);
 
   useEffect(() => {
     prevEditor.current = editor;

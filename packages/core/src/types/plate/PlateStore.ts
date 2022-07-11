@@ -54,6 +54,11 @@ export type PlateStoreState<
     enabled: boolean;
 
     /**
+     * Whether the editor is ready to be rendered.
+     */
+    isReady: boolean;
+
+    /**
      * Whether `Editable` is rendered so slate DOM is resolvable.
      */
     isRendered: boolean;
