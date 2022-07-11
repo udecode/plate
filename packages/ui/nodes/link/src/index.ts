@@ -4,3 +4,4 @@
 
 export * from './LinkElement/index';
 export * from './LinkToolbarButton/index';
+export * from './StyledFloatingLink';

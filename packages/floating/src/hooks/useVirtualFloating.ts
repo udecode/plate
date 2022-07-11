@@ -92,6 +92,7 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
       position: strategy,
       top: y ?? 0,
       left: x ?? 0,
+      display: floatingOptions.open === false ? 'none' : undefined,
       visibility: !visible ? 'hidden' : undefined,
     },
   };

@@ -12,8 +12,8 @@ export const getPopoverStyles = (props: StyledProps) =>
           border-radius: 3px;
           max-width: 350px;
           font-size: 14px;
-          box-shadow: rgba(9, 30, 66, 0.31) 0 0 1px,
-            rgba(9, 30, 66, 0.25) 0 4px 8px -2px;
+          box-shadow: rgb(15 15 15 / 5%) 0 0 0 1px,
+            rgb(15 15 15 / 10%) 0 3px 6px, rgb(15 15 15 / 20%) 0 9px 24px;
         `,
       ],
     }

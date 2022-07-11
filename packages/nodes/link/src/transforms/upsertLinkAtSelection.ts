@@ -11,6 +11,7 @@ import {
 } from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
+import { createLinkNode } from '../utils/createLinkNode';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -36,11 +37,13 @@ export const upsertLinkAtSelection = <V extends Value>(
   const type = getPluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
-    return insertNodes<TLinkElement>(editor, {
-      type,
-      url,
-      children: [{ text: url }],
-    });
+    return insertNodes<TLinkElement>(
+      editor,
+      createLinkNode(editor, {
+        url,
+        text: url,
+      })
+    );
   }
 
   // if our cursor is inside an existing link, but don't have the text selected, select it now

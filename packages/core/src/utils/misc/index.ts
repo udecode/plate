@@ -13,5 +13,6 @@ export * from './hexToBase64';
 export * from './hotkeys';
 export * from './isUrl';
 export * from './jotai';
+export * from './react-hotkeys-hook';
 export * from './type-utils';
 export * from './zustood';

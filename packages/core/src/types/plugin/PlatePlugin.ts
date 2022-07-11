@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 import { Value } from '../../slate/editor/TEditor';
 import { AnyObject } from '../misc/AnyObject';
 import { Nullable } from '../misc/Nullable';
@@ -14,6 +14,7 @@ import { PlatePluginComponent } from './PlatePluginComponent';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
 import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
+import { RenderAfterEditableProps } from './RenderAfterEditableProps';
 import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
 
@@ -150,27 +151,21 @@ export type PlatePlugin<
     /**
      * Render a component above `Editable`.
      */
-    renderAboveEditable?: (props: {
+    renderAboveEditable?: FC<{
       editor: E;
       plugin: WithPlatePlugin<P, V, E>;
       children: ReactNode;
-    }) => ReactNode;
+    }>;
 
     /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: (props: {
-      editor: E;
-      plugin: WithPlatePlugin<P, V, E>;
-    }) => ReactNode;
+    renderAfterEditable?: FC<RenderAfterEditableProps<P, V, E>>;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: (props: {
-      editor: E;
-      plugin: WithPlatePlugin<P, V, E>;
-    }) => ReactNode;
+    renderBeforeEditable?: FC<RenderAfterEditableProps<P, V, E>>;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.

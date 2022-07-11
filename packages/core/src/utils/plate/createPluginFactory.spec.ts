@@ -2,7 +2,7 @@ import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/cre
 import {
   createLinkPlugin,
   ELEMENT_LINK,
-} from '@udecode/plate-link/src/createLinkPlugin';
+} from 'packages/nodes/link/src/createLinkPlugin';
 import { createPlateEditor } from './createPlateEditor';
 import { createPluginFactory } from './createPluginFactory';
 import { getPlugin } from './getPlugin';

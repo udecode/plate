@@ -18,3 +18,4 @@ export * from './PlatePluginProps';
 export * from './SerializeHtml';
 export * from './ToggleMarkPlugin';
 export * from './WithOverride';
+export { RenderAfterEditableProps } from './RenderAfterEditableProps';

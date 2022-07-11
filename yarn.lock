@@ -5020,6 +5020,7 @@ __metadata:
     clsx: "npm:^1.1.1"
     jotai: "npm:^1.7.2"
     lodash: "npm:^4.17.21"
+    react-hotkeys-hook: "npm:^3.4.6"
     use-deep-compare: "npm:^1.1.0"
     zustand: "npm:^3.7.2"
   peerDependencies:
@@ -12910,6 +12911,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hotkeys-js@npm:3.9.3":
+  version: 3.9.3
+  resolution: "hotkeys-js@npm:3.9.3"
+  checksum: 891ffbff94fdec6e3f087569d1bf33af46bd6a3097b37a95c75ea28404ee7aa4a07497d001c14645c01e8867f25dcf67194fdabf952eaa87b11becad2def4285
+  languageName: node
+  linkType: hard
+
 "hpack.js@npm:^2.1.6":
   version: 2.1.6
   resolution: "hpack.js@npm:2.1.6"
@@ -19984,6 +19992,18 @@ __metadata:
   version: 6.0.11
   resolution: "react-error-overlay@npm:6.0.11"
   checksum: 6895a094484a767fb77f4c8dac084d1ce1cc8f0505dbd94244eadd6f6d8765bf4d4990546a67eccfd2f2204a803e3fec5a548b036fa27fe4a89a10c382e15682
+  languageName: node
+  linkType: hard
+
+"react-hotkeys-hook@npm:^3.4.6":
+  version: 3.4.6
+  resolution: "react-hotkeys-hook@npm:3.4.6"
+  dependencies:
+    hotkeys-js: "npm:3.9.3"
+  peerDependencies:
+    react: ">=16.8.1"
+    react-dom: ">=16.8.1"
+  checksum: d5b92713b2c7aab6bf162c800af76bb6a146cc15f9b8b78f5af1daf5241c8c7b907e5650ffcfcf02e56a9c1a1ec33df927fdb3d7231e75fc705ab6b789515603
   languageName: node
   linkType: hard
 

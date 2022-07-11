@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   isUrl as isUrlProtocol,
 } from '@udecode/plate-core';
-import { onKeyDownLink } from './onKeyDownLink';
+import { RenderAfterEditableLink } from './renderAfterEditableLink';
 import { LinkPlugin } from './types';
 import { withLink } from './withLink';
 
@@ -16,9 +16,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   isElement: true,
   isInline: true,
   props: ({ element }) => ({ nodeProps: { href: element?.url } }),
-  handlers: {
-    onKeyDown: onKeyDownLink,
-  },
+  renderAfterEditable: RenderAfterEditableLink,
   withOverrides: withLink,
   options: {
     isUrl: isUrlProtocol,

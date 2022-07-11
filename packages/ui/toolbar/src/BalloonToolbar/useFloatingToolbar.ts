@@ -9,7 +9,6 @@ import {
 import {
   flip,
   getSelectionBoundingClientRect,
-  hide,
   offset,
   useVirtualFloating,
   UseVirtualFloatingOptions,
@@ -72,11 +71,10 @@ export const useFloatingToolbar = ({
     mergeProps(
       {
         middleware: [
-          flip({
-            padding: 12,
-          }),
           offset(12),
-          hide(),
+          flip({
+            padding: 150,
+          }),
         ],
         placement: 'top',
         getBoundingClientRect: getSelectionBoundingClientRect,

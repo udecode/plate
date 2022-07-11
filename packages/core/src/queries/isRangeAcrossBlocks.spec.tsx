@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { createLinkPlugin } from 'packages/nodes/link/src/createLinkPlugin';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
