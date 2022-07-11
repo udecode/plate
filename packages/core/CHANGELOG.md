@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 14.4.2
+
+### Patch Changes
+
+- [#1689](https://github.com/udecode/plate/pull/1689) by [@zbeyens](https://github.com/zbeyens) – fix: wait for editor value being ready before calling `normalizeNodes`
+
 ## 14.0.2
 
 ### Patch Changes

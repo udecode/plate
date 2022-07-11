@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 14.4.2
+
 ## 14.4.0
 
 ### Minor Changes
