@@ -73,7 +73,6 @@ export const useFloatingLink = ({
   // reset url and text when closing
   useEffect(() => {
     if (!open) {
-      console.log('oosss');
       floatingLinkStore.set.url('');
       floatingLinkStore.set.text('');
     }
