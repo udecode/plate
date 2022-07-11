@@ -1,6 +1,5 @@
 import {
   getAboveNode,
-  HotkeyPlugin,
   Hotkeys,
   isCollapsed,
   KeyboardHandlerReturnType,
@@ -40,7 +39,7 @@ export const onKeyDownList = <
         ? { anchor: selection.focus, focus: selection.anchor }
         : { anchor: selection.anchor, focus: selection.focus };
 
-      // This is a workaround for a Slate bug 
+      // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
       anchor.offset = 0;
       const unHungRange = unhangRange(editor, { anchor, focus });

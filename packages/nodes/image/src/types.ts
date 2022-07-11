@@ -14,4 +14,14 @@ export interface ImagePlugin {
   uploadImage?: (
     dataUrl: string | ArrayBuffer
   ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+
+  /**
+   * Disable file upload on insert data.
+   */
+  disableUploadInsert?: boolean;
+
+  /**
+   * Disable url embed on insert data.
+   */
+  disableEmbedInsert?: boolean;
 }

@@ -1,5 +1,7 @@
 # @udecode/plate-image-ui
 
+## 14.2.0
+
 ## 14.0.2
 
 ## 14.0.1

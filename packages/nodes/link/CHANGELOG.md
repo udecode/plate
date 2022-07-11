@@ -1,5 +1,17 @@
 # @udecode/plate-link
 
+## 14.4.1
+
+### Patch Changes
+
+- [#1687](https://github.com/udecode/plate/pull/1687) by [@davisg123](https://github.com/davisg123) – Allow the link plugin to optionally specify a custom href for link text
+
+## 14.4.0
+
+### Patch Changes
+
+- [#1685](https://github.com/udecode/plate/pull/1685) by [@davisg123](https://github.com/davisg123) – Allow the link plugin to optionally specify a custom href for link text
+
 ## 14.0.2
 
 ## 14.0.0

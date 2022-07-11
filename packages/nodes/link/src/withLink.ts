@@ -47,13 +47,17 @@ const upsertLink = <V extends Value>(
 
 const upsertLinkIfValid = <V extends Value>(
   editor: PlateEditor<V>,
-  { isUrl }: { isUrl: any }
+  { isUrl, getUrlHref }: { isUrl: any; getUrlHref: any }
 ) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getEditorString(editor, rangeFromBlockStart);
+  const hrefFromBlockStart = getUrlHref?.(textFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-    upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
+    upsertLink(editor, {
+      url: hrefFromBlockStart || textFromBlockStart,
+      at: rangeFromBlockStart,
+    });
     return true;
   }
 };
@@ -74,7 +78,7 @@ export const withLink = <
   editor: E,
   {
     type,
-    options: { isUrl, rangeBeforeOptions },
+    options: { isUrl, getUrlHref, rangeBeforeOptions },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
   const { insertData, insertText } = editor;
@@ -83,7 +87,7 @@ export const withLink = <
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
-      if (upsertLinkIfValid(editor, { isUrl })) {
+      if (upsertLinkIfValid(editor, { isUrl, getUrlHref })) {
         moveSelection(editor, { unit: 'offset' });
         return insertText(text);
       }
@@ -96,9 +100,13 @@ export const withLink = <
 
       if (beforeWordRange) {
         const beforeWordText = getEditorString(editor, beforeWordRange);
+        const beforeWordHref = getUrlHref?.(beforeWordText);
 
         if (isUrl!(beforeWordText)) {
-          upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
+          upsertLink(editor, {
+            url: beforeWordHref || beforeWordText,
+            at: beforeWordRange,
+          });
           moveSelection(editor, { unit: 'offset' });
         }
       }
@@ -109,10 +117,11 @@ export const withLink = <
 
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
+    const textHref = getUrlHref?.(text);
 
     if (text) {
       if (isUrl!(text)) {
-        return upsertLinkAtSelection(editor, { url: text });
+        return upsertLinkAtSelection(editor, { url: textHref || text });
       }
 
       if (someNode(editor, { match: { type } })) {
