@@ -1,17 +1,15 @@
 import {
   collapseSelection,
   getLeafNode,
-  getPluginType,
   insertNodes,
   isCollapsed,
   PlateEditor,
   select,
-  unwrapNodes,
   Value,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 import { createLinkNode } from '../utils/createLinkNode';
+import { unwrapLink } from './unwrapLink';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -34,8 +32,6 @@ export const upsertLinkAtSelection = <V extends Value>(
 ) => {
   if (!editor.selection) return;
 
-  const type = getPluginType(editor, ELEMENT_LINK);
-
   if (!wrap && isCollapsed(editor.selection)) {
     return insertNodes<TLinkElement>(
       editor,
@@ -53,7 +49,7 @@ export const upsertLinkAtSelection = <V extends Value>(
     select(editor, inlinePath);
   }
 
-  unwrapNodes(editor, { at: editor.selection, match: { type } });
+  unwrapLink(editor, { at: editor.selection });
 
   wrapLink(editor, { at: editor.selection, url });
 

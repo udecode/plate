@@ -4,8 +4,9 @@
 
 export * from './createLinkPlugin';
 export * from './onKeyDownLink';
+export * from './renderAfterEditableLink';
 export * from './types';
 export * from './withLink';
-export * from './utils/index';
 export * from './components/index';
 export * from './transforms/index';
+export * from './utils/index';

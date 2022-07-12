@@ -14,7 +14,6 @@ import { PlatePluginComponent } from './PlatePluginComponent';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
 import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
-import { RenderAfterEditableProps } from './RenderAfterEditableProps';
 import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
 
@@ -152,20 +151,18 @@ export type PlatePlugin<
      * Render a component above `Editable`.
      */
     renderAboveEditable?: FC<{
-      editor: E;
-      plugin: WithPlatePlugin<P, V, E>;
       children: ReactNode;
     }>;
 
     /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: FC<RenderAfterEditableProps<P, V, E>>;
+    renderAfterEditable?: () => JSX.Element | null;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: FC<RenderAfterEditableProps<P, V, E>>;
+    renderBeforeEditable?: () => JSX.Element | null;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.

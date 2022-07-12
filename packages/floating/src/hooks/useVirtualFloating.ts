@@ -67,11 +67,11 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
     ...floatingOptions,
   });
 
-  const { reference, middlewareData, strategy, x, y } = floatingResult;
+  const { reference, middlewareData, strategy, x, y, update } = floatingResult;
 
   useLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
-  }, [getBoundingClientRect]);
+  }, [getBoundingClientRect, update]);
 
   useLayoutEffect(() => {
     reference(virtualElementRef.current);

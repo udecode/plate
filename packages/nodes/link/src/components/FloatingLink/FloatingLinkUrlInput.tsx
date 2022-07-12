@@ -12,12 +12,15 @@ import {
   mergeProps,
   useComposedRef,
 } from '@udecode/plate-core';
-import { floatingLinkStore } from './FloatingLink';
+import {
+  floatingLinkActions,
+  useFloatingLinkSelectors,
+} from './floatingLinkStore';
 
 export const useFloatingLinkUrlInput = (
   props: HTMLPropsAs<'input'>
 ): HTMLPropsAs<'input'> => {
-  const updated = floatingLinkStore.use.updated();
+  const updated = useFloatingLinkSelectors().updated();
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export const useFloatingLinkUrlInput = (
   }, [updated]);
 
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    floatingLinkStore.set.url(e.target.value);
+    floatingLinkActions.url(e.target.value);
   }, []);
 
   return mergeProps(

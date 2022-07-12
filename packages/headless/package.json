@@ -25,6 +25,7 @@
     "@udecode/plate-basic-marks": "14.0.2",
     "@udecode/plate-block-quote": "14.0.2",
     "@udecode/plate-break": "14.0.2",
+    "@udecode/plate-button": "14.0.2",
     "@udecode/plate-code-block": "14.0.2",
     "@udecode/plate-combobox": "14.0.2",
     "@udecode/plate-core": "14.0.2",

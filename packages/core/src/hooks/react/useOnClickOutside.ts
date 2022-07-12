@@ -37,7 +37,8 @@ export interface Options {
   ignoreClass?: string | string[];
   detectIFrame?: boolean;
 }
-interface Return {
+
+export interface UseOnClickOutsideReturn {
   (element: El | null): void;
 }
 
@@ -78,12 +79,12 @@ export const useOnClickOutside = (
     ignoreClass = DEFAULT_IGNORE_CLASS,
     detectIFrame = true,
   }: Options = {}
-): Return => {
+): UseOnClickOutsideReturn => {
   const [refsState, setRefsState] = useState<Refs>([]);
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const ref: Return = useCallback(
+  const ref: UseOnClickOutsideReturn = useCallback(
     (el) => setRefsState((prevState) => [...prevState, { current: el }]),
     []
   );

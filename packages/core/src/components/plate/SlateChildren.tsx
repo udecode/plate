@@ -37,10 +37,7 @@ export const SlateChildren = <
       afterEditable = (
         <>
           {afterEditable}
-          {renderAfterEditable({
-            editor,
-            plugin,
-          })}
+          {renderAfterEditable()}
         </>
       );
     }
@@ -49,10 +46,7 @@ export const SlateChildren = <
       beforeEditable = (
         <>
           {beforeEditable}
-          {renderBeforeEditable({
-            editor,
-            plugin,
-          })}
+          {renderBeforeEditable()}
         </>
       );
     }
@@ -80,8 +74,6 @@ export const SlateChildren = <
 
     if (renderAboveEditable)
       aboveEditable = renderAboveEditable({
-        editor,
-        plugin,
         children: aboveEditable,
       });
   });

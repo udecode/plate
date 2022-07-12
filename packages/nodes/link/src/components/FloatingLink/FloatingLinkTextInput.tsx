@@ -6,18 +6,22 @@ import {
   HTMLPropsAs,
   mergeProps,
 } from '@udecode/plate-core';
-import { floatingLinkStore } from './FloatingLink';
+import {
+  floatingLinkActions,
+  floatingLinkSelectors,
+} from './floatingLinkStore';
 
 export const useFloatingLinkTextInput = (
   props: HTMLPropsAs<'input'>
 ): HTMLPropsAs<'input'> => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    floatingLinkStore.set.text(e.target.value);
+    floatingLinkActions.text(e.target.value);
   }, []);
 
   return mergeProps(
     {
       onChange,
+      defaultValue: floatingLinkSelectors.text(),
     },
     props
   );

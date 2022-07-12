@@ -25,7 +25,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       skipInvalid: true,
       afterMatch: true,
     },
-    hotkey: 'mod+k',
+    triggerFloatingLinkHotkeys: 'command+k, ctrl+k',
   },
   then: (editor, { type }) => ({
     deserializeHtml: {

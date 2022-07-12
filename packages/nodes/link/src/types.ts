@@ -1,18 +1,16 @@
-import {
-  HotkeyPlugin,
-  RangeBeforeOptions,
-  TElement,
-} from '@udecode/plate-core';
+import { RangeBeforeOptions, TElement } from '@udecode/plate-core';
 
 export interface TLinkElement extends TElement {
   url: string;
 }
 
-export interface LinkPlugin extends HotkeyPlugin {
+export interface LinkPlugin {
   /**
    * Allow custom config for rangeBeforeOptions.
    */
   rangeBeforeOptions?: RangeBeforeOptions;
+
+  triggerFloatingLinkHotkeys?: string;
 
   /**
    * Callback to validate an url.

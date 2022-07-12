@@ -4,5 +4,7 @@
 
 export * from './getAndUpsertLink';
 export * from './insertLinkNode';
+export * from './submitFloatingLink';
 export * from './upsertLinkAtSelection';
 export * from './wrapLink';
+export * from './unwrapLink';

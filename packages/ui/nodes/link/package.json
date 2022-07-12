@@ -22,6 +22,7 @@
     "@udecode/plate-core": "14.0.2",
     "@udecode/plate-link": "14.4.1",
     "@udecode/plate-styled-components": "14.0.2",
+    "@udecode/plate-ui-button": "14.0.2",
     "@udecode/plate-ui-toolbar": "14.0.2"
   },
   "peerDependencies": {

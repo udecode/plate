@@ -9,7 +9,6 @@ export const ShortTextIcon = (props: SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <title>ShortText icon</title>
     <rect width={24} height={24} fill="none" />
     <path d="M4 9h16v2H4V9zm0 4h10v2H4v-2z" />
   </svg>

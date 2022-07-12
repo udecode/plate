@@ -3,11 +3,11 @@ import {
   getPluginType,
   isCollapsed,
   PlateEditor,
-  unwrapNodes,
   Value,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
+import { unwrapLink } from './unwrapLink';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
 export const getAndUpsertLink = async <V extends Value>(
@@ -34,9 +34,8 @@ export const getAndUpsertLink = async <V extends Value>(
   if (!url) {
     linkNode &&
       editor.selection &&
-      unwrapNodes(editor, {
+      unwrapLink(editor, {
         at: editor.selection,
-        match: { type: getPluginType(editor, ELEMENT_LINK) },
       });
 
     return;
