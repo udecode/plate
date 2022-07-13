@@ -1,5 +1,13 @@
 # @udecode/plate-list
 
+## 14.4.3
+
+### Patch Changes
+
+- [#1693](https://github.com/udecode/plate/pull/1693) by [@zbeyens](https://github.com/zbeyens) – fix: list plugin was preventing default event even when selection was not containing any list node
+
+## 14.4.2
+
 ## 14.4.0
 
 ### Minor Changes

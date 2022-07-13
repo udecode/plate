@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 14.4.2
+
 ## 14.0.2
 
 ## 14.0.0

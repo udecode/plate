@@ -1,5 +1,9 @@
 # @udecode/plate-docx-serializer
 
+## 14.4.3
+
+## 14.4.2
+
 ## 14.4.0
 
 ## 14.2.0
