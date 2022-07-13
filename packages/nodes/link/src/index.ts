@@ -9,5 +9,5 @@ export * from './withLink';
 export * from './components/index';
 export * from './transforms/index';
 export * from './utils/index';
-export { getPreviousNodeEndPoint } from './getPreviousNodeEndPoint';
-export { getNextNodeStartPoint } from './getNextNodeStartPoint';
+export { getPreviousNodeEndPoint } from '../../../core/src/queries/getPreviousNodeEndPoint';
+export { getNextNodeStartPoint } from '../../../core/src/queries/getNextNodeStartPoint';

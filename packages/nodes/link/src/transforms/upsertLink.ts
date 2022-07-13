@@ -13,8 +13,7 @@ import {
   withoutNormalizing,
   WrapNodesOptions,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK } from '../createLinkPlugin';
-import { LinkPlugin } from '../types';
+import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
 import { CreateLinkNodeOptions } from '../utils/index';
 import { insertLink } from './insertLink';
 

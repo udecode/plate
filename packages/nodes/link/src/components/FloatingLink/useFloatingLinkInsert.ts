@@ -9,8 +9,7 @@ import {
 } from '@udecode/plate-core';
 import { getSelectionBoundingClientRect } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
-import { ELEMENT_LINK } from '../../createLinkPlugin';
-import { LinkPlugin } from '../../types';
+import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import { FloatingLinkProps } from './FloatingLink';
 import {

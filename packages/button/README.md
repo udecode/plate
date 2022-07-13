@@ -8,4 +8,4 @@ See the [API documentation](https://plate-api.udecode.io/globals.html).
 
 ## License
 
-[MIT](../../../LICENSE)
+[MIT](../../LICENSE)

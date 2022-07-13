@@ -2,7 +2,9 @@ import {
   collapseSelection,
   getAboveNode,
   getEditorString,
+  getNextNodeStartPoint,
   getPluginType,
+  getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
   insertNodes,
@@ -20,10 +22,7 @@ import {
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Path, Point, Range } from 'slate';
 import { upsertLink } from './transforms/index';
-import { ELEMENT_LINK } from './createLinkPlugin';
-import { getNextNodeStartPoint } from './getNextNodeStartPoint';
-import { getPreviousNodeEndPoint } from './getPreviousNodeEndPoint';
-import { LinkPlugin } from './types';
+import { ELEMENT_LINK, LinkPlugin } from './createLinkPlugin';
 
 /**
  * Insert space after a url to wrap a link.

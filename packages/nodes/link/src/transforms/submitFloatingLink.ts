@@ -8,8 +8,7 @@ import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
-import { ELEMENT_LINK } from '../createLinkPlugin';
-import { LinkPlugin } from '../types';
+import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
 import { upsertLink } from './index';
 
 /**

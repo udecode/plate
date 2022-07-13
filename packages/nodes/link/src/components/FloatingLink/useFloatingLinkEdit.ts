@@ -17,9 +17,8 @@ import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
 } from '@udecode/plate-floating';
-import { ELEMENT_LINK } from '../../createLinkPlugin';
+import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
-import { LinkPlugin } from '../../types';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import { FloatingLinkProps } from './FloatingLink';
 import {

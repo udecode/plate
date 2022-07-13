@@ -1,10 +1,6 @@
-import {
-  getEndPoint,
-  getPreviousNode,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-core';
 import { Path } from 'slate';
+import { getEndPoint, getPreviousNode, Value } from '../slate';
+import { PlateEditor } from '../types/index';
 
 export const getPreviousNodeEndPoint = <V extends Value = Value>(
   editor: PlateEditor<V>,
