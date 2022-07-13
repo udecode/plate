@@ -3,5 +3,10 @@
 ---
 
 - `createLinkPlugin`
-  - removed `onKeyDownLink` in favor of floating link
-  - removed `hotkey` in favor of `triggerFloatingLinkHotkeys`
+  - removed `onKeyDownLink` for floating link
+  - removed `hotkey` for `triggerFloatingLinkHotkeys`
+- removed:
+  - `getAndUpsertLink` for `upsertLink`
+  - `upsertLinkAtSelection` for `upsertLink`
+- `LinkToolbarButton`:
+  - `onClick` now calls `triggerFloatingLink`
