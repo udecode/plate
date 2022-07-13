@@ -5015,6 +5015,7 @@ __metadata:
   resolution: "@udecode/plate-combobox@workspace:packages/editor/combobox"
   dependencies:
     "@udecode/plate-core": "npm:14.4.2"
+    "@udecode/plate-floating": "npm:14.4.2"
     downshift: "npm:^6.1.7"
   peerDependencies:
     react: ">=16.8.0"
