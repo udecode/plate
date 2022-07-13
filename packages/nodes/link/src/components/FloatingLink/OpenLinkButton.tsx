@@ -34,6 +34,9 @@ export const useOpenLinkButton = (
     'aria-label': 'Open link in a new tab',
     target: '_blank',
     href: link.url,
+    onMouseOver: (e) => {
+      e.stopPropagation();
+    },
     ...props,
   };
 };

@@ -50,7 +50,7 @@ export const useFloatingLinkEdit = ({
     return getDefaultBoundingClientRect();
   }, [editor]);
 
-  const isOpen = open && ['toolbar', 'edit'].includes(mode);
+  const isOpen = open && mode === 'edit';
 
   const { update, style, floating } = useVirtualFloatingLink({
     open: isOpen,
@@ -65,7 +65,7 @@ export const useFloatingLinkEdit = ({
         match: { type: getPluginType(editor, ELEMENT_LINK) },
       })
     ) {
-      floatingLinkActions.show('toolbar');
+      floatingLinkActions.show('edit');
       update();
     } else {
       floatingLinkActions.hide();

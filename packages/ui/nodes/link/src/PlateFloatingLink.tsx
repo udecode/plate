@@ -5,8 +5,9 @@ import {
   LinkIcon,
   LinkOffIcon,
   ShortTextIcon,
+  useFloatingLinkSelectors,
 } from '@udecode/plate-link';
-import { PlateButton, plateButtonCss } from '@udecode/plate-ui-button';
+import { plateButtonCss } from '@udecode/plate-ui-button';
 import styled, { css } from 'styled-components';
 import tw from 'twin.macro';
 
@@ -27,10 +28,9 @@ const inputCss = [
 ];
 
 export const floatingLinkRootCss = css`
-  ${tw`flex flex-col bg-white !z-20`};
+  ${tw`bg-white !z-20`};
 
   border-radius: 4px;
-  width: 330px;
   box-shadow: rgb(15 15 15 / 5%) 0 0 0 1px, rgb(15 15 15 / 10%) 0 3px 6px,
     rgb(15 15 15 / 20%) 0 9px 24px;
 `;
@@ -39,9 +39,11 @@ const VerticalDivider = () => <div tw="w-px h-5 bg-gray-200 mx-2" />;
 
 const buttonCss = [...plateButtonCss, tw`px-1`];
 
-export const PlateFloatingLink = () => (
-  <>
-    <FloatingLink.InsertRoot css={floatingLinkRootCss}>
+export const PlateFloatingLink = () => {
+  const isEditing = useFloatingLinkSelectors().isEditing();
+
+  const input = (
+    <div tw="flex flex-col w-[330px]">
       <InputWrapper>
         <IconWrapper>
           <LinkIcon width={18} />
@@ -58,12 +60,14 @@ export const PlateFloatingLink = () => (
         </IconWrapper>
         <FloatingLink.TextInput css={inputCss} placeholder="Text to display" />
       </InputWrapper>
-    </FloatingLink.InsertRoot>
+    </div>
+  );
 
-    <FloatingLink.EditRoot
-      css={[floatingLinkRootCss, tw`w-auto px-2 py-1 flex-row items-center`]}
-    >
-      <PlateButton>Edit link</PlateButton>
+  const editContent = !isEditing ? (
+    <div tw="w-auto px-2 py-1 flex flex-row items-center">
+      <FloatingLink.EditButton css={plateButtonCss}>
+        Edit link
+      </FloatingLink.EditButton>
 
       <VerticalDivider />
 
@@ -76,6 +80,20 @@ export const PlateFloatingLink = () => (
       <FloatingLink.UnlinkButton css={buttonCss}>
         <LinkOffIcon width={18} />
       </FloatingLink.UnlinkButton>
-    </FloatingLink.EditRoot>
-  </>
-);
+    </div>
+  ) : (
+    input
+  );
+
+  return (
+    <>
+      <FloatingLink.InsertRoot css={floatingLinkRootCss}>
+        {input}
+      </FloatingLink.InsertRoot>
+
+      <FloatingLink.EditRoot css={[floatingLinkRootCss, tw`w-auto`]}>
+        {editContent}
+      </FloatingLink.EditRoot>
+    </>
+  );
+};

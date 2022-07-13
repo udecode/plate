@@ -3,7 +3,6 @@
 import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createLinkPlugin, ELEMENT_LINK } from '../../createLinkPlugin';
-import { getAndUpsertLink } from '../../transforms/getAndUpsertLink';
 
 jsx;
 

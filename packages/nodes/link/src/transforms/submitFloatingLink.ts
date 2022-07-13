@@ -1,9 +1,16 @@
-import { focusEditor, isUrl, PlateEditor, Value } from '@udecode/plate-core';
+import {
+  focusEditor,
+  getPluginOptions,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-core';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
-import { insertLinkNode } from './index';
+import { ELEMENT_LINK } from '../createLinkPlugin';
+import { LinkPlugin } from '../types';
+import { upsertLink } from './index';
 
 /**
  * Insert link if url is valid.
@@ -12,17 +19,22 @@ import { insertLinkNode } from './index';
  * Focus editor.
  */
 export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
+  if (!editor.selection) return;
+
+  const { isUrl } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
+
   const url = floatingLinkSelectors.url();
-  const isValid = isUrl(url);
+  const isValid = isUrl?.(url);
   if (!isValid) return;
 
   const text = floatingLinkSelectors.text();
 
   floatingLinkActions.hide();
 
-  insertLinkNode(editor, {
+  upsertLink(editor, {
     url,
     text,
+    update: true,
   });
 
   setTimeout(() => {

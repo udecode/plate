@@ -20,6 +20,8 @@ export const plateButtonCss = [
     font-size: 14px;
     border-radius: 3px;
 
+    color: inherit;
+
     :active {
       color: inherit;
     }

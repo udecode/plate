@@ -3,7 +3,6 @@
  */
 
 export * from './createLinkPlugin';
-export * from './onKeyDownLink';
 export * from './renderAfterEditableLink';
 export * from './types';
 export * from './withLink';

@@ -7,6 +7,9 @@ import {
 } from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 
+/**
+ * Unwrap link node.
+ */
 export const unwrapLink = <V extends Value>(
   editor: PlateEditor<V>,
   options?: UnwrapNodesOptions

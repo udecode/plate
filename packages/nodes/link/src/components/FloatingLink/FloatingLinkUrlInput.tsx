@@ -14,6 +14,7 @@ import {
 } from '@udecode/plate-core';
 import {
   floatingLinkActions,
+  floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
 
@@ -36,6 +37,7 @@ export const useFloatingLinkUrlInput = (
   return mergeProps(
     {
       onChange,
+      defaultValue: floatingLinkSelectors.url(),
     },
     { ...props, ref: useComposedRef<HTMLInputElement>(props.ref, ref) }
   );

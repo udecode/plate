@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createLinkPlugin, ELEMENT_LINK } from '../../createLinkPlugin';
-import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
+import { upsertLink } from '../../transforms/upsertLink';
 
 jsx;
 
@@ -40,7 +40,7 @@ it('should run default insertText', () => {
     editor: input,
     plugins: [createLinkPlugin()],
   });
-  upsertLinkAtSelection(editor, { url: urlOutput });
+  upsertLink(editor, { url: urlOutput });
 
   expect(input.children).toEqual(output.children);
 });

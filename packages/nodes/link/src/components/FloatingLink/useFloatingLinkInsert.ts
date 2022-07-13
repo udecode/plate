@@ -55,7 +55,7 @@ export const useFloatingLinkInsert = ({
   });
 
   const { update, style, floating } = useVirtualFloatingLink({
-    open: open && ['insert'].includes(mode),
+    open: open && mode === 'insert',
     getBoundingClientRect: getSelectionBoundingClientRect,
     whileElementsMounted: () => {},
     ...floatingOptions,

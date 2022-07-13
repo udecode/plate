@@ -1,6 +1,6 @@
 import { createStore } from '@udecode/plate-core';
 
-export type FloatingLinkMode = '' | 'insert' | 'edit' | 'toolbar';
+export type FloatingLinkMode = '' | 'insert' | 'edit';
 
 export const floatingLinkStore = createStore('floatingLink')({
   open: false,
@@ -9,17 +9,20 @@ export const floatingLinkStore = createStore('floatingLink')({
   url: '',
   text: '',
   mode: '' as FloatingLinkMode,
+  isEditing: false,
 })
   .extendActions((set) => ({
     reset: () => {
       set.url('');
       set.text('');
       set.mode('');
+      set.isEditing(false);
     },
   }))
   .extendActions((set) => ({
     show: (mode: FloatingLinkMode) => {
       set.mode(mode);
+      set.isEditing(false);
       set.open(true);
     },
     hide: () => {
