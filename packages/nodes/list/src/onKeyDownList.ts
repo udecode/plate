@@ -1,11 +1,10 @@
 import {
-  getPluginType,
+  getAboveNode,
   Hotkeys,
   isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
   select,
-  someNode,
   unhangRange,
   Value,
   WithPlatePlugin,
@@ -13,7 +12,6 @@ import {
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
-import { ELEMENT_LIC } from './createListPlugin';
 import { moveListItems, toggleList } from './transforms';
 import { ListPlugin } from './types';
 
@@ -52,8 +50,8 @@ export const onKeyDownList = <
     }
 
     // check if we're in a list context.
-    const listSelected = someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_LIC) },
+    const listSelected = getAboveNode(editor, {
+      at: editor.selection,
     });
 
     if (workRange && listSelected) {
