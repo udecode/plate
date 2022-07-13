@@ -7,11 +7,7 @@ import {
   usePlateEditorState,
   withPlateEventProvider,
 } from '@udecode/plate-core';
-import {
-  ELEMENT_LINK,
-  floatingLinkSelectors,
-  triggerFloatingLink,
-} from '@udecode/plate-link';
+import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface LinkToolbarButtonProps extends ToolbarButtonProps {
@@ -37,8 +33,6 @@ export const LinkToolbarButton = withPlateEventProvider(
 
           event.preventDefault();
           event.stopPropagation();
-
-          if (floatingLinkSelectors.open()) return;
 
           focusEditor(editor, editor.selection ?? editor.prevSelection!);
 

@@ -11,7 +11,7 @@ import { getSelectionBoundingClientRect } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { LinkPlugin } from '../../types';
-import { triggerFloatingLink } from '../../utils/triggerFloatingLink';
+import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import { FloatingLinkProps } from './FloatingLink';
 import {
   floatingLinkActions,
@@ -38,7 +38,7 @@ export const useFloatingLinkInsert = ({
   useHotkeys(
     triggerFloatingLinkHotkeys!,
     () => {
-      triggerFloatingLink(editor, {
+      triggerFloatingLinkInsert(editor, {
         focused,
       });
     },

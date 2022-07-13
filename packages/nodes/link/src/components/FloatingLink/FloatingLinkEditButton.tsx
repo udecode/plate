@@ -3,15 +3,10 @@ import {
   AsProps,
   createComponentAs,
   createElementAs,
-  findNode,
-  getEditorString,
-  getPluginType,
   HTMLPropsAs,
   useEditorRef,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK } from '../../createLinkPlugin';
-import { TLinkElement } from '../../types';
-import { floatingLinkActions } from './floatingLinkStore';
+import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 
 export const useFloatingLinkEditButton = (
   props: HTMLPropsAs<'button'>
@@ -20,24 +15,7 @@ export const useFloatingLinkEditButton = (
 
   return {
     onClick: useCallback(() => {
-      floatingLinkActions.isEditing(true);
-
-      const entry = findNode<TLinkElement>(editor, {
-        match: { type: getPluginType(editor, ELEMENT_LINK) },
-      });
-      if (!entry) return;
-
-      const [link, path] = entry;
-
-      let text = getEditorString(editor, path);
-
-      floatingLinkActions.url(link.url);
-
-      if (text === link.url) {
-        text = '';
-      }
-
-      floatingLinkActions.text(text);
+      triggerFloatingLinkEdit(editor);
     }, [editor]),
     ...props,
   };

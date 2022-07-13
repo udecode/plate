@@ -18,6 +18,8 @@ export const useFloatingLinkTextInput = (
     floatingLinkActions.text(e.target.value);
   }, []);
 
+  console.log(floatingLinkSelectors.text());
+
   return mergeProps(
     {
       onChange,

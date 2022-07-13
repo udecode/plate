@@ -1,5 +1,8 @@
 import { focusEditor, useEditorRef, useHotkeys } from '@udecode/plate-core';
-import { floatingLinkActions } from './floatingLinkStore';
+import {
+  floatingLinkActions,
+  floatingLinkSelectors,
+} from './floatingLinkStore';
 
 export const useFloatingLinkEscape = () => {
   const editor = useEditorRef();
@@ -7,10 +10,13 @@ export const useFloatingLinkEscape = () => {
   useHotkeys(
     'escape',
     () => {
+      if (floatingLinkSelectors.mode() !== 'insert') return;
+
       floatingLinkActions.hide();
       focusEditor(editor, editor.selection!);
     },
     {
+      enableOnContentEditable: true,
       enableOnTags: ['INPUT'],
     },
     []

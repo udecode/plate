@@ -3,6 +3,7 @@ import {
   focusEditor,
   getAboveNode,
   getEndPoint,
+  getPluginOptions,
   getPluginType,
   getStartPoint,
   HTMLPropsAs,
@@ -18,9 +19,12 @@ import {
 } from '@udecode/plate-floating';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
+import { LinkPlugin } from '../../types';
+import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import { FloatingLinkProps } from './FloatingLink';
 import {
   floatingLinkActions,
+  floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
@@ -33,6 +37,11 @@ export const useFloatingLinkEdit = ({
   const keyEditor = usePlateSelectors(editor.id).keyEditor();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().open();
+
+  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
+    editor,
+    ELEMENT_LINK
+  );
 
   const getBoundingClientRect = useCallback(() => {
     const entry = getAboveNode(editor, {
@@ -67,10 +76,26 @@ export const useFloatingLinkEdit = ({
     ) {
       floatingLinkActions.show('edit');
       update();
-    } else {
+      return;
+    }
+
+    if (floatingLinkSelectors.mode() === 'edit') {
       floatingLinkActions.hide();
     }
   }, [editor, keyEditor, update]);
+
+  useHotkeys(
+    triggerFloatingLinkHotkeys!,
+    () => {
+      if (floatingLinkSelectors.mode() === 'edit') {
+        triggerFloatingLinkEdit(editor);
+      }
+    },
+    {
+      enableOnContentEditable: true,
+    },
+    []
+  );
 
   useHotkeys(
     'enter',
@@ -88,11 +113,19 @@ export const useFloatingLinkEdit = ({
   useHotkeys(
     'escape',
     () => {
+      if (floatingLinkSelectors.mode() !== 'edit') return;
+
+      if (floatingLinkSelectors.isEditing()) {
+        floatingLinkActions.show('edit');
+        focusEditor(editor, editor.selection!);
+        return;
+      }
+
       floatingLinkActions.hide();
-      focusEditor(editor, editor.selection!);
     },
     {
       enableOnTags: ['INPUT'],
+      enableOnContentEditable: true,
     },
     []
   );

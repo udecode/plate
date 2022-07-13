@@ -16,38 +16,40 @@ const createEditor = (editor: any) =>
 
 describe('withLink', () => {
   describe('insertData', () => {
-    describe('when url', () => {
-      const input = (
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any;
+    describe('when inserting url text', () => {
+      describe('in a paragraph', () => {
+        const input = (
+          <editor>
+            <hp>
+              test
+              <cursor />
+            </hp>
+          </editor>
+        ) as any;
 
-      const data: any = { getData: () => 'http://google.com' };
+        const data: any = { getData: () => 'http://google.com' };
 
-      const output = (
-        <editor>
-          <hp>
-            test
-            <ha url="http://google.com">http://google.com</ha>
-            <htext />
-          </hp>
-        </editor>
-      ) as any;
+        const output = (
+          <editor>
+            <hp>
+              test
+              <ha url="http://google.com">http://google.com</ha>
+              <htext />
+            </hp>
+          </editor>
+        ) as any;
 
-      it('should run default insertText', () => {
-        const editor = createEditor(input);
+        it('should insert link', () => {
+          const editor = createEditor(input);
 
-        editor.insertData(data);
+          editor.insertData(data);
 
-        expect(input.children).toEqual(output.children);
+          expect(input.children).toEqual(output.children);
+        });
       });
     });
 
-    describe('when not url', () => {
+    describe('when inserting non-url text', () => {
       const input = (
         <editor>
           <hp>
