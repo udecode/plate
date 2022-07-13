@@ -6,8 +6,8 @@ import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
 import {
-  addColumn,
-  addRow,
+  insertTableColumn,
+  insertTableRow,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -19,9 +19,9 @@ export const TableToolbarButtons = () => (
   <>
     <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
     <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-    <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+    <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
     <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-    <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
+    <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
     <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
   </>
 );

@@ -24,12 +24,12 @@ const canUsePassiveEvents = (): boolean => {
 
 export const DEFAULT_IGNORE_CLASS = 'ignore-onclickoutside';
 
-export interface Callback<T extends Event = Event> {
+export interface UseOnClickOutsideCallback<T extends Event = Event> {
   (event: T): void;
 }
 type El = HTMLElement;
 type Refs = RefObject<El>[];
-export interface Options {
+export interface UseOnClickOutsideOptions {
   refs?: Refs;
   disabled?: boolean;
   eventTypes?: string[];
@@ -70,7 +70,7 @@ const getEventOptions = (type: string): { passive: boolean } | boolean =>
   type.includes('touch') && canUsePassiveEvents() ? { passive: true } : false;
 
 export const useOnClickOutside = (
-  callback: Callback,
+  callback: UseOnClickOutsideCallback,
   {
     refs: refsOpt,
     disabled,
@@ -78,7 +78,7 @@ export const useOnClickOutside = (
     excludeScrollbar,
     ignoreClass = DEFAULT_IGNORE_CLASS,
     detectIFrame = true,
-  }: Options = {}
+  }: UseOnClickOutsideOptions = {}
 ): UseOnClickOutsideReturn => {
   const [refsState, setRefsState] = useState<Refs>([]);
   const callbackRef = useRef(callback);
