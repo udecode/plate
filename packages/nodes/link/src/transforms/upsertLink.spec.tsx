@@ -17,6 +17,7 @@ const createEditor = (editor: any) =>
 
 describe('upsertLink', () => {
   describe('when selection is collapsed', () => {
+    // done
     describe('when not in link, url only', () => {
       const input = (
         <editor>
@@ -43,6 +44,7 @@ describe('upsertLink', () => {
       });
     });
 
+    // https://github.com/udecode/editor-protocol/issues/35
     describe('when in a link', () => {
       const input = (
         <editor>
@@ -65,7 +67,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should unwrap link then wrap link', () => {
+      it('should insert text', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url });
 
@@ -75,6 +77,7 @@ describe('upsertLink', () => {
   });
 
   describe('when selection is expanded', () => {
+    // https://github.com/udecode/editor-protocol/issues/43
     describe('when not in link, url only', () => {
       const input = (
         <editor>
@@ -102,6 +105,7 @@ describe('upsertLink', () => {
       });
     });
 
+    // done
     describe('when not in link, url+text', () => {
       const input = (
         <editor>
@@ -129,6 +133,7 @@ describe('upsertLink', () => {
       });
     });
 
+    // done
     describe('when in a link', () => {
       const input = (
         <editor>
@@ -160,6 +165,7 @@ describe('upsertLink', () => {
       });
     });
 
+    // done
     describe('when containing a link', () => {
       const input = (
         <editor>

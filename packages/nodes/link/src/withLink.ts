@@ -2,13 +2,13 @@ import {
   collapseSelection,
   getAboveNode,
   getEditorString,
-  getNextNode,
   getPluginType,
   getRangeBefore,
   getRangeFromBlockStart,
   insertNodes,
   isCollapsed,
   isEndPoint,
+  isStartPoint,
   mockPlugin,
   PlateEditor,
   select,
@@ -21,25 +21,9 @@ import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Path, Point, Range } from 'slate';
 import { upsertLink } from './transforms/index';
 import { ELEMENT_LINK } from './createLinkPlugin';
+import { getNextNodeStartPoint } from './getNextNodeStartPoint';
+import { getPreviousNodeEndPoint } from './getPreviousNodeEndPoint';
 import { LinkPlugin } from './types';
-
-export const getNextPoint = <V extends Value = Value>(
-  editor: PlateEditor<V>,
-  at: Path
-) => {
-  const nextEntry = getNextNode(editor, {
-    at,
-  });
-
-  if (nextEntry) {
-    const [, nextPath] = nextEntry;
-    const nextPoint: Point = {
-      path: nextPath,
-      offset: 0,
-    };
-    return nextPoint;
-  }
-};
 
 /**
  * Insert space after a url to wrap a link.
@@ -138,15 +122,21 @@ export const withLink = <
         if (entry) {
           const [, path] = entry;
 
-          if (isEndPoint(editor, range.focus, path)) {
-            const nextPoint = getNextPoint(editor, path);
+          let newPoint: Point | undefined;
 
-            if (nextPoint) {
-              operation.newProperties = {
-                anchor: nextPoint,
-                focus: nextPoint,
-              };
-            }
+          if (isStartPoint(editor, range.focus, path)) {
+            newPoint = getPreviousNodeEndPoint(editor, path);
+          }
+
+          if (isEndPoint(editor, range.focus, path)) {
+            newPoint = getNextNodeStartPoint(editor, path);
+          }
+
+          if (newPoint) {
+            operation.newProperties = {
+              anchor: newPoint,
+              focus: newPoint,
+            };
           }
         }
       }
@@ -162,7 +152,7 @@ export const withLink = <
 
       if (range && isCollapsed(range)) {
         if (isEndPoint(editor, range.focus, path)) {
-          const nextPoint = getNextPoint(editor, path);
+          const nextPoint = getNextNodeStartPoint(editor, path);
 
           // select next text node if any
           if (nextPoint) {
