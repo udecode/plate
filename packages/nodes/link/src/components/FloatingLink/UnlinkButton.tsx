@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Button } from '@udecode/plate-button';
 import {
   AsProps,

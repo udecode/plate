@@ -40,64 +40,63 @@ describe('withImageUpload', () => {
     });
   });
 
-  describe("when no files", () => {
+  describe('when no files', () => {
     const input = (
       <editor>
         <hp>test</hp>
       </editor>
     ) as any;
-    
+
     const output = (
       <editor>
         <hp>test</hp>
       </editor>
     ) as any;
-    
+
     it('should run default insertData', () => {
       jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
-    
+
       const editor = createPlateEditor({
         editor: input,
         plugins: [createImagePlugin()],
       });
-    
+
       const data = {
         getData: () => 'test',
       };
       editor.insertData(data as any);
-    
+
       expect(input.children).toEqual(output.children);
     });
   });
 
-  describe("when inserting a non-image file", () => {
+  describe('when inserting a non-image file', () => {
     const input = (
       <editor>
         <hp>test</hp>
       </editor>
     ) as any;
-    
+
     const output = (
       <editor>
         <hp>test</hp>
       </editor>
     ) as any;
-    
+
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [createImagePlugin()],
       });
-    
+
       const data = {
         getData: () => 'test',
         files: [new File(['test'], 'not-an-image')],
       };
       editor.insertData(data as any);
-    
+
       expect(input.children).toEqual(output.children);
     });
-    
   });
 
   // it('should call uploadImage when provided', async () => {

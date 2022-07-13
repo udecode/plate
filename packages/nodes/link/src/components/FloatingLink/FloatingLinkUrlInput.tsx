@@ -1,9 +1,4 @@
-import React, {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useRef } from 'react';
 import {
   AsProps,
   createComponentAs,

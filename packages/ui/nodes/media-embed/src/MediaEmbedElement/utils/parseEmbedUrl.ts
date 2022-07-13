@@ -1,7 +1,13 @@
 import { parseTwitterUrl } from './parseTwitterUrl';
 import { parseVideoUrl } from './parseVideoUrl';
 
-export type EmbedProviders = 'twitter' | 'youtube' | 'vimeo' | 'dailymotion' | 'youku' | 'coub'
+export type EmbedProviders =
+  | 'twitter'
+  | 'youtube'
+  | 'vimeo'
+  | 'dailymotion'
+  | 'youku'
+  | 'coub';
 
 export type EmbedUrlData = {
   url?: string;

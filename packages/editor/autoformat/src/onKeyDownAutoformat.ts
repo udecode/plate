@@ -13,7 +13,7 @@ import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';
 
-const onKeyDownAutoformat = <
+export const onKeyDownAutoformat = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
@@ -89,5 +89,3 @@ const onKeyDownAutoformat = <
   }
   return true;
 };
-
-export default onKeyDownAutoformat;
