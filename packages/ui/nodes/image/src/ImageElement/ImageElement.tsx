@@ -25,11 +25,7 @@ export const ImageElement = (props: ImageElementProps) => {
   const styles = getImageElementStyles({ ...props, align, focused, selected });
 
   return (
-    <Image.Root
-      css={styles.root.css}
-      className={styles.root.className}
-      {...rootProps}
-    >
+    <Image.Root {...rootProps} css={styles.root.css}>
       <figure
         css={styles.figure?.css}
         className={`group ${styles.figure?.className}`}
