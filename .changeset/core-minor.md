@@ -14,5 +14,10 @@
   - pipes plugins `renderAboveEditable` and render the result above `Editable`
   - pipes plugins `renderAfterEditable` and render the result after `Editable`, before `children`
   - pipes plugins `renderBeforeEditable` and render the result before `Editable`, after `firstChildren`
+- new queries
+  - `getNextNodeStartPoint`
+  - `getPreviousNodeEndPoint`
 - new hooks
   - `useOnClickOutside`
+- `PlateEditor` new prop:
+  - `prevSelection: TRange | null;`

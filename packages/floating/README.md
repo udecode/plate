@@ -4,7 +4,7 @@ This package implements the floating UI for Plate.
 
 ## Documentation
 
-WIP
+See Link, Mention.
 
 ## API
 
@@ -12,4 +12,4 @@ See the [API documentation](https://plate-api.udecode.io/globals.html).
 
 ## License
 
-[MIT](../../../LICENSE)
+[MIT](../../LICENSE)
