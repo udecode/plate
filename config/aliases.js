@@ -1,6 +1,7 @@
 module.exports = {
   ...require('./aliases-plate'),
   '@udecode/plate': 'plate',
+  '@udecode/plate-excalidraw': 'ui/nodes/excalidraw',
   '@udecode/plate-styled-components': 'ui/styled-components',
   '@udecode/plate-ui': 'ui/plate',
   '@udecode/plate-ui-alignment': 'ui/nodes/alignment',
