@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 15.0.0
+
 ## 14.4.3
 
 ### Patch Changes

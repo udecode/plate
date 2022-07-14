@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - remove `@udecode/plate-ui-popper` dep for `@udecode/plate-floating`
+
 ## 14.4.3
 
 ## 14.4.2

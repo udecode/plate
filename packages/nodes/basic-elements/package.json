@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "14.4.2",
+  "version": "15.0.0",
   "description": "Basic elements plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,11 +19,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-block-quote": "14.4.2",
-    "@udecode/plate-code-block": "14.4.2",
-    "@udecode/plate-core": "14.4.2",
-    "@udecode/plate-heading": "14.4.2",
-    "@udecode/plate-paragraph": "14.4.2"
+    "@udecode/plate-block-quote": "15.0.0",
+    "@udecode/plate-code-block": "15.0.0",
+    "@udecode/plate-core": "15.0.0",
+    "@udecode/plate-heading": "15.0.0",
+    "@udecode/plate-paragraph": "15.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,5 +1,20 @@
 # @udecode/plate-toolbar
 
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - remove `@udecode/plate-ui-popper` and `react-popper` deps for `@udecode/plate-floating`
+  - `BalloonToolbarProps`:
+    - removed `popperOptions` for `floatingOptions`
+  - remove `useBalloonToolbarPopper` for `useFloatingToolbar`
+
+### Patch Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes #1434
+
 ## 14.4.2
 
 ## 14.0.2
