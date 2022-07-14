@@ -6,12 +6,12 @@ import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
 import {
-  insertTableColumn,
-  insertTableRow,
   deleteColumn,
   deleteRow,
   deleteTable,
   insertTable,
+  insertTableColumn,
+  insertTableRow,
   TableToolbarButton,
 } from '@udecode/plate';
 
