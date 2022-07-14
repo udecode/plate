@@ -1,4 +1,5 @@
 import { createStore, StateActions, StoreApi } from '@udecode/plate-core';
+import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { Range } from 'slate';
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 
@@ -82,15 +83,9 @@ export type ComboboxState<TData = NoData> = {
   highlightedIndex: number;
 
   /**
-   * Parent element of the popper element (the one that has the scroll).
-   * @default document
+   * Overrides `useFloating` options.
    */
-  popperContainer?: Document | HTMLElement;
-
-  /**
-   * Overrides `usePopper` options.
-   */
-  popperOptions?: any;
+  floatingOptions?: Partial<UseVirtualFloatingOptions>;
 
   /**
    * Range from the trigger to the cursor.

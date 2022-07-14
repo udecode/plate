@@ -1,14 +1,9 @@
 import { CSSProperties } from 'react';
 import {
   createAtomStore,
-  createComponentAs,
-  createElementAs,
+  createPlateElementComponent,
   createStore,
-  HTMLPropsAs,
-  PlateRenderElementProps,
   TPath,
-  useComposedRef,
-  Value,
 } from '@udecode/plate-core';
 import { TImageElement } from '../types';
 import { ImageCaption } from './ImageCaption';
@@ -20,6 +15,7 @@ export const { imageStore, useImageStore } = createAtomStore(
   {
     width: 0 as CSSProperties['width'],
   },
+  // NOTE: scope: ELEMENT_IMAGE is undefined (bundle issue)
   { name: 'image' as const, scope: 'img' }
 );
 
@@ -35,29 +31,7 @@ export const imageGlobalStore = createStore('image')({
   focusStartCaptionPath: null as TPath | null,
 });
 
-export type ImageProps = PlateRenderElementProps<Value, TImageElement> &
-  HTMLPropsAs<'div'>;
-
-export const useElementProps = ({
-  attributes,
-  nodeProps,
-  element,
-  editor,
-  ...props
-}: ImageProps): HTMLPropsAs<'div'> => {
-  return {
-    ...attributes,
-    ...props,
-    ...nodeProps,
-    ref: useComposedRef(props.ref, attributes.ref),
-  };
-};
-
-export const ImageRoot = createComponentAs<ImageProps>((props) => {
-  const htmlProps = useElementProps(props as any);
-
-  return createElementAs('div', htmlProps);
-});
+export const ImageRoot = createPlateElementComponent<TImageElement>();
 
 export const Image = {
   Root: ImageRoot,

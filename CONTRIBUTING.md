@@ -76,8 +76,8 @@ Build:
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `/examples/apps/next/next.config.js`
-        - add `'@udecode/plate-x': x/src'` to `alias` object to watch file changes
+    - edit `/config/aliases.js`
+        - add `'@udecode/plate-x': <package path from /packages>'` to watch file changes
 - Run the example app: 
   - run `yarn g:dev`
 - Create an example app in `/examples/src`

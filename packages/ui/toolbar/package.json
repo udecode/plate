@@ -21,9 +21,8 @@
   "dependencies": {
     "@tippyjs/react": "^4.2.6",
     "@udecode/plate-core": "14.4.2",
+    "@udecode/plate-floating": "14.4.2",
     "@udecode/plate-styled-components": "14.4.2",
-    "@udecode/plate-ui-popper": "14.4.2",
-    "react-popper": "^2.3.0",
     "react-use": "^17.3.2"
   },
   "peerDependencies": {

@@ -18,6 +18,7 @@ import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
+import { linkPlugin } from './link/linkPlugin';
 import { deserializeHtmlValue } from './serializing-html/deserializeHtmlValue';
 import { HighlightHTML } from './serializing-html/HighlightHTML';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
@@ -27,7 +28,7 @@ const plugins = createMyPlugins(
   [
     ...basicNodesPlugins,
     createImagePlugin(),
-    createLinkPlugin(),
+    createLinkPlugin(linkPlugin),
     createListPlugin(),
     createTablePlugin(),
     createTodoListPlugin(),

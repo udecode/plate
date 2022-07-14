@@ -10,6 +10,7 @@ import {
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
+import { linkPlugin } from './link/linkPlugin';
 import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
@@ -17,7 +18,7 @@ const plugins = createMyPlugins(
   [
     ...basicNodesPlugins,
     createImagePlugin(),
-    createLinkPlugin(),
+    createLinkPlugin(linkPlugin),
     createListPlugin(),
     createTablePlugin(),
     createDeserializeMdPlugin(),

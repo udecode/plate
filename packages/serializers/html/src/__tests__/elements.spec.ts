@@ -56,7 +56,7 @@ it('serialize link to html', () => {
       ],
     })
   ).toBe(
-    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-a">link</a> part.'
+    'Some paragraph of text with <a class="slate-a" href="https://theuselessweb.com/">link</a> part.'
   );
 });
 

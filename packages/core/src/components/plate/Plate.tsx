@@ -1,5 +1,5 @@
 import React, { Ref, useEffect } from 'react';
-import { Editable, Slate } from 'slate-react';
+import { Slate } from 'slate-react';
 import { plateIdAtom, SCOPE_PLATE } from '../../atoms/plateIdAtom';
 import { usePlate } from '../../hooks/plate/usePlate';
 import { usePlatesStoreEffect } from '../../hooks/plate/usePlatesStoreEffect';
@@ -11,8 +11,7 @@ import {
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
 import { JotaiProvider, Scope } from '../../utils/misc/jotai';
-import { EditorRefEffect } from './EditorRefEffect';
-import { EditorStateEffect } from './EditorStateEffect';
+import { SlateChildren } from './SlateChildren';
 
 export interface PlateProps<
   V extends Value = Value,
@@ -38,6 +37,7 @@ export interface PlateProps<
         insertData?: boolean;
         history?: boolean;
         react?: boolean;
+        selection?: boolean;
       }
     | boolean;
 
@@ -85,20 +85,20 @@ export const PlateContent = <
 }: PlateProps<V, E>) => {
   const { slateProps, editableProps } = usePlate<V, E>(options);
 
-  if (!slateProps.editor) return null;
+  const editor = slateProps.editor as E | undefined;
 
-  const editable = <Editable ref={editableRef} {...(editableProps as any)} />;
+  if (!editor) return null;
 
   return (
     <Slate {...(slateProps as any)}>
-      {firstChildren}
-
-      {renderEditable ? renderEditable(editable) : editable}
-
-      <EditorStateEffect id={options.id} />
-      <EditorRefEffect id={options.id} />
-
-      {children}
+      <SlateChildren<V, E>
+        editor={editor}
+        editableProps={editableProps}
+        editableRef={editableRef}
+        renderEditable={renderEditable}
+      >
+        {children}
+      </SlateChildren>
     </Slate>
   );
 };

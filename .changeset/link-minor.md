@@ -1,0 +1,65 @@
+---
+'@udecode/plate-link': minor
+---
+
+- new dep:
+  - `@udecode/plate-button`
+- new unstyled components + props hooks:
+  - `PlateFloatingLink`
+  - `LinkRoot`
+  - `FloatingLink`
+  - `FloatingLinkEditRoot`
+  - `FloatingLinkInsertRoot`
+  - `FloatingLinkUrlInput`
+  - `FloatingLinkTextInput`
+  - `FloatingLinkEditButton`
+  - `UnlinkButton`
+  - `OpenLinkButton`
+- new store: `floatingLinkStore`
+- `LinkPlugin` new props:
+  - `triggerFloatingLinkHotkeys`: Hotkeys to trigger floating link. Default is 'command+k, ctrl+k'
+- new utils:
+  - `insertLink`
+  - `submitFloatingLink`
+  - `unwrapLink`
+  - `upsertLink`
+  - `createLinkNode`
+  - `triggerFloatingLink`
+  - `triggerFloatingLinkEdit`
+  - `triggerFloatingLinkInsert`
+
+Specs:
+- Insert data:
+  - https://github.com/udecode/editor-protocol/issues/34 
+  - https://github.com/udecode/editor-protocol/issues/35 
+  - https://github.com/udecode/editor-protocol/issues/36
+  - https://github.com/udecode/editor-protocol/issues/37
+  - https://github.com/udecode/editor-protocol/issues/38
+  - https://github.com/udecode/editor-protocol/issues/43
+- Insert space:
+  - https://github.com/udecode/editor-protocol/issues/39
+  - https://github.com/udecode/editor-protocol/issues/40
+  - https://github.com/udecode/editor-protocol/issues/41
+  - https://github.com/udecode/editor-protocol/issues/42
+- Floating link:
+  - https://github.com/udecode/editor-protocol/issues/45
+  - https://github.com/udecode/editor-protocol/issues/48
+  - https://github.com/udecode/editor-protocol/issues/51
+  - https://github.com/udecode/editor-protocol/issues/60
+- Floating link insert:
+  - https://github.com/udecode/editor-protocol/issues/44
+  - https://github.com/udecode/editor-protocol/issues/46
+  - https://github.com/udecode/editor-protocol/issues/47
+  - https://github.com/udecode/editor-protocol/issues/49
+  - https://github.com/udecode/editor-protocol/issues/50
+- Floating link edit:
+  - https://github.com/udecode/editor-protocol/issues/54
+  - https://github.com/udecode/editor-protocol/issues/55
+  - https://github.com/udecode/editor-protocol/issues/56
+  - https://github.com/udecode/editor-protocol/issues/57
+  - https://github.com/udecode/editor-protocol/issues/58
+  - https://github.com/udecode/editor-protocol/issues/59
+  - https://github.com/udecode/editor-protocol/issues/61
+- Selection:
+  - https://github.com/udecode/editor-protocol/issues/52
+  - https://github.com/udecode/editor-protocol/issues/53

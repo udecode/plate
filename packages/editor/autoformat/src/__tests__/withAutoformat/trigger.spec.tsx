@@ -9,7 +9,7 @@ import {
   createAutoformatPlugin,
   KEY_AUTOFORMAT,
 } from '../../createAutoformatPlugin';
-import onKeyDownAutoformat from '../../onKeyDownAutoformat';
+import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
 import { AutoformatPlugin } from '../../types';
 
 jsx;

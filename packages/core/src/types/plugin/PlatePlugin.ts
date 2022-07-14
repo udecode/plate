@@ -1,3 +1,4 @@
+import { FC, ReactNode } from 'react';
 import { Value } from '../../slate/editor/TEditor';
 import { AnyObject } from '../misc/AnyObject';
 import { Nullable } from '../misc/Nullable';
@@ -145,6 +146,23 @@ export type PlatePlugin<
      * If object, its value will be shallow merged to the old props.
      */
     props?: PlatePluginProps<V>;
+
+    /**
+     * Render a component above `Editable`.
+     */
+    renderAboveEditable?: FC<{
+      children: ReactNode;
+    }>;
+
+    /**
+     * Render a component after `Editable`.
+     */
+    renderAfterEditable?: () => JSX.Element | null;
+
+    /**
+     * Render a component before `Editable`.
+     */
+    renderBeforeEditable?: () => JSX.Element | null;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
