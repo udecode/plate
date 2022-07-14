@@ -1,5 +1,14 @@
 # @udecode/plate-headless
 
+## 15.0.0
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - new deps + re-exports:
+    - `@udecode/plate-button`
+    - `@udecode/plate-floating`
+
 ## 14.4.3
 
 ## 14.4.2

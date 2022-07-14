@@ -1,5 +1,7 @@
 # @udecode/plate-media-embed-ui
 
+## 15.0.0
+
 ## 14.4.2
 
 ## 14.4.0

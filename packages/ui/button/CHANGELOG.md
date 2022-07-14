@@ -1,5 +1,18 @@
 # @udecode/plate-ui-button
 
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - moved `Button` to `@udecode/plate-button`
+  - `Button` is now unstyled
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - `PlateButton`
+
 ## 14.4.2
 
 ## 14.0.2

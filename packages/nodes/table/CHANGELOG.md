@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - remove `addRow` for `insertTableRow`
+  - remove `addColumn` for `insertTableColumn`
+
 ## 14.4.2
 
 ## 14.0.2

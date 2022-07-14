@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-cursor",
-  "version": "14.4.2",
+  "version": "15.0.0",
   "description": "Cursor UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,8 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "14.4.2",
-    "@udecode/plate-styled-components": "14.4.2"
+    "@udecode/plate-core": "15.0.0",
+    "@udecode/plate-styled-components": "15.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
