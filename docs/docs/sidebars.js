@@ -77,9 +77,10 @@ module.exports = {
         },
         {
           type: 'category',
-          label: 'Utils',
+          label: 'Functionality',
           items: [
             'plugins/autoformat',
+            'plugins/collaboration',
             'plugins/exit-break',
             'plugins/reset-node',
             'plugins/soft-break',

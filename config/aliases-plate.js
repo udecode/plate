@@ -37,4 +37,5 @@ module.exports = {
   '@udecode/plate-table': 'nodes/table',
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'editor/trailing-block',
+  '@udecode/plate-yjs': 'yjs',
 };

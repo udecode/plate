@@ -2064,6 +2064,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hocuspocus/common@npm:^1.0.0-alpha.11":
+  version: 1.0.0-alpha.11
+  resolution: "@hocuspocus/common@npm:1.0.0-alpha.11"
+  dependencies:
+    lib0: "npm:^0.2.47"
+  checksum: c34653cdabadd8089bff93666c6d7cca31e70fc722e4f84103f3e3a11f626ec4e01094def697f7fd0fa337dd39f623b037dc68ec9cb78f6c3437c607dd6b978b
+  languageName: node
+  linkType: hard
+
+"@hocuspocus/provider@npm:^1.0.0-alpha.39":
+  version: 1.0.0-alpha.39
+  resolution: "@hocuspocus/provider@npm:1.0.0-alpha.39"
+  dependencies:
+    "@hocuspocus/common": "npm:^1.0.0-alpha.11"
+    "@lifeomic/attempt": "npm:^3.0.2"
+    lib0: "npm:^0.2.46"
+    y-protocols: "npm:^1.0.5"
+    yjs: "npm:^13.5.29"
+  checksum: 27b55f021f981255ac5e4dbe23865870d18b238ea5ffd288c35ba41d214ec920676a203d01df256b2d45bca5ca908b7b64641e52d85dc061deac8642dc70c6c7
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.5.0":
   version: 0.5.0
   resolution: "@humanwhocodes/config-array@npm:0.5.0"
@@ -3164,6 +3186,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lifeomic/attempt@npm:^3.0.2":
+  version: 3.0.3
+  resolution: "@lifeomic/attempt@npm:3.0.3"
+  checksum: e7c96552894c65ac61bde595ab7ca45ec6fbd08e2d760d8f0eb250d8a59b69713a9f6e207477bf713791b075c016d91aa589ab7d259de3ea942a02b19ecdc654
+  languageName: node
+  linkType: hard
+
 "@manypkg/find-root@npm:^1.1.0":
   version: 1.1.0
   resolution: "@manypkg/find-root@npm:1.1.0"
@@ -3738,6 +3767,18 @@ __metadata:
   dependencies:
     "@sinonjs/commons": "npm:^1.7.0"
   checksum: bd2fa403bc58daaab8b17c85e56fc54a99e6ce314266e02dbd5a90e56ad1bf1f64c64cf6294623a28ab34c7584bcc30b147c6fe2d501a3cb4f7055ed06de8a5b
+  languageName: node
+  linkType: hard
+
+"@slate-yjs/core@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "@slate-yjs/core@npm:0.2.6"
+  dependencies:
+    y-protocols: "npm:^1.0.5"
+  peerDependencies:
+    slate: ">=0.70.0"
+    yjs: ^13.5.29
+  checksum: 052c92b3aebb7a499f6133970b50dba3a51004ae7f0ce2cb1e84fc06c67674adaf7d8a54f7eee81363b4cb838f65d6f9800f1e0a9f0d2ac06eb8e36656dbcb0e
   languageName: node
   linkType: hard
 
@@ -5961,6 +6002,22 @@ __metadata:
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.74.2"
     styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-yjs@workspace:packages/yjs":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-yjs@workspace:packages/yjs"
+  dependencies:
+    "@hocuspocus/provider": "npm:^1.0.0-alpha.39"
+    "@slate-yjs/core": "npm:^0.2.6"
+    "@udecode/plate-core": "npm:15.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.66.1"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.74.2"
   languageName: unknown
   linkType: soft
 
@@ -14332,6 +14389,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isomorphic.js@npm:^0.2.4":
+  version: 0.2.5
+  resolution: "isomorphic.js@npm:0.2.5"
+  checksum: b6b1a40f9b9b1e3055934897ec7814af5995bf9b234f0cc6bb5aba89e6d59fdeb3391df46f6649b609d79334942acf78bb46c4d118dc9cbaf68a447c8a433907
+  languageName: node
+  linkType: hard
+
 "isstream@npm:~0.1.2":
   version: 0.1.2
   resolution: "isstream@npm:0.1.2"
@@ -15545,6 +15609,15 @@ __metadata:
     prelude-ls: "npm:~1.1.2"
     type-check: "npm:~0.3.2"
   checksum: ca790d4b61d6ae2357b4e33f5a5da663c403c796f572b90f4fd9f1afd3cd71cf29903905638f81d7c5cb585619ae1d7f959deb0c86802bae02ba37c14a0902a8
+  languageName: node
+  linkType: hard
+
+"lib0@npm:^0.2.42, lib0@npm:^0.2.46, lib0@npm:^0.2.47, lib0@npm:^0.2.49":
+  version: 0.2.51
+  resolution: "lib0@npm:0.2.51"
+  dependencies:
+    isomorphic.js: "npm:^0.2.4"
+  checksum: 04bdf9c6375725d36e2d6bc2ba03fb33c265e99f4cf5639ee24522c6541078f1e0c22a6df9ff2113cb773a889ae7d37f10e7a6734e8165384424e5e22c11fe04
   languageName: node
   linkType: hard
 
@@ -25334,6 +25407,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"y-protocols@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "y-protocols@npm:1.0.5"
+  dependencies:
+    lib0: "npm:^0.2.42"
+  checksum: 2b1d3912f660c6134a85dc39fde1b8b954106aade917c57e94fc1f3bceb6a31d0759d280b4c9009427d17c8a16d81d8881e9a9a0c81260ef1ac4bc05cdd6cf4a
+  languageName: node
+  linkType: hard
+
 "y18n@npm:^4.0.0":
   version: 4.0.3
   resolution: "y18n@npm:4.0.3"
@@ -25481,6 +25563,15 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.0.0"
   checksum: 73e3e3f22a5e278bd335bd2c61bbfdae8181ecb178c304ca8438a3f34065e63885639b81e01c6ffee44dfeee7172f224c857feaec0ac2a940580b93b626f5080
+  languageName: node
+  linkType: hard
+
+"yjs@npm:^13.5.29":
+  version: 13.5.39
+  resolution: "yjs@npm:13.5.39"
+  dependencies:
+    lib0: "npm:^0.2.49"
+  checksum: 3d488df4d1262b1decb3107ccba48024194451a0990feaee6b0ca99997376ff9ea0ff25f71f122907e610eb562f098e398093a186a31f302b6a62918cca03d4d
   languageName: node
   linkType: hard
 
