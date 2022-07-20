@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 15.0.1
+
+### Patch Changes
+
+- [#1697](https://github.com/udecode/plate/pull/1697) by [@zbeyens](https://github.com/zbeyens) – fix: copy/paste was blocked by the link plugin. Now it should work when the data is not a url and not inserted into a link
+
 ## 15.0.0
 
 ### Major Changes
