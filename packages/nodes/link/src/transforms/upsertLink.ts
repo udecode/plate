@@ -51,11 +51,15 @@ export const upsertLink = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_LINK) },
     });
 
-    const { isUrl } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
-
-    if ((linkAbove && !update) || !isUrl?.(url)) {
+    if (linkAbove && !update) {
       editor.insertText(url);
       return true;
+    }
+
+    const { isUrl } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
+
+    if (!isUrl?.(url)) {
+      return;
     }
 
     const [linkNode, linkPath] = linkAbove ?? [];
