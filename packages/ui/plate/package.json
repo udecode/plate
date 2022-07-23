@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "15.0.1",
+  "version": "15.0.2",
   "description": "Plate UI",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -33,7 +33,7 @@
     "@udecode/plate-ui-image": "15.0.0",
     "@udecode/plate-ui-line-height": "15.0.0",
     "@udecode/plate-ui-link": "15.0.1",
-    "@udecode/plate-ui-list": "15.0.0",
+    "@udecode/plate-ui-list": "15.0.2",
     "@udecode/plate-ui-media-embed": "15.0.0",
     "@udecode/plate-ui-mention": "15.0.0",
     "@udecode/plate-ui-placeholder": "15.0.0",

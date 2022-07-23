@@ -1,5 +1,11 @@
 # @udecode/plate-list-ui
 
+## 15.0.2
+
+### Patch Changes
+
+- [#1696](https://github.com/udecode/plate/pull/1696) by [@mouradmourafiq](https://github.com/mouradmourafiq) – Prevent changing to-do list items in readOnly mode
+
 ## 15.0.0
 
 ## 14.4.3
