@@ -53,15 +53,7 @@ Build:
 
 #### How to: Create a plate package
 
-- `packages/`
-    - copy paste `scripts/templates/package` or `scripts/templates/nested/packages`
-    - find & replace all `template` or `ntemplate` by `x`
-    - edit `README.md`
-    - edit `package.json`
-        - `version`
-        - `description`
-        - `dependencies`
-        - `repository.directory`
+- run `yarn gen:package` and answer the prompts
 - `/src`
     - plate plugin?
         - *How to: Create a plate plugin*

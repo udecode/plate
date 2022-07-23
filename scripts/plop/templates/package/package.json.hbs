@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-ntemplate",
-  "version": "1.0.0",
-  "description": "Template plugin for Plate",
+  "name": "@udecode/plate-{{name}}",
+  "version": "{{plateVersion}}",
+  "description": "{{description}}",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/ntemplate"
+    "directory": "packages/{{name}}"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "1.0.0"
+    "@udecode/plate-core": "{{coreVersion}}"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

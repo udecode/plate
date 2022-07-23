@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-template",
-  "version": "1.0.0",
-  "description": "Template plugin for Plate",
+  "name": "@udecode/plate-aaa",
+  "version": "15.0.1",
+  "description": "Plate plugin",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/template"
+    "directory": "packages/aaa"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "1.0.0"
+    "@udecode/plate-core": "15.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
