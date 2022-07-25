@@ -1,4 +1,5 @@
-import { Path, Text } from 'slate';
+import { Path } from 'slate';
+import { isText } from '../text';
 import { NodeOf, TNode } from './TNode';
 
 /**
@@ -13,13 +14,10 @@ export const getNode = <N extends NodeOf<R>, R extends TNode = TNode>(
   path: Path
 ) => {
   try {
-    if (!path.length) {
-      return null;
-    }
     for (let i = 0; i < path.length; i++) {
-      const p = path[i]
+      const p = path[i];
 
-      if (Text.isText(root) || !root.children[p]) {
+      if (isText(root) || !root.children[p]) {
         return null;
       }
 
