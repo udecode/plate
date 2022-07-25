@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-code-block",
-  "version": "15.0.0",
+  "version": "15.0.3",
   "description": "Code block UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,10 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-code-block": "15.0.0",
-    "@udecode/plate-core": "15.0.0",
-    "@udecode/plate-styled-components": "15.0.0",
-    "@udecode/plate-ui-toolbar": "15.0.0"
+    "@udecode/plate-code-block": "15.0.3",
+    "@udecode/plate-core": "15.0.3",
+    "@udecode/plate-styled-components": "15.0.3",
+    "@udecode/plate-ui-toolbar": "15.0.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

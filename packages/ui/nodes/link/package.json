@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-link",
-  "version": "15.0.1",
+  "version": "15.0.3",
   "description": "Link UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,11 +19,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "15.0.0",
-    "@udecode/plate-link": "15.0.1",
-    "@udecode/plate-styled-components": "15.0.0",
-    "@udecode/plate-ui-button": "15.0.0",
-    "@udecode/plate-ui-toolbar": "15.0.0"
+    "@udecode/plate-core": "15.0.3",
+    "@udecode/plate-link": "15.0.3",
+    "@udecode/plate-styled-components": "15.0.3",
+    "@udecode/plate-ui-button": "15.0.3",
+    "@udecode/plate-ui-toolbar": "15.0.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

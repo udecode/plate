@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 15.0.3
+
+### Patch Changes
+
+- [#1707](https://github.com/udecode/plate/pull/1707) by [@dylans](https://github.com/dylans) – improve performance of list normalizations
+
 ## 15.0.0
 
 ### Minor Changes
