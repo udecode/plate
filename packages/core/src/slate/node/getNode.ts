@@ -22,6 +22,6 @@ export const getNode = <N extends NodeOf<R>, R extends TNode = TNode>(
     root = root.children[p] as R;
   }
 
-  return root;
+  return root as N;
 };
 
