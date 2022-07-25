@@ -12,16 +12,22 @@ export const getNode = <N extends NodeOf<R>, R extends TNode = TNode>(
   root: R,
   path: Path
 ) => {
-  for (let i = 0; i < path.length; i++) {
-    const p = path[i]
-
-    if (Text.isText(root) || !root.children[p]) {
+  try {
+    if (!path.length) {
       return null;
     }
+    for (let i = 0; i < path.length; i++) {
+      const p = path[i]
 
-    root = root.children[p] as R;
+      if (Text.isText(root) || !root.children[p]) {
+        return null;
+      }
+
+      root = root.children[p] as R;
+    }
+
+    return root as N;
+  } catch (e) {
+    return null;
   }
-
-  return root as N;
 };
-
