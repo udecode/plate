@@ -6,7 +6,7 @@ import {
 import isHotkey from 'is-hotkey';
 import { imageGlobalStore } from './components/index';
 import { ImagePlugin } from './types';
-import { withImageUpload } from './withImageUpload';
+import { withImage } from './withImage';
 
 export const ELEMENT_IMAGE = 'img';
 
@@ -17,7 +17,7 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   key: ELEMENT_IMAGE,
   isElement: true,
   isVoid: true,
-  withOverrides: withImageUpload,
+  withOverrides: withImage,
   handlers: {
     onKeyDown: (editor) => (e) => {
       // focus caption from image
