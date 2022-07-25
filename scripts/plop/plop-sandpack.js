@@ -1,20 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const { camelCase } = require('change-case');
+const { sandpackPath, inputPath } = require('./plop-config');
 
-const packageJsonPlate = require('../packages/plate/package.json');
-const packageJsonExcalidraw = require('../packages/ui/nodes/excalidraw/package.json');
-const packageJsonTestUtils = require('../packages/test-utils/package.json');
-const packageJsonJuice = require('../packages/serializers/juice/package.json');
-
-const templateVersions = `export const plateVersion = '${packageJsonPlate.version}';
-export const testUtilsVersion = '${packageJsonTestUtils.version}';
-export const excalidrawVersion = '${packageJsonExcalidraw.version}';
-export const juiceVersion = '${packageJsonJuice.version}';
-`;
-
-const inputPath = path.resolve(__dirname, '../examples/src');
-const sandpackPath = '../docs/docs/sandpack';
 const filesPath = `${sandpackPath}/files`;
 
 function* walkSync(dir) {
@@ -28,7 +16,10 @@ function* walkSync(dir) {
   }
 }
 
-module.exports = (plop) => {
+module.exports = (_plop) => {
+  /** @type {import('plop').NodePlopAPI} */
+  const plop = _plop;
+
   /** @type {import("plop").PlopGeneratorConfig["actions"]} */
   const actions = [];
 
@@ -200,18 +191,5 @@ export const rootFiles = {
     description: 'generate sandpack files',
     prompts: [],
     actions,
-  });
-
-  plop.setGenerator('version', {
-    description: 'Update Sandpack dependencies',
-    prompts: [],
-    actions: [
-      {
-        type: 'add',
-        template: templateVersions,
-        path: `${sandpackPath}/plate-versions.ts`,
-        force: true,
-      },
-    ],
   });
 };

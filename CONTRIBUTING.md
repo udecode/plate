@@ -28,40 +28,58 @@ minimal reproduction using
 
 ### Initial Setup
 
+#### Yarn
+
 This repo uses yarn workspaces, so you should install `yarn` as the
 package manager. See
 [installation guide](https://yarnpkg.com/en/docs/install).
 
-1. `cd ~` (optional)
-2. `git clone https://github.com/udecode/plate.git` _bonus_: use your own fork for this step
-3. `cd plate`
-4. `yarn install`
-5. `yarn g:build`
+#### Clone
 
-### Docs
+```bash
+git clone https://github.com/udecode/plate.git
+```
 
-Development: 
+#### Install & Build
 
-- `yarn docs:start`
-- Open [localhost:3000](localhost:3000)
-
-Build:
-
-- `yarn docs:build` if you've already built the packages
+```bash
+cd plate
+yarn install
+yarn g:build
+```
 
 ### Development
 
+#### How to: Local dev watching file changes
+
+To start the NextJS app locally, run:
+
+```bash
+yarn g:dev
+```
+
+#### How to: Local docs
+
+To start the docusaurus app locally, run:
+
+```bash
+yarn docs:start 
+```
+
+To build the docusaurus app, run:
+
+```bash
+yarn docs:build 
+```
+
 #### How to: Create a plate package
 
-- `packages/`
-    - copy paste `scripts/templates/package` or `scripts/templates/nested/packages`
-    - find & replace all `template` or `ntemplate` by `x`
-    - edit `README.md`
-    - edit `package.json`
-        - `version`
-        - `description`
-        - `dependencies`
-        - `repository.directory`
+Generate the package by answering the prompts:
+
+```bash
+yarn gen:package
+```
+
 - `/src`
     - plate plugin?
         - *How to: Create a plate plugin*
@@ -70,16 +88,19 @@ Build:
         - add the package to dependencies
     - edit `src/index.tsx`
         - add `export * from '@udecode/plate-x';`
-- `yarn install`
-- `yarn g:build`
+
+Once done with the package:
+
+```bash
+yarn install
+yarn g:build
+```
 
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `/config/aliases.js`
+    - edit `/config/aliases-plate.js`
         - add `'@udecode/plate-x': <package path from /packages>'` to watch file changes
-- Run the example app: 
-  - run `yarn g:dev`
 - Create an example app in `/examples/src`
 - Once you've finished the example app:
   - go back to the root of the repository
