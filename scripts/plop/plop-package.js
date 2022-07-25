@@ -19,6 +19,11 @@ module.exports = (_plop) => {
         message: 'Package description',
         default: 'Plate plugin',
       },
+      {
+        type: 'confirm',
+        name: 'createPlugin',
+        message: 'Create a plate plugin?',
+      },
     ],
     actions: [
       {

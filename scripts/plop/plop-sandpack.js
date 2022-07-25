@@ -1,9 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const { camelCase } = require('change-case');
+const { sandpackPath, inputPath } = require('./plop-config');
 
-const inputPath = path.resolve(__dirname, '../../examples/src');
-const sandpackPath = '../../docs/docs/sandpack';
 const filesPath = `${sandpackPath}/files`;
 
 function* walkSync(dir) {
