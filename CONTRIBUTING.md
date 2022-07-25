@@ -99,10 +99,8 @@ yarn g:build
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `/config/aliases.js`
+    - edit `/config/aliases-plate.js`
         - add `'@udecode/plate-x': <package path from /packages>'` to watch file changes
-- Run the example app: 
-  - run `yarn g:dev`
 - Create an example app in `/examples/src`
 - Once you've finished the example app:
   - go back to the root of the repository
