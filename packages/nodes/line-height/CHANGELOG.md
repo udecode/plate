@@ -1,5 +1,7 @@
 # @udecode/plate-line-height
 
+## 15.0.3
+
 ## 15.0.0
 
 ## 14.4.2

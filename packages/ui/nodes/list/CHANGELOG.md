@@ -1,5 +1,7 @@
 # @udecode/plate-list-ui
 
+## 15.0.3
+
 ## 15.0.2
 
 ### Patch Changes

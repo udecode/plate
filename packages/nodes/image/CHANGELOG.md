@@ -1,5 +1,11 @@
 # @udecode/plate-image
 
+## 15.0.3
+
+### Patch Changes
+
+- [#1708](https://github.com/udecode/plate/pull/1708) by [@zbeyens](https://github.com/zbeyens) – fix: insert image embed url should insert image
+
 ## 15.0.0
 
 ## 14.4.2
