@@ -12,8 +12,10 @@ import {
 } from '@udecode/plate-combobox';
 import { useEditorState, useEventEditorSelectors } from '@udecode/plate-core';
 import {
+  flip,
   getRangeBoundingClientRect,
   offset,
+  shift,
   useVirtualFloating,
 } from '@udecode/plate-floating';
 import { PortalBody } from '@udecode/plate-styled-components';
@@ -78,7 +80,7 @@ const ComboboxContent = <TData extends Data = NoData>(
   const { style, floating } = useVirtualFloating({
     placement: 'bottom-start',
     getBoundingClientRect,
-    middleware: [offset(4)],
+    middleware: [offset(4), shift(), flip()],
     ...floatingOptions,
   });
 
@@ -86,9 +88,11 @@ const ComboboxContent = <TData extends Data = NoData>(
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
-  const { root, item: styleItem, highlightedItem } = getComboboxStyles(
-    props as any
-  );
+  const {
+    root,
+    item: styleItem,
+    highlightedItem,
+  } = getComboboxStyles(props as any);
 
   return (
     <PortalBody element={portalElement}>
