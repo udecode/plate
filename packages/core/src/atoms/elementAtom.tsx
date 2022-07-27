@@ -4,6 +4,8 @@ import { TElement } from '../slate/index';
 import { JotaiProvider, JotaiProviderProps } from '../utils/index';
 import { createAtomStore } from './createAtomStore';
 
+export const SCOPE_ELEMENT = 'element';
+
 export const { elementStore, useElementStore } = createAtomStore(
   {
     element: (null as unknown) as TElement,
@@ -12,7 +14,7 @@ export const { elementStore, useElementStore } = createAtomStore(
 );
 
 export const useElement = <T extends TElement = TElement>(
-  pluginKey: string
+  pluginKey = SCOPE_ELEMENT
 ) => {
   const value = useElementStore().get.element(pluginKey);
 
@@ -34,14 +36,19 @@ export const ElementProviderChild = ({
   children: any;
 }) => {
   const setElement = useElementStore().set.element(scope);
+  const setGlobalElement = useElementStore().set.element(SCOPE_ELEMENT);
 
   useEffect(() => {
     setElement(element);
-  }, [element, setElement]);
+    setGlobalElement(element);
+  }, [element, setElement, setGlobalElement]);
 
   return children;
 };
 
+/**
+ * Global and scoped provider above element.
+ */
 export const ElementProvider = ({
   element,
   scope,
@@ -52,11 +59,17 @@ export const ElementProvider = ({
 }) => (
   <JotaiProvider
     initialValues={[[elementStore.atom.element, element]]}
-    scope={scope}
+    scope={SCOPE_ELEMENT}
     {...props}
   >
-    <ElementProviderChild element={element} scope={scope!}>
-      {children}
-    </ElementProviderChild>
+    <JotaiProvider
+      initialValues={[[elementStore.atom.element, element]]}
+      scope={scope}
+      {...props}
+    >
+      <ElementProviderChild element={element} scope={scope!}>
+        {children}
+      </ElementProviderChild>
+    </JotaiProvider>
   </JotaiProvider>
 );
