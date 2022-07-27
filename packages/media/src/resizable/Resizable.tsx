@@ -7,37 +7,41 @@ import {
   select,
   setNodes,
   useEditorRef,
+  useElement,
 } from '@udecode/plate-core';
-import { Resizable, ResizableProps } from 're-resizable';
+import {
+  Resizable as ReResizable,
+  ResizableProps as ReResizableProps,
+} from 're-resizable';
 import { useReadOnly } from 'slate-react';
-import { useImageElement } from '../hooks/index';
-import { TImageElement } from '../types';
-import { useImageStore } from './Image';
+import { useResizableStore } from '../Media';
+import { TMediaElement } from '../TMediaElement';
+import { TResizableElement } from './TResizableElement';
 
-export interface ImageResizableProps
-  extends Omit<ResizableProps, 'as'>,
+export interface ResizableProps
+  extends Omit<ReResizableProps, 'as'>,
     AsProps<'div'> {
   /**
-   * Image alignment.
+   * Node alignment.
    */
   align?: 'left' | 'center' | 'right';
 
   readOnly?: boolean;
 }
 
-export const useImageResizable = ({
+export const useResizable = ({
   align = 'center',
   readOnly,
   ...props
-}: ImageResizableProps): ResizableProps => {
-  const element = useImageElement();
+}: ResizableProps): ReResizableProps => {
+  const element = useElement<TMediaElement>();
   const editor = useEditorRef();
   const _readOnly = useReadOnly();
   readOnly = isDefined(readOnly) ? readOnly : _readOnly;
 
   const { width: nodeWidth = '100%' } = element ?? {};
 
-  const [width, setWidth] = useImageStore().use.width();
+  const [width, setWidth] = useResizableStore().use.width();
 
   const setNodeWidth = useCallback(
     (w: number) => {
@@ -48,7 +52,7 @@ export const useImageResizable = ({
         // Focus the node if not resized
         select(editor, path);
       } else {
-        setNodes<TImageElement>(editor, { width: w }, { at: path });
+        setNodes<TResizableElement>(editor, { width: w }, { at: path });
       }
     },
     [editor, element, nodeWidth]
@@ -58,7 +62,7 @@ export const useImageResizable = ({
     setWidth(nodeWidth);
   }, [nodeWidth, setWidth]);
 
-  const defaultProps: ResizableProps = {
+  const defaultProps: ReResizableProps = {
     minWidth: 92,
     size: { width: width!, height: '100%' },
     maxWidth: '100%',
@@ -98,10 +102,8 @@ export const useImageResizable = ({
   return { ...defaultProps, ...props };
 };
 
-export const ImageResizable = createComponentAs<ImageResizableProps>(
-  (props) => {
-    const resizableProps = useImageResizable(props);
+export const Resizable = createComponentAs<ResizableProps>((props) => {
+  const resizableProps = useResizable(props);
 
-    return <Resizable {...resizableProps} />;
-  }
-);
+  return <ReResizable {...resizableProps} />;
+});

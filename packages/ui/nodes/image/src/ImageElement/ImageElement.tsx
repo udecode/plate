@@ -61,17 +61,17 @@ export const ImageElement = (props: ImageElementProps) => {
         </Image.Resizable>
 
         {!caption.disabled && (
-          <Image.Caption
+          <Image.Caption.Root
             css={styles.figcaption?.css}
             className={styles.figcaption?.className}
           >
-            <Image.CaptionTextarea
+            <Image.Caption.Textarea
               css={styles.caption?.css}
               className={styles.caption?.className}
               placeholder={caption.placeholder ?? 'Write a caption...'}
               readOnly={(!ignoreReadOnly && readOnly) || !!caption.readOnly}
             />
-          </Image.Caption>
+          </Image.Caption.Root>
         )}
       </figure>
 

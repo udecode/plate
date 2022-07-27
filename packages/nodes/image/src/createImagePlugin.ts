@@ -3,8 +3,8 @@ import {
   getBlockAbove,
   getPluginType,
 } from '@udecode/plate-core';
+import { captionGlobalStore } from '@udecode/plate-media';
 import isHotkey from 'is-hotkey';
-import { imageGlobalStore } from './components/index';
 import { ImagePlugin } from './types';
 import { withImage } from './withImage';
 
@@ -27,7 +27,7 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
         });
         if (!entry) return;
 
-        imageGlobalStore.set.focusEndCaptionPath(entry[1]);
+        captionGlobalStore.set.focusEndCaptionPath(entry[1]);
       }
 
       // TODO: focus caption from line below image

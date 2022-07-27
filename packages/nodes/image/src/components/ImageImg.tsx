@@ -3,13 +3,13 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
+import { useCaptionString } from '@udecode/plate-media';
 import { useImageElement } from '../hooks/index';
-import { useImageCaptionString } from '../hooks/useImageCaptionString';
 
 export const useImageImg = (props?: HTMLPropsAs<'img'>): HTMLPropsAs<'img'> => {
   const { url } = useImageElement();
 
-  const captionString = useImageCaptionString();
+  const captionString = useCaptionString();
 
   return {
     src: url,

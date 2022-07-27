@@ -42,6 +42,7 @@
     "@udecode/plate-line-height": "15.0.3",
     "@udecode/plate-link": "15.0.3",
     "@udecode/plate-list": "15.0.3",
+    "@udecode/plate-media": "15.0.3",
     "@udecode/plate-media-embed": "15.0.3",
     "@udecode/plate-mention": "15.0.3",
     "@udecode/plate-node-id": "15.0.3",

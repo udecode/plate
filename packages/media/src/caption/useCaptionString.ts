@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { getNodeString } from '@udecode/plate-core';
-import { useImageElement } from './useImageElement';
+import { getNodeString, useElement } from '@udecode/plate-core';
+import { TCaptionElement } from './TCaptionElement';
 
-export const useImageCaptionString = () => {
+export const useCaptionString = () => {
   const {
     caption: nodeCaption = [{ children: [{ text: '' }] }],
-  } = useImageElement();
+  } = useElement<TCaptionElement>();
 
   return useMemo(() => {
     return getNodeString(nodeCaption[0] as any) || '';

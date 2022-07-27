@@ -18,16 +18,16 @@ import {
   TElement,
   useComposedRef,
   useEditorRef,
+  useElement,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
-import { useImageElement } from '../hooks/index';
-import { TImageElement } from '../types';
-import { imageGlobalStore } from './Image';
+import { captionGlobalStore } from '../Media';
+import { TCaptionElement } from './TCaptionElement';
 import { TextareaAutosize } from './TextareaAutosize';
 
-export interface ImageCaptionTextareaProps
+export interface CaptionTextareaProps
   extends TextareaAutosizeProps,
     RefAttributes<HTMLTextAreaElement>,
     AsProps<'textarea'> {}
@@ -35,29 +35,29 @@ export interface ImageCaptionTextareaProps
 /**
  * Focus textareaRef when focusCaptionPath is set to the image path.
  */
-export const useImageCaptionTextareaFocus = (
+export const useCaptionTextareaFocus = (
   textareaRef: RefObject<HTMLTextAreaElement>
 ) => {
   const editor = useEditorRef();
-  const element = useImageElement();
+  const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = imageGlobalStore.use.focusEndCaptionPath();
+  const focusCaptionPath = captionGlobalStore.use.focusEndCaptionPath();
 
   useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
       const path = findNodePath(editor, element);
       if (path && Path.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
-        imageGlobalStore.set.focusEndCaptionPath(null);
+        captionGlobalStore.set.focusEndCaptionPath(null);
       }
     }
   }, [editor, element, focusCaptionPath, textareaRef]);
 };
 
-export const useImageCaptionTextarea = (
-  props: ImageCaptionTextareaProps
+export const useCaptionTextarea = (
+  props: CaptionTextareaProps
 ): TextareaAutosizeProps & RefAttributes<HTMLTextAreaElement> => {
-  const element = useImageElement();
+  const element = useElement<TCaptionElement>();
 
   const {
     caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
@@ -73,7 +73,7 @@ export const useImageCaptionTextarea = (
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const ref = useComposedRef(textareaRef, props.ref);
 
-  useImageCaptionTextareaFocus(textareaRef);
+  useCaptionTextareaFocus(textareaRef);
 
   const onChange: TextareaAutosizeProps['onChange'] = useCallback(
     (e) => {
@@ -86,7 +86,7 @@ export const useImageCaptionTextarea = (
       if (!path) return;
 
       // saved state
-      setNodes<TImageElement>(
+      setNodes<TCaptionElement>(
         editor,
         { caption: [{ text: newValue }] },
         { at: path }
@@ -130,9 +130,9 @@ export const useImageCaptionTextarea = (
   };
 };
 
-export const ImageCaptionTextarea = createComponentAs<ImageCaptionTextareaProps>(
+export const CaptionTextarea = createComponentAs<CaptionTextareaProps>(
   ({ as, ...props }) => {
-    const htmlProps = useImageCaptionTextarea({ as: as as any, ...props });
+    const htmlProps = useCaptionTextarea({ as: as as any, ...props });
 
     return <TextareaAutosize {...htmlProps} />;
   }

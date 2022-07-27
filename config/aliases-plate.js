@@ -27,6 +27,7 @@ module.exports = {
   '@udecode/plate-link': 'nodes/link',
   '@udecode/plate-list': 'nodes/list',
   '@udecode/plate-serializer-md': 'serializers/md',
+  '@udecode/plate-media': 'media',
   '@udecode/plate-media-embed': 'nodes/media-embed',
   '@udecode/plate-mention': 'nodes/mention',
   '@udecode/plate-node-id': 'editor/node-id',

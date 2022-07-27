@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-image",
+  "name": "@udecode/plate-media",
   "version": "15.0.3",
-  "description": "Image plugin for Plate",
+  "description": "Plate Media plugin",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/nodes/image"
+    "directory": "packages/media"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -20,7 +20,8 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-core": "15.0.3",
-    "@udecode/plate-media": "15.0.3"
+    "re-resizable": "^6.9.9",
+    "react-textarea-autosize": "^8.3.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
