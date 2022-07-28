@@ -21,7 +21,9 @@ export const useFloatingLinkUrlInput = (
 
   useEffect(() => {
     if (ref.current && updated) {
-      ref.current.focus();
+      setTimeout(() => {
+        ref.current?.focus();
+      }, 0);
     }
   }, [updated]);
 
