@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useRef } from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useRef } from 'react';
 import {
   AsProps,
   createComponentAs,
@@ -10,12 +10,22 @@ import {
 import {
   floatingLinkActions,
   floatingLinkSelectors,
+  useFloatingLinkSelectors,
 } from './floatingLinkStore';
 
 export const useFloatingLinkUrlInput = (
   props: HTMLPropsAs<'input'>
 ): HTMLPropsAs<'input'> => {
+  const updated = useFloatingLinkSelectors().updated();
   const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (ref.current && updated) {
+      setTimeout(() => {
+        ref.current?.focus();
+      }, 0);
+    }
+  }, [updated]);
 
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingLinkActions.url(e.target.value);

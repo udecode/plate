@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import {
+  focusEditor,
   getPluginOptions,
   HTMLPropsAs,
   useComposedRef,
@@ -50,6 +51,7 @@ export const useFloatingLinkInsert = ({
   const ref = useOnClickOutside(() => {
     if (floatingLinkSelectors.mode() === 'insert') {
       floatingLinkActions.hide();
+      focusEditor(editor, editor.selection!);
     }
   });
 
