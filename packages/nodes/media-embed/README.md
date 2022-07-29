@@ -1,3 +1,5 @@
+Deprecated, use instead [@udecode/plate-media](https://npmjs.com/package/@udecode/plate-media)
+
 # Plate media embed plugin
 
 This package implements the media embed plugin for Plate. It allows inserting
@@ -6,7 +8,6 @@ editor.
 
 ## Documentation
 
-Check out [Media Embed](https://plate.udecode.io/docs/plugins/media-embed).
 
 ## API
 

@@ -1,6 +1,6 @@
-import { createImagePlugin } from '@udecode/plate-image/src/index';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { createImagePlugin } from 'packages/media/src/image/index';
 import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
 

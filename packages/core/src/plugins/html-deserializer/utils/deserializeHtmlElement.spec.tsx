@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { createImagePlugin } from '../../../../../media/src/image/createImagePlugin';
 import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createImagePlugin } from '../../../../../nodes/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../nodes/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';

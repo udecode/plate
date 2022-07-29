@@ -15,7 +15,7 @@ export const useVirtualFloatingLink = (
     middleware: [
       offset(12),
       flip({
-        padding: 150,
+        padding: 96,
       }),
     ],
     ...floatingOptions,

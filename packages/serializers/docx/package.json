@@ -21,9 +21,9 @@
   "dependencies": {
     "@udecode/plate-core": "15.0.3",
     "@udecode/plate-heading": "15.0.3",
-    "@udecode/plate-image": "15.0.3",
     "@udecode/plate-indent": "15.0.3",
     "@udecode/plate-indent-list": "15.0.3",
+    "@udecode/plate-media": "15.0.3",
     "@udecode/plate-paragraph": "15.0.3",
     "@udecode/plate-table": "15.0.3",
     "validator": "^13.7.0"

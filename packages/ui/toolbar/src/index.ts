@@ -9,3 +9,5 @@ export * from './MarkToolbarButton/index';
 export * from './Toolbar/index';
 export * from './ToolbarButton/index';
 export * from './ToolbarDropdown/index';
+export * from './styles';
+export { FloatingVerticalDivider } from './FloatingVerticalDivider';

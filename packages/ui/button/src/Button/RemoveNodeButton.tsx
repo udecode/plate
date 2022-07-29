@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   findNodePath,
+  focusEditor,
   removeNodes,
   TElement,
   useEditorRef,
@@ -23,7 +24,10 @@ export const RemoveNodeButton = ({
       `}
       onClick={() => {
         const path = findNodePath(editor, element);
+
         removeNodes(editor, { at: path });
+
+        focusEditor(editor, editor.selection!);
       }}
       {...props}
     >

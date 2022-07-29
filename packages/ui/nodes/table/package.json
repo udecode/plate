@@ -20,10 +20,10 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-core": "15.0.3",
+    "@udecode/plate-floating": "15.0.3",
     "@udecode/plate-styled-components": "15.0.3",
     "@udecode/plate-table": "15.0.3",
     "@udecode/plate-ui-button": "15.0.3",
-    "@udecode/plate-ui-popover": "15.0.3",
     "@udecode/plate-ui-toolbar": "15.0.3",
     "re-resizable": "^6.9.9"
   },

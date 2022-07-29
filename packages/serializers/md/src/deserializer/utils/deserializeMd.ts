@@ -16,9 +16,9 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import markdown from 'remark-parse';
 import slate from 'remark-slate';
