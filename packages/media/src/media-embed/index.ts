@@ -5,3 +5,4 @@
 export * from './createMediaEmbedPlugin';
 export * from './types';
 export * from './transforms/index';
+export { getIframeUrl } from './getIframeUrl';

@@ -3,6 +3,5 @@
  */
 
 export * from './Media';
+export * from './types';
 export * from './FloatingMedia/index';
-export { TMediaElement } from './types';
-export { MediaPlugin } from './types';

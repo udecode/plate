@@ -5921,6 +5921,7 @@ __metadata:
     "@udecode/plate-core": "npm:15.0.3"
     "@udecode/plate-floating": "npm:15.0.3"
     "@udecode/plate-styled-components": "npm:15.0.3"
+    "@udecode/plate-ui-button": "npm:15.0.3"
     react-use: "npm:^17.3.2"
   peerDependencies:
     react: ">=16.8.0"

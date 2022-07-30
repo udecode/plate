@@ -10,4 +10,3 @@ export * from './withImageUpload';
 export * from './components/index';
 export * from './transforms/index';
 export * from './utils/index';
-export { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';

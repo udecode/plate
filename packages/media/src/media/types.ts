@@ -7,4 +7,8 @@ export interface TMediaElement extends TCaptionElement, TResizableElement {
 
 export interface MediaPlugin {
   isUrl?: (text: string) => boolean;
+
+  transformUrl?: (url: string) => string;
 }
+
+export const ELEMENT_MEDIA = 'media';

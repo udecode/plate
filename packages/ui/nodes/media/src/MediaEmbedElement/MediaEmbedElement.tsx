@@ -9,6 +9,7 @@ import {
 import { ElementPopover } from '@udecode/plate-floating';
 import { Caption, Media, TMediaElement } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import { ELEMENT_MEDIA_EMBED } from '../../../../../media/src/media-embed/createMediaEmbedPlugin';
 import { mediaFloatingOptions } from '../mediaFloatingOptions';
 import { parseEmbedUrl } from './utils/parseEmbedUrl';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
@@ -37,7 +38,7 @@ export const useMediaIframe = ({
   };
 };
 
-export const MediaIframe = createComponentAs<MediaIframeProps>((props) => {
+export const MediaEmbed = createComponentAs<MediaIframeProps>((props) => {
   const htmlProps = useMediaIframe(props);
 
   // const isTwitter = provider === 'twitter' && id;
@@ -48,7 +49,7 @@ export const MediaIframe = createComponentAs<MediaIframeProps>((props) => {
 });
 
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
-  const { children, nodeProps, element, editor } = props;
+  const { children, nodeProps, element } = props;
 
   const { as, ...rootProps } = props;
 
@@ -70,7 +71,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
 
   return (
     <ElementPopover
-      content={<PlateFloatingMedia />}
+      content={<PlateFloatingMedia pluginKey={ELEMENT_MEDIA_EMBED} />}
       floatingOptions={mediaFloatingOptions}
     >
       <Media.Root {...rootProps} css={styles.root.css}>
@@ -103,7 +104,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
               className={styles.iframeWrapper?.className}
               draggable
             >
-              <MediaIframe
+              <MediaEmbed
                 css={styles.iframe?.css}
                 className={styles.iframe?.className}
                 {...nodeProps}

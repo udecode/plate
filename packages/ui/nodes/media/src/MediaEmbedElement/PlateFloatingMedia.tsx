@@ -13,7 +13,7 @@ import {
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
-export const PlateFloatingMedia = () => {
+export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
   const isEditing = useFloatingMediaSelectors().isEditing();
   const element = useElement();
 
@@ -39,6 +39,7 @@ export const PlateFloatingMedia = () => {
             <FloatingMedia.UrlInput
               css={floatingInputCss}
               placeholder="Paste the embed link..."
+              pluginKey={pluginKey}
             />
           </FloatingInputWrapper>
         </div>

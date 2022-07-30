@@ -3,7 +3,7 @@
  */
 
 export * from './caption/index';
-export * from './media-embed/index';
 export * from './image/index';
 export * from './media/index';
+export * from './media-embed/index';
 export * from './resizable/index';

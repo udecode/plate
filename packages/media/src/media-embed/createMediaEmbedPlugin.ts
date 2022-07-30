@@ -1,6 +1,7 @@
 import { createPluginFactory } from '@udecode/plate-core';
 import { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';
 import { MediaPlugin } from '../media/index';
+import { getIframeUrl } from './getIframeUrl';
 
 export const ELEMENT_MEDIA_EMBED = 'media_embed';
 
@@ -14,6 +15,9 @@ export const createMediaEmbedPlugin = createPluginFactory<MediaPlugin>({
   isVoid: true,
   handlers: {
     onKeyDown: getOnKeyDownCaption(ELEMENT_MEDIA_EMBED),
+  },
+  options: {
+    transformUrl: getIframeUrl,
   },
   then: (editor, { type }) => ({
     deserializeHtml: {

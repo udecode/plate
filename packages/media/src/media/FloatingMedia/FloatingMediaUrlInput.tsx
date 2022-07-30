@@ -1,54 +1,29 @@
 import { ChangeEventHandler, useCallback, useEffect } from 'react';
 import {
-  AsProps,
   createComponentAs,
   createElementAs,
   focusEditor,
   HTMLPropsAs,
-  isUrl,
   mergeProps,
-  PlateEditor,
-  setNodes,
   useEditorRef,
   useElement,
   useHotkeys,
-  Value,
 } from '@udecode/plate-core';
 import { TMediaElement } from '../types';
 import {
   floatingMediaActions,
   floatingMediaSelectors,
 } from './floatingMediaStore';
+import { submitFloatingMedia } from './submitFloatingMedia';
 
-export const submitFloatingMedia = <V extends Value>(
-  editor: PlateEditor<V>,
-  element: TMediaElement
-) => {
-  const url = floatingMediaSelectors.url();
-
-  if (url === element.url) {
-    floatingMediaActions.reset();
-    return true;
-  }
-
-  // const { isUrl } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
-  const isValid = isUrl?.(url);
-  if (!isValid) return;
-
-  setNodes<TMediaElement>(editor, {
-    url,
-  });
-
-  floatingMediaActions.reset();
-
-  focusEditor(editor, editor.selection!);
-
-  return true;
+export type FloatingMediaUrlInputProps = HTMLPropsAs<'input'> & {
+  pluginKey?: string;
 };
 
-export const useFloatingMediaUrlInput = (
-  props: HTMLPropsAs<'input'>
-): HTMLPropsAs<'input'> => {
+export const useFloatingMediaUrlInput = ({
+  pluginKey,
+  ...props
+}: FloatingMediaUrlInputProps): HTMLPropsAs<'input'> => {
   const editor = useEditorRef();
   const element = useElement<TMediaElement>();
 
@@ -61,7 +36,7 @@ export const useFloatingMediaUrlInput = (
   useHotkeys(
     'enter',
     (e) => {
-      if (submitFloatingMedia(editor, element)) {
+      if (submitFloatingMedia(editor, { element, pluginKey })) {
         e.preventDefault();
       }
     },
@@ -100,7 +75,7 @@ export const useFloatingMediaUrlInput = (
   );
 };
 
-export const FloatingMediaUrlInput = createComponentAs<AsProps<'input'>>(
+export const FloatingMediaUrlInput = createComponentAs<FloatingMediaUrlInputProps>(
   (props) => {
     const htmlProps = useFloatingMediaUrlInput(props);
 
