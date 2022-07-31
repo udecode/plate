@@ -29,8 +29,8 @@ module.exports = (_plop) => {
 
   const generateDirFiles = () => {
     let dirName = prevDir.slice(0, -1);
-    if (dirName.indexOf('/') > -1) {
-      dirName = dirName.substring(dirName.lastIndexOf('/') + 1);
+    if (dirName.indexOf(path.sep) > -1) {
+      dirName = dirName.substring(dirName.lastIndexOf(path.sep) + 1);
     }
 
     let fileContent = '';
@@ -70,9 +70,9 @@ export const ${camelCase(`${dirName}Files`)} = {
   };
 
   for (const templatePath of walkSync(inputPath)) {
-    const relativeFilePath = templatePath.split('examples/src/')[1];
+    const relativeFilePath = templatePath.split(`examples${path.sep}src${path.sep}`)[1];
 
-    const slashIndex = relativeFilePath.lastIndexOf('/');
+    const slashIndex = relativeFilePath.lastIndexOf(path.sep);
 
     const dir = relativeFilePath.substring(0, slashIndex + 1);
 
