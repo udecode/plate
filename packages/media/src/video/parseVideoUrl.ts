@@ -1,5 +1,5 @@
 import videoParser from 'js-video-url-parser';
-import { EmbedUrlData } from './parseEmbedUrl';
+import { EmbedUrlData } from '../media/parseMediaUrl';
 
 const YOUTUBE_PREFIX = 'https://www.youtube.com/embed/';
 const VIMEO_PREFIX = 'https://player.vimeo.com/video/';

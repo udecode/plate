@@ -9,9 +9,9 @@ import {
 import { ElementPopover } from '@udecode/plate-floating';
 import { Caption, Media, TMediaElement } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import { parseMediaUrl } from '../../../../../media/src/media/parseMediaUrl';
 import { ELEMENT_MEDIA_EMBED } from '../../../../../media/src/media-embed/createMediaEmbedPlugin';
 import { mediaFloatingOptions } from '../mediaFloatingOptions';
-import { parseEmbedUrl } from './utils/parseEmbedUrl';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { PlateFloatingMedia } from './PlateFloatingMedia';
@@ -27,7 +27,7 @@ export const useMediaIframe = ({
   const element = useElement<TMediaElement>();
   const { url: elementUrl } = element;
 
-  const { url } = useMemo(() => parseEmbedUrl(elementUrl), [elementUrl]);
+  const { url } = useMemo(() => parseMediaUrl(elementUrl), [elementUrl]);
 
   return {
     title: 'embed',
@@ -59,7 +59,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
 
   const { url: elementUrl } = element;
 
-  const { provider } = useMemo(() => parseEmbedUrl(elementUrl), [elementUrl]);
+  const { provider } = useMemo(() => parseMediaUrl(elementUrl), [elementUrl]);
 
   const styles = getMediaEmbedElementStyles({
     ...props,
