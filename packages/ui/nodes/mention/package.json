@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-mention",
-  "version": "15.0.3",
+  "version": "15.0.4",
   "description": "Media embed UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -23,7 +23,7 @@
     "@udecode/plate-core": "15.0.3",
     "@udecode/plate-mention": "15.0.3",
     "@udecode/plate-styled-components": "15.0.3",
-    "@udecode/plate-ui-combobox": "15.0.3"
+    "@udecode/plate-ui-combobox": "15.0.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

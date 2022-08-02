@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 15.0.5
+
+### Patch Changes
+
+- [#1715](https://github.com/udecode/plate/pull/1715) by [@tmilewski](https://github.com/tmilewski) – Fix FloatingLinkUrlInput snapping to the previous location on show and to the bottom of the editor upon clicking outside of the element
+
 ## 15.0.3
 
 ## 15.0.1
