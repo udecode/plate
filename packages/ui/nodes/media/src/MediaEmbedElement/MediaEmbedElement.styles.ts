@@ -34,6 +34,12 @@ export const getMediaEmbedElementStyles = (
       ? (provider && providersPadding[provider]) || '56.0417%'
       : undefined;
 
+  const resizable = getResizableCss({
+    align: 'center',
+    focused,
+    selected,
+  });
+
   return createStyles(
     { prefixClassNames: 'MediaEmbedElement', ...props },
     {
@@ -66,11 +72,11 @@ export const getMediaEmbedElementStyles = (
           align: 'center',
         },
       }),
-      ...getResizableCss({
-        align: 'center',
-        focused,
-        selected,
-      }),
+      ...resizable,
+      handleRight: [
+        ...resizable.handleRight,
+        provider === 'twitter' && tw`-mr-4`,
+      ],
     }
   );
 };

@@ -5317,6 +5317,7 @@ __metadata:
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
     "@udecode/plate-core": "npm:15.0.3"
+    js-video-url-parser: "npm:^0.5.1"
     re-resizable: "npm:^6.9.9"
     react-textarea-autosize: "npm:^8.3.3"
   peerDependencies:
@@ -15088,7 +15089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-video-url-parser@npm:0.5.1":
+"js-video-url-parser@npm:0.5.1, js-video-url-parser@npm:^0.5.1":
   version: 0.5.1
   resolution: "js-video-url-parser@npm:0.5.1"
   checksum: 2c91b63be54c05020b4f2366ad0b9b5a8c90ca4d2ac48d16a28c343b956244659a2fb22d49e2a2c67030376785571d94f76198bf61ef0f3f946290c54400fe0c

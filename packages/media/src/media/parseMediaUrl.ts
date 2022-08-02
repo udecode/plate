@@ -1,10 +1,16 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-core';
+import {
+  getPluginOptions,
+  PlateEditor,
+  RenderFunction,
+  Value,
+} from '@udecode/plate-core';
 import { MediaPlugin } from './types';
 
 export type EmbedUrlData = {
   url?: string;
   provider?: string;
   id?: string;
+  component?: RenderFunction<EmbedUrlData>;
 };
 
 export const parseMediaUrl = <V extends Value>(
@@ -16,14 +22,16 @@ export const parseMediaUrl = <V extends Value>(
     pluginKey: string;
     url: string;
   }
-): EmbedUrlData | undefined => {
+): EmbedUrlData => {
   const { rules } = getPluginOptions<MediaPlugin, V>(editor, pluginKey);
-  if (!rules) return;
+  if (!rules) return { url };
 
-  for (const rule of rules) {
-    const parsed = rule.parseUrl(url);
+  for (const { parser, component } of rules) {
+    const parsed = parser(url);
     if (parsed) {
-      return parsed;
+      return { ...parsed, component };
     }
   }
+
+  return { url };
 };

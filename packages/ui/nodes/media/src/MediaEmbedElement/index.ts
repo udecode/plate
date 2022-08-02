@@ -6,5 +6,3 @@ export * from './MediaEmbedElement.styles';
 export * from './MediaEmbedElement';
 export * from './MediaEmbedElement.types';
 export * from './PlateFloatingMedia';
-export * from './Tweet';
-export * from './utils/index';

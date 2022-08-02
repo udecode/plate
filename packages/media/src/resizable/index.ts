@@ -4,3 +4,4 @@
 
 export * from './Resizable';
 export * from './TResizableElement';
+export * from './resizableStore';

@@ -7,7 +7,7 @@ const DAILYMOTION_PREFIX = 'https://www.dailymotion.com/embed/video/';
 const YOUKU_PREFIX = 'https://player.youku.com/embed/';
 const COUB_PREFIX = 'https://coub.com/embed/';
 
-export const parseVideoUrl = (url: string) => {
+export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
   const videoData = videoParser.parse(url);
   if (videoData?.provider && videoData.id) {
     const { id, provider } = videoData;
@@ -24,6 +24,6 @@ export const parseVideoUrl = (url: string) => {
       id,
       provider,
       url: providerUrls[provider],
-    } as EmbedUrlData;
+    };
   }
 };

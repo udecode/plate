@@ -4,7 +4,7 @@ import {
   KeyboardHandler,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
-import { captionGlobalStore } from '../media/index';
+import { captionGlobalStore } from './captionGlobalStore';
 
 export const getOnKeyDownCaption = (pluginKey: string): KeyboardHandler => (
   editor

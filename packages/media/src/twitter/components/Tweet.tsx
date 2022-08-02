@@ -63,7 +63,7 @@ export const Tweet = ({
   return (
     <>
       {isLoading ? loadingComponent : null}
-      <div ref={containerRef} />
+      <div key={tweetId} ref={containerRef} />
     </>
   );
 };

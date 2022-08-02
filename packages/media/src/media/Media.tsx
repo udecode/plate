@@ -1,34 +1,55 @@
-import { CSSProperties } from 'react';
+import { useEffect } from 'react';
 import {
-  createAtomStore,
-  createPlateElementComponent,
-  createStore,
-  SCOPE_ELEMENT,
-  TPath,
+  createComponentAs,
+  createElementAs,
+  HTMLPropsAs,
+  PlateRenderElementProps,
+  useEditorRef,
+  useElement,
+  useElementProps,
+  Value,
 } from '@udecode/plate-core';
+import { ELEMENT_MEDIA_EMBED } from '../media-embed/index';
 import { Resizable } from '../resizable/Resizable';
+import { useMediaStore } from './mediaStore';
+import { parseMediaUrl } from './parseMediaUrl';
 import { TMediaElement } from './types';
 
-export const { resizableStore, useResizableStore } = createAtomStore(
-  {
-    width: 0 as CSSProperties['width'],
-  },
-  { name: 'resizable', scope: SCOPE_ELEMENT }
-);
+export type MediaRootProps = PlateRenderElementProps<Value, TMediaElement> &
+  HTMLPropsAs<'div'> & {
+    pluginKey?: string;
+  };
 
-export const captionGlobalStore = createStore('caption')({
-  /**
-   * When defined, focus end of caption textarea with the same path.
-   */
-  focusEndCaptionPath: null as TPath | null,
+export const useMedia = ({
+  pluginKey = ELEMENT_MEDIA_EMBED,
+  ...props
+}: MediaRootProps): HTMLPropsAs<'iframe'> => {
+  const editor = useEditorRef();
+  const element = useElement<TMediaElement>();
+  const setUrlData = useMediaStore().set.urlData();
+  const { url: elementUrl } = element;
 
-  /**
-   * When defined, focus start of caption textarea with the same path.
-   */
-  focusStartCaptionPath: null as TPath | null,
+  useEffect(() => {
+    const parsed = parseMediaUrl(editor, {
+      pluginKey,
+      url: elementUrl,
+    });
+
+    if (parsed) {
+      setUrlData(parsed);
+    }
+  }, [editor, elementUrl, pluginKey, setUrlData]);
+
+  return useElementProps(props as any);
+};
+
+export const MediaRoot = createComponentAs<
+  PlateRenderElementProps<Value, TMediaElement> & HTMLPropsAs<'div'>
+>((props) => {
+  const htmlProps = useMedia(props);
+
+  return createElementAs('div', htmlProps);
 });
-
-export const MediaRoot = createPlateElementComponent<TMediaElement>();
 
 export const Media = {
   Root: MediaRoot,

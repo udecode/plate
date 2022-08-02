@@ -14,8 +14,8 @@ import {
   ResizableProps as ReResizableProps,
 } from 're-resizable';
 import { useReadOnly } from 'slate-react';
-import { useResizableStore } from '../media/Media';
 import { TMediaElement } from '../media/types';
+import { useResizableStore } from './resizableStore';
 import { TResizableElement } from './TResizableElement';
 
 export interface ResizableProps

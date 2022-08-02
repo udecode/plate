@@ -3,6 +3,7 @@
  */
 
 export * from './createMediaEmbedPlugin';
+export * from './parseIframeUrl';
 export * from './types';
+export * from './components/index';
 export * from './transforms/index';
-export { getIframeUrl } from './getIframeUrl';

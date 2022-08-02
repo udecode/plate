@@ -4,7 +4,7 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 import { useReadOnly, useSelected } from 'slate-react';
-import { useResizableStore } from '../../media/Media';
+import { useResizableStore } from '../../resizable/resizableStore';
 import { useCaptionString } from '../hooks/useCaptionString';
 import { CaptionTextarea } from './CaptionTextarea';
 
