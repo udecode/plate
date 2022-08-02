@@ -4901,9 +4901,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4915,9 +4915,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4933,9 +4933,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4947,9 +4947,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4961,9 +4961,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4975,9 +4975,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -4989,9 +4989,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5041,9 +5041,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5055,9 +5055,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5070,9 +5070,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5084,9 +5084,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5098,9 +5098,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5146,10 +5146,10 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5161,9 +5161,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5175,9 +5175,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5187,9 +5187,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5203,9 +5203,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5232,9 +5232,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5246,9 +5246,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5260,9 +5260,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5276,9 +5276,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5303,9 +5303,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5320,9 +5320,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5335,9 +5335,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5349,9 +5349,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5363,9 +5363,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5377,9 +5377,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5391,9 +5391,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5405,9 +5405,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5422,9 +5422,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5443,10 +5443,10 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5460,9 +5460,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5483,9 +5483,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5500,9 +5500,9 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     react-is: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5525,7 +5525,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-test-utils@workspace:packages/test-utils"
   peerDependencies:
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-hyperscript: ">=0.66.0"
   languageName: unknown
   linkType: soft
@@ -5538,9 +5538,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5555,9 +5555,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5572,9 +5572,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5589,9 +5589,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5607,9 +5607,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5625,9 +5625,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5641,9 +5641,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5661,9 +5661,9 @@ __metadata:
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5678,9 +5678,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5696,9 +5696,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5715,9 +5715,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5732,9 +5732,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5744,9 +5744,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5762,9 +5762,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5781,9 +5781,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5799,9 +5799,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5821,9 +5821,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5840,9 +5840,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5856,9 +5856,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5869,9 +5869,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5884,9 +5884,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
 
@@ -5904,9 +5904,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5924,9 +5924,9 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5959,10 +5959,10 @@ __metadata:
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
@@ -5976,10 +5976,10 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
+    slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.74.2"
+    slate-react: ">=0.79.0"
     styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
