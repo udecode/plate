@@ -8,6 +8,7 @@ import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';
 import { KEY_INLINE_VOID } from './createInlineVoidPlugin';
 import { KEY_INSERT_DATA } from './createInsertDataPlugin';
+import { KEY_SELECTION } from './createSelectionPlugin';
 import { withPlate } from './withPlate';
 
 const coreKeys = [
@@ -16,6 +17,7 @@ const coreKeys = [
   KEY_EVENT_EDITOR,
   KEY_INLINE_VOID,
   KEY_INSERT_DATA,
+  KEY_SELECTION,
   KEY_DESERIALIZE_HTML,
   KEY_DESERIALIZE_AST,
 ];

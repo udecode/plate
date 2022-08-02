@@ -13,10 +13,12 @@ import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
+import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
   increase?: boolean;
   at?: GetNodeEntriesOptions['at'];
+  enableResetOnShiftTab?: boolean;
 };
 
 export const moveListItems = <V extends Value>(
@@ -24,6 +26,7 @@ export const moveListItems = <V extends Value>(
   {
     increase = true,
     at = editor.selection ?? undefined,
+    enableResetOnShiftTab,
   }: MoveListItemsOptions = {}
 ) => {
   const _nodes = getNodeEntries(editor, {
@@ -68,16 +71,25 @@ export const moveListItems = <V extends Value>(
 
       const listItem = getParentNode(editor, licPath);
       if (!listItem) return;
-      const listEntry = getParentNode(editor, listItem[1]);
+
+      const parentList = getParentNode(editor, listItem[1]);
+      if (!parentList) return;
 
       if (increase) {
         moveListItemDown(editor, {
-          list: listEntry as any,
+          list: parentList as any,
           listItem: listItem as any,
         });
-      } else if (listEntry && isListNested(editor, listEntry[1])) {
+      } else if (isListNested(editor, parentList[1])) {
+        // un-indent a sub-list item
         moveListItemUp(editor, {
-          list: listEntry as any,
+          list: parentList as any,
+          listItem: listItem as any,
+        });
+      } else if (enableResetOnShiftTab) {
+        // unindenting a top level list item, effectively breaking apart the list.
+        removeFirstListItem(editor, {
+          list: parentList as any,
           listItem: listItem as any,
         });
       }

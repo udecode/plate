@@ -1,16 +1,18 @@
 import React, { FC } from 'react';
-import { plateIdAtom } from '../../atoms/plateIdAtom';
+import { plateIdAtom, SCOPE_PLATE } from '../../atoms/plateIdAtom';
 import { usePlatesStoreEffect } from '../../hooks/plate/usePlatesStoreEffect';
 import { usePlatesSelectors } from '../../stores/plate/platesStore';
-import { JotaiProvider } from '../../utils/misc/jotai';
+import { JotaiProvider, Scope } from '../../utils/misc/jotai';
 import { withHOC } from '../../utils/react/withHOC';
 
 export const PlateProvider = ({
   id = 'main',
   children,
+  scope = SCOPE_PLATE,
 }: {
   id?: string;
   children: any;
+  scope?: Scope;
 }) => {
   const hasId = usePlatesSelectors.has(id);
 
@@ -19,7 +21,7 @@ export const PlateProvider = ({
   if (!hasId) return null;
 
   return (
-    <JotaiProvider key={id} initialValues={[[plateIdAtom, id]]}>
+    <JotaiProvider key={id} initialValues={[[plateIdAtom, id]]} scope={scope}>
       {children}
     </JotaiProvider>
   );

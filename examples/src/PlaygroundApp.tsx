@@ -64,6 +64,7 @@ import { withStyledDraggables } from './dnd/withStyledDraggables';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from './forced-layout/forcedLayoutPlugin';
 import { indentPlugin } from './indent/indentPlugin';
+import { linkPlugin } from './link/linkPlugin';
 import { MENTIONABLES } from './mention/mentionables';
 import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
@@ -104,7 +105,7 @@ const App = () => {
           createHeadingPlugin(),
           createImagePlugin(),
           createHorizontalRulePlugin(),
-          createLinkPlugin(),
+          createLinkPlugin(linkPlugin),
           createListPlugin(),
           createTablePlugin(),
           createMediaEmbedPlugin(),

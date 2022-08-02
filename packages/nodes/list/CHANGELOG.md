@@ -1,5 +1,39 @@
 # @udecode/plate-list
 
+## 16.0.0
+
+## 15.0.6
+
+### Patch Changes
+
+- [#1728](https://github.com/udecode/plate/pull/1728) by [@dylans](https://github.com/dylans) – Retain order of blocks when converting to a list
+
+## 15.0.3
+
+## 15.0.0
+
+## 14.4.3
+
+### Patch Changes
+
+- [#1693](https://github.com/udecode/plate/pull/1693) by [@zbeyens](https://github.com/zbeyens) – fix: list plugin was preventing default event even when selection was not containing any list node
+
+## 14.4.2
+
+## 14.4.0
+
+### Minor Changes
+
+- [#1676](https://github.com/udecode/plate/pull/1676) by [@zakishaheen](https://github.com/zakishaheen) – Allow escape unindent of the first element of a list
+
+## 14.1.0
+
+### Minor Changes
+
+- [#1663](https://github.com/udecode/plate/pull/1663) by [@zakishaheen](https://github.com/zakishaheen) – Allow un-indenting top level list items
+
+## 14.0.2
+
 ## 14.0.0
 
 ### Minor Changes

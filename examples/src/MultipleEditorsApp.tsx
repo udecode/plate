@@ -6,8 +6,8 @@ import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbar
 import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { imagePlugins } from './image/imagePlugins';
-import { imageValue } from './image/imageValue';
+import { imagePlugins } from './media/imagePlugins';
+import { imageValue } from './media/mediaValue';
 import { Toolbar } from './toolbar/Toolbar';
 import { MyValue } from './typescript/plateTypes';
 

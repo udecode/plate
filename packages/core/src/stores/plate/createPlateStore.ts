@@ -16,6 +16,7 @@ export const createPlateStore = <
     id: 'main',
     value: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
     editor: null,
+    isReady: false,
     isRendered: false,
     keyEditor: 1,
     keyPlugins: 1,
@@ -48,7 +49,7 @@ export const createPlateStore = <
         _set[key](prev + 1);
       },
     }))
-    .extendActions((_set, _get) => ({
+    .extendActions((_set) => ({
       /**
        * Redecorate the editor.
        */

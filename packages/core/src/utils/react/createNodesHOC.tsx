@@ -3,7 +3,7 @@ import { castArray } from 'lodash';
 import { AnyObject } from '../../types/misc/AnyObject';
 import { createNodeHOC } from './createNodeHOC';
 
-export type Options<T> = Partial<T> &
+export type CreateHOCOptions<T> = Partial<T> &
   AnyObject & {
     /**
      * Set HOC by key.
@@ -17,11 +17,14 @@ export type Options<T> = Partial<T> &
   };
 
 const createHOC = <T,>(withHOC: any) => {
-  return (components: any, options: Options<T> | Options<T>[]) => {
+  return (
+    components: any,
+    options: CreateHOCOptions<T> | CreateHOCOptions<T>[]
+  ) => {
     const _components = { ...components };
     const optionsByKey = {};
 
-    const optionsList = castArray<Options<T>>(options);
+    const optionsList = castArray<CreateHOCOptions<T>>(options);
 
     optionsList.forEach(({ key, keys, ...opt }) => {
       const _keys: string[] = key ? [key] : keys ?? Object.keys(_components);

@@ -1,11 +1,10 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { withPlateEventProvider } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
-import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';
-import { useBalloonToolbarPopper } from './useBalloonToolbarPopper';
+import { useFloatingToolbar } from './useFloatingToolbar';
 
 export const BalloonToolbar = withPlateEventProvider(
   (props: BalloonToolbarProps) => {
@@ -14,37 +13,29 @@ export const BalloonToolbar = withPlateEventProvider(
       theme = 'dark',
       arrow = false,
       portalElement,
-      popperOptions: _popperOptions = {},
+      floatingOptions,
     } = props;
 
-    const popperRef = useRef<HTMLDivElement>(null);
-
-    const popperOptions: UsePopperPositionOptions = {
-      popperElement: popperRef.current,
-      placement: 'top' as any,
-      offset: [0, 8],
-      ..._popperOptions,
-    };
-
-    const { styles: popperStyles, attributes } = useBalloonToolbarPopper(
-      popperOptions
-    );
+    const { floating, style, placement, open } = useFloatingToolbar({
+      floatingOptions,
+    });
 
     const styles = getBalloonToolbarStyles({
-      popperOptions,
+      placement,
       theme,
       arrow,
       ...props,
     });
 
+    if (!open) return null;
+
     return (
       <PortalBody element={portalElement}>
         <ToolbarBase
-          ref={popperRef}
           css={styles.root.css}
           className={styles.root.className}
-          style={popperStyles.popper}
-          {...attributes.popper}
+          ref={floating}
+          style={style}
         >
           {children}
         </ToolbarBase>

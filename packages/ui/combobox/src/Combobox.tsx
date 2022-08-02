@@ -11,12 +11,14 @@ import {
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
 import { useEditorState, useEventEditorSelectors } from '@udecode/plate-core';
-import { PortalBody } from '@udecode/plate-styled-components';
 import {
+  flip,
   getRangeBoundingClientRect,
-  usePopperPosition,
-  virtualReference,
-} from '@udecode/plate-ui-popper';
+  offset,
+  shift,
+  useVirtualFloating,
+} from '@udecode/plate-floating';
+import { PortalBody } from '@udecode/plate-styled-components';
 import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
@@ -38,8 +40,7 @@ const ComboboxContent = <TData extends Data = NoData>(
   const targetRange = useComboboxSelectors.targetRange();
   const filteredItems = useComboboxSelectors.filteredItems();
   const highlightedIndex = useComboboxSelectors.highlightedIndex();
-  const popperContainer = useComboboxSelectors.popperContainer?.();
-  const popperOptions = useComboboxSelectors.popperOptions?.();
+  const floatingOptions = useComboboxSelectors.floatingOptions?.();
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;
@@ -49,8 +50,6 @@ const ComboboxContent = <TData extends Data = NoData>(
   const sort = activeComboboxStore.use.sort?.();
   const maxSuggestions =
     activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
-
-  const popperRef = React.useRef<any>(null);
 
   // Update items
   useEffect(() => {
@@ -73,37 +72,36 @@ const ComboboxContent = <TData extends Data = NoData>(
 
   // Get target range rect
   const getBoundingClientRect = useCallback(
-    () => getRangeBoundingClientRect(editor, targetRange) ?? virtualReference,
+    () => getRangeBoundingClientRect(editor, targetRange),
     [editor, targetRange]
   );
 
   // Update popper position
-  const { styles: popperStyles, attributes } = usePopperPosition({
-    popperElement: popperRef.current,
-    popperContainer,
-    popperOptions,
+  const { style, floating } = useVirtualFloating({
     placement: 'bottom-start',
     getBoundingClientRect,
-    offset: [0, 4],
+    middleware: [offset(4), shift(), flip()],
+    ...floatingOptions,
   });
 
   const menuProps = combobox
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
-  const { root, item: styleItem, highlightedItem } = getComboboxStyles(
-    props as any
-  );
+  const {
+    root,
+    item: styleItem,
+    highlightedItem,
+  } = getComboboxStyles(props as any);
 
   return (
     <PortalBody element={portalElement}>
       <ul
         {...menuProps}
-        ref={popperRef}
-        style={popperStyles.popper}
+        ref={floating}
+        style={style}
         css={root.css}
         className={root.className}
-        {...attributes.popper}
       >
         {Component ? Component({ store: activeComboboxStore }) : null}
 

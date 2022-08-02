@@ -1,11 +1,11 @@
 import {
-  getAboveNode,
-  HotkeyPlugin,
+  getPluginType,
   Hotkeys,
   isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
   select,
+  someNode,
   unhangRange,
   Value,
   WithPlatePlugin,
@@ -13,14 +13,19 @@ import {
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
+import { ELEMENT_LIC } from './createListPlugin';
 import { moveListItems, toggleList } from './transforms';
+import { ListPlugin } from './types';
 
 export const onKeyDownList = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  { type, options: { hotkey } }: WithPlatePlugin<HotkeyPlugin, V, E>
+  {
+    type,
+    options: { hotkey, enableResetOnShiftTab },
+  }: WithPlatePlugin<ListPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
@@ -36,7 +41,7 @@ export const onKeyDownList = <
         ? { anchor: selection.focus, focus: selection.anchor }
         : { anchor: selection.anchor, focus: selection.focus };
 
-      // This is a workaround for a Slate bug 
+      // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
       anchor.offset = 0;
       const unHungRange = unhangRange(editor, { anchor, focus });
@@ -47,13 +52,17 @@ export const onKeyDownList = <
     }
 
     // check if we're in a list context.
-    const listSelected = getAboveNode(editor, {
-      at: editor.selection,
+    const listSelected = someNode(editor, {
+      match: { type: getPluginType(editor, ELEMENT_LIC) },
     });
 
     if (workRange && listSelected) {
       e.preventDefault();
-      moveListItems(editor, { at: workRange, increase: isTab });
+      moveListItems(editor, {
+        at: workRange,
+        increase: isTab,
+        enableResetOnShiftTab,
+      });
       return true;
     }
   }

@@ -45,10 +45,9 @@ import {
   CodeSyntaxLeaf,
 } from '@udecode/plate-ui-code-block';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
-import { ImageElement } from '@udecode/plate-ui-image';
 import { LinkElement } from '@udecode/plate-ui-link';
 import { TodoListElement } from '@udecode/plate-ui-list';
-import { MediaEmbedElement } from '@udecode/plate-ui-media-embed';
+import { ImageElement, MediaEmbedElement } from '@udecode/plate-ui-media';
 import { MentionElement, MentionInputElement } from '@udecode/plate-ui-mention';
 import {
   TableCellElement,

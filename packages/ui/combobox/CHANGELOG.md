@@ -1,5 +1,21 @@
 # @udecode/plate-ui-combobox
 
+## 16.0.0
+
+## 15.0.4
+
+### Patch Changes
+
+- [#1716](https://github.com/udecode/plate/pull/1716) by [@dylans](https://github.com/dylans) – Allow ComboBox and Mentions to stay on screen / flip when at bottom of viewport
+
+## 15.0.3
+
+## 15.0.0
+
+## 14.4.2
+
+## 14.0.2
+
 ## 14.0.0
 
 ## 13.8.0

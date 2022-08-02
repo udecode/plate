@@ -3,6 +3,7 @@
  */
 
 export * from './createAutoformatPlugin';
+export * from './onKeyDownAutoformat';
 export * from './types';
 export * from './withAutoformat';
 export * from './rules/index';

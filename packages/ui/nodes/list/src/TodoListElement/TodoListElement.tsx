@@ -43,6 +43,7 @@ export const TodoListElement = <V extends Value>(
           type="checkbox"
           checked={!!checked}
           onChange={(e) => {
+            if (readOnly) return;
             const path = findNodePath(editor, element);
             if (!path) return;
 

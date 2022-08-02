@@ -87,6 +87,7 @@ export const serializeHtml = <V extends Value>(
             nodes: node.children as EDescendant<V>[],
             preserveClassNames,
             stripWhitespace,
+            convertNewLinesToHtmlBr,
           }),
           attributes: { 'data-slate-node': 'element', ref: null },
           editor,

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-button",
-  "version": "14.0.0",
+  "version": "16.0.0",
   "description": "Button UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,15 +19,16 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "14.0.0",
-    "@udecode/plate-styled-components": "14.0.0"
+    "@udecode/plate-button": "16.0.0",
+    "@udecode/plate-core": "16.0.0",
+    "@udecode/plate-styled-components": "16.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
+    "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2",
+    "slate-react": ">=0.79.0",
     "styled-components": ">=5.0.0"
   },
   "keywords": [

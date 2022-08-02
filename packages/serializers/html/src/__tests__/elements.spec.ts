@@ -2,9 +2,9 @@ import { createParagraphPlugin } from '@udecode/plate';
 import { createAlignPlugin } from '@udecode/plate-alignment/src/index';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/index';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/index';
-import { createImagePlugin } from '@udecode/plate-image/src/index';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createListPlugin } from '@udecode/plate-list/src/index';
+import { createImagePlugin } from '@udecode/plate-media/src/index';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '@udecode/plate-table/src/index';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
@@ -56,7 +56,7 @@ it('serialize link to html', () => {
       ],
     })
   ).toBe(
-    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-a">link</a> part.'
+    'Some paragraph of text with <a class="slate-a" href="https://theuselessweb.com/">link</a> part.'
   );
 });
 

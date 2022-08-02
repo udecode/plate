@@ -10,3 +10,4 @@ export * from './Plate';
 export * from './PlateEventProvider';
 export * from './PlateProvider';
 export * from './PlateTest';
+export * from './SlateChildren';

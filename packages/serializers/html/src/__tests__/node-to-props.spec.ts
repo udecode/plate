@@ -1,5 +1,5 @@
-import { createImagePlugin } from '@udecode/plate-image/src/index';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
+import { createImagePlugin } from '@udecode/plate-media/src/index';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
 import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
@@ -43,7 +43,7 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a href="https://theuselessweb.com/" class="slate-a" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-a">link</a>.'
+    'An external <a target="_blank" class="slate-a" href="https://theuselessweb.com/">link</a> and an internal <a class="slate-a" href="https://slatejs.org/">link</a>.'
   );
 });
 

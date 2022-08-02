@@ -1,5 +1,24 @@
 # @udecode/plate-table-ui
 
+## 16.0.0
+
+### Major Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `TableElementBase` props:
+    - replace `onRenderContainer` by `floatingOptions`
+  - `TablePopover` is now a floating instead of tippy
+  - deps:
+    - replaced `plate-ui-popover` by `plate-floating`
+
+## 15.0.3
+
+## 15.0.0
+
+## 14.4.2
+
+## 14.0.2
+
 ## 14.0.0
 
 ## 13.8.0

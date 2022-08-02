@@ -20,14 +20,13 @@ import { highlightFiles } from './highlight/code-highlightFiles';
 import { horizontalRuleFiles } from './horizontal-rule/code-horizontalRuleFiles';
 import { hugeDocumentFiles } from './huge-document/code-hugeDocumentFiles';
 import { iframeFiles } from './iframe/code-iframeFiles';
-import { imageFiles } from './image/code-imageFiles';
 import { indentFiles } from './indent/code-indentFiles';
 import { indentListFiles } from './indent-list/code-indentListFiles';
 import { kbdFiles } from './kbd/code-kbdFiles';
 import { lineHeightFiles } from './line-height/code-lineHeightFiles';
 import { linkFiles } from './link/code-linkFiles';
 import { listFiles } from './list/code-listFiles';
-import { mediaEmbedFiles } from './media-embed/code-mediaEmbedFiles';
+import { mediaFiles } from './media/code-mediaFiles';
 import { mentionFiles } from './mention/code-mentionFiles';
 import { multipleEditorsFiles } from './multiple-editors/code-multipleEditorsFiles';
 import { placeholderFiles } from './placeholder/code-placeholderFiles';
@@ -68,14 +67,13 @@ export const rootFiles = {
   ...horizontalRuleFiles,
   ...hugeDocumentFiles,
   ...iframeFiles,
-  ...imageFiles,
   ...indentFiles,
   ...indentListFiles,
   ...kbdFiles,
   ...lineHeightFiles,
   ...linkFiles,
   ...listFiles,
-  ...mediaEmbedFiles,
+  ...mediaFiles,
   ...mentionFiles,
   ...multipleEditorsFiles,
   ...placeholderFiles,

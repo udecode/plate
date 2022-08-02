@@ -3,4 +3,5 @@
  */
 
 export * from './useComposedRef';
+export * from './useOnClickOutside';
 export * from './useWrapElement';

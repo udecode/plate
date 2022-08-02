@@ -9,8 +9,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "change-case": "^4.1.2",
     "examples": "workspace:^",
-    "next": "^12.1.6"
+    "next": "^12.1.6",
+    "react-pro-sidebar": "^0.7.1",
+    "sass": "^1.54.0"
   },
   "browserslist": {
     "production": [

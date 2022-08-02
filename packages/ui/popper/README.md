@@ -1,11 +1,1 @@
-# Plate popper
-
-This package implements the popper utilities for Plate.
-
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
-## License
-
-[MIT](../../../LICENSE)
+Deprecated, use instead [@udecode/plate-floating](https://npmjs.com/package/@udecode/plate-floating)
