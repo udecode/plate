@@ -120,9 +120,9 @@ export const toggleList = <V extends Value>(
         const _nodes = getNodeEntries<TElement>(editor, {
           mode: 'all',
         });
-        const nodes = Array.from(_nodes)
-          .filter(([, path]) => path.length === rootPathLength + 1)
-          .reverse();
+        const nodes = Array.from(_nodes).filter(
+          ([, path]) => path.length === rootPathLength + 1
+        );
 
         nodes.forEach((n) => {
           if (getListTypes(editor).includes(n[0].type)) {

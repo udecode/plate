@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 15.0.6
+
+### Patch Changes
+
+- [#1728](https://github.com/udecode/plate/pull/1728) by [@dylans](https://github.com/dylans) – Retain order of blocks when converting to a list
+
 ## 15.0.3
 
 ## 15.0.0
