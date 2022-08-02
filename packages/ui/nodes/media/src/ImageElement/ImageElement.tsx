@@ -2,9 +2,8 @@
 import React from 'react';
 import { Box } from '@udecode/plate-core';
 import { ElementPopover } from '@udecode/plate-floating';
-import { Caption, Image, Media } from '@udecode/plate-media';
+import { Caption, ELEMENT_IMAGE, Image, Media } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
-import { ELEMENT_IMAGE } from '../../../../../media/src/image/createImagePlugin';
 import { PlateFloatingMedia } from '../MediaEmbedElement/index';
 import { mediaFloatingOptions } from '../mediaFloatingOptions';
 import { getImageElementStyles } from './ImageElement.styles';

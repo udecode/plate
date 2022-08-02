@@ -4,10 +4,10 @@ import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/index';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/index';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createListPlugin } from '@udecode/plate-list/src/index';
+import { createImagePlugin } from '@udecode/plate-media/src/index';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '@udecode/plate-table/src/index';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { createImagePlugin } from 'packages/media/src/image/index';
 import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
 

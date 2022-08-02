@@ -14,6 +14,7 @@ import {
   createHeadingPlugin,
   createPlugins,
 } from '@udecode/plate-headless';
+import { ImageToolbarButton } from '@udecode/plate-ui-media/src/index';
 import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
 import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
 import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
@@ -50,7 +51,6 @@ import { createTodoListPlugin } from '../../../nodes/list/src/todo-list/createTo
 import { createMentionPlugin } from '../../../nodes/mention/src/createMentionPlugin';
 import { createTablePlugin } from '../../../nodes/table/src/createTablePlugin';
 import { SearchHighlightToolbar } from '../../../ui/find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
-import { ImageToolbarButton } from '../../../ui/nodes/image/src/ImageToolbarButton/ImageToolbarButton';
 import { LineHeightToolbarDropdown } from '../../../ui/nodes/line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
 import { LinkToolbarButton } from '../../../ui/nodes/link/src/LinkToolbarButton/LinkToolbarButton';
 import { MediaEmbedToolbarButton } from '../../../ui/nodes/media/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';

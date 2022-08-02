@@ -48,8 +48,8 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             // @ts-ignore
             css={styles.resizable?.css}
             className={styles.resizable?.className}
-            maxWidth={provider === 'twitter' ? 550 : undefined}
-            minWidth={provider === 'twitter' ? 300 : undefined}
+            maxWidth={provider === 'twitter' ? 550 : '100%'}
+            minWidth={provider === 'twitter' ? 300 : 100}
             handleComponent={{
               left: (
                 <Box
