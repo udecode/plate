@@ -1,3 +1,114 @@
+# 16.0.0
+
+## @udecode/plate@16.0.0
+## @udecode/plate-headless@16.0.0
+
+### Major Changes
+
+-   [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+    -   deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
+
+ ## @udecode/plate-media@16.0.0
+
+### Major Changes
+
+-   [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+    -   removed:
+        -   `useImageElement` for `useElement`
+        -   `MediaEmbedUrlInput` for `FloatingMediaUrlInput`
+        -   `parseEmbedUrl` for `parseMediaUrl`
+        -   `EmbedProviders`
+    -   renamed:
+        -   `ImageImg` to `Image`
+        -   `ImageCaptionTextarea` to `CaptionTextarea`
+        -   `useImageCaptionString` to `useCaptionString`
+        -   `ImageResizable` to `Resizable`
+
+## @udecode/plate-ui-table@16.0.0
+
+### Major Changes
+
+-   [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+   -   `TableElementBase` props:
+       -   replace `onRenderContainer` by `floatingOptions`
+   -   `TablePopover` is now a floating instead of tippy
+   -   deps:
+       -   replaced `plate-ui-popover` by `plate-floating`
+
+## @udecode/plate-ui@16.0.0
+
+### Major Changes
+
+-   [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+   -   deprecate `@udecode/plate-ui-popover` for `@udecode/plate-floating`
+
+# 15.0.0
+
+## @udecode/plate-combobox@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+    -   deps:
+        -   replaced `@udecode/plate-ui-popper` by `@udecode/plate-floating`
+    -   `comboboxStore`:
+        -   removed `popperContainer`, use `floatingOptions` instead
+        -   removed `popperOptions`, use `floatingOptions` instead
+
+## @udecode/plate-link@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+    -   `createLinkPlugin`
+        -   removed `onKeyDownLink` for floating link
+        -   removed `hotkey` for `triggerFloatingLinkHotkeys`
+    -   removed:
+        -   `getAndUpsertLink` for `upsertLink`
+        -   `upsertLinkAtSelection` for `upsertLink`
+    -   `LinkToolbarButton`:
+        -   `onClick` now calls `triggerFloatingLink`
+
+## @udecode/plate-table@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+   -   remove `addRow` for `insertTableRow`
+   -   remove `addColumn` for `insertTableColumn`
+
+## @udecode/plate@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+    -   remove `@udecode/plate-ui-popper` dep for `@udecode/plate-floating`
+
+## @udecode/plate-ui-button@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+    -   moved `Button` to `@udecode/plate-button`
+    -   `Button` is now unstyled
+
+## @udecode/plate-ui-popper@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+   -   deprecated, use instead `@udecode/plate-floating`
+
+## @udecode/plate-ui-toolbar@15.0.0
+
+### Major Changes
+
+-   [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+   -   remove `@udecode/plate-ui-popper` and `react-popper` deps for `@udecode/plate-floating`
+   -   `BalloonToolbarProps`:
+       -   removed `popperOptions` for `floatingOptions`
+   -   remove `useBalloonToolbarPopper` for `useFloatingToolbar`
+
 # 14.0.0
 
 ## @udecode/plate-core@14.0.0
