@@ -11,6 +11,7 @@ import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFi
 import { mediaEmbedAppCode } from '../sandpack/files/code-MediaEmbedApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { mediaEmbedFiles } from '../sandpack/files/media-embed/code-mediaEmbedFiles';
+import { mediaFiles } from "../sandpack/files/media/code-mediaFiles";
 import { selectOnBackspacePluginFile } from '../sandpack/files/select-on-backspace/code-selectOnBackspacePlugin';
 import { toolbarFile } from '../sandpack/files/toolbar/code-Toolbar';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
@@ -26,7 +27,7 @@ export const MediaSandpack = () => (
     }}
     appCode={mediaEmbedAppCode}
     files={{
-      ...mediaEmbedFiles,
+      ...mediaFiles,
       ...selectOnBackspacePluginFile,
       ...toolbarFile,
       ...basicNodesFiles,
