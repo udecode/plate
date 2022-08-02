@@ -1,5 +1,16 @@
 # @udecode/plate
 
+## 16.0.0
+
+### Major Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+
+  - deprecate `@udecode/plate-ui-popover` for `@udecode/plate-floating`
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
+
 ## 15.0.6
 
 ## 15.0.5

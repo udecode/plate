@@ -1,5 +1,19 @@
 # @udecode/plate-ui-media
 
+## 16.0.0
+
+### Minor Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `ImageElement`:
+    - now uses composition pattern
+    - displays `PlateFloatingMedia` on select
+  - `MediaEmbedElement`:
+    - now uses composition pattern
+    - displays `PlateFloatingMedia` on select
+  - `PlateFloatingMedia`:
+    - edit link button
+    - delete node button
 
 ## @udecode/plate-ui-media-embed
 
