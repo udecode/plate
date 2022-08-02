@@ -1,5 +1,12 @@
 # @udecode/plate-ui-button
 
+## 16.0.0
+
+### Patch Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `focus` editor after removing node on click
+
 ## 15.0.3
 
 ## 15.0.0

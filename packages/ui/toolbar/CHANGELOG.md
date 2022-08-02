@@ -1,5 +1,14 @@
 # @udecode/plate-toolbar
 
+## 16.0.0
+
+### Minor Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `FloatingVerticalDivider`
+  - new dep:
+    - `@udecode/plate-ui-button`
+
 ## 15.0.3
 
 ## 15.0.0

@@ -1,5 +1,13 @@
 # @udecode/plate-floating
 
+## 16.0.0
+
+### Minor Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `Popover`: Popover displayed over children, rendering `content`
+  - `ElementPopover`: Popover displayed over an element if not read-only, element selected
+
 ## 15.0.3
 
 ## 15.0.0
