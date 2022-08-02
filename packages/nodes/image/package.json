@@ -18,10 +18,6 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
-  "dependencies": {
-    "@udecode/plate-core": "15.0.3",
-    "@udecode/plate-media": "15.0.3"
-  },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",

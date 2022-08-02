@@ -1,11 +1,6 @@
-import { TDescendant, TElement } from '@udecode/plate-core';
-import { MediaPlugin } from '../media/index';
+import { MediaPlugin, TMediaElement } from '../media/index';
 
-export interface TImageElement extends TElement {
-  url: string;
-  width?: number;
-  caption?: TDescendant[];
-}
+export interface TImageElement extends TMediaElement {}
 
 export interface ImagePlugin extends MediaPlugin {
   /**

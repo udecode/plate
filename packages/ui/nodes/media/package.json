@@ -21,10 +21,10 @@
   "dependencies": {
     "@udecode/plate-core": "15.0.3",
     "@udecode/plate-floating": "15.0.3",
-    "@udecode/plate-link": "15.0.3",
+    "@udecode/plate-link": "15.0.5",
     "@udecode/plate-media": "15.0.3",
     "@udecode/plate-styled-components": "15.0.3",
-    "@udecode/plate-ui-link": "15.0.3",
+    "@udecode/plate-ui-link": "15.0.5",
     "@udecode/plate-ui-toolbar": "15.0.3",
     "js-video-url-parser": "0.5.1"
   },

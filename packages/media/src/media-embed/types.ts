@@ -1,5 +1,3 @@
-import { TElement } from '@udecode/plate-core';
+import { TMediaElement } from '../media/index';
 
-export interface TMediaEmbedElement extends TElement {
-  url: string;
-}
+export interface TMediaEmbedElement extends TMediaElement {}
