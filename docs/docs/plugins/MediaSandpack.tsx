@@ -8,10 +8,10 @@ import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
 import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
 import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
+import { mediaAppCode } from "../sandpack/files/code-MediaApp";
 import { mediaEmbedAppCode } from '../sandpack/files/code-MediaEmbedApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { mediaEmbedFiles } from '../sandpack/files/media-embed/code-mediaEmbedFiles';
-import { mediaFiles } from "../sandpack/files/media/code-mediaFiles";
+import { mediaFiles } from '../sandpack/files/media/code-mediaFiles';
 import { selectOnBackspacePluginFile } from '../sandpack/files/select-on-backspace/code-selectOnBackspacePlugin';
 import { toolbarFile } from '../sandpack/files/toolbar/code-Toolbar';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
@@ -25,7 +25,7 @@ export const MediaSandpack = () => (
       ...plateTestUtilsDeps,
       ...toolbarDeps,
     }}
-    appCode={mediaEmbedAppCode}
+    appCode={mediaAppCode}
     files={{
       ...mediaFiles,
       ...selectOnBackspacePluginFile,
