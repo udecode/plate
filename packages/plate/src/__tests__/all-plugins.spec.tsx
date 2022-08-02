@@ -14,6 +14,7 @@ import {
   createHeadingPlugin,
   createPlugins,
 } from '@udecode/plate-headless';
+import { ImageToolbarButton } from '@udecode/plate-ui-media/src/index';
 import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
 import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
 import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
@@ -38,22 +39,21 @@ import { createNormalizeTypesPlugin } from '../../../editor/normalizers/src/crea
 import { createResetNodePlugin } from '../../../editor/reset-node/src/createResetNodePlugin';
 import { createSelectOnBackspacePlugin } from '../../../editor/select/src/createSelectOnBackspacePlugin';
 import { createTrailingBlockPlugin } from '../../../editor/trailing-block/src/createTrailingBlockPlugin';
+import { createImagePlugin } from '../../../media/src/image/createImagePlugin';
+import { createMediaEmbedPlugin } from '../../../media/src/media-embed/createMediaEmbedPlugin';
 import { createAlignPlugin } from '../../../nodes/alignment/src/createAlignPlugin';
 import { createBasicMarksPlugin } from '../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import { createBlockquotePlugin } from '../../../nodes/block-quote/src/createBlockquotePlugin';
 import { createHighlightPlugin } from '../../../nodes/highlight/src/createHighlightPlugin';
-import { createImagePlugin } from '../../../nodes/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../nodes/link/src/createLinkPlugin';
 import { createListPlugin } from '../../../nodes/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../nodes/list/src/todo-list/createTodoListPlugin';
-import { createMediaEmbedPlugin } from '../../../nodes/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../../../nodes/mention/src/createMentionPlugin';
 import { createTablePlugin } from '../../../nodes/table/src/createTablePlugin';
 import { SearchHighlightToolbar } from '../../../ui/find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
-import { ImageToolbarButton } from '../../../ui/nodes/image/src/ImageToolbarButton/ImageToolbarButton';
 import { LineHeightToolbarDropdown } from '../../../ui/nodes/line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
 import { LinkToolbarButton } from '../../../ui/nodes/link/src/LinkToolbarButton/LinkToolbarButton';
-import { MediaEmbedToolbarButton } from '../../../ui/nodes/media-embed/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
+import { MediaEmbedToolbarButton } from '../../../ui/nodes/media/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
 import { MentionCombobox } from '../../../ui/nodes/mention/src/MentionCombobox';
 import { createPlateUI } from '../../../ui/plate/src/utils/createPlateUI';
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';

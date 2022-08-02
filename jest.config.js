@@ -19,7 +19,7 @@ const getTsConfigBasePaths = () => {
     : {};
 };
 
-const aliases = require(`${process.cwd()}/config/aliases-plate`);
+const aliases = require(`${appRoot}/config/aliases-plate`);
 
 const modules = {};
 

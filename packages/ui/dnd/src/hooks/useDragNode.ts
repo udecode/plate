@@ -1,5 +1,4 @@
-import { useDrag } from 'react-dnd';
-import { DragSourceHookSpec } from 'react-dnd/src/hooks/types';
+import { DragSourceHookSpec, useDrag } from 'react-dnd';
 import { TEditor, Value } from '@udecode/plate-core';
 import { DragItemNode } from '../types';
 

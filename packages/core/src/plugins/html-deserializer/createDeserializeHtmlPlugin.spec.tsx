@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
+import { createMediaEmbedPlugin } from '../../../../media/src/media-embed/createMediaEmbedPlugin';
 import { createBoldPlugin } from '../../../../nodes/basic-marks/src/createBoldPlugin';
 import { createHeadingPlugin } from '../../../../nodes/heading/src/createHeadingPlugin';
 import { createLinkPlugin } from '../../../../nodes/link/src/createLinkPlugin';
-import { createMediaEmbedPlugin } from '../../../../nodes/media-embed/src/createMediaEmbedPlugin';
 import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';

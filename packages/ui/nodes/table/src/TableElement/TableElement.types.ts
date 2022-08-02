@@ -1,7 +1,7 @@
-import { RenderFunction, Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-core';
+import { UseFloatingProps } from '@udecode/plate-floating';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { TTableElement } from '@udecode/plate-table';
-import { PopoverProps } from '@udecode/plate-ui-popover';
 import { CSSProp } from 'styled-components';
 
 export interface TableElementStyleProps<V extends Value>
@@ -18,13 +18,7 @@ export interface TableElementProps<V extends Value>
   /**
    * Transform node column sizes
    */
-  popoverProps?: PopoverProps;
+  floatingOptions?: UseFloatingProps;
 
   transformColSizes?: (colSizes: number[]) => number[];
-
-  /**
-   * An override to render the table container.
-   * @default TablePopover
-   */
-  onRenderContainer?: RenderFunction<TableElementProps<V>>;
 }

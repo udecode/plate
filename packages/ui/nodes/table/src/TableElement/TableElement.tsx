@@ -12,7 +12,7 @@ import { TableElementProps } from './TableElement.types';
 
 export const TableElementBase = <V extends Value>({
   transformColSizes,
-  onRenderContainer: Popover = TablePopover,
+  floatingOptions,
   ...props
 }: TableElementProps<V>) => {
   const { attributes, children, nodeProps, element } = props;
@@ -35,24 +35,25 @@ export const TableElementBase = <V extends Value>({
   useSelectedCells();
 
   return (
-    <Popover {...props}>
-      <table
-        {...attributes}
-        css={root.css}
-        className={root.className}
-        {...rootProps}
-        {...nodeProps}
-      >
-        <colgroup>
-          {colSizes.map((width, index) => (
-            <col key={index} style={width ? { width } : undefined} />
-          ))}
-        </colgroup>
+    <table
+      {...attributes}
+      css={root.css}
+      className={root.className}
+      {...rootProps}
+      {...nodeProps}
+    >
+      <colgroup>
+        {colSizes.map((width, index) => (
+          <col key={index} style={width ? { width } : undefined} />
+        ))}
+      </colgroup>
+
+      <TablePopover floatingOptions={floatingOptions}>
         <tbody css={tbody?.css} className={tbody?.className}>
           {children}
         </tbody>
-      </table>
-    </Popover>
+      </TablePopover>
+    </table>
   );
 };
 

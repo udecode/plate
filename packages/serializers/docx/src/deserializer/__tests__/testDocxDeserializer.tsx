@@ -5,8 +5,8 @@ import {
   OverrideByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
-import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
+import { createImagePlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'examples/src/align/alignPlugin';
 import { lineHeightPlugin } from 'examples/src/line-height/lineHeightPlugin';

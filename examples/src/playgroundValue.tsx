@@ -9,13 +9,12 @@ import { fontValue } from './font/fontValue';
 import { forcedLayoutValue } from './forced-layout/forcedLayoutValue';
 import { highlightValue } from './highlight/highlightValue';
 import { horizontalRuleValue } from './horizontal-rule/horizontalRuleValue';
-import { imageValue } from './image/imageValue';
 import { indentValue } from './indent/indentValue';
 import { kbdValue } from './kbd/kbdValue';
 import { lineHeightValue } from './line-height/lineHeightValue';
 import { linkValue } from './link/linkValue';
 import { listValue } from './list/listValue';
-import { mediaEmbedValue } from './media-embed/mediaEmbedValue';
+import { mediaValue } from './media/mediaValue';
 import { mentionValue } from './mention/mentionValue';
 import { deserializeCsvValue } from './serializing-csv/deserializeCsvValue';
 import { deserializeDocxValue } from './serializing-docx/deserializeDocxValue';
@@ -39,8 +38,7 @@ export const playgroundValue: any = createNodesWithId([
   ...tableValue,
   ...linkValue,
   ...mentionValue,
-  ...imageValue,
-  ...mediaEmbedValue,
+  ...mediaValue,
   ...excalidrawValue,
   ...autoformatValue,
   ...softBreakValue,
