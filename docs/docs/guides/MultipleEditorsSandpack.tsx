@@ -11,7 +11,7 @@ import { basicMarksFiles } from '../sandpack/files/basic-marks/code-basicMarksFi
 import { basicNodesPluginsFile } from '../sandpack/files/basic-nodes/code-basicNodesPlugins';
 import { multipleEditorsAppCode } from '../sandpack/files/code-MultipleEditorsApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
-import { imageFiles } from '../sandpack/files/image/code-imageFiles';
+import { mediaFiles } from '../sandpack/files/media/code-mediaFiles';
 import { selectOnBackspacePluginFile } from '../sandpack/files/select-on-backspace/code-selectOnBackspacePlugin';
 import { toolbarFile } from '../sandpack/files/toolbar/code-Toolbar';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
@@ -24,7 +24,7 @@ export const MultipleEditorsSandpack = () => (
     appCode={multipleEditorsAppCode}
     files={{
       ...markBalloonToolbarFile,
-      ...imageFiles,
+      ...mediaFiles,
       ...toolbarFile,
       ...selectOnBackspacePluginFile,
       ...basicNodesPluginsFile,

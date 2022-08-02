@@ -22,5 +22,5 @@ export const imagePlugins = createMyPlugins(
 `;
 
 export const imagePluginsFile = {
-  '/image/imagePlugins.ts': imagePluginsCode,
+  '/media/imagePlugins.ts': imagePluginsCode,
 };

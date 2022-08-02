@@ -14,7 +14,7 @@
     "g:build-changed": "yarn workspaces foreach -ptv --no-private --since=origin/main run p:build",
     "g:changeset": "changeset",
     "g:clean": "rimraf '.cache/*' && yarn workspaces foreach -ptv run p:clean",
-    "gen:code": "yarn plop --plopfile scripts/plop/plopfile.js sandpack",
+    "gen:code": "rimraf docs/docs/sandpack/files && yarn plop --plopfile scripts/plop/plopfile.js sandpack",
     "gen:package": "yarn plop --plopfile scripts/plop/plopfile.js package",
     "gen:v": "yarn plop --plopfile scripts/plop/plopfile.js version",
     "g:dev": "yarn workspace examples-next dev",
