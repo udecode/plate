@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const WIDGET_SCRIPT_URL = 'https://platform.twitter.com/widgets.js';
 
-const hasScriptInserted = () =>
-  document.querySelector(`script[src="${WIDGET_SCRIPT_URL}"]`);
+declare global {
+  interface Window {
+    twttr: any;
+  }
+}
 
 export type TweetProps = Readonly<{
   loadingComponent?: JSX.Element | string;
@@ -24,7 +27,6 @@ export const Tweet = ({
 
   const createTweet = useCallback(async () => {
     try {
-      // @ts-expect-error Twitter is attached to the window.
       await window.twttr.widgets.createTweet(tweetId, containerRef.current);
 
       setIsLoading(false);
@@ -41,22 +43,23 @@ export const Tweet = ({
 
   useEffect(() => {
     if (tweetId !== previousTweetIDRef.current) {
-      setIsLoading(true);
+      let isComponentMounted = true;
+      const script = require('scriptjs');
+      script(WIDGET_SCRIPT_URL, 'twitter-embed', () => {
+        if (!window.twttr) {
+          return console.error('Failure to load window.twttr.');
+        }
 
-      if (!hasScriptInserted()) {
-        const script = document.createElement('script');
-        script.src = WIDGET_SCRIPT_URL;
-        script.async = true;
-        document.body?.appendChild(script);
-        script.onload = createTweet;
-        script.onerror = onError || console.error;
-      } else {
-        createTweet();
-      }
+        if (isComponentMounted) createTweet();
+      });
 
       if (previousTweetIDRef) {
         previousTweetIDRef.current = tweetId;
       }
+
+      return () => {
+        isComponentMounted = false;
+      };
     }
   }, [createTweet, onError, onLoad, tweetId]);
 
