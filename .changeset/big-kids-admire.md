@@ -1,5 +1,4 @@
 ---
-'examples-next': patch
 '@udecode/plate-media': patch
 ---
 
