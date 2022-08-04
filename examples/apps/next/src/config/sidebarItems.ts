@@ -23,7 +23,7 @@ export const sidebarItems = [
   'line-height',
   'link',
   'list',
-  'media-embed',
+  'media',
   'mention',
   'multi-editors',
   'multiple-editors',
