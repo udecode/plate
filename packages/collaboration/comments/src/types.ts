@@ -1,5 +1,5 @@
 import { TElement } from '@udecode/plate-core';
-import { Thread } from './Thread';
+import { Thread } from './utils/types';
 
 export interface ThreadNodeData {
   thread: Thread;

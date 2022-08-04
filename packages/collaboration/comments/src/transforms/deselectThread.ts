@@ -3,10 +3,10 @@ import { NodeEntry } from 'slate';
 import { ThreadElement } from '../types';
 import { upsertThread } from './upsertThread';
 
-export function deselectThread(
+export const deselectThread = (
   editor: PlateEditor,
   threadEntry: NodeEntry<ThreadElement>
-) {
+) => {
   const [threadNode, threadPath] = threadEntry;
   if (threadNode.selected) {
     upsertThread(editor, {
@@ -15,4 +15,4 @@ export function deselectThread(
       elementProps: { selected: false },
     });
   }
-}
+};

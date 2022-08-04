@@ -6,22 +6,22 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
-import { Editor, Location, Range, Transforms } from 'slate';
+import { Editor, Location, NodeEntry, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { findSelectedThreadNodeEntry } from '../findSelectedThreadNodeEntry';
-import { isThread } from '../isThread';
-import { Thread } from '../Thread';
+import { findSelectedThreadNodeEntry } from '../queries/findSelectedThreadNodeEntry';
 import { ThreadElement, ThreadNodeData } from '../types';
+import { isThread } from '../utils/isThread';
+import { Thread } from '../utils/types';
 import { wrapWithThread } from './wrapWithThread';
 
-export function upsertThread<V extends Value>(
+export const upsertThread = <V extends Value>(
   editor: PlateEditor<V>,
   {
     at,
     thread,
     elementProps,
   }: { thread: Thread; at: Location; elementProps?: Partial<ThreadNodeData> }
-): any {
+): NodeEntry<ThreadElement> | undefined => {
   const type = getPluginType(editor, ELEMENT_THREAD);
   const isRange = Range.isRange(at);
 
@@ -64,4 +64,4 @@ export function upsertThread<V extends Value>(
   }
 
   return findSelectedThreadNodeEntry(editor);
-}
+};

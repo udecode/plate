@@ -1,5 +1,5 @@
 import { createPluginFactory, PlateEditor, Value } from '@udecode/plate-core';
-import { insertTextThreadPlugin } from './insertTextThreadPlugin';
+import { insertTextThreadPlugin } from './transforms/insertTextThreadPlugin';
 import { ThreadPlugin } from './types';
 
 export const ELEMENT_THREAD = 'thread';

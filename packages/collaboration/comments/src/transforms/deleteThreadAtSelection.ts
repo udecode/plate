@@ -6,11 +6,11 @@ import {
 } from '@udecode/plate-core';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 
-export function deleteThreadAtSelection<V extends Value>(
+export const deleteThreadAtSelection = <V extends Value>(
   editor: PlateEditor<V>
-) {
+): void => {
   unwrapNodes(editor, {
     at: editor.selection!,
     match: { type: getPluginType(editor, ELEMENT_THREAD) },
   });
-}
+};

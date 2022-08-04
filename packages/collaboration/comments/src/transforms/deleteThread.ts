@@ -7,12 +7,12 @@ import {
 import { Location } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 
-export function deleteThread<V extends Value>(
+export const deleteThread = <V extends Value>(
   editor: PlateEditor<V>,
   thread: Location
-) {
+): void => {
   unwrapNodes(editor, {
     at: thread,
     match: { type: getPluginType(editor, ELEMENT_THREAD) },
   });
-}
+};
