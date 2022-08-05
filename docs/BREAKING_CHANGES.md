@@ -260,7 +260,6 @@
   - `getLastNode` -> `getLastNodeByLevel`
   - `getPointBefore` -> `getPointBeforeLocation`
   - `getNodes` -> `getNodeEntries`
-  - `getNodes` -> `getNodeEntries`
   - `isStart` -> `isStartPoint`
   - `isEnd` -> `isEndPoint`
 
