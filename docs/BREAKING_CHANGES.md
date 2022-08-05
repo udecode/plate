@@ -259,7 +259,6 @@
   - `getText` -> `getEditorString`
   - `getLastNode` -> `getLastNodeByLevel`
   - `getPointBefore` -> `getPointBeforeLocation`
-  - `getNode` -> `getNodeEntry`
   - `getNodes` -> `getNodeEntries`
   - `isStart` -> `isStartPoint`
   - `isEnd` -> `isEndPoint`
