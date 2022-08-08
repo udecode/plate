@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 16.0.1
+
+### Patch Changes
+
+- [#1754](https://github.com/udecode/plate/pull/1754) by [@haydencarlson](https://github.com/haydencarlson) – Fixed twitter embed loading when using multiple plate instances
+
 ## 16.0.0
 
 ### Major Changes

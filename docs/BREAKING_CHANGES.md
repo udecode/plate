@@ -260,7 +260,6 @@
   - `getLastNode` -> `getLastNodeByLevel`
   - `getPointBefore` -> `getPointBeforeLocation`
   - `getNodes` -> `getNodeEntries`
-  - `getNodes` -> `getNodeEntries`
   - `isStart` -> `isStartPoint`
   - `isEnd` -> `isEndPoint`
 
@@ -292,7 +291,17 @@
   )
   ```
 
-## @udecode/plate-styled-components@10.0.0
+## @udecode/plate-table@11.0.0
+
+- `getEmptyTableNode` default options changed. Migration:
+```tsx
+// From (0 row count and col count, previously it was 2)
+getEmptyTableNode(editor)
+// To
+getEmptyTableNode(editor, { rowCount: 2, colCount: 2 })
+```
+
+## @udecode/plate-styled-components@11.0.0
 
 **Generic types**
 - `type StyledElementProps<V extends Value, N extends TElement = EElement<V>, TStyles = {}>`
