@@ -1,5 +1,7 @@
 # @udecode/plate-toolbar
 
+## 16.0.2
+
 ## 16.0.0
 
 ### Minor Changes
