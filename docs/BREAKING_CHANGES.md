@@ -282,7 +282,6 @@
   **Utils**
 
   - `match` signature change:
-
   ```
   <T extends TNode>(
     obj: T,
@@ -290,6 +289,7 @@
     predicate?: Predicate<T>
   )
   ```
+  - `deleteFragment` is now using `Editor.deleteFragment`
 
 ## @udecode/plate-table@11.0.0
 
