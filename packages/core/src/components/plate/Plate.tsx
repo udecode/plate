@@ -78,9 +78,9 @@ export const PlateContent = <
   E extends PlateEditor<V> = PlateEditor<V>
 >({
   children,
-  renderEditable,
   editableRef,
   firstChildren,
+  renderEditable,
   ...options
 }: PlateProps<V, E>) => {
   const { slateProps, editableProps } = usePlate<V, E>(options);
@@ -95,6 +95,7 @@ export const PlateContent = <
         editor={editor}
         editableProps={editableProps}
         editableRef={editableRef}
+        firstChildren={firstChildren}
         renderEditable={renderEditable}
       >
         {children}
