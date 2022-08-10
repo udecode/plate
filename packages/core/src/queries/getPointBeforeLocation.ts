@@ -128,7 +128,7 @@ export const getPointBeforeLocation = <V extends Value>(
       count += 1;
 
       if (!options.skipInvalid) {
-        if (!matchString || count > matchString.length) return;
+        if (!matchString || count >= matchString.length) return;
       }
     }
   });
