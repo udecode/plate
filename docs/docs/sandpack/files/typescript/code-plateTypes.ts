@@ -150,7 +150,7 @@ export interface MyLineHeightProps {
 }
 
 export interface MyAlignProps {
-  textAlign?: CSSProperties['textAlign'];
+  align?: CSSProperties['textAlign'];
 }
 
 export interface MyBlockElement
