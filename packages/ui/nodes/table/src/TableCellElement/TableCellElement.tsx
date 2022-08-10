@@ -1,16 +1,12 @@
 import React, { useMemo } from 'react';
-import { findNodePath, useAtom, Value } from '@udecode/plate-core';
+import { findNodePath, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
-import {
-  ELEMENT_TABLE,
-  getTableColumnIndex,
-  setTableColSize,
-} from '@udecode/plate-table';
+import { getTableColumnIndex, setTableColSize } from '@udecode/plate-table';
 import clsx from 'clsx';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
 import { useReadOnly } from 'slate-react';
 import { useIsCellSelected } from '../hooks/useIsCellSelected';
-import { hoveredColIndexAtom, resizingColAtom } from '../table.atoms';
+import { useTableStore } from '../table.atoms';
 import { getTableCellElementStyles } from './TableCellElement.styles';
 import { TableCellElementProps } from './TableCellElement.types';
 
@@ -30,11 +26,11 @@ export const TableCellElement = <V extends Value>(
   const rootProps = getRootProps(props);
   const readOnly = useReadOnly();
 
-  const [hoveredColIndex, setHoveredColIndex] = useAtom(
-    hoveredColIndexAtom,
-    ELEMENT_TABLE
-  );
-  const [, setResizingCol] = useAtom(resizingColAtom, ELEMENT_TABLE);
+  const [
+    hoveredColIndex,
+    setHoveredColIndex,
+  ] = useTableStore().use.hoveredColIndex();
+  const setResizingCol = useTableStore().set.resizingCol();
 
   const isCellSelected = useIsCellSelected(element);
 

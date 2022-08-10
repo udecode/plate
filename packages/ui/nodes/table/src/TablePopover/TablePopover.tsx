@@ -9,7 +9,13 @@ export const TablePopover = ({ children, ...props }: PopoverProps) => {
 
   return (
     <ElementPopover
-      content={<RemoveNodeButton element={element} css={floatingButtonCss} />}
+      content={
+        <RemoveNodeButton
+          element={element}
+          css={floatingButtonCss}
+          contentEditable={false}
+        />
+      }
       css={floatingRootCss}
       {...props}
     >
