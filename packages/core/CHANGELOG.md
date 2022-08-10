@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 16.0.2
+
+### Patch Changes
+
+- [#1766](https://github.com/udecode/plate/pull/1766) by [@zbeyens](https://github.com/zbeyens) – Fix: Plate `firstChildren` is now working
+
+- [#1755](https://github.com/udecode/plate/pull/1755) by [@mouradmourafiq](https://github.com/mouradmourafiq) – Add `options` parameter to `isSelectionAtBlockEnd`
+
 ## 16.0.0
 
 ### Minor Changes

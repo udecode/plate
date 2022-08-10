@@ -1,5 +1,7 @@
 # @udecode/plate-ui-button
 
+## 16.0.2
+
 ## 16.0.0
 
 ### Patch Changes
