@@ -46,7 +46,7 @@ const plugins = createMyPlugins(
 const Serialized = () => {
   const editor = useEditorState();
   const html = serializeHtml(editor, {
-    nodes: basicNodesValue,
+    nodes: editor.children,
   });
 
   return <HighlightHTML code={html} />;

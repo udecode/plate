@@ -13,6 +13,7 @@ import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { serializingHtmlFiles } from '../sandpack/files/serializing-html/code-serializingHtmlFiles';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
+import { linkFiles } from '../sandpack/files/link/code-linkFiles';
 
 export const SerializingHtmlSandpack = () => (
   <CommonSandpack
@@ -33,6 +34,7 @@ export const SerializingHtmlSandpack = () => (
       ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
+      ...linkFiles,
     }}
   />
 );

@@ -13,6 +13,7 @@ import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { serializingCsvFiles } from '../sandpack/files/serializing-csv/code-serializingCsvFiles';
 import { softBreakPluginFile } from '../sandpack/files/soft-break/code-softBreakPlugin';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
+import { linkFiles } from '../sandpack/files/link/code-linkFiles';
 
 export const SerializingCsvSandpack = () => (
   <CommonSandpack
@@ -32,6 +33,7 @@ export const SerializingCsvSandpack = () => (
       ...softBreakPluginFile,
       ...commonFiles,
       ...typescriptFiles,
+      ...linkFiles,
     }}
   />
 );
