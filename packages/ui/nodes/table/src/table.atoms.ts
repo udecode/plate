@@ -1,9 +1,11 @@
-import { atom, TElement } from '@udecode/plate-core';
+import { createAtomStore, TElement } from '@udecode/plate-core';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
 
-export const hoveredColIndexAtom = atom<number | null>(null);
-
-export const resizingColAtom = atom<{ index: number; width: number } | null>(
-  null
+export const { tableStore, useTableStore } = createAtomStore(
+  {
+    hoveredColIndex: null as number | null,
+    resizingCol: null as { index: number; width: number } | null,
+    selectedCells: null as TElement[] | null,
+  },
+  { name: 'table' as const, scope: ELEMENT_TABLE }
 );
-
-export const selectedCellsAtom = atom<TElement[] | null>(null);
