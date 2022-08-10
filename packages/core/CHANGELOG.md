@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 16.1.0
+
+### Minor Changes
+
+- [#1768](https://github.com/udecode/plate/pull/1768) by [@zbeyens](https://github.com/zbeyens) – new utils:
+  - `wrapNodeChildren`: Wrap node children into a single element
+
 ## 16.0.2
 
 ### Patch Changes
