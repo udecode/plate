@@ -39,6 +39,68 @@ describe('when --space', () => {
 
     expect(input.children).toEqual(output.children);
   });
+
+  it('should not insert — with multiple in between chars', () => {
+    const input = (
+      <editor>
+        <hp>
+          -OO
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          -OO-
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(autoformatPlugin as any)
+    );
+
+    editor.insertText('-');
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should not insert — with 1 in between char', () => {
+    const input = (
+      <editor>
+        <hp>
+          -O
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          -O-
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(autoformatPlugin as any)
+    );
+
+    editor.insertText('-');
+
+    expect(input.children).toEqual(output.children);
+  });
 });
 
 describe('when (tm)', () => {
