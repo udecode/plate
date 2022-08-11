@@ -1,21 +1,23 @@
 import {
+  ELEMENT_DEFAULT,
   getBlockAbove,
   getEndPoint,
-  getNodeChildren,
+  getPluginType,
   getPointAfter,
   getPointBefore,
   getStartPoint,
   isCollapsed,
   moveSelection,
   PlateEditor,
-  removeNodes,
   select,
+  TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
+import { replaceNodeChildren } from './withInsertFragmentTable';
 
 /**
  * Return true if:
@@ -95,15 +97,21 @@ export const withDeleteTable = <
     if (cellEntries.length > 1) {
       withoutNormalizing(editor, () => {
         cellEntries.forEach(([, cellPath]) => {
-          for (const [, childPath] of getNodeChildren(editor, cellPath, {
-            reverse: true,
-          })) {
-            removeNodes(editor, { at: childPath });
-          }
+          replaceNodeChildren<TElement>(editor, {
+            at: cellPath,
+            nodes: {
+              type: getPluginType(editor, ELEMENT_DEFAULT),
+              children: [{ text: '' }],
+            },
+          });
+        });
+
+        // set back the selection
+        select(editor, {
+          anchor: getStartPoint(editor, cellEntries[0][1]),
+          focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
         });
       });
-
-      select(editor, cellEntries[0][1]);
 
       return;
     }
