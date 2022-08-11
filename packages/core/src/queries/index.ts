@@ -30,6 +30,7 @@ export * from './isFirstChild';
 export * from './isMarkActive';
 export * from './isPointAtWordEnd';
 export * from './isRangeAcrossBlocks';
+export * from './isRangeInSameBlock';
 export * from './isRangeInSingleText';
 export * from './isSelectionAtBlockEnd';
 export * from './isSelectionAtBlockStart';
