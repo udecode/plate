@@ -423,4 +423,118 @@ describe('withInsertFragmentTable', () => {
       expect(editor.selection).toEqual(output.selection);
     });
   });
+
+  // https://github.com/udecode/editor-protocol/issues/63
+  describe('when inserting table cells with multiple p', () => {
+    it('should paste', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11a</hp>
+                <hp>
+                  11b
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>12</htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>o12</htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>o12</htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [createTablePlugin()],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  // https://github.com/udecode/editor-protocol/issues/64
+  describe('when inserting blocks inside a table', () => {
+    it('should insert the blocks without removing the cells', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <anchor />
+                11
+              </htd>
+              <htd>
+                12
+                <focus />
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <hp>o11a</hp>
+          <hp>o11b</hp>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [createTablePlugin()],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
 });
