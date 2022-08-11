@@ -9,6 +9,7 @@ import {
   isCollapsed,
   moveSelection,
   PlateEditor,
+  replaceNodeChildren,
   select,
   TElement,
   Value,
@@ -17,7 +18,6 @@ import {
 import { Point } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
-import { replaceNodeChildren } from './withInsertFragmentTable';
 
 /**
  * Return true if:
