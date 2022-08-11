@@ -22,7 +22,7 @@ export const withDraggable = <V extends Value>(
   Component: any,
   {
     styles,
-    level,
+    level = 0,
     filter,
     allowReadOnly = false,
     onRenderDragHandle,
