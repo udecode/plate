@@ -16,14 +16,12 @@ export const withInsertTextTable = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  { options }: WithPlatePlugin<TablePlugin<V>, V, E>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  plugin: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
-    // console.log('a', editor.selection);
-    //
-    // return;
     if (isExpanded(editor.selection)) {
       const tableEntry = isRangeInSameBlock(editor, {
         match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -38,7 +36,6 @@ export const withInsertTextTable = <
           collapseSelection(editor, {
             edge: 'focus',
           });
-          console.log(editor.selection);
         }
       }
     }
