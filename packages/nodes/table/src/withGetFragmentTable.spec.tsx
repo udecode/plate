@@ -43,4 +43,42 @@ describe('withGetFragmentTable', () => {
       expect(fragment).toEqual([getTableGridAbove(editor)[0][0]]);
     });
   });
+
+  // https://github.com/udecode/editor-protocol/issues/63
+  describe('when copying a single cell with 2 blocks', () => {
+    it('should copy only the 2 blocks', () => {
+      const blocks = (
+        <fragment>
+          <hp>
+            <anchor />
+            11
+          </hp>
+          <hp>
+            12
+            <focus />
+          </hp>
+        </fragment>
+      );
+
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>{blocks}</htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      let editor = createPlateEditor({
+        editor: input,
+      });
+
+      editor = withGetFragmentTable(editor);
+
+      const fragment = editor.getFragment();
+
+      expect(fragment).toEqual(blocks);
+    });
+  });
 });

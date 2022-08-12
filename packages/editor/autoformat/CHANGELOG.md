@@ -1,5 +1,17 @@
 # @udecode/plate-autoformat
 
+## 16.2.0
+
+## 16.1.1
+
+### Patch Changes
+
+- [#1772](https://github.com/udecode/plate/pull/1772) by [@davisg123](https://github.com/davisg123) – Autoformatter will incorrectly match on text that contains one additional character of text
+
+## 16.1.0
+
+## 16.0.2
+
 ## 16.0.0
 
 ## 15.0.3

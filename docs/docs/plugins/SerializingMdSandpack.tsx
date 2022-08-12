@@ -8,6 +8,7 @@ import { serializingMdAppCode } from '../sandpack/files/code-SerializingMdApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { serializingMdFiles } from '../sandpack/files/serializing-md/code-serializingMdFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
+import { linkFiles } from '../sandpack/files/link/code-linkFiles';
 
 export const SerializingMdSandpack = () => (
   <CommonSandpack
@@ -25,6 +26,7 @@ export const SerializingMdSandpack = () => (
       ...basicMarksPluginsFile,
       ...commonFiles,
       ...typescriptFiles,
+      ...linkFiles,
     }}
   />
 );

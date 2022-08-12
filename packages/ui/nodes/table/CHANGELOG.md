@@ -1,5 +1,25 @@
 # @udecode/plate-table-ui
 
+## 16.2.0
+
+### Patch Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: table cells are now full height and not vertically centered anymore
+
+## 16.1.0
+
+### Patch Changes
+
+- [#1768](https://github.com/udecode/plate/pull/1768) by [@zbeyens](https://github.com/zbeyens) – Fix:
+  - Slate should not throw anymore when clicking around the table
+  - Resizing columns should resize on drag. Moved the atoms into `tableStore`, `useTableStore`:
+    - `hoveredColIndexAtom`
+    - `resizingColAtom`
+    - `selectedCellsAtom`
+
+## 16.0.2
+
 ## 16.0.0
 
 ### Major Changes

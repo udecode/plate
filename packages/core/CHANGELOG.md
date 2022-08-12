@@ -1,5 +1,34 @@
 # @udecode/plate-core
 
+## 16.2.0
+
+### Minor Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - `isRangeAcrossBlocks`: Now returns true if one of the block above is found but not the other and returns undefined if no block is found.
+  - `isRangeInSameBlock`: Whether the range is in the same block.
+  - `removeNodeChildren`: Remove node children.
+  - `replaceNodeChildren`: Replace node children: remove then insert.
+
+### Patch Changes
+
+- [#1776](https://github.com/udecode/plate/pull/1776) by [@davisg123](https://github.com/davisg123) – Autoformatter will incorrectly match on text that contains one additional character of text
+
+## 16.1.0
+
+### Minor Changes
+
+- [#1768](https://github.com/udecode/plate/pull/1768) by [@zbeyens](https://github.com/zbeyens) – new utils:
+  - `wrapNodeChildren`: Wrap node children into a single element
+
+## 16.0.2
+
+### Patch Changes
+
+- [#1766](https://github.com/udecode/plate/pull/1766) by [@zbeyens](https://github.com/zbeyens) – Fix: Plate `firstChildren` is now working
+
+- [#1755](https://github.com/udecode/plate/pull/1755) by [@mouradmourafiq](https://github.com/mouradmourafiq) – Add `options` parameter to `isSelectionAtBlockEnd`
+
 ## 16.0.0
 
 ### Minor Changes

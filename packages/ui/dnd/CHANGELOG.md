@@ -1,5 +1,16 @@
 # @udecode/plate-dnd
 
+## 16.2.0
+
+### Patch Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - `withDraggable`: default `level` option is now 0 as expected
+
+## 16.1.0
+
+## 16.0.2
+
 ## 16.0.0
 
 ## 15.0.3

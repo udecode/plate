@@ -1,5 +1,36 @@
 # @udecode/plate-table
 
+## 16.2.0
+
+### Minor Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - on delete many cells:
+    - replace cell children by a paragraph then reselect all the selected cells
+  - on get fragment (copy):
+    - copying in a single cell should not copy the table anymore
+  - on insert fragment (paste):
+    - pasting multiple blocks into many selected cells will replace these cells children by the same blocks
+    - replace cell children by a paragraph then reselect all the selected cells
+  - on insert text:
+    - it should delete the cells content by preserving the cells
+  - normalize cells:
+    - wrap cell children in a paragraph if they are texts
+  - normalize selection:
+    - it was easy to destroy the table structure when selection goes beyond a table. The current fix is to normalize the selection so it selects the whole table (see the specs)
+  - specs:
+    - https://github.com/udecode/editor-protocol/issues/63
+    - https://github.com/udecode/editor-protocol/issues/64
+    - https://github.com/udecode/editor-protocol/issues/65
+    - https://github.com/udecode/editor-protocol/issues/66
+    - https://github.com/udecode/editor-protocol/issues/67
+    - https://github.com/udecode/editor-protocol/issues/68
+    - https://github.com/udecode/editor-protocol/issues/69
+
+## 16.1.0
+
+## 16.0.2
+
 ## 16.0.0
 
 ## 15.0.3
