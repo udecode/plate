@@ -170,6 +170,41 @@ describe('upsertLink', () => {
           <hp>
             .
             <ha url={url}>
+              <htext bold>
+                insert <cursor /> link
+              </htext>
+            </ha>
+            .
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            .
+            <ha url={url}>
+              <htext bold>edit link</htext>
+            </ha>
+            .
+          </hp>
+        </editor>
+      ) as any;
+
+      it('should insert text', () => {
+        const editor = createEditor(input);
+        upsertLink(editor, { url, text: 'edit link' });
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
+
+    describe('when in a link, insertTextInLink + same url', () => {
+      const input = (
+        <editor>
+          <hp>
+            .
+            <ha url={url}>
               insert <cursor /> link
             </ha>
             .

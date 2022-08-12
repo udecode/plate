@@ -1,22 +1,18 @@
 import {
   findNode,
   getAboveNode,
-  getChildren,
   getEditorString,
   getNodeProps,
   getPluginOptions,
   getPluginType,
-  insertNodes,
   InsertNodesOptions,
   isDefined,
   isExpanded,
   PlateEditor,
   removeNodes,
   setNodes,
-  TText,
   UnwrapNodesOptions,
   Value,
-  withoutNormalizing,
   WrapNodesOptions,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
@@ -24,6 +20,7 @@ import { TLinkElement } from '../types';
 import { CreateLinkNodeOptions } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
+import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
 export type UpsertLinkOptions<
@@ -36,42 +33,6 @@ export type UpsertLinkOptions<
   insertNodesOptions?: InsertNodesOptions<V>;
   unwrapNodesOptions?: UnwrapNodesOptions<V>;
   wrapNodesOptions?: WrapNodesOptions<V>;
-};
-
-export const upsertLinkText = <V extends Value>(
-  editor: PlateEditor<V>,
-  { text }: UpsertLinkOptions<V>
-) => {
-  const newLink = getAboveNode<TLinkElement>(editor, {
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
-  });
-
-  if (newLink) {
-    const [, newLinkPath] = newLink;
-
-    if (text?.length && text !== getEditorString(editor, newLinkPath)) {
-      withoutNormalizing(editor, () => {
-        // remove link children
-        getChildren(newLink)
-          .reverse()
-          .forEach(([, childPath]) => {
-            removeNodes(editor, {
-              at: childPath,
-            });
-          });
-
-        // insert link child text
-        insertNodes<TText>(
-          editor,
-          { text: text! },
-          {
-            at: newLinkPath.concat([0]),
-            select: true,
-          }
-        );
-      });
-    }
-  }
 };
 
 /**
