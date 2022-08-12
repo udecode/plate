@@ -27,8 +27,6 @@ export const triggerFloatingLinkEdit = <V extends Value>(
     text = '';
   }
 
-  console.log(text);
-
   floatingLinkActions.text(text);
 
   floatingLinkActions.isEditing(true);
