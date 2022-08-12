@@ -1,5 +1,7 @@
 # @udecode/plate-ui-cursor
 
+## 16.2.0
+
 ## 16.1.0
 
 ## 16.0.2
