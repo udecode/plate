@@ -10,7 +10,7 @@ export const isRangeInSameBlock = <V extends Value>(
   }: Omit<GetAboveNodeOptions<V>, 'at'> & { at?: Range | null } = {}
 ) => {
   if (!at) at = editor.selection;
-  if (!at) return false;
+  if (!at) return;
 
   const [start, end] = Range.edges(at);
   const startBlock = getBlockAbove(editor, {
@@ -22,5 +22,7 @@ export const isRangeInSameBlock = <V extends Value>(
     ...options,
   });
 
-  return startBlock && endBlock && Path.equals(startBlock[1], endBlock[1]);
+  if (!startBlock || !endBlock) return;
+
+  return Path.equals(startBlock[1], endBlock[1]);
 };
