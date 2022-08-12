@@ -1,5 +1,7 @@
 # @udecode/plate-ui-media
 
+## 16.2.1
+
 ## 16.2.0
 
 ## 16.1.0
