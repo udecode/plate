@@ -14,8 +14,12 @@ describe('withDeleteTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
           </htable>
           <hp>
@@ -28,10 +32,14 @@ describe('withDeleteTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
               <htd>
-                12
-                <cursor />
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>
+                  12
+                  <cursor />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -63,8 +71,12 @@ describe('withDeleteTable', () => {
           </hp>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -76,10 +88,14 @@ describe('withDeleteTable', () => {
           <htable>
             <htr>
               <htd>
-                <cursor />
-                11
+                <hp>
+                  <cursor />
+                  11
+                </hp>
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -113,14 +129,18 @@ describe('withDeleteTable', () => {
                 <anchor />
                 11
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
               <htd>
                 21
                 <focus />
               </htd>
-              <htd>22</htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -131,16 +151,25 @@ describe('withDeleteTable', () => {
           <htable>
             <htr>
               <htd>
-                <htext />
-                <cursor />
+                <hp>
+                  <htext />
+                  <anchor />
+                </hp>
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
               <htd>
-                <htext />
+                <hp>
+                  <htext />
+                  <focus />
+                </hp>
               </htd>
-              <htd>22</htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
