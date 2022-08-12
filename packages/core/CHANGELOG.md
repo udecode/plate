@@ -1,5 +1,19 @@
 # @udecode/plate-core
 
+## 16.2.0
+
+### Minor Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - `isRangeAcrossBlocks`: Now returns true if one of the block above is found but not the other and returns undefined if no block is found.
+  - `isRangeInSameBlock`: Whether the range is in the same block.
+  - `removeNodeChildren`: Remove node children.
+  - `replaceNodeChildren`: Replace node children: remove then insert.
+
+### Patch Changes
+
+- [#1776](https://github.com/udecode/plate/pull/1776) by [@davisg123](https://github.com/davisg123) – Autoformatter will incorrectly match on text that contains one additional character of text
+
 ## 16.1.0
 
 ### Minor Changes

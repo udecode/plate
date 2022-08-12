@@ -1,5 +1,12 @@
 # @udecode/plate-table-ui
 
+## 16.2.0
+
+### Patch Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - fix: table cells are now full height and not vertically centered anymore
+
 ## 16.1.0
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-autoformat
 
+## 16.2.0
+
 ## 16.1.1
 
 ### Patch Changes
