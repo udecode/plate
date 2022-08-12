@@ -2,34 +2,35 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
-import { insertTableRow } from './insertTableRow';
+import { createTablePlugin } from './createTablePlugin';
 
 jsx;
 
-describe('insertTableRow', () => {
-  describe('when inserting a table row', () => {
-    it('should insert a tr with empty cells', () => {
+describe('withInsertTextTable', () => {
+  // https://github.com/udecode/editor-protocol/issues/65
+  describe('cell child is a text', () => {
+    it('should wrap the children into a p', async () => {
       const input = ((
         <editor>
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
+                <hp>
+                  <anchor />a
+                </hp>
               </htd>
               <htd>
-                <hp>12</hp>
+                <hp>b</hp>
               </htd>
             </htr>
             <htr>
               <htd>
                 <hp>
-                  21
-                  <cursor />
+                  c<focus />
                 </hp>
               </htd>
               <htd>
-                <hp>22</hp>
+                <hp>d</hp>
               </htd>
             </htr>
           </htable>
@@ -41,30 +42,20 @@ describe('insertTableRow', () => {
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
                 <hp>
                   <htext />
                 </hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>e</hp>
+              </htd>
+              <htd>
+                <hp>d</hp>
               </htd>
             </htr>
           </htable>
@@ -73,17 +64,12 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [
-          createTablePlugin({
-            options: { newCellChildren: [{ text: '' }] },
-          }),
-        ],
+        plugins: [createTablePlugin()],
       });
 
-      insertTableRow(editor);
-
+      editor.deleteFragment();
+      editor.insertText('e');
       expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
     });
   });
 });

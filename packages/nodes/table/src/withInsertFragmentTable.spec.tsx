@@ -16,14 +16,22 @@ describe('withInsertFragmentTable', () => {
           <htable>
             <htr>
               <htd>
-                11
-                <cursor />
+                <hp>
+                  11
+                  <cursor />
+                </hp>
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -33,10 +41,14 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>a</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>b</htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -46,12 +58,20 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>a</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>b</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -79,11 +99,17 @@ describe('withInsertFragmentTable', () => {
                 11
                 <cursor />
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -93,8 +119,12 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>a</htd>
-              <htd>b</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -104,12 +134,20 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>a</htd>
-              <htd>b</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -137,10 +175,14 @@ describe('withInsertFragmentTable', () => {
                 <anchor />
                 11
               </htd>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
               <htd>
                 22
                 <focus />
@@ -154,8 +196,12 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>a</htd>
-              <htd>b</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -165,15 +211,23 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>a</htd>
-              <htd>b</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
             <htr>
               <htd>
-                <htext />
+                <hp>
+                  <htext />
+                </hp>
               </htd>
               <htd>
-                <htext />
+                <hp>
+                  <htext />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -199,15 +253,23 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
               <htd>
-                12
-                <cursor />
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>
+                  12
+                  <cursor />
+                </hp>
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -217,10 +279,14 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>a</htd>
+              <htd>
+                <hp>a</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>b</htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -230,15 +296,23 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
               <htd>
-                <anchor />a
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <anchor />a
+                </hp>
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
               <htd>
-                <focus />b
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>
+                  b<focus />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -254,9 +328,6 @@ describe('withInsertFragmentTable', () => {
 
       expect(editor.children).toEqual(output.children);
 
-      const selection = output.selection!;
-      selection.anchor.path.pop();
-      selection.focus.path.pop();
       expect(editor.selection).toEqual(output.selection);
     });
   });
@@ -268,14 +339,22 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
               <htd>
-                22
-                <cursor />
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>
+                  22
+                  <cursor />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -286,12 +365,20 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>aa</htd>
-              <htd>ab</htd>
+              <htd>
+                <hp>aa</hp>
+              </htd>
+              <htd>
+                <hp>ab</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>ba</htd>
-              <htd>bb</htd>
+              <htd>
+                <hp>ba</hp>
+              </htd>
+              <htd>
+                <hp>bb</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -301,28 +388,46 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
               <htd>
-                <htext />
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
               <htd>
-                <anchor />
-                aa
+                <hp>21</hp>
               </htd>
-              <htd>ab</htd>
+              <htd>
+                <hp>
+                  <anchor />
+                  aa
+                </hp>
+              </htd>
+              <htd>
+                <hp>ab</hp>
+              </htd>
             </htr>
             <htr>
               <htd>
-                <htext />
+                <hp>
+                  <htext />
+                </hp>
               </htd>
-              <htd>ba</htd>
               <htd>
-                <focus />
-                bb
+                <hp>ba</hp>
+              </htd>
+              <htd>
+                <hp>
+                  bb
+                  <focus />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -342,9 +447,6 @@ describe('withInsertFragmentTable', () => {
 
       expect(editor.children).toEqual(output.children);
 
-      const selection = output.selection!;
-      selection.anchor.path.pop();
-      selection.focus.path.pop();
       expect(editor.selection).toEqual(output.selection);
     });
   });
@@ -355,14 +457,22 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
               <htd>
-                22
-                <cursor />
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>
+                  22
+                  <cursor />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -373,12 +483,20 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>aa</htd>
-              <htd>ab</htd>
+              <htd>
+                <hp>aa</hp>
+              </htd>
+              <htd>
+                <hp>ab</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>ba</htd>
-              <htd>bb</htd>
+              <htd>
+                <hp>ba</hp>
+              </htd>
+              <htd>
+                <hp>bb</hp>
+              </htd>
             </htr>
           </htable>
         </fragment>
@@ -388,14 +506,23 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
               <htd>
-                <cursor />
-                aa
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <anchor />
+                  aa
+                  <focus />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -418,9 +545,131 @@ describe('withInsertFragmentTable', () => {
 
       expect(editor.children).toEqual(output.children);
 
-      const selection = output.selection!;
-      selection.anchor.path.pop();
       expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  // https://github.com/udecode/editor-protocol/issues/63
+  describe('when inserting table cells with multiple p', () => {
+    it('should paste', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11a</hp>
+                <hp>
+                  11b
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>
+                <hp>o12</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>
+                <hp>o12</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [createTablePlugin()],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  // https://github.com/udecode/editor-protocol/issues/64
+  describe('when inserting blocks inside a table', () => {
+    it('should insert the blocks without removing the cells', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <anchor />
+                  11
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  12
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <hp>o11a</hp>
+          <hp>o11b</hp>
+        </fragment>
+      ) as any) as TElement[];
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+              <htd>
+                <hp>o11a</hp>
+                <hp>o11b</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [createTablePlugin()],
+      });
+
+      editor.insertFragment(fragment);
+
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

@@ -88,11 +88,9 @@ const ComboboxContent = <TData extends Data = NoData>(
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
-  const {
-    root,
-    item: styleItem,
-    highlightedItem,
-  } = getComboboxStyles(props as any);
+  const { root, item: styleItem, highlightedItem } = getComboboxStyles(
+    props as any
+  );
 
   return (
     <PortalBody element={portalElement}>

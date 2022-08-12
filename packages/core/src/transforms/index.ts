@@ -7,6 +7,8 @@ export * from './insertElements';
 export * from './insertEmptyElement';
 export * from './moveChildren';
 export * from './removeMark';
+export * from './removeNodeChildren';
+export * from './replaceNodeChildren';
 export * from './selectEditor';
 export * from './selectEndOfBlockAboveSelection';
 export * from './setElements';
