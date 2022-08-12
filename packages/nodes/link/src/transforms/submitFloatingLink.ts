@@ -33,7 +33,6 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   upsertLink(editor, {
     url,
     text,
-    update: true,
   });
 
   setTimeout(() => {

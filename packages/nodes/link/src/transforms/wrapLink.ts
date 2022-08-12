@@ -8,12 +8,17 @@ import {
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 
+export interface WrapLinkOptions<V extends Value = Value>
+  extends WrapNodesOptions<V> {
+  url: string;
+}
+
 /**
  * Wrap a link node with split.
  */
 export const wrapLink = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, ...options }: { url: string } & WrapNodesOptions<V>
+  { url, ...options }: WrapLinkOptions<V>
 ) => {
   wrapNodes<TLinkElement, Value>(
     editor,

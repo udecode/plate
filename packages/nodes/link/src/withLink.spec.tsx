@@ -8,24 +8,25 @@ jsx;
 
 /**
  * TODO: test
+ * react:
  * https://github.com/udecode/editor-protocol/issues/44
  * https://github.com/udecode/editor-protocol/issues/45
- * https://github.com/udecode/editor-protocol/issues/46
- * https://github.com/udecode/editor-protocol/issues/47
- * https://github.com/udecode/editor-protocol/issues/48
  * https://github.com/udecode/editor-protocol/issues/49
- * https://github.com/udecode/editor-protocol/issues/50
  * https://github.com/udecode/editor-protocol/issues/51
- * https://github.com/udecode/editor-protocol/issues/52
- * https://github.com/udecode/editor-protocol/issues/53
  * https://github.com/udecode/editor-protocol/issues/54
  * https://github.com/udecode/editor-protocol/issues/55
- * https://github.com/udecode/editor-protocol/issues/56
  * https://github.com/udecode/editor-protocol/issues/57
- * https://github.com/udecode/editor-protocol/issues/58
- * https://github.com/udecode/editor-protocol/issues/59
- * https://github.com/udecode/editor-protocol/issues/60
  * https://github.com/udecode/editor-protocol/issues/61
+ *
+ * submitFloatingLink:
+ * https://github.com/udecode/editor-protocol/issues/48
+ *
+ * selection:
+ * https://github.com/udecode/editor-protocol/issues/52
+ * https://github.com/udecode/editor-protocol/issues/53
+ *
+ * unwrapLink
+ * https://github.com/udecode/editor-protocol/issues/56
  */
 
 const url = 'http://google.com';
@@ -112,12 +113,12 @@ describe('withLink', () => {
       });
 
       // https://github.com/udecode/editor-protocol/issues/37
-      describe('when above a link', () => {
+      describe('when selection contains a link without the edges inside', () => {
         const input = (
           <editor>
             <hp>
-              insert link <anchor />
-              <ha url={url}>here</ha>
+              insert <anchor />
+              link <ha url={url}>here</ha>
               <focus />.
             </hp>
           </editor>
@@ -128,7 +129,7 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              insert link <ha url={urlOutput}>here</ha>.
+              insert <ha url={urlOutput}>link here</ha>.
             </hp>
           </editor>
         ) as any;
@@ -384,6 +385,7 @@ describe('withLink', () => {
       });
     });
 
+    // https://github.com/udecode/editor-protocol/issues/62
     describe('when url with bold mark', () => {
       const input = (
         <editor>
@@ -401,8 +403,7 @@ describe('withLink', () => {
           <hp>
             link:{' '}
             <ha url="http://google.com">
-              {/* http://<htext bold>google</htext>.com */}
-              http://google.com
+              http://<htext bold>google</htext>.com
             </ha>{' '}
           </hp>
         </editor>

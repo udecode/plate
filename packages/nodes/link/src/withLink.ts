@@ -100,7 +100,10 @@ export const withLink = <
     const textHref = getUrlHref?.(text);
 
     if (text) {
-      const inserted = upsertLink(editor, { url: textHref || text });
+      const inserted = upsertLink(editor, {
+        url: textHref || text,
+        insertTextInLink: true,
+      });
       if (inserted) return;
     }
 
