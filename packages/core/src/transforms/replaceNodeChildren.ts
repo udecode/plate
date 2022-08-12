@@ -10,6 +10,9 @@ import {
 } from '../slate/index';
 import { removeNodeChildren } from './removeNodeChildren';
 
+/**
+ * Replace node children: remove then insert.
+ */
 export const replaceNodeChildren = <
   N extends EElementOrText<V>,
   V extends Value = Value

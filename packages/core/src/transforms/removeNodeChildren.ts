@@ -8,6 +8,9 @@ import {
   withoutNormalizing,
 } from '../slate/index';
 
+/**
+ * Remove node children.
+ */
 export const removeNodeChildren = <V extends Value = Value>(
   editor: TEditor<V>,
   path: Path,

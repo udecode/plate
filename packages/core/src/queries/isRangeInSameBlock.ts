@@ -2,6 +2,9 @@ import { Path, Range } from 'slate';
 import { GetAboveNodeOptions, TEditor, Value } from '../slate/index';
 import { getBlockAbove } from './getBlockAbove';
 
+/**
+ * Whether the range is in the same block.
+ */
 export const isRangeInSameBlock = <V extends Value>(
   editor: TEditor<V>,
   {

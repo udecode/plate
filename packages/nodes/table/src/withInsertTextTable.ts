@@ -1,14 +1,11 @@
 import {
   collapseSelection,
-  getPluginType,
   isExpanded,
-  isRangeInSameBlock,
   PlateEditor,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
-import { getTableGridAbove } from './queries/index';
-import { ELEMENT_TABLE } from './createTablePlugin';
+import { getTableAbove, getTableGridAbove } from './queries/index';
 import { TablePlugin } from './types';
 
 export const withInsertTextTable = <
@@ -23,11 +20,11 @@ export const withInsertTextTable = <
 
   editor.insertText = (text) => {
     if (isExpanded(editor.selection)) {
-      const tableEntry = isRangeInSameBlock(editor, {
-        match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      const entry = getTableAbove(editor, {
+        at: editor.selection?.anchor,
       });
 
-      if (tableEntry) {
+      if (entry) {
         const cellEntries = getTableGridAbove(editor, {
           format: 'cell',
         });

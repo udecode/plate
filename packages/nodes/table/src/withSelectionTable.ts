@@ -43,26 +43,26 @@ export const withSelectionTable = <
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         })
       ) {
-        const focusEntry = getBlockAbove(editor, {
-          at: selection.focus,
+        const anchorEntry = getBlockAbove(editor, {
+          at: selection.anchor,
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         });
 
-        if (focusEntry) {
-          op.newProperties.focus = Range.isBackward(selection)
-            ? getPointBefore(editor, getStartPoint(editor, focusEntry[1]))
-            : getEndPoint(editor, focusEntry[1]);
-        } else {
-          const anchorEntry = getBlockAbove(editor, {
-            at: selection.anchor,
+        if (!anchorEntry) {
+          const focusEntry = getBlockAbove(editor, {
+            at: selection.focus,
             match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
           });
 
-          if (anchorEntry) {
+          if (focusEntry) {
             op.newProperties.focus = Range.isBackward(selection)
-              ? getStartPoint(editor, anchorEntry[1])
-              : getEndPoint(editor, anchorEntry[1]);
+              ? getPointBefore(editor, getStartPoint(editor, focusEntry[1]))
+              : getEndPoint(editor, focusEntry[1]);
           }
+        } else {
+          op.newProperties.focus = Range.isBackward(selection)
+            ? getStartPoint(editor, anchorEntry[1])
+            : getEndPoint(editor, anchorEntry[1]);
         }
       }
     }
