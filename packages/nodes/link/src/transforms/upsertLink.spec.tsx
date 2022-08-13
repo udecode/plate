@@ -375,5 +375,39 @@ describe('upsertLink', () => {
         expect(input.children).toEqual(output.children);
       });
     });
+
+    // https://github.com/udecode/editor-protocol/issues/70
+    describe('when inserting a link in a marked text', () => {
+      const input = (
+        <editor>
+          <hp>
+            insert{' '}
+            <htext bold>
+              link <cursor /> here
+            </htext>
+            .
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            insert <htext bold>link </htext>
+            <ha url={urlOutput}>
+              <htext bold>{urlOutput}</htext>
+            </ha>
+            <htext bold> here</htext>.
+          </hp>
+        </editor>
+      ) as any;
+
+      it('the new link should keep the marks', () => {
+        const editor = createEditor(input);
+        upsertLink(editor, { url: urlOutput });
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
   });
 });

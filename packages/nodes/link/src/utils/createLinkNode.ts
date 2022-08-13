@@ -14,8 +14,6 @@ export const createLinkNode = <V extends Value>(
 ): TLinkElement => {
   const type = getPluginType(editor, ELEMENT_LINK);
 
-  if (!text.length) text = url;
-
   return {
     type,
     url,

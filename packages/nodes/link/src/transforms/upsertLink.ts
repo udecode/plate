@@ -2,6 +2,7 @@ import {
   findNode,
   getAboveNode,
   getEditorString,
+  getNodeLeaf,
   getNodeProps,
   getPluginOptions,
   getPluginType,
@@ -137,6 +138,30 @@ export const upsertLink = <V extends Value>(
 
   const props = getNodeProps(linkNode ?? ({} as any));
 
-  insertLink(editor, { ...props, url, text }, insertNodesOptions);
+  const path = editor.selection?.focus.path;
+  if (!path) return;
+
+  // link text should have the focused leaf marks
+  const leaf = getNodeLeaf(editor, path);
+
+  // if text is empty, text is url
+  if (!text?.length) {
+    text = url;
+  }
+
+  insertLink(
+    editor,
+    {
+      ...props,
+      url,
+      children: [
+        {
+          ...leaf,
+          text,
+        },
+      ],
+    },
+    insertNodesOptions
+  );
   return true;
 };
