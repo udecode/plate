@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 16.2.3
+
 ## 16.2.0
 
 ## 16.1.0
