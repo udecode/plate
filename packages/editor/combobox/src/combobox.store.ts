@@ -85,7 +85,7 @@ export type ComboboxState<TData = NoData> = {
   /**
    * Overrides `useFloating` options.
    */
-  floatingOptions?: Partial<UseVirtualFloatingOptions>;
+  floatingOptions: Partial<UseVirtualFloatingOptions>;
 
   /**
    * Range from the trigger to the cursor.
