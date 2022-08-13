@@ -35,21 +35,12 @@ const ComboboxContent = <TData extends Data = NoData>(
     | 'sort'
   >
 ) => {
-  const {
-    component: Component,
-    items,
-    portalElement,
-    onRenderItem,
-    floatingOptions: _floatingOptions,
-  } = props;
+  const { component: Component, items, portalElement, onRenderItem } = props;
 
   const targetRange = useComboboxSelectors.targetRange();
   const filteredItems = useComboboxSelectors.filteredItems();
   const highlightedIndex = useComboboxSelectors.highlightedIndex();
-
-  let floatingOptions = useComboboxSelectors.floatingOptions?.();
-  floatingOptions = _floatingOptions ?? floatingOptions;
-
+  const floatingOptions = useComboboxSelectors.floatingOptions();
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;
@@ -161,12 +152,19 @@ export const Combobox = <TData extends Data = NoData>({
   maxSuggestions,
   filter,
   sort,
+  floatingOptions,
   ...props
 }: ComboboxProps<TData>) => {
   const editor = useEditorState();
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
   const activeId = useComboboxSelectors.activeId();
+
+  useEffect(() => {
+    if (floatingOptions) {
+      comboboxActions.floatingOptions(floatingOptions);
+    }
+  }, [floatingOptions]);
 
   useEffect(() => {
     comboboxActions.setComboboxById({
