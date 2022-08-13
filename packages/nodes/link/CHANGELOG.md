@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 16.2.2
+
+### Patch Changes
+
+- [#1783](https://github.com/udecode/plate/pull/1783) by [@zbeyens](https://github.com/zbeyens) – fix: https://github.com/udecode/editor-protocol/issues/70
+
 ## 16.2.1
 
 ### Patch Changes
