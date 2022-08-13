@@ -35,12 +35,21 @@ const ComboboxContent = <TData extends Data = NoData>(
     | 'sort'
   >
 ) => {
-  const { component: Component, items, portalElement, onRenderItem } = props;
+  const {
+    component: Component,
+    items,
+    portalElement,
+    onRenderItem,
+    floatingOptions: _floatingOptions,
+  } = props;
 
   const targetRange = useComboboxSelectors.targetRange();
   const filteredItems = useComboboxSelectors.filteredItems();
   const highlightedIndex = useComboboxSelectors.highlightedIndex();
-  const floatingOptions = useComboboxSelectors.floatingOptions?.();
+
+  let floatingOptions = useComboboxSelectors.floatingOptions?.();
+  floatingOptions = _floatingOptions ?? floatingOptions;
+
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;

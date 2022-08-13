@@ -104,6 +104,7 @@ const createComboboxStore = (state: ComboboxStateById) =>
 export const comboboxStore = createStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
+  floatingOptions: {},
   highlightedIndex: 0,
   items: [],
   filteredItems: [],

@@ -24,7 +24,7 @@ export interface ComboboxItemProps<TData> {
 }
 
 export interface ComboboxProps<TData = NoData>
-  extends Partial<Pick<ComboboxState<TData>, 'items'>>,
+  extends Partial<Pick<ComboboxState<TData>, 'items' | 'floatingOptions'>>,
     ComboboxStateById<TData>,
     StyledProps<ComboboxStyles> {
   /**
