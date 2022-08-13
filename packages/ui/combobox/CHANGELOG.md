@@ -1,5 +1,11 @@
 # @udecode/plate-ui-combobox
 
+## 16.2.3
+
+### Patch Changes
+
+- [#1786](https://github.com/udecode/plate/pull/1786) by [@zbeyens](https://github.com/zbeyens) – fix: `floatingOptions` is now a `Combobox` prop
+
 ## 16.2.0
 
 ## 16.1.0
