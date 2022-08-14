@@ -1,2 +1,2 @@
-export * from "./createPortivePlugin";
-export * from "./PortiveImage";
+export * from './createPortivePlugin';
+export * from './PortiveImage';
