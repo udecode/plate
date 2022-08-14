@@ -30,6 +30,7 @@ export const sidebarItems = [
   'placeholder',
   'plate',
   'playground',
+  'portive',
   'preview-md',
   'reset-node',
   'serializing-csv',

@@ -30,6 +30,7 @@ import { mediaFiles } from './media/code-mediaFiles';
 import { mentionFiles } from './mention/code-mentionFiles';
 import { multipleEditorsFiles } from './multiple-editors/code-multipleEditorsFiles';
 import { placeholderFiles } from './placeholder/code-placeholderFiles';
+import { portiveFiles } from './portive/code-portiveFiles';
 import { previewMarkdownFiles } from './preview-markdown/code-previewMarkdownFiles';
 import { resetNodeFiles } from './reset-node/code-resetNodeFiles';
 import { selectOnBackspaceFiles } from './select-on-backspace/code-selectOnBackspaceFiles';
@@ -77,6 +78,7 @@ export const rootFiles = {
   ...mentionFiles,
   ...multipleEditorsFiles,
   ...placeholderFiles,
+  ...portiveFiles,
   ...previewMarkdownFiles,
   ...resetNodeFiles,
   ...selectOnBackspaceFiles,

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "paths": {
-      "@udecode/plate": ["../packages/plate/index"]
+      "@udecode/plate": ["../packages/plate/index"],
+      "@udecode/plate-portive": ["../packages/portive/index"]
     }
   },
   "include": ["src"],

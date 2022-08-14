@@ -47,6 +47,7 @@ module.exports = {
             'plugins/line-height',
             'plugins/list',
             'plugins/media',
+            'plugins/portive',
             'plugins/table',
           ],
           collapsed: false,
