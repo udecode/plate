@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-portive",
-  "version": "13.1.0",
+  "version": "16.2.3",
   "description": "Portive plugin for Plate",
   "keywords": [
     "slate",
@@ -14,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/nodes/portive"
+    "directory": "packages/portive"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -24,15 +24,15 @@
     "dist"
   ],
   "dependencies": {
-    "@udecode/plate-core": "14.0.0",
-    "slate-portive": "^1.0.9"
+    "@udecode/plate-core": "16.2.0",
+    "slate-portive": "^2.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
+    "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2"
+    "slate-react": ">=0.79.0"
   },
   "publishConfig": {
     "access": "public"
