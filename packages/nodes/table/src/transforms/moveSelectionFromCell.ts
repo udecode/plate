@@ -83,12 +83,6 @@ export const moveSelectionFromCell = <V extends Value = Value>(
   if (cellEntry) {
     const [, cellPath] = cellEntry;
 
-    // const a = getPointBefore(editor, editor.selection?.focus!, {
-    //   unit: 'line',
-    // });
-    //
-    // if (!isStartPoint(editor, a, cellPath)) return;
-
     const nextCellPath = [...cellPath];
 
     const offset = reverse ? -1 : 1;
