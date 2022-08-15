@@ -1,24 +1,23 @@
-import { createPluginFactory, PlateEditor, Value } from '@udecode/plate-core';
-import { ELEMENT_IMAGE, TImageElement } from '@udecode/plate-media/src/index';
+import { ELEMENT_IMAGE, TImageElement } from '@udecode/plate';
+import {
+  createPluginFactory,
+  PlateEditor,
+  TElement,
+  Value,
+  WithPartial,
+} from '@udecode/plate-core';
 import {
   createAttachmentBlock,
   CreateImageFileElementEvent,
+  ImageFileInterface,
   PortiveEditor,
   withPortive,
   WithPortiveOptions,
 } from 'slate-portive';
 
-export type TPortiveImageElement = Partial<TImageElement> & {
-  /**
-   * Must include originKey and originSize
-   */
-  originKey: string;
-  originSize: [number, number];
-  /**
-   * Must include `size` (consider switching to `mods.size`)
-   */
-  size: [number, number];
-};
+export type TPortiveImageElement = WithPartial<TImageElement, 'url'> &
+  Partial<ImageFileInterface> &
+  TElement;
 
 export const createPortiveImage = (
   e: CreateImageFileElementEvent
