@@ -1,5 +1,5 @@
 import { Value } from '@udecode/plate-core';
-import { UseFloatingProps } from '@udecode/plate-floating';
+import { PopoverProps } from '@udecode/plate-floating';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { TTableElement } from '@udecode/plate-table';
 import { CSSProp } from 'styled-components';
@@ -15,10 +15,10 @@ export interface TableElementStyles {
 
 export interface TableElementProps<V extends Value>
   extends StyledElementProps<V, TTableElement, TableElementStyles> {
+  popoverProps?: PopoverProps;
+
   /**
    * Transform node column sizes
    */
-  floatingOptions?: UseFloatingProps;
-
   transformColSizes?: (colSizes: number[]) => number[];
 }
