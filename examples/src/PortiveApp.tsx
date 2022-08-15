@@ -23,9 +23,7 @@ const plugins = createMyPlugins(
   [
     createBasicElementsPlugin(),
     ...basicMarksPlugins,
-    createImagePlugin({
-      type: 'image-block',
-    }),
+    createImagePlugin(),
     createPortivePlugin({
       authToken:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imo0YlpVSGFQMmtlQmNyYTQifQ.eyJwYXRoIjoib24ve3l5eXl9L3ttbX0ve2RkfSIsImlhdCI6MTY2MDQ3OTY5NCwiZXhwIjoxNjkyMDM3Mjk0fQ.s03TfyuckZx-IfooKQDh8I9h4KwVth3lB7qiLbEzg6w',
