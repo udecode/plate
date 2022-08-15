@@ -16,6 +16,7 @@ import {
   getTableCellEntry,
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
+import { keyShiftEdges } from './constants';
 
 export const onKeyDownTable = <
   P = PluginOptions,
@@ -25,44 +26,68 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  const isShiftUp = isHotkey('shift+up', e);
-  if (isHotkey('up', e) || isShiftUp) {
-    if (
-      moveSelectionFromCell(editor, {
-        reverse: true,
-        edge: isShiftUp ? 'top' : undefined,
-      })
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
+  const setEditorLastKeyDown = (hotkey: string) => {
+    if (isHotkey(hotkey, e)) {
+      editor.lastKeyDown = hotkey;
     }
-  }
+  };
 
-  const isShiftDown = isHotkey('shift+down', e);
-  if (isHotkey('down', e) || isShiftDown) {
-    if (
-      moveSelectionFromCell(editor, {
-        edge: isShiftDown ? 'bottom' : undefined,
-      })
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
+  const keys = ['up', 'down', 'left', 'right'];
 
-  if (isHotkey('shift+left', e)) {
-    if (moveSelectionFromCell(editor, { edge: 'left' })) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
+  // set last key down to editor so we can override apply set_selection
+  keys.forEach((key) => {
+    setEditorLastKeyDown(key);
+  });
 
-  if (isHotkey('shift+right', e)) {
-    if (moveSelectionFromCell(editor, { edge: 'right' })) {
-      e.preventDefault();
-      e.stopPropagation();
+  const isKeyDown = {
+    'shift+up': isHotkey('shift+up', e),
+    'shift+down': isHotkey('shift+down', e),
+    'shift+left': isHotkey('shift+left', e),
+    'shift+right': isHotkey('shift+right', e),
+  };
+
+  Object.keys(isKeyDown).forEach((key) => {
+    if (isKeyDown[key]) {
+      // if many cells are selected
+      if (
+        moveSelectionFromCell(editor, {
+          reverse: key === 'shift+up',
+          edge: keyShiftEdges[key],
+        })
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      } else {
+        setEditorLastKeyDown(key);
+      }
     }
-  }
+  });
+
+  // if (isHotkey('down', e) || isShiftDown) {
+  //   editor.lastKeyDown = e.key;
+  // if (
+  //   moveSelectionFromCell(editor, {
+  //     edge: isShiftDown ? 'bottom' : undefined,
+  //   })
+  // ) {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  // }
+  // }
+
+  // if (isHotkey('shift+left', e)) {
+  //   if (moveSelectionFromCell(editor, { edge: 'left' })) {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //   }
+  // }
+  //
+  // if (isHotkey('shift+right', e)) {
+  //   if (moveSelectionFromCell(editor, { edge: 'right' })) {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //   }
+  // }
 
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);

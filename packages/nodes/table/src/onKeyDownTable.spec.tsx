@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import React from 'react';
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateTestEditor } from '../../../core/src/utils/__tests__/createPlateTestEditor';
@@ -41,6 +42,61 @@ describe('onKeyDownTable', () => {
             </htr>
             <htr>
               <htd>21</htd>
+              <htd>22</htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        editor: input,
+        plugins: [createTablePlugin()],
+      });
+
+      await triggerKeyboardEvent('ArrowUp');
+
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('when arrow up from a cell second child block', () => {
+    it('should move selection to cell first child block', async () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>21a</hp>
+                <hp>
+                  21b
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>22</htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>11</htd>
+              <htd>12</htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  21a
+                  <cursor />
+                </hp>
+                <hp>21b</hp>
+              </htd>
               <htd>22</htd>
             </htr>
           </htable>

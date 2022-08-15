@@ -9,6 +9,7 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
+import { Location } from 'slate';
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
@@ -18,9 +19,13 @@ import { getCellTypes } from '../utils/getCellType';
 export const moveSelectionFromCell = <V extends Value = Value>(
   editor: PlateEditor<V>,
   {
+    at,
     reverse,
     edge,
+    force,
   }: {
+    at?: Location;
+
     /**
      * false: move selection to cell below
      * true: move selection to cell above
@@ -30,12 +35,19 @@ export const moveSelectionFromCell = <V extends Value = Value>(
      * Expand cell selection to an edge.
      */
     edge?: 'top' | 'left' | 'right' | 'bottom';
+
+    /**
+     * Force selection to next cell
+     */
+    force?: boolean;
   } = {}
 ) => {
   if (edge) {
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+    const cellEntries = getTableGridAbove(editor, { at, format: 'cell' });
 
-    if (cellEntries.length > 0) {
+    const minCell = force ? 0 : 1;
+
+    if (cellEntries.length > minCell) {
       const [, firstCellPath] = cellEntries[0];
       const [, lastCellPath] = cellEntries[cellEntries.length - 1];
 
@@ -64,11 +76,18 @@ export const moveSelectionFromCell = <V extends Value = Value>(
   }
 
   const cellEntry = getBlockAbove(editor, {
+    at,
     match: { type: getCellTypes(editor) },
   });
 
   if (cellEntry) {
     const [, cellPath] = cellEntry;
+
+    // const a = getPointBefore(editor, editor.selection?.focus!, {
+    //   unit: 'line',
+    // });
+    //
+    // if (!isStartPoint(editor, a, cellPath)) return;
 
     const nextCellPath = [...cellPath];
 

@@ -5,10 +5,14 @@ import {
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
+  isRangeInSameBlock,
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
+import { moveSelectionFromCell } from './transforms/index';
+import { getCellTypes } from './utils/index';
+import { keyShiftEdges } from './constants';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
 // TODO: tests
@@ -29,14 +33,13 @@ export const withSelectionTable = <
   const { apply } = editor;
 
   editor.apply = (op) => {
-    if (op.type === 'set_selection') {
+    if (op.type === 'set_selection' && op.newProperties) {
       const selection = {
         ...editor.selection,
         ...op.newProperties,
       } as Range | null;
 
       if (
-        op.newProperties &&
         Range.isRange(selection) &&
         isRangeAcrossBlocks(editor, {
           at: selection,
@@ -64,6 +67,63 @@ export const withSelectionTable = <
             ? getStartPoint(editor, anchorEntry[1])
             : getEndPoint(editor, anchorEntry[1]);
         }
+      }
+
+      if (
+        editor.lastKeyDown &&
+        [
+          'up',
+          'down',
+          'shift+up',
+          'shift+right',
+          'shift+down',
+          'shift+left',
+        ].includes(editor.lastKeyDown)
+      ) {
+        console.log('a');
+
+        if (
+          editor.selection?.focus &&
+          selection?.focus &&
+          isRangeAcrossBlocks(editor, {
+            at: {
+              anchor: editor.selection.focus,
+              focus: selection.focus,
+            },
+            match: { type: getCellTypes(editor) },
+          })
+        ) {
+          let edge: any;
+
+          // if the previous selection was in a single cell
+          if (
+            isRangeInSameBlock(editor, {
+              at: editor.selection,
+              match: { type: getCellTypes(editor) },
+            })
+          ) {
+            edge = keyShiftEdges[editor.lastKeyDown];
+            console.log('yes');
+          }
+
+          console.log(op.properties);
+          const prevSelection = editor.selection;
+          const reverse = ['up', 'shift+up'].includes(editor.lastKeyDown);
+
+          // selection.focus = editor.selection.focus;
+          setTimeout(() => {
+            console.log(edge, reverse, prevSelection, selection);
+
+            moveSelectionFromCell(editor, {
+              at: prevSelection,
+              reverse,
+              edge,
+              force: true,
+            });
+          }, 0);
+        }
+
+        editor.lastKeyDown = null;
       }
     }
 
