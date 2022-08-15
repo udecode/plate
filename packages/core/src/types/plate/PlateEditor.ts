@@ -13,4 +13,5 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
     plugins: WithPlatePlugin<{}, V>[];
     pluginsByKey: Record<PluginKey, WithPlatePlugin<{}, V>>;
     prevSelection: TRange | null;
+    lastKeyDown: string | null;
   };

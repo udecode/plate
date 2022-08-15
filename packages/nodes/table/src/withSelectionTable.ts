@@ -9,6 +9,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
+import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
 // TODO: tests
@@ -29,41 +30,64 @@ export const withSelectionTable = <
   const { apply } = editor;
 
   editor.apply = (op) => {
-    if (op.type === 'set_selection') {
-      const selection = {
+    if (op.type === 'set_selection' && op.newProperties) {
+      const newSelection = {
         ...editor.selection,
         ...op.newProperties,
       } as Range | null;
 
       if (
-        op.newProperties &&
-        Range.isRange(selection) &&
+        Range.isRange(newSelection) &&
         isRangeAcrossBlocks(editor, {
-          at: selection,
+          at: newSelection,
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         })
       ) {
         const anchorEntry = getBlockAbove(editor, {
-          at: selection.anchor,
+          at: newSelection.anchor,
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         });
 
         if (!anchorEntry) {
           const focusEntry = getBlockAbove(editor, {
-            at: selection.focus,
+            at: newSelection.focus,
             match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
           });
 
           if (focusEntry) {
-            op.newProperties.focus = Range.isBackward(selection)
-              ? getPointBefore(editor, getStartPoint(editor, focusEntry[1]))
-              : getEndPoint(editor, focusEntry[1]);
+            const [, focusPath] = focusEntry;
+
+            const isBackward = Range.isBackward(newSelection);
+
+            if (isBackward) {
+              const startPoint = getStartPoint(editor, focusPath);
+              const pointBefore = getPointBefore(editor, startPoint);
+              op.newProperties.focus = pointBefore ?? startPoint;
+            } else {
+              op.newProperties.focus = getEndPoint(editor, focusPath);
+            }
           }
         } else {
-          op.newProperties.focus = Range.isBackward(selection)
-            ? getStartPoint(editor, anchorEntry[1])
-            : getEndPoint(editor, anchorEntry[1]);
+          const [, anchorPath] = anchorEntry;
+
+          const isBackward = Range.isBackward(newSelection);
+
+          if (isBackward) {
+            op.newProperties.focus = getStartPoint(editor, anchorPath);
+          } else {
+            const pointBefore = getPointBefore(editor, anchorPath);
+            // if the table is the first block
+            if (pointBefore) {
+              op.newProperties.focus = getEndPoint(editor, anchorPath);
+            }
+          }
         }
+      }
+
+      overrideSelectionFromCell(editor, newSelection);
+
+      if (editor.lastKeyDown) {
+        editor.lastKeyDown = null;
       }
     }
 
