@@ -5,14 +5,11 @@ import {
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
-  isRangeInSameBlock,
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
-import { moveSelectionFromCell } from './transforms/index';
-import { getCellTypes } from './utils/index';
-import { keyShiftEdges } from './constants';
+import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 import { ELEMENT_TABLE } from './createTablePlugin';
 
 // TODO: tests
@@ -34,95 +31,62 @@ export const withSelectionTable = <
 
   editor.apply = (op) => {
     if (op.type === 'set_selection' && op.newProperties) {
-      const selection = {
+      const newSelection = {
         ...editor.selection,
         ...op.newProperties,
       } as Range | null;
 
       if (
-        Range.isRange(selection) &&
+        Range.isRange(newSelection) &&
         isRangeAcrossBlocks(editor, {
-          at: selection,
+          at: newSelection,
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         })
       ) {
         const anchorEntry = getBlockAbove(editor, {
-          at: selection.anchor,
+          at: newSelection.anchor,
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         });
 
         if (!anchorEntry) {
           const focusEntry = getBlockAbove(editor, {
-            at: selection.focus,
+            at: newSelection.focus,
             match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
           });
 
           if (focusEntry) {
-            op.newProperties.focus = Range.isBackward(selection)
-              ? getPointBefore(editor, getStartPoint(editor, focusEntry[1]))
-              : getEndPoint(editor, focusEntry[1]);
+            const [, focusPath] = focusEntry;
+
+            const isBackward = Range.isBackward(newSelection);
+
+            if (isBackward) {
+              const startPoint = getStartPoint(editor, focusPath);
+              const pointBefore = getPointBefore(editor, startPoint);
+              op.newProperties.focus = pointBefore ?? startPoint;
+            } else {
+              op.newProperties.focus = getEndPoint(editor, focusPath);
+            }
           }
         } else {
-          op.newProperties.focus = Range.isBackward(selection)
-            ? getStartPoint(editor, anchorEntry[1])
-            : getEndPoint(editor, anchorEntry[1]);
+          const [, anchorPath] = anchorEntry;
+
+          const isBackward = Range.isBackward(newSelection);
+
+          if (isBackward) {
+            op.newProperties.focus = getStartPoint(editor, anchorPath);
+          } else {
+            const pointBefore = getPointBefore(editor, anchorPath);
+            // if the table is the first block
+            if (pointBefore) {
+              op.newProperties.focus = getEndPoint(editor, anchorPath);
+            }
+          }
         }
       }
 
-      if (
-        editor.lastKeyDown &&
-        [
-          'up',
-          'down',
-          'shift+up',
-          'shift+right',
-          'shift+down',
-          'shift+left',
-        ].includes(editor.lastKeyDown)
-      ) {
-        console.log('a');
+      overrideSelectionFromCell(editor, newSelection);
 
-        if (
-          editor.selection?.focus &&
-          selection?.focus &&
-          isRangeAcrossBlocks(editor, {
-            at: {
-              anchor: editor.selection.focus,
-              focus: selection.focus,
-            },
-            match: { type: getCellTypes(editor) },
-          })
-        ) {
-          let edge: any;
-
-          // if the previous selection was in a single cell
-          if (
-            isRangeInSameBlock(editor, {
-              at: editor.selection,
-              match: { type: getCellTypes(editor) },
-            })
-          ) {
-            edge = keyShiftEdges[editor.lastKeyDown];
-            console.log('yes');
-          }
-
-          console.log(op.properties);
-          const prevSelection = editor.selection;
-          const reverse = ['up', 'shift+up'].includes(editor.lastKeyDown);
-
-          // selection.focus = editor.selection.focus;
-          setTimeout(() => {
-            console.log(edge, reverse, prevSelection, selection);
-
-            moveSelectionFromCell(editor, {
-              at: prevSelection,
-              reverse,
-              edge,
-              force: true,
-            });
-          }, 0);
-        }
-
+      if (editor.lastKeyDown) {
         editor.lastKeyDown = null;
       }
     }

@@ -22,7 +22,7 @@ export const moveSelectionFromCell = <V extends Value = Value>(
     at,
     reverse,
     edge,
-    force,
+    fromOneCell,
   }: {
     at?: Location;
 
@@ -37,15 +37,15 @@ export const moveSelectionFromCell = <V extends Value = Value>(
     edge?: 'top' | 'left' | 'right' | 'bottom';
 
     /**
-     * Force selection to next cell
+     * Move selection from one selected cell
      */
-    force?: boolean;
+    fromOneCell?: boolean;
   } = {}
 ) => {
   if (edge) {
     const cellEntries = getTableGridAbove(editor, { at, format: 'cell' });
 
-    const minCell = force ? 0 : 1;
+    const minCell = fromOneCell ? 0 : 1;
 
     if (cellEntries.length > minCell) {
       const [, firstCellPath] = cellEntries[0];

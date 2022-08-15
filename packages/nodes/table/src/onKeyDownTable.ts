@@ -13,7 +13,7 @@ import isHotkey from 'is-hotkey';
 import {
   getNextTableCell,
   getPreviousTableCell,
-  getTableCellEntry,
+  getTableEntries,
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
 import { keyShiftEdges } from './constants';
@@ -63,69 +63,33 @@ export const onKeyDownTable = <
     }
   });
 
-  // if (isHotkey('down', e) || isShiftDown) {
-  //   editor.lastKeyDown = e.key;
-  // if (
-  //   moveSelectionFromCell(editor, {
-  //     edge: isShiftDown ? 'bottom' : undefined,
-  //   })
-  // ) {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  // }
-  // }
-
-  // if (isHotkey('shift+left', e)) {
-  //   if (moveSelectionFromCell(editor, { edge: 'left' })) {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //   }
-  // }
-  //
-  // if (isHotkey('shift+right', e)) {
-  //   if (moveSelectionFromCell(editor, { edge: 'right' })) {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //   }
-  // }
-
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
   if (isTab || isUntab) {
-    const res = getTableCellEntry(editor, {});
-    if (!res) return;
-    const { tableRow, tableCell } = res;
-    const [, tableCellPath] = tableCell;
+    const entries = getTableEntries(editor);
+    if (!entries) return;
+
+    const { row, cell } = entries;
+    const [, cellPath] = cell;
 
     if (isUntab) {
       // move left with shift+tab
-      const previousCell = getPreviousTableCell(
-        editor,
-        tableCell,
-        tableCellPath,
-        tableRow
-      );
+      const previousCell = getPreviousTableCell(editor, cell, cellPath, row);
       if (previousCell) {
         const [, previousCellPath] = previousCell;
         select(editor, previousCellPath);
-        e.preventDefault();
-        e.stopPropagation();
       }
     } else if (isTab) {
       // move right with tab
-      const nextCell = getNextTableCell(
-        editor,
-        tableCell,
-        tableCellPath,
-        tableRow
-      );
+      const nextCell = getNextTableCell(editor, cell, cellPath, row);
       if (nextCell) {
         const [, nextCellPath] = nextCell;
         select(editor, nextCellPath);
-        e.preventDefault();
-        e.stopPropagation();
       }
     }
+
+    e.preventDefault();
+    e.stopPropagation();
   }
 
   if (isHotkey('mod+a', e)) {
