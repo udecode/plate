@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 16.4.1
+
+### Patch Changes
+
+- [#1804](https://github.com/udecode/plate/pull/1804) by [@zbeyens](https://github.com/zbeyens) – Fixes #1803
+
 ## 16.3.0
 
 ## 16.2.0
