@@ -38,8 +38,8 @@ export const onKeyDownList = <
     // Unhang the expanded selection
     if (!isCollapsed(editor.selection)) {
       const { anchor, focus } = Range.isBackward(selection)
-        ? { anchor: selection.focus, focus: selection.anchor }
-        : { anchor: selection.anchor, focus: selection.focus };
+        ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
+        : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
