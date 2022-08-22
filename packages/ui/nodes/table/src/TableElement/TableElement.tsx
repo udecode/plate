@@ -1,25 +1,23 @@
 import React from 'react';
-import { Value, withProviders } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { Provider, useAtom } from 'jotai';
 import { useSelectedCells } from '../hooks/useSelectedCells';
 import { useTableColSizes } from '../hooks/useTableColSizes';
-import { selectedCellsAtom } from '../table.atoms';
+import { useTableStore } from '../table.atoms';
 import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
 
-export const TableElementBase = <V extends Value>({
+export const TableElement = <V extends Value>({
   transformColSizes,
-  onRenderContainer: Popover = TablePopover,
+  popoverProps,
   ...props
 }: TableElementProps<V>) => {
   const { attributes, children, nodeProps, element } = props;
 
   const rootProps = getRootProps(props);
 
-  const [selectedCells] = useAtom(selectedCellsAtom);
+  const selectedCells = useTableStore().get.selectedCells();
 
   const { root, tbody } = getTableElementStyles({
     ...props,
@@ -35,27 +33,24 @@ export const TableElementBase = <V extends Value>({
   useSelectedCells();
 
   return (
-    <Popover {...props}>
-      <table
-        {...attributes}
-        css={root.css}
-        className={root.className}
-        {...rootProps}
-        {...nodeProps}
-      >
-        <colgroup>
-          {colSizes.map((width, index) => (
-            <col key={index} style={width ? { width } : undefined} />
-          ))}
-        </colgroup>
+    <table
+      {...attributes}
+      css={root.css}
+      className={root.className}
+      {...rootProps}
+      {...nodeProps}
+    >
+      <colgroup contentEditable={false}>
+        {colSizes.map((width, index) => (
+          <col key={index} style={width ? { width } : undefined} />
+        ))}
+      </colgroup>
+
+      <TablePopover {...popoverProps}>
         <tbody css={tbody?.css} className={tbody?.className}>
           {children}
         </tbody>
-      </table>
-    </Popover>
+      </TablePopover>
+    </table>
   );
 };
-
-export const TableElement = withProviders([Provider, { scope: ELEMENT_TABLE }])(
-  TableElementBase
-);

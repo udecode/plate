@@ -10,15 +10,15 @@ jsx;
 
 describe('toggle on', () => {
   it('should turn a p to list', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           1<cursor />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -26,7 +26,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -39,7 +39,7 @@ describe('toggle on', () => {
   });
 
   it('should turn a p with a selection to list', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           Planetas <anchor />
@@ -47,9 +47,9 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -61,7 +61,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -74,7 +74,7 @@ describe('toggle on', () => {
   });
 
   it('should turn multiple p to list', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           <anchor />1
@@ -84,9 +84,9 @@ describe('toggle on', () => {
           3<focus />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -100,7 +100,113 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should turn multiple p to list in the same order', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          AAA
+        </hp>
+        <hp>BBB</hp>
+        <hp>CCC</hp>
+        <hp>DDD</hp>
+        <hp>EEE</hp>
+        <hp>
+          FFF
+          <focus />
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>AAA</hlic>
+          </hli>
+          <hli>
+            <hlic>BBB</hlic>
+          </hli>
+          <hli>
+            <hlic>CCC</hlic>
+          </hli>
+          <hli>
+            <hlic>DDD</hlic>
+          </hli>
+          <hli>
+            <hlic>EEE</hlic>
+          </hli>
+          <hli>
+            <hlic>FFF</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should turn multiple p to list in the same order', () => {
+    const input = (
+      <editor>
+        <hp>
+          <focus />
+          AAA
+        </hp>
+        <hp>BBB</hp>
+        <hp>CCC</hp>
+        <hp>DDD</hp>
+        <hp>EEE</hp>
+        <hp>
+          FFF
+          <anchor />
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>AAA</hlic>
+          </hli>
+          <hli>
+            <hlic>BBB</hlic>
+          </hli>
+          <hli>
+            <hlic>CCC</hlic>
+          </hli>
+          <hli>
+            <hlic>DDD</hlic>
+          </hli>
+          <hli>
+            <hlic>EEE</hlic>
+          </hli>
+          <hli>
+            <hlic>FFF</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -115,7 +221,7 @@ describe('toggle on', () => {
 
 describe('toggle off', () => {
   it('should split a simple list to two', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -132,9 +238,9 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -148,7 +254,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -161,7 +267,7 @@ describe('toggle off', () => {
   });
 
   it('should split a nested list', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -183,9 +289,9 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -204,7 +310,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -217,7 +323,7 @@ describe('toggle off', () => {
   });
 
   it('should turn a list to multiple p', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -235,15 +341,15 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>1</hp>
         <hp>2</hp>
         <hp>3</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -258,7 +364,7 @@ describe('toggle off', () => {
 
 describe('toggle over', () => {
   it('should toggle different list types', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -268,9 +374,9 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hol>
           <hli>
@@ -278,7 +384,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -291,7 +397,7 @@ describe('toggle over', () => {
   });
 
   it('should only toggle the nested list', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -307,9 +413,9 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -322,7 +428,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -335,7 +441,7 @@ describe('toggle over', () => {
   });
 
   it('should only toggle everything that is selected', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -353,9 +459,9 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hol>
           <hli>
@@ -368,7 +474,57 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should fully toggle a nested list when the selection contains a p', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <anchor />1
+            </hlic>
+            <hul>
+              <hli>
+                <hlic>11</hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+        <hp>
+          body
+          <focus />
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <hol>
+          <hli>
+            <hlic>1</hlic>
+            <hol>
+              <hli>
+                <hlic>11</hlic>
+              </hli>
+            </hol>
+          </hli>
+          <hli>
+            <hlic>body</hlic>
+          </hli>
+        </hol>
+      </editor>
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

@@ -36,7 +36,7 @@ module.exports = {
   settings: {
     'import/resolver': {
       node: {
-        moduleDirectory: ['node_modules', 'src'],
+        moduleDirectory: ['node_modules'],
         typescript: {
           alwaysTryTypes: true,
         },
@@ -66,6 +66,7 @@ module.exports = {
         tsx: 'never',
         js: 'never',
         jsx: 'never',
+        json: 'always',
       },
     ],
     'import/no-cycle': 'off',
@@ -284,27 +285,6 @@ module.exports = {
         'prettier/prettier': 'off',
         'simple-import-sort/imports': 'off',
         'import/order': ['error', { 'newlines-between': 'never' }],
-      },
-    },
-    // local
-    {
-      files: 'packages/**/*',
-      excludedFiles: '**/*.spec.*',
-      rules: {
-        'no-restricted-imports': [
-          'error',
-          {
-            paths: [
-              {
-                name: '@styled-icons',
-                message:
-                  '@styled-icons package is meant to be used in stories only',
-              },
-            ],
-            // The no-restricted-imports rule does not support custom messages for pattern imports yet: https://github.com/eslint/eslint/issues/11843
-            patterns: ['@styled-icons/*'],
-          },
-        ],
       },
     },
   ],

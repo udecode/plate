@@ -1,12 +1,13 @@
 import React from 'react';
 import {
+  focusEditor,
   getPluginType,
   someNode,
   useEventPlateId,
   usePlateEditorState,
   withPlateEventProvider,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK, getAndUpsertLink } from '@udecode/plate-link';
+import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface LinkToolbarButtonProps extends ToolbarButtonProps {
@@ -31,7 +32,13 @@ export const LinkToolbarButton = withPlateEventProvider(
           if (!editor) return;
 
           event.preventDefault();
-          getAndUpsertLink(editor, getLinkUrl);
+          event.stopPropagation();
+
+          focusEditor(editor, editor.selection ?? editor.prevSelection!);
+
+          setTimeout(() => {
+            triggerFloatingLink(editor, { focused: true });
+          }, 0);
         }}
         {...props}
       />

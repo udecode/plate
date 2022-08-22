@@ -1,5 +1,166 @@
 # @udecode/plate-link
 
+## 16.3.0
+
+## 16.2.2
+
+### Patch Changes
+
+- [#1783](https://github.com/udecode/plate/pull/1783) by [@zbeyens](https://github.com/zbeyens) – fix: https://github.com/udecode/editor-protocol/issues/70
+
+## 16.2.1
+
+### Patch Changes
+
+- [#1765](https://github.com/udecode/plate/pull/1765) by [@zbeyens](https://github.com/zbeyens) – fix:
+  - overall, marks should be kept on link insert/edit
+  - `unwrapLink`: new option `split`
+    - if true: split the link above anchor/focus before unwrapping
+  - `upsertLink`:
+    - replaced `update` option by `insertTextInLink`: if true, insert text when selection is in url
+    - `upsertLinkText`: If the text is different than the link above text, replace link children by a new text. The new text has the same marks than the first text replaced.
+  - specs:
+    - https://github.com/udecode/editor-protocol/issues/47
+    - https://github.com/udecode/editor-protocol/issues/50
+    - https://github.com/udecode/editor-protocol/issues/58
+    - https://github.com/udecode/editor-protocol/issues/59
+    - https://github.com/udecode/editor-protocol/issues/60
+
+## 16.2.0
+
+## 16.1.0
+
+## 16.0.2
+
+## 16.0.0
+
+## 15.0.5
+
+### Patch Changes
+
+- [#1715](https://github.com/udecode/plate/pull/1715) by [@tmilewski](https://github.com/tmilewski) – Fix FloatingLinkUrlInput snapping to the previous location on show and to the bottom of the editor upon clicking outside of the element
+
+## 15.0.3
+
+## 15.0.1
+
+### Patch Changes
+
+- [#1697](https://github.com/udecode/plate/pull/1697) by [@zbeyens](https://github.com/zbeyens) – fix: copy/paste was blocked by the link plugin. Now it should work when the data is not a url and not inserted into a link
+
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - `createLinkPlugin`
+    - removed `onKeyDownLink` for floating link
+    - removed `hotkey` for `triggerFloatingLinkHotkeys`
+  - removed:
+    - `getAndUpsertLink` for `upsertLink`
+    - `upsertLinkAtSelection` for `upsertLink`
+  - `LinkToolbarButton`:
+    - `onClick` now calls `triggerFloatingLink`
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+
+  - new dep:
+    - `@udecode/plate-button`
+  - new unstyled components + props hooks:
+    - `PlateFloatingLink`
+    - `LinkRoot`
+    - `FloatingLink`
+    - `FloatingLinkEditRoot`
+    - `FloatingLinkInsertRoot`
+    - `FloatingLinkUrlInput`
+    - `FloatingLinkTextInput`
+    - `FloatingLinkEditButton`
+    - `UnlinkButton`
+    - `OpenLinkButton`
+  - new store: `floatingLinkStore`
+  - `LinkPlugin` new props:
+    - `triggerFloatingLinkHotkeys`: Hotkeys to trigger floating link. Default is 'command+k, ctrl+k'
+  - new utils:
+    - `insertLink`
+    - `submitFloatingLink`
+    - `unwrapLink`
+    - `upsertLink`
+    - `createLinkNode`
+    - `triggerFloatingLink`
+    - `triggerFloatingLinkEdit`
+    - `triggerFloatingLinkInsert`
+
+  Specs:
+
+  - Insert data:
+    - https://github.com/udecode/editor-protocol/issues/34
+    - https://github.com/udecode/editor-protocol/issues/35
+    - https://github.com/udecode/editor-protocol/issues/36
+    - https://github.com/udecode/editor-protocol/issues/37
+    - https://github.com/udecode/editor-protocol/issues/38
+    - https://github.com/udecode/editor-protocol/issues/43
+  - Insert space:
+    - https://github.com/udecode/editor-protocol/issues/39
+    - https://github.com/udecode/editor-protocol/issues/40
+    - https://github.com/udecode/editor-protocol/issues/41
+    - https://github.com/udecode/editor-protocol/issues/42
+  - Floating link:
+    - https://github.com/udecode/editor-protocol/issues/45
+    - https://github.com/udecode/editor-protocol/issues/48
+    - https://github.com/udecode/editor-protocol/issues/51
+    - https://github.com/udecode/editor-protocol/issues/60
+  - Floating link insert:
+    - https://github.com/udecode/editor-protocol/issues/44
+    - https://github.com/udecode/editor-protocol/issues/46
+    - https://github.com/udecode/editor-protocol/issues/47
+    - https://github.com/udecode/editor-protocol/issues/49
+    - https://github.com/udecode/editor-protocol/issues/50
+  - Floating link edit:
+    - https://github.com/udecode/editor-protocol/issues/54
+    - https://github.com/udecode/editor-protocol/issues/55
+    - https://github.com/udecode/editor-protocol/issues/56
+    - https://github.com/udecode/editor-protocol/issues/57
+    - https://github.com/udecode/editor-protocol/issues/58
+    - https://github.com/udecode/editor-protocol/issues/59
+    - https://github.com/udecode/editor-protocol/issues/61
+  - Selection:
+    - https://github.com/udecode/editor-protocol/issues/52
+    - https://github.com/udecode/editor-protocol/issues/53
+
+### Patch Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes #1580
+  - Fixes #1542
+  - Fixes #1194
+  - Fixes #712
+
+## 14.4.2
+
+## 14.4.1
+
+### Patch Changes
+
+- [#1687](https://github.com/udecode/plate/pull/1687) by [@davisg123](https://github.com/davisg123) – Allow the link plugin to optionally specify a custom href for link text
+
+## 14.4.0
+
+### Patch Changes
+
+- [#1685](https://github.com/udecode/plate/pull/1685) by [@davisg123](https://github.com/davisg123) – Allow the link plugin to optionally specify a custom href for link text
+
+## 14.0.2
+
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.1.0

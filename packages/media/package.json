@@ -1,0 +1,46 @@
+{
+  "name": "@udecode/plate-media",
+  "version": "16.3.0",
+  "description": "Plate Media plugin",
+  "license": "MIT",
+  "homepage": "https://plate.udecode.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/media"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@udecode/plate-core": "16.3.0",
+    "js-video-url-parser": "^0.5.1",
+    "re-resizable": "^6.9.9",
+    "react-textarea-autosize": "^8.3.3",
+    "scriptjs": "2.5.9"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.78.0",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.79.0"
+  },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/scriptjs": "0.0.2"
+  }
+}

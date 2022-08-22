@@ -1,5 +1,47 @@
 # @udecode/plate-ui-button
 
+## 16.3.0
+
+## 16.2.0
+
+## 16.1.0
+
+## 16.0.2
+
+## 16.0.0
+
+### Patch Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `focus` editor after removing node on click
+
+## 15.0.3
+
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - moved `Button` to `@udecode/plate-button`
+  - `Button` is now unstyled
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - `PlateButton`
+
+## 14.4.2
+
+## 14.0.2
+
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.1.0

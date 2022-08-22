@@ -1,10 +1,11 @@
 import {
-  getBlockAbove,
+  getEndPoint,
   getPluginType,
+  getStartPoint,
+  getTEditor,
   hasNode,
-  insertNodes,
   PlateEditor,
-  removeNodes,
+  replaceNodeChildren,
   select,
   TElement,
   Value,
@@ -13,6 +14,7 @@ import {
 } from '@udecode/plate-core';
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
+import { getTableAbove } from './queries/getTableAbove';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { TablePlugin } from './types';
@@ -33,22 +35,53 @@ export const withInsertFragmentTable = <
   const { insertFragment } = editor;
   const { disableExpandOnInsert, insertColumn, insertRow } = options;
 
-  editor.insertFragment = (fragment) => {
+  const myEditor = getTEditor<V>(editor);
+
+  myEditor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
       (n) => n.type === getPluginType(editor, ELEMENT_TABLE)
     );
 
-    if (insertedTable) {
-      const tableEntry = getBlockAbove(editor, {
+    if (!insertedTable) {
+      const tableEntry = getTableAbove(editor, {
         at: editor.selection?.anchor,
-        match: {
-          type: getPluginType(editor, ELEMENT_TABLE),
-        },
+      });
+
+      if (tableEntry) {
+        const cellEntries = getTableGridAbove(editor, {
+          format: 'cell',
+        });
+
+        if (cellEntries.length > 1) {
+          cellEntries.forEach((cellEntry) => {
+            if (cellEntry) {
+              const [, cellPath] = cellEntry;
+
+              replaceNodeChildren(editor, {
+                at: cellPath,
+                nodes: cloneDeep(fragment),
+              });
+            }
+          });
+
+          select(editor, {
+            anchor: getStartPoint(editor, cellEntries[0][1]),
+            focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
+          });
+          return;
+        }
+      }
+    }
+
+    if (insertedTable) {
+      const tableEntry = getTableAbove(editor, {
+        at: editor.selection?.anchor,
       });
 
       // inserting inside table
       if (tableEntry) {
         const [cellEntry] = getTableGridAbove(editor, {
+          at: editor.selection?.anchor,
           format: 'cell',
         });
 
@@ -102,11 +135,9 @@ export const withInsertFragmentTable = <
                 }
                 initCell = false;
 
-                removeNodes(editor, {
+                replaceNodeChildren(editor, {
                   at: cellPath,
-                });
-                insertNodes<TElement>(editor, cloneDeep(cell), {
-                  at: cellPath,
+                  nodes: cloneDeep(cell.children as any),
                 });
 
                 lastCellPath = [...cellPath];
@@ -115,14 +146,8 @@ export const withInsertFragmentTable = <
 
             if (lastCellPath) {
               select(editor, {
-                anchor: {
-                  offset: 0,
-                  path: startCellPath,
-                },
-                focus: {
-                  offset: 0,
-                  path: lastCellPath,
-                },
+                anchor: getStartPoint(editor, startCellPath),
+                focus: getEndPoint(editor, lastCellPath),
               });
             }
           });

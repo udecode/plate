@@ -1,53 +1,45 @@
 {
   "name": "@udecode/plate-ui-table",
-  "version": "13.5.0",
+  "version": "16.4.0",
   "description": "Table UI for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/ui/nodes/table"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../../cti.sh",
-    "rollup": "rollup -c=../../../../rollup.config.js",
-    "test": "jest"
-  },
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "13.5.0",
-    "@udecode/plate-styled-components": "13.5.0",
-    "@udecode/plate-table": "13.5.0",
-    "@udecode/plate-ui-toolbar": "13.5.0",
-    "@udecode/plate-ui-button": "13.5.0",
-    "@udecode/plate-ui-popover": "13.5.0",
+    "@udecode/plate-core": "16.3.0",
+    "@udecode/plate-floating": "16.3.0",
+    "@udecode/plate-styled-components": "16.3.0",
+    "@udecode/plate-table": "16.3.0",
+    "@udecode/plate-ui-button": "16.3.0",
+    "@udecode/plate-ui-toolbar": "16.3.0",
     "re-resizable": "^6.9.9"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
+    "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2",
+    "slate-react": ">=0.79.0",
     "styled-components": ">=5.0.0"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

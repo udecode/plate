@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 import { useEditorRef } from '@udecode/plate-core';
 import { getTableGridAbove } from '@udecode/plate-table';
-import { useAtom } from 'jotai';
 import { useReadOnly, useSelected } from 'slate-react';
-import { selectedCellsAtom } from '../table.atoms';
+import { useTableStore } from '../table.atoms';
 
 /**
  * Many grid cells above and diff -> set
@@ -15,7 +14,7 @@ export const useSelectedCells = () => {
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const [selectedCells, setSelectedCells] = useAtom(selectedCellsAtom);
+  const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
 
   useEffect(() => {
     if (!selected || readOnly) setSelectedCells(null);

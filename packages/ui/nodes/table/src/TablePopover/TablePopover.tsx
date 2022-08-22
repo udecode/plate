@@ -1,15 +1,25 @@
 import React from 'react';
-import { Value } from '@udecode/plate-core';
+import { useElement } from '@udecode/plate-core';
+import { ElementPopover, PopoverProps } from '@udecode/plate-floating';
 import { RemoveNodeButton } from '@udecode/plate-ui-button';
-import { Popover } from '@udecode/plate-ui-popover';
-import { TableElementProps } from '../TableElement/TableElement.types';
+import { floatingButtonCss, floatingRootCss } from '@udecode/plate-ui-toolbar';
 
-export const TablePopover = <V extends Value>({
-  element,
-  popoverProps,
-  children,
-}: TableElementProps<V>) => (
-  <Popover content={<RemoveNodeButton element={element} />} {...popoverProps}>
-    {children}
-  </Popover>
-);
+export const TablePopover = ({ children, ...props }: PopoverProps) => {
+  const element = useElement();
+
+  return (
+    <ElementPopover
+      content={
+        <RemoveNodeButton
+          element={element}
+          css={floatingButtonCss}
+          contentEditable={false}
+        />
+      }
+      css={floatingRootCss}
+      {...props}
+    >
+      {children}
+    </ElementPopover>
+  );
+};

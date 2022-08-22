@@ -45,14 +45,14 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version: 16.x
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: yarn
 
       - name: Prepare release
-        run: yarn prerelease
+        run: yarn g:build
 
       # https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md
       - name: Release to @pr channel
@@ -65,7 +65,7 @@ jobs:
 
       - name: Get released version
         id: version
-        run: echo ::set-output name=version::$(node -p "require('./lerna.json').version")
+        run: echo ::set-output name=version::$(node -p "require('./packages/plate/package.json').version")
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1

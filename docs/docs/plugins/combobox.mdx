@@ -6,6 +6,8 @@ title: Combobox
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-combobox
 ```
 
@@ -20,8 +22,7 @@ The combobox state is stored in a [zustood store](https://github.com/udecode/zus
 - `items` – Unfiltered items
 - `filteredItems` – Filtered items
 - `highlightedIndex` – Highlighted index
-- `popperContainer` – Parent element of the popper element (the one that has the scroll)
-- `popperOptions` – Overrides `usePopper` options
+- `floatingOptions` – Overrides `useFloating` options
 - `targetRange` – Range from the trigger to the cursor
 - `text` – Text after the trigger
 
@@ -96,4 +97,4 @@ If the combobox is open, handle:
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/ui/combobox/src/createComboboxPlugin.ts)
 - [packages/ui/combobox](https://github.com/udecode/plate/tree/main/packages/ui/combobox/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

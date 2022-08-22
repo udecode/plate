@@ -6,36 +6,20 @@ title: Placeholder
 ### Installation
 
 ```bash npm2yarn
+npm install @udecode/plate
+# or
 npm install @udecode/plate-ui-placeholder
 ```
 
 ### Usage
 
-```ts live
-() => {
-  const components = withStyledPlaceHolders(CONFIG.components);
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createExitBreakPlugin(CONFIG.exitBreak),
-  ], { components });
+Try to focus an empty paragraph: a placeholder will be shown.
 
-  return (
-    <>
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-      </HeadingToolbar>
-      <Plate
-        id="placeholder"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.placeholder}
-        plugins={plugins}
-      />
-    </>
-  );
-}
-```
+import { PlaceholderSandpack } from './PlaceholderSandpack'
+
+<PlaceholderSandpack />
 
 ### Source Code
 
 - [packages/ui/placeholder](https://github.com/udecode/plate/tree/main/packages/ui/placeholder/src)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

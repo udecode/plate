@@ -1,21 +1,25 @@
 import {
+  ELEMENT_DEFAULT,
   getBlockAbove,
   getEndPoint,
-  getNodeChildren,
+  getPluginType,
   getPointAfter,
   getPointBefore,
   getStartPoint,
   isCollapsed,
+  isRangeInSameBlock,
   moveSelection,
   PlateEditor,
-  removeNodes,
+  replaceNodeChildren,
   select,
+  TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
+import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
  * Return true if:
@@ -91,21 +95,37 @@ export const withDeleteTable = <
   };
 
   editor.deleteFragment = () => {
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-    if (cellEntries.length > 1) {
-      withoutNormalizing(editor, () => {
-        cellEntries.forEach(([, cellPath]) => {
-          for (const [, childPath] of getNodeChildren(editor, cellPath, {
-            reverse: true,
-          })) {
-            removeNodes(editor, { at: childPath });
-          }
+    isRangeInSameBlock(editor, {
+      match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+    });
+
+    if (
+      isRangeInSameBlock(editor, {
+        match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+      })
+    ) {
+      const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+      if (cellEntries.length > 1) {
+        withoutNormalizing(editor, () => {
+          cellEntries.forEach(([, cellPath]) => {
+            replaceNodeChildren<TElement>(editor, {
+              at: cellPath,
+              nodes: {
+                type: getPluginType(editor, ELEMENT_DEFAULT),
+                children: [{ text: '' }],
+              },
+            });
+          });
+
+          // set back the selection
+          select(editor, {
+            anchor: getStartPoint(editor, cellEntries[0][1]),
+            focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
+          });
         });
-      });
 
-      select(editor, cellEntries[0][1]);
-
-      return;
+        return;
+      }
     }
 
     deleteFragment();

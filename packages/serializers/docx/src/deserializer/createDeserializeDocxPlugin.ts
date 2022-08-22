@@ -12,9 +12,9 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { KEY_INDENT, KEY_TEXT_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
+import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import {

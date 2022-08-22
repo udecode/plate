@@ -3,25 +3,30 @@ import {
   PlateEditor,
   Value,
   wrapNodes,
+  WrapNodesOptions,
 } from '@udecode/plate-core';
-import { Location } from 'slate';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 
+export interface WrapLinkOptions<V extends Value = Value>
+  extends WrapNodesOptions<V> {
+  url: string;
+}
+
 /**
- * Wrap selected nodes with a link and collapse at the end.
+ * Wrap a link node with split.
  */
 export const wrapLink = <V extends Value>(
   editor: PlateEditor<V>,
-  { at, url }: { url: string; at?: Location }
+  { url, ...options }: WrapLinkOptions<V>
 ) => {
-  wrapNodes<TLinkElement>(
+  wrapNodes<TLinkElement, Value>(
     editor,
     {
       type: getPluginType(editor, ELEMENT_LINK),
       url,
       children: [],
     },
-    { at, split: true }
+    { split: true, ...options } as any
   );
 };

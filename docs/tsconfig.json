@@ -2,9 +2,8 @@
   "extends": "@tsconfig/docusaurus/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {
-      "@example/*": ["../examples/next/src/*"]
-    }
+    "jsx": "react-jsx",
+    "outDir": "dist"
   },
   "files": ["../types/twin.d.ts"],
   "include": ["src"]

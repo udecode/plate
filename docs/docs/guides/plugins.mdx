@@ -477,6 +477,10 @@ createIndentPlugin({
 
 - Property used by `inlineVoid` core plugin to set elements of this `type` as void.
 
+### `normalizeInitialValue`
+
+- Normalize value before passing it into the editor.
+
 ### `options`
 
 - Extended properties used by any plugin as options.
@@ -496,6 +500,18 @@ createIndentPlugin({
 - Property used by Plate to override node `component` props.
 - If function, its returning value will be shallow merged to the old props, with the old props as parameter.
 - If object, its value will be shallow merged to the old props.
+
+### `renderAboveEditable`
+
+- Render a component above `Editable`.
+
+### `renderAfterEditable`
+
+- Render a component after `Editable`.
+
+### `renderBeforeEditable`
+
+- Render a component before `Editable`.
 
 ### `serializeHtml`
 

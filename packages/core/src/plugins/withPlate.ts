@@ -29,6 +29,8 @@ export const withPlate = <
   let editor = (e as any) as E & PlateEditor<V>;
 
   editor.id = id as string;
+  editor.prevSelection = null;
+  editor.lastKeyDown = null;
 
   if (!editor.key) {
     editor.key = Math.random();

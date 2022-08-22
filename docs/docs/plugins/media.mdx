@@ -1,0 +1,97 @@
+---
+slug: /plugins/media
+title: Media
+---
+
+This package implements the media plugins for Plate. It allows inserting
+embeddable media such as images, YouTube or Vimeo videos and tweets into your
+editor.
+
+It also provides the following features:
+- editable caption below the media
+- resizable
+
+Media providers supported by this plugin:
+
+- video: 
+  - youtube
+  - vimeo
+  - dailymotion
+  - youku
+  - coub
+- twitter
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate
+# or
+npm install @udecode/plate-media
+npm install @udecode/plate-ui-media
+```
+
+### Usage
+
+
+import { MediaSandpack } from "./MediaSandpack";
+
+<MediaSandpack />
+
+### Options
+
+```tsx
+export type EmbedUrlData = {
+  url?: string;
+  provider?: string;
+  id?: string;
+  component?: RenderFunction<EmbedUrlData>;
+};
+
+export type MediaUrlParser = (url: string) => EmbedUrlData | undefined;
+
+export type MediaPluginRule = {
+  parser: MediaUrlParser;
+  component?: RenderFunction<EmbedUrlData>;
+};
+
+export interface MediaPlugin {
+  isUrl?: (text: string) => boolean;
+
+  /**
+   * Transforms the url.
+   */
+  transformUrl?: (url: string) => string;
+
+  /**
+   * List of rules. The first rule that matches the url will be used,
+   * i.e. its component will be used to render the media. Used by `MediaEmbed`.
+   */
+  rules?: MediaPluginRule[];
+}
+
+export interface ImagePlugin extends MediaPlugin {
+  /**
+   * An optional method that will upload the image to a server.
+   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+   */
+  uploadImage?: (
+    dataUrl: string | ArrayBuffer
+  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+
+  /**
+   * Disable file upload on insert data.
+   */
+  disableUploadInsert?: boolean;
+
+  /**
+   * Disable url embed on insert data.
+   */
+  disableEmbedInsert?: boolean;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/media/src/createMediaEmbedPlugin.ts)
+- [packages/ui/nodes/media](https://github.com/udecode/plate/tree/main/packages/ui/nodes/media/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

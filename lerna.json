@@ -9,10 +9,6 @@
   ],
   "includeMergedTags": true,
   "npmClient": "yarn",
-  "packages": [
-    "packages/**",
-    "docs"
-  ],
-  "useWorkspaces": true,
+  "packages": ["packages/**"],
   "version": "1.0.0"
 }

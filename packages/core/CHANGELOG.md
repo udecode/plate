@@ -1,5 +1,134 @@
 # @udecode/plate-core
 
+## 16.3.0
+
+### Patch Changes
+
+- [#1796](https://github.com/udecode/plate/pull/1796) by [@zbeyens](https://github.com/zbeyens) – New `PlateEditor` prop to store the last key down:
+  - `lastKeyDown: string | null`
+
+## 16.2.0
+
+### Minor Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - `isRangeAcrossBlocks`: Now returns true if one of the block above is found but not the other and returns undefined if no block is found.
+  - `isRangeInSameBlock`: Whether the range is in the same block.
+  - `removeNodeChildren`: Remove node children.
+  - `replaceNodeChildren`: Replace node children: remove then insert.
+
+### Patch Changes
+
+- [#1776](https://github.com/udecode/plate/pull/1776) by [@davisg123](https://github.com/davisg123) – Autoformatter will incorrectly match on text that contains one additional character of text
+
+## 16.1.0
+
+### Minor Changes
+
+- [#1768](https://github.com/udecode/plate/pull/1768) by [@zbeyens](https://github.com/zbeyens) – new utils:
+  - `wrapNodeChildren`: Wrap node children into a single element
+
+## 16.0.2
+
+### Patch Changes
+
+- [#1766](https://github.com/udecode/plate/pull/1766) by [@zbeyens](https://github.com/zbeyens) – Fix: Plate `firstChildren` is now working
+
+- [#1755](https://github.com/udecode/plate/pull/1755) by [@mouradmourafiq](https://github.com/mouradmourafiq) – Add `options` parameter to `isSelectionAtBlockEnd`
+
+## 16.0.0
+
+### Minor Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `ElementProvider` now has `SCOPE_ELEMENT='element'` scope in addition to the plugin key, so `useElement()` can be called without parameter (default = `SCOPE_ELEMENT`). You'll need to use the plugin key scope only to get an ancestor element.
+  - upgrade peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
+## 15.0.3
+
+### Patch Changes
+
+- [#1707](https://github.com/udecode/plate/pull/1707) by [@dylans](https://github.com/dylans) – improve performance of list normalizations
+
+## 15.0.0
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - new dep + re-exports `"react-hotkeys-hook": "^3.4.6"`
+  - new core plugin `createSelectionPlugin`
+    - stores the previous selection in `editor.prevSelection` (default is `null`)
+    - enabled by default, can be disabled using `selection` key
+  - new `PlatePlugin` props:
+    - `renderAboveEditable`: Render a component above `Editable`.
+    - `renderAfterEditable`: Render a component after `Editable`.
+    - `renderBeforeEditable`: Render a component before `Editable`.
+  - `Plate`:
+    - pipes plugins `renderAboveEditable` and render the result above `Editable`
+    - pipes plugins `renderAfterEditable` and render the result after `Editable`, before `children`
+    - pipes plugins `renderBeforeEditable` and render the result before `Editable`, after `firstChildren`
+  - new queries
+    - `getNextNodeStartPoint`
+    - `getPreviousNodeEndPoint`
+  - new hooks
+    - `useOnClickOutside`
+  - `PlateEditor` new prop:
+    - `prevSelection: TRange | null;`
+
+## 14.4.2
+
+### Patch Changes
+
+- [#1689](https://github.com/udecode/plate/pull/1689) by [@zbeyens](https://github.com/zbeyens) – fix: wait for editor value being ready before calling `normalizeNodes`
+
+## 14.0.2
+
+### Patch Changes
+
+- [#1669](https://github.com/udecode/plate/pull/1669) by [@zbeyens](https://github.com/zbeyens) – fix: use jotai scope to Plate provider
+
+## 14.0.0
+
+### Major Changes
+
+- [#1633](https://github.com/udecode/plate/pull/1633) by [@tjramage](https://github.com/tjramage) – Moved `serializeHtml` and its utils to `@udecode/plate-serializer-html` as it has a new dependency: [html-entities](https://www.npmjs.com/package/html-entities).
+  - If you're using `@udecode/plate`, no migration is needed
+  - Otherwise, import it from `@udecode/plate-serializer-html`
+
+## 13.8.0
+
+### Minor Changes
+
+- [#1650](https://github.com/udecode/plate/pull/1650) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin` has a new option:
+  - `normalizeInitialValue`: filter the value before it's passed into the editor
+
+## 13.7.0
+
+### Minor Changes
+
+- [#1648](https://github.com/udecode/plate/pull/1648) by [@zbeyens](https://github.com/zbeyens) –
+  - new plate action:
+    - `redecorate` - triggers a redecoration of the editor.
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `focusEditor` new option to set selection before focusing the editor
+    - `target`: if defined:
+      - deselect the editor (otherwise it will focus the start of the editor)
+      - select the editor
+      - focus the editor
+  - re-exports `createStore` from `@udecode/zustood`, so the other packages don't have to install it
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - fix returned type: `getNextSiblingNodes`
+
 ## 13.5.0
 
 ### Minor Changes
@@ -38,9 +167,6 @@
   - exports `Hotkeys` from slate
   - types:
     - use [slate type options](https://github.com/ianstormtaylor/slate/commit/3b7a1bf72d0c3951416c771f7f149bfbda411111) when defined
-  - upgrade deps:
-    - `"slate": "0.78.0"`
-    - `"slate-react": "0.79.0"`
 
 ## 11.1.0
 

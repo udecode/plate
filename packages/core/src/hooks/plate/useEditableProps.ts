@@ -17,6 +17,7 @@ export const useEditableProps = <V extends Value>({
 }: Pick<PlateProps<V>, 'id'>): TEditableProps<V> => {
   const editor = usePlateEditorRef<V>(id)!;
   const keyPlugins = usePlateSelectors<V>(id).keyPlugins();
+  const keyDecorate = usePlateSelectors<V>(id).keyDecorate();
   const editableProps = usePlateSelectors<V>(id).editableProps();
   const storeDecorate = usePlateSelectors<V>(id).decorate();
   const storeRenderLeaf = usePlateSelectors<V>(id).renderLeaf();
@@ -24,11 +25,17 @@ export const useEditableProps = <V extends Value>({
 
   const isValid = editor && !!keyPlugins;
 
-  const decorate = useMemo(() => {
+  const decorateMemo = useMemo(() => {
     if (!isValid) return;
 
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
   }, [editableProps?.decorate, editor, isValid, storeDecorate]);
+
+  const decorate: typeof decorateMemo = useMemo(() => {
+    if (!keyDecorate || !decorateMemo) return;
+
+    return (entry) => decorateMemo(entry);
+  }, [decorateMemo, keyDecorate]);
 
   const renderElement = useMemo(() => {
     if (!isValid) return;

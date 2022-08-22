@@ -1,62 +1,28 @@
 import {
+  collapseSelection,
+  getAboveNode,
   getEditorString,
+  getNextNodeStartPoint,
   getPluginType,
+  getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
+  insertNodes,
   isCollapsed,
+  isEndPoint,
+  isStartPoint,
   mockPlugin,
-  moveSelection,
   PlateEditor,
+  select,
   someNode,
-  unwrapNodes,
   Value,
+  withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
-import { Range } from 'slate';
-import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
-import { wrapLink } from './transforms/wrapLink';
-import { ELEMENT_LINK } from './createLinkPlugin';
-import { LinkPlugin } from './types';
-
-const upsertLink = <V extends Value>(
-  editor: PlateEditor<V>,
-  {
-    url,
-    at,
-  }: {
-    url: string;
-    at: Range;
-  }
-) => {
-  unwrapNodes(editor, {
-    at,
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
-  });
-
-  const newSelection = editor.selection as Range;
-
-  wrapLink(editor, {
-    at: {
-      ...at,
-      focus: newSelection.focus,
-    },
-    url,
-  });
-};
-
-const upsertLinkIfValid = <V extends Value>(
-  editor: PlateEditor<V>,
-  { isUrl }: { isUrl: any }
-) => {
-  const rangeFromBlockStart = getRangeFromBlockStart(editor);
-  const textFromBlockStart = getEditorString(editor, rangeFromBlockStart);
-
-  if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-    upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
-    return true;
-  }
-};
+import { Path, Point, Range } from 'slate';
+import { upsertLink } from './transforms/index';
+import { ELEMENT_LINK, LinkPlugin } from './createLinkPlugin';
 
 /**
  * Insert space after a url to wrap a link.
@@ -74,34 +40,56 @@ export const withLink = <
   editor: E,
   {
     type,
-    options: { isUrl, rangeBeforeOptions },
+    options: { isUrl, getUrlHref, rangeBeforeOptions },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
-  const { insertData, insertText } = editor;
+  const { insertData, insertText, apply, normalizeNode } = editor;
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
-      const selection = editor.selection as Range;
+      withoutNormalizing(editor, () => {
+        const selection = editor.selection!;
 
-      if (upsertLinkIfValid(editor, { isUrl })) {
-        moveSelection(editor, { unit: 'offset' });
-        return insertText(text);
-      }
+        // get the range from first space before the cursor
+        let beforeWordRange = getRangeBefore(
+          editor,
+          selection,
+          rangeBeforeOptions
+        );
 
-      const beforeWordRange = getRangeBefore(
-        editor,
-        selection,
-        rangeBeforeOptions
-      );
-
-      if (beforeWordRange) {
-        const beforeWordText = getEditorString(editor, beforeWordRange);
-
-        if (isUrl!(beforeWordText)) {
-          upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
-          moveSelection(editor, { unit: 'offset' });
+        // if no space found before, get the range from block start
+        if (!beforeWordRange) {
+          beforeWordRange = getRangeFromBlockStart(editor);
         }
-      }
+
+        // if no word found before the cursor, exit
+        if (!beforeWordRange) return;
+
+        const hasLink = someNode(editor, {
+          at: beforeWordRange,
+          match: { type: getPluginType(editor, ELEMENT_LINK) },
+        });
+
+        // if word before the cursor has a link, exit
+        if (hasLink) return;
+
+        let beforeWordText = getEditorString(editor, beforeWordRange);
+        beforeWordText = getUrlHref?.(beforeWordText) ?? beforeWordText;
+
+        // if word before is not an url, exit
+        if (!isUrl!(beforeWordText)) return;
+
+        // select the word to wrap link
+        select(editor, beforeWordRange);
+
+        // wrap link
+        upsertLink(editor, {
+          url: beforeWordText,
+        });
+
+        // collapse selection
+        collapseSelection(editor, { edge: 'end' });
+      });
     }
 
     insertText(text);
@@ -109,27 +97,80 @@ export const withLink = <
 
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
+    const textHref = getUrlHref?.(text);
 
     if (text) {
-      if (isUrl!(text)) {
-        return upsertLinkAtSelection(editor, { url: text });
-      }
-
-      if (someNode(editor, { match: { type } })) {
-        return insertText(text);
-      }
+      const inserted = upsertLink(editor, {
+        url: textHref || text,
+        insertTextInLink: true,
+      });
+      if (inserted) return;
     }
 
     insertData(data);
   };
 
-  // editor.insertBreak = () => {
-  //   if (upsertLinkIfValid(editor, { link, isUrl })) {
-  //     console.info('fix cursor');
-  //   }
-  //
-  //   insertBreak();
-  // };
+  // TODO: plugin
+  editor.apply = (operation) => {
+    if (operation.type === 'set_selection') {
+      const range = operation.newProperties as Range | null;
+
+      if (range && range.focus && range.anchor && isCollapsed(range)) {
+        const entry = getAboveNode(editor, {
+          at: range,
+          match: { type: getPluginType(editor, ELEMENT_LINK) },
+        });
+
+        if (entry) {
+          const [, path] = entry;
+
+          let newPoint: Point | undefined;
+
+          if (isStartPoint(editor, range.focus, path)) {
+            newPoint = getPreviousNodeEndPoint(editor, path);
+          }
+
+          if (isEndPoint(editor, range.focus, path)) {
+            newPoint = getNextNodeStartPoint(editor, path);
+          }
+
+          if (newPoint) {
+            operation.newProperties = {
+              anchor: newPoint,
+              focus: newPoint,
+            };
+          }
+        }
+      }
+    }
+
+    apply(operation);
+  };
+
+  // TODO: plugin
+  editor.normalizeNode = ([node, path]) => {
+    if (node.type === getPluginType(editor, ELEMENT_LINK)) {
+      const range = editor.selection as Range | null;
+
+      if (range && isCollapsed(range)) {
+        if (isEndPoint(editor, range.focus, path)) {
+          const nextPoint = getNextNodeStartPoint(editor, path);
+
+          // select next text node if any
+          if (nextPoint) {
+            select(editor, nextPoint);
+          } else {
+            // insert text node then select
+            const nextPath = Path.next(path);
+            insertNodes(editor, { text: '' } as any, { at: nextPath });
+            select(editor, nextPath);
+          }
+        }
+      }
+    }
+
+    normalizeNode([node, path]);
+  };
 
   editor = withRemoveEmptyNodes<V, E>(
     editor,

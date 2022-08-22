@@ -23,6 +23,7 @@ export type AtomStoreApi<T, N extends string = ''> = {
 } & {
   [key in keyof Record<NameStore<N>, {}>]: {
     atom: AtomRecord<T>;
+    scope?: Scope;
     extend: <ET, EN>(
       extendedState: ET,
       options?: Omit<
@@ -94,11 +95,15 @@ export const createAtomStore = <T, IT, N extends string = ''>(
     const atomConfig = atom(initialState[key]);
 
     atoms[key] = atomConfig;
-    getAtoms[key] = (scope?: Scope) =>
-      useAtomValue(atomConfig, scope ?? storeScope);
-    setAtoms[key] = (scope?: Scope) =>
-      useSetAtom(atomConfig, scope ?? storeScope);
-    useAtoms[key] = (scope?: Scope) => useAtom(atomConfig, scope ?? storeScope);
+    getAtoms[key] = (scope?: Scope) => {
+      return useAtomValue(atomConfig, scope ?? storeScope);
+    };
+    setAtoms[key] = (scope?: Scope) => {
+      return useSetAtom(atomConfig, scope ?? storeScope);
+    };
+    useAtoms[key] = (scope?: Scope) => {
+      return useAtom(atomConfig, scope ?? storeScope);
+    };
   });
 
   const api: any = {
@@ -117,6 +122,7 @@ export const createAtomStore = <T, IT, N extends string = ''>(
     ...api,
     [storeIndex]: {
       ...api[storeIndex],
+      scope: storeScope,
       extend: (extendedState: any, options: any) =>
         createAtomStore(extendedState, {
           scope: storeScope,

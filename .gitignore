@@ -1,5 +1,17 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Generated files
+/docs/.docusaurus
+/docs/.cache-loader
+/docs/src/css/tailwind.output.css
 
 .history
 node_modules/
@@ -16,7 +28,7 @@ jspm_packages/
 /dist
 /tmp
 /out-tsc
-/build
+**/build
 
 # Runtime data
 pids
@@ -103,7 +115,7 @@ storybook-static/
 
 # Local
 packages/plate/docs/
-typedoc/
-!typedoc/_redirects
+config/typedoc/
+!config/typedoc/_redirects
 # Local Netlify folder
 .netlify

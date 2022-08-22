@@ -1,5 +1,61 @@
 # @udecode/plate-image
 
+## 15.0.3
+
+### Patch Changes
+
+- [#1708](https://github.com/udecode/plate/pull/1708) by [@zbeyens](https://github.com/zbeyens) – fix: insert image embed url should insert image
+
+## 15.0.0
+
+## 14.4.2
+
+## 14.2.0
+
+### Minor Changes
+
+- [#1673](https://github.com/udecode/plate/pull/1673) by [@zbeyens](https://github.com/zbeyens) –
+  - `withImage` includes:
+    - `withImageUpload`: can be disabled using the new plugin option `disableUploadInsert`
+    - `withImageEmbed`: can be disabled using the new plugin option `disableEmbedInsert`. It inserts image when inserting an image url text.
+
+## 14.0.2
+
+### Patch Changes
+
+- [#1669](https://github.com/udecode/plate/pull/1669) by [@zbeyens](https://github.com/zbeyens) – fix: image resizing (bis)
+
+## 14.0.1
+
+### Patch Changes
+
+- [#1664](https://github.com/udecode/plate/pull/1664) by [@zbeyens](https://github.com/zbeyens) – fix: resizing one image should not resize all images
+
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
+### Minor Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `imageGlobalStore`: zustood store
+    - `focusEndCaptionPath`: When defined, focus end of caption textarea of the image with the same path
+    - `focusStartCaptionPath`: When defined, focus start of caption textarea of the image with the same path
+  - `ImageCaptionTextarea`:
+    - key `up` from the caption will focus the image
+    - key `down` from the caption will focus the next block
+    - key `down` from the image will focus the caption
+
+### Patch Changes
+
+- [`bed47ae`](https://github.com/udecode/plate/commit/bed47ae4380971a829c8f0fff72d1610cf321e73) by [@zbeyens](https://github.com/zbeyens) –
+  - `ImageCaptionTextarea`:
+    - fix cursor bugs in the caption
+
 ## 13.5.0
 
 ### Minor Changes

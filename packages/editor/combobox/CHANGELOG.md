@@ -1,5 +1,46 @@
 # @udecode/plate-combobox
 
+## 16.3.0
+
+## 16.2.3
+
+### Patch Changes
+
+- [#1786](https://github.com/udecode/plate/pull/1786) by [@zbeyens](https://github.com/zbeyens) – fix: floatingOptions is now defined in the store
+
+## 16.2.0
+
+## 16.1.0
+
+## 16.0.2
+
+## 16.0.0
+
+## 15.0.3
+
+## 15.0.0
+
+### Major Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - deps:
+    - replaced `@udecode/plate-ui-popper` by `@udecode/plate-floating`
+  - `comboboxStore`:
+    - removed `popperContainer`, use `floatingOptions` instead
+    - removed `popperOptions`, use `floatingOptions` instead
+
+## 14.4.2
+
+## 14.0.2
+
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.4.1

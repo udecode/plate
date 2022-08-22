@@ -18,6 +18,7 @@ export const useSlateProps = <V extends Value>({
   const editor = usePlateEditorRef(id);
   const keyPlugins = usePlateSelectors(id).keyPlugins();
   const value = usePlateSelectors(id).value();
+  const isReady = usePlateSelectors(id).isReady();
   const onChangeProp = usePlateSelectors(id).onChange();
 
   const onChange = useCallback(
@@ -36,7 +37,7 @@ export const useSlateProps = <V extends Value>({
   );
 
   return useMemo(() => {
-    if (!editor) return {};
+    if (!editor || !isReady) return {};
 
     return {
       key: editor.key,
@@ -44,5 +45,5 @@ export const useSlateProps = <V extends Value>({
       onChange,
       value,
     };
-  }, [editor, onChange, value]);
+  }, [editor, isReady, onChange, value]);
 };

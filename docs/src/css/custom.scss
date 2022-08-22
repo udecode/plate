@@ -1,6 +1,51 @@
 @import 'theme', 'admonitions', 'footer', 'global', 'navbar', 'shadows',
   'spacing', 'transitions', 'typography', 'carbonads';
 
+.sp-stack-vertical {
+  min-width: 100% !important;
+}
+
+.sp-code-editor {
+  font-size: 13.6px !important;
+  line-height: 24px !important;
+}
+
+.sp-wrapper {
+  font-size: 14px !important;
+  margin-bottom: 20px !important;
+}
+
+.sp-preview-h1:nth-of-type(2) {
+  height: 122px !important;
+}
+.sp-preview-h2:nth-of-type(2) {
+  height: 222px !important;
+}
+.sp-preview-h3:nth-of-type(2) {
+  height: 322px !important;
+}
+.sp-preview-h4:nth-of-type(2) {
+  height: 422px !important;
+}
+.sp-preview-h5:nth-of-type(2) {
+  height: 522px !important;
+}
+.sp-preview-h6:nth-of-type(2) {
+  height: 622px !important;
+}
+.sp-preview-h7:nth-of-type(2) {
+  height: 722px !important;
+}
+.sp-preview-h8:nth-of-type(2) {
+  height: 822px !important;
+}
+
+.cm-scroller {
+  font-family: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+  line-height: 24px !important;
+}
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to

@@ -120,13 +120,22 @@ export const toggleList = <V extends Value>(
         const _nodes = getNodeEntries<TElement>(editor, {
           mode: 'all',
         });
-        const nodes = Array.from(_nodes)
-          .filter(([, path]) => path.length === rootPathLength + 1)
-          .reverse();
+        const nodes = Array.from(_nodes).filter(
+          ([, path]) => path.length === rootPathLength + 1
+        );
 
         nodes.forEach((n) => {
           if (getListTypes(editor).includes(n[0].type)) {
-            setElements(editor, { type }, { at: n[1] });
+            setElements(
+              editor,
+              { type },
+              {
+                at: n[1],
+                match: (_n) =>
+                  isElement(_n) && getListTypes(editor).includes(_n.type),
+                mode: 'all',
+              }
+            );
           } else {
             setElements(
               editor,

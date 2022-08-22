@@ -1,5 +1,75 @@
 # @udecode/plate-headless
 
+## 16.4.1
+
+## 16.3.0
+
+## 16.2.3
+
+## 16.2.2
+
+## 16.2.1
+
+## 16.2.0
+
+## 16.1.1
+
+## 16.1.0
+
+## 16.0.2
+
+## 16.0.1
+
+## 16.0.0
+
+### Major Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
+
+## 15.0.6
+
+## 15.0.5
+
+## 15.0.3
+
+## 15.0.1
+
+## 15.0.0
+
+### Minor Changes
+
+- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
+  - new deps + re-exports:
+    - `@udecode/plate-button`
+    - `@udecode/plate-floating`
+
+## 14.4.3
+
+## 14.4.2
+
+## 14.4.1
+
+## 14.4.0
+
+## 14.3.0
+
+## 14.2.0
+
+## 14.1.0
+
+## 14.0.2
+
+## 14.0.1
+
+## 14.0.0
+
+## 13.8.0
+
+## 13.7.0
+
+## 13.6.0
+
 ## 13.5.0
 
 ## 13.4.2

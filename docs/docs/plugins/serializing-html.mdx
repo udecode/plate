@@ -6,64 +6,18 @@ title: HTML
 ### Installation
 
 ```bash npm2yarn
-npm install @udecode/plate-core
+npm install @udecode/plate
+# or
+npm install @udecode/plate-serialize-html
 ```
 
-### Deserializer Usage
+### Usage
 
-```ts live
-() => {
-  let plugins = [
-    ...PLUGINS.basicNodes,
-    createImagePlugin(),
-    createLinkPlugin(),
-    createListPlugin(),
-    createTablePlugin(),
-    createTodoListPlugin(),
-    createMediaEmbedPlugin(),
-    createExcalidrawPlugin(),
-    createHighlightPlugin(),
-    createMentionPlugin(),
-    createSoftBreakPlugin(CONFIG.softBreak),
-  ]
+import { SerializingHtmlSandpack } from './SerializingHtmlSandpack'
 
-  plugins = createPlugins(plugins, {
-    components: CONFIG.components,
-  });
-
-  return (
-    <Plate
-      id="deserialize-html"
-      editableProps={CONFIG.editableProps}
-      initialValue={VALUES.pasteHtml}
-      plugins={plugins}
-    />
-  );
-}
-```
-
-### Serializer Usage
-
-Use `serializeHtml`:
-
-```ts live
-() => {
-  const editor = createPlateEditor({
-    plugins: PLUGINS.basicNodes,
-    components: CONFIG.components
-  });
-
-  const html = serializeHtml(editor, {
-    nodes: VALUES.basicNodes,
-  });
-
-  return (
-    <HighlightHTML code={html} />
-  );
-}
-```
+<SerializingHtmlSandpack />
 
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/core/src/plugins/html-deserializer/createDeserializeHtmlPlugin.ts)
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

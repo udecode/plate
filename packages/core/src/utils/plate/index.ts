@@ -3,6 +3,7 @@
  */
 
 export * from './createPlateEditor';
+export * from './createPlateElementComponent';
 export * from './createPluginFactory';
 export * from './createPlugins';
 export * from './flattenDeepPlugins';
@@ -21,6 +22,7 @@ export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepPlugins';
 export * from './mockPlugin';
 export * from './normalizeDescendantsToDocumentFragment';
+export * from './normalizeInitialValue';
 export * from './overridePluginsByKey';
 export * from './pipeDecorate';
 export * from './pipeHandler';

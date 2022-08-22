@@ -1,4 +1,3 @@
-import { createStore } from '@udecode/zustood';
 import { castArray } from 'lodash';
 import { PlateProps } from '../../components/plate/Plate';
 import { Value } from '../../slate/editor/TEditor';
@@ -8,6 +7,7 @@ import {
   PlateStoreApi,
   PlateStoreState,
 } from '../../types/plate/PlateStore';
+import { createStore } from '../../utils/index';
 import { isUndefined } from '../../utils/misc/type-utils';
 import { eventEditorActions } from '../event-editor/event-editor.store';
 import { createPlateStore } from './createPlateStore';

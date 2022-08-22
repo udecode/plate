@@ -1,7 +1,7 @@
 import { Path } from 'slate';
 import { Value } from '../slate/editor/TEditor';
 import { EElementOrText } from '../slate/element/TElement';
-import { EAncestorEntry, TNodeEntry } from '../slate/node/TNodeEntry';
+import { EAncestorEntry } from '../slate/node/TNodeEntry';
 
 /**
  * Get the next sibling nodes after a path.
@@ -11,16 +11,17 @@ import { EAncestorEntry, TNodeEntry } from '../slate/node/TNodeEntry';
 export const getNextSiblingNodes = <V extends Value>(
   ancestorEntry: EAncestorEntry<V>,
   path: Path
-) => {
+): EElementOrText<V>[] => {
   const [ancestor, ancestorPath] = ancestorEntry;
 
   const leafIndex = path[ancestorPath.length];
 
-  const siblings: TNodeEntry<EElementOrText<V>>[] = [];
+  const siblings: EElementOrText<V>[] = [];
+  const ancestorChildren = ancestor.children as EElementOrText<V>[];
 
   if (leafIndex + 1 < ancestor.children.length) {
     for (let i = leafIndex + 1; i < ancestor.children.length; i++) {
-      siblings.push(ancestor.children[i] as any);
+      siblings.push(ancestorChildren[i]);
     }
   }
 
