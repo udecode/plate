@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyledProps } from '@udecode/plate-styled-components';
-import { Thread as ThreadModel } from '@xolvio/plate-comments/dist/Thread';
+import { Thread as ThreadModel } from '@xolvio/plate-comments';
 import { FetchContacts } from '../../types';
 import { TextArea } from '../TextArea/TextArea';
 import {

@@ -17,6 +17,7 @@ export function insertTextAtTheEndOfAThreadNode(
   const parent = getParentNode(editor, threadPath);
   if (parent) {
     const siblings = getNextSiblingNodes(parent, threadPath);
+    // @ts-ignore
     if (siblings.length >= 1 && isTextNode(siblings[0][0])) {
       changeSelectionToBeBasedOnTheNextNode(editor);
     } else {

@@ -25,14 +25,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc && yarn rollup",
-    "build:w": "yarn rollup -w",
-    "cti": "sh ../../../../cti.sh",
-    "rollup": "rollup -c=../../../../rollup.config.js",
-    "test": "jest"
-  },
   "dependencies": {
     "@material/button": "^13.0.0",
     "@material/checkbox": "^14.0.0",
@@ -46,9 +38,9 @@
     "@material/textfield": "^13.0.0",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
-    "@udecode/plate-core": "^13.5.0",
-    "@udecode/plate-styled-components": "^13.5.0",
-    "@udecode/plate-ui-toolbar": "^13.5.0",
+    "@udecode/plate-core": "16.3.0",
+    "@udecode/plate-styled-components": "16.3.0",
+    "@udecode/plate-ui-toolbar": "16.3.0",
     "@xolvio/plate-comments": "^0.5.0",
     "uuid": "^8.3.2"
   },

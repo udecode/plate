@@ -188,6 +188,7 @@ export const useComments = (
         editor,
         newThread
       );
+      // @ts-ignore
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
   }, [editor, selection, retrieveUser]);

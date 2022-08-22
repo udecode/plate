@@ -5,7 +5,7 @@ import {
   withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
-import { OnAddThread } from '../../hooks';
+import { OnAddThread } from '../../types';
 
 export const AddThreadToolbarButton = withPlateEventProvider(
   ({
