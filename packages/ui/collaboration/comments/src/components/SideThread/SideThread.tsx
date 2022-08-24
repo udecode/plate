@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { ThreadPosition } from '../../types';
 import { CommonThreadAndSideThreadProps, Thread } from '../Thread';
@@ -10,10 +10,12 @@ type SideThreadProps = {
 } & StyledProps &
   CommonThreadAndSideThreadProps;
 
-export function SideThread({ position, ...props }: SideThreadProps) {
-  const { root } = createSideThreadStyles(props);
+export const SideThread = (props: SideThreadProps) => {
+  const { position, ...otherProps } = props;
 
-  return ReactDOM.createPortal(
+  const { root } = createSideThreadStyles(otherProps);
+
+  return createPortal(
     <div
       css={root.css}
       className={root.className}
@@ -23,7 +25,7 @@ export function SideThread({ position, ...props }: SideThreadProps) {
       }}
     >
       <Thread
-        {...props}
+        {...otherProps}
         showResolveThreadButton
         showReOpenThreadButton={false}
         showMoreButton
@@ -31,4 +33,4 @@ export function SideThread({ position, ...props }: SideThreadProps) {
     </div>,
     document.body
   );
-}
+};

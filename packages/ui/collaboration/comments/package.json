@@ -36,6 +36,7 @@
     "@material/ripple": "^13.0.0",
     "@material/snackbar": "^13.0.0",
     "@material/textfield": "^13.0.0",
+    "@mui/base": "5.0.0-alpha.93",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "16.3.0",
@@ -45,7 +46,9 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.4"
+    "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^2.0.0",
+    "vite": "^3.0.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -57,5 +60,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "start": "vite"
   }
 }

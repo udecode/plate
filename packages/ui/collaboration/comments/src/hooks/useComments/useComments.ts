@@ -24,6 +24,7 @@ import {
   ThreadElement,
   upsertThreadAtSelection,
 } from '@xolvio/plate-comments';
+import { cloneDeep } from 'lodash';
 import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { v4 as createV4UUID } from 'uuid';
@@ -38,6 +39,9 @@ import {
 } from '../../types';
 import { determineAbsolutePosition } from '../../utils';
 import { UseCommentsParams, UseCommentsReturnType } from './useComments.types';
+
+const ACTIVE_THREAD_COLOR = '#fcc934';
+const INACTIVE_THREAD_COLOR = '#fae093';
 
 export const useComments = (
   params: UseCommentsParams
@@ -120,16 +124,26 @@ export const useComments = (
     }
   }, [editor, newThreadThreadNodeEntry]);
 
+  const normalizeThreadColor = useCallback(() => {
+    if (!editor) return;
+    const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+    if (!threadNodeEntry) return;
+    const [threadNode] = threadNodeEntry;
+    const threadDomNode = ReactEditor.toDOMNode(
+      editor as ReactEditor,
+      threadNode
+    );
+    threadDomNode.style.backgroundColor = '';
+  }, [editor]);
+
   const onResolveThread = useCallback(() => {
-    if (editor && thread) {
-      const newThread = {
-        ...thread,
-        isResolved: true,
-      };
-      upsertThreadAtSelection(editor, newThread);
-      hideThread();
-    }
-  }, [editor, hideThread, thread]);
+    if (!editor || !thread) return;
+    const newThread = cloneDeep(thread);
+    newThread.isResolved = true;
+    upsertThreadAtSelection(editor, newThread);
+    normalizeThreadColor();
+    hideThread();
+  }, [editor, hideThread, normalizeThreadColor, thread]);
 
   const handleThreadIdInURL = useCallback(() => {
     if (!editor) {
@@ -205,9 +219,8 @@ export const useComments = (
   );
 
   const onSaveComment = useCallback<OnSaveComment>(
-    // TODO: remove the ts ignore
     // @ts-ignore
-    async (comment: Comment) => {
+    (comment: Comment) => {
       const newThread = {
         ...thread!,
         comments: replaceComment(thread!.comments, comment),
@@ -257,7 +270,7 @@ export const useComments = (
     }
   }, [
     editor,
-    editorKey,
+    editorKey, // extra dependency to force effect when editor changes
     handleThreadIdInURL,
     hasThreadIdInURLBeenHandled,
     thread,
@@ -272,6 +285,7 @@ export const useComments = (
     let threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
       match: { type },
     });
+
     if (!threadNodeEntry && selection) {
       if (Range.isCollapsed(selection)) {
         threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
@@ -304,7 +318,10 @@ export const useComments = (
       } catch (error) {}
 
       if (previousThreadNodeDomNode) {
-        previousThreadNodeDomNode.style.backgroundColor = '';
+        previousThreadNodeDomNode.style.backgroundColor = previousThreadNode
+          .thread.isResolved
+          ? ''
+          : INACTIVE_THREAD_COLOR;
       }
     }
     if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
@@ -314,7 +331,9 @@ export const useComments = (
         domNode = ReactEditor.toDOMNode(editor as any, threadNode);
       } catch (error) {}
       if (domNode) {
-        domNode.style.backgroundColor = '#fcc934';
+        domNode.style.backgroundColor = threadNode.thread.isResolved
+          ? ''
+          : ACTIVE_THREAD_COLOR;
       }
       showThread(threadNodeEntry);
     } else {

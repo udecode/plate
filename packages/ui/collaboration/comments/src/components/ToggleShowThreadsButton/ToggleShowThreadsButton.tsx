@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { FetchContacts, RetrieveUser } from '../../types';
-import { Threads } from '../Threads/Threads';
+import { ResolvedThreads } from '../Threads/ResolvedThreads';
 
 export const ToggleShowThreadsButton = withPlateEventProvider(
   ({
@@ -21,18 +21,15 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
 
-    const ref = useRef<HTMLDivElement>(null);
-
     const [areThreadsShown, setAreThreadsShown] = useState(false);
 
-    const toggleShowThreads = useCallback(
-      function showThreads() {
-        setAreThreadsShown(!areThreadsShown);
-      },
-      [areThreadsShown]
-    );
+    const ref = useRef<HTMLDivElement>(null);
 
-    const onCloseThreads = useCallback(function onCloseThreads() {
+    const toggleShowThreads = useCallback(() => {
+      setAreThreadsShown((areThreadsShownPrev) => !areThreadsShownPrev);
+    }, []);
+
+    const onCloseThreads = useCallback(() => {
       setAreThreadsShown(false);
     }, []);
 
@@ -51,7 +48,7 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
           {...props}
         />
         {areThreadsShown ? (
-          <Threads
+          <ResolvedThreads
             parent={ref}
             onClose={onCloseThreads}
             fetchContacts={fetchContacts}

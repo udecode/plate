@@ -114,56 +114,51 @@ function findMentionedUsers(commentText: string): string[] {
   return mentionedUserIdentifiers;
 }
 
-export function Thread({
-  thread,
-  showResolveThreadButton,
-  showReOpenThreadButton,
-  showMoreButton,
-  onSaveComment,
-  onSubmitComment: onSubmitCommentCallback,
-  onCancelCreateThread,
-  onResolveThread,
-  fetchContacts,
-  retrieveUser,
-  retrieveUserByEmailAddress,
-  ...props
-}: ThreadProps) {
-  const editor = usePlateEditorRef();
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+export const Thread = (props: ThreadProps) => {
+  const {
+    fetchContacts,
+    onCancelCreateThread,
+    onResolveThread,
+    onSaveComment,
+    onSubmitComment: onSubmitCommentCallback,
+    retrieveUser,
+    retrieveUserByEmailAddress,
+    showMoreButton,
+    showReOpenThreadButton,
+    showResolveThreadButton,
+    thread,
+    ...otherProps
+  } = props;
+
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
     false
   );
-
-  const loggedInUser = useLoggedInUser(retrieveUser);
   const [user, setUser] = useState<User>(createNullUser());
-
   const [
     userThatCanBeAssignedTo,
     setUserThatCanBeAssignedTo,
   ] = useState<User | null>(null);
-  const [assignedTo, setAssignedTo] = useState<User | undefined>(undefined);
+  const [assignedTo, setAssignedTo] = useState<User>();
+  const [value, setValue] = useState('');
 
-  const isAssigned = useCallback(
-    function isAssigned() {
-      return Boolean(assignedTo);
-    },
-    [assignedTo]
-  );
+  const editor = usePlateEditorRef();
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  false;
 
-  const determineAssigningVerb = useCallback(
-    function determineAssigningVerb() {
-      return determineAssigningVerbBase({
-        assignedTo: thread.assignedTo ?? null,
-        userThatCanBeAssignedTo,
-      });
-    },
-    [thread.assignedTo, userThatCanBeAssignedTo]
-  );
+  const loggedInUser = useLoggedInUser(retrieveUser);
 
-  const [value, setValue] = useState<string>('');
+  const isAssigned = Boolean(assignedTo);
+
+  const determineAssigningVerb = useCallback(() => {
+    const verbBase = determineAssigningVerbBase({
+      assignedTo: thread.assignedTo ?? null,
+      userThatCanBeAssignedTo,
+    });
+    return verbBase;
+  }, [thread.assignedTo, userThatCanBeAssignedTo]);
 
   const retrieveUserThatCanBeAssignedTo = useCallback(
-    async function retrieveUserThatCanBeAssignedTo(text: string) {
+    async (text: string) => {
       const mentionedUsersEmailAddresses = findMentionedUsers(text);
       const unassignedMentionedUsersEmailAddresses = thread.assignedTo
         ? mentionedUsersEmailAddresses.filter(
@@ -180,18 +175,15 @@ export function Thread({
     [retrieveUserByEmailAddress, thread.assignedTo]
   );
 
-  const onToggleAssign = useCallback(
-    async function onToggleAssign() {
-      if (isAssigned()) {
-        setAssignedTo(undefined);
-      } else if (userThatCanBeAssignedTo) {
-        setAssignedTo(userThatCanBeAssignedTo);
-      }
-    },
-    [isAssigned, userThatCanBeAssignedTo]
-  );
+  const onToggleAssign = useCallback(async () => {
+    if (isAssigned) {
+      setAssignedTo(undefined);
+    } else if (userThatCanBeAssignedTo) {
+      setAssignedTo(userThatCanBeAssignedTo);
+    }
+  }, [isAssigned, userThatCanBeAssignedTo]);
 
-  const onChange = useCallback(function onChange(newValue) {
+  const onChange = useCallback((newValue) => {
     setValue(newValue);
   }, []);
 
@@ -227,13 +219,10 @@ export function Thread({
     setValue('');
   }, []);
 
-  const onSubmitComment = useCallback(
-    async function onSubmitComment() {
-      onSubmitCommentCallback(value, assignedTo);
-      clearTextArea();
-    },
-    [assignedTo, clearTextArea, onSubmitCommentCallback, value]
-  );
+  const onSubmitComment = useCallback(() => {
+    onSubmitCommentCallback(value, assignedTo);
+    clearTextArea();
+  }, [assignedTo, clearTextArea, onSubmitCommentCallback, value]);
 
   const hasComments = useCallback(
     function hasComments() {
@@ -242,49 +231,40 @@ export function Thread({
     [thread]
   );
 
-  const onCancel = useCallback(
-    function onCancel() {
-      if (hasComments()) {
-        clearTextArea();
-      }
+  const onCancel = useCallback(() => {
+    if (hasComments()) {
+      clearTextArea();
+    }
 
-      onCancelCreateThread();
-    },
-    [hasComments, onCancelCreateThread, clearTextArea]
-  );
+    onCancelCreateThread();
+  }, [hasComments, onCancelCreateThread, clearTextArea]);
 
-  const onReOpenThread = useCallback<OnReOpenThread>(
-    function onReOpenThread() {
-      if (editor) {
-        const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
-          (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === thread.id
-        );
-        if (threadNodeEntry) {
-          const newThread = {
-            ...thread,
-            isResolved: false,
-          };
-          upsertThread(editor, {
-            at: threadNodeEntry[1],
-            thread: newThread,
-          });
-        }
+  const onReOpenThread = useCallback<OnReOpenThread>(() => {
+    if (editor) {
+      const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
+        (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === thread.id
+      );
+      if (threadNodeEntry) {
+        const newThread = {
+          ...thread,
+          isResolved: false,
+        };
+        upsertThread(editor, {
+          at: threadNodeEntry[1],
+          thread: newThread,
+        });
       }
-    },
-    [editor, thread]
-  );
+    }
+  }, [editor, thread]);
 
-  const deleteThread = useCallback(
-    function deleteThread() {
-      if (editor) {
-        deleteThreadAtSelection(editor);
-      }
-    },
-    [editor]
-  );
+  const deleteThread = useCallback(() => {
+    if (editor) {
+      deleteThreadAtSelection(editor);
+    }
+  }, [editor]);
 
   const deleteComment = useCallback(
-    function deleteComment(comment) {
+    (comment) => {
       if (editor) {
         thread.comments = thread.comments.filter(
           (comment2) => comment2 !== comment
@@ -296,7 +276,7 @@ export function Thread({
   );
 
   const onDelete = useCallback(
-    function onDelete(comment: Comment) {
+    (comment: Comment) => {
       if (isFirstComment(thread, comment)) {
         deleteThread();
       } else {
@@ -313,16 +293,16 @@ export function Thread({
     [clearTextArea, thread]
   );
 
-  const { root } = createThreadStyles(props);
-  const { root: commentHeader } = createCommentHeaderStyles(props);
-  const { root: authorTimestamp } = createAuthorTimestampStyles(props);
-  const { root: commenterName } = createCommenterNameStyles(props);
+  const { root } = createThreadStyles(otherProps);
+  const { root: commentHeader } = createCommentHeaderStyles(otherProps);
+  const { root: authorTimestamp } = createAuthorTimestampStyles(otherProps);
+  const { root: commenterName } = createCommenterNameStyles(otherProps);
   const { root: commentInput, commentInputReply } = createCommentInputStyles(
-    props
+    otherProps
   );
-  const { root: buttons } = createButtonsStyles(props);
-  const { root: commentButton } = createCommentButtonStyles(props);
-  const { root: cancelButton } = createCancelButtonStyles(props);
+  const { root: buttons } = createButtonsStyles(otherProps);
+  const { root: commentButton } = createCommentButtonStyles(otherProps);
+  const { root: cancelButton } = createCancelButtonStyles(otherProps);
 
   let commentInputCss = [...commentInput.css];
   let commentInputClassName = commentInput.className;
@@ -331,21 +311,18 @@ export function Thread({
     commentInputClassName += ` ${commentInputReply!.className}`;
   }
 
-  const initializeCheckbox = useCallback(function initializeCheckbox(checkbox) {
+  const initializeCheckbox = useCallback((checkbox) => {
     if (checkbox) {
       new MDCCheckbox(checkbox);
     }
   }, []);
 
-  const determineSubmitButtonText = useCallback(
-    function determineSubmitButtonText() {
-      if (isAssigned()) {
-        return determineAssigningVerb();
-      }
-      return thread.comments.length === 0 ? 'Comment' : 'Reply';
-    },
-    [determineAssigningVerb, isAssigned, thread.comments.length]
-  );
+  const determineSubmitButtonText = useCallback(() => {
+    if (isAssigned) {
+      return determineAssigningVerb();
+    }
+    return thread.comments.length === 0 ? 'Comment' : 'Reply';
+  }, [determineAssigningVerb, isAssigned, thread.comments.length]);
 
   return (
     <div css={root.css} className={root.className}>
@@ -412,7 +389,7 @@ export function Thread({
                   type="checkbox"
                   className="mdc-checkbox__native-control"
                   id="assign"
-                  checked={isAssigned()}
+                  checked={isAssigned}
                   onChange={onToggleAssign}
                 />
                 <div className="mdc-checkbox__background">
@@ -463,4 +440,4 @@ export function Thread({
       </div>
     </div>
   );
-}
+};

@@ -2,11 +2,12 @@ import React, {
   RefObject,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import ReactDOM from 'react-dom';
-import { usePlateEditorRef } from '@udecode/plate-core';
+import { createPortal } from 'react-dom';
+import { useHotkeys, usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { createNullUser, findThreadNodeEntries } from '@xolvio/plate-comments';
 import { FetchContacts, RetrieveUser, ThreadPosition } from '../../types';
@@ -16,28 +17,66 @@ import {
   createBodyStyles,
   createHeaderStyles,
   createThreadsStyles,
-} from './Threads.styles';
+} from './ResolvedThreads.styles';
 
-function wasClickOnTargetInsideThreads(event: MouseEvent): boolean {
-  const closestThreadsParent =
-    event.target &&
-    (event.target as any).closest &&
-    (event.target as any).closest('.threads');
-  return Boolean(closestThreadsParent);
-}
+const isClickInsideThreads = (event: MouseEvent): boolean => {
+  const target = event.target as HTMLElement;
+  return Boolean(target && target.closest && target.closest('.threads'));
+};
 
-export function Threads(
-  props: {
-    parent: RefObject<HTMLElement>;
-    onClose: () => void;
-    fetchContacts: FetchContacts;
-    retrieveUser: RetrieveUser;
-  } & StyledProps
-) {
-  const editor = usePlateEditorRef()!;
+type ResolvedThreadsProps = {
+  parent: RefObject<HTMLElement>;
+  onClose: () => void;
+  fetchContacts: FetchContacts;
+  retrieveUser: RetrieveUser;
+} & StyledProps;
+
+export const ResolvedThreads = (props: ResolvedThreadsProps) => {
   const { parent, onClose, fetchContacts, retrieveUser } = props;
-  const ref = useRef<HTMLDivElement>(null);
+
   const [position, setPosition] = useState<ThreadPosition | null>(null);
+
+  const ref = useRef<HTMLDivElement>(null);
+
+  const editor = usePlateEditorRef()!;
+
+  const { root } = createThreadsStyles(props);
+  const { root: header } = createHeaderStyles(props);
+  const { root: body } = createBodyStyles(props);
+
+  useHotkeys('escape', () => onClose(), {
+    enableOnTags: ['INPUT'],
+    enableOnContentEditable: true,
+  });
+
+  const resolvedThreads = useMemo(() => {
+    return Array.from(findThreadNodeEntries(editor))
+      .map((threadNodeEntry) => threadNodeEntry[0].thread)
+      .filter((thread) => thread.isResolved);
+  }, [editor]);
+
+  const onClick = useCallback(
+    (event: MouseEvent) => {
+      if (!isClickInsideThreads(event)) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    setTimeout(() => {
+      if (isMounted) {
+        document.body.addEventListener('click', onClick);
+      }
+    }, 400);
+
+    return () => {
+      document.body.removeEventListener('click', onClick);
+      isMounted = false;
+    };
+  }, [onClick]);
 
   useEffect(() => {
     const parentElement = parent.current!;
@@ -50,44 +89,7 @@ export function Threads(
     setPosition(newPosition);
   }, [parent]);
 
-  const { root } = createThreadsStyles(props);
-  const { root: header } = createHeaderStyles(props);
-  const { root: body } = createBodyStyles(props);
-
-  const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
-  const threads = threadNodeEntries.map(
-    (threadNodeEntry) => threadNodeEntry[0].thread
-  );
-  const resolvedThreads = threads.filter((thread) => thread.isResolved);
-
-  const onClick = useCallback(
-    function onClick(event: MouseEvent) {
-      if (!wasClickOnTargetInsideThreads(event)) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(
-    function registerOnClick() {
-      let isMounted = true;
-
-      setTimeout(() => {
-        if (isMounted) {
-          document.body.addEventListener('click', onClick);
-        }
-      }, 400);
-
-      return () => {
-        document.body.removeEventListener('click', onClick);
-        isMounted = false;
-      };
-    },
-    [onClick]
-  );
-
-  return ReactDOM.createPortal(
+  return createPortal(
     <div
       ref={ref}
       css={root.css}
@@ -120,4 +122,4 @@ export function Threads(
     </div>,
     document.body
   );
-}
+};

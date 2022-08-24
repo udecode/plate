@@ -1,2 +1,2 @@
-export * from './Threads.styles';
-export * from './Threads';
+export * from './ResolvedThreads.styles';
+export * from './ResolvedThreads';

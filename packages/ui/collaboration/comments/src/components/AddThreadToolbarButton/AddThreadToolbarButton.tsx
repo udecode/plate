@@ -13,7 +13,7 @@ export const AddThreadToolbarButton = withPlateEventProvider(
     onAddThread,
     ...props
   }: ToolbarButtonProps & {
-    onAddThread: OnAddThread;
+    onAddThread?: OnAddThread;
   }) => {
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
@@ -26,7 +26,7 @@ export const AddThreadToolbarButton = withPlateEventProvider(
           }
 
           event.preventDefault();
-          await onAddThread();
+          await onAddThread?.();
         }}
         {...props}
       />
