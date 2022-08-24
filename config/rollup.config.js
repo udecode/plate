@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import css from 'rollup-plugin-import-css';
 import includePaths from 'rollup-plugin-includepaths';
 import json from 'rollup-plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
@@ -123,6 +124,8 @@ const plugins = [
   // Only minify the output in production, since it is very slow. And only
   // for UMD builds, since modules will be bundled by the consumer.
   isUmd && terser(),
+
+  css(),
 ];
 
 export default [
