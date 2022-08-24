@@ -44,9 +44,6 @@ import {
   createTrailingBlockPlugin,
   createUnderlinePlugin,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_IMAGE,
-  ELEMENT_OL,
-  ELEMENT_UL,
   MentionCombobox,
   Plate,
   StyledElement,
@@ -109,20 +106,7 @@ const App = () => {
           createImagePlugin(),
           createHorizontalRulePlugin(),
           createLinkPlugin(linkPlugin),
-          createListPlugin({
-            overrideByKey: {
-              [ELEMENT_UL]: {
-                options: {
-                  validLiChildrenTypes: [ELEMENT_IMAGE],
-                },
-              },
-              [ELEMENT_OL]: {
-                options: {
-                  validLiChildrenTypes: [ELEMENT_IMAGE],
-                },
-              },
-            },
-          }),
+          createListPlugin(),
           createTablePlugin(),
           createMediaEmbedPlugin(),
           createExcalidrawPlugin() as MyPlatePlugin,
