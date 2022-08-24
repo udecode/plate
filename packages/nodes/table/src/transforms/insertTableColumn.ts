@@ -5,13 +5,14 @@ import {
   getPluginType,
   insertElements,
   PlateEditor,
+  setNodes,
   TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
-import { TablePlugin } from '../types';
+import { TablePlugin, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 import { getCellTypes } from '../utils/index';
 
@@ -47,15 +48,16 @@ export const insertTableColumn = <V extends Value>(
 
   const [, cellPath] = cellEntry;
 
-  const tableEntry = getBlockAbove(editor, {
+  const tableEntry = getBlockAbove<TTableElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
     at: cellPath,
   });
   if (!tableEntry) return;
 
-  const [tableNode] = tableEntry;
+  const [tableNode, tablePath] = tableEntry;
 
   const nextCellPath = Path.next(cellPath);
+  const nextColIndex = cellPath[cellPath.length - 1] + 1;
   const currentRowIndex = cellPath[cellPath.length - 2];
 
   const { newCellChildren } = getPluginOptions<TablePlugin, V>(
@@ -87,5 +89,23 @@ export const insertTableColumn = <V extends Value>(
         }
       );
     });
+
+    const { colSizes } = tableNode;
+
+    if (colSizes) {
+      setNodes<TTableElement>(
+        editor,
+        {
+          colSizes: [
+            ...colSizes.slice(0, nextColIndex),
+            0,
+            ...colSizes.slice(nextColIndex),
+          ],
+        },
+        {
+          at: tablePath,
+        }
+      );
+    }
   });
 };
