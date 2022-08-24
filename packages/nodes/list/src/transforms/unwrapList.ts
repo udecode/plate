@@ -1,6 +1,7 @@
 import {
   ELEMENT_DEFAULT,
   getAboveNode,
+  getBlockAbove,
   getCommonNode,
   getPluginType,
   isElement,
@@ -11,7 +12,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
+import {
+  ELEMENT_LI,
+  ELEMENT_LIC,
+  ELEMENT_OL,
+  ELEMENT_UL,
+} from '../createListPlugin';
 import { getListTypes } from '../queries';
 
 export const unwrapList = <V extends Value>(
@@ -43,9 +49,16 @@ export const unwrapList = <V extends Value>(
 
   withoutNormalizing(editor, () => {
     do {
-      setElements(editor, {
-        type: getPluginType(editor, ELEMENT_DEFAULT),
+      const licEntry = getBlockAbove(editor, {
+        at,
+        match: { type: getPluginType(editor, ELEMENT_LIC) },
       });
+      if (licEntry) {
+        setElements(editor, {
+          at,
+          type: getPluginType(editor, ELEMENT_DEFAULT),
+        });
+      }
 
       unwrapNodes(editor, {
         at,
