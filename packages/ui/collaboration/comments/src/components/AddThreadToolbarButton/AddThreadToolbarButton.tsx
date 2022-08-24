@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEventHandler, useCallback } from 'react';
 import {
   useEventPlateId,
   usePlateEditorState,
@@ -7,29 +7,27 @@ import {
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { OnAddThread } from '../../types';
 
+type AddThreadToolbarButtonProps = {
+  onAddThread?: OnAddThread;
+} & ToolbarButtonProps;
+
 export const AddThreadToolbarButton = withPlateEventProvider(
-  ({
-    id,
-    onAddThread,
-    ...props
-  }: ToolbarButtonProps & {
-    onAddThread?: OnAddThread;
-  }) => {
-    id = useEventPlateId(id);
-    const editor = usePlateEditorState(id)!;
+  (props: AddThreadToolbarButtonProps) => {
+    const { id, onAddThread, ...otherProps } = props;
 
-    return (
-      <ToolbarButton
-        onMouseDown={async (event) => {
-          if (!editor) {
-            return;
-          }
+    const eventPlateId = useEventPlateId(id);
+    const editor = usePlateEditorState(eventPlateId)!;
 
+    const onMouseDown = useCallback<MouseEventHandler<HTMLSpanElement>>(
+      (event) => {
+        if (editor) {
           event.preventDefault();
-          await onAddThread?.();
-        }}
-        {...props}
-      />
+          onAddThread?.();
+        }
+      },
+      [editor, onAddThread]
     );
+
+    return <ToolbarButton onMouseDown={onMouseDown} {...otherProps} />;
   }
 );

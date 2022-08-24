@@ -5,7 +5,9 @@ import { StyledProps } from '@udecode/plate-styled-components';
 import { User } from '@xolvio/plate-comments';
 import { createAvatarHolderStyles, createAvatarStyles } from './Avatar.styles';
 
-export function Avatar(props: { user: User } & StyledProps) {
+type AvatarProps = { user: User } & StyledProps;
+
+export const Avatar = (props: AvatarProps) => {
   const { user } = props;
 
   const { root: avatarHolder } = createAvatarHolderStyles(props);
@@ -31,4 +33,4 @@ export function Avatar(props: { user: User } & StyledProps) {
       )}
     </div>
   );
-}
+};

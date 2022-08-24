@@ -10,11 +10,11 @@ import {
 } from '@xolvio/plate-comments';
 import { createThreadElementStyles } from './ThreadElement.styles';
 
-function determineStyle(
+const determineStyle = (
   element: any,
   thread: Thread,
   props: StyledElementProps<Value, TThreadElement>
-): any {
+) => {
   let style;
   const { root, selected, resolved } = createThreadElementStyles(props);
   if (thread.isResolved) {
@@ -25,7 +25,7 @@ function determineStyle(
     style = root;
   }
   return style;
-}
+};
 
 export const ThreadElement = (
   props: StyledElementProps<Value, TThreadElement>
@@ -39,8 +39,8 @@ export const ThreadElement = (
   return (
     <span
       {...attributes}
-      css={style.css}
-      className={style.className}
+      css={style?.css}
+      className={style?.className}
       {...rootProps}
       {...nodeProps}
     >

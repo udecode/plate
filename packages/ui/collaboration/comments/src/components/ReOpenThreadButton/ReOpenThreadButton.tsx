@@ -7,11 +7,11 @@ import {
   ReOpenThreadButtonStyledProps,
 } from './ReOpenThreadButton.styles';
 
-export function ReOpenThreadButton(
-  props: {
-    onReOpenThread: OnReOpenThread;
-  } & ReOpenThreadButtonStyledProps
-) {
+type ReOpenThreadButtonProps = {
+  onReOpenThread: OnReOpenThread;
+} & ReOpenThreadButtonStyledProps;
+
+export const ReOpenThreadButton = (props: ReOpenThreadButtonProps) => {
   const { onReOpenThread } = props;
 
   const { root, icon } = createReOpenThreadButtonStyles(props);
@@ -28,4 +28,4 @@ export function ReOpenThreadButton(
       <Unarchive css={icon!.css} className={icon!.className} />
     </button>
   );
-}
+};

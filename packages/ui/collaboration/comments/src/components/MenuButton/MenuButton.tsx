@@ -9,12 +9,12 @@ import { MoreVert } from '@styled-icons/material/MoreVert';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { createMoreButtonStyles } from './MenuButton.styles';
 
-export interface MenuButtonProps extends StyledProps {
+export type MenuButtonProps = {
   showLinkToThisComment: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onLinkToThisComment: () => void;
-}
+} & StyledProps;
 
 export class MenuButton extends React.Component<MenuButtonProps> {
   ref: React.RefObject<HTMLDivElement>;

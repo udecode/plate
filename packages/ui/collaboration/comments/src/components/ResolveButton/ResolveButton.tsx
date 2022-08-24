@@ -8,12 +8,12 @@ import {
   ResolveButtonStyledProps,
 } from './ResolveButton.styles';
 
-export function ResolveButton(
-  props: {
-    thread: Thread;
-    onResolveThread: OnResolveThread;
-  } & ResolveButtonStyledProps
-) {
+type ResolveButtonProps = {
+  thread: Thread;
+  onResolveThread: OnResolveThread;
+} & ResolveButtonStyledProps;
+
+export const ResolveButton = (props: ResolveButtonProps) => {
   const { thread, onResolveThread } = props;
 
   const { root, icon } = createResolveButtonStyles(props);
@@ -34,4 +34,4 @@ export function ResolveButton(
       <Check css={icon!.css} className={icon!.className} />
     </button>
   );
-}
+};

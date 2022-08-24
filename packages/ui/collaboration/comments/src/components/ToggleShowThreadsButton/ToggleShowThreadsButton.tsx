@@ -8,18 +8,17 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { FetchContacts, RetrieveUser } from '../../types';
 import { ResolvedThreads } from '../Threads/ResolvedThreads';
 
+type ToggleShowThreadsButtonProps = {
+  fetchContacts: FetchContacts;
+  retrieveUser: RetrieveUser;
+} & ToolbarButtonProps;
+
 export const ToggleShowThreadsButton = withPlateEventProvider(
-  ({
-    id,
-    fetchContacts,
-    retrieveUser,
-    ...props
-  }: ToolbarButtonProps & {
-    fetchContacts: FetchContacts;
-    retrieveUser: RetrieveUser;
-  }) => {
-    id = useEventPlateId(id);
-    const editor = usePlateEditorState(id)!;
+  (props: ToggleShowThreadsButtonProps) => {
+    const { id, fetchContacts, retrieveUser, ...otherProps } = props;
+
+    const eventPlateId = useEventPlateId(id);
+    const editor = usePlateEditorState(eventPlateId)!;
 
     const [areThreadsShown, setAreThreadsShown] = useState(false);
 
@@ -45,7 +44,7 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
             event.preventDefault();
             toggleShowThreads();
           }}
-          {...props}
+          {...otherProps}
         />
         {areThreadsShown ? (
           <ResolvedThreads

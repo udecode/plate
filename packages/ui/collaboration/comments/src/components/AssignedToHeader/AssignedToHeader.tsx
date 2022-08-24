@@ -13,29 +13,28 @@ import {
   createAssignedToHeaderStyles,
 } from './AssignedToHeader.styles';
 
-export function AssignedToHeader(
-  props: {
-    thread: Thread;
-    assignedTo: User;
-    showResolveThreadButton: boolean;
-    showReOpenThreadButton: boolean;
-    retrieveUser: RetrieveUser;
-    onResolveThread: OnResolveThread;
-    onReOpenThread: OnReOpenThread;
-  } & AssignedToHeaderStyledProps
-) {
+type AssignedToHeaderProps = {
+  thread: Thread;
+  assignedTo: User;
+  showResolveThreadButton: boolean;
+  showReOpenThreadButton: boolean;
+  retrieveUser: RetrieveUser;
+  onResolveThread: OnResolveThread;
+  onReOpenThread: OnReOpenThread;
+} & AssignedToHeaderStyledProps;
+
+export const AssignedToHeader = (props: AssignedToHeaderProps) => {
   const {
-    thread,
     assignedTo,
-    showResolveThreadButton,
-    showReOpenThreadButton,
-    retrieveUser,
-    onResolveThread,
     onReOpenThread,
+    onResolveThread,
+    retrieveUser,
+    showReOpenThreadButton,
+    showResolveThreadButton,
+    thread,
   } = props;
 
   const loggedInUser = useLoggedInUser(retrieveUser);
-
   const isAssignedToLoggedInUser = loggedInUser.id === assignedTo.id;
 
   const {
@@ -94,4 +93,4 @@ export function AssignedToHeader(
       </div>
     </div>
   );
-}
+};

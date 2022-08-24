@@ -18,7 +18,7 @@ import { createTextAreaStyles } from '../Thread/Thread.styles';
 
 type OnChange = (newValue: string) => void;
 
-interface TextAreaProps {
+type TextAreaProps = {
   value: string;
   onChange: OnChange;
   thread: ThreadModel;
@@ -26,11 +26,11 @@ interface TextAreaProps {
   haveContactsBeenClosed: boolean;
   setHaveContactsBeenClosed: React.Dispatch<React.SetStateAction<boolean>>;
   onSubmit: () => void;
-}
+};
 
 export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  function TextArea(
-    {
+  (props: TextAreaProps, ref: ForwardedRef<HTMLTextAreaElement>) => {
+    const {
       value,
       onChange,
       thread,
@@ -38,11 +38,11 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       haveContactsBeenClosed,
       setHaveContactsBeenClosed,
       onSubmit,
-      ...props
-    }: TextAreaProps,
-    ref: ForwardedRef<HTMLTextAreaElement>
-  ) {
+      ...otherProps
+    } = props;
+
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+
     const [areContactsShown, setAreContactsShown] = useState<boolean>(false);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [filteredContacts, setFilteredContacts2] = useState<Contact[]>([]);
@@ -339,7 +339,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       [textAreaRef]
     );
 
-    const { root: textArea } = createTextAreaStyles(props);
+    const { root: textArea } = createTextAreaStyles(otherProps);
 
     const onChange2 = useCallback(
       function onChange2(event) {

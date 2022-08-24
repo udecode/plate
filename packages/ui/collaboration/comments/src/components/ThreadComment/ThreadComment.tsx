@@ -20,21 +20,21 @@ import {
   createThreadCommentTextStyles,
 } from './ThreadComment.styles';
 
-export function ThreadComment(
-  props: {
-    comment: Comment;
-    thread: Thread;
-    showResolveThreadButton: boolean;
-    showReOpenThreadButton: boolean;
-    showMoreButton: boolean;
-    showLinkToThisComment: boolean;
-    onSaveComment: (comment: Comment) => void;
-    onResolveThread: OnResolveThread;
-    onReOpenThread: OnReOpenThread;
-    onDelete: (comment: Comment) => void;
-    fetchContacts: FetchContacts;
-  } & StyledProps
-) {
+type ThreadCommentProps = {
+  comment: Comment;
+  thread: Thread;
+  showResolveThreadButton: boolean;
+  showReOpenThreadButton: boolean;
+  showMoreButton: boolean;
+  showLinkToThisComment: boolean;
+  onSaveComment: (comment: Comment) => void;
+  onResolveThread: OnResolveThread;
+  onReOpenThread: OnReOpenThread;
+  onDelete: (comment: Comment) => void;
+  fetchContacts: FetchContacts;
+} & StyledProps;
+
+export const ThreadComment = (props: ThreadCommentProps) => {
   const {
     comment,
     thread,
@@ -50,6 +50,7 @@ export function ThreadComment(
   } = props;
 
   const [isEdited, setIsEdited] = useState(false);
+  const [threadLink, setThreadLink] = useState<string | null>(null);
 
   const { root } = createThreadCommentStyled(props);
   const { root: commentHeader } = createCommentHeaderStyles(props);
@@ -57,8 +58,6 @@ export function ThreadComment(
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: timestamp } = createTimestampStyles(props);
   const { root: threadCommentText } = createThreadCommentTextStyles(props);
-
-  const [threadLink, setThreadLink] = useState<string | null>(null);
 
   const onEdit = useCallback(function onEdit() {
     setIsEdited(true);
@@ -151,4 +150,4 @@ export function ThreadComment(
       ) : null}
     </div>
   );
-}
+};

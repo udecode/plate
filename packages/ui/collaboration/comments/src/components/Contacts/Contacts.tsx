@@ -4,12 +4,12 @@ import React, { RefObject } from 'react';
 import { Corner, DefaultFocusState, MDCMenu } from '@material/menu';
 import { Contact } from '@xolvio/plate-comments';
 
-interface ContactsProps {
+type ContactsProps = {
   contacts: Contact[];
   onSelected: (contact: Contact) => void;
   onClosed: () => void;
   selectedIndex: number;
-}
+};
 
 export class Contacts extends React.Component<ContactsProps> {
   contactsRef: RefObject<HTMLDivElement>;
@@ -17,18 +17,16 @@ export class Contacts extends React.Component<ContactsProps> {
 
   constructor(props: ContactsProps) {
     super(props);
-
     this.contactsRef = React.createRef();
-
     this.onMenuSelected = this.onMenuSelected.bind(this);
   }
 
   componentDidMount() {
+    const { onClosed } = this.props;
     this.contactsMenu = new MDCMenu(this.contactsRef.current!);
     this.contactsMenu.setDefaultFocusState(DefaultFocusState.NONE);
     this.contactsMenu.setAnchorCorner(Corner.BOTTOM_START);
 
-    const { onClosed } = this.props;
     this.contactsMenu.listen('MDCMenu:selected', this.onMenuSelected);
     this.contactsMenu.listen('MDCMenuSurface:closed', onClosed);
 

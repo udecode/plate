@@ -14,10 +14,10 @@ import { Close } from '@styled-icons/material/Close';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { createCloseButtonStyles } from './ThreadLinkDialog.styles';
 
-interface CommentLinkDialogProps extends StyledProps {
+type CommentLinkDialogProps = {
   threadLink: string;
   onClose: () => void;
-}
+} & StyledProps;
 
 export class ThreadLinkDialog extends React.Component<CommentLinkDialogProps> {
   ref: React.RefObject<HTMLDivElement>;

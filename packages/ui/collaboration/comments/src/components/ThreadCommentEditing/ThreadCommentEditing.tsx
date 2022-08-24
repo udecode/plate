@@ -10,32 +10,35 @@ import {
   createCommentInputStyles,
 } from '../Thread/Thread.styles';
 
-export function ThreadCommentEditing({
-  thread,
-  defaultText,
-  onSave: onSaveCallback,
-  onCancel,
-  fetchContacts,
-  ...props
-}: {
+type ThreadCommentEditingProps = {
   thread: ThreadModel;
   defaultText: string;
   onSave: (text: string) => void;
   onCancel: () => void;
   fetchContacts: FetchContacts;
-} & StyledProps) {
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+} & StyledProps;
+
+export const ThreadCommentEditing = (props: ThreadCommentEditingProps) => {
+  const {
+    thread,
+    defaultText,
+    onSave: onSaveCallback,
+    onCancel,
+    fetchContacts,
+    ...otherProps
+  } = props;
 
   const [value, setValue] = useState<string>(defaultText);
-
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
     false
   );
 
-  const { root: commentInput } = createCommentInputStyles(props);
-  const { root: buttons } = createButtonsStyles(props);
-  const { root: commentButton } = createCommentButtonStyles(props);
-  const { root: cancelButton } = createCancelButtonStyles(props);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { root: commentInput } = createCommentInputStyles(otherProps);
+  const { root: buttons } = createButtonsStyles(otherProps);
+  const { root: commentButton } = createCommentButtonStyles(otherProps);
+  const { root: cancelButton } = createCancelButtonStyles(otherProps);
 
   const onSave = useCallback(
     async function onSave() {
@@ -93,4 +96,4 @@ export function ThreadCommentEditing({
       </div>
     </div>
   );
-}
+};
