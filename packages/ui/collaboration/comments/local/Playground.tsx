@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AddComment, Comment } from '@styled-icons/material';
@@ -42,16 +42,22 @@ const Toolbar = withPlateEventProvider(
     onAddThread?: OnAddThread;
     fetchContacts: FetchContacts;
     retrieveUser: RetrieveUser;
-  }) => (
-    <HeadingToolbar>
-      <AddThreadToolbarButton onAddThread={onAddThread} icon={<AddComment />} />
-      <ToggleShowThreadsButton
-        icon={<Comment />}
-        fetchContacts={fetchContacts}
-        retrieveUser={retrieveUser}
-      />
-    </HeadingToolbar>
-  )
+  }) => {
+    return (
+      <HeadingToolbar>
+        <AddThreadToolbarButton
+          onAddThread={onAddThread}
+          icon={<AddComment />}
+        />
+        <ToggleShowThreadsButton
+          icon={<Comment />}
+          fetchContacts={fetchContacts}
+          retrieveUser={retrieveUser}
+          renderContainer={document.body}
+        />
+      </HeadingToolbar>
+    );
+  }
 );
 
 export const Playground = () => {

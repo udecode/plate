@@ -11,11 +11,18 @@ import { ResolvedThreads } from '../Threads/ResolvedThreads';
 type ToggleShowThreadsButtonProps = {
   fetchContacts: FetchContacts;
   retrieveUser: RetrieveUser;
+  renderContainer: HTMLElement;
 } & ToolbarButtonProps;
 
 export const ToggleShowThreadsButton = withPlateEventProvider(
   (props: ToggleShowThreadsButtonProps) => {
-    const { id, fetchContacts, retrieveUser, ...otherProps } = props;
+    const {
+      id,
+      fetchContacts,
+      renderContainer,
+      retrieveUser,
+      ...otherProps
+    } = props;
 
     const eventPlateId = useEventPlateId(id);
     const editor = usePlateEditorState(eventPlateId)!;
@@ -52,6 +59,7 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
             onClose={onCloseThreads}
             fetchContacts={fetchContacts}
             retrieveUser={retrieveUser}
+            renderContainer={renderContainer}
           />
         ) : null}
       </div>

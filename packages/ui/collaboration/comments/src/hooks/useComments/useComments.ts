@@ -380,6 +380,10 @@ export const useComments = (
     }
   }, [editor, selection]);
 
+  useEffect(() => {
+    normalizeThreadColor();
+  }, [editor, normalizeThreadColor]);
+
   const returnValue = useMemo(
     () => ({
       thread,

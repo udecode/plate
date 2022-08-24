@@ -25,14 +25,21 @@ const isClickInsideThreads = (event: MouseEvent): boolean => {
 };
 
 type ResolvedThreadsProps = {
-  parent: RefObject<HTMLElement>;
-  onClose: () => void;
+  renderContainer: HTMLElement;
   fetchContacts: FetchContacts;
+  onClose: () => void;
+  parent: RefObject<HTMLElement>;
   retrieveUser: RetrieveUser;
 } & StyledProps;
 
 export const ResolvedThreads = (props: ResolvedThreadsProps) => {
-  const { parent, onClose, fetchContacts, retrieveUser } = props;
+  const {
+    fetchContacts,
+    onClose,
+    parent,
+    renderContainer,
+    retrieveUser,
+  } = props;
 
   const [position, setPosition] = useState<ThreadPosition | null>(null);
 
@@ -64,6 +71,17 @@ export const ResolvedThreads = (props: ResolvedThreadsProps) => {
     [onClose]
   );
 
+  const updatePosition = useCallback(() => {
+    const parentElement = parent.current!;
+    const newPosition = determineAbsolutePosition(parentElement);
+    newPosition.top += parentElement.clientHeight;
+    newPosition.left =
+      newPosition.left -
+      0.5 * ref.current!.clientWidth +
+      0.5 * parentElement.clientWidth;
+    setPosition(newPosition);
+  }, [parent]);
+
   useEffect(() => {
     let isMounted = true;
     setTimeout(() => {
@@ -79,15 +97,8 @@ export const ResolvedThreads = (props: ResolvedThreadsProps) => {
   }, [onClick]);
 
   useEffect(() => {
-    const parentElement = parent.current!;
-    const newPosition = determineAbsolutePosition(parentElement);
-    newPosition.top += parentElement.clientHeight;
-    newPosition.left =
-      newPosition.left -
-      0.5 * ref.current!.clientWidth +
-      0.5 * parentElement.clientWidth;
-    setPosition(newPosition);
-  }, [parent]);
+    updatePosition();
+  }, [updatePosition]);
 
   return createPortal(
     <div
@@ -100,26 +111,24 @@ export const ResolvedThreads = (props: ResolvedThreadsProps) => {
         <h2>Resolved threads</h2>
       </div>
       <div css={body.css} className={body.className}>
-        {resolvedThreads.map((thread) => {
-          return (
-            <Thread
-              key={thread.id}
-              thread={thread}
-              onSaveComment={() => undefined as any}
-              onSubmitComment={() => Promise.resolve() as any}
-              onCancelCreateThread={() => undefined}
-              onResolveThread={() => undefined}
-              showResolveThreadButton={false}
-              showReOpenThreadButton
-              showMoreButton={false}
-              fetchContacts={fetchContacts}
-              retrieveUser={retrieveUser}
-              retrieveUserByEmailAddress={() => createNullUser()}
-            />
-          );
-        })}
+        {resolvedThreads.map((thread) => (
+          <Thread
+            key={thread.id}
+            thread={thread}
+            onSaveComment={() => undefined as any}
+            onSubmitComment={() => Promise.resolve() as any}
+            onCancelCreateThread={() => undefined}
+            onResolveThread={() => undefined}
+            showResolveThreadButton={false}
+            showReOpenThreadButton
+            showMoreButton={false}
+            fetchContacts={fetchContacts}
+            retrieveUser={retrieveUser}
+            retrieveUserByEmailAddress={() => createNullUser()}
+          />
+        ))}
       </div>
     </div>,
-    document.body
+    renderContainer
   );
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { User } from '@xolvio/plate-comments';
 import { SideThread, useComments } from '@xolvio/plate-ui-comments';
 import { UseCommentsReturnType } from '@xolvio/plate-ui-comments/src';
