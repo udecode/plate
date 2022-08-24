@@ -1,8 +1,10 @@
 import {
   ELEMENT_DEFAULT,
   findNode,
+  getBlockAbove,
   getCommonNode,
   getNodeEntries,
+  getPluginOptions,
   getPluginType,
   isCollapsed,
   isElement,
@@ -17,16 +19,22 @@ import {
 import { Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';
+import { ListPlugin } from '../types';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = <V extends Value>(
   editor: PlateEditor<V>,
-  { type }: { type: string }
+  { type, pluginKey = type }: { type: string; pluginKey?: string }
 ) =>
   withoutNormalizing(editor, () => {
     if (!editor.selection) {
       return;
     }
+
+    const { validLiChildrenTypes } = getPluginOptions<ListPlugin, V>(
+      editor,
+      pluginKey
+    );
 
     if (isCollapsed(editor.selection) || !isRangeAcrossBlocks(editor)) {
       // selection is collapsed
@@ -56,9 +64,15 @@ export const toggleList = <V extends Value>(
           match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
         });
         const nodes = Array.from(_nodes);
-        setElements(editor, {
-          type: getPluginType(editor, ELEMENT_LIC),
+
+        const blockAbove = getBlockAbove(editor, {
+          match: { type: validLiChildrenTypes },
         });
+        if (!blockAbove) {
+          setElements(editor, {
+            type: getPluginType(editor, ELEMENT_LIC),
+          });
+        }
 
         const listItem = {
           type: getPluginType(editor, ELEMENT_LI),
@@ -137,11 +151,13 @@ export const toggleList = <V extends Value>(
               }
             );
           } else {
-            setElements(
-              editor,
-              { type: getPluginType(editor, ELEMENT_LIC) },
-              { at: n[1] }
-            );
+            if (!validLiChildrenTypes?.includes(n[0].type)) {
+              setElements(
+                editor,
+                { type: getPluginType(editor, ELEMENT_LIC) },
+                { at: n[1] }
+              );
+            }
 
             const listItem = {
               type: getPluginType(editor, ELEMENT_LI),
