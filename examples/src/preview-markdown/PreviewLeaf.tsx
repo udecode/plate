@@ -8,7 +8,7 @@ export const PreviewLeaf: RenderLeaf = (props) => {
   const { root } = getPreviewLeafStyles(leaf as any);
 
   return (
-    <span {...attributes} css={root.css} className={root.className}>
+    <span {...attributes} style={root.css[0] as object} className={root.className}>
       {children}
     </span>
   );
