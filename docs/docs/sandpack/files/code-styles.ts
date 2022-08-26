@@ -17,6 +17,10 @@ td {
 
 .slate-HeadingToolbar {
   padding: 17px 60px !important;
+  position: fixed !important;
+  background: white !important;
+  z-index: 1000;
+  width: 100%;
 }
 
 .tippy-box[data-theme~='tomato'] {
