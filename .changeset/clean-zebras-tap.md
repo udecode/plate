@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-minor": minor
+"@udecode/plate-core": minor
 ---
 
 New editor prop:
