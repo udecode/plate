@@ -1,5 +1,14 @@
 # @udecode/plate-media
 
+## 16.5.0
+
+### Minor Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes https://github.com/udecode/editor-protocol/issues/79
+  - new option `disableCaption`
+  - image and media-embed plugins use `getWithSelectionCaption`
+
 ## 16.3.0
 
 ## 16.2.0

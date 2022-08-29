@@ -30,7 +30,7 @@ export const withPlate = <
 
   editor.id = id as string;
   editor.prevSelection = null;
-  editor.lastKeyDown = null;
+  editor.currentKeyboardEvent = null;
 
   if (!editor.key) {
     editor.key = Math.random();

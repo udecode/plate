@@ -3,20 +3,17 @@ import {
   createNodesWithHOC,
   findNodePath,
   PlateRenderElementProps,
-  TEditor,
   Value,
 } from '@udecode/plate-core';
-import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
 export interface WithDraggableOptions<V extends Value = Value>
-  extends Pick<DraggableProps<V>, 'onRenderDragHandle' | 'styles'> {
-  level?: number;
-  filter?: (editor: TEditor<V>, path: Path) => boolean;
-  allowReadOnly?: boolean;
-}
+  extends Pick<
+    DraggableProps<V>,
+    'onRenderDragHandle' | 'styles' | 'level' | 'filter' | 'allowReadOnly'
+  > {}
 
 export const withDraggable = <V extends Value>(
   Component: any,

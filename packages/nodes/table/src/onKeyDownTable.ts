@@ -26,19 +26,6 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  const setEditorLastKeyDown = (hotkey: string) => {
-    if (isHotkey(hotkey, e)) {
-      editor.lastKeyDown = hotkey;
-    }
-  };
-
-  const keys = ['up', 'down', 'left', 'right'];
-
-  // set last key down to editor so we can override apply set_selection
-  keys.forEach((key) => {
-    setEditorLastKeyDown(key);
-  });
-
   const isKeyDown = {
     'shift+up': isHotkey('shift+up', e),
     'shift+down': isHotkey('shift+down', e),
@@ -57,8 +44,6 @@ export const onKeyDownTable = <
       ) {
         e.preventDefault();
         e.stopPropagation();
-      } else {
-        setEditorLastKeyDown(key);
       }
     }
   });

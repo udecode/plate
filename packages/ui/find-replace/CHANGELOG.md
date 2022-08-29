@@ -1,5 +1,7 @@
 # @udecode/plate-find-replace-ui
 
+## 16.5.0
+
 ## 16.3.0
 
 ## 16.2.0
