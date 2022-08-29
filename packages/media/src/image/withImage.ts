@@ -1,4 +1,6 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-core';
+import { getWithSelectionCaption } from '../caption/getWithSelectionCaption';
+import { ELEMENT_IMAGE } from './createImagePlugin';
 import { ImagePlugin } from './types';
 import { withImageEmbed } from './withImageEmbed';
 import { withImageUpload } from './withImageUpload';
@@ -15,7 +17,7 @@ export const withImage = <
   plugin: WithPlatePlugin<ImagePlugin, V, E>
 ) => {
   const {
-    options: { disableUploadInsert, disableEmbedInsert },
+    options: { disableUploadInsert, disableEmbedInsert, disableCaption },
   } = plugin;
 
   if (!disableUploadInsert) {
@@ -24,6 +26,10 @@ export const withImage = <
 
   if (!disableEmbedInsert) {
     editor = withImageEmbed(editor, plugin);
+  }
+
+  if (!disableCaption) {
+    editor = getWithSelectionCaption(ELEMENT_IMAGE)(editor, plugin);
   }
 
   return editor;

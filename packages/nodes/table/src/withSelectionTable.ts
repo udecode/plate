@@ -85,10 +85,6 @@ export const withSelectionTable = <
       }
 
       overrideSelectionFromCell(editor, newSelection);
-
-      if (editor.lastKeyDown) {
-        editor.lastKeyDown = null;
-      }
     }
 
     apply(op);

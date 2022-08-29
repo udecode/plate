@@ -1,5 +1,6 @@
 import { createPluginFactory } from '@udecode/plate-core';
 import { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';
+import { getWithSelectionCaption } from '../caption/getWithSelectionCaption';
 import { MediaPlugin } from '../media/index';
 import { MediaEmbedTweet, parseTwitterUrl } from '../twitter/index';
 import { MediaEmbedVideo, parseVideoUrl } from '../video/index';
@@ -17,6 +18,17 @@ export const createMediaEmbedPlugin = createPluginFactory<MediaPlugin>({
   isVoid: true,
   handlers: {
     onKeyDown: getOnKeyDownCaption(ELEMENT_MEDIA_EMBED),
+  },
+  withOverrides: (editor, plugin) => {
+    const {
+      options: { disableCaption },
+    } = plugin;
+
+    if (!disableCaption) {
+      editor = getWithSelectionCaption(ELEMENT_MEDIA_EMBED)(editor, plugin);
+    }
+
+    return editor;
   },
   options: {
     transformUrl: parseIframeUrl,
