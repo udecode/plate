@@ -18,11 +18,15 @@ export const createSelectionPlugin = createPluginFactory({
         const { properties } = operation;
 
         editor.prevSelection = properties as TRange | null;
+
+        apply(operation);
+
+        editor.currentKeyboardEvent = null;
+
+        return;
       }
 
       apply(operation);
-
-      editor.currentKeyboardEvent = null;
     };
 
     return editor;

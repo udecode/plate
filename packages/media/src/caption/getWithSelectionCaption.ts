@@ -13,7 +13,10 @@ import { ImagePlugin } from '../image/index';
 import { TMediaElement } from '../media/index';
 import { captionGlobalStore } from './captionGlobalStore';
 
-// TODO: tests
+/**
+ * TODO: tests
+ * https://github.com/udecode/editor-protocol/issues/79
+ */
 
 /**
  * Selection table:
