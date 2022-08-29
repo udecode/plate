@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 16.5.0
+
+### Patch Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – Refactor: use `editor.currentKeyboardEvent`
+
 ## 16.4.2
 
 ### Patch Changes
