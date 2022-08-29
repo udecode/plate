@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-html
 
+## 16.5.0
+
+### Patch Changes
+
+- [#1825](https://github.com/udecode/plate/pull/1825) by [@mskelton](https://github.com/mskelton) – Add missing `slate-history` peer dependency.
+
 ## 16.3.0
 
 ## 16.2.0

@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 16.5.0
+
+### Minor Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – New editor prop:
+  - `currentKeyboardEvent`: is set in `onKeyDown` and unset after applying `set_selection` operation. Useful to override the selection depending on the keyboard event.
+
 ## 16.3.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 16.5.0
+
+### Patch Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – Fix: `DraggableProps.level` type accepts `null`
+
 ## 16.3.0
 
 ## 16.2.0
