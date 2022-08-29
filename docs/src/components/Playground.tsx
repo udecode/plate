@@ -96,16 +96,16 @@ import { ImageToolbarButton } from '@udecode/plate-ui-image';
 import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height';
 import { MediaEmbedToolbarButton } from '@udecode/plate-ui-media-embed';
 import { HeadingToolbar } from '@udecode/plate-ui-toolbar';
-import { createThreadPlugin, ELEMENT_THREAD } from '@xolvio/plate-comments';
+import { createThreadPlugin, ELEMENT_THREAD } from '@udecode/plate-comments';
 import {
   FetchContacts,
   OnAddThread,
   ThreadElement,
-} from '@xolvio/plate-ui-comments';
+} from '@udecode/plate-ui-comments';
 import {
   RetrieveUser,
   UseCommentsReturnType,
-} from '@xolvio/plate-ui-comments/src';
+} from '@udecode/plate-ui-comments/src';
 import { Comments } from './Comments';
 import { useFetchContacts } from './useFetchContacts';
 import { useRetrieveUser } from './useRetrieveUser';

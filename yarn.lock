@@ -5830,6 +5830,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-comments@npm:^0.5.0, @udecode/plate-comments@workspace:packages/comments":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-comments@workspace:packages/comments"
+  dependencies:
+    "@udecode/plate-core": "npm:16.5.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.66.1"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.74.2"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-core@npm:16.5.0, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
@@ -6439,6 +6453,41 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ui-comments@workspace:packages/ui/comments":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui-comments@workspace:packages/ui/comments"
+  dependencies:
+    "@material/button": "npm:^13.0.0"
+    "@material/checkbox": "npm:^14.0.0"
+    "@material/dialog": "npm:^13.0.0"
+    "@material/form-field": "npm:^14.0.0"
+    "@material/icon-button": "npm:^13.0.0"
+    "@material/menu": "npm:^13.0.0"
+    "@material/menu-surface": "npm:^13.0.0"
+    "@material/ripple": "npm:^13.0.0"
+    "@material/snackbar": "npm:^13.0.0"
+    "@material/textfield": "npm:^13.0.0"
+    "@mui/base": "npm:5.0.0-alpha.93"
+    "@seznam/compose-react-refs": "npm:^1.0.6"
+    "@styled-icons/material": "npm:^10.34.0"
+    "@types/uuid": "npm:^8.3.4"
+    "@udecode/plate-comments": "npm:^0.5.0"
+    "@udecode/plate-core": "npm:16.5.0"
+    "@udecode/plate-styled-components": "npm:16.5.0"
+    "@udecode/plate-ui-toolbar": "npm:16.5.0"
+    "@vitejs/plugin-react": "npm:^2.0.0"
+    uuid: "npm:^8.3.2"
+    vite: "npm:^3.0.5"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.66.1"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.74.2"
+    styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-ui-cursor@npm:16.5.0, @udecode/plate-ui-cursor@workspace:packages/ui/cursor":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-cursor@workspace:packages/ui/cursor"
@@ -7007,55 +7056,6 @@ __metadata:
   checksum: f151b31dbfeff78d5891fcc00e01648459a7ee9f7fb11d11b0ee5443cb92e5e6e4a169e8a8b47493fa61bbf50a8812f384fa6c9c7b07729a0e04c21d547e36f8
   languageName: node
   linkType: hard
-
-"@xolvio/plate-comments@npm:^0.5.0, @xolvio/plate-comments@workspace:packages/collaboration/comments":
-  version: 0.0.0-use.local
-  resolution: "@xolvio/plate-comments@workspace:packages/collaboration/comments"
-  dependencies:
-    "@udecode/plate-core": "npm:16.3.0"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
-    slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
-  languageName: unknown
-  linkType: soft
-
-"@xolvio/plate-ui-comments@workspace:packages/ui/collaboration/comments":
-  version: 0.0.0-use.local
-  resolution: "@xolvio/plate-ui-comments@workspace:packages/ui/collaboration/comments"
-  dependencies:
-    "@material/button": "npm:^13.0.0"
-    "@material/checkbox": "npm:^14.0.0"
-    "@material/dialog": "npm:^13.0.0"
-    "@material/form-field": "npm:^14.0.0"
-    "@material/icon-button": "npm:^13.0.0"
-    "@material/menu": "npm:^13.0.0"
-    "@material/menu-surface": "npm:^13.0.0"
-    "@material/ripple": "npm:^13.0.0"
-    "@material/snackbar": "npm:^13.0.0"
-    "@material/textfield": "npm:^13.0.0"
-    "@mui/base": "npm:5.0.0-alpha.93"
-    "@seznam/compose-react-refs": "npm:^1.0.6"
-    "@styled-icons/material": "npm:^10.34.0"
-    "@types/uuid": "npm:^8.3.4"
-    "@udecode/plate-core": "npm:16.3.0"
-    "@udecode/plate-styled-components": "npm:16.3.0"
-    "@udecode/plate-ui-toolbar": "npm:16.3.0"
-    "@vitejs/plugin-react": "npm:^2.0.0"
-    "@xolvio/plate-comments": "npm:^0.5.0"
-    uuid: "npm:^8.3.2"
-    vite: "npm:^3.0.5"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.66.1"
-    slate-history: ">=0.66.0"
-    slate-react: ">=0.74.2"
-    styled-components: ">=5.0.0"
-  languageName: unknown
-  linkType: soft
 
 "@xtuc/ieee754@npm:^1.2.0":
   version: 1.2.0

@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
-import { User } from '@xolvio/plate-comments';
-import { SideThread, useComments } from '@xolvio/plate-ui-comments';
-import { UseCommentsReturnType } from '@xolvio/plate-ui-comments/src';
+import { User } from '@udecode/plate-comments';
+import { SideThread, useComments } from '@udecode/plate-ui-comments';
+import { UseCommentsReturnType } from '@udecode/plate-ui-comments/src';
 import { useFetchContacts } from './useFetchContacts';
 import { useRetrieveUser } from './useRetrieveUser';
 import { users } from './users';
