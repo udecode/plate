@@ -44,8 +44,6 @@ export const onKeyDownTable = <
       ) {
         e.preventDefault();
         e.stopPropagation();
-      } else {
-        // setEditorLastKeyDown(key);
       }
     }
   });
