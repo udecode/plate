@@ -5,6 +5,11 @@ export const KEY_SELECTION = 'selection';
 
 export const createSelectionPlugin = createPluginFactory({
   key: KEY_SELECTION,
+  handlers: {
+    onKeyDown: (editor) => (e) => {
+      editor.currentKeyboardEvent = e;
+    },
+  },
   withOverrides: (editor) => {
     const { apply } = editor;
 
@@ -16,6 +21,8 @@ export const createSelectionPlugin = createPluginFactory({
       }
 
       apply(operation);
+
+      editor.currentKeyboardEvent = null;
     };
 
     return editor;
