@@ -23,7 +23,7 @@ export const getDraggableStyles = <V extends Value>(
 
       block: tw`overflow-auto`,
       gutterLeft: [
-        tw`absolute top-0 flex h-full opacity-0`,
+        tw`absolute top-0 flex h-full opacity-0 pointer-events-none cursor-text`,
         css`
           transform: translateX(-100%);
         `,
