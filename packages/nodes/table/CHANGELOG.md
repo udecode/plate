@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 16.6.0
+
+### Minor Changes
+
+- [#1835](https://github.com/udecode/plate/pull/1835) by [@zbeyens](https://github.com/zbeyens) – New table plugin option: `disableUnsetSingleColSize`. Disable unsetting the first column width when the table has one column. Set it to true if you want to resize the table width when there is only one column. Keep it false if you have a full-width table.
+
 ## 16.5.0
 
 ### Patch Changes
