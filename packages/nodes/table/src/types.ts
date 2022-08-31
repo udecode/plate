@@ -8,6 +8,13 @@ export interface TablePlugin<V extends Value = Value> {
   disableExpandOnInsert?: boolean;
 
   /**
+   * Disable unsetting the first column width when the table has one column.
+   * Set it to true if you want to resize the table width when there is only one column.
+   * Keep it false if you have a full-width table.
+   */
+  disableUnsetSingleColSize?: boolean;
+
+  /**
    * @default empty paragraph
    */
   newCellChildren?: TDescendant[];

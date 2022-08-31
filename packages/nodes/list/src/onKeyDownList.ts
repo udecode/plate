@@ -13,7 +13,7 @@ import {
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
-import { ELEMENT_LIC } from './createListPlugin';
+import { ELEMENT_LI } from './createListPlugin';
 import { moveListItems, toggleList } from './transforms';
 import { ListPlugin } from './types';
 
@@ -38,8 +38,8 @@ export const onKeyDownList = <
     // Unhang the expanded selection
     if (!isCollapsed(editor.selection)) {
       const { anchor, focus } = Range.isBackward(selection)
-        ? { anchor: selection.focus, focus: selection.anchor }
-        : { anchor: selection.anchor, focus: selection.focus };
+        ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
+        : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
@@ -53,7 +53,7 @@ export const onKeyDownList = <
 
     // check if we're in a list context.
     const listSelected = someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_LIC) },
+      match: { type: getPluginType(editor, ELEMENT_LI) },
     });
 
     if (workRange && listSelected) {

@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react';
 import { TEditor, Value } from '../../slate/editor/TEditor';
 import { THistoryEditor } from '../../slate/history-editor/THistoryEditor';
 import { TRange } from '../../slate/index';
@@ -13,4 +14,5 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
     plugins: WithPlatePlugin<{}, V>[];
     pluginsByKey: Record<PluginKey, WithPlatePlugin<{}, V>>;
     prevSelection: TRange | null;
+    currentKeyboardEvent: KeyboardEvent | null;
   };

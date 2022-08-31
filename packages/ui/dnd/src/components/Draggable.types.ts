@@ -75,7 +75,20 @@ export interface DraggableProps<V extends Value>
    */
   onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
 
-  level?: number;
+  /**
+   * Document level where dnd is enabled. 0 = root blocks, 1 = first level of children, etc.
+   * Set to null to allow all levels.
+   * @default 0
+   */
+  level?: number | null;
+
+  /**
+   * Filter out elements that can't be dragged.
+   */
   filter?: (editor: TEditor<V>, path: Path) => boolean;
+
+  /**
+   * Enables dnd in read-only.
+   */
   allowReadOnly?: boolean;
 }

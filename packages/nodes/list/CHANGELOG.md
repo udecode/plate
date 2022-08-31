@@ -1,5 +1,27 @@
 # @udecode/plate-list
 
+## 16.6.1
+
+### Patch Changes
+
+- [#1842](https://github.com/udecode/plate/pull/1842) by [@zbeyens](https://github.com/zbeyens) – `moveListItems` should return a boolean (whether it has been moved)
+
+## 16.5.0
+
+## 16.4.2
+
+### Patch Changes
+
+- [#1816](https://github.com/udecode/plate/pull/1816) by [@zbeyens](https://github.com/zbeyens) – Fixes #1817
+
+## 16.4.1
+
+### Patch Changes
+
+- [#1804](https://github.com/udecode/plate/pull/1804) by [@zbeyens](https://github.com/zbeyens) – Fixes #1803
+
+## 16.3.0
+
 ## 16.2.0
 
 ## 16.1.0

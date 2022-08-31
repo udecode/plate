@@ -64,7 +64,9 @@ export const moveListItems = <V extends Value>(
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  withoutNormalizing(editor, () => {
+  return withoutNormalizing(editor, () => {
+    let moved = false;
+
     licPathRefsToMove.forEach((licPathRef) => {
       const licPath = licPathRef.unref();
       if (!licPath) return;
@@ -75,24 +77,30 @@ export const moveListItems = <V extends Value>(
       const parentList = getParentNode(editor, listItem[1]);
       if (!parentList) return;
 
+      let _moved: any;
+
       if (increase) {
-        moveListItemDown(editor, {
+        _moved = moveListItemDown(editor, {
           list: parentList as any,
           listItem: listItem as any,
         });
       } else if (isListNested(editor, parentList[1])) {
         // un-indent a sub-list item
-        moveListItemUp(editor, {
+        _moved = moveListItemUp(editor, {
           list: parentList as any,
           listItem: listItem as any,
         });
       } else if (enableResetOnShiftTab) {
         // unindenting a top level list item, effectively breaking apart the list.
-        removeFirstListItem(editor, {
+        _moved = removeFirstListItem(editor, {
           list: parentList as any,
           listItem: listItem as any,
         });
       }
+
+      moved = _moved || moved;
     });
+
+    return moved;
   });
 };

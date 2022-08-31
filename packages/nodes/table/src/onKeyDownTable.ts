@@ -13,9 +13,10 @@ import isHotkey from 'is-hotkey';
 import {
   getNextTableCell,
   getPreviousTableCell,
-  getTableCellEntry,
+  getTableEntries,
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
+import { keyShiftEdges } from './constants';
 
 export const onKeyDownTable = <
   P = PluginOptions,
@@ -25,82 +26,55 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
-  const isShiftUp = isHotkey('shift+up', e);
-  if (isHotkey('up', e) || isShiftUp) {
-    if (
-      moveSelectionFromCell(editor, {
-        reverse: true,
-        edge: isShiftUp ? 'top' : undefined,
-      })
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
+  const isKeyDown = {
+    'shift+up': isHotkey('shift+up', e),
+    'shift+down': isHotkey('shift+down', e),
+    'shift+left': isHotkey('shift+left', e),
+    'shift+right': isHotkey('shift+right', e),
+  };
 
-  const isShiftDown = isHotkey('shift+down', e);
-  if (isHotkey('down', e) || isShiftDown) {
-    if (
-      moveSelectionFromCell(editor, {
-        edge: isShiftDown ? 'bottom' : undefined,
-      })
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
+  Object.keys(isKeyDown).forEach((key) => {
+    if (isKeyDown[key]) {
+      // if many cells are selected
+      if (
+        moveSelectionFromCell(editor, {
+          reverse: key === 'shift+up',
+          edge: keyShiftEdges[key],
+        })
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     }
-  }
-
-  if (isHotkey('shift+left', e)) {
-    if (moveSelectionFromCell(editor, { edge: 'left' })) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
-
-  if (isHotkey('shift+right', e)) {
-    if (moveSelectionFromCell(editor, { edge: 'right' })) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
+  });
 
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
   if (isTab || isUntab) {
-    const res = getTableCellEntry(editor, {});
-    if (!res) return;
-    const { tableRow, tableCell } = res;
-    const [, tableCellPath] = tableCell;
+    const entries = getTableEntries(editor);
+    if (!entries) return;
+
+    const { row, cell } = entries;
+    const [, cellPath] = cell;
 
     if (isUntab) {
       // move left with shift+tab
-      const previousCell = getPreviousTableCell(
-        editor,
-        tableCell,
-        tableCellPath,
-        tableRow
-      );
+      const previousCell = getPreviousTableCell(editor, cell, cellPath, row);
       if (previousCell) {
         const [, previousCellPath] = previousCell;
         select(editor, previousCellPath);
-        e.preventDefault();
-        e.stopPropagation();
       }
     } else if (isTab) {
       // move right with tab
-      const nextCell = getNextTableCell(
-        editor,
-        tableCell,
-        tableCellPath,
-        tableRow
-      );
+      const nextCell = getNextTableCell(editor, cell, cellPath, row);
       if (nextCell) {
         const [, nextCellPath] = nextCell;
         select(editor, nextCellPath);
-        e.preventDefault();
-        e.stopPropagation();
       }
     }
+
+    e.preventDefault();
+    e.stopPropagation();
   }
 
   if (isHotkey('mod+a', e)) {

@@ -7,6 +7,7 @@ import {
   getPointBefore,
   getStartPoint,
   isCollapsed,
+  isRangeInSameBlock,
   moveSelection,
   PlateEditor,
   replaceNodeChildren,
@@ -18,6 +19,7 @@ import {
 import { Point } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
+import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
  * Return true if:
@@ -93,27 +95,37 @@ export const withDeleteTable = <
   };
 
   editor.deleteFragment = () => {
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-    if (cellEntries.length > 1) {
-      withoutNormalizing(editor, () => {
-        cellEntries.forEach(([, cellPath]) => {
-          replaceNodeChildren<TElement>(editor, {
-            at: cellPath,
-            nodes: {
-              type: getPluginType(editor, ELEMENT_DEFAULT),
-              children: [{ text: '' }],
-            },
+    isRangeInSameBlock(editor, {
+      match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+    });
+
+    if (
+      isRangeInSameBlock(editor, {
+        match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+      })
+    ) {
+      const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+      if (cellEntries.length > 1) {
+        withoutNormalizing(editor, () => {
+          cellEntries.forEach(([, cellPath]) => {
+            replaceNodeChildren<TElement>(editor, {
+              at: cellPath,
+              nodes: {
+                type: getPluginType(editor, ELEMENT_DEFAULT),
+                children: [{ text: '' }],
+              },
+            });
+          });
+
+          // set back the selection
+          select(editor, {
+            anchor: getStartPoint(editor, cellEntries[0][1]),
+            focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
           });
         });
 
-        // set back the selection
-        select(editor, {
-          anchor: getStartPoint(editor, cellEntries[0][1]),
-          focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
-        });
-      });
-
-      return;
+        return;
+      }
     }
 
     deleteFragment();

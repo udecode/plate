@@ -27,6 +27,8 @@ export interface MediaPlugin {
    * i.e. its component will be used to render the media. Used by `MediaEmbed`.
    */
   rules?: MediaPluginRule[];
+
+  disableCaption?: boolean;
 }
 
 export const ELEMENT_MEDIA = 'media';

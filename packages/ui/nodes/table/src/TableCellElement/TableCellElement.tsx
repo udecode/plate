@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { findNodePath, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { getTableColumnIndex, setTableColSize } from '@udecode/plate-table';
@@ -32,6 +32,10 @@ export const TableCellElement = <V extends Value>(
   ] = useTableStore().use.hoveredColIndex();
   const setResizingCol = useTableStore().set.resizingCol();
 
+  useEffect(() => {
+    setHoveredColIndex(null);
+  }, [element, setHoveredColIndex]);
+
   const isCellSelected = useIsCellSelected(element);
 
   const handleResize: HandleStyles | undefined =
@@ -45,10 +49,7 @@ export const TableCellElement = <V extends Value>(
         }
       : undefined;
 
-  const colIndex = useMemo(
-    () => getTableColumnIndex(editor, { node: element }),
-    [editor, element]
-  );
+  const colIndex = getTableColumnIndex(editor, { node: element });
 
   const {
     root,
@@ -79,6 +80,7 @@ export const TableCellElement = <V extends Value>(
     );
 
     setResizingCol(null);
+    setHoveredColIndex(null);
   };
 
   return (

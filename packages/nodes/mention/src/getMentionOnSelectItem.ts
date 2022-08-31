@@ -7,7 +7,6 @@ import {
   TComboboxItem,
 } from '@udecode/plate-combobox';
 import {
-  deleteText,
   getBlockAbove,
   getPlugin,
   insertNodes,
@@ -47,7 +46,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
   } = getPlugin<MentionPlugin>(editor as any, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];
-  const isBlockEnd =
+  const isBlockEnd = () =>
     editor.selection &&
     pathAbove &&
     isEndPoint(editor, editor.selection.anchor, pathAbove);
@@ -59,11 +58,6 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     const props = createMentionNode!(item, {
       search: comboboxSelectors.text() ?? '',
     });
-
-    // insert a space to fix the bug
-    if (isBlockEnd) {
-      insertText(editor, ' ');
-    }
 
     select(editor, targetRange);
 
@@ -80,12 +74,12 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     } as TMentionElement);
 
     // move the selection after the element
-    moveSelection(editor);
+    moveSelection(editor, { unit: 'offset' });
 
-    // delete the inserted space
-    if (isBlockEnd && !insertSpaceAfterMention) {
-      deleteText(editor);
+    if (isBlockEnd() && insertSpaceAfterMention) {
+      insertText(editor, ' ');
     }
   });
+
   return comboboxActions.reset();
 };

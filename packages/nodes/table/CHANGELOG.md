@@ -1,5 +1,47 @@
 # @udecode/plate-table
 
+## 16.6.0
+
+### Minor Changes
+
+- [#1835](https://github.com/udecode/plate/pull/1835) by [@zbeyens](https://github.com/zbeyens) – New table plugin option: `disableUnsetSingleColSize`. Disable unsetting the first column width when the table has one column. Set it to true if you want to resize the table width when there is only one column. Keep it false if you have a full-width table.
+
+## 16.5.0
+
+### Patch Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – Refactor: use `editor.currentKeyboardEvent`
+
+## 16.4.2
+
+### Patch Changes
+
+- [#1821](https://github.com/udecode/plate/pull/1821) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixes #1356
+  - Fixes #1359
+
+- [#1819](https://github.com/udecode/plate/pull/1819) by [@zbeyens](https://github.com/zbeyens) – Fix: https://github.com/udecode/editor-protocol/issues/76
+
+## 16.3.0
+
+### Minor Changes
+
+- [#1796](https://github.com/udecode/plate/pull/1796) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes #1795
+  - Fixes #1794
+  - Fixes #1793
+  - Fixes #1791
+  - Fixes #1798
+  - `getTableCellEntry`:
+    - renamed to `getTableEntries`
+    - returns `table`, `row`, `cell`
+    - is now working when selecting many blocks in a cell
+  - `moveSelectionFromCell`:
+    - new option `fromOneCell`
+    - should not do anything when `at` is in a single cell, unless `fromOneCell` is `true`
+  - `overrideSelectionFromCell`: Override the new selection if the previous selection and the new one are in different cells
+
 ## 16.2.0
 
 ### Minor Changes

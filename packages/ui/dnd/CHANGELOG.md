@@ -1,5 +1,19 @@
 # @udecode/plate-dnd
 
+## 16.6.1
+
+### Patch Changes
+
+- [`4d03e4a`](https://github.com/udecode/plate/commit/4d03e4a42318ed87531b831d585510fcef38f11f) by [@zbeyens](https://github.com/zbeyens) – `Draggable`: Set `gutterLeft` before the block to fix a selection bug.
+
+## 16.5.0
+
+### Patch Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – Fix: `DraggableProps.level` type accepts `null`
+
+## 16.3.0
+
 ## 16.2.0
 
 ### Patch Changes
