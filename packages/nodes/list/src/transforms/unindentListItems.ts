@@ -6,4 +6,4 @@ export type UnindentListItemsOptions = Omit<MoveListItemsOptions, 'increase'>;
 export const unindentListItems = <V extends Value>(
   editor: PlateEditor<V>,
   options: UnindentListItemsOptions = {}
-): void => moveListItems(editor, { ...options, increase: false });
+) => moveListItems(editor, { ...options, increase: false });
