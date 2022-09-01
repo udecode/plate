@@ -50,19 +50,28 @@ export const images: Record<string, HostedFileInfo> = {
 export const portiveValue: any = (
   <fragment>
     <hh2>Portive</hh2>
-    <hp>Generic files</hp>
-    <element
-      type="attachment-block"
-      originKey="pdf"
-      filename="sherlock-holmes.pdf"
-      bytes={771277}
+    {/* <hp>Generic files</hp> */}
+    {/* <element */}
+    {/*  type="attachment-block" */}
+    {/*  originKey="pdf" */}
+    {/*  filename="sherlock-holmes.pdf" */}
+    {/*  bytes={771277} */}
+    {/* > */}
+    {/*  <htext /> */}
+    {/* </element> */}
+    <hp>Image with url:</hp>
+    <himg
+      originKey="icon"
+      originSize={images.icon.originSize}
+      size={[40, 40]}
+      url="https://source.unsplash.com/kFrdX5IeQzI"
     >
-      <htext />
-    </element>
-    <himg originKey="icon" originSize={images.icon.originSize} size={[40, 40]}>
       <htext />
     </himg>
 
-    <hp>Completed upload with origin id</hp>
+    <hp>Drop an image to upload:</hp>
+    <hp>
+      <htext />
+    </hp>
   </fragment>
 );

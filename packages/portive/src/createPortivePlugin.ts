@@ -1,9 +1,8 @@
-import { ELEMENT_IMAGE, TImageElement } from '@udecode/plate';
+import { ELEMENT_IMAGE, TImageElement, Value } from '@udecode/plate';
 import {
   createPluginFactory,
   PlateEditor,
   TElement,
-  Value,
   WithPartial,
 } from '@udecode/plate-core';
 import {
@@ -29,26 +28,30 @@ export const createPortiveImage = (
   children: [{ text: '' }],
 });
 
-export type PortivePlugin = {};
+export type PortivePlugin = Omit<
+  WithPortiveOptions,
+  'createFileElement' | 'createImageFileElement'
+>;
 
 export const KEY_PORTIVE = 'portive';
 
 /**
  * @see {@link withPortive}
  */
-export const createPortivePlugin = (
-  portiveOptions: Partial<WithPortiveOptions>
-) =>
-  createPluginFactory<PortivePlugin, Value, PlateEditor & PortiveEditor>({
-    key: KEY_PORTIVE,
-    withOverrides: (editor) =>
-      withPortive(editor as any, {
-        createImageFileElement: createPortiveImage as any,
-        createFileElement: createAttachmentBlock,
-        ...portiveOptions,
-      }),
-    handlers: {
-      onPaste: (editor) => editor.portive.handlePaste,
-      onDrop: (editor) => editor.portive.handleDrop,
-    },
-  });
+export const createPortivePlugin = createPluginFactory<
+  PortivePlugin,
+  Value,
+  PlateEditor & PortiveEditor
+>({
+  key: KEY_PORTIVE,
+  withOverrides: (editor, { options }) =>
+    withPortive(editor as any, {
+      createImageFileElement: createPortiveImage as any,
+      createFileElement: createAttachmentBlock,
+      ...options,
+    }),
+  handlers: {
+    onPaste: (editor) => editor.portive.handlePaste,
+    onDrop: (editor) => editor.portive.handleDrop,
+  },
+});

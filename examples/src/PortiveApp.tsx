@@ -10,7 +10,7 @@ import {
   MediaEmbedToolbarButton,
   Plate,
 } from '@udecode/plate';
-import { createPortivePlugin, PortiveImage } from '@udecode/plate-portive';
+import { createPortivePlugin, RenderHostedImage } from '@udecode/plate-portive';
 import { basicMarksPlugins } from './basic-marks/basicMarksPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -25,13 +25,15 @@ const plugins = createMyPlugins(
     ...basicMarksPlugins,
     createImagePlugin(),
     createPortivePlugin({
-      authToken:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imo0YlpVSGFQMmtlQmNyYTQifQ.eyJwYXRoIjoib24ve3l5eXl9L3ttbX0ve2RkfSIsImlhdCI6MTY2MDQ3OTY5NCwiZXhwIjoxNjkyMDM3Mjk0fQ.s03TfyuckZx-IfooKQDh8I9h4KwVth3lB7qiLbEzg6w',
-    })(),
+      options: {
+        authToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imo0YlpVSGFQMmtlQmNyYTQifQ.eyJwYXRoIjoib24ve3l5eXl9L3ttbX0ve2RkfSIsImlhdCI6MTY2MDQ3OTY5NCwiZXhwIjoxNjkyMDM3Mjk0fQ.s03TfyuckZx-IfooKQDh8I9h4KwVth3lB7qiLbEzg6w',
+      },
+    }) as any,
     createSelectOnBackspacePlugin(selectOnBackspacePlugin),
   ],
   {
-    components: { ...plateUI, [ELEMENT_IMAGE]: PortiveImage },
+    components: { ...plateUI, [ELEMENT_IMAGE]: RenderHostedImage },
   }
 );
 
