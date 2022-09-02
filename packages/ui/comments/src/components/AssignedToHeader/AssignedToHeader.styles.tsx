@@ -1,61 +1,29 @@
-import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css, CSSProp } from 'styled-components';
+import { createStyles } from '@udecode/plate-styled-components';
+import tw from 'twin.macro';
+import { AssignedToHeaderStyleProps } from './AssignedToHeader.types';
 
-const borderRadius = '8px';
+export const getAssignedToHeaderStyles = (
+  props: AssignedToHeaderStyleProps
+) => {
+  const { isAssignedToLoggedInUser } = props;
 
-export type AssignedToHeaderStyledProps = StyledProps<{
-  avatar: CSSProp;
-  assignedTo: CSSProp;
-  assignedToLabel: CSSProp;
-  assignedToDisplayName: CSSProp;
-  done: CSSProp;
-}>;
-
-export const createAssignedToHeaderStyles = (
-  props: AssignedToHeaderStyledProps & { isAssignedToLoggedInUser: boolean }
-) =>
-  createStyles(
+  return createStyles(
     {
       prefixClassNames: 'AssignedToHeader',
       ...props,
     },
     {
-      root: css`
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        border-top-left-radius: ${borderRadius};
-        border-top-right-radius: ${borderRadius};
-        color: ${props.isAssignedToLoggedInUser ? 'white' : 'rgb(60, 64, 67)'};
-        background-color: ${props.isAssignedToLoggedInUser
-          ? '#1a73e8'
-          : '#e8f0fe'};
-        padding: 12px;
-        border-bottom: 1px solid rgb(218, 220, 224);
-      `,
-      avatar: css`
-        flex: 0 0 auto;
-        margin-right: 10px;
-        background-color: white;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-      `,
-      assignedTo: css`
-        flex: 1 1 auto;
-      `,
-      assignedToLabel: css`
-        font-size: 0.75rem;
-        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-      `,
-      assignedToDisplayName: css`
-        font-size: 0.875rem;
-        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-        line-height: 1.25rem;
-        font-weight: 500;
-      `,
-      done: css`
-        flex: 0 0 auto;
-      `,
+      root: [
+        tw`flex items-center rounded-t-lg p-3 border-b-2 border-gray-600`,
+        isAssignedToLoggedInUser
+          ? tw`bg-blue-600 text-white`
+          : tw`bg-blue-200 text-gray-400`,
+      ],
+      avatar: [tw`mr-2`],
+      assignedTo: [tw`flex items-center content-center gap-1`],
+      assignedToLabel: [tw`text-xs`],
+      assignedToDisplayName: [tw`text-sm font-medium`],
+      done: [tw`flex items-center content-center ml-auto gap-2`],
     }
   );
+};

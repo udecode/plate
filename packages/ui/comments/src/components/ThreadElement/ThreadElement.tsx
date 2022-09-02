@@ -1,13 +1,13 @@
 import React from 'react';
+import {
+  Thread,
+  ThreadElement as TThreadElement,
+} from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
-import {
-  Thread,
-  ThreadElement as TThreadElement,
-} from '@udecode/plate-comments';
 import { createThreadElementStyles } from './ThreadElement.styles';
 
 const determineStyle = (

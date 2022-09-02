@@ -1,34 +1,15 @@
-import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css, CSSProp } from 'styled-components';
+import { createStyles } from '@udecode/plate-styled-components';
+import tw from 'twin.macro';
+import { ResolveButtonStyleProps } from './ResolveButton.types';
 
-export type ResolveButtonStyledProps = StyledProps<{
-  icon: CSSProp;
-}>;
-
-export const createResolveButtonStyles = (props: ResolveButtonStyledProps) =>
-  createStyles(
+export const createResolveButtonStyles = (props: ResolveButtonStyleProps) => {
+  return createStyles(
     {
       prefixClassNames: 'ResolveButton',
       ...props,
     },
     {
-      root: css`
-        padding: 3px;
-        width: 30px;
-        height: 30px;
-
-        & .mdc-icon-button__ripple::before,
-        & .mdc-icon-button__ripple::after {
-          border-radius: initial;
-        }
-
-        svg {
-          position: relative;
-          top: -3px;
-        }
-      `,
-      icon: css`
-        color: #2196f3;
-      `,
+      root: [tw`flex items-center content-center p-1 w-8 h-8`],
     }
   );
+};

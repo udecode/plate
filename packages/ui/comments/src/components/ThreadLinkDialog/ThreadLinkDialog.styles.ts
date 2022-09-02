@@ -1,24 +1,16 @@
-import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css } from 'styled-components';
+import { createStyles } from '@udecode/plate-styled-components';
+import tw from 'twin.macro';
+import { ThreadLinkDialogStyleProps } from './ThreadLinkDialog.types';
 
-export const createCloseButtonStyles = (props: StyledProps) =>
+export const getThreadLinkDialogStyles = (props: ThreadLinkDialogStyleProps) =>
   createStyles(
     {
-      prefixClassNames: 'ThreadLinkDialogCloseButton',
+      prefixClassNames: 'ThreadLinkDialog',
       ...props,
     },
     {
-      root: css`
-        width: 32px;
-        height: 32px;
-        padding: 7px;
-
-        svg {
-          position: relative;
-          top: -6px;
-          width: 18px;
-          height: 18px;
-        }
-      `,
+      root: [],
+      closeButton: [tw`w-8 h-8 p-2`],
+      icon: [tw`relative -top-2.5 -left-1.5 w-4 h-4`],
     }
   );

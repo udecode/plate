@@ -1,18 +1,14 @@
-import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css } from 'styled-components';
+import { createStyles } from '@udecode/plate-styled-components';
+import tw from 'twin.macro';
+import { SideThreadStyleProps } from './SideThread.types';
 
-export const createSideThreadStyles = (props: StyledProps) =>
+export const getSideThreadStyles = (props: SideThreadStyleProps) =>
   createStyles(
     {
       prefixClassNames: 'SideThread',
       ...props,
     },
     {
-      root: css`
-        position: absolute;
-        z-index: 6;
-        width: 418px;
-        padding-bottom: 1rem;
-      `,
+      root: [tw`absolute pb-4 w-96 z-10`],
     }
   );

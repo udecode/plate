@@ -1,31 +1,26 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { StyledProps } from '@udecode/plate-styled-components';
-import { ThreadPosition } from '../../types';
-import { CommonThreadAndSideThreadProps, Thread } from '../Thread';
-import { createSideThreadStyles } from './SideThread.styles';
+import { Thread } from '../Thread';
+import { getSideThreadStyles } from './SideThread.styles';
+import { SideThreadStyleProps } from './SideThread.types';
+import { useSideThread } from './useSideThread';
 
-type SideThreadProps = {
-  position: ThreadPosition;
-} & StyledProps &
-  CommonThreadAndSideThreadProps;
+export const SideThread = (props: SideThreadStyleProps) => {
+  const { position, threadProps } = useSideThread(props);
 
-export const SideThread = (props: SideThreadProps) => {
-  const { position, ...otherProps } = props;
-
-  const { root } = createSideThreadStyles(otherProps);
+  const styles = getSideThreadStyles(props);
 
   return createPortal(
     <div
-      css={root.css}
-      className={root.className}
+      css={styles.root.css}
+      className={styles.root.className}
       style={{
         left: position.left,
         top: position.top,
       }}
     >
       <Thread
-        {...otherProps}
+        {...threadProps}
         showResolveThreadButton
         showReOpenThreadButton={false}
         showMoreButton

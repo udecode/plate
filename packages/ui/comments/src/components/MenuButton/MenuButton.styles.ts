@@ -1,28 +1,14 @@
 import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css } from 'styled-components';
+import tw from 'twin.macro';
 
-export function createMoreButtonStyles(props: StyledProps) {
+export const getMenuButtonStyles = (props: StyledProps) => {
   return createStyles(
     {
-      prefixClassNames: 'ThreadMoreButton',
+      prefixClassNames: 'MenuButton',
       ...props,
     },
     {
-      root: css`
-        padding: 3px;
-        width: 30px;
-        height: 30px;
-
-        & .mdc-icon-button__ripple::before,
-        & .mdc-icon-button__ripple::after {
-          border-radius: initial;
-        }
-
-        svg {
-          position: relative;
-          top: -3px;
-        }
-      `,
+      root: [tw`p-1 w-8 h-8`],
     }
   );
-}
+};

@@ -26,17 +26,20 @@
     "dist"
   ],
   "dependencies": {
+    "@emotion/react": "11.10.4",
+    "@emotion/styled": "11.10.4",
     "@material/button": "^13.0.0",
     "@material/checkbox": "^14.0.0",
     "@material/dialog": "^13.0.0",
     "@material/form-field": "^14.0.0",
     "@material/icon-button": "^13.0.0",
-    "@material/menu": "^13.0.0",
+    "@material/menu": "14.0.0",
     "@material/menu-surface": "^13.0.0",
     "@material/ripple": "^13.0.0",
     "@material/snackbar": "^13.0.0",
     "@material/textfield": "^13.0.0",
     "@mui/base": "5.0.0-alpha.93",
+    "@mui/material": "5.10.3",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-comments": "^0.5.0",
@@ -44,6 +47,9 @@
     "@udecode/plate-styled-components": "16.5.0",
     "@udecode/plate-ui-toolbar": "16.5.0",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.3.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

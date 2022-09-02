@@ -1,19 +1,22 @@
 import { createStyles, StyledProps } from '@udecode/plate-styled-components';
 import { css, CSSProp } from 'styled-components';
+import tw from 'twin.macro';
+import { ThreadStyleProps } from './Thread.types';
 
-export const createThreadStyles = (props: StyledProps) =>
+export const getThreadStyles = (props: ThreadStyleProps) =>
   createStyles(
     {
       prefixClassNames: 'Thread',
       ...props,
     },
     {
-      root: css`
-        border-radius: 8px;
-        box-shadow: 0 2px 6px 2px rgb(60 64 67 / 15%);
-        background-color: white;
-        border: 1px solid white;
-      `,
+      root: [tw`rounded-lg bg-white border`], // box-shadow: 0 2px 6px 2px rgb(60 64 67 / 15%);
+      commentHeader: [tw`text-black text-sm h-10 whitespace-nowrap	`],
+      authorTimestamp: [tw``],
+      commenterName: [tw``],
+      buttons: [tw``],
+      commentButton: [tw``],
+      cancelButton: [tw``],
     }
   );
 
@@ -155,37 +158,6 @@ export const createCommentInputStyles = (props: StyledProps) =>
         border-top: 1px solid rgb(218, 220, 224);
         padding-top: 12px;
         margin-top: 12px;
-      `,
-    }
-  );
-
-export const createTextAreaStyles = (props: StyledProps) =>
-  createStyles(
-    {
-      prefixClassNames: 'ThreadTextArea',
-      ...props,
-    },
-    {
-      root: css`
-        color: #3c4043;
-        line-height: 20px;
-        height: 38px;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-size: 14px;
-        min-height: 36px;
-        padding: 8px;
-        display: block;
-        margin: 0;
-        overflow-x: hidden;
-        overflow-y: hidden;
-        outline-width: 0 !important;
-        resize: none;
-        width: 100%;
-        cursor: text;
-        text-align: start;
-        word-wrap: break-word;
       `,
     }
   );

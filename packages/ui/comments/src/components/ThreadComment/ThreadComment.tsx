@@ -1,122 +1,70 @@
 import '@material/menu-surface/dist/mdc.menu-surface.css';
-import React, { useCallback, useState } from 'react';
-import { StyledProps } from '@udecode/plate-styled-components';
-import { Comment, generateThreadLink, Thread } from '@udecode/plate-comments';
-import { FetchContacts, OnReOpenThread, OnResolveThread } from '../../types';
+import React from 'react';
 import { Avatar } from '../Avatar/Avatar';
 import { MenuButton } from '../MenuButton';
 import { ReOpenThreadButton } from '../ReOpenThreadButton/ReOpenThreadButton';
 import { ResolveButton } from '../ResolveButton/ResolveButton';
-import {
-  createAuthorTimestampStyles,
-  createCommenterNameStyles,
-  createCommentHeaderStyles,
-  createTimestampStyles,
-} from '../Thread/Thread.styles';
 import { ThreadCommentEditing } from '../ThreadCommentEditing/ThreadCommentEditing';
 import { ThreadLinkDialog } from '../ThreadLinkDialog';
-import {
-  createThreadCommentStyled,
-  createThreadCommentTextStyles,
-} from './ThreadComment.styles';
+import { getThreadCommentStyles } from './ThreadComment.styles';
+import { ThreadCommentStyleProps } from './ThreadComment.types';
+import { useThreadComment } from './useThreadComment';
 
-type ThreadCommentProps = {
-  comment: Comment;
-  thread: Thread;
-  showResolveThreadButton: boolean;
-  showReOpenThreadButton: boolean;
-  showMoreButton: boolean;
-  showLinkToThisComment: boolean;
-  onSaveComment: (comment: Comment) => void;
-  onResolveThread: OnResolveThread;
-  onReOpenThread: OnReOpenThread;
-  onDelete: (comment: Comment) => void;
-  fetchContacts: FetchContacts;
-} & StyledProps;
-
-export const ThreadComment = (props: ThreadCommentProps) => {
+export const ThreadComment = (props: ThreadCommentStyleProps) => {
   const {
     comment,
-    thread,
-    showResolveThreadButton,
-    showReOpenThreadButton,
-    showMoreButton,
-    showLinkToThisComment,
-    onSaveComment,
-    onResolveThread,
-    onReOpenThread,
-    onDelete: onDeleteCallback,
     fetchContacts,
-  } = props;
+    isEdited,
+    onCancel,
+    onCloseCommentLinkDialog,
+    onDelete,
+    onEdit,
+    onLinkToThisComment,
+    onReOpenThread,
+    onResolveThread,
+    onSave,
+    showLinkToThisComment,
+    showMoreButton,
+    showReOpenThreadButton,
+    showResolveThreadButton,
+    thread,
+    threadLink,
+  } = useThreadComment(props);
 
-  const [isEdited, setIsEdited] = useState(false);
-  const [threadLink, setThreadLink] = useState<string | null>(null);
-
-  const { root } = createThreadCommentStyled(props);
-  const { root: commentHeader } = createCommentHeaderStyles(props);
-  const { root: authorTimestamp } = createAuthorTimestampStyles(props);
-  const { root: commenterName } = createCommenterNameStyles(props);
-  const { root: timestamp } = createTimestampStyles(props);
-  const { root: threadCommentText } = createThreadCommentTextStyles(props);
-
-  const onEdit = useCallback(function onEdit() {
-    setIsEdited(true);
-  }, []);
-
-  const onDelete = useCallback(
-    function onDelete() {
-      onDeleteCallback(comment);
-    },
-    [comment, onDeleteCallback]
-  );
-
-  const onLinkToThisComment = useCallback(
-    function onLinkToThisComment() {
-      setThreadLink(generateThreadLink(thread));
-    },
-    [thread]
-  );
-
-  const onCloseCommentLinkDialog = useCallback(
-    function onCloseCommentLinkDialog() {
-      setThreadLink(null);
-    },
-    []
-  );
-
-  const onSave = useCallback(
-    async function onSave(text: string) {
-      setIsEdited(false);
-      await onSaveComment({
-        ...comment,
-        text,
-      });
-    },
-    [comment, onSaveComment]
-  );
-
-  const onCancel = useCallback(function onCancel() {
-    setIsEdited(false);
-  }, []);
+  const styles = getThreadCommentStyles(props);
 
   return (
-    <div css={root.css} className={root.className}>
-      <div css={commentHeader.css} className={commentHeader.className}>
+    <div css={styles.root.css} className={styles.root.className}>
+      <div
+        css={styles.commentHeader?.css}
+        className={styles.commentHeader?.className}
+      >
         <Avatar user={comment.createdBy} />
-        <div css={authorTimestamp.css} className={authorTimestamp.className}>
-          <div css={commenterName.css} className={commenterName.className}>
+        <div
+          css={styles.authorTimestamp?.css}
+          className={styles.authorTimestamp?.className}
+        >
+          <div
+            css={styles.commenterName?.css}
+            className={styles.commenterName?.className}
+          >
             {comment.createdBy.name}
           </div>
-          <div css={timestamp.css} className={timestamp.className}>
+          <div
+            css={styles.timestamp?.css}
+            className={styles.timestamp?.className}
+          >
             {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>
-        {showResolveThreadButton && (
-          <ResolveButton thread={thread} onResolveThread={onResolveThread} />
-        )}
-        {showReOpenThreadButton && (
-          <ReOpenThreadButton onReOpenThread={onReOpenThread} />
-        )}
+        <div css={styles.actions?.css} className={styles.actions?.className}>
+          {showResolveThreadButton && (
+            <ResolveButton thread={thread} onResolveThread={onResolveThread} />
+          )}
+          {showReOpenThreadButton && (
+            <ReOpenThreadButton onReOpenThread={onReOpenThread} />
+          )}
+        </div>
         {showMoreButton ? (
           <MenuButton
             showLinkToThisComment={showLinkToThisComment}
@@ -136,8 +84,8 @@ export const ThreadComment = (props: ThreadCommentProps) => {
         />
       ) : (
         <div
-          css={threadCommentText.css}
-          className={threadCommentText.className}
+          css={styles.threadCommentText?.css}
+          className={styles.threadCommentText?.className}
         >
           {comment.text}
         </div>

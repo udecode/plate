@@ -1,37 +1,23 @@
 import React from 'react';
-// eslint-disable-next-line no-restricted-imports
-import { Check } from '@styled-icons/material/Check';
-import { Thread } from '@udecode/plate-comments';
-import { OnResolveThread } from '../../types';
-import {
-  createResolveButtonStyles,
-  ResolveButtonStyledProps,
-} from './ResolveButton.styles';
+import { Check } from '@styled-icons/material';
+import { createResolveButtonStyles } from './ResolveButton.styles';
+import { ResolveButtonStyleProps } from './ResolveButton.types';
+import { useResolveButton } from './useResolveButton';
 
-type ResolveButtonProps = {
-  thread: Thread;
-  onResolveThread: OnResolveThread;
-} & ResolveButtonStyledProps;
+export const ResolveButton = (props: ResolveButtonStyleProps) => {
+  const { onResolveThread, title } = useResolveButton(props);
 
-export const ResolveButton = (props: ResolveButtonProps) => {
-  const { thread, onResolveThread } = props;
-
-  const { root, icon } = createResolveButtonStyles(props);
-
-  const title = `Mark as ${
-    thread.assignedTo ? 'done' : 'resolved'
-  } and hide discussion`;
+  const styles = createResolveButtonStyles(props);
 
   return (
     <button
-      type="button"
-      css={root.css}
-      className={`${root.className} mdc-icon-button`}
+      className={styles.root.className}
+      css={styles.root.css}
       onClick={onResolveThread}
       title={title}
+      type="button"
     >
-      <div className="mdc-icon-button__ripple" />
-      <Check css={icon!.css} className={icon!.className} />
+      <Check css={styles.icon?.css} className={styles.icon?.className} />
     </button>
   );
 };

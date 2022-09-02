@@ -1,31 +1,23 @@
 import React from 'react';
-// eslint-disable-next-line no-restricted-imports
-import { Unarchive } from '@styled-icons/material/Unarchive';
-import { OnReOpenThread } from '../../types';
-import {
-  createReOpenThreadButtonStyles,
-  ReOpenThreadButtonStyledProps,
-} from './ReOpenThreadButton.styles';
+import { Unarchive } from '@styled-icons/material';
+import { getReOpenThreadButtonStyles } from './ReOpenThreadButton.styles';
+import { ReOpenThreadButtonStyleProps } from './ReOpenThreadButton.types';
+import { useReOpenThreadButton } from './useReOpenThreadButton';
 
-type ReOpenThreadButtonProps = {
-  onReOpenThread: OnReOpenThread;
-} & ReOpenThreadButtonStyledProps;
+export const ReOpenThreadButton = (props: ReOpenThreadButtonStyleProps) => {
+  const { onReOpenThread } = useReOpenThreadButton(props);
 
-export const ReOpenThreadButton = (props: ReOpenThreadButtonProps) => {
-  const { onReOpenThread } = props;
-
-  const { root, icon } = createReOpenThreadButtonStyles(props);
+  const styles = getReOpenThreadButtonStyles(props);
 
   return (
     <button
-      type="button"
-      css={root.css}
-      className={`${root.className} mdc-icon-button`}
+      className={styles.root.className}
+      css={styles.root.css}
       onClick={onReOpenThread}
       title="Re-open"
+      type="button"
     >
-      <div className="mdc-icon-button__ripple" />
-      <Unarchive css={icon!.css} className={icon!.className} />
+      <Unarchive css={styles.icon?.css} className={styles.icon?.className} />
     </button>
   );
 };

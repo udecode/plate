@@ -1,69 +1,48 @@
 import React from 'react';
-import { Thread, User } from '@udecode/plate-comments';
 import { css } from 'styled-components';
-import { OnReOpenThread, OnResolveThread, RetrieveUser } from '../../types';
 import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
 import { generateUserDisplayIdentifier } from '../../utils/generateUserDisplayIdentifier';
-import { useLoggedInUser } from '../../utils/useLoggedInUser';
 import { Avatar } from '../Avatar/Avatar';
 import { ReOpenThreadButton } from '../ReOpenThreadButton/ReOpenThreadButton';
 import { ResolveButton } from '../ResolveButton/ResolveButton';
-import {
-  AssignedToHeaderStyledProps,
-  createAssignedToHeaderStyles,
-} from './AssignedToHeader.styles';
-
-type AssignedToHeaderProps = {
-  thread: Thread;
-  assignedTo: User;
-  showResolveThreadButton: boolean;
-  showReOpenThreadButton: boolean;
-  retrieveUser: RetrieveUser;
-  onResolveThread: OnResolveThread;
-  onReOpenThread: OnReOpenThread;
-} & AssignedToHeaderStyledProps;
+import { getAssignedToHeaderStyles } from './AssignedToHeader.styles';
+import { AssignedToHeaderProps } from './AssignedToHeader.types';
+import { useAssignedToHeader } from './useAssignedToHeader';
 
 export const AssignedToHeader = (props: AssignedToHeaderProps) => {
   const {
     assignedTo,
+    isAssignedToLoggedInUser,
     onReOpenThread,
     onResolveThread,
-    retrieveUser,
     showReOpenThreadButton,
     showResolveThreadButton,
     thread,
-  } = props;
+  } = useAssignedToHeader(props);
 
-  const loggedInUser = useLoggedInUser(retrieveUser);
-  const isAssignedToLoggedInUser = loggedInUser.id === assignedTo.id;
-
-  const {
-    root,
-    avatar,
-    assignedTo: assignedToContainer,
-    assignedToLabel,
-    assignedToDisplayName,
-    done,
-  } = createAssignedToHeaderStyles({
+  const styles = getAssignedToHeaderStyles({
     ...props,
     isAssignedToLoggedInUser,
   });
 
   return (
-    <div css={root.css} className={root.className}>
-      <div css={avatar!.css} className={avatar!.className}>
+    <div css={styles.root.css} className={styles.root.className}>
+      <div css={styles.avatar?.css} className={styles.avatar?.className}>
         <Avatar user={assignedTo} />
       </div>
       <div
-        css={assignedToContainer!.css}
-        className={assignedToContainer!.className}
+        css={styles.assignedTo?.css}
+        className={styles.assignedTo?.className}
       >
-        <div css={assignedToLabel!.css} className={assignedToLabel!.className}>
+        <div
+          css={styles.assignedToLabel?.css}
+          className={styles.assignedToLabel?.className}
+        >
           Assigned to
         </div>
         <div
-          css={assignedToDisplayName!.css}
-          className={assignedToDisplayName!.className}
+          css={styles.assignedToDisplayName?.css}
+          className={styles.assignedToDisplayName?.className}
         >
           {capitalizeFirstLetter(
             generateUserDisplayIdentifier({
@@ -73,7 +52,7 @@ export const AssignedToHeader = (props: AssignedToHeaderProps) => {
           )}
         </div>
       </div>
-      <div css={done!.css} className={done!.className}>
+      <div css={styles.done?.css} className={styles.done?.className}>
         {showResolveThreadButton && (
           <ResolveButton
             thread={thread}
@@ -88,7 +67,16 @@ export const AssignedToHeader = (props: AssignedToHeaderProps) => {
           />
         )}
         {showReOpenThreadButton && (
-          <ReOpenThreadButton onReOpenThread={onReOpenThread} />
+          <ReOpenThreadButton
+            onReOpenThread={onReOpenThread}
+            styles={{
+              icon: css`
+                color: ${isAssignedToLoggedInUser
+                  ? 'white'
+                  : 'rgb(60, 64, 67)'};
+              `,
+            }}
+          />
         )}
       </div>
     </div>

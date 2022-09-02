@@ -1,95 +1,52 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyledProps } from '@udecode/plate-styled-components';
-import { Thread as ThreadModel } from '@udecode/plate-comments';
-import { FetchContacts } from '../../types';
+import React from 'react';
 import { TextArea } from '../TextArea/TextArea';
-import {
-  createButtonsStyles,
-  createCancelButtonStyles,
-  createCommentButtonStyles,
-  createCommentInputStyles,
-} from '../Thread/Thread.styles';
-
-type ThreadCommentEditingProps = {
-  thread: ThreadModel;
-  defaultText: string;
-  onSave: (text: string) => void;
-  onCancel: () => void;
-  fetchContacts: FetchContacts;
-} & StyledProps;
+import { getThreadCommentEditingStyles } from './ThreadCommentEditing.styles';
+import { ThreadCommentEditingProps } from './ThreadCommentEditing.types';
+import { useThreadCommentEditing } from './useThreadCommentEditing';
 
 export const ThreadCommentEditing = (props: ThreadCommentEditingProps) => {
   const {
-    thread,
-    defaultText,
-    onSave: onSaveCallback,
-    onCancel,
+    disabled,
     fetchContacts,
-    ...otherProps
-  } = props;
+    haveContactsBeenClosed,
+    onCancel,
+    onChange,
+    onSaveComment,
+    setHaveContactsBeenClosed,
+    textAreaRef,
+    thread,
+    value,
+  } = useThreadCommentEditing(props);
 
-  const [value, setValue] = useState<string>(defaultText);
-  const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
-    false
-  );
-
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
-  const { root: commentInput } = createCommentInputStyles(otherProps);
-  const { root: buttons } = createButtonsStyles(otherProps);
-  const { root: commentButton } = createCommentButtonStyles(otherProps);
-  const { root: cancelButton } = createCancelButtonStyles(otherProps);
-
-  const onSave = useCallback(
-    async function onSave() {
-      await onSaveCallback(value);
-    },
-    [onSaveCallback, value]
-  );
-
-  useEffect(
-    function onShow() {
-      const textArea = textAreaRef.current!;
-      textArea.focus();
-      const { length } = textArea.value;
-      textArea.setSelectionRange(length, length);
-    },
-    [textAreaRef, thread]
-  );
-
-  const onChange = useCallback(function onChange(newValue) {
-    setValue(newValue);
-  }, []);
+  const styles = getThreadCommentEditingStyles(props);
 
   return (
-    <div css={commentInput.css} className={commentInput.className}>
+    <div css={styles.root.css} className={styles.root.className}>
       <TextArea
-        ref={textAreaRef}
-        value={value}
-        onChange={onChange}
-        thread={thread}
         fetchContacts={fetchContacts}
         haveContactsBeenClosed={haveContactsBeenClosed}
+        onChange={onChange}
+        onSubmit={onSaveComment}
+        ref={textAreaRef}
         setHaveContactsBeenClosed={setHaveContactsBeenClosed}
-        onSubmit={onSave}
+        thread={thread}
+        value={value}
       />
-      <div css={buttons.css} className={buttons.className}>
+      <div css={styles.buttons?.css} className={styles.buttons?.className}>
         <button
+          className={styles.commentButton?.className}
+          css={styles.commentButton?.css}
+          disabled={disabled}
+          onClick={onSaveComment}
           type="button"
-          css={commentButton.css}
-          className={commentButton.className}
-          onClick={onSave}
-          disabled={
-            value.trim().length === 0 || value.trim() === defaultText.trim()
-          }
         >
           Save
         </button>
         <button
-          type="button"
-          css={cancelButton.css}
-          className={cancelButton.className}
+          className={styles.cancelButton?.className}
+          css={styles.cancelButton?.css}
           onClick={onCancel}
+          type="button"
         >
           Cancel
         </button>
