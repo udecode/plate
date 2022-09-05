@@ -142,6 +142,7 @@ export interface MyIndentProps {
 
 export interface MyIndentListProps extends MyIndentProps {
   listStart?: number;
+  listRestart?: number;
   listStyleType?: string;
 }
 
