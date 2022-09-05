@@ -1,6 +1,6 @@
 import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React from 'react';
-import { Avatar } from '../Avatar/Avatar';
+import { Avatar } from '../Avatar/PlateAvatar';
 import { MenuButton } from '../MenuButton';
 import { ReOpenThreadButton } from '../ReOpenThreadButton/ReOpenThreadButton';
 import { ResolveButton } from '../ResolveButton/ResolveButton';

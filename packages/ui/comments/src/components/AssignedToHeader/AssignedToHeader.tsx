@@ -1,8 +1,8 @@
 import React from 'react';
 import { css } from 'styled-components';
-import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
+import { capitalizeFirstLetter } from '@udecode/plate-comments/src/utils/capitalizeFirstLetter';
 import { generateUserDisplayIdentifier } from '../../utils/generateUserDisplayIdentifier';
-import { Avatar } from '../Avatar/Avatar';
+import { Avatar } from '../Avatar/PlateAvatar';
 import { ReOpenThreadButton } from '../ReOpenThreadButton/ReOpenThreadButton';
 import { ResolveButton } from '../ResolveButton/ResolveButton';
 import { getAssignedToHeaderStyles } from './AssignedToHeader.styles';
