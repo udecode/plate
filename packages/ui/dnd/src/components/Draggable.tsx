@@ -39,24 +39,6 @@ export const Draggable = <V extends Value>(props: DraggableProps<V>) => {
       ref={multiRootRef}
     >
       <div
-        ref={blockRef}
-        css={[
-          ...(styles.blockAndGutter?.css ?? []),
-          ...(styles.block?.css ?? []),
-        ]}
-      >
-        {children}
-
-        {!!dropLine && (
-          <div
-            css={styles.dropLine?.css}
-            className={styles.dropLine?.className}
-            contentEditable={false}
-          />
-        )}
-      </div>
-
-      <div
         css={[
           ...(styles.blockAndGutter?.css ?? []),
           ...(styles.gutterLeft?.css ?? []),
@@ -81,6 +63,24 @@ export const Draggable = <V extends Value>(props: DraggableProps<V>) => {
             />
           </div>
         </div>
+      </div>
+
+      <div
+        ref={blockRef}
+        css={[
+          ...(styles.blockAndGutter?.css ?? []),
+          ...(styles.block?.css ?? []),
+        ]}
+      >
+        {children}
+
+        {!!dropLine && (
+          <div
+            css={styles.dropLine?.css}
+            className={styles.dropLine?.className}
+            contentEditable={false}
+          />
+        )}
       </div>
     </div>
   );

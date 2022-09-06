@@ -1,5 +1,11 @@
 # @udecode/plate-indent
 
+## 16.7.0
+
+### Minor Changes
+
+- [#1850](https://github.com/udecode/plate/pull/1850) by [@bokuweb](https://github.com/bokuweb) – New prop: `listRestart` - if set, force `listStart` to be `listRestart` instead of the previous `listStart + 1`
+
 ## 16.5.0
 
 ## 16.3.0

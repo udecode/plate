@@ -160,4 +160,56 @@ describe('normalizeIndentListStart', () => {
       expect(editor.children).toEqual(output.children);
     });
   });
+
+  describe('with restart', () => {
+    const input = ((
+      <editor>
+        <element type="page">
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStyleType="decimal">
+            2
+          </hp>
+        </element>
+        <element type="page">
+          <hp indent={1} listStyleType="decimal" listStart={2} listRestart={1}>
+            2
+          </hp>
+        </element>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <element type="page">
+          <hp indent={1} listStyleType="decimal">
+            1
+          </hp>
+          <hp indent={1} listStyleType="decimal" listStart={2}>
+            2
+          </hp>
+        </element>
+        <element type="page">
+          <hp indent={1} listStyleType="decimal" listStart={1} listRestart={1}>
+            2
+          </hp>
+        </element>
+      </editor>
+    ) as any) as PlateEditor;
+
+    it('should be', async () => {
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createParagraphPlugin(),
+          createIndentPlugin(),
+          createIndentListPlugin(indentListPluginPage),
+        ],
+        normalizeInitialValue: true,
+      }) as any;
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
 });

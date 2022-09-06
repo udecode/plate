@@ -21,6 +21,8 @@ export const moveListItemDown = <V extends Value>(
   editor: PlateEditor<V>,
   { list, listItem }: MoveListItemDownOptions
 ) => {
+  let moved = false;
+
   const [listNode] = list;
   const [, listItemPath] = listItem;
 
@@ -63,6 +65,10 @@ export const moveListItemDown = <V extends Value>(
         at: listItemPath,
         to: newPath,
       });
+
+      moved = true;
     });
   }
+
+  return moved;
 };

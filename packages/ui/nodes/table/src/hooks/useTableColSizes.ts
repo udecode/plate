@@ -1,6 +1,16 @@
 import { useEffect } from 'react';
-import { findNodePath, unsetNodes, useEditorRef } from '@udecode/plate-core';
-import { getTableColumnCount, TTableElement } from '@udecode/plate-table';
+import {
+  findNodePath,
+  getPluginOptions,
+  unsetNodes,
+  useEditorRef,
+} from '@udecode/plate-core';
+import {
+  ELEMENT_TABLE,
+  getTableColumnCount,
+  TablePlugin,
+  TTableElement,
+} from '@udecode/plate-table';
 import { useTableStore } from '../table.atoms';
 
 /**
@@ -10,6 +20,11 @@ import { useTableStore } from '../table.atoms';
 export const useTableColSizes = (tableNode: TTableElement): number[] => {
   const editor = useEditorRef();
   const resizingCol = useTableStore().get.resizingCol();
+
+  const { disableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const colCount = getTableColumnCount(tableNode);
 
@@ -22,12 +37,16 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
   }
 
   useEffect(() => {
-    if (colCount < 2 && tableNode.colSizes?.length) {
+    if (
+      !disableUnsetSingleColSize &&
+      colCount < 2 &&
+      tableNode.colSizes?.length
+    ) {
       unsetNodes(editor, 'colSizes', {
         at: findNodePath(editor, tableNode),
       });
     }
-  }, [colCount, editor, tableNode]);
+  }, [colCount, disableUnsetSingleColSize, editor, tableNode]);
 
   return colSizes;
 };

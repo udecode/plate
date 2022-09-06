@@ -5,6 +5,7 @@ import { withIndentList } from './withIndentList';
 
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
 export const KEY_LIST_START = 'listStart';
+export const KEY_LIST_RESTART = 'listRestart';
 
 export interface IndentListPlugin {
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement, Value>;
