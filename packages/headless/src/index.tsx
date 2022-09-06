@@ -31,6 +31,7 @@ export * from '@udecode/plate-normalizers';
 export * from '@udecode/plate-paragraph';
 export * from '@udecode/plate-reset-node';
 export * from '@udecode/plate-select';
+export * from '@udecode/plate-selection';
 export * from '@udecode/plate-serializer-csv';
 export * from '@udecode/plate-serializer-docx';
 export * from '@udecode/plate-serializer-html';

@@ -16,7 +16,7 @@ export default function MyApp({ Component, pageProps }: any) {
     <div className="app">
       <Sidebar />
 
-      <div style={{ width: '100%', overflow: 'scroll' }}>
+      <div style={{ width: '100%' }}>
         <DndProvider backend={HTML5Backend}>
           <Component key={router.asPath} {...pageProps} />
         </DndProvider>

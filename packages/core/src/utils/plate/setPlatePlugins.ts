@@ -16,11 +16,11 @@ import {
   createInsertDataPlugin,
   KEY_INSERT_DATA,
 } from '../../plugins/createInsertDataPlugin';
-import { createReactPlugin } from '../../plugins/createReactPlugin';
 import {
-  createSelectionPlugin,
-  KEY_SELECTION,
-} from '../../plugins/createSelectionPlugin';
+  createPrevSelectionPlugin,
+  KEY_PREV_SELECTION,
+} from '../../plugins/createPrevSelectionPlugin';
+import { createReactPlugin } from '../../plugins/createReactPlugin';
 import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
@@ -75,7 +75,8 @@ export const setPlatePlugins = <V extends Value>(
     }
     if (typeof dcp !== 'object' || !dcp.selection) {
       plugins.push(
-        (editor.pluginsByKey?.[KEY_SELECTION] as any) ?? createSelectionPlugin()
+        (editor.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
+          createPrevSelectionPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.deserializeHtml) {
