@@ -1,5 +1,5 @@
 import { createStore } from '@udecode/plate-core';
-import { ChangedElements } from '@viselect/react';
+import { ChangedElements } from './components/SelectionArea';
 import { extractSelectableIds } from './utils/extractSelectableIds';
 
 export const blockSelectionStore = createStore('selection')({

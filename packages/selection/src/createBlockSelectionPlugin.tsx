@@ -21,7 +21,11 @@ export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlug
     },
     inject: {
       aboveComponent: () => ({ element, children }) =>
-        BlockSelectable({ element, children }),
+        BlockSelectable({
+          element,
+          children,
+          selectedColor: 'rgb(219 234 254)',
+        }),
     },
     handlers: {
       onFocus: () => () => {

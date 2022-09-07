@@ -22,6 +22,7 @@ export interface BlockSelectableProps extends HTMLPropsAs<'div'> {
   element: TElement;
   children: ReactNode;
   state?: BlockSelectableState;
+  selectedColor?: string;
 }
 
 export const useBlockSelectableState = ({
@@ -59,6 +60,7 @@ export const useBlockSelectableState = ({
 
 export const useBlockSelectable = ({
   element,
+  selectedColor,
   ...props
 }: BlockSelectableProps): HTMLPropsAs<'div'> => {
   const id = element.id as string | undefined;
@@ -70,7 +72,7 @@ export const useBlockSelectable = ({
       : 'slate-selectable',
     style: isSelected
       ? {
-          backgroundColor: 'rgb(219 234 254)',
+          backgroundColor: selectedColor,
         }
       : undefined,
     'data-key': id,

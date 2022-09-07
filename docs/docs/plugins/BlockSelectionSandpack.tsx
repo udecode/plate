@@ -8,7 +8,7 @@ import { singleLineAppCode } from '../sandpack/files/code-SingleLineApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
-export const SelectionSandpack = () => (
+export const BlockSelectionSandpack = () => (
   <CommonSandpack
     height={722}
     previewSize={3}
