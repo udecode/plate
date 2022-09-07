@@ -13,6 +13,7 @@ td {
 
 [data-slate-editor] {
   padding: 50px;
+  position: relative;
 }
 
 .slate-HeadingToolbar {
