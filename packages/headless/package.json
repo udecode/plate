@@ -48,6 +48,7 @@
     "@udecode/plate-paragraph": "16.5.0",
     "@udecode/plate-reset-node": "16.5.0",
     "@udecode/plate-select": "16.5.0",
+    "@udecode/plate-selection": "16.6.1",
     "@udecode/plate-serializer-csv": "16.6.0",
     "@udecode/plate-serializer-docx": "16.7.0",
     "@udecode/plate-serializer-html": "16.5.0",

@@ -8,7 +8,7 @@ export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
 export * from './createReactPlugin';
-export * from './createSelectionPlugin';
+export * from './createPrevSelectionPlugin';
 export * from './onKeyDownToggleElement';
 export * from './onKeyDownToggleMark';
 export * from './withPlate';

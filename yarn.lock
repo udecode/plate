@@ -5144,6 +5144,7 @@ __metadata:
     "@udecode/plate-paragraph": "npm:16.5.0"
     "@udecode/plate-reset-node": "npm:16.5.0"
     "@udecode/plate-select": "npm:16.5.0"
+    "@udecode/plate-selection": "npm:16.6.1"
     "@udecode/plate-serializer-csv": "npm:16.6.0"
     "@udecode/plate-serializer-docx": "npm:16.6.1"
     "@udecode/plate-serializer-html": "npm:16.5.0"
@@ -5411,6 +5412,21 @@ __metadata:
   resolution: "@udecode/plate-select@workspace:packages/editor/select"
   dependencies:
     "@udecode/plate-core": "npm:16.5.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-selection@npm:16.6.1, @udecode/plate-selection@workspace:packages/selection":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-selection@workspace:packages/selection"
+  dependencies:
+    "@udecode/plate-core": "npm:16.5.0"
+    "@viselect/vanilla": "npm:^3.1.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -6003,6 +6019,13 @@ __metadata:
   peerDependencies:
     zustand: ">=3.5.10"
   checksum: 280352e66c7fdf7d726047e8e9e226022e0ddf59a5c03b0b36354477a76001bc83cddd392f2de64424029018fc5c733bcbe4bac007f0df31a1a51ecae575257f
+  languageName: node
+  linkType: hard
+
+"@viselect/vanilla@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@viselect/vanilla@npm:3.1.0"
+  checksum: c694d8e9d9474a1ca02e0b90133a6ba8bad4e5422e8b93768a820320eb7e223221e89167cd7f608c3188023c2dbd316872f03d3a9b9a178238f02f1199c4e460
   languageName: node
   linkType: hard
 

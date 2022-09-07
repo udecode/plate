@@ -13,10 +13,20 @@ export interface QueryNodeOptions {
   /**
    * List of types that are valid. If empty or undefined - allow all.
    */
-  allow?: string[] | string;
+  allow?: string[] | string | null;
 
   /**
    * List of types that are invalid.
    */
-  exclude?: string[] | string;
+  exclude?: string[] | string | null;
+
+  /**
+   * Valid path levels.
+   */
+  level?: number[] | number | null;
+
+  /**
+   * Paths above that value are invalid.
+   */
+  maxLevel?: number | null;
 }

@@ -4,6 +4,7 @@ export const sidebarItems = [
   'balloon-toolbar',
   'basic-elements',
   'basic-marks',
+  'block-selection',
   'cursor-overlay',
   'dnd',
   'editable-voids',
