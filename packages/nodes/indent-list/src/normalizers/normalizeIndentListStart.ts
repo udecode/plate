@@ -8,7 +8,11 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import {
+  KEY_LIST_RESTART,
+  KEY_LIST_START,
+  KEY_LIST_STYLE_TYPE,
+} from '../createIndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
@@ -24,8 +28,8 @@ export const normalizeNextIndentListStart = <V extends Value>(
 
   const prevListStart = (prevNode?.[KEY_LIST_START] as number) ?? 1;
   const currListStart = (node[KEY_LIST_START] as number) ?? 1;
-
-  const listStart = prevListStart + 1;
+  const restart = node[KEY_LIST_RESTART];
+  const listStart = restart == null ? prevListStart + 1 : restart;
 
   if (currListStart !== listStart) {
     setElements(editor, { [KEY_LIST_START]: listStart }, { at: path });
