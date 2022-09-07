@@ -1,6 +1,7 @@
 import {
   createPlateEditor,
   CreatePlateEditorOptions,
+  PlateEditor,
   TEditor,
   Value,
 } from '@udecode/plate-headless';
@@ -12,7 +13,8 @@ import { createPlateUI } from './createPlateUI';
 export const createPlateUIEditor = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>
->({ components, ...options }: CreatePlateEditorOptions<V, E> = {}) =>
+>({ components, ...options }: CreatePlateEditorOptions<V, E> = {}): E &
+  PlateEditor<V> =>
   createPlateEditor<V, E>({
     ...options,
     components: createPlateUI(components),

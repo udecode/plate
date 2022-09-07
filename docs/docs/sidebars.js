@@ -79,6 +79,7 @@ module.exports = {
           label: 'Utils',
           items: [
             'plugins/autoformat',
+            'plugins/block-selection',
             'plugins/exit-break',
             'plugins/reset-node',
             'plugins/soft-break',

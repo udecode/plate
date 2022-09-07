@@ -85,7 +85,7 @@ export const BlockSelectable = (props: BlockSelectableProps) => {
   const htmlProps = useBlockSelectable(props as any);
   const { active } = useBlockSelectableState(props as any);
 
-  if (!active) return htmlProps.children;
+  if (!active) return <>{htmlProps.children}</>;
 
   return <div {...htmlProps} />;
 };
