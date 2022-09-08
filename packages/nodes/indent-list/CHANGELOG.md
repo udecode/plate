@@ -1,5 +1,7 @@
 # @udecode/plate-indent-list
 
+## 16.8.0
+
 ## 16.7.0
 
 ### Minor Changes

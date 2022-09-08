@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 16.8.0
+
 ## 16.5.0
 
 ## 16.3.0

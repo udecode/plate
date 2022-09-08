@@ -1,5 +1,7 @@
 # @udecode/plate-table
 
+## 16.8.0
+
 ## 16.6.0
 
 ### Minor Changes
