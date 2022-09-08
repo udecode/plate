@@ -1,24 +1,22 @@
 import React from 'react';
-import { Avatar, AvatarStyleProps, useAvatar } from '@udecode/plate-comments';
-import { getAvatarStyles } from './PlateAvatar.styles';
+import { Avatar } from './Avatar';
+import { AvatarAccountCircleProps } from './AvatarAccountCircle';
+import { AvatarImageProps } from './AvatarImage';
+import { AvatarRootProps } from './AvatarRoot';
+import { avatarImageCss, avatarRootCss } from './styles';
 
-export const PlateAvatar = (props: AvatarStyleProps) => {
-  const { user } = useAvatar(props);
+export type PlateAvatarProps = AvatarRootProps &
+  AvatarImageProps &
+  AvatarAccountCircleProps;
 
-  const styles = getAvatarStyles(props);
-
+export const PlateAvatar = (props: PlateAvatarProps) => {
+  const { user } = props;
   return (
-    <Avatar.Root css={styles.root.css} className={styles.root.className}>
+    <Avatar.Root css={avatarRootCss}>
       {user.avatarUrl ? (
-        <Avatar.Image
-          css={styles.avatar?.css}
-          className={styles.avatar?.className}
-        />
+        <Avatar.Image {...props} css={avatarImageCss} />
       ) : (
-        <Avatar.AccountCircle
-          css={styles.avatar?.css}
-          className={styles.avatar?.className}
-        />
+        <Avatar.AccountCircle css={avatarImageCss} />
       )}
     </Avatar.Root>
   );

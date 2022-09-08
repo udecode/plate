@@ -3,5 +3,3 @@
  */
 
 export * from './AddThreadToolbarButton';
-export * from './AddThreadToolbarButton.types';
-export * from './useAddThreadToolbarButton';

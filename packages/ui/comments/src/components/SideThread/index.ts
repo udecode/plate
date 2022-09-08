@@ -4,5 +4,3 @@
 
 export * from './SideThread.styles';
 export * from './SideThread';
-export * from './SideThread.types';
-export * from './useSideThread';

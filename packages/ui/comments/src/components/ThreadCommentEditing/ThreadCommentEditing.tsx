@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextArea } from '../TextArea/TextArea';
+import { TextArea } from '../CommentTextArea/TextArea';
 import { getThreadCommentEditingStyles } from './ThreadCommentEditing.styles';
 import { ThreadCommentEditingProps } from './ThreadCommentEditing.types';
 import { useThreadCommentEditing } from './useThreadCommentEditing';

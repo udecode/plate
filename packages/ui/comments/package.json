@@ -40,6 +40,7 @@
     "@material/textfield": "^13.0.0",
     "@mui/base": "5.0.0-alpha.93",
     "@mui/material": "5.10.3",
+    "@radix-ui/react-dialog": "1.0.0",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-comments": "^0.5.0",
@@ -49,7 +50,21 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.4"
+    "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^2.0.0",
+    "babel-plugin-macros": "3.1.0",
+    "babel-plugin-styled-components": "2.0.7",
+    "tailwindcss": "3.1.8",
+    "twin.macro": "2.8.2",
+    "vite": "^3.0.5"
+  },
+  "babelMacros": {
+    "twin": {
+      "preset": "styled-components"
+    }
+  },
+  "scripts": {
+    "start": "vite"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

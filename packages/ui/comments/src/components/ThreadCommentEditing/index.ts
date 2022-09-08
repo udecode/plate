@@ -4,5 +4,3 @@
 
 export * from './ThreadCommentEditing.styles';
 export * from './ThreadCommentEditing';
-export * from './ThreadCommentEditing.types';
-export * from './useThreadCommentEditing';

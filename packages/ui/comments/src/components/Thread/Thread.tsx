@@ -5,7 +5,7 @@ import { Comment } from '@udecode/plate-comments';
 import { generateUserDisplayIdentifier } from '../../utils/generateUserDisplayIdentifier';
 import { AssignedToHeader } from '../AssignedToHeader/AssignedToHeader';
 import { Avatar } from '../Avatar/PlateAvatar';
-import { TextArea } from '../TextArea/TextArea';
+import { TextArea } from '../CommentTextArea/TextArea';
 import { ThreadComment } from '../ThreadComment';
 import { getThreadStyles } from './Thread.styles';
 import { ThreadStyleProps } from './Thread.types';

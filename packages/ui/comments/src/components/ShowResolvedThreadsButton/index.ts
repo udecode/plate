@@ -3,5 +3,3 @@
  */
 
 export * from './ShowResolvedThreadsButton';
-export * from './ShowResolvedThreadsButton.types';
-export * from './useShowResolvedThreadsButton';
