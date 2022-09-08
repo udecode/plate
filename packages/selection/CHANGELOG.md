@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 16.8.1
+
+### Patch Changes
+
+- [#1862](https://github.com/udecode/plate/pull/1862) by [@zbeyens](https://github.com/zbeyens) – fix: support string ids on selectable blocks
+
 ## 16.8.0
 
 ### Minor Changes
