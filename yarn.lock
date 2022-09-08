@@ -11456,7 +11456,7 @@ __metadata:
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-ui-excalidraw": "workspace:^"
-    nanoid: "npm:4.0.0"
+    nanoid: "npm:3.3.4"
     prism-react-renderer: "npm:^1.2.0"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"
@@ -16823,16 +16823,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:4.0.0":
-  version: 4.0.0
-  resolution: "nanoid@npm:4.0.0"
-  bin:
-    nanoid: bin/nanoid.js
-  checksum: b6263a2a2425999b5aecabd18b25442ae4ef13048b2809ff173e0b0066f376b6fb2605d423763d1d26512cb095e71beee3d8b927f984603e05e169e171d8f6f0
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
+"nanoid@npm:3.3.4, nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
   bin:
