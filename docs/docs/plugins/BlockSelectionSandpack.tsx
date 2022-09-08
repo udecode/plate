@@ -12,7 +12,7 @@ import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFil
 export const BlockSelectionSandpack = () => (
   <CommonSandpack
     height={722}
-    previewSize={3}
+    previewSize={7}
     deps={{
       ...commonDeps,
       ...plateTestUtilsDeps,
