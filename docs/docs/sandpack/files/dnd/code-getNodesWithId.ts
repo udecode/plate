@@ -1,8 +1,11 @@
-export const getNodesWithIdCode = `import { nanoid } from 'nanoid';
+export const getNodesWithIdCode = `let _id = 10000;
 
 export const getNodesWithId = (nodes: any[]) => {
   nodes.forEach((node) => {
-    node.id = nanoid();
+    _id++;
+    node.id = _id;
+    // node.id = nanoid();
+    // node.id = Math.random().toString().substr(2, 6);
   });
 
   return nodes;

@@ -1,11 +1,12 @@
 import React from 'react';
 import { commonDeps, plateTestUtilsDeps } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
-import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
-import { basicMarksPluginsFile } from '../sandpack/files/basic-marks/code-basicMarksPlugins';
+import { basicElementsFiles } from '../sandpack/files/basic-elements/code-basicElementsFiles';
+import { basicMarksFiles } from '../sandpack/files/basic-marks/code-basicMarksFiles';
 import { basicNodesFiles } from '../sandpack/files/basic-nodes/code-basicNodesFiles';
-import { singleLineAppCode } from '../sandpack/files/code-SingleLineApp';
+import { blockSelectionAppCode } from '../sandpack/files/code-BlockSelectionApp';
 import { commonFiles } from '../sandpack/files/common/code-commonFiles';
+import { getNodesWithIdFile } from '../sandpack/files/dnd/code-getNodesWithId';
 import { typescriptFiles } from '../sandpack/files/typescript/code-typescriptFiles';
 
 export const BlockSelectionSandpack = () => (
@@ -16,11 +17,12 @@ export const BlockSelectionSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
     }}
-    appCode={singleLineAppCode}
+    appCode={blockSelectionAppCode}
     files={{
       ...basicNodesFiles,
-      ...basicElementsPluginsFile,
-      ...basicMarksPluginsFile,
+      ...basicElementsFiles,
+      ...basicMarksFiles,
+      ...getNodesWithIdFile,
       ...commonFiles,
       ...typescriptFiles,
     }}
