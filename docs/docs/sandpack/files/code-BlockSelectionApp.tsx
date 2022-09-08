@@ -8,7 +8,7 @@ import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
-import { createNodesWithId } from './dnd/createNodesWithId';
+import { getNodesWithId } from './dnd/getNodesWithId';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -18,7 +18,7 @@ const plugins = createMyPlugins(
   }
 );
 
-const initialValue = createNodesWithId(basicNodesValue);
+const initialValue = getNodesWithId(basicNodesValue);
 
 export default () => (
   <Plate<MyValue>
