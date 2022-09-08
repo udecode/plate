@@ -1,5 +1,15 @@
 # @udecode/plate-core
 
+## 16.8.0
+
+### Minor Changes
+
+- [#1856](https://github.com/udecode/plate/pull/1856) by [@zbeyens](https://github.com/zbeyens) –
+  - core plugin `createSelectionPlugin` renamed to `createPrevSelectionPlugin`
+  - `queryNode` - new options:
+    - `level`: Valid path levels
+    - `maxLevel`: Paths above that value are invalid
+
 ## 16.5.0
 
 ### Minor Changes

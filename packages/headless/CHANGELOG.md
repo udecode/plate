@@ -1,5 +1,11 @@
 # @udecode/plate-headless
 
+## 16.8.0
+
+### Minor Changes
+
+- [#1856](https://github.com/udecode/plate/pull/1856) by [@zbeyens](https://github.com/zbeyens) – New package: `@udecode/plate-selection`
+
 ## 16.7.0
 
 ## 16.6.1
