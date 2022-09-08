@@ -5111,7 +5111,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:16.8.0, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:16.8.1, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -5144,7 +5144,7 @@ __metadata:
     "@udecode/plate-paragraph": "npm:16.8.0"
     "@udecode/plate-reset-node": "npm:16.8.0"
     "@udecode/plate-select": "npm:16.8.0"
-    "@udecode/plate-selection": "npm:16.8.0"
+    "@udecode/plate-selection": "npm:16.8.1"
     "@udecode/plate-serializer-csv": "npm:16.8.0"
     "@udecode/plate-serializer-docx": "npm:16.8.0"
     "@udecode/plate-serializer-html": "npm:16.8.0"
@@ -5421,7 +5421,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:16.8.0, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:16.8.1, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -5957,11 +5957,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:16.8.0, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:16.8.1, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:16.8.0"
+    "@udecode/plate-headless": "npm:16.8.1"
     "@udecode/plate-styled-components": "npm:16.8.0"
     "@udecode/plate-ui-alignment": "npm:16.8.0"
     "@udecode/plate-ui-block-quote": "npm:16.8.0"
@@ -5997,8 +5997,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:16.8.0"
-    "@udecode/plate-ui": "npm:16.8.0"
+    "@udecode/plate-headless": "npm:16.8.1"
+    "@udecode/plate-ui": "npm:16.8.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
