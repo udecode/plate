@@ -11,6 +11,7 @@ import { TLinkElement } from '../types';
 export interface WrapLinkOptions<V extends Value = Value>
   extends WrapNodesOptions<V> {
   url: string;
+  target?: string;
 }
 
 /**
@@ -18,13 +19,14 @@ export interface WrapLinkOptions<V extends Value = Value>
  */
 export const wrapLink = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, ...options }: WrapLinkOptions<V>
+  { url, target = '_self', ...options }: WrapLinkOptions<V>
 ) => {
   wrapNodes<TLinkElement, Value>(
     editor,
     {
       type: getPluginType(editor, ELEMENT_LINK),
       url,
+      target,
       children: [],
     },
     { split: true, ...options } as any

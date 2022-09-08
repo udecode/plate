@@ -31,3 +31,5 @@ export const floatingInputCss = [
     line-height: 20px;
   `,
 ];
+
+export const floatingLabelCss = [tw`text-sm`];

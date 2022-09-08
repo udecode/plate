@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FloatingLink,
   LaunchIcon,
@@ -13,10 +12,12 @@ import {
   FloatingIconWrapper,
   floatingInputCss,
   FloatingInputWrapper,
+  floatingLabelCss,
   floatingRootCss,
   floatingRowCss,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
+import React from 'react';
 
 export const PlateFloatingLink = () => {
   const isEditing = useFloatingLinkSelectors().isEditing();
@@ -44,6 +45,14 @@ export const PlateFloatingLink = () => {
           css={floatingInputCss}
           placeholder="Text to display"
         />
+      </FloatingInputWrapper>
+      <div tw="h-px bg-gray-200" />
+
+      <FloatingInputWrapper>
+        <FloatingIconWrapper>
+          <FloatingLink.NewTabInput />
+        </FloatingIconWrapper>
+        <label css={floatingLabelCss}>Open link in new tab</label>
       </FloatingInputWrapper>
     </div>
   );

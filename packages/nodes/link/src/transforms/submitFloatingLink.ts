@@ -27,12 +27,14 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   if (!isValid) return;
 
   const text = floatingLinkSelectors.text();
+  const target = floatingLinkSelectors.newTab() ? '_blank' : '_self';
 
   floatingLinkActions.hide();
 
   upsertLink(editor, {
     url,
     text,
+    target,
   });
 
   setTimeout(() => {

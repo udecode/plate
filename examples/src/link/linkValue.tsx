@@ -9,7 +9,10 @@ export const linkValue: any = (
     <hh2>🔗 Link</hh2>
     <hp>
       In addition to block nodes, you can create inline nodes, like{' '}
-      <ha url="https://en.wikipedia.org/wiki/Hypertext">hyperlinks</ha>!
+      <ha target="_blank" url="https://en.wikipedia.org/wiki/Hypertext">
+        hyperlinks
+      </ha>
+      !
     </hp>
     <hp>
       This example shows hyperlinks in action. It features two ways to add
