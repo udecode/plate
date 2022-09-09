@@ -74,7 +74,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       getNode: (el) => ({
         type,
         url: el.getAttribute('href'),
-        target: el.getAttribute('target'),
+        target: el.getAttribute('target') || '_blank',
       }),
     },
   }),

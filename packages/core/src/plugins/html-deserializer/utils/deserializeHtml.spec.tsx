@@ -161,7 +161,9 @@ describe('when deserializing all plugins', () => {
         <htext superscript>sup</htext>
       </hp>
       <hp>
-        <ha url="http://google.com">a</ha>
+        <ha target="_blank" url="http://google.com">
+          a
+        </ha>
       </hp>
       <hcodeblock>
         <hcodeline>code 1code 2</hcodeline>
