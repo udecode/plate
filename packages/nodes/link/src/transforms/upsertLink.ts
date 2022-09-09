@@ -132,7 +132,7 @@ export const upsertLink = <V extends Value>(
       target,
     });
 
-    upsertLinkText(editor, { url, text });
+    upsertLinkText(editor, { url, target, text });
 
     return true;
   }

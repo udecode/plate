@@ -57,7 +57,9 @@ describe('withLink', () => {
           <editor>
             <hp>
               test
-              <ha url="http://google.com">http://google.com</ha>
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>
               <htext />
             </hp>
           </editor>
@@ -78,7 +80,7 @@ describe('withLink', () => {
           <editor>
             <hp>
               test{' '}
-              <ha url="http://google.com">
+              <ha target="_self" url="http://google.com">
                 please
                 <anchor />
                 click
@@ -94,9 +96,15 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              test <ha url="http://google.com">please</ha>
+              test{' '}
+              <ha target="_self" url="http://google.com">
+                please
+              </ha>
               <htext />
-              <ha url="http://google.com/test">click here</ha>.
+              <ha target="_self" url="http://google.com/test">
+                click here
+              </ha>
+              .
             </hp>
           </editor>
         ) as any;
@@ -118,7 +126,10 @@ describe('withLink', () => {
           <editor>
             <hp>
               insert <anchor />
-              link <ha url={url}>here</ha>
+              link{' '}
+              <ha target="_self" url={url}>
+                here
+              </ha>
               <focus />.
             </hp>
           </editor>
@@ -129,7 +140,11 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              insert <ha url={urlOutput}>link here</ha>.
+              insert{' '}
+              <ha target="_self" url={urlOutput}>
+                link here
+              </ha>
+              .
             </hp>
           </editor>
         ) as any;
@@ -153,7 +168,7 @@ describe('withLink', () => {
             <editor>
               <hp>
                 test
-                <ha url="http://google.com">
+                <ha target="_self" url="http://google.com">
                   http://
                   <cursor />
                   google.com
@@ -169,7 +184,9 @@ describe('withLink', () => {
             <editor>
               <hp>
                 test
-                <ha url="http://google.com">http://docsgoogle.com</ha>
+                <ha target="_self" url="http://google.com">
+                  http://docsgoogle.com
+                </ha>
                 <htext />
               </hp>
             </editor>
@@ -192,7 +209,10 @@ describe('withLink', () => {
         const input = (
           <editor>
             <hp>
-              link: <ha url="http://google.com">http://google.com</ha>
+              link:{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>
               <cursor />
             </hp>
           </editor>
@@ -203,7 +223,10 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              link: <ha url="http://google.com">http://google.com</ha>{' '}
+              link:{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>{' '}
             </hp>
           </editor>
         ) as any;
@@ -261,7 +284,10 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              link: <ha url="http://google.com">http://google.com</ha>{' '}
+              link:{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>{' '}
             </hp>
           </editor>
         ) as any;
@@ -279,7 +305,10 @@ describe('withLink', () => {
         const input = (
           <editor>
             <hp>
-              link: <ha url="http://google.com">http://google.com</ha>
+              link:{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>
             </hp>
             <hp>
               test
@@ -293,7 +322,10 @@ describe('withLink', () => {
         const output = (
           <editor>
             <hp>
-              link: <ha url="http://google.com">http://google.com</ha>
+              link:{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>
             </hp>
             <hp>
               {'test '}
@@ -329,7 +361,9 @@ describe('withLink', () => {
           <editor>
             <hp>
               <htext />
-              <ha url="http://google.com">http://google.com</ha>{' '}
+              <ha target="_self" url="http://google.com">
+                http://google.com
+              </ha>{' '}
             </hp>
           </editor>
         ) as any;
@@ -359,7 +393,9 @@ describe('withLink', () => {
           <editor>
             <hp>
               <htext />
-              <ha url="http://google.com">google.com</ha>{' '}
+              <ha target="_self" url="http://google.com">
+                google.com
+              </ha>{' '}
             </hp>
           </editor>
         ) as any;
@@ -402,7 +438,7 @@ describe('withLink', () => {
         <editor>
           <hp>
             link:{' '}
-            <ha url="http://google.com">
+            <ha target="_self" url="http://google.com">
               http://<htext bold>google</htext>.com
             </ha>{' '}
           </hp>

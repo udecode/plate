@@ -55,13 +55,9 @@ export const FloatingLinkNewTabInput = createComponentAs<AsProps<'input'>>(
       <input
         type={'checkbox'}
         checked={value}
-        onChange={(val) => {
-          setValue(val.target.checked);
-          htmlProps.onChange?.({
-            target: {
-              checked: val,
-            },
-          } as any);
+        onChange={(e) => {
+          setValue(e.target.checked);
+          htmlProps.onChange?.(e);
         }}
       ></input>
     );
