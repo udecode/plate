@@ -16,6 +16,7 @@ export const useLink = (props: LinkRootProps): HTMLPropsAs<'a'> => {
     ...props,
     elementToAttributes: (element) => ({
       href: element.url,
+      target: element.target,
     }),
   });
 

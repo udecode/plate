@@ -51,7 +51,9 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
-  props: ({ element }) => ({ nodeProps: { href: element?.url } }),
+  props: ({ element }) => ({
+    nodeProps: { href: element?.url, target: element?.target },
+  }),
   withOverrides: withLink,
   options: {
     isUrl: isUrlProtocol,
@@ -72,6 +74,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       getNode: (el) => ({
         type,
         url: el.getAttribute('href'),
+        target: el.getAttribute('target'),
       }),
     },
   }),
