@@ -1,6 +1,7 @@
 import {
   AsProps,
   createComponentAs,
+  createElementAs,
   HTMLPropsAs,
   mergeProps,
   useComposedRef,
@@ -54,14 +55,6 @@ export const FloatingLinkNewTabInput = createComponentAs<AsProps<'input'>>(
   (props) => {
     const htmlProps = useFloatingLinkNewTabInput(props);
 
-    return (
-      <input
-        type={htmlProps.type}
-        checked={htmlProps.checked}
-        onChange={(e) => {
-          htmlProps.onChange?.(e);
-        }}
-      ></input>
-    );
+    return createElementAs('input', htmlProps);
   }
 );
