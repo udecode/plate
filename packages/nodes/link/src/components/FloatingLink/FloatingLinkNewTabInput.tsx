@@ -23,6 +23,9 @@ export const useFloatingLinkNewTabInput = (
 ): HTMLPropsAs<'input'> => {
   const updated = useFloatingLinkSelectors().updated();
   const ref = useRef<HTMLInputElement>(null);
+  const [checked, setChecked] = useState<boolean>(
+    floatingLinkSelectors.newTab()
+  );
 
   useEffect(() => {
     if (ref.current && updated) {
@@ -33,13 +36,14 @@ export const useFloatingLinkNewTabInput = (
   }, [updated]);
 
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    setChecked(e.target.checked);
     floatingLinkActions.newTab(e.target.checked);
   }, []);
 
   return mergeProps(
     {
       onChange,
-      checked: floatingLinkSelectors.newTab(),
+      checked,
       type: 'checkbox',
     },
     { ...props, ref: useComposedRef<HTMLInputElement>(props.ref, ref) }
@@ -49,14 +53,12 @@ export const useFloatingLinkNewTabInput = (
 export const FloatingLinkNewTabInput = createComponentAs<AsProps<'input'>>(
   (props) => {
     const htmlProps = useFloatingLinkNewTabInput(props);
-    const [value, setValue] = useState<boolean>(htmlProps.checked as boolean);
 
     return (
       <input
-        type={'checkbox'}
-        checked={value}
+        type={htmlProps.type}
+        checked={htmlProps.checked}
         onChange={(e) => {
-          setValue(e.target.checked);
           htmlProps.onChange?.(e);
         }}
       ></input>

@@ -11,7 +11,7 @@ export interface CreateLinkNodeOptions {
 
 export const createLinkNode = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, text = '', target = '_self', children }: CreateLinkNodeOptions
+  { url, text = '', target, children }: CreateLinkNodeOptions
 ): TLinkElement => {
   const type = getPluginType(editor, ELEMENT_LINK);
 

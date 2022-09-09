@@ -32,11 +32,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            insert link
-            <ha target="_self" url={url}>
-              {url}
-            </ha>
-            .
+            insert link<ha url={url}>{url}</ha>.
           </hp>
         </editor>
       ) as any;
@@ -63,11 +59,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            insert link
-            <ha target="_self" url={url}>
-              another
-            </ha>
-            .
+            insert link<ha url={url}>another</ha>.
           </hp>
         </editor>
       ) as any;
@@ -86,7 +78,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <cursor /> link
             </ha>
             .
@@ -97,11 +89,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              insert {url} link
-            </ha>
-            .
+            .<ha url={url}>insert {url} link</ha>.
           </hp>
         </editor>
       ) as any;
@@ -119,7 +107,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <cursor />
               link
             </ha>
@@ -131,11 +119,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              insert link
-            </ha>
-            .
+            .<ha url={url}>insert link</ha>.
           </hp>
         </editor>
       ) as any;
@@ -154,7 +138,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <cursor />
               link
             </ha>
@@ -166,18 +150,14 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={urlOutput}>
-              insert link
-            </ha>
-            .
+            .<ha url={urlOutput}>insert link</ha>.
           </hp>
         </editor>
       ) as any;
 
       it('should update link url', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url: urlOutput, target: '_self' });
+        upsertLink(editor, { url: urlOutput });
 
         expect(input.children).toEqual(output.children);
       });
@@ -189,7 +169,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               <htext bold>
                 insert <cursor /> link
               </htext>
@@ -203,7 +183,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               <htext bold>edit link</htext>
             </ha>
             .
@@ -224,7 +204,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <cursor /> link
             </ha>
             .
@@ -235,11 +215,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              insert {url} link
-            </ha>
-            .
+            .<ha url={url}>insert {url} link</ha>.
           </hp>
         </editor>
       ) as any;
@@ -258,7 +234,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <cursor /> link
             </ha>
             .
@@ -269,11 +245,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              {url}
-            </ha>
-            .
+            .<ha url={url}>{url}</ha>.
           </hp>
         </editor>
       ) as any;
@@ -303,18 +275,14 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              insert link
-            </ha>
-            .
+            .<ha url={url}>insert link</ha>.
           </hp>
         </editor>
       ) as any;
 
       it('should insert link', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, target: '_self', text: 'insert link' });
+        upsertLink(editor, { url, text: 'insert link' });
 
         expect(input.children).toEqual(output.children);
       });
@@ -335,18 +303,14 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              another
-            </ha>
-            .
+            .<ha url={url}>another</ha>.
           </hp>
         </editor>
       ) as any;
 
       it('should insert link', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, target: '_self', text: 'another' });
+        upsertLink(editor, { url, text: 'another' });
 
         expect(input.children).toEqual(output.children);
       });
@@ -358,7 +322,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             .
-            <ha target="_self" url={url}>
+            <ha url={url}>
               insert <anchor />
               link
               <focus />
@@ -371,18 +335,14 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            .
-            <ha target="_self" url={url}>
-              insert link
-            </ha>
-            .
+            .<ha url={url}>insert link</ha>.
           </hp>
         </editor>
       ) as any;
 
       it('should insert text', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, target: '_self' });
+        upsertLink(editor, { url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -394,9 +354,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             insert link <anchor />
-            <ha url={url} target="_self">
-              here
-            </ha>
+            <ha url={url}>here</ha>
             <focus />.
           </hp>
         </editor>
@@ -405,11 +363,7 @@ describe('upsertLink', () => {
       const output = (
         <editor>
           <hp>
-            insert link{' '}
-            <ha url={urlOutput} target="_self">
-              here
-            </ha>
-            .
+            insert link <ha url={urlOutput}>here</ha>.
           </hp>
         </editor>
       ) as any;
@@ -440,7 +394,7 @@ describe('upsertLink', () => {
         <editor>
           <hp>
             insert <htext bold>link </htext>
-            <ha target="_self" url={urlOutput}>
+            <ha url={urlOutput}>
               <htext bold>{urlOutput}</htext>
             </ha>
             <htext bold> here</htext>.
@@ -450,7 +404,7 @@ describe('upsertLink', () => {
 
       it('the new link should keep the marks', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url: urlOutput, target: '_self' });
+        upsertLink(editor, { url: urlOutput });
 
         expect(input.children).toEqual(output.children);
       });

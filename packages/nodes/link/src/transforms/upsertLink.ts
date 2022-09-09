@@ -49,7 +49,7 @@ export const upsertLink = <V extends Value>(
   {
     url,
     text,
-    target = '_self',
+    target,
     insertTextInLink,
     insertNodesOptions,
   }: UpsertLinkOptions<V>

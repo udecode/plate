@@ -19,7 +19,7 @@ export interface WrapLinkOptions<V extends Value = Value>
  */
 export const wrapLink = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, target = '_self', ...options }: WrapLinkOptions<V>
+  { url, target, ...options }: WrapLinkOptions<V>
 ) => {
   wrapNodes<TLinkElement, Value>(
     editor,
