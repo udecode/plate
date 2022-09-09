@@ -1,3 +1,10 @@
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   AsProps,
   createComponentAs,
@@ -6,13 +13,6 @@ import {
   mergeProps,
   useComposedRef,
 } from '@udecode/plate-core';
-import React, {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
 import {
   floatingLinkActions,
   floatingLinkSelectors,

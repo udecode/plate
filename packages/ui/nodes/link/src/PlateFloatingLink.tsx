@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   FloatingLink,
   LaunchIcon,
@@ -16,7 +17,6 @@ import {
   floatingRowCss,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
-import React from 'react';
 
 export const PlateFloatingLink = () => {
   const isEditing = useFloatingLinkSelectors().isEditing();
