@@ -57,6 +57,3 @@ it('serialize image with alt to html', () => {
     '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true" class="slate-ImageElement-img">'
   );
 });
-
-Expected: 'Some paragraph of text with <a rel="noopener nofollow" class="slate-a" href="https://theuselessweb.com/">link</a> part.';
-Received: 'Some paragraph of text with <a rel="noopener nofollow" class="slate-a" href="https://theuselessweb.com/">link</a> part.';
