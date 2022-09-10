@@ -1,5 +1,12 @@
 # @udecode/plate-link
 
+## 16.9.0
+
+### Minor Changes
+
+- [#1865](https://github.com/udecode/plate/pull/1865) by [@rawi96](https://github.com/rawi96) –
+  - `TLinkElement` new optional prop `target`: allows you to control the link `target` attribute. Default is `undefined` (`_blank`).
+
 ## 16.8.0
 
 ## 16.5.0
