@@ -231,7 +231,9 @@ describe('when inserting link with href', () => {
     <editor>
       <hp>
         test
-        <ha url="http://test.com">link</ha>
+        <ha target="_blank" url="http://test.com">
+          link
+        </ha>
         <cursor />
       </hp>
     </editor>
