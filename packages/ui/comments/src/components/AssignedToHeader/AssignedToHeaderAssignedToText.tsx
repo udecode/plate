@@ -11,7 +11,7 @@ import {
 } from '../../utils';
 
 export type AssignedToHeaderAssignedToTextProps = {
-  user: User;
+  user?: User;
   retrieveUser: () => User;
 } & HTMLPropsAs<'p'>;
 
@@ -21,15 +21,17 @@ export const useAssignedToHeaderAssignedToText = (
   const { user, retrieveUser } = props;
 
   const loggedInUser = useLoggedInUser(retrieveUser);
-  const isAssignedToLoggedInUser = loggedInUser.id === user.id;
+  const isAssignedToLoggedInUser = loggedInUser.id === user?.id;
 
-  const text = `Assigned to
+  const text = user
+    ? `Assigned to
     ${capitalizeFirstLetter(
       generateUserDisplayIdentifier({
         user,
         isLoggedInUser: isAssignedToLoggedInUser,
       })
-    )}`;
+    )}`
+    : 'Unassigned';
 
   return {
     ...props,

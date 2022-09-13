@@ -10,8 +10,8 @@ export const getThreadStyles = (props: ThreadStyleProps) =>
       ...props,
     },
     {
-      root: [tw`rounded-lg bg-white border`], // box-shadow: 0 2px 6px 2px rgb(60 64 67 / 15%);
-      commentHeader: [tw`text-black text-sm h-10 whitespace-nowrap	`],
+      root: [], // box-shadow: 0 2px 6px 2px rgb(60 64 67 / 15%);
+      commentHeader: [],
       authorTimestamp: [tw``],
       commenterName: [tw``],
       buttons: [tw``],

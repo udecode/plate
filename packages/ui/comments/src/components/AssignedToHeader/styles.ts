@@ -2,11 +2,11 @@ import { css } from 'styled-components';
 import tw from 'twin.macro';
 
 export const assignedToHeaderRoot = css`
-  ${tw`flex items-center justify-between bg-indigo-700	rounded-t-lg px-3 py-1`}
+  ${tw`flex items-center justify-between bg-[#56bf98]	rounded-t-lg px-3 py-1`}
 `;
 
 export const assignedToHeaderInformationCss = css`
-  ${tw`flex items-center gap-2 text-gray-300`}
+  ${tw`flex items-center gap-2 text-white`}
 `;
 
 export const assignedToHeaderAvatarCss = css`

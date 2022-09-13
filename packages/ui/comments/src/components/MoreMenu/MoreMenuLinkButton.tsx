@@ -3,7 +3,7 @@ import { createComponentAs, createElementAs } from '@udecode/plate-core';
 import { MoreMenuItem, MoreMenuItemProps } from './MoreMenuItem';
 
 export type MoreMenuLinkButtonProps = {
-  onLink: () => void;
+  onLink?: () => void;
   showLinkButton?: boolean;
 } & MoreMenuItemProps;
 
@@ -11,7 +11,7 @@ export const useMoreMenuLinkButton = (props: MoreMenuLinkButtonProps) => {
   const { onLink, ...rest } = props;
 
   const onClick = useCallback(() => {
-    onLink();
+    onLink?.();
   }, [onLink]);
 
   return { ...rest, onClick };

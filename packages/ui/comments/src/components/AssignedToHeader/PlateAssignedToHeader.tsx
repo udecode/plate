@@ -14,13 +14,13 @@ import {
 } from './styles';
 
 export type PlateAssignedToHeaderProps = {
-  user: User;
+  user?: User;
   retrieveUser: () => User;
   showResolveThreadButton?: boolean;
   showReOpenThreadButton?: boolean;
   thread: Thread;
-  onResolveThread: () => void;
-  onReOpenThread: () => void;
+  onResolveThread?: () => void;
+  onReOpenThread?: () => void;
 };
 
 export const PlateAssignedToHeader = (props: PlateAssignedToHeaderProps) => {

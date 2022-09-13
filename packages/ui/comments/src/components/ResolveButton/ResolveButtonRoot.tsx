@@ -7,7 +7,7 @@ import { Thread } from '../../utils';
 
 export type ResolveButtonRootProps = {
   thread: Thread;
-  onResolveThread: () => void;
+  onResolveThread?: () => void;
 } & HTMLPropsAs<'button'>;
 
 export const useResolveButtonRoot = (props: ResolveButtonRootProps) => {

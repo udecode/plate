@@ -3,14 +3,14 @@ import { createComponentAs, createElementAs } from '@udecode/plate-core';
 import { MoreMenuItem, MoreMenuItemProps } from './MoreMenuItem';
 
 export type MoreMenuDeleteButtonProps = {
-  onDelete: () => void;
+  onDelete?: () => void;
 } & MoreMenuItemProps;
 
 export const useMoreMenuDeleteButton = (props: MoreMenuDeleteButtonProps) => {
   const { onDelete, ...rest } = props;
 
   const onClick = useCallback(() => {
-    onDelete();
+    onDelete?.();
   }, [onDelete]);
 
   return { ...rest, onClick };

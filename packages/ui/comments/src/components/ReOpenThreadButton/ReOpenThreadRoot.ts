@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-core';
 
 export type ReOpenThreadRootProps = {
-  onReOpenThread: () => void;
+  onReOpenThread?: () => void;
 } & HTMLPropsAs<'button'>;
 
 export const useReOpenThreadRoot = (props: ReOpenThreadRootProps) => {

@@ -1,8 +1,6 @@
 import {
-  Dispatch,
   KeyboardEvent,
   RefObject,
-  SetStateAction,
   useCallback,
   useEffect,
   useRef,
@@ -20,15 +18,18 @@ import {
   emailRegexExpression,
   nameRegexExpression,
   Thread,
+  User,
 } from '../../utils';
+import {
+  commentTextAreaActions,
+  commentTextAreaSelectors,
+} from './commentTextAreaStore';
 
 export type TextAreaProps = {
   fetchContacts: () => Contact[];
-  haveContactsBeenClosed: boolean;
-  onValueChange: (value: string) => void;
-  onSubmit: () => void;
-  setHaveContactsBeenClosed: Dispatch<SetStateAction<boolean>>;
-  textAreaRef: RefObject<HTMLTextAreaElement> | null;
+  onValueChange?: (value: string) => void;
+  onSubmitComment?: (value: string, assignedTo: User) => void;
+  textAreaRef?: RefObject<HTMLTextAreaElement> | null;
   thread: Thread;
   value: string;
 } & HTMLPropsAs<'textarea'>;
@@ -36,18 +37,18 @@ export type TextAreaProps = {
 export const useTextArea = (props: TextAreaProps) => {
   const {
     fetchContacts,
-    haveContactsBeenClosed,
     onValueChange,
-    onSubmit,
-    setHaveContactsBeenClosed,
+    onSubmitComment,
     textAreaRef,
     thread,
     value,
   } = props;
-  const [areContactsShown, setAreContactsShown] = useState<boolean>(false);
+
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [filteredContacts, setFilteredContacts2] = useState<Contact[]>([]);
   const [selectedContactIndex, setSelectedContactIndex] = useState<number>(0);
+
+  const areContactsShown = commentTextAreaSelectors.areContactsShown();
+  const filteredContacts = commentTextAreaSelectors.filteredContacts();
 
   const hasComments = thread.comments.length >= 1;
 
@@ -125,13 +126,11 @@ export const useTextArea = (props: TextAreaProps) => {
   }, [retrieveMentionStringAtCaretPosition]);
 
   const showContacts = useCallback(() => {
-    if (!haveContactsBeenClosed) {
-      setAreContactsShown(true);
-    }
-  }, [haveContactsBeenClosed]);
+    commentTextAreaActions.areContactsShown(true);
+  }, []);
 
   const hideContacts = useCallback(() => {
-    setAreContactsShown(false);
+    commentTextAreaActions.areContactsShown(false);
     setSelectedContactIndex(0);
   }, []);
 
@@ -153,7 +152,7 @@ export const useTextArea = (props: TextAreaProps) => {
 
   const setFilteredContacts = useCallback(
     (filteredContacts2) => {
-      setFilteredContacts2(filteredContacts2);
+      commentTextAreaActions.filteredContacts(filteredContacts2);
       setSelectedContactIndex(
         Math.min(selectedContactIndex, filteredContacts2.length - 1)
       );
@@ -175,7 +174,7 @@ export const useTextArea = (props: TextAreaProps) => {
           0,
           mentionString.startIndex
         )}${mentionInsertString}${value.substr(mentionString.endIndex + 1)}`;
-        onValueChange(newValue);
+        if (onValueChange) onValueChange(newValue);
         const selectionIndex =
           mentionString.startIndex + mentionInsertString.length;
         textArea.focus();
@@ -193,10 +192,6 @@ export const useTextArea = (props: TextAreaProps) => {
     [hideContacts, insertMention]
   );
 
-  const onContactsClosed = useCallback(() => {
-    setHaveContactsBeenClosed(true);
-  }, [setHaveContactsBeenClosed]);
-
   const onKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === '@' && !areContactsShown) {
@@ -210,8 +205,12 @@ export const useTextArea = (props: TextAreaProps) => {
         setSelectedContactIndex(
           Math.min(selectedContactIndex + 1, filteredContacts.length - 1)
         );
-      } else if ((event.ctrlKey || event.metaKey) && event.code === 'Enter') {
-        onSubmit();
+      } else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.code === 'Enter' &&
+        thread.assignedTo
+      ) {
+        if (onSubmitComment) onSubmitComment(value, thread.assignedTo);
         event.preventDefault();
       } else if (areContactsShown && event.code === 'Enter') {
         const selectedContact = filteredContacts[selectedContactIndex];
@@ -223,17 +222,16 @@ export const useTextArea = (props: TextAreaProps) => {
       areContactsShown,
       filteredContacts,
       onContactSelected,
-      onSubmit,
+      onSubmitComment,
       selectedContactIndex,
       showContacts,
+      thread.assignedTo,
+      value,
     ]
   );
 
   const onKeyUp = useCallback(() => {
-    setHaveContactsBeenClosed(false);
-
     updateFilteredContacts();
-
     const mentionStringAfterAtCharacter = retrieveMentionStringAfterAtCharacter();
     if (
       mentionStringAfterAtCharacter !== null &&
@@ -253,13 +251,12 @@ export const useTextArea = (props: TextAreaProps) => {
     contacts,
     hideContacts,
     retrieveMentionStringAfterAtCharacter,
-    setHaveContactsBeenClosed,
     showContacts,
     updateFilteredContacts,
   ]);
 
-  const loadContacts = useCallback(async () => {
-    const fetchedContacts = await fetchContacts();
+  const loadContacts = useCallback(() => {
+    const fetchedContacts = fetchContacts();
     setContacts(fetchedContacts);
     setFilteredContacts(filterContacts(fetchedContacts));
   }, [fetchContacts, filterContacts, setFilteredContacts]);
@@ -279,7 +276,7 @@ export const useTextArea = (props: TextAreaProps) => {
 
   const onTextAreaValueChange = useCallback(
     (event) => {
-      onValueChange(event.target.value);
+      if (onValueChange) onValueChange(event.target.value);
     },
     [onValueChange]
   );

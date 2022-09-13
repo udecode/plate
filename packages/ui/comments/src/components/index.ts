@@ -11,7 +11,6 @@ export * from './MoreMenu/index';
 export * from './ReOpenThreadButton/index';
 export * from './ResolveButton/index';
 export * from './ResolvedThreads/index';
-export * from './ShowResolvedThreadsButton/index';
 export * from './SideThread/index';
 export * from './Thread/index';
 export * from './ThreadComment/index';

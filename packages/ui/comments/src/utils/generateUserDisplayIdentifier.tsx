@@ -1,4 +1,4 @@
-import { User } from '@udecode/plate-comments';
+import { User } from './types';
 
 export function generateUserDisplayIdentifier({
   user,

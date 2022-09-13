@@ -3,7 +3,7 @@ import { ContentCopy } from '@styled-icons/material';
 import { createElementAs } from '@udecode/plate-core';
 
 export type ThreadLinkDialogCopyIconProps = {
-  threadLink: string;
+  threadLink?: string;
 } & ComponentProps<typeof ContentCopy>;
 
 export const useThreadLinkDialogCopyIcon = (
@@ -12,7 +12,7 @@ export const useThreadLinkDialogCopyIcon = (
   const { threadLink } = props;
 
   const copyLinkToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(threadLink);
+    if (threadLink) navigator.clipboard.writeText(threadLink);
   }, [threadLink]);
 
   return {
