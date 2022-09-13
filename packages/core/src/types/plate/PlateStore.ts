@@ -16,8 +16,9 @@ export type PlateStoreState<
   E extends PlateEditor<V> = PlateEditor<V>
 > = {
   /**
-   * A unique id used to store the editor state by id.
-   * Required if rendering multiple `Plate`. Optional otherwise.
+   * A unique id used as a provider scope.
+   * Use it if you have multiple `PlateProvider` in the same React tree.
+   * @default PLATE_SCOPE
    */
   id: PlateId;
 

@@ -9,7 +9,7 @@ export const EditorStateEffect = memo(({ id }: { id?: PlateId }) => {
 
   useEffect(() => {
     updateKeyEditor();
-  }, [updateKeyEditor]);
+  });
 
   useEffect(() => {
     updateKeySelection();

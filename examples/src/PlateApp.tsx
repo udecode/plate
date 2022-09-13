@@ -1,11 +1,10 @@
-import React from 'react';
-import { getPlateActions, Plate, PlateProvider } from '@udecode/plate';
-import { useResetPlateEditor } from '@udecode/plate-core/src/index';
+import React, { useState } from 'react';
+import { Plate, PlateProvider, useResetPlateEditor } from '@udecode/plate';
 import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
-const Editor = () => {
+const Buttons = ({ disabled, setDisabled }: any) => {
   const resetPlateEditor = useResetPlateEditor();
 
   return (
@@ -14,10 +13,10 @@ const Editor = () => {
         className="cursor-pointer"
         type="button"
         onClick={() => {
-          getPlateActions(id).enabled(!enabled);
+          setDisabled(!disabled);
         }}
       >
-        {enabled ? 'Disable editor' : 'Enable editor'}
+        {disabled ? 'Disable editor' : 'Enable editor'}
       </button>
       <button
         className="ml-2 cursor-pointer"
@@ -28,18 +27,23 @@ const Editor = () => {
       >
         Reset editor (history)
       </button>
-      <p />
-      <Plate<MyValue>
-        id={id}
-        editableProps={editableProps}
-        initialValue={plainTextValue}
-      />
     </>
   );
 };
 
-export default () => (
-  <PlateProvider id={id}>
-    <Editor />
-  </PlateProvider>
-);
+export default () => {
+  const [disabled, setDisabled] = useState(false);
+
+  return (
+    <PlateProvider
+      initialValue={plainTextValue}
+      disableCorePlugins={{ eventEditor: true }}
+    >
+      <Buttons disabled={disabled} setDisabled={setDisabled} />
+
+      <p />
+
+      {!disabled && <Plate<MyValue> editableProps={editableProps} />}
+    </PlateProvider>
+  );
+};

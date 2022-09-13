@@ -37,8 +37,6 @@ export const useFloatingLinkEdit = ({
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().open();
 
-  console.log(keyEditor);
-
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK

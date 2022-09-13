@@ -45,7 +45,6 @@ export const pluginRenderElement = <V extends Value>(
       }
     });
 
-    console.log(key);
     let component: JSX.Element | null = (
       <Element {...nodeProps}>{children}</Element>
     );

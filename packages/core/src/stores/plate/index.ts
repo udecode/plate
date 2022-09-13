@@ -3,4 +3,5 @@
  */
 
 export * from './createPlateStore';
+export * from './actions/index';
 export * from './selectors/index';

@@ -47,6 +47,7 @@ import {
   ELEMENT_CODE_BLOCK,
   MentionCombobox,
   Plate,
+  PlateProvider,
   StyledElement,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
@@ -157,23 +158,21 @@ const App = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Toolbar>
-        <ToolbarButtons />
-      </Toolbar>
+      <PlateProvider<MyValue> initialValue={playgroundValue} plugins={plugins}>
+        <Toolbar>
+          <ToolbarButtons />
+        </Toolbar>
 
-      <div ref={containerRef} style={styles.container}>
-        <Plate<MyValue, MyEditor>
-          editableProps={editableProps}
-          initialValue={playgroundValue}
-          plugins={plugins}
-        >
-          <MarkBalloonToolbar />
+        <div ref={containerRef} style={styles.container}>
+          <Plate editableProps={editableProps}>
+            <MarkBalloonToolbar />
 
-          <MentionCombobox items={MENTIONABLES} />
+            <MentionCombobox items={MENTIONABLES} />
 
-          <CursorOverlayContainer containerRef={containerRef} />
-        </Plate>
-      </div>
+            <CursorOverlayContainer containerRef={containerRef} />
+          </Plate>
+        </div>
+      </PlateProvider>
     </DndProvider>
   );
 };

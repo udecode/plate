@@ -1,18 +1,21 @@
-import { useCallback } from 'react';
-import { nanoid } from 'nanoid';
 import {
   createAtomStore,
   GetRecord,
   SetRecord,
   UseRecord,
 } from '../../atoms/index';
-import { withPlate } from '../../plugins/index';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
-import { PlateChangeKey, PlateStoreState } from '../../types/plate/PlateStore';
-import { createTEditor, Scope } from '../../utils/index';
+import { PlateStoreState } from '../../types/plate/PlateStore';
+import { Scope } from '../../utils/index';
 
+/**
+ * A unique id used as a provider scope.
+ * Use it if you have multiple `PlateProvider` in the same React tree.
+ * @default PLATE_SCOPE
+ */
 export type PlateId = Scope;
+
 export const PLATE_SCOPE = Symbol('plate');
 
 export const createPlateStore = <
@@ -79,38 +82,3 @@ export const usePlateState = <
 >(
   id?: PlateId
 ): UseRecord<PlateStoreState<V, E>> => usePlateStore(id).use as any;
-
-export const useUpdatePlateKey = (key: PlateChangeKey, id?: PlateId) => {
-  const set = usePlateActions(id)[key]();
-
-  return useCallback(() => {
-    set(nanoid());
-  }, [set]);
-};
-
-export const useRedecorate = (id?: PlateId) => {
-  const updateDecorate = useUpdatePlateKey('keyDecorate', id);
-
-  return useCallback(() => {
-    updateDecorate();
-  }, [updateDecorate]);
-};
-
-/**
- * Set a new editor with plate.
- */
-export const useResetPlateEditor = (id?: PlateId) => {
-  const editor = usePlateSelectors(id).editor();
-  const setEditor = usePlateActions(id).editor();
-
-  return useCallback(() => {
-    if (!editor) return;
-
-    setEditor(
-      withPlate(createTEditor(), {
-        id: editor.id,
-        plugins: editor.plugins as any,
-      })
-    );
-  }, [editor, setEditor]);
-};
