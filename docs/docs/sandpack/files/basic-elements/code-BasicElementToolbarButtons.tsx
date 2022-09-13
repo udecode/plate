@@ -23,7 +23,7 @@ import {
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const BasicElementToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <>

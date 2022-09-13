@@ -5042,6 +5042,7 @@ __metadata:
     clsx: "npm:^1.1.1"
     jotai: "npm:^1.7.2"
     lodash: "npm:^4.17.21"
+    nanoid: "npm:^3.3.4"
     react-hotkeys-hook: "npm:^3.4.6"
     use-deep-compare: "npm:^1.1.0"
     zustand: "npm:^3.7.2"

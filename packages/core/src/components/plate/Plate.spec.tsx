@@ -99,7 +99,7 @@ describe('Plate', () => {
       const error = jest.spyOn(global.console, 'error');
 
       const PlateContainer = () => {
-        const id = 'main';
+        const id;
         const [count, setCount] = useState(1);
 
         useEffect(() => {

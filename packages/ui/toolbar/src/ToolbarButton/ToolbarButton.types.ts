@@ -1,13 +1,13 @@
 import { HTMLProps } from 'react';
 import { TippyProps } from '@tippyjs/react';
-import { AnyObject } from '@udecode/plate-core';
+import { AnyObject, PlateId } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface ToolbarButtonProps
   extends StyledProps<{ active?: CSSProp }>,
     AnyObject {
-  id?: string;
+  id?: PlateId;
 
   /**
    * Is it active.

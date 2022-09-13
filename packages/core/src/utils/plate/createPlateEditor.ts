@@ -33,7 +33,7 @@ export const createPlateEditor = <
   plugins = [],
   components,
   overrideByKey,
-  normalizeInitialValue,
+  normalizeInitialValue: shouldNormalizeInitialValue,
   ...withPlateOptions
 }: CreatePlateEditorOptions<V, E> = {}): E & PlateEditor<V> => {
   plugins = createPlugins<V>(plugins, {
@@ -45,8 +45,9 @@ export const createPlateEditor = <
     plugins,
     ...withPlateOptions,
   }) as E & PlateEditor<V>;
+  console.log(e.plugins);
 
-  if (normalizeInitialValue) {
+  if (shouldNormalizeInitialValue) {
     normalizeEditor(e, { force: true });
   }
 

@@ -33,9 +33,11 @@ export const useFloatingLinkEdit = ({
   ...props
 }: FloatingLinkProps): HTMLPropsAs<'div'> => {
   const editor = useEditorRef();
-  const keyEditor = usePlateSelectors(editor.id).keyEditor();
+  const keyEditor = usePlateSelectors().keyEditor();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().open();
+
+  console.log(keyEditor);
 
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,

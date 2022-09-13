@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Plate } from '../../components/index';
-import { getPlateSelectors } from '../../stores/index';
+import { usePlateSelectors } from '../../stores/index';
 import { PlatePlugin } from '../../types/index';
 
 describe('normalizeInitialValue', () => {
@@ -31,7 +31,7 @@ describe('normalizeInitialValue', () => {
         />
       );
 
-      const value = getPlateSelectors().value();
+      const value = usePlateSelectors().value();
 
       expect(value).toEqual([
         { type: 'p', count: 2, children: [{ text: '' }] },

@@ -6,6 +6,7 @@ import {
   createResetNodePlugin,
   createSoftBreakPlugin,
   Plate,
+  PlateProvider,
 } from '@udecode/plate';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
@@ -14,7 +15,7 @@ import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { Toolbar } from './toolbar/Toolbar';
-import { createMyPlugins } from './typescript/plateTypes';
+import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
@@ -29,15 +30,11 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider initialValue={basicElementsValue} plugins={plugins}>
     <Toolbar>
       <BasicElementToolbarButtons />
     </Toolbar>
 
-    <Plate
-      editableProps={editableProps}
-      initialValue={basicElementsValue}
-      plugins={plugins}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );

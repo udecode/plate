@@ -55,7 +55,7 @@ const plugins = createMyPlugins(
 );
 
 const ToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <>

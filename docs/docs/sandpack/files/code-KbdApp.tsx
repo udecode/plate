@@ -19,7 +19,7 @@ import {
 } from './typescript/plateTypes';
 
 const KbdToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <MarkToolbarButton

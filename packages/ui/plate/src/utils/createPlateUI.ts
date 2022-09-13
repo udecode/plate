@@ -1,6 +1,5 @@
 import {
   ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
   ELEMENT_H1,
@@ -39,11 +38,7 @@ import {
 } from '@udecode/plate-headless';
 import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
 import { BlockquoteElement } from '@udecode/plate-ui-block-quote';
-import {
-  CodeBlockElement,
-  CodeLineElement,
-  CodeSyntaxLeaf,
-} from '@udecode/plate-ui-code-block';
+import { CodeLineElement, CodeSyntaxLeaf } from '@udecode/plate-ui-code-block';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { LinkElement } from '@udecode/plate-ui-link';
 import { TodoListElement } from '@udecode/plate-ui-list';
@@ -65,7 +60,7 @@ export const createPlateUI = <T extends string = string>(
 ) => {
   const components = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-    [ELEMENT_CODE_BLOCK]: CodeBlockElement,
+    // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_HR]: HrElement,
@@ -164,7 +159,7 @@ export const createPlateUI = <T extends string = string>(
       },
     }),
     [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
-      as: 'p',
+      // as: 'p',
       styles: {
         root: tw`m-0 py-1 px-0`,
       },

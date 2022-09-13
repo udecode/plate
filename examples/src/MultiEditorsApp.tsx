@@ -52,7 +52,7 @@ export default () => (
       return (
         <div style={styles.wrapper} key={idx}>
           <div>{idx}</div>
-          <WithPlate initialValue={initialValue} id={idx} />
+          <WithPlate initialValue={initialValue} id={idx + 1} />
           {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}
         </div>
       );

@@ -4,8 +4,6 @@
 
 export * from './useEditableProps';
 export * from './useElementProps';
-export * from './usePlate';
 export * from './usePlateEffects';
 export * from './usePlateStoreEffects';
-export * from './usePlatesStoreEffect';
 export * from './useSlateProps';

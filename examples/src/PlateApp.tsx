@@ -1,19 +1,12 @@
 import React from 'react';
-import {
-  getPlateActions,
-  Plate,
-  PlateProvider,
-  usePlateSelectors,
-} from '@udecode/plate';
+import { getPlateActions, Plate, PlateProvider } from '@udecode/plate';
+import { useResetPlateEditor } from '@udecode/plate-core/src/index';
 import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
-const id = 'plate';
-
 const Editor = () => {
-  const useSelectors = usePlateSelectors(id);
-  const enabled = useSelectors ? useSelectors.enabled() : null;
+  const resetPlateEditor = useResetPlateEditor();
 
   return (
     <>
@@ -30,7 +23,7 @@ const Editor = () => {
         className="ml-2 cursor-pointer"
         type="button"
         onClick={() => {
-          getPlateActions(id).resetEditor();
+          resetPlateEditor();
         }}
       >
         Reset editor (history)

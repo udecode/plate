@@ -10,7 +10,7 @@ import {
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const ListToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <>
