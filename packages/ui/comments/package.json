@@ -49,23 +49,6 @@
     "@udecode/plate-ui-toolbar": "16.5.0",
     "uuid": "^8.3.2"
   },
-  "devDependencies": {
-    "@types/uuid": "^8.3.4",
-    "@vitejs/plugin-react": "^2.0.0",
-    "babel-plugin-macros": "3.1.0",
-    "babel-plugin-styled-components": "2.0.7",
-    "tailwindcss": "3.1.8",
-    "twin.macro": "2.8.2",
-    "vite": "^3.0.5"
-  },
-  "babelMacros": {
-    "twin": {
-      "preset": "styled-components"
-    }
-  },
-  "scripts": {
-    "start": "vite"
-  },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
