@@ -1,5 +1,12 @@
 # @udecode/plate-link
 
+## 16.9.1
+
+### Patch Changes
+
+- [#1868](https://github.com/udecode/plate/pull/1868) by [@rawi96](https://github.com/rawi96) –
+  - `upsertLink()` Set nodes also if only the link target has changed.
+
 ## 16.9.0
 
 ### Minor Changes
