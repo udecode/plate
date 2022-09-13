@@ -80,9 +80,9 @@ export const upsertLink = <V extends Value>(
     text = url;
   }
 
-  // edit the link url
+  // edit the link url and/or target
   if (linkAbove) {
-    if (url !== linkAbove[0]?.url) {
+    if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
       setNodes<TLinkElement>(
         editor,
         { url, target },
