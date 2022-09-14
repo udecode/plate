@@ -17,7 +17,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider initialValue={indentValue} plugins={plugins}>
+  <PlateProvider<MyValue> initialValue={indentValue} plugins={plugins}>
     <Toolbar>
       <IndentToolbarButtons />
     </Toolbar>

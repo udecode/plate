@@ -57,7 +57,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider initialValue={alignValue} plugins={plugins}>
+  <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
     <Toolbar>
       <AlignToolbarButtons />
     </Toolbar>

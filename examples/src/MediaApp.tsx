@@ -38,7 +38,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider plugins={plugins} initialValue={mediaValue}>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={mediaValue}>
     <Toolbar>
       <ImageToolbarButton icon={<Image />} />
       <MediaEmbedToolbarButton icon={<OndemandVideo />} />

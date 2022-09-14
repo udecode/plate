@@ -29,7 +29,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider plugins={plugins} initialValue={tableValue}>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
     <Toolbar>
       <TableToolbarButtons />
     </Toolbar>

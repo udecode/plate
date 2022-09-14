@@ -22,7 +22,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider plugins={plugins} initialValue={lineHeightValue}>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={lineHeightValue}>
     <Toolbar>
       <LineHeightToolbarDropdown icon={<LineWeight />} />
     </Toolbar>

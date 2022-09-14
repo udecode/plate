@@ -35,7 +35,7 @@ const plugins = createMyPlugins([...basicNodesPlugins, createKbdPlugin()], {
 });
 
 export default () => (
-  <PlateProvider plugins={plugins} initialValue={kbdValue}>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={kbdValue}>
     <Toolbar>
       <KbdToolbarButton />
     </Toolbar>

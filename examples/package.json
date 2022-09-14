@@ -5,6 +5,7 @@
     "apps/**"
   ],
   "dependencies": {
+    "@codesandbox/sandpack-react": "1.7.2",
     "@styled-icons/boxicons-regular": "10.23.0",
     "@styled-icons/foundation": "10.28.0",
     "@styled-icons/material": "10.28.0",

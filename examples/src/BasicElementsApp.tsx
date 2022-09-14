@@ -30,7 +30,7 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider initialValue={basicElementsValue} plugins={plugins}>
+  <PlateProvider<MyValue> initialValue={basicElementsValue} plugins={plugins}>
     <Toolbar>
       <BasicElementToolbarButtons />
     </Toolbar>

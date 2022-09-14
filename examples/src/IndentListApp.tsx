@@ -84,7 +84,7 @@ const ToolbarButtons = () => {
 };
 
 export default () => (
-  <PlateProvider
+  <PlateProvider<MyValue>
     plugins={plugins}
     initialValue={indentListValue}
     normalizeInitialValue

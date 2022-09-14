@@ -54,7 +54,7 @@ const CopyContent = () => (
 );
 
 export default () => (
-  <PlateProvider initialValue={fontValue} plugins={plugins}>
+  <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
     <Toolbar>
       <ColorPickerToolbarDropdown
         pluginKey={MARK_COLOR}

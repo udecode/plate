@@ -5,11 +5,12 @@ import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createMultiEditorsValue } from './multiple-editors/createMultiEditorsValue';
+import { MyValue } from './typescript/plateTypes';
 
 const initialValues = createMultiEditorsValue();
 
 const WithPlate = ({ initialValue, id }: any) => (
-  <Plate
+  <Plate<MyValue>
     id={id}
     editableProps={editableProps}
     initialValue={initialValue}
