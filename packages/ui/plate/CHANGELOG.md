@@ -1,5 +1,12 @@
 # @udecode/plate-ui
 
+## 17.0.0
+
+### Major Changes
+
+- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
+  - Removed `[ELEMENT_CODE_BLOCK]: CodeBlockElement` from Plate UI. You can define it in your app.
+
 ## 16.9.1
 
 ## 16.9.0
