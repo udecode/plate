@@ -1,6 +1,7 @@
+import { PLATE_SCOPE, PlateId } from '../../plate/index';
 import { eventEditorSelectors } from '../event-editor.store';
 
-export const getEventEditorId = (id?: string) => {
+export const getEventPlateId = (id?: PlateId) => {
   if (id) return id;
 
   const focus = eventEditorSelectors.focus();
@@ -9,5 +10,5 @@ export const getEventEditorId = (id?: string) => {
   const blur = eventEditorSelectors.blur();
   if (blur) return blur;
 
-  return eventEditorSelectors.last() ?? 'main';
+  return eventEditorSelectors.last() ?? PLATE_SCOPE;
 };

@@ -17,7 +17,6 @@ export const sidebarItems = [
   'horizontal-rule',
   'huge-document',
   'iframe',
-  'image',
   'indent',
   'indent-list',
   'kbd',

@@ -1,5 +1,5 @@
 export const multipleEditorsAppCode = `import React from 'react';
-import { Plate, PlateProps } from '@udecode/plate';
+import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
@@ -24,26 +24,33 @@ const Editor = (props: PlateProps<MyValue>) => (
 );
 
 export default () => (
-  <>
-    <Toolbar>
-      <BasicElementToolbarButtons />
-      <BasicMarkToolbarButtons />
-    </Toolbar>
+  <PlateProvider<MyValue>
+    plugins={basicNodesPlugins}
+    initialValue={basicElementsValue}
+  >
+    <PlateProvider<MyValue>
+      id="marks"
+      plugins={basicNodesPlugins}
+      initialValue={basicMarksValue}
+    >
+      <PlateProvider<MyValue>
+        id="image"
+        plugins={imagePlugins}
+        initialValue={imageValue}
+      >
+        <Toolbar>
+          <BasicElementToolbarButtons />
+          <BasicMarkToolbarButtons />
+        </Toolbar>
 
-    <div style={styles.wrapper}>
-      <Editor
-        id="basic"
-        plugins={basicNodesPlugins}
-        initialValue={basicElementsValue}
-      />
-      <Editor
-        id="marks"
-        plugins={basicNodesPlugins}
-        initialValue={basicMarksValue}
-      />
-      <Editor id="image" plugins={imagePlugins} initialValue={imageValue} />
-    </div>
-  </>
+        <div style={styles.wrapper}>
+          <Editor />
+          <Editor id="marks" />
+          <Editor id="image" />
+        </div>
+      </PlateProvider>
+    </PlateProvider>
+  </PlateProvider>
 );
 `;
 

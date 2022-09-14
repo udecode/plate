@@ -6,7 +6,7 @@ import 'prismjs/components/prism-markdown';
 /**
  * Decorate texts with markdown preview.
  */
-export const decoratePreview = () => ([node, path]) => {
+export const decoratePreview = () => ([node, path]: any) => {
   const ranges: any[] = [];
 
   if (!isText(node)) {

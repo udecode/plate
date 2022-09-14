@@ -6,6 +6,7 @@ import {
   MARK_KBD,
   MarkToolbarButton,
   Plate,
+  PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
@@ -19,7 +20,7 @@ import {
 } from './typescript/plateTypes';
 
 const KbdToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <MarkToolbarButton
@@ -34,17 +35,13 @@ const plugins = createMyPlugins([...basicNodesPlugins, createKbdPlugin()], {
 });
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={kbdValue}>
     <Toolbar>
       <KbdToolbarButton />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={kbdValue}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );
 `;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlateEditorRef } from '@udecode/plate-core';
+import { useEventPlateId, usePlateEditorRef } from '@udecode/plate-core';
 import { insertMediaEmbed } from '@udecode/plate-media';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -15,7 +15,7 @@ export const MediaEmbedToolbarButton = ({
   getEmbedUrl,
   ...props
 }: MediaEmbedToolbarButtonProps) => {
-  const editor = usePlateEditorRef(id)!;
+  const editor = usePlateEditorRef(useEventPlateId(id));
 
   return (
     <ToolbarButton

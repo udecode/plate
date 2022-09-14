@@ -2,12 +2,14 @@ import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import {
+  createPlateEditor,
+  createTEditor,
   getEndPoint,
-  getPlateEditorRef,
   getStartPoint,
   Plate,
   PlateEditor,
   select,
+  TEditor,
   Value,
 } from '@udecode/plate-core';
 import {
@@ -40,13 +42,18 @@ function renderWithPlate(
   ui: ReactElement,
   {
     initialValue = DEFAULT_INITIAL_VALUE,
+    editor,
     ...options
   }: {
     initialValue?: Value;
+    editor?: TEditor;
   } & RenderOptions = {}
 ) {
   const Wrapper = ({ children }: { children?: ReactNode }) => (
-    <Plate plugins={DEFAULT_PLUGINS} initialValue={initialValue}>
+    <Plate
+      editor={createPlateEditor({ editor, plugins: DEFAULT_PLUGINS })}
+      initialValue={initialValue}
+    >
       {children}
     </Plate>
   );
@@ -82,9 +89,9 @@ describe('ColorPickerToolbarDropdown', () => {
           />
         );
 
-        renderWithPlate(<Component />);
+        editor = createTEditor() as any;
 
-        editor = getPlateEditorRef()!;
+        renderWithPlate(<Component />, { editor });
 
         // select the entire text
         select(editor, {

@@ -10,36 +10,29 @@ import {
   useEventPlateId,
   usePlateEditorState,
   Value,
-  withPlateEventProvider,
 } from '@udecode/plate-core';
 import {
   BlockToolbarButton,
   ToolbarButtonProps,
 } from '@udecode/plate-ui-toolbar';
 
-export const CodeBlockToolbarButton = withPlateEventProvider(
-  <V extends Value>({
-    id,
-    options,
-    ...props
-  }: ToolbarButtonProps & {
-    options?: CodeBlockInsertOptions<V>;
-  }) => {
-    id = useEventPlateId(id);
-    const editor = usePlateEditorState(id)!;
-    if (!editor) {
-      return null;
-    }
+export const CodeBlockToolbarButton = <V extends Value>({
+  id,
+  options,
+  ...props
+}: ToolbarButtonProps & {
+  options?: CodeBlockInsertOptions<V>;
+}) => {
+  const editor = usePlateEditorState(useEventPlateId(id));
 
-    return (
-      <BlockToolbarButton
-        type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
-        onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
-          insertNodesOptions: { select: true },
-          ...options,
-        })}
-        {...props}
-      />
-    );
-  }
-);
+  return (
+    <BlockToolbarButton
+      type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
+      onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
+        insertNodesOptions: { select: true },
+        ...options,
+      })}
+      {...props}
+    />
+  );
+};

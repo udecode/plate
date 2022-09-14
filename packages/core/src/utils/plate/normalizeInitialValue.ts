@@ -1,7 +1,6 @@
 import { cloneDeep } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import { Value } from '../../slate/index';
-import { getPlateActions } from '../../stores/index';
 import { PlateEditor } from '../../types/index';
 
 /**
@@ -22,7 +21,6 @@ export const normalizeInitialValue = <V extends Value>(
   });
 
   if (!isEqual(value, normalizedValue)) {
-    getPlateActions(editor.id).value(normalizedValue);
     return normalizedValue;
   }
 };

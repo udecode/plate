@@ -1,6 +1,11 @@
 import React from 'react';
 import { Link } from '@styled-icons/material/Link';
-import { createLinkPlugin, LinkToolbarButton, Plate } from '@udecode/plate';
+import {
+  createLinkPlugin,
+  LinkToolbarButton,
+  Plate,
+  PlateProvider,
+} from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -17,15 +22,11 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
     <Toolbar>
       <LinkToolbarButton icon={<Link />} />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={linkValue}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );

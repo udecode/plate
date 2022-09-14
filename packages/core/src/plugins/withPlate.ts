@@ -21,7 +21,7 @@ export const withPlate = <
 >(
   e: E,
   {
-    id = 'main',
+    id,
     plugins = [],
     disableCorePlugins,
   }: WithPlateOptions<V, E & PlateEditor<V>> = {}

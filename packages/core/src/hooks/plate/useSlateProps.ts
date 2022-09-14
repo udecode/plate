@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
-import { PlateProps } from '../../components/plate/Plate';
 import { Value } from '../../slate/editor/TEditor';
 import { SlateProps } from '../../slate/types/SlateProps';
 import {
-  getPlateActions,
+  PlateId,
+  usePlateActions,
   usePlateSelectors,
-} from '../../stores/plate/platesStore';
+} from '../../stores/index';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { pipeOnChange } from '../../utils/plate/pipeOnChange';
 
@@ -14,36 +14,33 @@ import { pipeOnChange } from '../../utils/plate/pipeOnChange';
  */
 export const useSlateProps = <V extends Value>({
   id,
-}: Pick<PlateProps<V>, 'id'> = {}): Omit<SlateProps, 'children'> => {
+}: {
+  id?: PlateId;
+}): Omit<SlateProps, 'children'> => {
   const editor = usePlateEditorRef(id);
-  const keyPlugins = usePlateSelectors(id).keyPlugins();
   const value = usePlateSelectors(id).value();
-  const isReady = usePlateSelectors(id).isReady();
   const onChangeProp = usePlateSelectors(id).onChange();
+  const setValue = usePlateActions(id).value();
 
   const onChange = useCallback(
     (newValue: V) => {
-      if (!editor || !keyPlugins) return;
-
       const eventIsHandled = pipeOnChange(editor)(newValue);
 
       if (!eventIsHandled) {
         onChangeProp?.(newValue);
       }
 
-      getPlateActions(id).value(newValue);
+      setValue(newValue);
     },
-    [onChangeProp, editor, id, keyPlugins]
+    [editor, setValue, onChangeProp]
   );
 
   return useMemo(() => {
-    if (!editor || !isReady) return {};
-
     return {
       key: editor.key,
       editor,
       onChange,
       value,
     };
-  }, [editor, isReady, onChange, value]);
+  }, [editor, onChange, value]);
 };

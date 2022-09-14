@@ -26,7 +26,6 @@ import {
   KEY_DESERIALIZE_HTML,
 } from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
 import { Value } from '../../slate/editor/TEditor';
-import { getPlateActions } from '../../stores/plate/platesStore';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
@@ -114,6 +113,4 @@ export const setPlatePlugins = <V extends Value>(
       flattenDeepPlugins<V>(editor, newPlugins as any);
     }
   });
-
-  getPlateActions(editor.id).incrementKey('keyPlugins');
 };

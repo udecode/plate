@@ -4,7 +4,7 @@ import { getPluginType, MARK_KBD, MarkToolbarButton } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const KbdToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <MarkToolbarButton

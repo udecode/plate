@@ -1,5 +1,5 @@
 export const basicMarksAppCode = `import React from 'react';
-import { createBasicMarksPlugin, Plate } from '@udecode/plate';
+import { createBasicMarksPlugin, Plate, PlateProvider } from '@udecode/plate';
 import { basicElementsPlugins } from './basic-elements/basicElementsPlugins';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
@@ -16,17 +16,13 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> initialValue={basicMarksValue} plugins={plugins}>
     <Toolbar>
       <BasicMarkToolbarButtons />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      initialValue={basicMarksValue}
-      plugins={plugins}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );
 `;
 

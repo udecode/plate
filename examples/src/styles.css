@@ -12,7 +12,7 @@ td {
 }
 
 [data-slate-editor] {
-  padding: 50px;
+  padding: 84px 50px 50px;
   position: relative;
 }
 
