@@ -1,5 +1,7 @@
 # @udecode/plate-selection
 
+## 17.0.0
+
 ## 16.8.1
 
 ### Patch Changes
