@@ -8,6 +8,7 @@ export const floatingLinkStore = createStore('floatingLink')({
   updated: false,
   url: '',
   text: '',
+  newTab: false,
   mode: '' as FloatingLinkMode,
   isEditing: false,
 })
@@ -15,6 +16,7 @@ export const floatingLinkStore = createStore('floatingLink')({
     reset: () => {
       set.url('');
       set.text('');
+      set.newTab(false);
       set.mode('');
       set.isEditing(false);
     },

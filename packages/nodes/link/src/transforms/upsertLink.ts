@@ -46,7 +46,13 @@ export type UpsertLinkOptions<
  */
 export const upsertLink = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, text, insertTextInLink, insertNodesOptions }: UpsertLinkOptions<V>
+  {
+    url,
+    text,
+    target,
+    insertTextInLink,
+    insertNodesOptions,
+  }: UpsertLinkOptions<V>
 ) => {
   const at = editor.selection;
 
@@ -74,19 +80,19 @@ export const upsertLink = <V extends Value>(
     text = url;
   }
 
-  // edit the link url
+  // edit the link url and/or target
   if (linkAbove) {
-    if (url !== linkAbove[0]?.url) {
+    if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
       setNodes<TLinkElement>(
         editor,
-        { url },
+        { url, target },
         {
           at: linkAbove[1],
         }
       );
     }
 
-    upsertLinkText(editor, { url, text });
+    upsertLinkText(editor, { url, text, target });
 
     return true;
   }
@@ -123,9 +129,10 @@ export const upsertLink = <V extends Value>(
 
     wrapLink(editor, {
       url,
+      target,
     });
 
-    upsertLinkText(editor, { url, text });
+    upsertLinkText(editor, { url, target, text });
 
     return true;
   }
@@ -154,6 +161,7 @@ export const upsertLink = <V extends Value>(
     {
       ...props,
       url,
+      target,
       children: [
         {
           ...leaf,
