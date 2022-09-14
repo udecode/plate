@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useDeepCompareEffect } from 'use-deep-compare';
 import { Value } from '../../slate/index';
 import { usePlateActions } from '../../stores/index';
 import { PlateEditor, PlateStoreState } from '../../types/index';
@@ -14,7 +13,6 @@ export type UsePlateStoreEffectsProps<
     | 'id'
     | 'value'
     | 'onChange'
-    | 'editableProps'
     | 'decorate'
     | 'renderElement'
     | 'renderLeaf'
@@ -29,7 +27,6 @@ export const usePlateStoreEffects = <
   id,
   value: valueProp,
   onChange,
-  editableProps,
   plugins,
   decorate,
   renderElement,
@@ -38,7 +35,6 @@ export const usePlateStoreEffects = <
   const actions = usePlateActions<V, E>(id);
   const setValue = actions.value();
   const setOnChange = actions.onChange();
-  const setEditableProps = actions.editableProps();
   const setDecorate = actions.decorate();
   const setRenderElement = actions.renderElement();
   const setRenderLeaf = actions.renderLeaf();
@@ -57,13 +53,6 @@ export const usePlateStoreEffects = <
       setOnChange(onChange);
     }
   }, [onChange, setOnChange]);
-
-  // Store editableProps
-  useDeepCompareEffect(() => {
-    if (!isUndefined(editableProps)) {
-      setEditableProps(editableProps);
-    }
-  }, [editableProps, setEditableProps]);
 
   // Store decorate
   useEffect(() => {

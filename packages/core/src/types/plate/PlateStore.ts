@@ -40,11 +40,6 @@ export type PlateStoreState<
 > &
   Nullable<{
     /**
-     * The props for the `Editable` component.
-     */
-    editableProps: TEditableProps<V>;
-
-    /**
      * Whether `Editable` is rendered so slate DOM is resolvable.
      */
     isRendered: boolean;

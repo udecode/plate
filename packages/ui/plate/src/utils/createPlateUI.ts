@@ -159,7 +159,7 @@ export const createPlateUI = <T extends string = string>(
       },
     }),
     [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
-      // as: 'p',
+      as: 'p',
       styles: {
         root: tw`m-0 py-1 px-0`,
       },

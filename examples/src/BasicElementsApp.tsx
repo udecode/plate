@@ -2,7 +2,6 @@ import React from 'react';
 import {
   createBasicElementsPlugin,
   createExitBreakPlugin,
-  createPlateUI,
   createResetNodePlugin,
   createSoftBreakPlugin,
   Plate,
@@ -11,6 +10,7 @@ import {
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
@@ -25,7 +25,7 @@ const plugins = createMyPlugins(
     createExitBreakPlugin(exitBreakPlugin),
   ],
   {
-    components: createPlateUI(),
+    components: plateUI,
   }
 );
 

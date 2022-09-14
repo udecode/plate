@@ -23,7 +23,6 @@ export const createPlateStore = <
   E extends PlateEditor<V> = PlateEditor<V>
 >({
   decorate = null,
-  editableProps = null,
   editor = null as any,
   id,
   isRendered = false,
@@ -41,7 +40,6 @@ export const createPlateStore = <
   createAtomStore(
     {
       decorate,
-      editableProps,
       editor,
       id,
       isRendered,

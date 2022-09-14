@@ -44,11 +44,9 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
-  ELEMENT_CODE_BLOCK,
   MentionCombobox,
   Plate,
   PlateProvider,
-  StyledElement,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import {
@@ -85,7 +83,6 @@ import { ToolbarButtons } from './ToolbarButtons';
 
 let components = createPlateUI({
   [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-  [ELEMENT_CODE_BLOCK]: StyledElement,
   // customize your components by plugin key
 });
 components = withStyledPlaceHolders(components);
