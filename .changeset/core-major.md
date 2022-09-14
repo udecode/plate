@@ -56,7 +56,7 @@
 - renamed:
   - `SCOPE_PLATE` to `PLATE_SCOPE`
   - `getEventEditorId` to `getEventPlateId`
-  - to `useResetPlateEditor`
+  - `getPlateActions().resetEditor` to `useResetPlateEditor()`
 - removed:
   - `plateIdAtom`
   - `usePlateId` for `usePlateSelectors().id()`
