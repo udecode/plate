@@ -74,7 +74,7 @@ export const usePlateActions = <
 >(
   id?: PlateId
 ): SetRecord<PlateStoreState<V, E>> => usePlateStore(id).set as any;
-export const usePlateState = <
+export const usePlateStates = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(

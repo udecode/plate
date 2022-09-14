@@ -35,10 +35,7 @@ export default () => {
   const [disabled, setDisabled] = useState(false);
 
   return (
-    <PlateProvider
-      initialValue={plainTextValue}
-      disableCorePlugins={{ eventEditor: true }}
-    >
+    <PlateProvider initialValue={plainTextValue}>
       <Buttons disabled={disabled} setDisabled={setDisabled} />
 
       <p />

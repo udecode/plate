@@ -41,7 +41,7 @@ const plugins = createPlugins<MyValue>(
 );
 
 export default () => (
-  <Plate
+  <Plate<MyValue>
     editableProps={editableProps}
     initialValue={[...basicElementsValue, ...basicMarksValue]}
     plugins={plugins}

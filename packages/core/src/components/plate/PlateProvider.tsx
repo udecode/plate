@@ -11,7 +11,7 @@ import {
   getPluginType,
   normalizeInitialValue,
 } from '../../utils/index';
-import { JotaiProvider, Scope } from '../../utils/misc/jotai';
+import { JotaiProvider } from '../../utils/misc/jotai';
 import { withHOC } from '../../utils/react/withHOC';
 import {
   PlateProviderEffects,
@@ -35,8 +35,6 @@ export interface PlateProviderProps<
    * @default false
    */
   normalizeInitialValue?: boolean;
-
-  scope?: Scope;
 }
 
 export const PlateProvider = <

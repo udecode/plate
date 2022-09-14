@@ -7,7 +7,7 @@ import { createEditableVoidPlugin } from './editable-voids/createEditableVoidPlu
 import { EditableVoidElement } from './editable-voids/EditableVoidElement';
 import { IFrame } from './iframe/IFrame';
 import { iframeValue } from './iframe/iframeValue';
-import { createMyPlugins } from './typescript/plateTypes';
+import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
@@ -23,7 +23,7 @@ const plugins = createMyPlugins(
 
 export default () => (
   <IFrame>
-    <Plate
+    <Plate<MyValue>
       editableProps={editableProps}
       plugins={plugins}
       initialValue={iframeValue}

@@ -9,6 +9,7 @@ import {
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
   Plate,
+  PlateProvider,
   StyledElement,
   toggleIndentList,
   ToolbarButton,
@@ -83,18 +84,17 @@ const ToolbarButtons = () => {
 };
 
 export default () => (
-  <>
+  <PlateProvider<MyValue>
+    plugins={plugins}
+    initialValue={indentListValue}
+    normalizeInitialValue
+  >
     <Toolbar>
       <ToolbarButtons />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={indentListValue}
-      normalizeInitialValue
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );
 `;
 

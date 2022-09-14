@@ -70,7 +70,7 @@ import {
   usePlateEditorRef,
   usePlateEditorState,
   usePlateSelectors,
-  usePlateState,
+  usePlateStates,
   WithOverride,
 } from '@udecode/plate';
 // import {
@@ -348,8 +348,8 @@ export const useMyPlateSelectors = (id?: PlateId) =>
   usePlateSelectors<MyValue, MyEditor>(id);
 export const useMyPlateActions = (id?: PlateId) =>
   usePlateActions<MyValue, MyEditor>(id);
-export const useMyPlateState = (id?: PlateId) =>
-  usePlateState<MyValue, MyEditor>(id);
+export const useMyPlateStates = (id?: PlateId) =>
+  usePlateStates<MyValue, MyEditor>(id);
 
 /**
  * Utils
