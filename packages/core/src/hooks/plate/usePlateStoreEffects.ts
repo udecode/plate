@@ -1,24 +1,45 @@
 import { useEffect } from 'react';
-import { Value } from '../../slate/index';
-import { usePlateActions } from '../../stores/index';
-import { PlateEditor, PlateStoreState } from '../../types/index';
-import { isUndefined } from '../../utils/misc/type-utils';
+import { TEditableProps, Value } from '../../slate/index';
+import { usePlateStates } from '../../stores/index';
+import { Nullable, PlateEditor, PlateStoreState } from '../../types/index';
+import { isUndefined } from '../../utils/index';
 
 export type UsePlateStoreEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
-> = Partial<
-  Pick<
-    PlateStoreState<V, E>,
-    | 'id'
-    | 'value'
-    | 'onChange'
-    | 'decorate'
-    | 'renderElement'
-    | 'renderLeaf'
-    | 'plugins'
-  >
->;
+> = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value' | 'plugins'>> &
+  Nullable<{
+    /**
+     * Controlled callback called when the editor state changes.
+     */
+    onChange?: (value: V) => void;
+
+    decorate?: TEditableProps<V>['decorate'];
+    renderElement?: TEditableProps<V>['renderElement'];
+    renderLeaf?: TEditableProps<V>['renderLeaf'];
+  }>;
+
+/**
+ * A hook to update the store when the props changes.
+ * Undefined props are ignored.
+ */
+const usePlateStoreOnChange = ({
+  setState,
+  state,
+  nextState,
+  nextStateValue = nextState,
+}: {
+  state: any;
+  setState: (v: any) => void;
+  nextState: any;
+  nextStateValue?: any;
+}) => {
+  useEffect(() => {
+    if (nextState !== state && !isUndefined(nextState)) {
+      setState(nextStateValue);
+    }
+  }, [setState, state, nextState, nextStateValue]);
+};
 
 export const usePlateStoreEffects = <
   V extends Value = Value,
@@ -26,59 +47,59 @@ export const usePlateStoreEffects = <
 >({
   id,
   value: valueProp,
-  onChange,
-  plugins,
-  decorate,
-  renderElement,
-  renderLeaf,
+  onChange: onChangeProp,
+  plugins: pluginsProp,
+  decorate: decorateProp,
+  renderElement: renderElementProp,
+  renderLeaf: renderLeafProp,
 }: UsePlateStoreEffectsProps<V, E>) => {
-  const actions = usePlateActions<V, E>(id);
-  const setValue = actions.value();
-  const setOnChange = actions.onChange();
-  const setDecorate = actions.decorate();
-  const setRenderElement = actions.renderElement();
-  const setRenderLeaf = actions.renderLeaf();
-  const setPlugins = actions.plugins();
+  const states = usePlateStates<V, E>(id);
+  const [value, setValue] = states.value();
+  const [decorate, setDecorate] = states.decorate();
+  const [renderElement, setRenderElement] = states.renderElement();
+  const [renderLeaf, setRenderLeaf] = states.renderLeaf();
+  const [plugins, setPlugins] = states.plugins();
+  const [onChange, setOnChange] = states.onChange();
 
   // Store Slate.value
-  useEffect(() => {
-    if (!isUndefined(valueProp)) {
-      valueProp && setValue(valueProp);
-    }
-  }, [valueProp, setValue]);
+  usePlateStoreOnChange({
+    state: value,
+    setState: setValue,
+    nextState: valueProp,
+  });
 
-  // Store onChange
-  useEffect(() => {
-    if (!isUndefined(onChange)) {
-      setOnChange(onChange);
-    }
-  }, [onChange, setOnChange]);
+  usePlateStoreOnChange({
+    state: plugins,
+    setState: setPlugins,
+    nextState: pluginsProp,
+    nextStateValue: pluginsProp ?? [],
+  });
 
-  // Store decorate
-  useEffect(() => {
-    if (!isUndefined(decorate)) {
-      setDecorate(decorate);
-    }
-  }, [decorate, setDecorate]);
+  usePlateStoreOnChange({
+    state: onChange?.fn,
+    setState: setOnChange,
+    nextState: onChangeProp,
+    nextStateValue: onChangeProp ? { fn: onChangeProp } : null,
+  });
 
-  // Store plugins
-  useEffect(() => {
-    if (!isUndefined(renderElement)) {
-      setRenderElement(renderElement);
-    }
-  }, [renderElement, setRenderElement]);
+  usePlateStoreOnChange({
+    state: decorate?.fn,
+    setState: setDecorate,
+    nextState: decorateProp,
+    nextStateValue: decorateProp ? { fn: decorateProp } : null,
+  });
 
-  // Store plugins
-  useEffect(() => {
-    if (!isUndefined(renderLeaf)) {
-      setRenderLeaf(renderLeaf);
-    }
-  }, [renderLeaf, setRenderLeaf]);
+  usePlateStoreOnChange({
+    state: renderElement?.fn,
+    setState: setRenderElement,
+    nextState: renderElementProp,
+    nextStateValue: renderElementProp ? { fn: renderElementProp } : null,
+  });
 
-  // Store plugins
-  useEffect(() => {
-    if (!isUndefined(plugins)) {
-      setPlugins(plugins);
-    }
-  }, [plugins, setPlugins]);
+  usePlateStoreOnChange({
+    state: renderLeaf?.fn,
+    setState: setRenderLeaf,
+    nextState: renderLeafProp,
+    nextStateValue: renderLeafProp ? { fn: renderLeafProp } : null,
+  });
 };
