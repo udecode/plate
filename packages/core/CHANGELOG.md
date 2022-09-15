@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 17.0.1
+
+### Patch Changes
+
+- [#1878](https://github.com/udecode/plate/pull/1878) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: `Maximum call stack size exceeded` after many changes
+  - Fix: Plate props that are functions are now working (e.g. `onChange`)
+
 ## 17.0.0
 
 ### Major Changes
@@ -19,9 +27,7 @@
       - `enabled`, use conditional rendering instead
       - `isReady`, no point anymore as it's now directly ready
     - `useEventPlateId` is still used to get the last focused editor id.
-    -   Functions are stored in an object `{ fn: <here> }`
-                - `const setOnChange = usePlateActions(id).onChange()`
-                - `setOnChange({ fn: newOnChange })`
+    - Functions are stored in an object `{ fn: <here> }` - `const setOnChange = usePlateActions(id).onChange()` - `setOnChange({ fn: newOnChange })`
   - `Plate`
     - if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
     - if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
