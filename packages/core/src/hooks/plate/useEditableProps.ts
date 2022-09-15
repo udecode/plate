@@ -18,9 +18,9 @@ export const useEditableProps = ({
   const selectors = usePlateSelectors(id);
   const keyPlugins = selectors.keyPlugins();
   const keyDecorate = selectors.keyDecorate();
-  const storeDecorate = selectors.decorate();
-  const storeRenderLeaf = selectors.renderLeaf();
-  const storeRenderElement = selectors.renderElement();
+  const storeDecorate = selectors.decorate()?.fn;
+  const storeRenderLeaf = selectors.renderLeaf()?.fn;
+  const storeRenderElement = selectors.renderElement()?.fn;
 
   const isValid = editor && !!keyPlugins;
 

@@ -111,21 +111,31 @@ export const createAtomStore = <T, IT, N extends string = ''>(
   const api: any = {
     [useStoreIndex]: (scope?: Scope) => {
       if (scope) {
-        Object.keys(getAtoms).forEach((key) => {
-          const get = getAtoms[key];
-          getAtoms[key] = (_scope?: Scope) =>
+        const getAtomsHook = { ...getAtoms };
+        const setAtomsHook = { ...setAtoms };
+        const useAtomsHook = { ...useAtoms };
+
+        Object.keys(getAtomsHook).forEach((key) => {
+          const get = getAtomsHook[key];
+          getAtomsHook[key] = (_scope?: Scope) =>
             get(_scope ?? scope ?? storeScope);
         });
-        Object.keys(setAtoms).forEach((key) => {
-          const set = setAtoms[key];
-          setAtoms[key] = (_scope?: Scope) =>
+        Object.keys(setAtomsHook).forEach((key) => {
+          const set = setAtomsHook[key];
+          setAtomsHook[key] = (_scope?: Scope) =>
             set(_scope ?? scope ?? storeScope);
         });
-        Object.keys(useAtoms).forEach((key) => {
-          const use = useAtoms[key];
-          useAtoms[key] = (_scope?: Scope) =>
+        Object.keys(useAtomsHook).forEach((key) => {
+          const use = useAtomsHook[key];
+          useAtomsHook[key] = (_scope?: Scope) =>
             use(_scope ?? scope ?? storeScope);
         });
+
+        return {
+          get: getAtomsHook,
+          set: setAtomsHook,
+          use: useAtomsHook,
+        };
       }
 
       return {

@@ -105,14 +105,14 @@ export const PlateProvider = <
   return (
     <JotaiProvider
       initialValues={[
-        [plateStore.atom.decorate, decorate],
         [plateStore.atom.id, id],
         [plateStore.atom.editor, editor],
-        [plateStore.atom.onChange, onChange],
         [plateStore.atom.plugins, editor.plugins],
-        [plateStore.atom.renderElement, renderElement],
-        [plateStore.atom.renderLeaf, renderLeaf],
         [plateStore.atom.value, value],
+        [plateStore.atom.decorate, { fn: decorate }],
+        [plateStore.atom.onChange, { fn: onChange }],
+        [plateStore.atom.renderElement, { fn: renderElement }],
+        [plateStore.atom.renderLeaf, { fn: renderLeaf }],
       ]}
       scope={id}
     >

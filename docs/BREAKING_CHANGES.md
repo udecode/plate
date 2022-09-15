@@ -19,6 +19,9 @@
             -   `enabled`, use conditional rendering instead
             -   `isReady`, no point anymore as it's now directly ready
         -   `useEventPlateId` is still used to get the last focused editor id.
+        -   Functions are stored in an object `{ fn: <here> }`
+            - `const setOnChange = usePlateActions(id).onChange()`
+            - `setOnChange({ fn: newOnChange })`
     -   `Plate`
         -   if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
         -   if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
