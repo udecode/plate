@@ -21,7 +21,7 @@ describe('useEditableProps', () => {
 
       render(<Plate plugins={plugins} />);
 
-      expect(decorate).toBeCalledTimes(6);
+      expect(decorate).toBeCalledTimes(3);
     });
   });
 

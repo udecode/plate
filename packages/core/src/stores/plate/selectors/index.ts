@@ -4,5 +4,4 @@
 
 export * from './usePlateEditorRef';
 export * from './usePlateEditorState';
-export * from './usePlatePlugins';
 export * from './usePlateSelection';
