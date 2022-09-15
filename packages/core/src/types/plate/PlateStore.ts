@@ -2,14 +2,14 @@ import { Value } from '../../slate/editor/TEditor';
 import { TEditableProps } from '../../slate/index';
 import { PlateId } from '../../stores/index';
 import { Nullable } from '../misc/Nullable';
-import { PlatePlugin, PluginOptions } from '../plugin/PlatePlugin';
+import {
+  PlatePlugin,
+  PluginOptions,
+  WithPlatePlugin,
+} from '../plugin/PlatePlugin';
 import { PlateEditor } from './PlateEditor';
 
-export type PlateChangeKey =
-  | 'keyEditor'
-  | 'keyPlugins'
-  | 'keySelection'
-  | 'keyDecorate';
+export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';
 
 export type PlateStoreState<
   V extends Value = Value,
@@ -28,7 +28,15 @@ export type PlateStoreState<
    */
   editor: E;
 
-  plugins: PlatePlugin<PluginOptions, V, E>[];
+  /**
+   * Plugins prop passed to `Plate`.
+   */
+  rawPlugins: PlatePlugin<PluginOptions, V, E>[];
+
+  /**
+   * Flattened plugins.
+   */
+  plugins: WithPlatePlugin<PluginOptions, V, E>[];
 
   /**
    * Value of the editor.
@@ -45,11 +53,6 @@ export type PlateStoreState<
    * A random key updated on each editor change.
    */
   keyEditor: string;
-
-  /**
-   * A random key updated on each editor.plugins change.
-   */
-  keyPlugins: string;
 
   /**
    * A random key updated on each editor.selection change.

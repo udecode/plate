@@ -20,9 +20,8 @@ export const EditorRefPluginEffect = ({
 };
 
 export const EditorRefEffect = ({ id }: { id?: PlateId }) => {
-  const editor = useEditorRef();
-  usePlateSelectors(id).keyPlugins();
   const setIsRendered = usePlateActions(id).isRendered();
+  const plugins = usePlateSelectors(id).plugins();
 
   useEffect(() => {
     setIsRendered(true);
@@ -34,7 +33,7 @@ export const EditorRefEffect = ({ id }: { id?: PlateId }) => {
 
   return (
     <>
-      {editor.plugins.map((plugin) => (
+      {plugins.map((plugin) => (
         <EditorRefPluginEffect key={plugin.key} plugin={plugin} />
       ))}
     </>
