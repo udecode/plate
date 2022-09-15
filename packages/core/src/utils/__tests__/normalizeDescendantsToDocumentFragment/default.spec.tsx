@@ -34,6 +34,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     'should add a blank leaf to blocks without children',
     ({ input, output }: any) => {
       const editor = createPlateUIEditor();
+
       const result = normalizeDescendantsToDocumentFragment(editor, {
         descendants: input,
       });

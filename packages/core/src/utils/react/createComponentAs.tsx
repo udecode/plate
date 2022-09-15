@@ -1,6 +1,6 @@
 import React, { forwardRef, ReactElement } from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { AsProps, Component, Props } from '../../types/index';
+import { AsProps, Children, Component, Props } from '../../types/index';
 
 /**
  * Creates a type-safe component with the `as` prop and `React.forwardRef`.
@@ -24,7 +24,7 @@ import { AsProps, Component, Props } from '../../types/index';
  * <Component as="button" customProp />
  */
 export const createComponentAs = <O extends AsProps>(
-  render: (props: Omit<Props<O>, 'asChild'>) => ReactElement | null
+  render: (props: Omit<Props<O>, 'asChild'>) => ReactElement | Children | null
 ) => {
   const Role = ({ asChild, ...props }: Props<O>, ref: React.Ref<any>) => {
     const Comp: any = asChild ? Slot : render;

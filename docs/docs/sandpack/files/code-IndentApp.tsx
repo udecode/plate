@@ -1,5 +1,5 @@
 export const indentAppCode = `import React from 'react';
-import { createIndentPlugin, Plate } from '@udecode/plate';
+import { createIndentPlugin, Plate, PlateProvider } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -17,17 +17,13 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> initialValue={indentValue} plugins={plugins}>
     <Toolbar>
       <IndentToolbarButtons />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={indentValue}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );
 `;
 

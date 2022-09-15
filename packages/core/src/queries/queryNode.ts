@@ -8,9 +8,25 @@ import { QueryNodeOptions } from '../types/slate/QueryNodeOptions';
  */
 export const queryNode = <N extends TNode>(
   entry?: TNodeEntry<N>,
-  { filter, allow, exclude }: QueryNodeOptions = {}
+  { filter, allow, exclude, level, maxLevel }: QueryNodeOptions = {}
 ) => {
   if (!entry) return false;
+
+  const [node, path] = entry;
+
+  if (level) {
+    const levels = castArray(level);
+
+    if (!levels.includes(path.length)) {
+      return false;
+    }
+  }
+
+  if (maxLevel) {
+    if (path.length > maxLevel) {
+      return false;
+    }
+  }
 
   if (filter && !filter(entry)) {
     return false;
@@ -19,7 +35,7 @@ export const queryNode = <N extends TNode>(
   if (allow) {
     const allows = castArray(allow);
 
-    if (allows.length && !allows.includes(entry[0].type as any)) {
+    if (allows.length && !allows.includes(node.type as any)) {
       return false;
     }
   }
@@ -27,7 +43,7 @@ export const queryNode = <N extends TNode>(
   if (exclude) {
     const excludes = castArray(exclude);
 
-    if (excludes.length && excludes.includes(entry[0].type as any)) {
+    if (excludes.length && excludes.includes(node.type as any)) {
       return false;
     }
   }

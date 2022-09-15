@@ -14,7 +14,7 @@ import {
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const MarkBalloonToolbar = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   const arrow = false;
   const theme = 'dark';

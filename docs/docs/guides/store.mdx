@@ -3,36 +3,41 @@ title: Store
 slug: /store
 ---
 
-`Plate` is using a [zustood](https://github.com/udecode/zustood) store for each editor, stored by **id**.
+`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
 
-If rendering only one editor, the store `id` is optional, the default being `'main'`.
+:::note
+
+To use the store hooks in a component, it needs to be wrapped by `PlateProvider` or `Plate`.
+
+:::
 
 # Plate Store
 
-Plate Store is a zustood store that implements the following [state](#state):
+Plate Store is a jotai store that implements the following [state](#state):
 
 ## State
 
 ### [`decorate`](/docs/plate#editable-decorate)
 ### [`editableProps`](/docs/plate#editable-editableprops)
 ### [`editor`](/docs/plate#editor)
-### [`enabled`](/docs/plate#enabled)
 
 ### `isRendered`
+
+`boolean`
 
 - Whether `Editable` is rendered so slate DOM is resolvable.
 
 ### `keyEditor`
 
-- A key that is incremented on each editor change.
+- A random key updated on each editor change.
 
 ### `keyPlugins`
 
-- A key that is incremented on each editor.plugins change.
+- A random key updated on each `editor.plugins` change.
 
 ### `keySelection`
 
-- A key that is incremented on each editor.selection change.
+- A random key updated on each `editor.selection` change.
 
 ### [`onChange`](/docs/plate#slate-onchange)
 ### [`plugins`](/docs/plate#plugins)
@@ -40,70 +45,32 @@ Plate Store is a zustood store that implements the following [state](#state):
 ### [`renderLeaf`](/docs/plate#editable-renderleaf)
 ### [`value`](/docs/plate#value)
 
-## Hook Selectors
+## Selectors
 
 - Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
-- Example: `usePlateSelectors(id).value()` will subscribe to `value` changes.
-- See [zustood hooks](https://github.com/udecode/zustood#hooks) 
-
-## Getters
-
-- Use `getPlateSelectors(id).<state property>()` when you don't need to subscribe to a value.
-- Example `getPlateSelectors(id).value()` will get `value`. 
-- See [zustood getters](https://github.com/udecode/zustood#getters)
+- Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
 ## Actions
 
-- `Plate` subscribes to the store state so you can update the store state in a flexible way.
-- Use `getPlateActions(id).<state property>(<new value>)` when you need to update the value of a store property.
-- Example: `getPlateActions(id).value(<new value>)` will update `value`.
-- See [zustood actions](https://github.com/udecode/zustood#actions) 
+- Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
+- Example: `const setValue = usePlateActions(id).value()`.
+- It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
 
-### `redecorate()`
+## Actions
+
+- Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+- Example: `const [value, setValue] = usePlateStates(id).value()`.
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+
+
+### `useRedecorate()`
 
 - Redecorate the editor.
 
-### `resetEditor()`
+### `useResetEditor()`
 
 - Set a new editor with plate.
-- If you want to set your own editor, use `.editor(<value>)` instead
-
-## Provider
-
-### `PlateProvider`
-
-You can't access the store before it's initialized. Two ways of doing this:
-- Inside `Plate` component: the store is initialized, you can access it.
-- Outside `Plate` component (e.g. for a shared toolbar): the store is not initialized, you will need to render `PlateProvider` above your accessing component. 
-
-The only prop of `PlateProvider` is `id` which is the id of the store (defaults to `'main'`).
-
-### `withPlateProvider`
-
-- HOC that wraps your component with `PlateProvider`.
-- Usage: `withPlateProvider(<Component>, id)`
-
-# Plates Store
-
-This store is an object whose property keys are [editor ids](Plate#id) and whose property values are zustood stores (it's a "store of stores"), where the state implements [PlateState](#state).
-
-In other words, `platesStore` is a store that can store many plate stores by id, looking to this:
-
-```bash
-<zustood store>({
-  'main': <zustood store>({
-    id: 'main',
-    editor: ...,
-  }),
-  'other': <zustood store>({
-    id: 'other',
-    editor: ...,
-  }),
-  ...
-})
-```
-
-`Plate` is taking care of the store initialization and updates. You will not need to use this store directly.
 
 
 # Event Editor Store
@@ -135,22 +102,9 @@ One of the core plugins of [Plate](Plate) will store the following events.
 - Example: `useEventEditorSelectors().focus()` will get the last focused editor id.
 - See [zustood hooks](https://github.com/udecode/zustood#hooks) 
 
-### `useEventEditorId`
-
-- Get last event editor id: focus, blur or last.
-
 ### `useEventPlateId`
 
-- Get the context plate id if called in a `PlateProvider`
-- If the latter is not defined, [useEventEditorId](#useeventeditorid) will be used.
+- Get the context plate id if called in a `PlateProvider`.
+- If not defined, it returns the last event editor id: focus, blur or last.
+- If not defined, `PLATE_SCOPE` is returned.
 
-## HOC
-
-### `PlateEventProvider`
-
-- `PlateProvider` where `id` is `useEventPlateId`
-
-### `withPlateEventProvider`
-
-- HOC that will add `PlateEventProvider` above a component.
-- Useful for toolbars shared between multiple editors. 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { render } from '@testing-library/react';
 import { isEqual, memoize } from 'lodash';
 import { isBlock } from '../../slate/editor/isBlock';
@@ -91,34 +91,6 @@ describe('Plate', () => {
       expect(editor.children).not.toStrictEqual([
         { children: [{ text: '' }], path: [0] },
       ]);
-    });
-  });
-
-  describe('adding a Plate instance', () => {
-    it('should render', () => {
-      const error = jest.spyOn(global.console, 'error');
-
-      const PlateContainer = () => {
-        const id = 'main';
-        const [count, setCount] = useState(1);
-
-        useEffect(() => {
-          setCount(count + 1);
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []);
-
-        return (
-          <>
-            {[...Array(count)].map((x, i) => (
-              <Plate key={`${id}-${i}`} id={`${id}-${i}`} />
-            ))}
-          </>
-        );
-      };
-
-      render(<PlateContainer />);
-
-      expect(error).not.toHaveBeenCalled();
     });
   });
 });

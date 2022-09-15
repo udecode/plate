@@ -19,11 +19,12 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   getPluginType,
+  useEventPlateId,
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const BasicElementToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef(useEventPlateId());
 
   return (
     <>

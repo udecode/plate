@@ -4,6 +4,7 @@ import {
   createSoftBreakPlugin,
   createTablePlugin,
   Plate,
+  PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
@@ -28,15 +29,11 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
     <Toolbar>
       <TableToolbarButtons />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={tableValue}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );

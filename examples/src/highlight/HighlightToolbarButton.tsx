@@ -8,7 +8,7 @@ import {
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const HighlightToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <MarkToolbarButton

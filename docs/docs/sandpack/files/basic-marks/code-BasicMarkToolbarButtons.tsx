@@ -20,7 +20,7 @@ import {
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const BasicMarkToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef();
 
   return (
     <>

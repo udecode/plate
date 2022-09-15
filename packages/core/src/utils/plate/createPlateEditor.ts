@@ -12,10 +12,29 @@ export interface CreatePlateEditorOptions<
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>
 > extends Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'> {
+  /**
+   * Initial editor (without `withPlate`).
+   */
   editor?: E;
+
+  /**
+   * Editor plugins.
+   */
   plugins?: PlatePlugin<PluginOptions, V>[];
+
+  /**
+   * Inject components into plugins.
+   */
   components?: Record<string, PlatePluginComponent>;
+
+  /**
+   * Override plugins by key.
+   */
   overrideByKey?: OverrideByKey<V>;
+
+  /**
+   * Normalize editor.
+   */
   normalizeInitialValue?: boolean;
 }
 
@@ -33,7 +52,7 @@ export const createPlateEditor = <
   plugins = [],
   components,
   overrideByKey,
-  normalizeInitialValue,
+  normalizeInitialValue: shouldNormalizeInitialValue,
   ...withPlateOptions
 }: CreatePlateEditorOptions<V, E> = {}): E & PlateEditor<V> => {
   plugins = createPlugins<V>(plugins, {
@@ -46,7 +65,7 @@ export const createPlateEditor = <
     ...withPlateOptions,
   }) as E & PlateEditor<V>;
 
-  if (normalizeInitialValue) {
+  if (shouldNormalizeInitialValue) {
     normalizeEditor(e, { force: true });
   }
 

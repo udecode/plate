@@ -1,5 +1,5 @@
 import React from 'react';
-import { createHighlightPlugin, Plate } from '@udecode/plate';
+import { createHighlightPlugin, Plate, PlateProvider } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -16,15 +16,11 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> initialValue={highlightValue} plugins={plugins}>
     <Toolbar>
       <HighlightToolbarButton />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={highlightValue}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );

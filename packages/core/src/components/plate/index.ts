@@ -3,11 +3,11 @@
  */
 
 export * from './DefaultLeaf';
-export * from './EditablePlugins';
 export * from './EditorRefEffect';
 export * from './EditorStateEffect';
 export * from './Plate';
-export * from './PlateEventProvider';
+export * from './PlateEditable';
 export * from './PlateProvider';
+export * from './PlateProviderEffects';
+export * from './PlateSlate';
 export * from './PlateTest';
-export * from './SlateChildren';

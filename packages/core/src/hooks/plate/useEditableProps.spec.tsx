@@ -1,8 +1,8 @@
 import React from 'react';
-import { act, render } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { Plate } from '../../components/index';
-import { getPlateActions } from '../../stores/index';
 import { PlatePlugin } from '../../types/index';
+import { useEditableProps } from './useEditableProps';
 
 describe('useEditableProps', () => {
   describe('default', () => {
@@ -21,31 +21,45 @@ describe('useEditableProps', () => {
 
       render(<Plate plugins={plugins} />);
 
-      expect(decorate).toBeCalledTimes(3);
-    });
-  });
-
-  describe('redecorate', () => {
-    it('should trigger decorate twice', () => {
-      const decorate = jest.fn();
-
-      const plugins: PlatePlugin[] = [
-        {
-          key: 'a',
-          decorate: () => () => {
-            decorate();
-            return [];
-          },
-        },
-      ];
-
-      render(<Plate plugins={plugins} />);
-
-      act(() => {
-        getPlateActions().redecorate();
-      });
-
       expect(decorate).toBeCalledTimes(6);
     });
   });
+
+  // describe('redecorate', () => {
+  //   it('should trigger decorate twice', () => {
+  //     const decorate = jest.fn();
+  //
+  //     const plugins: PlatePlugin[] = [
+  //       {
+  //         key: 'a',
+  //         decorate: () => () => {
+  //           decorate();
+  //           return [];
+  //         },
+  //       },
+  //     ];
+  //
+  //     const A = () => {
+  //       useEditableProps()
+  //
+  //       return null
+  //     }
+  //
+  //     const wrapper = ({ children }: any) => (
+  //       <PlateProvider plugins={plugins}><A />{children}</PlateProvider>
+  //     );
+  //
+  //     const { result } = renderHook(() => usePlateSelectors().value(), {
+  //       wrapper,
+  //     });
+  //
+  //     render(<Plate plugins={plugins} />);
+  //
+  //     act(() => {
+  //       getPlateActions().redecorate();
+  //     });
+  //
+  //     expect(decorate).toBeCalledTimes(6);
+  //   });
+  // });
 });

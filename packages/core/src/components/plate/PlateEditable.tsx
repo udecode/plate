@@ -1,29 +1,53 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, Ref } from 'react';
 import { Editable } from 'slate-react';
+import { useEditableProps, useEditorRef } from '../../hooks/index';
 import { TEditableProps, Value } from '../../slate/index';
-import { PlateEditor } from '../../types/index';
+import { PlateId } from '../../stores/index';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
-import { PlateProps } from './Plate';
 
-export const SlateChildren = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->({
+export interface PlateEditableExtendedProps {
+  id?: PlateId;
+
+  /**
+   * The children rendered inside `Slate`, after `Editable`.
+   */
+  children?: ReactNode;
+
+  /**
+   * Ref to the `Editable` component.
+   */
+  editableRef?: Ref<HTMLDivElement>;
+
+  /**
+   * The first children rendered inside `Slate`, before `Editable`.
+   * Slate DOM is not yet resolvable on first render, for that case use `children` instead.
+   */
+  firstChildren?: ReactNode;
+
+  /**
+   * Custom `Editable` node.
+   */
+  renderEditable?: (editable: ReactNode) => ReactNode;
+}
+
+export interface PlateEditableProps<V extends Value = Value>
+  extends Omit<TEditableProps<V>, 'id'>,
+    PlateEditableExtendedProps {}
+
+export const PlateEditable = <V extends Value = Value>({
   children,
   renderEditable,
   editableRef,
-  editableProps,
-  editor,
   firstChildren,
-}: Pick<
-  PlateProps<V, E>,
-  'children' | 'renderEditable' | 'editableRef' | 'firstChildren'
-> & {
-  editor: E;
-  editableProps?: TEditableProps;
-}) => {
+  ...props
+}: PlateEditableProps<V>) => {
+  const { id } = props;
+
+  const editor = useEditorRef();
   const { plugins } = editor;
+
+  const editableProps = useEditableProps(props as any);
 
   const editable = <Editable ref={editableRef} {...(editableProps as any)} />;
 
@@ -60,8 +84,8 @@ export const SlateChildren = <
 
       {renderEditable ? renderEditable(editable) : editable}
 
-      <EditorStateEffect id={editor.id} />
-      <EditorRefEffect id={editor.id} />
+      <EditorStateEffect id={id} />
+      <EditorRefEffect id={id} />
 
       {afterEditable}
 

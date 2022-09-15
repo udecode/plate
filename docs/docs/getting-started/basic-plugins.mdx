@@ -18,11 +18,12 @@ Let's use the basic element and basic mark plugins.
 `Plate` is using the `type` property so a plugin can render a node by type.
 :::
 
-import { BasicPluginsDefaultSandpack } from './BasicPluginsSandpack'
+
+import { BasicPluginsComponentsSandpack, BasicPluginsDefaultSandpack } from "./BasicPluginsSandpack";
 
 <BasicPluginsDefaultSandpack />
 
-Everything actually works, by looking at the debug value. However, we didn't provide any `components` to render, so it's using the default (unstyled) ones.
+Everything actually works by looking at the debug value. However, we didn't provide any `components` to render, so it's using the default (unstyled) ones.
 The default element component is a `div` and the default leaf component is a `span`.
 
 :::info
@@ -37,7 +38,7 @@ To plug all the components at once, you can use `createPlugins`:
 - use the first parameter for the `plugins` 
 - use the second parameter for the `components`. In the following example we'll use `createPlateUI()`, which returns all Plate components by plugin key.
 
-import { BasicPluginsComponentsSandpack } from './BasicPluginsSandpack'
+
 
 <BasicPluginsComponentsSandpack />
 

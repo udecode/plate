@@ -1,18 +1,19 @@
 import { memo, useEffect } from 'react';
 import { useEditorState } from '../../hooks/slate/useEditorState';
-import { getPlateActions } from '../../stores/plate/platesStore';
-import { PlateProps } from './Plate';
+import { PlateId, useUpdatePlateKey } from '../../stores/index';
 
-export const EditorStateEffect = memo(({ id }: Pick<PlateProps, 'id'>) => {
+export const EditorStateEffect = memo(({ id }: { id?: PlateId }) => {
   const editorState = useEditorState();
+  const updateKeyEditor = useUpdatePlateKey('keyEditor', id);
+  const updateKeySelection = useUpdatePlateKey('keySelection', id);
 
   useEffect(() => {
-    getPlateActions(id).incrementKey('keyEditor');
+    updateKeyEditor();
   });
 
   useEffect(() => {
-    getPlateActions(id).incrementKey('keySelection');
-  }, [editorState.selection, id]);
+    updateKeySelection();
+  }, [editorState.selection, updateKeySelection]);
 
   return null;
 });

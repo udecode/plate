@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "16.5.0",
+  "version": "17.0.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -24,6 +24,7 @@
     "clsx": "^1.1.1",
     "jotai": "^1.7.2",
     "lodash": "^4.17.21",
+    "nanoid": "^3.3.4",
     "react-hotkeys-hook": "^3.4.6",
     "use-deep-compare": "^1.1.0",
     "zustand": "^3.7.2"

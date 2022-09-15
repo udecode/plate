@@ -1,0 +1,47 @@
+---
+slug: /plugins/block-selection
+title: Block Selection
+---
+
+Adds a visual way of selecting blocks.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate
+# or
+npm install @udecode/plate-selection
+npm install @udecode/plate-node-id
+```
+
+### Usage
+
+
+
+import { BlockSelectionSandpack } from "./BlockSelectionSandpack";
+
+<BlockSelectionSandpack />
+
+### Styling
+
+You can style the selection area by using the `slate-selection-area` class:
+
+```css
+.slate-selection-area {
+  background: #4f90f22d;
+  border: 1px solid #4f90f2;
+}
+```
+
+### Options
+
+```tsx
+export interface BlockSelectionPlugin {
+  query?: QueryNodeOptions;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/block-selection/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

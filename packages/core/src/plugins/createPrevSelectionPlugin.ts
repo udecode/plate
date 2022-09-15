@@ -1,10 +1,10 @@
 import { TRange } from '../slate/index';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 
-export const KEY_SELECTION = 'selection';
+export const KEY_PREV_SELECTION = 'prevSelection';
 
-export const createSelectionPlugin = createPluginFactory({
-  key: KEY_SELECTION,
+export const createPrevSelectionPlugin = createPluginFactory({
+  key: KEY_PREV_SELECTION,
   handlers: {
     onKeyDown: (editor) => (e) => {
       editor.currentKeyboardEvent = e;

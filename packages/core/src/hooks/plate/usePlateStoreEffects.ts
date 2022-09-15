@@ -1,25 +1,23 @@
 import { useEffect } from 'react';
-import { useDeepCompareEffect } from 'use-deep-compare';
-import { PlateProps } from '../../components/plate/Plate';
-import { Value } from '../../slate/editor/TEditor';
-import { getPlateActions } from '../../stores/plate/platesStore';
-import { PlateEditor } from '../../types/plate/PlateEditor';
+import { Value } from '../../slate/index';
+import { usePlateActions } from '../../stores/index';
+import { PlateEditor, PlateStoreState } from '../../types/index';
 import { isUndefined } from '../../utils/misc/type-utils';
 
-export type UsePlateStoreEffects<
+export type UsePlateStoreEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
-> = Pick<
-  PlateProps<V, E>,
-  | 'id'
-  | 'value'
-  | 'enabled'
-  | 'onChange'
-  | 'editableProps'
-  | 'plugins'
-  | 'decorate'
-  | 'renderElement'
-  | 'renderLeaf'
+> = Partial<
+  Pick<
+    PlateStoreState<V, E>,
+    | 'id'
+    | 'value'
+    | 'onChange'
+    | 'decorate'
+    | 'renderElement'
+    | 'renderLeaf'
+    | 'plugins'
+  >
 >;
 
 export const usePlateStoreEffects = <
@@ -28,69 +26,59 @@ export const usePlateStoreEffects = <
 >({
   id,
   value: valueProp,
-  enabled: enabledProp = true,
   onChange,
-  editableProps,
   plugins,
   decorate,
   renderElement,
   renderLeaf,
-}: UsePlateStoreEffects<V, E>) => {
-  const plateActions = getPlateActions<V, E>(id);
+}: UsePlateStoreEffectsProps<V, E>) => {
+  const actions = usePlateActions<V, E>(id);
+  const setValue = actions.value();
+  const setOnChange = actions.onChange();
+  const setDecorate = actions.decorate();
+  const setRenderElement = actions.renderElement();
+  const setRenderLeaf = actions.renderLeaf();
+  const setPlugins = actions.plugins();
 
   // Store Slate.value
   useEffect(() => {
     if (!isUndefined(valueProp)) {
-      valueProp && plateActions.value(valueProp);
+      valueProp && setValue(valueProp);
     }
-  }, [valueProp, plateActions]);
-
-  // Store enabled
-  useEffect(() => {
-    if (!isUndefined(enabledProp)) {
-      plateActions.enabled(enabledProp);
-    }
-  }, [enabledProp, plateActions]);
+  }, [valueProp, setValue]);
 
   // Store onChange
   useEffect(() => {
     if (!isUndefined(onChange)) {
-      plateActions.onChange(onChange);
+      setOnChange(onChange);
     }
-  }, [onChange, plateActions]);
-
-  // Store editableProps
-  useDeepCompareEffect(() => {
-    if (!isUndefined(editableProps)) {
-      plateActions.editableProps(editableProps);
-    }
-  }, [editableProps, plateActions]);
+  }, [onChange, setOnChange]);
 
   // Store decorate
   useEffect(() => {
     if (!isUndefined(decorate)) {
-      plateActions.decorate(decorate);
+      setDecorate(decorate);
     }
-  }, [decorate, plateActions]);
+  }, [decorate, setDecorate]);
 
   // Store plugins
   useEffect(() => {
     if (!isUndefined(renderElement)) {
-      plateActions.renderElement(renderElement);
+      setRenderElement(renderElement);
     }
-  }, [renderElement, plateActions]);
+  }, [renderElement, setRenderElement]);
 
   // Store plugins
   useEffect(() => {
     if (!isUndefined(renderLeaf)) {
-      plateActions.renderLeaf(renderLeaf);
+      setRenderLeaf(renderLeaf);
     }
-  }, [renderLeaf, plateActions]);
+  }, [renderLeaf, setRenderLeaf]);
 
   // Store plugins
   useEffect(() => {
     if (!isUndefined(plugins)) {
-      plateActions.plugins(plugins);
+      setPlugins(plugins);
     }
-  }, [plugins, plateActions]);
+  }, [plugins, setPlugins]);
 };

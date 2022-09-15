@@ -10,6 +10,7 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
   Plate,
+  PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
@@ -53,7 +54,7 @@ const CopyContent = () => (
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
     <Toolbar>
       <ColorPickerToolbarDropdown
         pluginKey={MARK_COLOR}
@@ -71,10 +72,6 @@ export default () => (
 
     <CopyContent />
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      initialValue={fontValue}
-      plugins={plugins}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );

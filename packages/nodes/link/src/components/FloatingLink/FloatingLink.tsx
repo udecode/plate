@@ -5,6 +5,7 @@ import {
 } from '@udecode/plate-core';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { FloatingLinkEditButton } from './FloatingLinkEditButton';
+import { FloatingLinkNewTabInput } from './FloatingLinkNewTabInput';
 import { FloatingLinkTextInput } from './FloatingLinkTextInput';
 import { FloatingLinkUrlInput } from './FloatingLinkUrlInput';
 import { OpenLinkButton } from './OpenLinkButton';
@@ -45,6 +46,7 @@ export const FloatingLink = {
   InsertRoot: FloatingLinkInsertRoot,
   UrlInput: FloatingLinkUrlInput,
   TextInput: FloatingLinkTextInput,
+  NewTabInput: FloatingLinkNewTabInput,
   EditButton: FloatingLinkEditButton,
   UnlinkButton,
   OpenLinkButton,

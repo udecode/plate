@@ -19,6 +19,7 @@ export const juiceDeps = {
 
 export const commonDeps = {
   '@udecode/plate': plateVersion,
+  nanoid: '3.3.4',
   react: '17.0.2',
   'react-dom': '17.0.2',
   'react-scripts': '4.0.3',

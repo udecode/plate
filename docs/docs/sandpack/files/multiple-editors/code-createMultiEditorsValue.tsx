@@ -8,7 +8,7 @@ jsx;
 export const createMultiEditorsValue = () => {
   const multiEditors: TDescendant[][] = [];
 
-  for (let h = 0; h < 400; h++) {
+  for (let h = 0; h < 300; h++) {
     const multiEditor: TDescendant[] = [];
     multiEditor.push(
       (<hh1>Amet duis nisi ea enim laborum laboris.</hh1>) as any

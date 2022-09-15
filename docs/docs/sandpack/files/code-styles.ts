@@ -12,7 +12,8 @@ td {
 }
 
 [data-slate-editor] {
-  padding: 40px;
+  padding: 84px 50px 50px;
+  position: relative;
 }
 
 .slate-HeadingToolbar {
@@ -26,6 +27,11 @@ td {
 .tippy-box[data-theme~='tomato'] {
   background-color: tomato;
   color: yellow;
+}
+
+.slate-selection-area {
+  background: #4f90f22d;
+  border: 1px solid #4f90f2;
 }
 
 .drag-button {

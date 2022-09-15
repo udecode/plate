@@ -1,5 +1,9 @@
 # @udecode/plate-media
 
+## 17.0.0
+
+## 16.8.0
+
 ## 16.5.0
 
 ### Minor Changes

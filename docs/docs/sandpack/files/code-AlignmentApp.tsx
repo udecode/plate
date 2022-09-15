@@ -14,6 +14,7 @@ import {
   ELEMENT_H6,
   ELEMENT_PARAGRAPH,
   Plate,
+  PlateProvider,
 } from '@udecode/plate';
 import { alignValue } from './align/alignValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
@@ -56,17 +57,13 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <>
+  <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
     <Toolbar>
       <AlignToolbarButtons />
     </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      initialValue={alignValue}
-      plugins={plugins}
-    />
-  </>
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
 );
 `;
 

@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
-import {
-  getMyPlateSelectors,
-  MyEditor,
-  MyValue,
-} from './typescript/plateTypes';
+import { MyEditor, MyValue } from './typescript/plateTypes';
 
 export default () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const [value, setValue] = useState(initialValue);
-
-  const editor = getMyPlateSelectors().editor();
-  console.info(editor);
 
   return (
     // Because of the TypeScript-awareness you'll also get an error if you

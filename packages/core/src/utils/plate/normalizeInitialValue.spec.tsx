@@ -1,7 +1,7 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import { Plate } from '../../components/index';
-import { getPlateSelectors } from '../../stores/index';
+import { renderHook } from '@testing-library/react-hooks';
+import { PlateProvider } from '../../components/index';
+import { usePlateSelectors } from '../../stores/index';
 import { PlatePlugin } from '../../types/index';
 
 describe('normalizeInitialValue', () => {
@@ -24,16 +24,20 @@ describe('normalizeInitialValue', () => {
         },
       ];
 
-      render(
-        <Plate
+      const wrapper = ({ children }: any) => (
+        <PlateProvider
           plugins={plugins}
           initialValue={[{ type: 'p', count: 0, children: [{ text: '' }] }]}
-        />
+        >
+          {children}
+        </PlateProvider>
       );
 
-      const value = getPlateSelectors().value();
+      const { result } = renderHook(() => usePlateSelectors().value(), {
+        wrapper,
+      });
 
-      expect(value).toEqual([
+      expect(result.current).toEqual([
         { type: 'p', count: 2, children: [{ text: '' }] },
       ]);
     });

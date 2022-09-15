@@ -1,5 +1,17 @@
 # @udecode/plate-code-block
 
+## 17.0.0
+
+### Major Changes
+
+- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
+  - Removed these imports because of build errors:
+    - `prismjs/components/prism-django`
+    - `prismjs/components/prism-ejs`
+    - `prismjs/components/prism-php`
+
+## 16.8.0
+
 ## 16.5.0
 
 ## 16.3.0
