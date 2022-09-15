@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 17.0.2
+
+### Patch Changes
+
+- [#1882](https://github.com/udecode/plate/pull/1882) by [@zbeyens](https://github.com/zbeyens) – Fix: dynamic plugins
+
 ## 17.0.1
 
 ### Patch Changes
