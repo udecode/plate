@@ -1,5 +1,6 @@
-import { Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 
-export function retrieveNode(nodeEntry: NodeEntry): Node {
-  return nodeEntry[0];
-}
+export const retrieveNode = (nodeEntry: NodeEntry) => {
+  const [node] = nodeEntry;
+  return node;
+};

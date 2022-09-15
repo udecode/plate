@@ -1,15 +1,16 @@
-import { ELEMENT_THREAD, ThreadElement } from '@udecode/plate-comments';
 import {
   getAboveNode,
   getPluginType,
   PlateEditor,
   TAncestor,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Range } from 'slate';
+import { Editor, Range } from 'slate';
+import { ELEMENT_THREAD } from '../createThreadPlugin';
+import { ThreadElement } from '../types';
 
-export function determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft(
+export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft = (
   editor: PlateEditor
-): NodeEntry<ThreadElement & TAncestor> | undefined {
+) => {
   let threadNodeEntry;
   if (editor.selection) {
     const type = getPluginType(editor, ELEMENT_THREAD);
@@ -37,4 +38,4 @@ export function determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnThe
     }
   }
   return threadNodeEntry;
-}
+};

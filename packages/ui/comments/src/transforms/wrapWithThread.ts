@@ -6,8 +6,7 @@ import {
 } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { ThreadElement, ThreadNodeData } from '../types';
-import { Thread } from '../utils/types';
+import { Thread, ThreadElement, ThreadNodeData } from '../types';
 
 export const wrapWithThread = <V extends Value>(
   editor: PlateEditor<V>,

@@ -1,5 +1,5 @@
 import React, { RefObject } from 'react';
-import { Contact, Thread } from '../../utils';
+import { Thread, User } from '../../types';
 import {
   CommentTextArea,
   commentTextAreaSelectors,
@@ -26,7 +26,7 @@ export type PlateThreadCommentEditingProps = {
   onSave: (value: string) => void;
   onCancel: () => void;
   initialValue: string;
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   onValueChange: (value: string) => void;
   thread: Thread;
   value: string;

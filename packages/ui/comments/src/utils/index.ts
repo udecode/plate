@@ -4,7 +4,6 @@
 
 export * from './capitalizeFirstLetter';
 export * from './constants';
-export * from './createNullUser';
 export * from './determineAbsolutePosition';
 export * from './determineAssigningVerb';
 export * from './doBothElementsHaveTheSameId';
@@ -15,5 +14,4 @@ export * from './generateUserDisplayIdentifier';
 export * from './isClickInsideThreads';
 export * from './isThread';
 export * from './last';
-export * from './types';
 export * from './useLoggedInUser';

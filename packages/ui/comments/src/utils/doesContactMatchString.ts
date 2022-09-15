@@ -1,11 +1,11 @@
-import { Contact } from './types';
+import { User } from '../types';
 
-export function doesContactMatchString(
+export const doesContactMatchString = (
   matchString: string,
-  contact: Contact
-): boolean {
-  return (
+  contact: User
+): boolean => {
+  return Boolean(
     contact.name.startsWith(matchString) ||
-    contact.email.startsWith(matchString)
+      contact.email.startsWith(matchString)
   );
-}
+};

@@ -1,22 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
-import { createNullUser } from './createNullUser';
-import { User } from './types';
+import { useEffect, useState } from 'react';
+import { User } from '../types';
 
-export const useLoggedInUser = (retrieveUser: () => User): User => {
-  const [loggedInUser, setLoggedInUser] = useState<User>(createNullUser());
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const user = await retrieveUser();
-      setLoggedInUser(user);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [retrieveUser]);
+export const useLoggedInUser = (retrieveUser: () => User) => {
+  const [loggedInUser, setLoggedInUser] = useState<User | null>();
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    setLoggedInUser(retrieveUser());
+  }, [retrieveUser]);
 
   return loggedInUser;
 };

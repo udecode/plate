@@ -9,9 +9,8 @@ import {
 import { Editor, Location, NodeEntry, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { findSelectedThreadNodeEntry } from '../queries/findSelectedThreadNodeEntry';
-import { ThreadElement, ThreadNodeData } from '../types';
+import { Thread, ThreadElement, ThreadNodeData } from '../types';
 import { isThread } from '../utils/isThread';
-import { Thread } from '../utils/types';
 import { wrapWithThread } from './wrapWithThread';
 
 export const upsertThread = <V extends Value>(
@@ -30,6 +29,7 @@ export const upsertThread = <V extends Value>(
     const [, inlinePath] = threadLeaf;
     Transforms.select(editor as any, inlinePath);
     at = editor.selection!;
+    console.log('in first if');
   }
 
   const threadNodeEntry2 = getAboveNode(editor, {
@@ -47,8 +47,10 @@ export const upsertThread = <V extends Value>(
       },
       { at: threadNodeEntry2[1] }
     );
+    console.log('in second if');
   } else {
     wrapWithThread(editor, { at, thread, elementProps });
+    console.log('in second else');
   }
 
   if (isRange) {
@@ -61,6 +63,7 @@ export const upsertThread = <V extends Value>(
     const [, threadPath] = threadNodeEntry!;
 
     Transforms.select(editor as any, threadPath);
+    console.log('in last if');
   }
 
   return findSelectedThreadNodeEntry(editor);

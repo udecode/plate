@@ -1,4 +1,4 @@
-export function determineAbsolutePosition(element: HTMLElement) {
+export const determineAbsolutePosition = (element: HTMLElement) => {
   let left = 0;
   let top = 0;
   let currentElement: HTMLElement | null = element;
@@ -11,4 +11,4 @@ export function determineAbsolutePosition(element: HTMLElement) {
     left,
     top,
   };
-}
+};

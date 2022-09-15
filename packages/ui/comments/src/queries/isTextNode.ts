@@ -1,5 +1,5 @@
 import { Node } from 'slate';
 
-export function isTextNode(node: Node): boolean {
+export const isTextNode = (node: Node) => {
   return node.hasOwnProperty('text');
-}
+};

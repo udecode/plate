@@ -1,4 +1,4 @@
-import { Comment } from '@udecode/plate-comments';
+import { Comment } from '../types';
 import { replaceElementMatchingById } from './replaceElementMatchingById';
 
 export const replaceComment = (

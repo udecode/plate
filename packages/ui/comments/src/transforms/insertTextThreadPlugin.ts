@@ -12,11 +12,11 @@ import { ThreadElement } from '../types';
 import { insertTextAtTheEndOfAThreadNode } from './insertTextAtTheEndOfAThreadNode';
 import { insertTextAtTheStartOfAThreadNode } from './insertTextAtTheStartOfAThreadNode';
 
-export function insertTextThreadPlugin(
+export const insertTextThreadPlugin = (
   editor: PlateEditor,
   insertText: (text: string) => void,
   text: string
-): void {
+) => {
   let insertHasBeenHandled = false;
 
   if (editor.selection && Range.isCollapsed(editor.selection)) {
@@ -48,4 +48,4 @@ export function insertTextThreadPlugin(
   if (!insertHasBeenHandled) {
     insertText(text);
   }
-}
+};

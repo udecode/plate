@@ -1,7 +1,6 @@
 import { PlateEditor, Value } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
-import { ThreadElement } from '../types';
-import { Thread } from '../utils/types';
+import { Thread, ThreadElement } from '../types';
 import { upsertThread } from './upsertThread';
 
 export const upsertThreadAtSelection = <V extends Value>(

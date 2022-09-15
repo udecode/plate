@@ -1,5 +1,5 @@
-import { Comment, Thread } from '../utils/types';
+import { Comment, Thread } from '../types';
 
-export function isFirstComment(thread: Thread, comment: Comment): boolean {
+export const isFirstComment = (thread: Thread, comment: Comment) => {
   return thread.comments.indexOf(comment) === 0;
-}
+};

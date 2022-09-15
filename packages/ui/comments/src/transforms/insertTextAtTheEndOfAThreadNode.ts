@@ -8,11 +8,11 @@ import { isTextNode } from '../queries/isTextNode';
 import { last } from '../utils/last';
 import { changeSelectionToBeBasedOnTheNextNode } from './changeSelectionToBeBasedOnTheNextNode';
 
-export function insertTextAtTheEndOfAThreadNode(
+export const insertTextAtTheEndOfAThreadNode = (
   editor: PlateEditor,
   threadPath: Path,
   text: string
-): boolean {
+) => {
   let insertHasBeenHandled = false;
   const parent = getParentNode(editor, threadPath);
   if (parent) {
@@ -44,4 +44,4 @@ export function insertTextAtTheEndOfAThreadNode(
   }
 
   return insertHasBeenHandled;
-}
+};

@@ -5,11 +5,11 @@ import { retrieveNode } from '../queries/retrieveNode';
 import { retrievePreviousSibling } from '../queries/retrievePreviousSibling';
 import { changeSelectionToBeBasedOnThePreviousNode } from './changeSelectionToBeBasedOnThePreviousNode';
 
-export function insertTextAtTheStartOfAThreadNode(
+export const insertTextAtTheStartOfAThreadNode = (
   editor: PlateEditor,
   threadPath: Path,
   text: string
-): boolean {
+) => {
   let insertHasBeenHandled = false;
   const previousSiblingNodeEntry = retrievePreviousSibling(
     editor,
@@ -35,4 +35,4 @@ export function insertTextAtTheStartOfAThreadNode(
   }
 
   return insertHasBeenHandled;
-}
+};

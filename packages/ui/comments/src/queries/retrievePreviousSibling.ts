@@ -1,11 +1,8 @@
 import { getNode, PlateEditor } from '@udecode/plate-core';
-import { NodeEntry, Path } from 'slate';
+import { Path } from 'slate';
 import { last } from '../utils/last';
 
-export const retrievePreviousSibling = (
-  editor: PlateEditor,
-  path: Path
-): NodeEntry | undefined => {
+export const retrievePreviousSibling = (editor: PlateEditor, path: Path) => {
   const index = last(path);
   if (index > 0) {
     const previousSiblingIndex = index - 1;

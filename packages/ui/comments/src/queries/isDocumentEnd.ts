@@ -1,7 +1,7 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 
-export function isDocumentEnd(editor: PlateEditor): boolean {
+export const isDocumentEnd = (editor: PlateEditor) => {
   if (editor.selection) {
     const point = editor.selection.focus;
     const endPoint = Editor.end(editor as any, []);
@@ -12,4 +12,4 @@ export function isDocumentEnd(editor: PlateEditor): boolean {
     );
   }
   return false;
-}
+};

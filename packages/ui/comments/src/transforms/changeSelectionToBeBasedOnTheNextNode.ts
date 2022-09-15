@@ -2,9 +2,7 @@ import { PlateEditor } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { isDocumentEnd } from '../queries/isDocumentEnd';
 
-export function changeSelectionToBeBasedOnTheNextNode(
-  editor: PlateEditor
-): void {
+export const changeSelectionToBeBasedOnTheNextNode = (editor: PlateEditor) => {
   if (isDocumentEnd(editor)) {
     const endPoint = Editor.end(editor as any, []);
     Transforms.select(editor as any, endPoint);
@@ -19,4 +17,4 @@ export function changeSelectionToBeBasedOnTheNextNode(
       reverse: true,
     });
   }
-}
+};

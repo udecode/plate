@@ -1,11 +1,11 @@
-import { User } from './types';
+import { User } from '../types';
 
-export function generateUserDisplayIdentifier({
+export const generateUserDisplayIdentifier = ({
   user,
   isLoggedInUser,
 }: {
   user: User;
   isLoggedInUser: boolean;
-}): string {
+}): string => {
   return isLoggedInUser ? 'you' : user.name || user.email;
-}
+};

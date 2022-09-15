@@ -1,12 +1,14 @@
-import { User } from '@udecode/plate-comments';
+import { User } from '../types';
 
-export const determineAssigningVerb = ({
-  assignedTo,
-  userThatCanBeAssignedTo,
-}: {
+type DetermineAssigningVerbParams = {
   assignedTo: User | null;
   userThatCanBeAssignedTo: User | null;
-}): string => {
+};
+
+export const determineAssigningVerb = (
+  params: DetermineAssigningVerbParams
+): string => {
+  const { assignedTo, userThatCanBeAssignedTo } = params;
   if (
     assignedTo &&
     userThatCanBeAssignedTo &&
