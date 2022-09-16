@@ -1,30 +1,128 @@
 import React from 'react';
+import { renderHook } from '@testing-library/react-hooks';
+import {
+  PLATE_SCOPE,
+  usePlateEditorRef,
+  usePlateSelectors,
+} from '../../stores/index';
+import { ELEMENT_DEFAULT } from '../../types/index';
+import { createPlateEditor, getPluginType } from '../../utils/index';
 import { PlateProvider } from './PlateProvider';
 
 describe('PlateProvider', () => {
-  describe('when id prop is not defined', () => {
-    it('usePlateId should return "main"', async () => {
-      const wrapper = ({ children }: any) => (
-        <PlateProvider>{children}</PlateProvider>
-      );
-      // const { result } = renderHook(() => usePlateId(), {
-      //   wrapper,
-      // });
-      //
-      // expect(result.current).toBe('main');
+  describe('usePlateEditorRef()', () => {
+    describe('when editor is defined', () => {
+      it('should be initialValue', async () => {
+        const editor = createPlateEditor();
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider editor={editor}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateEditorRef(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(editor);
+      });
+    });
+    describe('when editor is not defined', () => {
+      it('should be default', async () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateEditorRef(), {
+          wrapper,
+        });
+
+        expect(result.current.id).toBe(PLATE_SCOPE);
+      });
+    });
+    describe('when id is defined', () => {
+      it('should be id', async () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateEditorRef('test'), {
+          wrapper,
+        });
+
+        expect(result.current.id).toBe('test');
+      });
+      it('should be not find editor with default id', async () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateEditorRef(), {
+          wrapper,
+        });
+
+        expect(result.current).toBeNull();
+      });
     });
   });
 
-  describe('when id prop is defined', () => {
-    it('usePlateId should return that id', async () => {
-      const wrapper = ({ children }: any) => (
-        <PlateProvider id="test">{children}</PlateProvider>
-      );
-      // const { result } = renderHook(() => usePlateId(), {
-      //   wrapper,
-      // });
-      //
-      // expect(result.current).toBe('test');
+  describe('usePlateSelectors().value()', () => {
+    describe('when initialValue is defined', () => {
+      it('should be initialValue', async () => {
+        const initialValue = [{ type: 'p', children: [{ text: 'test' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider initialValue={initialValue}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(initialValue);
+      });
+    });
+    describe('when value is defined', () => {
+      it('should be value', async () => {
+        const value = [{ type: 'p', children: [{ text: 'value' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider value={value}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(value);
+      });
+    });
+    describe('when editor with children is defined', () => {
+      it('should be editor.children', async () => {
+        const editor = createPlateEditor();
+        editor.children = [{ type: 'p', children: [{ text: 'value' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider editor={editor}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(editor.children);
+      });
+    });
+    describe('when editor without children is defined', () => {
+      it('should be default', async () => {
+        const editor = createPlateEditor();
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider editor={editor}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toEqual([
+          {
+            type: getPluginType(editor, ELEMENT_DEFAULT),
+            children: [{ text: '' }],
+          },
+        ]);
+      });
     });
   });
 });
