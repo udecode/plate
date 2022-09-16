@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 17.0.3
+
+### Patch Changes
+
+- [#1885](https://github.com/udecode/plate/pull/1885) by [@zbeyens](https://github.com/zbeyens) – fix: Plate without `initialValue` or `value` prop should use `editor.children` as value. If `editor.children` is empty, use default value (empty paragraph).
+
 ## 17.0.2
 
 ### Patch Changes
