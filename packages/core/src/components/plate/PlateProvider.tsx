@@ -75,15 +75,18 @@ export const PlateProvider = <
 
   const value = useMemo(
     () => {
-      let currValue =
-        initialValue ??
-        _value ??
-        ([
-          {
-            type: getPluginType(editor, ELEMENT_DEFAULT),
-            children: [{ text: '' }],
-          },
-        ] as V);
+      let currValue = initialValue ?? _value;
+
+      if (!currValue) {
+        currValue = editor.children.length
+          ? editor.children
+          : ([
+              {
+                type: getPluginType(editor, ELEMENT_DEFAULT),
+                children: [{ text: '' }],
+              },
+            ] as V);
+      }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);
       if (normalizedValue) {
