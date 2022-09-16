@@ -37,7 +37,7 @@ export interface PlateProviderProps<
   normalizeInitialValue?: boolean;
 }
 
-export const PlateProvider = <
+const PlateProviderContent = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
@@ -120,6 +120,17 @@ export const PlateProvider = <
       <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
     </JotaiProvider>
   );
+};
+
+export const PlateProvider = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  props: PlateProviderProps<V, E>
+) => {
+  const { id } = props;
+
+  return <PlateProviderContent key={id?.toString()} {...props} />;
 };
 
 export const withPlateProvider = <T,>(Component: FC<T>, hocProps?: T) =>
