@@ -50,7 +50,7 @@ export const PlateProvider = <
     initialValue,
     value: _value,
     children,
-    plugins,
+    plugins: _plugins,
     disableCorePlugins,
     onChange,
     decorate,
@@ -59,16 +59,13 @@ export const PlateProvider = <
   } = props;
 
   const editor: E = useMemo(
-    () => {
-      return (
-        _editor ??
-        createPlateEditor({
-          id,
-          plugins: plugins as any,
-          disableCorePlugins,
-        })
-      );
-    },
+    () =>
+      _editor ??
+      createPlateEditor({
+        id,
+        plugins: _plugins as any,
+        disableCorePlugins,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
@@ -111,6 +108,7 @@ export const PlateProvider = <
         [plateStore.atom.id, id],
         [plateStore.atom.editor, editor],
         [plateStore.atom.plugins, editor.plugins],
+        [plateStore.atom.rawPlugins, _plugins],
         [plateStore.atom.value, value],
         [plateStore.atom.decorate, { fn: decorate }],
         [plateStore.atom.onChange, { fn: onChange }],
