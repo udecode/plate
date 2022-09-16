@@ -125,4 +125,29 @@ describe('PlateProvider', () => {
       });
     });
   });
+
+  describe('usePlateSelectors().plugins()', () => {
+    describe('when plugins is updated', () => {
+      it('should be updated', () => {
+        const _plugins = [{ key: 'test' }];
+
+        const wrapper = ({ children, plugins }: any) => (
+          <PlateProvider plugins={plugins}>{children}</PlateProvider>
+        );
+        const { result, rerender } = renderHook(
+          () => usePlateSelectors().plugins(),
+          {
+            wrapper,
+            initialProps: { plugins: _plugins },
+          }
+        );
+
+        expect(result.current[result.current.length - 1].key).toBe('test');
+
+        rerender({ plugins: [{ key: 'test2' }] });
+
+        expect(result.current[result.current.length - 1].key).toBe('test2');
+      });
+    });
+  });
 });
