@@ -1,40 +1,16 @@
 import React, { RefObject } from 'react';
-import { Close, MoreVert } from '@styled-icons/material';
-import { Comment, Contact, Thread, User } from '../../utils';
+import { Close } from '@styled-icons/material';
+import { Comment, Thread, User } from '../../types';
 import { Avatar, avatarImageCss, avatarRootCss } from '../Avatar';
-import {
-  CommentTextArea,
-  commentTextAreaSelectors,
-  textAreaStyles,
-} from '../CommentTextArea';
-import {
-  contactCss,
-  Contacts,
-  contactsEmailCss,
-  contactsImageCss,
-  contactsNameCss,
-  contactsRootCss,
-  contactsWrapperCss,
-} from '../Contacts';
-import {
-  MoreMenu,
-  moreMenuButtonRootStyles,
-  moreMenuMenuItemStyles,
-  moreMenuMenuRootStyles,
-  moreMenuRootStyles,
-  useMoreMenuSelectors,
-} from '../MoreMenu';
+import { PlateMoreMenu } from '../MoreMenu';
 import {
   ReOpenThreadButton,
   reOpenThreadButtonRootStyles,
 } from '../ReOpenThreadButton';
 import { ResolveButton, resolveButtonRootStyles } from '../ResolveButton';
 import {
-  ThreadCommentEditing,
-  threadCommentEditingActionsCss,
-  threadCommentEditingCancelButtonCss,
+  PlateThreadCommentEditing,
   threadCommentEditingRootCss,
-  threadCommentEditingSaveButtonCss,
 } from '../ThreadCommentEditing';
 import {
   ThreadLinkDialog,
@@ -57,7 +33,7 @@ import { useThreadCommentStoreSelectors } from './threadCommentStore';
 
 export type PlateThreadCommentProps = {
   comment: Comment;
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   initialValue: string;
   onCancel?: () => void;
   onDelete?: () => void;
@@ -65,7 +41,7 @@ export type PlateThreadCommentProps = {
   onLink?: () => void;
   onReOpenThread?: () => void;
   onResolveThread?: () => void;
-  onSave?: (value: string) => void;
+  onSave: (comment: Comment) => Thread;
   onSubmitComment?: (value: string, assignedTo: User) => void;
   onValueChange?: (value: string) => void;
   showLinkButton?: boolean;
@@ -74,7 +50,6 @@ export type PlateThreadCommentProps = {
   showResolveThreadButton?: boolean;
   textAreaRef?: RefObject<HTMLTextAreaElement> | null;
   thread: Thread;
-  value: string;
   threadLink?: string;
 };
 
@@ -86,11 +61,8 @@ export const PlateThreadComment = (props: PlateThreadCommentProps) => {
     showMoreButton,
   } = props;
 
-  const isMenuOpen = useMoreMenuSelectors().isMenuOpen();
   const isThreadLinkDialogOpen = useThreadCommentStoreSelectors().isOpen();
   const isEditing = useThreadCommentStoreSelectors().isEditing();
-  const areContactsShown = commentTextAreaSelectors.areContactsShown();
-  const contacts = commentTextAreaSelectors.filteredContacts();
 
   return (
     <div css={threadCommentRootCss}>
@@ -120,71 +92,12 @@ export const PlateThreadComment = (props: PlateThreadCommentProps) => {
               <ReOpenThreadButton.Unarchive />
             </ReOpenThreadButton.Root>
           )}
-
-          {showMoreButton ? (
-            <div css={moreMenuRootStyles}>
-              <MoreMenu.Button css={moreMenuButtonRootStyles}>
-                <MoreVert />
-              </MoreMenu.Button>
-              {isMenuOpen ? (
-                <MoreMenu.MenuRoot css={moreMenuMenuRootStyles}>
-                  <ThreadComment.MoreMenuEditButton
-                    {...props}
-                    css={moreMenuMenuItemStyles}
-                  >
-                    Edit
-                  </ThreadComment.MoreMenuEditButton>
-                  <MoreMenu.DeleteButton
-                    {...props}
-                    css={moreMenuMenuItemStyles}
-                  >
-                    Delete
-                  </MoreMenu.DeleteButton>
-                  <MoreMenu.LinkButton {...props} css={moreMenuMenuItemStyles}>
-                    Link to this thread
-                  </MoreMenu.LinkButton>
-                </MoreMenu.MenuRoot>
-              ) : null}
-            </div>
-          ) : null}
+          {showMoreButton ? <PlateMoreMenu {...props} /> : null}
         </div>
       </div>
       {isEditing ? (
         <div css={threadCommentEditingRootCss}>
-          <CommentTextArea.TextArea {...props} css={textAreaStyles} />
-          {areContactsShown ? (
-            <div css={contactsWrapperCss}>
-              <div css={contactsRootCss}>
-                {contacts.map((contact) => (
-                  <div key={contact.id} css={contactCss}>
-                    <Contacts.Image contact={contact} css={contactsImageCss} />
-                    <div>
-                      <Contacts.Text css={contactsNameCss}>
-                        {contact.name}
-                      </Contacts.Text>
-                      <Contacts.Text css={contactsEmailCss}>
-                        {contact.email}
-                      </Contacts.Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          <div css={threadCommentEditingActionsCss}>
-            <ThreadCommentEditing.SaveButton
-              {...props}
-              css={threadCommentEditingSaveButtonCss}
-            >
-              Save
-            </ThreadCommentEditing.SaveButton>
-            <ThreadComment.CancelButton
-              {...props}
-              css={threadCommentEditingCancelButtonCss}
-            >
-              Cancel
-            </ThreadComment.CancelButton>
-          </div>
+          <PlateThreadCommentEditing {...props} initialValue={comment.text} />
         </div>
       ) : (
         <div css={threadCommentThreadCommentTextCss}>{comment.text}</div>

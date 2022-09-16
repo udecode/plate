@@ -12,13 +12,11 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
+import { Thread, User } from '../../types';
 import {
-  Contact,
   doesContactMatchString,
   emailRegexExpression,
   nameRegexExpression,
-  Thread,
-  User,
 } from '../../utils';
 import {
   commentTextAreaActions,
@@ -26,12 +24,12 @@ import {
 } from './commentTextAreaStore';
 
 export type TextAreaProps = {
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   onValueChange?: (value: string) => void;
   onSubmitComment?: (value: string, assignedTo: User) => void;
   textAreaRef?: RefObject<HTMLTextAreaElement> | null;
   thread: Thread;
-  value: string;
+  initialValue?: string;
 } & HTMLPropsAs<'textarea'>;
 
 export const useTextArea = (props: TextAreaProps) => {
@@ -41,11 +39,12 @@ export const useTextArea = (props: TextAreaProps) => {
     onSubmitComment,
     textAreaRef,
     thread,
-    value,
+    initialValue,
   } = props;
 
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<User[]>([]);
   const [selectedContactIndex, setSelectedContactIndex] = useState<number>(0);
+  const [value, setValue] = useState(initialValue || '');
 
   const areContactsShown = commentTextAreaSelectors.areContactsShown();
   const filteredContacts = commentTextAreaSelectors.filteredContacts();
@@ -135,7 +134,7 @@ export const useTextArea = (props: TextAreaProps) => {
   }, []);
 
   const filterContacts = useCallback(
-    (contactsToFilter: Contact[]) => {
+    (contactsToFilter: User[]) => {
       const mentionStringAfterAtCharacter = retrieveMentionStringAfterAtCharacter();
       let newFilteredContacts;
       if (mentionStringAfterAtCharacter) {
@@ -165,7 +164,7 @@ export const useTextArea = (props: TextAreaProps) => {
   }, [contacts, filterContacts, setFilteredContacts]);
 
   const insertMention = useCallback(
-    (mentionedContact: Contact) => {
+    (mentionedContact: User) => {
       const mentionString = retrieveMentionStringAtCaretPosition();
       if (mentionString) {
         const textArea = ref.current!;
@@ -185,7 +184,7 @@ export const useTextArea = (props: TextAreaProps) => {
   );
 
   const onContactSelected = useCallback(
-    (selectedContact: Contact) => {
+    (selectedContact: User) => {
       hideContacts();
       insertMention(selectedContact);
     },
@@ -276,6 +275,7 @@ export const useTextArea = (props: TextAreaProps) => {
 
   const onTextAreaValueChange = useCallback(
     (event) => {
+      setValue(event.target.value);
       if (onValueChange) onValueChange(event.target.value);
     },
     [onValueChange]

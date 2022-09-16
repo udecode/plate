@@ -3,7 +3,6 @@
  */
 
 export * from './PlateThread';
-export * from './Thread.styles';
 export * from './Thread';
 export * from './ThreadCancelButton';
 export * from './ThreadCommentsList';

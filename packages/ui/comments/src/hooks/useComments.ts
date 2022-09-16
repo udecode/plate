@@ -12,7 +12,7 @@ import {
   usePlateSelection,
   usePlateSelectors,
 } from '@udecode/plate-core';
-import { cloneDeep } from 'lodash';
+import { clamp, cloneDeep } from 'lodash';
 import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { v4 as createV4UUID } from 'uuid';
@@ -47,6 +47,7 @@ export type UseCommentsReturnType = {
   onSubmitComment: (commentText: string, assignedTo?: User) => Thread;
   onCancelCreateThread: () => void;
   onResolveThread: () => void;
+  hideThread: () => void;
 };
 
 export const useComments = (
@@ -97,8 +98,14 @@ export const useComments = (
         width: editorWidth,
       } = editorDOMNode.getBoundingClientRect();
 
+      const sideThreadWidth = 418;
+      const padding = 16;
+
       const newThreadPosition = {
-        left: editorX + editorWidth + 16,
+        left: clamp(
+          editorX + editorWidth + 16,
+          window.innerWidth - (sideThreadWidth + padding)
+        ),
         top: selectionDOMNodePosition.top,
       };
       setThreadPosition(newThreadPosition);
@@ -119,8 +126,12 @@ export const useComments = (
   );
 
   const hideThread = useCallback(() => {
-    setThread(null);
-  }, []);
+    if (thread) {
+      setThread(null);
+      ReactEditor.blur(editor as ReactEditor);
+      Transforms.deselect(editor as BaseEditor);
+    }
+  }, [editor, thread]);
 
   const onCancelCreateThread = useCallback(() => {
     if (editor && newThreadThreadNodeEntry) {
@@ -398,6 +409,7 @@ export const useComments = (
       onSubmitComment,
       position: threadPosition,
       thread,
+      hideThread,
     }),
     [
       onAddThread,
@@ -407,6 +419,7 @@ export const useComments = (
       onSubmitComment,
       thread,
       threadPosition,
+      hideThread,
     ]
   );
 

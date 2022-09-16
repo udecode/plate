@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { createComponentAs, createElementAs } from '@udecode/plate-core';
+import { threadCommentStoreActions } from '../ThreadComment';
 import { MoreMenuItem, MoreMenuItemProps } from './MoreMenuItem';
 
 export type MoreMenuEditButtonProps = {
@@ -11,6 +12,7 @@ export const useMoreMenuEditButton = (props: MoreMenuEditButtonProps) => {
 
   const onClick = useCallback(() => {
     onEdit?.();
+    threadCommentStoreActions.isEditing(true);
   }, [onEdit]);
 
   return { ...rest, onClick };

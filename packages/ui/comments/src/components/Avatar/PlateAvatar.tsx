@@ -13,7 +13,7 @@ export const PlateAvatar = (props: PlateAvatarProps) => {
   const { user } = props;
   return (
     <Avatar.Root css={avatarRootCss}>
-      {user.avatarUrl ? (
+      {user?.avatarUrl ? (
         <Avatar.Image {...props} css={avatarImageCss} />
       ) : (
         <Avatar.AccountCircle css={avatarImageCss} />

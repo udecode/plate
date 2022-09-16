@@ -1,5 +1,5 @@
 import React from 'react';
-import { Contact } from '../../utils';
+import { User } from '../../types';
 import { Contacts } from './Contacts';
 import {
   contactCss,
@@ -11,7 +11,7 @@ import {
 } from './styles';
 
 export type PlateContacts = {
-  contacts: Contact[];
+  contacts: User[];
 };
 
 export const PlateContacts = (props: PlateContacts) => {

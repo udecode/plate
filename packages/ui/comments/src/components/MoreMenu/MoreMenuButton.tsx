@@ -4,15 +4,17 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { moreMenuActions, moreMenuSelectors } from './moreMenuStore';
 
-export type MoreMenuButtonProps = HTMLPropsAs<'button'>;
+export type MoreMenuButtonProps = {
+  setMenuVisibility: (visibility: boolean) => void;
+} & HTMLPropsAs<'button'>;
 
 export const useMoreMenuButton = (props: MoreMenuButtonProps) => {
+  const { setMenuVisibility } = props;
+
   const onClick = useCallback(() => {
-    const isMenuOpen = moreMenuSelectors.isMenuOpen();
-    moreMenuActions.isMenuOpen(!isMenuOpen);
-  }, []);
+    setMenuVisibility(true);
+  }, [setMenuVisibility]);
 
   return { ...props, onClick };
 };

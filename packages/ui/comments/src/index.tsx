@@ -3,10 +3,10 @@ import { render } from 'react-dom';
 import { AddComment } from '@styled-icons/material';
 import { createPlugins, Plate } from '@udecode/plate-core';
 import { createPlateUI } from '@udecode/plate-ui';
-import { AddThreadToolbarButton } from '../src/components/AddThreadToolbarButton';
-import { ThreadElement } from '../src/components/ThreadElement';
-import { createThreadPlugin, ELEMENT_THREAD } from '../src/createThreadPlugin';
+import { AddThreadToolbarButton } from './components/AddThreadToolbarButton';
+import { ThreadElement } from './components/ThreadElement';
 import { Comments } from './Comments';
+import { createThreadPlugin, ELEMENT_THREAD } from './createThreadPlugin';
 
 const initialValue = [
   {
@@ -26,25 +26,23 @@ const plugins = createPlugins([...[createThreadPlugin()]], {
 const App = () => {
   const [commentActions, setCommentActions] = useState<any>();
 
-  console.log(commentActions);
-
   return (
     <div>
+      {commentActions ? (
+        <AddThreadToolbarButton
+          icon={<AddComment />}
+          onAddThread={commentActions.onAddThread}
+        />
+      ) : null}
       <Plate
         id="main"
         editableProps={{
           placeholder: 'Enter some plain text...',
         }}
         initialValue={initialValue}
-        onChange={console.log}
         plugins={plugins}
+        onChange={console.log}
       >
-        {commentActions ? (
-          <AddThreadToolbarButton
-            icon={<AddComment />}
-            onAddThread={commentActions.onAddThread}
-          />
-        ) : null}
         <Comments setCommentActions={setCommentActions} />
       </Plate>
     </div>

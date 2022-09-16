@@ -1,9 +1,9 @@
 import { createStore } from '@udecode/plate-core';
-import { Contact } from '../../utils';
+import { User } from '../../types';
 
 export const commentTextAreaStore = createStore('commentTextArea')({
   areContactsShown: false,
-  filteredContacts: [] as Contact[],
+  filteredContacts: [] as User[],
 });
 
 export const commentTextAreaActions = commentTextAreaStore.set;

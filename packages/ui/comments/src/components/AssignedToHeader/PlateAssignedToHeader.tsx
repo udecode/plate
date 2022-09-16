@@ -1,5 +1,5 @@
 import React from 'react';
-import { Thread, User } from '../../utils';
+import { Thread, User } from '../../types';
 import { Avatar } from '../Avatar';
 import { ReOpenThreadButton } from '../ReOpenThreadButton';
 import { ResolveButton } from '../ResolveButton';

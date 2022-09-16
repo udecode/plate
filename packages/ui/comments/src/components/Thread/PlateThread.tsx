@@ -1,5 +1,5 @@
-import React from 'react';
-import { Comment, Contact, Thread as ThreadType, User } from '../../utils';
+import React, { useCallback, useState } from 'react';
+import { Comment, Thread as ThreadType, User } from '../../types';
 import { PlateAssignedToHeader } from '../AssignedToHeader';
 import { PlateCommentTextArea } from '../CommentTextArea';
 import { PlateThreadComment } from '../ThreadComment';
@@ -12,15 +12,15 @@ import {
 import { Thread } from './Thread';
 
 export type PlateThreadProps = {
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   onCancel?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
   onLink?: () => void;
   onReOpenThread?: () => void;
   onResolveThread?: () => void;
-  onSave?: (value: string) => void;
-  onSubmitComment?: (value: string, assignedTo: User) => void;
+  onSave: (comment: Comment) => ThreadType;
+  onSubmitComment?: (value: string, assignedTo?: User) => void;
   onValueChange?: (value: string) => void;
   retrieveUser: () => User;
   showMoreButton?: boolean;
@@ -28,7 +28,6 @@ export type PlateThreadProps = {
   showResolveThreadButton?: boolean;
   thread: ThreadType;
   user?: User;
-  value: string;
   noHeader?: boolean;
   noActions?: boolean;
 };
@@ -42,9 +41,16 @@ export const PlateThread = (props: PlateThreadProps) => {
     noActions,
   } = props;
 
+  const [value, setValue] = useState('');
+
+  const onValueChange = useCallback((val: string) => {
+    setValue(val);
+  }, []);
+
+  console.log('thread.assignedTO', thread.assignedTo);
   return (
     <div css={threadRootCss}>
-      {!noHeader && thread.assignedTo ? (
+      {!noHeader && thread.createdBy ? (
         <PlateAssignedToHeader {...props} />
       ) : null}
       {thread.comments.map((comment: Comment, index: number) => {
@@ -62,9 +68,13 @@ export const PlateThread = (props: PlateThreadProps) => {
       })}
       {!noActions ? (
         <div>
-          <PlateCommentTextArea {...props} />
+          <PlateCommentTextArea {...props} onValueChange={onValueChange} />
           <div css={threadButtonsCss}>
-            <Thread.SubmitButton {...props} css={threadSubmitButtonCss}>
+            <Thread.SubmitButton
+              {...props}
+              css={threadSubmitButtonCss}
+              value={value}
+            >
               Comment
             </Thread.SubmitButton>
             <Thread.CancelButton {...props} css={threadCancelButtonCss}>

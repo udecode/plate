@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { User } from '../../utils';
+import { User } from '../../types';
 
 export type ContactsImageProps = {
   contact: User;

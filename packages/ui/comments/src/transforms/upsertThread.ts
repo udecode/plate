@@ -29,7 +29,6 @@ export const upsertThread = <V extends Value>(
     const [, inlinePath] = threadLeaf;
     Transforms.select(editor as any, inlinePath);
     at = editor.selection!;
-    console.log('in first if');
   }
 
   const threadNodeEntry2 = getAboveNode(editor, {
@@ -47,10 +46,8 @@ export const upsertThread = <V extends Value>(
       },
       { at: threadNodeEntry2[1] }
     );
-    console.log('in second if');
   } else {
     wrapWithThread(editor, { at, thread, elementProps });
-    console.log('in second else');
   }
 
   if (isRange) {
@@ -63,7 +60,6 @@ export const upsertThread = <V extends Value>(
     const [, threadPath] = threadNodeEntry!;
 
     Transforms.select(editor as any, threadPath);
-    console.log('in last if');
   }
 
   return findSelectedThreadNodeEntry(editor);

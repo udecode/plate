@@ -3,11 +3,11 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
+import { User } from '../../types';
 import {
   capitalizeFirstLetter,
   generateUserDisplayIdentifier,
   useLoggedInUser,
-  User,
 } from '../../utils';
 
 export type AssignedToHeaderAssignedToTextProps = {
@@ -21,7 +21,7 @@ export const useAssignedToHeaderAssignedToText = (
   const { user, retrieveUser } = props;
 
   const loggedInUser = useLoggedInUser(retrieveUser);
-  const isAssignedToLoggedInUser = loggedInUser.id === user?.id;
+  const isAssignedToLoggedInUser = loggedInUser?.id === user?.id;
 
   const text = user
     ? `Assigned to

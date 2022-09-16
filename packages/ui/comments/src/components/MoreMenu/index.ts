@@ -10,5 +10,4 @@ export * from './MoreMenuItem';
 export * from './MoreMenuLinkButton';
 export * from './MoreMenuRoot';
 export * from './PlateMoreMenu';
-export * from './moreMenuStore';
 export * from './styles';

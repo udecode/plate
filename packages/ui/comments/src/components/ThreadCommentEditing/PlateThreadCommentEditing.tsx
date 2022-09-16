@@ -1,5 +1,5 @@
-import React, { RefObject } from 'react';
-import { Thread, User } from '../../types';
+import React, { RefObject, useCallback, useState } from 'react';
+import { Comment, Thread, User } from '../../types';
 import {
   CommentTextArea,
   commentTextAreaSelectors,
@@ -23,15 +23,15 @@ import {
 import { ThreadCommentEditing } from './ThreadCommentEditing';
 
 export type PlateThreadCommentEditingProps = {
-  onSave: (value: string) => void;
-  onCancel: () => void;
+  onSave?: (comment: Comment) => Thread;
+  onCancel?: () => void;
   initialValue: string;
   fetchContacts: () => User[];
-  onValueChange: (value: string) => void;
+  onValueChange?: (value: string) => void;
   thread: Thread;
-  value: string;
-  onSubmit: () => void;
-  textAreaRef: RefObject<HTMLTextAreaElement> | null;
+  onSubmit?: () => void;
+  textAreaRef?: RefObject<HTMLTextAreaElement> | null;
+  comment: Comment;
 };
 
 export const PlateThreadCommentEditing = (
@@ -40,9 +40,19 @@ export const PlateThreadCommentEditing = (
   const areContactsShown = commentTextAreaSelectors.areContactsShown();
   const contacts = commentTextAreaSelectors.filteredContacts();
 
+  const [value, setValue] = useState('');
+
+  const onValueChange = useCallback((val: string) => {
+    setValue(val);
+  }, []);
+
   return (
     <div css={threadCommentEditingRootCss}>
-      <CommentTextArea.TextArea {...props} css={textAreaStyles} />
+      <CommentTextArea.TextArea
+        {...props}
+        css={textAreaStyles}
+        onValueChange={onValueChange}
+      />
       {areContactsShown ? (
         <div css={contactsWrapperCss}>
           <div css={contactsRootCss}>
@@ -65,6 +75,7 @@ export const PlateThreadCommentEditing = (
       <div css={threadCommentEditingActionsCss}>
         <ThreadCommentEditing.SaveButton
           {...props}
+          value={value}
           css={threadCommentEditingSaveButtonCss}
         >
           Save

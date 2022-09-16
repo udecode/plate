@@ -1,6 +1,6 @@
 import React, { RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { Contact, Thread, User } from '../../utils';
+import { Thread, User } from '../../types';
 import { PlateThread } from '../Thread/PlateThread';
 import { ResolvedThread } from './ResolvedThreads';
 import { ResolveThreadsPosition } from './ResolvedThreadsRoot';
@@ -11,7 +11,7 @@ export type PlateResolvedThreadsProps = {
   position: ResolveThreadsPosition;
   resolvedThreads: Thread[];
   retrieveUser: () => User;
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   parentRef: RefObject<HTMLElement>;
   onReOpenThread?: () => void;
 };

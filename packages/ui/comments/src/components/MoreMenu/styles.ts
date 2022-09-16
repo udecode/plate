@@ -10,7 +10,7 @@ export const moreMenuButtonRootStyles = css`
 `;
 
 export const moreMenuMenuRootStyles = css`
-  ${tw`bg-gray-200 rounded-lg min-w-[80px] max-w-max absolute top-full mt-1`}
+  ${tw`bg-gray-200 rounded-lg min-w-[80px] max-w-max absolute top-full mt-1 z-10`}
 `;
 
 export const moreMenuMenuItemStyles = css`

@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { Comment } from '../../utils';
+import { Comment } from '../../types';
 import { Avatar } from '../Avatar';
 
 export type ThreadCommentAvatarImageProps = {

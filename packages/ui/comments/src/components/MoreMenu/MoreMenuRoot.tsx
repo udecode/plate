@@ -5,16 +5,19 @@ import {
   HTMLPropsAs,
   useOnClickOutside,
 } from '@udecode/plate-core';
-import { moreMenuActions } from './moreMenuStore';
 
-export type MoreMenuRootProps = HTMLPropsAs<'div'>;
+export type MoreMenuRootProps = {
+  setMenuVisibility: (visibility: boolean) => void;
+} & HTMLPropsAs<'div'>;
 
 export const useMoreMenuRoot = (props: MoreMenuRootProps) => {
+  const { setMenuVisibility } = props;
+
   const ref = useRef<HTMLDivElement | null>(null);
 
   useOnClickOutside(
     () => {
-      moreMenuActions.isMenuOpen(false);
+      setMenuVisibility(false);
     },
     { refs: [ref] }
   );

@@ -1,6 +1,5 @@
 import React, { MouseEventHandler, useCallback } from 'react';
 import {
-  useEditorState,
   useEventPlateId,
   usePlateEditorState,
   withPlateEventProvider,

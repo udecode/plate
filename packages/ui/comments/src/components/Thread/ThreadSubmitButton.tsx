@@ -4,21 +4,19 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { Thread, User } from '../../utils';
+import { Thread, User } from '../../types';
 
 export type ThreadSubmitButtonProps = {
-  onSubmitComment?: (value: string, assignedTo: User) => void;
-  value: string;
+  onSubmitComment?: (value: string, assignedTo?: User) => void;
   thread: Thread;
+  value: string;
 } & HTMLPropsAs<'button'>;
 
 export const useThreadSubmitButton = (props: ThreadSubmitButtonProps) => {
-  const { onSubmitComment, thread, value, ...rest } = props;
+  const { onSubmitComment, value, thread, ...rest } = props;
 
   const onClick = useCallback(() => {
-    if (thread.assignedTo) {
-      onSubmitComment?.(value, thread.assignedTo);
-    }
+    onSubmitComment?.(value, thread.assignedTo);
   }, [thread.assignedTo, onSubmitComment, value]);
 
   return {

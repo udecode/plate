@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { Thread } from '../../utils';
+import { Thread } from '../../types';
 
 export type ResolveButtonRootProps = {
   thread: Thread;

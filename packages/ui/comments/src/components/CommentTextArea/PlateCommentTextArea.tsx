@@ -1,5 +1,5 @@
 import React, { RefObject } from 'react';
-import { Contact, Thread, User } from '../../utils';
+import { Thread, User } from '../../types';
 import {
   contactCss,
   Contacts,
@@ -14,12 +14,11 @@ import { commentTextAreaSelectors } from './commentTextAreaStore';
 import { textAreaStyles } from './styles';
 
 export type PlateCommentTextAreaProps = {
-  fetchContacts: () => Contact[];
+  fetchContacts: () => User[];
   onValueChange?: (value: string) => void;
   onSubmitComment?: (value: string, assignedTo: User) => void;
   textAreaRef?: RefObject<HTMLTextAreaElement> | null;
   thread: Thread;
-  value: string;
 };
 
 export const PlateCommentTextArea = (props: PlateCommentTextAreaProps) => {

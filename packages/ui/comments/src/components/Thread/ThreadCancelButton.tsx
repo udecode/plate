@@ -7,14 +7,16 @@ import {
 
 export type ThreadCancelButtonProps = {
   onCancel?: () => void;
+  hideThread?: () => void;
 } & HTMLPropsAs<'button'>;
 
 export const useThreadCancelButton = (props: ThreadCancelButtonProps) => {
-  const { onCancel, ...rest } = props;
+  const { onCancel, hideThread, ...rest } = props;
 
   const onClick = useCallback(() => {
     onCancel?.();
-  }, [onCancel]);
+    hideThread?.();
+  }, [hideThread, onCancel]);
 
   return {
     ...rest,
