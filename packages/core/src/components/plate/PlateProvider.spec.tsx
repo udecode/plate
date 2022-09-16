@@ -149,6 +149,21 @@ describe('PlateProvider', () => {
         expect(result.current[result.current.length - 1].key).toBe('test2');
       });
     });
+
+    describe('when unmounted id is used', () => {
+      it('should be []', () => {
+        const plugins = [{ key: 'test1' }];
+
+        const wrapper = ({ children }: any) => (
+          <PlateProvider plugins={plugins}>{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors(1).plugins(), {
+          wrapper,
+        });
+
+        expect(result.current).toEqual([]);
+      });
+    });
   });
 
   describe('when id updates', () => {
