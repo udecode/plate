@@ -150,4 +150,29 @@ describe('PlateProvider', () => {
       });
     });
   });
+
+  describe('when id updates', () => {
+    it('should remount PlateProvider', () => {
+      const _plugins = [{ key: 'test1' }];
+
+      const wrapper = ({ children, id }: any) => (
+        <PlateProvider id={id} plugins={id === 1 ? _plugins : undefined}>
+          {children}
+        </PlateProvider>
+      );
+      const { result, rerender } = renderHook(
+        ({ id }) => usePlateSelectors(id).plugins(),
+        {
+          wrapper,
+          initialProps: { id: 1 },
+        }
+      );
+
+      expect(result.current[result.current.length - 1].key).toBe('test1');
+
+      rerender({ id: 2 });
+
+      expect(result.current[result.current.length - 1].key).not.toBe('test1');
+    });
+  });
 });
