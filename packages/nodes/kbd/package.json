@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-kbd",
-  "version": "17.0.2",
+  "version": "17.0.3",
   "description": "Keyboard input plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "17.0.2"
+    "@udecode/plate-core": "17.0.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
