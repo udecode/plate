@@ -1,9 +1,8 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const reOpenThreadButtonCss = css`
-  padding: 3px;
-  width: 30px;
-  height: 30px;
+  ${tw`p-1 w-8 h-8`};
 
   & .mdc-icon-button__ripple::before,
   & .mdc-icon-button__ripple::after {
@@ -17,5 +16,5 @@ export const reOpenThreadButtonCss = css`
 `;
 
 export const reOpenThreadIconCss = css`
-  color: black;
+  ${tw`text-black`};
 `;

@@ -1,14 +1,11 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const threadLinkDialogCloseButtonCss = css`
-  width: 32px;
-  height: 32px;
-  padding: 7px;
+  ${tw`h-8 p-2 w-8`}
 
   svg {
-    position: relative;
+    ${tw`h-4 relative w-4`};
     top: -6px;
-    width: 18px;
-    height: 18px;
   }
 `;

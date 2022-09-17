@@ -1,23 +1,11 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const textAreaCss = css`
-  color: #3c4043;
-  line-height: 20px;
-  height: 38px;
+  ${tw`text-gray-800 leading-5 h-10 rounded box-border text-sm p-2 block m-0 overflow-x-hidden overflow-y-hidden resize-none w-full cursor-text`};
   border: 1px solid #dadce0;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
   min-height: 36px;
-  padding: 8px;
-  display: block;
-  margin: 0;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  outline-width: 0 !important;
-  resize: none;
-  width: 100%;
-  cursor: text;
+  outline-width: 0;
   text-align: start;
   word-wrap: break-word;
 `;

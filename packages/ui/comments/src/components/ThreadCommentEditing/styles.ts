@@ -1,80 +1,40 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const threadCommentEditingRootCss = css`
+  ${tw`bg-white cursor-default block text-sm px-3 pt-0 pb-3 relative text-left text-black whitespace-normal`};
   font-weight: normal;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  color: black;
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  white-space: normal;
-  font-size: 14px;
-  cursor: default;
-  -webkit-user-select: text;
   direction: ltr;
   unicode-bidi: isolate;
-  position: relative;
   outline: none;
-  zoom: 1;
-  border: none;
-  background-color: #fff;
-  padding: 12px;
-  display: block !important;
-  padding-top: 0;
-  text-align: left;
 `;
 
 export const threadCommentEditingActionsCss = css`
+  ${tw`cursor-pointer block text-sm pt-2 text-left text-black whitespace-normal`};
   font-weight: normal;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  color: black;
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  white-space: normal;
-  font-size: 14px;
-  cursor: pointer;
   direction: ltr;
-  -webkit-user-select: text;
-  zoom: 1;
-  text-align: left;
-  padding-top: 8px;
-  display: block;
 `;
 
 export const threadCommentEditingSaveButtonCss = css`
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  ${tw`border-transparent rounded border-solid border box-border cursor-pointer inline-block font-medium h-6 text-sm leading-4 my-0 ml-0 mr-2 py-1 px-3 relative shadow-none text-center text-white tracking-wide select-none align-middle whitespace-nowrap`};
   direction: ltr;
-  position: relative;
-  display: inline-block;
-  text-align: center;
-  white-space: nowrap;
   outline: 0px;
-  margin: 0 8px 0 0;
   min-width: 24px;
-  vertical-align: middle;
-  border: 1px solid transparent !important;
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.25px;
-  line-height: 16px;
-  height: 24px;
-  padding: 3px 12px 5px;
-  background-color: #1a73e8;
-  color: #fff;
-  user-select: none;
-  cursor: pointer;
+  background-color: rgba(26, 115, 232, 1);
 
   &:hover {
+    ${tw`text-white`};
     background-color: #2b7de9;
     box-shadow: 0 1px 3px 1px rgb(66 133 244 / 15%);
-    color: #fff;
   }
 
   &:active {
+    ${tw`text-white`};
     background-color: #63a0ef;
     box-shadow: 0 2px 6px 2px rgb(66 133 244 / 15%);
-    color: #fff;
   }
 
   &[disabled] {
@@ -86,31 +46,13 @@ export const threadCommentEditingSaveButtonCss = css`
 `;
 
 export const threadCommentEditingCancelButtonCss = css`
+  ${tw`bg-white rounded border-solid border box-border cursor-pointer inline-block font-medium h-6 text-sm leading-4 my-0 ml-0 mr-2 py-1 px-3 relative shadow-none text-center tracking-wide select-none align-middle whitespace-nowrap`};
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   direction: ltr;
-  position: relative;
-  display: inline-block;
-  text-align: center;
-  white-space: nowrap;
   outline: 0px;
-  margin: 0 8px 0 0;
   min-width: 24px;
-  vertical-align: middle;
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.25px;
-  line-height: 16px;
-  background: white;
-  border: 1px solid #dadce0 !important;
-  height: 24px;
-  padding: 3px 12px 5px;
-  color: #1a73e8;
-  user-select: none;
-  cursor: pointer;
+  border-color: rgba(218, 220, 224, 1);
+  color: rgba(26, 115, 232, 1);
 
   &:hover {
     background-color: #f8fbff;

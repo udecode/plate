@@ -1,40 +1,29 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const assignedToHeaderRootCss = css`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  padding: 12px;
+  ${tw`flex flex-row items-center p-3 rounded-t-lg`};
   border-bottom: 1px solid rgb(218, 220, 224);
 `;
 
 export const assignedToHeaderAvatarContainerCss = css`
-  flex: 0 0 auto;
-  margin-right: 10px;
-  background-color: white;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  ${tw`mr-2 bg-white w-8 h-8 flex-none rounded-full`};
 `;
 
 export const assignedToHeaderAssignedToContainerCss = css`
-  flex: 1 1 auto;
+  ${tw`flex-auto`}
 `;
 
 export const assignedToHeaderAssignedToTextCss = css`
-  font-size: 0.75rem;
+  ${tw`text-xs`};
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
 `;
 
 export const assignedToHeaderAssignedToUserNameCss = css`
-  font-size: 0.875rem;
+  ${tw`text-sm leading-5 font-medium`};
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  line-height: 1.25rem;
-  font-weight: 500;
 `;
 
 export const assignedToHeaderActionsCss = css`
-  flex: 0 0 auto;
+  ${tw`flex-none`};
 `;

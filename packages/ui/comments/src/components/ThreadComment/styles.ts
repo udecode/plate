@@ -1,78 +1,35 @@
 import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const threadCommentHeaderCss = css`
-  box-sizing: content-box;
+  ${tw`box-content cursor-default flex items-center h-10 text-sm m-0 p-3 text-left text-black whitespace-nowrap`};
   font-weight: normal;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  text-align: left;
-  color: black;
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  font-size: 14px;
   direction: ltr;
-  cursor: default;
-  -webkit-user-select: text;
-  height: 38px;
-  white-space: nowrap;
-  display: flex;
-  margin: 0;
-  padding: 12px;
-  align-items: center;
 `;
 
 export const threadCommentHeaderInfoCss = css`
+  ${tw`cursor-pointer flex flex-col justify-center flex-grow text-sm pl-2 text-left text-black truncate`};
   font-weight: normal;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  text-align: left;
-  color: black;
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  cursor: pointer;
   direction: ltr;
-  -webkit-user-select: text;
-  padding-left: 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  -webkit-box-flex: 1;
-  flex-grow: 1;
-  display: flex;
   align-items: start;
-  flex-direction: column;
-  justify-content: center;
 `;
 
 export const threadCommentHeaderCreatedByNameCss = css`
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  text-align: left;
+  ${tw`cursor-default self-stretch font-medium h-4 text-sm leading-5 my-0 ml-0 mr-1 text-left tracking-wide truncate`};
   direction: ltr;
-  cursor: default;
-  -webkit-user-select: text;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-  height: 18px;
-  align-self: stretch;
-  color: #3c4043;
+  color: rgba(60, 64, 67, 1);
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.25px;
-  line-height: 20px;
-  margin-right: 0.25rem;
 `;
 
 export const threadCommentHeaderCreatedDateCss = css`
-  color: #3c4043;
+  ${tw`text-xs leading-4 tracking-wide`};
+  color: rgba(60, 64, 67, 1);
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.3px;
 `;
 
 export const threadCommentTextCss = css`
-  padding-left: 12px;
-  padding-right: 12px;
+  ${tw`px-3 whitespace-pre-wrap`};
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  white-space: pre-wrap;
 `;
