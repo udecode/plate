@@ -1,10 +1,17 @@
 import { createStore } from '@udecode/plate-core';
 
-export const threadCommentStore = createStore('threadCommentStore')({
-  isOpen: false,
+type ThreadCommentState = {
+  isEditing: boolean;
+  threadLink: string | null;
+};
+
+export const threadCommentStore = createStore(
+  'threadComment'
+)<ThreadCommentState>({
   isEditing: false,
+  threadLink: null,
 });
 
-export const threadCommentStoreActions = threadCommentStore.set;
-export const threadCommentStoreSelectors = threadCommentStore.get;
-export const useThreadCommentStoreSelectors = () => threadCommentStore.use;
+export const useThreadCommentSelectors = threadCommentStore.use;
+export const threadCommentSelectors = threadCommentStore.get;
+export const threadCommentActions = threadCommentStore.set;

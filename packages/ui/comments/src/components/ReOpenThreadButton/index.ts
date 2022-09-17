@@ -4,6 +4,5 @@
 
 export * from './PlateReOpenThreadButton';
 export * from './ReOpenThreadButton';
-export * from './ReOpenThreadRoot';
-export * from './ReOpenThreadUnarchive';
+export * from './ReOpenThreadButtonRoot';
 export * from './styles';

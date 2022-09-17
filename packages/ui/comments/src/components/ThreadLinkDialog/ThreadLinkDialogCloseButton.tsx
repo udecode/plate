@@ -10,12 +10,9 @@ export type ThreadLinkDialogCloseButtonProps = {
 
 export const useThreadLinkDialogCloseButton = (
   props: ThreadLinkDialogCloseButtonProps
-) => {
-  const { onClose } = props;
-  return {
-    ...props,
-    onClick: onClose,
-  };
+): HTMLPropsAs<'button'> => {
+  const { onClose, ...rest } = props;
+  return { ...rest, onClick: onClose };
 };
 
 export const ThreadLinkDialogCloseButton = createComponentAs<ThreadLinkDialogCloseButtonProps>(

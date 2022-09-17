@@ -1,26 +1,40 @@
 import { css } from 'styled-components';
-import tw from 'twin.macro';
 
-export const assignedToHeaderRoot = css`
-  ${tw`flex items-center justify-between bg-[#56bf98]	rounded-t-lg px-3 py-1`}
+export const assignedToHeaderRootCss = css`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgb(218, 220, 224);
 `;
 
-export const assignedToHeaderInformationCss = css`
-  ${tw`flex items-center gap-2 text-white`}
+export const assignedToHeaderAvatarContainerCss = css`
+  flex: 0 0 auto;
+  margin-right: 10px;
+  background-color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
 `;
 
-export const assignedToHeaderAvatarCss = css`
-  ${tw`h-8 w-8 object-cover rounded-full`};
+export const assignedToHeaderAssignedToContainerCss = css`
+  flex: 1 1 auto;
+`;
+
+export const assignedToHeaderAssignedToTextCss = css`
+  font-size: 0.75rem;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+`;
+
+export const assignedToHeaderAssignedToUserNameCss = css`
+  font-size: 0.875rem;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  line-height: 1.25rem;
+  font-weight: 500;
 `;
 
 export const assignedToHeaderActionsCss = css`
-  ${tw`flex items-center gap-2`};
-`;
-
-export const assignedToHeaderResolveButtonCss = css`
-  ${tw`flex items-center content-center p-1 w-8 h-8 bg-transparent border-none cursor-pointer rounded-lg bg-gray-200 hover:bg-gray-300`}
-`;
-
-export const assignedToHeaderReOpenThreadButtonCss = css`
-  ${tw`flex items-center content-center p-1 w-8 h-8 bg-transparent border-none cursor-pointer rounded-lg bg-gray-200 hover:bg-gray-300`}
+  flex: 0 0 auto;
 `;

@@ -3,25 +3,29 @@ import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
+  useHotkeys,
 } from '@udecode/plate-core';
+import { ThreadPosition } from '../../types';
 import { determineAbsolutePosition, isClickInsideThreads } from '../../utils';
 
 export type ResolvedThreadsRootProps = {
   onClose: () => void;
-  parentRef: RefObject<HTMLElement>;
+  parent: RefObject<HTMLElement>;
 } & HTMLPropsAs<'div'>;
 
-export type ResolveThreadsPosition = {
-  top: number;
-  left: number;
-};
+export const useResolvedThreadsRoot = (
+  props: ResolvedThreadsRootProps
+): HTMLPropsAs<'div'> => {
+  const { onClose, parent } = props;
 
-export const useResolvedThreadsRoot = (props: ResolvedThreadsRootProps) => {
-  const { onClose, parentRef } = props;
-
-  const [position, setPosition] = useState<ResolveThreadsPosition | null>(null);
+  const [position, setPosition] = useState<ThreadPosition | null>(null);
 
   const ref = useRef<HTMLDivElement>(null);
+
+  useHotkeys('escape', () => onClose(), {
+    enableOnTags: ['INPUT'],
+    enableOnContentEditable: true,
+  });
 
   const onClick = useCallback(
     (event: MouseEvent) => {
@@ -33,7 +37,7 @@ export const useResolvedThreadsRoot = (props: ResolvedThreadsRootProps) => {
   );
 
   const updatePosition = useCallback(() => {
-    const parentElement = parentRef.current!;
+    const parentElement = parent.current!;
     const newPosition = determineAbsolutePosition(parentElement);
     newPosition.top += parentElement.clientHeight;
     newPosition.left =
@@ -41,7 +45,7 @@ export const useResolvedThreadsRoot = (props: ResolvedThreadsRootProps) => {
       0.5 * ref.current!.clientWidth +
       0.5 * parentElement.clientWidth;
     setPosition(newPosition);
-  }, [parentRef]);
+  }, [parent]);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,11 +65,7 @@ export const useResolvedThreadsRoot = (props: ResolvedThreadsRootProps) => {
     updatePosition();
   }, [updatePosition]);
 
-  return {
-    ...props,
-    ref,
-    style: { ...position },
-  };
+  return { ...props, ref, style: { ...position } };
 };
 
 export const ResolvedThreadsRoot = createComponentAs<ResolvedThreadsRootProps>(

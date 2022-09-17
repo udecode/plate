@@ -4,6 +4,5 @@
 
 export * from './PlateResolveButton';
 export * from './ResolveButton';
-export * from './ResolveButtonCheck';
 export * from './ResolveButtonRoot';
 export * from './styles';

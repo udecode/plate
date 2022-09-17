@@ -3,8 +3,6 @@
  */
 
 export * from './Avatar';
-export * from './AvatarAccountCircle';
 export * from './AvatarImage';
-export * from './AvatarRoot';
 export * from './PlateAvatar';
 export * from './styles';

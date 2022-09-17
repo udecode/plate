@@ -1,123 +1,130 @@
-import React, { RefObject } from 'react';
-import { Close } from '@styled-icons/material';
+import '@material/menu-surface/dist/mdc.menu-surface.css';
+import React, { useCallback, useState } from 'react';
 import { Comment, Thread, User } from '../../types';
-import { Avatar, avatarImageCss, avatarRootCss } from '../Avatar';
-import { PlateMoreMenu } from '../MoreMenu';
+import { generateThreadLink } from '../../utils';
+import { PlateAvatar } from '../Avatar';
+import { PlateMenuButton } from '../MenuButton';
+import { PlateReOpenThreadButton } from '../ReOpenThreadButton';
+import { PlateResolveButton } from '../ResolveButton';
+import { PlateThreadCommentEditing } from '../ThreadCommentEditing/PlateThreadCommentEditing';
+import { PlateThreadLinkDialog } from '../ThreadLinkDialog';
 import {
-  ReOpenThreadButton,
-  reOpenThreadButtonRootStyles,
-} from '../ReOpenThreadButton';
-import { ResolveButton, resolveButtonRootStyles } from '../ResolveButton';
-import {
-  PlateThreadCommentEditing,
-  threadCommentEditingRootCss,
-} from '../ThreadCommentEditing';
-import {
-  ThreadLinkDialog,
-  threadLinkDialogCloseButtonCss,
-  threadLinkDialogHeaderCss,
-  threadLinkDialogLinkCss,
-  threadLinkDialogRootCss,
-} from '../ThreadLinkDialog';
-import {
-  threadCommentActionsCss,
-  threadCommentAuthorTimestampCss,
-  threadCommentCommenterNameCss,
-  threadCommentCommentHeaderCss,
-  threadCommentRootCss,
-  threadCommentThreadCommentTextCss,
-  threadCommentTimestampCss,
+  threadCommentHeaderCreatedByNameCss,
+  threadCommentHeaderCreatedDateCss,
+  threadCommentHeaderCss,
+  threadCommentHeaderInfoCss,
+  threadCommentTextCss,
 } from './styles';
-import { ThreadComment } from './ThreadComment';
-import { useThreadCommentStoreSelectors } from './threadCommentStore';
 
-export type PlateThreadCommentProps = {
+type PlateThreadCommentProps = {
   comment: Comment;
-  fetchContacts: () => User[];
-  initialValue: string;
-  onCancel?: () => void;
-  onDelete?: () => void;
-  onEdit?: () => void;
-  onLink?: () => void;
-  onReOpenThread?: () => void;
-  onResolveThread?: () => void;
-  onSave: (comment: Comment) => Thread;
-  onSubmitComment?: (value: string, assignedTo: User) => void;
-  onValueChange?: (value: string) => void;
-  showLinkButton?: boolean;
-  showMoreButton?: boolean;
-  showReOpenThreadButton?: boolean;
-  showResolveThreadButton?: boolean;
-  textAreaRef?: RefObject<HTMLTextAreaElement> | null;
   thread: Thread;
-  threadLink?: string;
+  showResolveThreadButton: boolean;
+  showReOpenThreadButton: boolean;
+  showMoreButton: boolean;
+  showLinkToThisComment: boolean;
+  onSaveComment: (comment: Comment) => void;
+  onResolveThread: () => void;
+  onReOpenThread: () => void;
+  onDelete: (comment: Comment) => void;
+  fetchContacts: () => User[];
 };
 
 export const PlateThreadComment = (props: PlateThreadCommentProps) => {
   const {
     comment,
-    showResolveThreadButton,
-    showReOpenThreadButton,
+    fetchContacts,
+    onDelete: onDeleteCallback,
+    onReOpenThread,
+    onResolveThread,
+    onSaveComment,
+    showLinkToThisComment,
     showMoreButton,
+    showReOpenThreadButton,
+    showResolveThreadButton,
+    thread,
   } = props;
 
-  const isThreadLinkDialogOpen = useThreadCommentStoreSelectors().isOpen();
-  const isEditing = useThreadCommentStoreSelectors().isEditing();
+  const [isEditing, setIsEditing] = useState(false);
+  const [threadLink, setThreadLink] = useState<string | null>(null);
+
+  const onEdit = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const onDelete = useCallback(() => {
+    onDeleteCallback(comment);
+  }, [comment, onDeleteCallback]);
+
+  const onLinkToThisComment = useCallback(() => {
+    setThreadLink(generateThreadLink(thread));
+  }, [thread]);
+
+  const onCloseCommentLinkDialog = useCallback(() => {
+    setThreadLink(null);
+  }, []);
+
+  const onSave = useCallback(
+    (text: string) => {
+      setIsEditing(false);
+      onSaveComment({
+        ...comment,
+        text,
+      });
+    },
+    [comment, onSaveComment]
+  );
+
+  const onCancel = useCallback(() => {
+    setIsEditing(false);
+  }, []);
 
   return (
-    <div css={threadCommentRootCss}>
-      <div css={threadCommentCommentHeaderCss}>
-        <Avatar.Root css={avatarRootCss}>
-          <ThreadComment.AvatarImage {...props} css={avatarImageCss} />
-        </Avatar.Root>
-        <div css={threadCommentAuthorTimestampCss}>
-          <div css={threadCommentCommenterNameCss}>
+    <div>
+      <div css={threadCommentHeaderCss}>
+        <PlateAvatar user={comment.createdBy} />
+        <div css={threadCommentHeaderInfoCss}>
+          <div css={threadCommentHeaderCreatedByNameCss}>
             {comment.createdBy.name}
           </div>
-          <div css={threadCommentTimestampCss}>
+          <div css={threadCommentHeaderCreatedDateCss}>
             {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>
-        <div css={threadCommentActionsCss}>
-          {showResolveThreadButton && (
-            <ResolveButton.Root {...props} css={resolveButtonRootStyles}>
-              <ResolveButton.Check />
-            </ResolveButton.Root>
-          )}
-          {showReOpenThreadButton && (
-            <ReOpenThreadButton.Root
-              {...props}
-              css={reOpenThreadButtonRootStyles}
-            >
-              <ReOpenThreadButton.Unarchive />
-            </ReOpenThreadButton.Root>
-          )}
-          {showMoreButton ? <PlateMoreMenu {...props} /> : null}
-        </div>
+        {showResolveThreadButton ? (
+          <PlateResolveButton
+            thread={thread}
+            onResolveThread={onResolveThread}
+          />
+        ) : null}
+        {showReOpenThreadButton && (
+          <PlateReOpenThreadButton onReOpenThread={onReOpenThread} />
+        )}
+        {showMoreButton ? (
+          <PlateMenuButton
+            showLinkToThisComment={showLinkToThisComment}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onLinkToThisComment={onLinkToThisComment}
+          />
+        ) : null}
       </div>
       {isEditing ? (
-        <div css={threadCommentEditingRootCss}>
-          <PlateThreadCommentEditing {...props} initialValue={comment.text} />
-        </div>
+        <PlateThreadCommentEditing
+          thread={thread}
+          defaultText={comment.text}
+          onSave={onSave}
+          onCancel={onCancel}
+          fetchContacts={fetchContacts}
+        />
       ) : (
-        <div css={threadCommentThreadCommentTextCss}>{comment.text}</div>
+        <div css={threadCommentTextCss}>{comment.text}</div>
       )}
-
-      {isThreadLinkDialogOpen ? (
-        <div css={threadLinkDialogRootCss}>
-          <div css={threadLinkDialogHeaderCss}>
-            <h3>Link To Thread</h3>
-            <ThreadComment.ThreadLinkDialogCloseButton
-              css={threadLinkDialogCloseButtonCss}
-            >
-              <Close />
-            </ThreadComment.ThreadLinkDialogCloseButton>
-          </div>
-          <div css={threadLinkDialogLinkCss}>
-            <ThreadLinkDialog.Input {...props} />
-            <ThreadLinkDialog.CopyIcon {...props} />
-          </div>
-        </div>
+      {threadLink ? (
+        <PlateThreadLinkDialog
+          threadLink={threadLink}
+          onClose={onCloseCommentLinkDialog}
+        />
       ) : null}
     </div>
   );

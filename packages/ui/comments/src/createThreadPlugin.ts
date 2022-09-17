@@ -1,5 +1,4 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { ThreadElement } from './components/ThreadElement';
 import { insertTextThreadPlugin } from './transforms/insertTextThreadPlugin';
 import { ThreadPlugin } from './types';
 

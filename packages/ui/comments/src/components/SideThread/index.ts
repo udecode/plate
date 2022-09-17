@@ -3,7 +3,4 @@
  */
 
 export * from './PlateSideThread';
-export * from './SideThread.styles';
-export * from './SideThread';
-export * from './SideThreadRoot';
 export * from './styles';

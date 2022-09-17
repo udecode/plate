@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { PlateSideThread } from './components/SideThread/PlateSideThread';
+import { PlateSideThread } from './components';
 import { useComments } from './hooks';
 
 const user = {
@@ -19,24 +19,27 @@ export const Comments = (props: any) => {
     setCommentActions(commentActions);
   }, [commentActions, setCommentActions]);
 
-  const retrieveUserByEmail = (email: string) => {
-    return [user].find((u) => u.email === email);
+  const retrieveUserByEmailAddress = (email: string) => {
+    const foundUser = [user].find((u) => u.email === email);
+    if (foundUser) {
+      return foundUser;
+    }
+    return null;
   };
 
   if (commentActions.thread) {
     return (
       <>
         <PlateSideThread
-          fetchContacts={() => [user]}
-          onCancel={commentActions.onCancelCreateThread}
-          onResolveThread={commentActions.onResolveThread}
-          onSave={commentActions.onSaveComment}
-          onSubmitComment={commentActions.onSubmitComment}
-          position={commentActions.position}
-          retrieveUser={retrieveUser}
-          retrieveUserByEmail={retrieveUserByEmail}
           thread={commentActions.thread}
-          hideThread={commentActions.hideThread}
+          position={commentActions.position}
+          onSaveComment={commentActions.onSaveComment}
+          onSubmitComment={commentActions.onSubmitComment}
+          onCancelCreateThread={commentActions.onCancelCreateThread}
+          onResolveThread={commentActions.onResolveThread}
+          fetchContacts={() => [user]}
+          retrieveUser={retrieveUser}
+          retrieveUserByEmailAddress={retrieveUserByEmailAddress}
         />
       </>
     );

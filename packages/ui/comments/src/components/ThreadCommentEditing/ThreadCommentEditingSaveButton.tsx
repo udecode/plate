@@ -4,33 +4,27 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { cloneDeep } from 'lodash';
-import { Comment, Thread } from '../../types';
-import { threadCommentStoreActions } from '../ThreadComment/threadCommentStore';
 
 export type ThreadCommentEditingSaveButtonProps = {
-  onSave?: (comment: Comment) => Thread;
+  onSave: (text: string) => void;
   value: string;
-  initialValue: string;
-  comment: Comment;
+  defaultText: string;
 } & HTMLPropsAs<'button'>;
 
 export const useThreadCommentEditingSaveButton = (
   props: ThreadCommentEditingSaveButtonProps
 ) => {
-  const { initialValue, onSave, value, comment, ...rest } = props;
+  const { onSave, value, defaultText } = props;
 
-  const onSaveComment = useCallback(() => {
-    const updatedComment = cloneDeep(comment);
-    updatedComment.text = value;
-    onSave?.(updatedComment);
-    threadCommentStoreActions.isEditing(false);
-  }, [comment, onSave, value]);
+  const onClick = useCallback(() => {
+    onSave(value);
+  }, [onSave, value]);
 
-  const disabled =
-    value.trim().length === 0 || value.trim() === initialValue.trim();
-
-  return { ...rest, onClick: onSaveComment, disabled };
+  return {
+    ...props,
+    onClick,
+    disabled: value.trim().length === 0 || value.trim() === defaultText.trim(),
+  };
 };
 
 export const ThreadCommentEditingSaveButton = createComponentAs<ThreadCommentEditingSaveButtonProps>(

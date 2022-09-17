@@ -17,6 +17,7 @@ export const insertTextAtTheStartOfAThreadNode = (
   );
   if (
     previousSiblingNodeEntry &&
+    // @ts-ignore
     isTextNode(retrieveNode(previousSiblingNodeEntry))
   ) {
     changeSelectionToBeBasedOnThePreviousNode(editor);

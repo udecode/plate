@@ -1,23 +1,24 @@
 import React from 'react';
+import { AccountCircle } from '@styled-icons/material';
+import { User } from '../../types';
 import { Avatar } from './Avatar';
-import { AvatarAccountCircleProps } from './AvatarAccountCircle';
-import { AvatarImageProps } from './AvatarImage';
-import { AvatarRootProps } from './AvatarRoot';
-import { avatarImageCss, avatarRootCss } from './styles';
+import {
+  avatarAccountCircleCss,
+  avatarImageCss,
+  avatarRootCss,
+} from './styles';
 
-export type PlateAvatarProps = AvatarRootProps &
-  AvatarImageProps &
-  AvatarAccountCircleProps;
+export type PlateAvatarProps = { user: User };
 
 export const PlateAvatar = (props: PlateAvatarProps) => {
   const { user } = props;
   return (
-    <Avatar.Root css={avatarRootCss}>
-      {user?.avatarUrl ? (
+    <div css={avatarRootCss}>
+      {user.avatarUrl ? (
         <Avatar.Image {...props} css={avatarImageCss} />
       ) : (
-        <Avatar.AccountCircle css={avatarImageCss} />
+        <AccountCircle css={avatarAccountCircleCss} />
       )}
-    </Avatar.Root>
+    </div>
   );
 };

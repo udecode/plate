@@ -7,22 +7,19 @@ import { Thread } from '../../types';
 
 export type ResolveButtonRootProps = {
   thread: Thread;
-  onResolveThread?: () => void;
+  onResolveThread: () => void;
 } & HTMLPropsAs<'button'>;
 
-export const useResolveButtonRoot = (props: ResolveButtonRootProps) => {
+export const useResolveButtonRoot = (
+  props: ResolveButtonRootProps
+): HTMLPropsAs<'button'> => {
   const { thread, onResolveThread } = props;
 
   const title = `Mark as ${
     thread.assignedTo ? 'done' : 'resolved'
   } and hide discussion`;
 
-  return {
-    ...props,
-    onClick: onResolveThread,
-    title,
-    type: 'button',
-  };
+  return { ...props, onClick: onResolveThread, title };
 };
 
 export const ResolveButtonRoot = createComponentAs<ResolveButtonRootProps>(

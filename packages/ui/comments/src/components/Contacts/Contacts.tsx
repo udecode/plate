@@ -1,7 +1,5 @@
-import { ContactsImage } from './ContactsImage';
-import { ContactsText } from './ContactsText';
+import { ContactsRoot } from './ContactsRoot';
 
 export const Contacts = {
-  Image: ContactsImage,
-  Text: ContactsText,
+  Root: ContactsRoot,
 };

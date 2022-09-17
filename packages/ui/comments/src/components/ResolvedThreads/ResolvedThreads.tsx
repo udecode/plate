@@ -1,5 +1,5 @@
 import { ResolvedThreadsRoot } from './ResolvedThreadsRoot';
 
-export const ResolvedThread = {
+export const ResolvedThreads = {
   Root: ResolvedThreadsRoot,
 };

@@ -1,6 +1,21 @@
 import { css } from 'styled-components';
-import tw from 'twin.macro';
 
-export const resolveButtonRootStyles = css`
-  ${tw`flex items-center content-center p-1 w-8 h-8 bg-transparent border-none cursor-pointer rounded-lg bg-gray-200 hover:bg-gray-300`}
+export const resolveButtonCss = css`
+  padding: 3px;
+  width: 30px;
+  height: 30px;
+
+  & .mdc-icon-button__ripple::before,
+  & .mdc-icon-button__ripple::after {
+    border-radius: initial;
+  }
+
+  svg {
+    position: relative;
+    top: -3px;
+  }
+`;
+
+export const resolveButtonIconCss = css`
+  color: #2196f3;
 `;

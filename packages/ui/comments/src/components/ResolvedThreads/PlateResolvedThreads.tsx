@@ -1,48 +1,65 @@
 import React, { RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { Thread, User } from '../../types';
+import { usePlateEditorState } from '@udecode/plate-core';
+import { findThreadNodeEntries } from '../../queries';
+import { User } from '../../types';
+import { nullUser } from '../../utils';
 import { PlateThread } from '../Thread/PlateThread';
-import { ResolvedThread } from './ResolvedThreads';
-import { ResolveThreadsPosition } from './ResolvedThreadsRoot';
-import { resolvedThreadsCss, resolvedThreadsRootCss } from './styles';
+import { ResolvedThreads } from './ResolvedThreads';
+import {
+  resolvedThreadsBodyCss,
+  resolvedThreadsHeaderCss,
+  resolvedThreadsRootCss,
+} from './styles';
 
-export type PlateResolvedThreadsProps = {
-  onClose: () => void;
-  position: ResolveThreadsPosition;
-  resolvedThreads: Thread[];
-  retrieveUser: () => User;
+type PlateResolvedThreadsProps = {
   fetchContacts: () => User[];
-  parentRef: RefObject<HTMLElement>;
-  onReOpenThread?: () => void;
+  onClose: () => void;
+  parent: RefObject<HTMLElement>;
+  retrieveUser: () => User;
 };
 
 export const PlateResolvedThreads = (props: PlateResolvedThreadsProps) => {
-  const { resolvedThreads } = props;
+  const { fetchContacts, retrieveUser } = props;
+
+  const editor = usePlateEditorState()!;
+
+  const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
+
+  const resolvedThreads = threadNodeEntries
+    .map(([threadNodeEntry]) => threadNodeEntry.thread)
+    .filter((thread) => {
+      return thread.isResolved;
+    });
 
   return createPortal(
-    <ResolvedThread.Root
+    <ResolvedThreads.Root
       {...props}
       css={resolvedThreadsRootCss}
       className="threads"
     >
-      <h2>Resolved threads</h2>
-      <div css={resolvedThreadsCss}>
+      <div css={resolvedThreadsHeaderCss}>
+        <h2>Resolved threads</h2>
+      </div>
+      <div css={resolvedThreadsBodyCss}>
         {resolvedThreads.map((thread) => (
           <PlateThread
             key={thread.id}
             thread={thread}
-            showReOpenThreadButton
+            onSaveComment={() => undefined as any}
+            onSubmitComment={() => Promise.resolve() as any}
+            onCancelCreateThread={() => undefined}
+            onResolveThread={() => undefined}
             showResolveThreadButton={false}
+            showReOpenThreadButton
             showMoreButton={false}
-            noHeader
-            noActions
-            // a hacky fix to resolve typescript errors
-            value=""
-            {...props}
+            fetchContacts={fetchContacts}
+            retrieveUser={retrieveUser}
+            retrieveUserByEmailAddress={() => nullUser}
           />
         ))}
       </div>
-    </ResolvedThread.Root>,
+    </ResolvedThreads.Root>,
     document.body
   );
 };

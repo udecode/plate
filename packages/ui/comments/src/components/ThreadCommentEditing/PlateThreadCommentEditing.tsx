@@ -1,19 +1,6 @@
-import React, { RefObject, useCallback, useState } from 'react';
-import { Comment, Thread, User } from '../../types';
-import {
-  CommentTextArea,
-  commentTextAreaSelectors,
-  textAreaStyles,
-} from '../CommentTextArea';
-import {
-  contactCss,
-  Contacts,
-  contactsEmailCss,
-  contactsImageCss,
-  contactsNameCss,
-  contactsRootCss,
-  contactsWrapperCss,
-} from '../Contacts';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Thread as ThreadType, User } from '../../types';
+import { PlateTextArea } from '../TextArea/PlateTextArea';
 import {
   threadCommentEditingActionsCss,
   threadCommentEditingCancelButtonCss,
@@ -23,55 +10,55 @@ import {
 import { ThreadCommentEditing } from './ThreadCommentEditing';
 
 export type PlateThreadCommentEditingProps = {
-  onSave?: (comment: Comment) => Thread;
-  onCancel?: () => void;
-  initialValue: string;
+  thread: ThreadType;
+  defaultText: string;
+  onSave: (text: string) => void;
+  onCancel: () => void;
   fetchContacts: () => User[];
-  onValueChange?: (value: string) => void;
-  thread: Thread;
-  onSubmit?: () => void;
-  textAreaRef?: RefObject<HTMLTextAreaElement> | null;
-  comment: Comment;
 };
 
 export const PlateThreadCommentEditing = (
   props: PlateThreadCommentEditingProps
 ) => {
-  const areContactsShown = commentTextAreaSelectors.areContactsShown();
-  const contacts = commentTextAreaSelectors.filteredContacts();
+  const { thread, defaultText, fetchContacts, onSave } = props;
 
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<string>(defaultText);
+  const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
+    false
+  );
 
-  const onValueChange = useCallback((val: string) => {
-    setValue(val);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  const onSubmit = useCallback(() => {
+    onSave(value);
+  }, [value, onSave]);
+
+  const onValueChange = useCallback((newValue) => {
+    setValue(newValue);
   }, []);
+
+  useEffect(
+    function onShow() {
+      const textArea = textAreaRef.current!;
+      textArea.focus();
+      const { length } = textArea.value;
+      textArea.setSelectionRange(length, length);
+    },
+    [textAreaRef, thread]
+  );
 
   return (
     <div css={threadCommentEditingRootCss}>
-      <CommentTextArea.TextArea
-        {...props}
-        css={textAreaStyles}
+      <PlateTextArea
+        fetchContacts={fetchContacts}
+        haveContactsBeenClosed={haveContactsBeenClosed}
+        onSubmit={onSubmit}
         onValueChange={onValueChange}
+        ref={textAreaRef}
+        setHaveContactsBeenClosed={setHaveContactsBeenClosed}
+        thread={thread}
+        value={value}
       />
-      {areContactsShown ? (
-        <div css={contactsWrapperCss}>
-          <div css={contactsRootCss}>
-            {contacts.map((contact) => (
-              <div key={contact.id} css={contactCss}>
-                <Contacts.Image contact={contact} css={contactsImageCss} />
-                <div>
-                  <Contacts.Text css={contactsNameCss}>
-                    {contact.name}
-                  </Contacts.Text>
-                  <Contacts.Text css={contactsEmailCss}>
-                    {contact.email}
-                  </Contacts.Text>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
       <div css={threadCommentEditingActionsCss}>
         <ThreadCommentEditing.SaveButton
           {...props}

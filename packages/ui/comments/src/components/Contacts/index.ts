@@ -3,7 +3,6 @@
  */
 
 export * from './Contacts';
-export * from './ContactsImage';
-export * from './ContactsText';
+export * from './ContactsRoot';
 export * from './PlateContacts';
 export * from './styles';

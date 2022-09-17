@@ -1,7 +1,5 @@
-import { ReOpenThreadRoot } from './ReOpenThreadRoot';
-import { ReOpenThreadUnarchive } from './ReOpenThreadUnarchive';
+import { ReOpenThreadButtonRoot } from './ReOpenThreadButtonRoot';
 
 export const ReOpenThreadButton = {
-  Root: ReOpenThreadRoot,
-  Unarchive: ReOpenThreadUnarchive,
+  Root: ReOpenThreadButtonRoot,
 };

@@ -1,26 +1,18 @@
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
-export const contactsWrapperCss = css`
-  ${tw`relative`}
-`;
-
-export const contactsRootCss = css`
-  ${tw`flex flex-col gap-2 absolute bg-gray-200 rounded-lg`}
-`;
-
-export const contactCss = css`
-  ${tw`flex gap-2 p-2 items-center cursor-pointer rounded-lg hover:bg-gray-300`}
-`;
-
-export const contactsImageCss = css`
-  ${tw`h-10 w-10 object-cover rounded-full rounded-full`};
-`;
-
-export const contactsNameCss = css`
-  ${tw`p-0 m-0 text-gray-900`};
-`;
-
-export const contactsEmailCss = css`
-  ${tw`p-0 m-0 text-sm text-gray-700`};
+export const contactAvatarImageCss = css`
+  ${tw`rounded-full`}
+  font-weight: normal;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-align: left;
+  color: black;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  direction: ltr;
+  cursor: default;
+  -webkit-user-select: text;
+  white-space: nowrap;
+  height: 40px;
+  width: 40px;
 `;

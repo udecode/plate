@@ -1,34 +1,25 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Comment, Thread, User } from '../../types';
-import { PlateThread } from '../Thread';
-import { SideThread } from './SideThread';
-import { SideThreadPosition } from './SideThreadRoot';
+import { ThreadPosition } from '../../types';
+import { CommonThreadAndSideThreadProps, PlateThread } from '../Thread';
 import { sideThreadRootCss } from './styles';
 
-export type PlateSideThreadProps = {
-  position: SideThreadPosition;
-  fetchContacts: () => User[];
-  retrieveUser: () => User;
-  thread: Thread;
-  onCancel: () => void;
-  onResolveThread?: () => void;
-  onSave: (comment: Comment) => Thread;
-  onSubmitComment?: (value: string, assignedTo?: User) => void;
-  retrieveUserByEmail: (email: string) => User | undefined;
-  hideThread?: () => void;
-};
+export type SideThreadProps = {
+  position: ThreadPosition;
+} & CommonThreadAndSideThreadProps;
 
-export const PlateSideThread = (props: PlateSideThreadProps) => {
+export const PlateSideThread = (props: SideThreadProps) => {
+  const { position, ...otherProps } = props;
+
   return createPortal(
-    <SideThread.Root {...props} css={sideThreadRootCss}>
+    <div css={sideThreadRootCss} style={{ ...position }}>
       <PlateThread
-        {...props}
+        {...otherProps}
         showResolveThreadButton
         showReOpenThreadButton={false}
         showMoreButton
       />
-    </SideThread.Root>,
+    </div>,
     document.body
   );
 };

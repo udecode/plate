@@ -7,7 +7,7 @@ import {
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export type AddThreadToolbarButtonProps = {
-  onAddThread: () => void;
+  onAddThread?: () => void;
 } & ToolbarButtonProps;
 
 export const useAddThreadToolbarButton = (
@@ -22,22 +22,18 @@ export const useAddThreadToolbarButton = (
     (event) => {
       if (editor) {
         event.preventDefault();
-        onAddThread();
+        onAddThread?.();
       }
     },
     [editor, onAddThread]
   );
 
-  return {
-    onMouseDown,
-    otherProps,
-  } as const;
+  return { ...otherProps, onMouseDown };
 };
 
 export const AddThreadToolbarButton = withPlateEventProvider(
   (props: AddThreadToolbarButtonProps) => {
-    const { onMouseDown, otherProps } = useAddThreadToolbarButton(props);
-
-    return <ToolbarButton {...otherProps} onMouseDown={onMouseDown} />;
+    const buttonProps = useAddThreadToolbarButton(props);
+    return <ToolbarButton {...buttonProps} />;
   }
 );

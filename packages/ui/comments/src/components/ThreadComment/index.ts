@@ -3,12 +3,5 @@
  */
 
 export * from './PlateThreadComment';
-export * from './ThreadComment';
-export * from './ThreadCommentAvatarImage';
-export * from './ThreadCommentCancelButton';
-export * from './ThreadCommentMoreMenuEditButton';
-export * from './ThreadCommentResolveButton';
-export * from './ThreadCommentThreadLink';
-export * from './ThreadCommentThreadLinkDialogCloseButton';
 export * from './styles';
 export * from './threadCommentStore';

@@ -6,13 +6,13 @@ import {
 import { User } from '../../types';
 
 export type AvatarImageProps = {
-  user?: User;
+  user: User;
 } & HTMLPropsAs<'img'>;
 
 export const useAvatarImage = (props: AvatarImageProps): HTMLPropsAs<'img'> => {
   const { user } = props;
-  const src = user?.avatarUrl;
-  const alt = `Avatar of ${user?.name}`;
+  const src = user.avatarUrl;
+  const alt = `Avatar of ${user.name}`;
 
   return { ...props, src, alt };
 };

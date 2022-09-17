@@ -3,9 +3,9 @@ import {
   getParentNode,
   PlateEditor,
 } from '@udecode/plate-core';
+import { last } from 'lodash';
 import { Path, Transforms } from 'slate';
 import { isTextNode } from '../queries/isTextNode';
-import { last } from '../utils/last';
 import { changeSelectionToBeBasedOnTheNextNode } from './changeSelectionToBeBasedOnTheNextNode';
 
 export const insertTextAtTheEndOfAThreadNode = (
@@ -23,7 +23,7 @@ export const insertTextAtTheEndOfAThreadNode = (
     } else {
       const insertPath = threadPath
         .slice(0, threadPath.length - 1)
-        .concat([last(threadPath) + 1]);
+        .concat([last(threadPath)! + 1]);
       Transforms.insertNodes(
         editor as any,
         { text },
@@ -36,7 +36,7 @@ export const insertTextAtTheEndOfAThreadNode = (
         editor as any,
         threadPath
           .slice(0, threadPath.length - 1)
-          .concat([last(threadPath) + 2])
+          .concat([last(threadPath)! + 2])
       );
       Transforms.collapse(editor as any, { edge: 'end' });
       insertHasBeenHandled = true;

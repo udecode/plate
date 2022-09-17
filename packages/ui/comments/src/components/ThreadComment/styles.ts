@@ -1,29 +1,78 @@
 import { css } from 'styled-components';
-import tw from 'twin.macro';
 
-export const threadCommentRootCss = css`
-  ${[]}
-`;
-export const threadCommentActionsCss = css`
-  ${[tw`ml-auto flex gap-1.5`]}
-`;
-
-export const threadCommentCommentHeaderCss = css`
-  ${tw`flex items-center whitespace-nowrap h-9 p-3 mt-2 font-normal text-left text-black text-sm cursor-default`};
-`;
-
-export const threadCommentAuthorTimestampCss = css`
-  ${tw`flex flex-col content-center items-start font-normal text-left text-black whitespace-nowrap text-sm ml-3`};
-`;
-
-export const threadCommentCommenterNameCss = css`
-  ${tw`text-gray-700 text-sm text-left font-medium whitespace-nowrap`};
-`;
-
-export const threadCommentTimestampCss = css`
-  ${tw`text-gray-500 text-xs text-left whitespace-nowrap tracking-wide`};
+export const threadCommentHeaderCss = css`
+  box-sizing: content-box;
+  font-weight: normal;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-align: left;
+  color: black;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  direction: ltr;
+  cursor: default;
+  -webkit-user-select: text;
+  height: 38px;
+  white-space: nowrap;
+  display: flex;
+  margin: 0;
+  padding: 12px;
+  align-items: center;
 `;
 
-export const threadCommentThreadCommentTextCss = css`
-  ${tw`text-sm whitespace-pre-wrap px-3 py-2`}
+export const threadCommentHeaderInfoCss = css`
+  font-weight: normal;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-align: left;
+  color: black;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  direction: ltr;
+  -webkit-user-select: text;
+  padding-left: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+export const threadCommentHeaderCreatedByNameCss = css`
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-align: left;
+  direction: ltr;
+  cursor: default;
+  -webkit-user-select: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  height: 18px;
+  align-self: stretch;
+  color: #3c4043;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.25px;
+  line-height: 20px;
+  margin-right: 0.25rem;
+`;
+
+export const threadCommentHeaderCreatedDateCss = css`
+  color: #3c4043;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+`;
+
+export const threadCommentTextCss = css`
+  padding-left: 12px;
+  padding-right: 12px;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  white-space: pre-wrap;
 `;

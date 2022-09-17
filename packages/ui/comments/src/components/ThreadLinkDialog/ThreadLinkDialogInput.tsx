@@ -5,16 +5,15 @@ import {
 } from '@udecode/plate-core';
 
 export type ThreadLinkDialogInputProps = {
-  threadLink?: string;
+  threadLink: string;
 } & HTMLPropsAs<'input'>;
 
-export const useThreadLinkDialogInput = (props: ThreadLinkDialogInputProps) => {
+export const useThreadLinkDialogInput = (
+  props: ThreadLinkDialogInputProps
+): HTMLPropsAs<'input'> => {
   const { threadLink } = props;
-  return {
-    ...props,
-    value: threadLink,
-    readOnly: true,
-  };
+
+  return { ...props, defaultValue: threadLink, readOnly: true };
 };
 
 export const ThreadLinkDialogInput = createComponentAs<ThreadLinkDialogInputProps>(

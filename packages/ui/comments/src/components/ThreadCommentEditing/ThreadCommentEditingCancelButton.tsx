@@ -5,15 +5,18 @@ import {
 } from '@udecode/plate-core';
 
 export type ThreadCommentEditingCancelButtonProps = {
-  onCancel?: (value: string) => void;
+  onCancel: (text: string) => void;
 } & HTMLPropsAs<'button'>;
 
 export const useThreadCommentEditingCancelButton = (
   props: ThreadCommentEditingCancelButtonProps
 ) => {
-  const { onCancel, ...rest } = props;
+  const { onCancel } = props;
 
-  return { ...rest, onClick: onCancel };
+  return {
+    ...props,
+    onClick: onCancel,
+  };
 };
 
 export const ThreadCommentEditingCancelButton = createComponentAs<ThreadCommentEditingCancelButtonProps>(

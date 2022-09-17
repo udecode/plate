@@ -1,9 +1,15 @@
 import { ThreadLinkDialogCloseButton } from './ThreadLinkDialogCloseButton';
-import { ThreadLinkDialogCopyIcon } from './ThreadLinkDialogCopyIcon';
+import { ThreadLinkDialogCopyLinkButton } from './ThreadLinkDialogCopyLinkButton';
+import { ThreadLinkDialogDoneButton } from './ThreadLinkDialogDoneButton';
 import { ThreadLinkDialogInput } from './ThreadLinkDialogInput';
+import { ThreadLinkDialogRoot } from './ThreadLinkDialogRoot';
+import { ThreadLinkDialogSnackbar } from './ThreadLinkDialogSnackbar';
 
 export const ThreadLinkDialog = {
-  Input: ThreadLinkDialogInput,
   CloseButton: ThreadLinkDialogCloseButton,
-  CopyIcon: ThreadLinkDialogCopyIcon,
+  CopyLinkButton: ThreadLinkDialogCopyLinkButton,
+  DoneButton: ThreadLinkDialogDoneButton,
+  Input: ThreadLinkDialogInput,
+  Root: ThreadLinkDialogRoot,
+  Snackbar: ThreadLinkDialogSnackbar,
 };
