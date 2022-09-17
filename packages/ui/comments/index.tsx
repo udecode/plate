@@ -3,11 +3,14 @@ import { render } from 'react-dom';
 import { AddComment, Comment } from '@styled-icons/material';
 import { createPlugins, Plate } from '@udecode/plate-core';
 import { createPlateUI } from '@udecode/plate-ui';
-import { AddThreadToolbarButton } from './components/AddThreadToolbarButton';
-import { PlateThreadNode } from './components/ThreadNode';
-import { Comments } from './Comments';
-import { ToggleShowThreadsButton } from './components';
-import { createThreadPlugin, ELEMENT_THREAD } from './createThreadPlugin';
+import {
+  AddThreadToolbarButton,
+  Comments,
+  createThreadPlugin,
+  ELEMENT_THREAD,
+  PlateThreadNode,
+  ToggleShowThreadsButton,
+} from './src';
 
 const initialValue = [
   {

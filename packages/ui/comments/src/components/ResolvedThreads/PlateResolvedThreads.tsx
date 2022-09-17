@@ -1,21 +1,17 @@
-import React, { RefObject } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import { usePlateEditorState } from '@udecode/plate-core';
 import { findThreadNodeEntries } from '../../queries';
 import { User } from '../../types';
 import { nullUser } from '../../utils';
 import { PlateThread } from '../Thread/PlateThread';
-import { ResolvedThreads } from './ResolvedThreads';
 import {
   resolvedThreadsBodyCss,
   resolvedThreadsHeaderCss,
   resolvedThreadsRootCss,
 } from './styles';
 
-type PlateResolvedThreadsProps = {
+export type PlateResolvedThreadsProps = {
   fetchContacts: () => User[];
-  onClose: () => void;
-  parent: RefObject<HTMLElement>;
   retrieveUser: () => User;
 };
 
@@ -32,15 +28,9 @@ export const PlateResolvedThreads = (props: PlateResolvedThreadsProps) => {
       return thread.isResolved;
     });
 
-  return createPortal(
-    <ResolvedThreads.Root
-      {...props}
-      css={resolvedThreadsRootCss}
-      className="threads"
-    >
-      <div css={resolvedThreadsHeaderCss}>
-        <h2>Resolved threads</h2>
-      </div>
+  return (
+    <div css={resolvedThreadsRootCss}>
+      <h2 css={resolvedThreadsHeaderCss}>Resolved threads</h2>
       <div css={resolvedThreadsBodyCss}>
         {resolvedThreads.map((thread) => (
           <PlateThread
@@ -56,10 +46,10 @@ export const PlateResolvedThreads = (props: PlateResolvedThreadsProps) => {
             fetchContacts={fetchContacts}
             retrieveUser={retrieveUser}
             retrieveUserByEmailAddress={() => nullUser}
+            noTextArea
           />
         ))}
       </div>
-    </ResolvedThreads.Root>,
-    document.body
+    </div>
   );
 };

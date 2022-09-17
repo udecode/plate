@@ -6,11 +6,11 @@ import {
 
 export type MenuButtonLinkItemProps = {
   onLinkToThisComment: () => void;
-} & HTMLPropsAs<'li'>;
+} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonLinkItem = (
   props: MenuButtonLinkItemProps
-): HTMLPropsAs<'li'> => {
+): HTMLPropsAs<'div'> => {
   const { onLinkToThisComment } = props;
   return { ...props, onClick: onLinkToThisComment };
 };
@@ -18,6 +18,6 @@ export const useMenuButtonLinkItem = (
 export const MenuButtonLinkItem = createComponentAs<MenuButtonLinkItemProps>(
   (props) => {
     const htmlProps = useMenuButtonLinkItem(props);
-    return createElementAs('li', htmlProps);
+    return createElementAs('div', htmlProps);
   }
 );

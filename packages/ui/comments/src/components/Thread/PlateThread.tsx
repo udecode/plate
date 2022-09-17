@@ -1,5 +1,3 @@
-import '@material/checkbox/dist/mdc.checkbox.css';
-import '@material/form-field/dist/mdc.form-field.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { cloneDeep } from 'lodash';
@@ -60,6 +58,7 @@ export const PlateThread = (props: PlateThreadProps) => {
     showReOpenThreadButton,
     showResolveThreadButton,
     thread,
+    noTextArea,
   } = props;
 
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
@@ -258,47 +257,49 @@ export const PlateThread = (props: PlateThreadProps) => {
             </div>
           </div>
         ) : null}
-        <div
-          css={[
-            threadCommentInputCss,
-            hasComments ? threadCommentInputReplyCss : null,
-          ]}
-        >
-          <PlateTextArea
-            ref={textAreaRef}
-            value={value}
-            onValueChange={onChange}
-            thread={thread}
-            fetchContacts={fetchContacts}
-            haveContactsBeenClosed={haveContactsBeenClosed}
-            setHaveContactsBeenClosed={setHaveContactsBeenClosed}
-            onSubmit={onSubmitComment}
-          />
-          <ThreadCheckbox
-            determineAssigningVerb={determineAssigningVerb}
-            isAssigned={isAssigned}
-            onToggleAssign={onToggleAssign}
-            retrieveUser={retrieveUser}
-            userThatCanBeAssignedTo={userThatCanBeAssignedTo}
-          />
-          <div css={threadActionsCss}>
-            <button
-              type="button"
-              css={threadCommentButtonCss}
-              onClick={onSubmitComment}
-              disabled={value.trim().length === 0}
-            >
-              {determineSubmitButtonText()}
-            </button>
-            <button
-              css={threadCancelButtonCss}
-              onClick={onCancel}
-              type="button"
-            >
-              Cancel
-            </button>
+        {!noTextArea ? (
+          <div
+            css={[
+              threadCommentInputCss,
+              hasComments ? threadCommentInputReplyCss : null,
+            ]}
+          >
+            <PlateTextArea
+              ref={textAreaRef}
+              value={value}
+              onValueChange={onChange}
+              thread={thread}
+              fetchContacts={fetchContacts}
+              haveContactsBeenClosed={haveContactsBeenClosed}
+              setHaveContactsBeenClosed={setHaveContactsBeenClosed}
+              onSubmit={onSubmitComment}
+            />
+            <ThreadCheckbox
+              determineAssigningVerb={determineAssigningVerb}
+              isAssigned={isAssigned}
+              onToggleAssign={onToggleAssign}
+              retrieveUser={retrieveUser}
+              userThatCanBeAssignedTo={userThatCanBeAssignedTo}
+            />
+            <div css={threadActionsCss}>
+              <button
+                type="button"
+                css={threadCommentButtonCss}
+                onClick={onSubmitComment}
+                disabled={value.trim().length === 0}
+              >
+                {determineSubmitButtonText()}
+              </button>
+              <button
+                css={threadCancelButtonCss}
+                onClick={onCancel}
+                type="button"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

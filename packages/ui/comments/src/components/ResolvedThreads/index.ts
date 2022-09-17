@@ -3,6 +3,4 @@
  */
 
 export * from './PlateResolvedThreads';
-export * from './ResolvedThreads';
-export * from './ResolvedThreadsRoot';
 export * from './styles';

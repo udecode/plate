@@ -13,6 +13,7 @@ import {
   threadCommentHeaderCreatedDateCss,
   threadCommentHeaderCss,
   threadCommentHeaderInfoCss,
+  threadCommentRootCss,
   threadCommentTextCss,
 } from './styles';
 
@@ -80,7 +81,7 @@ export const PlateThreadComment = (props: PlateThreadCommentProps) => {
   }, []);
 
   return (
-    <div>
+    <div css={threadCommentRootCss}>
       <div css={threadCommentHeaderCss}>
         <PlateAvatar user={comment.createdBy} />
         <div css={threadCommentHeaderInfoCss}>

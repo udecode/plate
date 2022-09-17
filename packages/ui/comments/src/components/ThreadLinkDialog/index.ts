@@ -4,10 +4,7 @@
 
 export * from './PlateThreadLinkDialog';
 export * from './ThreadLinkDialog';
-export * from './ThreadLinkDialogCloseButton';
+export * from './ThreadLinkDialogCloseButtonRoot';
 export * from './ThreadLinkDialogCopyLinkButton';
-export * from './ThreadLinkDialogDoneButton';
 export * from './ThreadLinkDialogInput';
-export * from './ThreadLinkDialogRoot';
-export * from './ThreadLinkDialogSnackbar';
 export * from './styles';

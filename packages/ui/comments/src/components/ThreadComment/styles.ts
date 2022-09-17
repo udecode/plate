@@ -1,6 +1,10 @@
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
+export const threadCommentRootCss = css`
+  ${tw`py-2`}
+`;
+
 export const threadCommentHeaderCss = css`
   ${tw`box-content cursor-default flex items-center h-10 text-sm m-0 p-3 text-left text-black whitespace-nowrap`};
   font-weight: normal;

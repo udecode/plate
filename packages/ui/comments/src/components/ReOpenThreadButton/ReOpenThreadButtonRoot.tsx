@@ -6,11 +6,11 @@ import {
 
 export type ReOpenThreadButtonRootProps = {
   onReOpenThread: () => void;
-} & HTMLPropsAs<'button'>;
+} & HTMLPropsAs<'div'>;
 
 export const useReOpenThreadButtonRoot = (
   props: ReOpenThreadButtonRootProps
-): HTMLPropsAs<'button'> => {
+): HTMLPropsAs<'div'> => {
   const { onReOpenThread } = props;
 
   return { ...props, onClick: onReOpenThread };
@@ -19,6 +19,6 @@ export const useReOpenThreadButtonRoot = (
 export const ReOpenThreadButtonRoot = createComponentAs<ReOpenThreadButtonRootProps>(
   (props) => {
     const htmlProps = useReOpenThreadButtonRoot(props);
-    return createElementAs('button', htmlProps);
+    return createElementAs('div', htmlProps);
   }
 );

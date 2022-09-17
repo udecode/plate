@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { MDCCheckbox } from '@material/checkbox';
+import React from 'react';
+import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { User } from '../../types';
 import { generateUserDisplayIdentifier, useLoggedInUser } from '../../utils';
 
@@ -11,58 +11,41 @@ export type ThreadCheckboxProps = {
   retrieveUser: () => User;
 };
 
-export const ThreadCheckbox = (props: ThreadCheckboxProps) => {
+export const useThreadCheckbox = (props: ThreadCheckboxProps) => {
   const {
     determineAssigningVerb,
-    isAssigned,
-    onToggleAssign,
     retrieveUser,
     userThatCanBeAssignedTo,
   } = props;
 
   const loggedInUser = useLoggedInUser(retrieveUser);
 
-  const initializeCheckbox = useCallback((checkbox) => {
-    if (checkbox) {
-      new MDCCheckbox(checkbox);
-    }
-  }, []);
+  const label = userThatCanBeAssignedTo
+    ? `${determineAssigningVerb()} to ${generateUserDisplayIdentifier({
+        user: userThatCanBeAssignedTo,
+        isLoggedInUser: userThatCanBeAssignedTo.id === loggedInUser?.id,
+      })}`
+    : `${determineAssigningVerb()}`;
+
+  return { ...props, label };
+};
+
+export const ThreadCheckbox = (props: ThreadCheckboxProps) => {
+  const {
+    userThatCanBeAssignedTo,
+    label,
+    onToggleAssign,
+    isAssigned,
+  } = useThreadCheckbox(props);
 
   if (userThatCanBeAssignedTo) {
     return (
-      <div className="mdc-form-field">
-        <div
-          ref={initializeCheckbox}
-          className="mdc-checkbox mdc-checkbox--touch"
-        >
-          <input
-            type="checkbox"
-            className="mdc-checkbox__native-control"
-            id="assign"
-            checked={isAssigned}
-            onChange={onToggleAssign}
-          />
-          <div className="mdc-checkbox__background">
-            <svg className="mdc-checkbox__checkmark" viewBox="0 0 24 24">
-              <path
-                className="mdc-checkbox__checkmark-path"
-                fill="none"
-                d="M1.73,12.91 8.1,19.28 22.79,4.59"
-              />
-            </svg>
-            <div className="mdc-checkbox__mixedmark" />
-          </div>
-          <div className="mdc-checkbox__ripple" />
-        </div>
-        <label htmlFor="assign">
-          {userThatCanBeAssignedTo
-            ? `${determineAssigningVerb()} to ${generateUserDisplayIdentifier({
-                user: userThatCanBeAssignedTo,
-                isLoggedInUser: userThatCanBeAssignedTo.id === loggedInUser?.id,
-              })}`
-            : `${determineAssigningVerb()}`}
-        </label>
-      </div>
+      <FormGroup>
+        <FormControlLabel
+          label={label}
+          control={<Checkbox value={isAssigned} onChange={onToggleAssign} />}
+        />
+      </FormGroup>
     );
   }
 

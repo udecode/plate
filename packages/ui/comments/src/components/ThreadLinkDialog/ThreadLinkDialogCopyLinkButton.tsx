@@ -1,34 +1,26 @@
-import { useEffect, useRef } from 'react';
-import { MDCRipple } from '@material/ripple';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
 
-export type ThreadLinkDialogCopyLinkButtonProps = {
+export type ThreadLinkDialogCopyLinkRootProps = {
   threadLink: string;
-} & HTMLPropsAs<'button'>;
+} & HTMLPropsAs<'div'>;
 
-export const useThreadLinkDialogCopyLinkButton = (
-  props: ThreadLinkDialogCopyLinkButtonProps
-): HTMLPropsAs<'button'> => {
+export const useThreadLinkDialogCopyLinkRoot = (
+  props: ThreadLinkDialogCopyLinkRootProps
+): HTMLPropsAs<'div'> => {
   const { threadLink } = props;
-
-  const ref = useRef<HTMLButtonElement>(null);
 
   const onCopyLink = () => navigator.clipboard.writeText(threadLink);
 
-  useEffect(() => {
-    new MDCRipple(ref.current!);
-  }, []);
-
-  return { ...props, onClick: onCopyLink, ref };
+  return { ...props, onClick: onCopyLink };
 };
 
-export const ThreadLinkDialogCopyLinkButton = createComponentAs<ThreadLinkDialogCopyLinkButtonProps>(
+export const ThreadLinkDialogCopyLinkRoot = createComponentAs<ThreadLinkDialogCopyLinkRootProps>(
   (props) => {
-    const htmlProps = useThreadLinkDialogCopyLinkButton(props);
-    return createElementAs('button', htmlProps);
+    const htmlProps = useThreadLinkDialogCopyLinkRoot(props);
+    return createElementAs('div', htmlProps);
   }
 );

@@ -8,11 +8,11 @@ import { Thread } from '../../types';
 export type ResolveButtonRootProps = {
   thread: Thread;
   onResolveThread: () => void;
-} & HTMLPropsAs<'button'>;
+} & HTMLPropsAs<'div'>;
 
 export const useResolveButtonRoot = (
   props: ResolveButtonRootProps
-): HTMLPropsAs<'button'> => {
+): HTMLPropsAs<'div'> => {
   const { thread, onResolveThread } = props;
 
   const title = `Mark as ${
@@ -25,6 +25,6 @@ export const useResolveButtonRoot = (
 export const ResolveButtonRoot = createComponentAs<ResolveButtonRootProps>(
   (props) => {
     const htmlProps = useResolveButtonRoot(props);
-    return createElementAs('button', htmlProps);
+    return createElementAs('div', htmlProps);
   }
 );

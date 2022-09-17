@@ -1,12 +1,8 @@
-import '@material/icon-button/dist/mdc.icon-button.css';
-import '@material/list/dist/mdc.list.css';
-import '@material/menu-surface/dist/mdc.menu-surface.css';
-import '@material/menu/dist/mdc.menu.css';
-import React, { useEffect, useRef } from 'react';
-import { MDCMenu } from '@material/menu';
+import React, { MouseEvent } from 'react';
+import { IconButton, Menu, MenuItem } from '@mui/material';
 import { MoreVert } from '@styled-icons/material';
 import { MenuButton } from './MenuButton';
-import { menuButtonCss } from './styles';
+import { menuButtonCss, menuButtonItemCss } from './styles';
 
 export type MenuButtonProps = {
   showLinkToThisComment: boolean;
@@ -15,67 +11,49 @@ export type MenuButtonProps = {
   onLinkToThisComment: () => void;
 };
 
-let menu: MDCMenu;
 export const PlateMenuButton = (props: MenuButtonProps) => {
   const { showLinkToThisComment } = props;
 
-  const ref = useRef<HTMLDivElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  const open = Boolean(anchorEl);
 
-  useEffect(() => {
-    menu = new MDCMenu(ref.current!);
-  }, []);
-
-  const onClick = () => {
-    menu!.open = !menu!.open;
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   return (
-    <div className="mdc-menu-surface--anchor">
-      <button
-        type="button"
-        css={menuButtonCss}
-        className="mdc-icon-button"
-        onClick={onClick}
+    <div>
+      <IconButton color="default" onClick={handleClick} css={menuButtonCss}>
+        <MoreVert size={22} />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <div className="mdc-icon-button__ripple" />
-        <MoreVert />
-      </button>
-      <div ref={ref} className="mdc-menu mdc-menu-surface">
-        <ul
-          className="mdc-list"
-          role="menu"
-          aria-hidden="true"
-          aria-orientation="vertical"
-          tabIndex={-1}
-        >
-          <MenuButton.EditItem
-            {...props}
-            className="mdc-list-item"
-            role="menuitem"
-          >
-            <span className="mdc-list-item__ripple" />
-            <span className="mdc-list-item__text">Edit</span>
+        <MenuItem onClick={handleClose}>
+          <MenuButton.EditItem {...props} css={menuButtonItemCss}>
+            Edit
           </MenuButton.EditItem>
-          <MenuButton.DeleteItem
-            {...props}
-            className="mdc-list-item"
-            role="menuitem"
-          >
-            <span className="mdc-list-item__ripple" />
-            <span className="mdc-list-item__text">Delete</span>
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <MenuButton.DeleteItem {...props} css={menuButtonItemCss}>
+            Delete thread
           </MenuButton.DeleteItem>
-          {showLinkToThisComment ? (
-            <MenuButton.LinkItem
-              {...props}
-              className="mdc-list-item"
-              role="menuitem"
-            >
-              <span className="mdc-list-item__ripple" />
-              <span className="mdc-list-item__text">Link to this thread</span>
+        </MenuItem>
+        {showLinkToThisComment && (
+          <MenuItem onClick={handleClose}>
+            <MenuButton.LinkItem {...props} css={menuButtonItemCss}>
+              Link to this thread
             </MenuButton.LinkItem>
-          ) : null}
-        </ul>
-      </div>
+          </MenuItem>
+        )}
+      </Menu>
     </div>
   );
 };

@@ -54,6 +54,7 @@ export const upsertThread = <V extends Value>(
     const threadNodeEntry = findNode(editor, {
       at: [],
       match(node: any) {
+        // @ts-ignore
         return isThread(editor, node) && node.thread.id === thread.id;
       },
     });

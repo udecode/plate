@@ -6,11 +6,11 @@ import {
 
 export type MenuButtonEditItemProps = {
   onEdit: () => void;
-} & HTMLPropsAs<'li'>;
+} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonEditItem = (
   props: MenuButtonEditItemProps
-): HTMLPropsAs<'li'> => {
+): HTMLPropsAs<'div'> => {
   const { onEdit } = props;
   return { ...props, onClick: onEdit };
 };
@@ -18,6 +18,6 @@ export const useMenuButtonEditItem = (
 export const MenuButtonEditItem = createComponentAs<MenuButtonEditItemProps>(
   (props) => {
     const htmlProps = useMenuButtonEditItem(props);
-    return createElementAs('li', htmlProps);
+    return createElementAs('div', htmlProps);
   }
 );

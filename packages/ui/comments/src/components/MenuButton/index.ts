@@ -6,7 +6,5 @@ export * from './MenuButton';
 export * from './MenuButtonDeleteItem';
 export * from './MenuButtonEditItem';
 export * from './MenuButtonLinkItem';
-export * from './MenuButtonMenu';
-export * from './MenuButtonRoot';
 export * from './PlateMenuButton';
 export * from './styles';

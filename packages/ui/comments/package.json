@@ -28,22 +28,11 @@
   "dependencies": {
     "@emotion/react": "11.10.4",
     "@emotion/styled": "11.10.4",
-    "@material/button": "^13.0.0",
-    "@material/checkbox": "^14.0.0",
-    "@material/dialog": "^13.0.0",
-    "@material/form-field": "^14.0.0",
-    "@material/icon-button": "^13.0.0",
     "@material/menu": "14.0.0",
     "@material/menu-surface": "^13.0.0",
-    "@material/ripple": "^13.0.0",
-    "@material/snackbar": "^13.0.0",
-    "@material/textfield": "^13.0.0",
-    "@mui/base": "5.0.0-alpha.93",
-    "@mui/material": "5.10.3",
-    "@radix-ui/react-dialog": "1.0.0",
+    "@mui/material": "5.10.5",
     "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
-    "@types/uuid": "8.3.4",
     "@udecode/plate-comments": "^0.5.0",
     "@udecode/plate-core": "16.5.0",
     "@udecode/plate-styled-components": "16.5.0",
@@ -62,24 +51,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/react": "^17.0.48",
-    "@types/react-dom": "^17.0.17",
-    "@types/styled-components": "^5",
-    "@udecode/plate-ui": "16.5.0",
+    "@types/uuid": "8.3.4",
     "@vitejs/plugin-react": "^2.0.1",
-    "babel-plugin-macros": "3.1.0",
-    "babel-plugin-styled-components": "2.0.7",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "styled-components": "5.3.5",
-    "tailwindcss": "3.1.8",
-    "twin.macro": "2.8.2",
     "vite": "^3.0.9"
-  },
-  "babelMacros": {
-    "twin": {
-      "preset": "styled-components"
-    }
   },
   "scripts": {
     "start": "vite"

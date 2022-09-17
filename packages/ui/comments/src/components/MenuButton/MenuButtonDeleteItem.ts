@@ -6,11 +6,11 @@ import {
 
 export type MenuButtonDeleteItemProps = {
   onDelete: () => void;
-} & HTMLPropsAs<'li'>;
+} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonDeleteItem = (
   props: MenuButtonDeleteItemProps
-): HTMLPropsAs<'li'> => {
+): HTMLPropsAs<'div'> => {
   const { onDelete } = props;
   return { ...props, onClick: onDelete };
 };
@@ -18,6 +18,6 @@ export const useMenuButtonDeleteItem = (
 export const MenuButtonDeleteItem = createComponentAs<MenuButtonDeleteItemProps>(
   (props) => {
     const htmlProps = useMenuButtonDeleteItem(props);
-    return createElementAs('li', htmlProps);
+    return createElementAs('div', htmlProps);
   }
 );

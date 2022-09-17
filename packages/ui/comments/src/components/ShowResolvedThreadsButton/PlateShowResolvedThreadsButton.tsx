@@ -1,4 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
+import { Popover } from '@mui/material';
 import {
   useEventPlateId,
   usePlateEditorState,
@@ -27,16 +28,13 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
     const eventPlateId = useEventPlateId(id);
     const editor = usePlateEditorState(eventPlateId)!;
 
-    const [areThreadsShown, setAreThreadsShown] = useState(false);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+      null
+    );
+    const areThreadsShown = Boolean(anchorEl);
 
-    const ref = useRef<HTMLDivElement>(null);
-
-    const toggleShowThreads = useCallback(() => {
-      setAreThreadsShown((areThreadsShownPrev) => !areThreadsShownPrev);
-    }, []);
-
-    const onCloseThreads = useCallback(() => {
-      setAreThreadsShown(false);
+    const handleClose = useCallback(() => {
+      setAnchorEl(null);
     }, []);
 
     const onMouseDown = useCallback(
@@ -44,28 +42,31 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
         if (!editor) {
           return;
         }
-
         event.preventDefault();
-        toggleShowThreads();
+        setAnchorEl(event.currentTarget);
       },
-      [editor, toggleShowThreads]
+      [editor]
     );
 
     return (
-      <div ref={ref}>
+      <div>
         <ToolbarButton
           active={areThreadsShown}
           onMouseDown={onMouseDown}
           {...otherProps}
         />
-        {areThreadsShown ? (
+        <Popover
+          id={areThreadsShown ? 'simple-popover' : undefined}
+          open={areThreadsShown}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        >
           <PlateResolvedThreads
-            parent={ref}
-            onClose={onCloseThreads}
             fetchContacts={fetchContacts}
             retrieveUser={retrieveUser}
           />
-        ) : null}
+        </Popover>
       </div>
     );
   }
