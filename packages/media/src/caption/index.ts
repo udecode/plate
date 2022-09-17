@@ -4,6 +4,7 @@
 
 export * from './captionGlobalStore';
 export * from './getOnKeyDownCaption';
+export * from './getWithSelectionCaption';
 export * from './components/index';
 export * from './hooks/index';
 export * from './types/index';

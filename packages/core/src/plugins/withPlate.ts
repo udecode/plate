@@ -36,7 +36,7 @@ export const withPlate = <
     editor.key = Math.random();
   }
 
-  setPlatePlugins(editor, {
+  setPlatePlugins<V>(editor, {
     plugins: plugins as any,
     disableCorePlugins,
   });

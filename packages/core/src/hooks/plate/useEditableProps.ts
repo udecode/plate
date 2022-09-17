@@ -16,19 +16,14 @@ export const useEditableProps = ({
 }: TEditableProps & { id?: PlateId } = {}): TEditableProps => {
   const editor = usePlateEditorRef(id);
   const selectors = usePlateSelectors(id);
-  const keyPlugins = selectors.keyPlugins();
   const keyDecorate = selectors.keyDecorate();
-  const storeDecorate = selectors.decorate();
-  const storeRenderLeaf = selectors.renderLeaf();
-  const storeRenderElement = selectors.renderElement();
-
-  const isValid = editor && !!keyPlugins;
+  const storeDecorate = selectors.decorate()?.fn;
+  const storeRenderLeaf = selectors.renderLeaf()?.fn;
+  const storeRenderElement = selectors.renderElement()?.fn;
 
   const decorateMemo = useMemo(() => {
-    if (!isValid) return;
-
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
-  }, [editableProps?.decorate, editor, isValid, storeDecorate]);
+  }, [editableProps?.decorate, editor, storeDecorate]);
 
   const decorate: typeof decorateMemo = useMemo(() => {
     if (!keyDecorate || !decorateMemo) return;
@@ -37,23 +32,17 @@ export const useEditableProps = ({
   }, [decorateMemo, keyDecorate]);
 
   const renderElement = useMemo(() => {
-    if (!isValid) return;
-
     return pipeRenderElement(
       editor,
       storeRenderElement ?? editableProps?.renderElement
     );
-  }, [editableProps?.renderElement, editor, isValid, storeRenderElement]);
+  }, [editableProps?.renderElement, editor, storeRenderElement]);
 
   const renderLeaf = useMemo(() => {
-    if (!isValid) return;
-
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
-  }, [editableProps?.renderLeaf, editor, isValid, storeRenderLeaf]);
+  }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
 
   const props: TEditableProps = useDeepCompareMemo(() => {
-    if (!isValid) return {};
-
     const _props: TEditableProps = {
       decorate,
       renderElement,
@@ -72,7 +61,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, isValid, renderElement, renderLeaf]);
+  }, [decorate, editableProps, renderElement, renderLeaf]);
 
   return useDeepCompareMemo(
     () => ({
