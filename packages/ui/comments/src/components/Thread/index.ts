@@ -3,6 +3,5 @@
  */
 
 export * from './PlateThread';
-export * from './Thread';
 export * from './ThreadCheckbox';
 export * from './styles';

@@ -3,7 +3,7 @@ import { Popover } from '@mui/material';
 import {
   useEventPlateId,
   usePlateEditorState,
-  withPlateEventProvider,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { User } from '../../types';
@@ -14,7 +14,7 @@ type ToggleShowThreadsButtonProps = {
   retrieveUser: () => User;
 } & ToolbarButtonProps;
 
-export const ToggleShowThreadsButton = withPlateEventProvider(
+export const ToggleShowThreadsButton = withPlateProvider(
   (props: ToggleShowThreadsButtonProps) => {
     const {
       id,

@@ -29,19 +29,17 @@ export const Comments = (props: any) => {
 
   if (commentActions.thread) {
     return (
-      <>
-        <PlateSideThread
-          thread={commentActions.thread}
-          position={commentActions.position}
-          onSaveComment={commentActions.onSaveComment}
-          onSubmitComment={commentActions.onSubmitComment}
-          onCancelCreateThread={commentActions.onCancelCreateThread}
-          onResolveThread={commentActions.onResolveThread}
-          fetchContacts={() => [user]}
-          retrieveUser={retrieveUser}
-          retrieveUserByEmailAddress={retrieveUserByEmailAddress}
-        />
-      </>
+      <PlateSideThread
+        thread={commentActions.thread}
+        position={commentActions.position}
+        onSaveComment={commentActions.onSaveComment}
+        onSubmitComment={commentActions.onSubmitComment}
+        onCancelCreateThread={commentActions.onCancelCreateThread}
+        onResolveThread={commentActions.onResolveThread}
+        fetchContacts={() => [user]}
+        retrieveUser={retrieveUser}
+        retrieveUserByEmailAddress={retrieveUserByEmailAddress}
+      />
     );
   }
 

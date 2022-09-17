@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@types/uuid": "8.3.4",
+    "@udecode/plate-ui": "17.0.3",
     "@vitejs/plugin-react": "^2.0.1",
     "vite": "^3.0.9"
   },

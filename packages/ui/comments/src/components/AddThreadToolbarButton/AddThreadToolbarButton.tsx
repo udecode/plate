@@ -2,7 +2,7 @@ import React, { MouseEventHandler, useCallback } from 'react';
 import {
   useEventPlateId,
   usePlateEditorState,
-  withPlateEventProvider,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -31,7 +31,7 @@ export const useAddThreadToolbarButton = (
   return { ...otherProps, onMouseDown };
 };
 
-export const AddThreadToolbarButton = withPlateEventProvider(
+export const AddThreadToolbarButton = withPlateProvider(
   (props: AddThreadToolbarButtonProps) => {
     const buttonProps = useAddThreadToolbarButton(props);
     return <ToolbarButton {...buttonProps} />;

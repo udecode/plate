@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import { AddComment, Comment } from '@styled-icons/material';
 import { createPlugins, Plate } from '@udecode/plate-core';
 import { createPlateUI } from '@udecode/plate-ui';
+import { initialValue } from './initialValue';
 import {
   AddThreadToolbarButton,
   Comments,
@@ -11,13 +12,6 @@ import {
   PlateThreadNode,
   ToggleShowThreadsButton,
 } from './src';
-
-const initialValue = [
-  {
-    type: 'p',
-    children: [{ text: 'A line of text in a paragraph.' }],
-  },
-];
 
 const components = createPlateUI({
   [ELEMENT_THREAD]: PlateThreadNode,
@@ -57,7 +51,7 @@ const App = () => {
         }}
         initialValue={initialValue}
         plugins={plugins}
-        onChange={console.log}
+        onChange={(value) => console.log(JSON.stringify(value))}
       >
         <Comments setCommentActions={setCommentActions} />
       </Plate>
