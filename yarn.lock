@@ -5490,7 +5490,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:17.0.3, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:18.0.0, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -6336,11 +6336,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:17.0.3, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:18.0.0, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:17.0.3"
+    "@udecode/plate-headless": "npm:18.0.0"
     "@udecode/plate-styled-components": "npm:17.0.3"
     "@udecode/plate-ui-alignment": "npm:17.0.3"
     "@udecode/plate-ui-block-quote": "npm:17.0.3"
@@ -6376,8 +6376,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:17.0.3"
-    "@udecode/plate-ui": "npm:17.0.3"
+    "@udecode/plate-headless": "npm:18.0.0"
+    "@udecode/plate-ui": "npm:18.0.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
