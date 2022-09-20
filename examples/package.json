@@ -12,6 +12,7 @@
     "@tippyjs/react": "4.2.5",
     "@udecode/plate": "workspace:^",
     "@udecode/plate-juice": "workspace:^",
+    "@udecode/plate-selection": "workspace:^",
     "@udecode/plate-test-utils": "workspace:^",
     "@udecode/plate-ui-excalidraw": "workspace:^",
     "nanoid": "3.3.4",

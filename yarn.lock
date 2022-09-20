@@ -5800,7 +5800,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:17.0.3, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:17.0.3, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -11880,6 +11880,7 @@ __metadata:
     "@tippyjs/react": "npm:4.2.5"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
+    "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-ui-excalidraw": "workspace:^"
     nanoid: "npm:3.3.4"
