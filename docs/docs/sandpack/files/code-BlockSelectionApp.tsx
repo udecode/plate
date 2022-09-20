@@ -1,9 +1,6 @@
 export const blockSelectionAppCode = `import React from 'react';
-import {
-  createBlockSelectionPlugin,
-  createNodeIdPlugin,
-  Plate,
-} from '@udecode/plate';
+import { createNodeIdPlugin, Plate } from '@udecode/plate';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
