@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 18.1.0
+
+### Minor Changes
+
+- [#1892](https://github.com/udecode/plate/pull/1892) by [@zakishaheen](https://github.com/zakishaheen) – Wrap valid link in anchor element when inserting a break
+
 ## 17.0.3
 
 ## 17.0.2
