@@ -33,6 +33,7 @@ import { ELEMENT_LINK, LinkPlugin } from './createLinkPlugin';
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
+
 export const withLink = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -43,53 +44,63 @@ export const withLink = <
     options: { isUrl, getUrlHref, rangeBeforeOptions },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
-  const { insertData, insertText, apply, normalizeNode } = editor;
+  const { insertData, insertText, apply, normalizeNode, insertBreak } = editor;
+
+  const wrapLink = () => {
+    withoutNormalizing(editor, () => {
+      const selection = editor.selection!;
+
+      // get the range from first space before the cursor
+      let beforeWordRange = getRangeBefore(
+        editor,
+        selection,
+        rangeBeforeOptions
+      );
+
+      // if no space found before, get the range from block start
+      if (!beforeWordRange) {
+        beforeWordRange = getRangeFromBlockStart(editor);
+      }
+
+      // if no word found before the cursor, exit
+      if (!beforeWordRange) return;
+
+      const hasLink = someNode(editor, {
+        at: beforeWordRange,
+        match: { type: getPluginType(editor, ELEMENT_LINK) },
+      });
+
+      // if word before the cursor has a link, exit
+      if (hasLink) return;
+
+      let beforeWordText = getEditorString(editor, beforeWordRange);
+      beforeWordText = getUrlHref?.(beforeWordText) ?? beforeWordText;
+
+      // if word before is not an url, exit
+      if (!isUrl!(beforeWordText)) return;
+
+      // select the word to wrap link
+      select(editor, beforeWordRange);
+
+      // wrap link
+      upsertLink(editor, {
+        url: beforeWordText,
+      });
+
+      // collapse selection
+      collapseSelection(editor, { edge: 'end' });
+    });
+  };
+
+  editor.insertBreak = () => {
+    if (!isCollapsed(editor.selection)) return insertBreak();
+    wrapLink();
+    insertBreak();
+  };
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
-      withoutNormalizing(editor, () => {
-        const selection = editor.selection!;
-
-        // get the range from first space before the cursor
-        let beforeWordRange = getRangeBefore(
-          editor,
-          selection,
-          rangeBeforeOptions
-        );
-
-        // if no space found before, get the range from block start
-        if (!beforeWordRange) {
-          beforeWordRange = getRangeFromBlockStart(editor);
-        }
-
-        // if no word found before the cursor, exit
-        if (!beforeWordRange) return;
-
-        const hasLink = someNode(editor, {
-          at: beforeWordRange,
-          match: { type: getPluginType(editor, ELEMENT_LINK) },
-        });
-
-        // if word before the cursor has a link, exit
-        if (hasLink) return;
-
-        let beforeWordText = getEditorString(editor, beforeWordRange);
-        beforeWordText = getUrlHref?.(beforeWordText) ?? beforeWordText;
-
-        // if word before is not an url, exit
-        if (!isUrl!(beforeWordText)) return;
-
-        // select the word to wrap link
-        select(editor, beforeWordRange);
-
-        // wrap link
-        upsertLink(editor, {
-          url: beforeWordText,
-        });
-
-        // collapse selection
-        collapseSelection(editor, { edge: 'end' });
-      });
+      wrapLink();
     }
 
     insertText(text);
