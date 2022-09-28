@@ -1,5 +1,7 @@
 # @udecode/plate-md-serializer
 
+## 18.1.1
+
 ## 18.1.0
 
 ## 17.0.3
