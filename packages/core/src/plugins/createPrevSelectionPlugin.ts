@@ -9,6 +9,7 @@ export const createPrevSelectionPlugin = createPluginFactory({
     onKeyDown: (editor) => (e) => {
       // React 16.x needs this event to be persistented due to it's event pooling implementation.
       // https://reactjs.org/docs/legacy-event-pooling.html
+      e.persist();
       editor.currentKeyboardEvent = e;
     },
   },
