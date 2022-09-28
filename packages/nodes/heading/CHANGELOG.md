@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 18.1.1
+
 ## 17.0.3
 
 ## 17.0.2
