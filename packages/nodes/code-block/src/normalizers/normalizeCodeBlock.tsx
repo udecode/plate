@@ -12,7 +12,7 @@ import {
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../constants';
 
 /**
- * Normalize list node to force the ul>li>p+ul structure.
+ * Normalize code block node to force the pre>code>div.codeline structure.
  */
 export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
@@ -27,14 +27,14 @@ export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
     const isCodeBlockRoot = node.type === codeBlockType;
     if (isCodeBlockRoot) {
       // Children should all be code lines
-      const nonCodeLines = getChildren([node, path]).find(
+      const nonCodeLine = getChildren([node, path]).find(
         ([child]) => child.type !== codeLineType
       );
-      if (nonCodeLines) {
+      if (nonCodeLine) {
         return setNodes<TElement>(
           editor,
           { type: codeLineType },
-          { at: nonCodeLines[1] }
+          { at: nonCodeLine[1] }
         );
       }
       return normalizeNode([node, path]);
