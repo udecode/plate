@@ -192,7 +192,8 @@ export const Combobox = <TData extends Data = NoData>({
     !combobox ||
     !editor.selection ||
     focusedEditorId !== editor.id ||
-    activeId !== id
+    activeId !== id ||
+    !props.items?.length
   ) {
     return null;
   }
