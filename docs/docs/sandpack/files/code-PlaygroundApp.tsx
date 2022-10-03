@@ -6,7 +6,6 @@ import {
   createAlignPlugin,
   createAutoformatPlugin,
   createBlockquotePlugin,
-  createBlockSelectionPlugin,
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
@@ -49,6 +48,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
