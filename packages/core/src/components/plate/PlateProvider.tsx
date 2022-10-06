@@ -1,6 +1,11 @@
 import React, { FC, useMemo } from 'react';
 import { normalizeEditor, Value } from '../../slate/index';
-import { PLATE_SCOPE, plateStore } from '../../stores/index';
+import {
+  GLOBAL_PLATE_SCOPE,
+  PLATE_SCOPE,
+  plateIdAtom,
+  plateStore,
+} from '../../stores/index';
 import {
   ELEMENT_DEFAULT,
   PlateEditor,
@@ -117,7 +122,12 @@ const PlateProviderContent = <
       ]}
       scope={id}
     >
-      <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      <JotaiProvider
+        initialValues={[[plateIdAtom, id]]}
+        scope={GLOBAL_PLATE_SCOPE}
+      >
+        <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      </JotaiProvider>
     </JotaiProvider>
   );
 };

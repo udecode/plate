@@ -190,4 +190,64 @@ describe('PlateProvider', () => {
       expect(result.current[result.current.length - 1].key).not.toBe('test1');
     });
   });
+
+  describe('usePlateSelectors().id()', () => {
+    describe('when PlateProvider has an id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe('test');
+      });
+    });
+
+    describe('when PlateProvider without id > PlateProvider with id', () => {
+      it('should be the one without id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider>
+            <PlateProvider id="test">{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(PLATE_SCOPE);
+      });
+    });
+
+    describe('when PlateProvider without id > PlateProvider with id, select with any id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider>
+            <PlateProvider id="test">{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors('any').id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe('test');
+      });
+    });
+
+    describe('when PlateProvider with id > PlateProvider without id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">
+            <PlateProvider>{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(PLATE_SCOPE);
+      });
+    });
+  });
 });
