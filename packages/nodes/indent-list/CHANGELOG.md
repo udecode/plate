@@ -1,5 +1,7 @@
 # @udecode/plate-indent-list
 
+## 18.2.0
+
 ## 18.1.3
 
 ### Patch Changes
