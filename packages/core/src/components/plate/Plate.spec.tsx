@@ -135,4 +135,35 @@ describe('Plate', () => {
       ).toThrowError();
     });
   });
+
+  describe('when nested Plate', () => {
+    it('should work', () => {
+      const plugins: PlatePlugin[] = [
+        {
+          key: 'a',
+          isElement: true,
+          isVoid: true,
+          component: ({ children, attributes }) => (
+            <div {...attributes}>
+              <Plate id="test" />
+              {children}
+            </div>
+          ),
+        },
+      ];
+
+      const editor = createPlateEditor({
+        plugins,
+      });
+
+      expect(() =>
+        render(
+          <Plate
+            editor={editor}
+            initialValue={[{ type: 'a', children: [{ text: '' }] }] as any}
+          />
+        )
+      ).not.toThrowError();
+    });
+  });
 });

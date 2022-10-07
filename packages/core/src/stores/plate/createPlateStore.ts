@@ -8,7 +8,7 @@ import {
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
-import { Scope, useAtom } from '../../utils/index';
+import { isDefined, Scope, useAtom } from '../../utils/index';
 
 /**
  * A unique id used as a provider scope.
@@ -74,9 +74,8 @@ export const createPlateStore = <
     usePlateStore: (_id?: PlateId) => {
       const closestId = usePlateId();
 
-      const targetId = stores.usePlateStore(_id).get.id(_id);
-
-      if (targetId) {
+      // get targeted store if id defined or if the store is found
+      if (isDefined(_id) || stores.usePlateStore(_id).get.id(_id)) {
         return stores.usePlateStore(_id);
       }
 
