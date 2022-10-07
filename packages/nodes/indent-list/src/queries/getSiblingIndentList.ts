@@ -2,6 +2,7 @@ import {
   EElement,
   EElementEntry,
   EElementOrText,
+  isDefined,
   TEditor,
   TNode,
   TNodeEntry,
@@ -67,7 +68,7 @@ export const getSiblingIndentList = <
     const indent = node[KEY_INDENT] as number;
     const nextIndent = nextNode[KEY_INDENT] as number;
 
-    if (!nextIndent) return;
+    if (!isDefined(nextIndent)) return;
 
     if (breakQuery && breakQuery(nextNode)) return;
 

@@ -2,6 +2,7 @@ import {
   excalidrawVersion,
   juiceVersion,
   plateVersion,
+  selectionVersion,
   testUtilsVersion,
 } from './plate-versions';
 
@@ -15,6 +16,10 @@ export const excalidrawDeps = {
 
 export const juiceDeps = {
   '@udecode/plate-juice': juiceVersion,
+};
+
+export const selectionDeps = {
+  '@udecode/plate-selection': selectionVersion,
 };
 
 export const commonDeps = {
@@ -45,4 +50,5 @@ export const playgroundDeps = {
   ...toolbarDeps,
   ...excalidrawDeps,
   ...juiceDeps,
+  ...selectionDeps,
 };

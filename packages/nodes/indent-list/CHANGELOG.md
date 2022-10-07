@@ -1,5 +1,19 @@
 # @udecode/plate-indent-list
 
+## 18.1.3
+
+### Patch Changes
+
+- [#1918](https://github.com/udecode/plate/pull/1918) by [@zbeyens](https://github.com/zbeyens) – Fix indent 0
+
+## 18.1.2
+
+### Patch Changes
+
+- [#1915](https://github.com/udecode/plate/pull/1915) by [@zbeyens](https://github.com/zbeyens) – fix: support indent 0
+
+## 18.1.1
+
 ## 17.0.3
 
 ## 17.0.2

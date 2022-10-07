@@ -1,4 +1,10 @@
-import { TEditor, TNodeEntry, unsetNodes, Value } from '@udecode/plate-core';
+import {
+  isDefined,
+  TEditor,
+  TNodeEntry,
+  unsetNodes,
+  Value,
+} from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
@@ -10,7 +16,7 @@ export const normalizeIndentListNotIndented = <V extends Value>(
   [node, path]: TNodeEntry
 ) => {
   if (
-    !node[KEY_INDENT] &&
+    !isDefined(node[KEY_INDENT]) &&
     (node[KEY_LIST_STYLE_TYPE] || node[KEY_LIST_START])
   ) {
     unsetNodes(editor, [KEY_LIST_STYLE_TYPE, KEY_LIST_START], { at: path });

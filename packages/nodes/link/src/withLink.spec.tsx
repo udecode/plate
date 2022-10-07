@@ -312,6 +312,39 @@ describe('withLink', () => {
         });
       });
 
+      describe('when creating new block', () => {
+        const input = (
+          <editor>
+            <hp>
+              http://google.com
+              <cursor />
+            </hp>
+          </editor>
+        ) as any;
+
+        const text = ' ';
+
+        const output = (
+          <editor>
+            <hp>
+              <htext />
+              <ha url="http://google.com">http://google.com</ha>
+              <htext />
+            </hp>
+            <hp>
+              <cursor />
+            </hp>
+          </editor>
+        ) as any;
+
+        it('should wrap the url with a link ha', () => {
+          const editor = createEditor(input);
+
+          editor.insertBreak();
+
+          expect(input.children).toEqual(output.children);
+        });
+      });
       // https://github.com/udecode/editor-protocol/issues/42
       describe('when after url at start of block', () => {
         const input = (

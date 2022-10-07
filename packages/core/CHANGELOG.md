@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 18.1.1
+
+### Patch Changes
+
+- [#1896](https://github.com/udecode/plate/pull/1896) by [@charrondev](https://github.com/charrondev) – Fix `PrevSelectionPlugin` event persistence on React 16.x
+
 ## 17.0.3
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-horizontal-rule
 
+## 18.1.1
+
 ## 17.0.3
 
 ## 17.0.2
