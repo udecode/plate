@@ -155,6 +155,13 @@ export type PlatePlugin<
     }>;
 
     /**
+     * Render a component above `Slate`.
+     */
+    renderAboveSlate?: FC<{
+      children: ReactNode;
+    }>;
+
+    /**
      * Render a component after `Editable`.
      */
     renderAfterEditable?: () => JSX.Element | null;

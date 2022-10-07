@@ -93,4 +93,46 @@ describe('Plate', () => {
       ]);
     });
   });
+
+  describe('when renderAboveSlate renders null', () => {
+    it('should not normalize editor children', () => {
+      const plugins: PlatePlugin[] = [
+        {
+          key: 'a',
+          renderAboveSlate: () => {
+            return null;
+          },
+        },
+      ];
+
+      const editor = createPlateEditor({
+        plugins,
+      });
+
+      expect(() =>
+        render(<Plate editor={editor} initialValue={[{}] as any} />)
+      ).not.toThrowError();
+    });
+  });
+
+  describe('when renderAboveSlate renders children', () => {
+    it("should not trigger plugin's normalize", () => {
+      const plugins: PlatePlugin[] = [
+        {
+          key: 'a',
+          renderAboveSlate: ({ children }) => {
+            return <>{children}</>;
+          },
+        },
+      ];
+
+      const editor = createPlateEditor({
+        plugins,
+      });
+
+      expect(() =>
+        render(<Plate editor={editor} initialValue={[{}] as any} />)
+      ).toThrowError();
+    });
+  });
 });

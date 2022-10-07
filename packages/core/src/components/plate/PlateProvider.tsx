@@ -1,6 +1,11 @@
 import React, { FC, useMemo } from 'react';
 import { normalizeEditor, Value } from '../../slate/index';
-import { PLATE_SCOPE, plateStore } from '../../stores/index';
+import {
+  GLOBAL_PLATE_SCOPE,
+  PLATE_SCOPE,
+  plateIdAtom,
+  plateStore,
+} from '../../stores/index';
 import {
   ELEMENT_DEFAULT,
   PlateEditor,
@@ -37,7 +42,7 @@ export interface PlateProviderProps<
   normalizeInitialValue?: boolean;
 }
 
-export const PlateProvider = <
+const PlateProviderContent = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
@@ -117,9 +122,25 @@ export const PlateProvider = <
       ]}
       scope={id}
     >
-      <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      <JotaiProvider
+        initialValues={[[plateIdAtom, id]]}
+        scope={GLOBAL_PLATE_SCOPE}
+      >
+        <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      </JotaiProvider>
     </JotaiProvider>
   );
+};
+
+export const PlateProvider = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  props: PlateProviderProps<V, E>
+) => {
+  const { id } = props;
+
+  return <PlateProviderContent key={id?.toString()} {...props} />;
 };
 
 export const withPlateProvider = <T,>(Component: FC<T>, hocProps?: T) =>
