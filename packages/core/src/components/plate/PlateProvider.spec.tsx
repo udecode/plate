@@ -195,14 +195,14 @@ describe('PlateProvider', () => {
       });
     });
 
-    describe('when PlateProvider without id > PlateProvider with id, select with any id', () => {
+    describe('when PlateProvider with id > PlateProvider without id > select id', () => {
       it('should be that id', () => {
         const wrapper = ({ children }: any) => (
-          <PlateProvider>
-            <PlateProvider id="test">{children}</PlateProvider>
+          <PlateProvider id="test">
+            <PlateProvider>{children}</PlateProvider>
           </PlateProvider>
         );
-        const { result } = renderHook(() => usePlateSelectors('any').id(), {
+        const { result } = renderHook(() => usePlateSelectors('test').id(), {
           wrapper,
         });
 
