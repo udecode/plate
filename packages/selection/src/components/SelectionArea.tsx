@@ -16,6 +16,14 @@ export interface SelectionAreaProps
   onStart?: SelectionEvents['start'];
   onMove?: SelectionEvents['move'];
   onStop?: SelectionEvents['stop'];
+
+  /**
+   * The boundaries of the selection area.
+   * @boundaries ref of the selection area element.
+   */
+  getBoundaries?: (
+    boundaries: SelectionOptions['boundaries']
+  ) => SelectionOptions['boundaries'];
 }
 
 export const SelectionArea = ({
@@ -32,9 +40,10 @@ export const SelectionArea = ({
   startAreas,
   behaviour,
   features,
+  getBoundaries = (boundaries) => boundaries,
   ...props
 }: SelectionAreaProps) => {
-  const root = createRef<HTMLDivElement>();
+  const ref = createRef<HTMLDivElement>();
 
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
@@ -49,10 +58,10 @@ export const SelectionArea = ({
       features,
     };
 
-    const areaBoundaries = root.current as HTMLElement;
+    const areaBoundaries = ref.current as HTMLElement;
 
     const selection = new VanillaSelectionArea({
-      boundaries: areaBoundaries,
+      boundaries: getBoundaries(areaBoundaries),
       ...opt,
     });
 
@@ -65,7 +74,7 @@ export const SelectionArea = ({
   }, []);
 
   return (
-    <div ref={root} {...props}>
+    <div ref={ref} {...props}>
       {children}
     </div>
   );
