@@ -1,5 +1,15 @@
 # @udecode/plate-selection
 
+## 18.2.1
+
+### Patch Changes
+
+- [#1928](https://github.com/udecode/plate/pull/1928) by [@zbeyens](https://github.com/zbeyens) – `SelectionArea` props:
+
+  - new prop: `getBoundaries` to customize `boundaries`
+
+- [#1929](https://github.com/udecode/plate/pull/1929) by [@zbeyens](https://github.com/zbeyens) – Types: `BlockStartArea` `placement` and `size` props are now optional
+
 ## 18.2.0
 
 ## 18.1.1
