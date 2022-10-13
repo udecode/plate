@@ -10,5 +10,4 @@ export * from './withIndentList';
 export * from './normalizers/index';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './queries/getSiblingListStyleType';
 export * from './onKeyDownIndentList';
