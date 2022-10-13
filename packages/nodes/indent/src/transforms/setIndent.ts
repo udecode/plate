@@ -53,6 +53,7 @@ export const setIndent = <V extends Value>(
 
   const _nodes = getNodeEntries(editor, {
     block: true,
+    mode: 'lowest',
     ...getNodesOptions,
   });
   const nodes = Array.from(_nodes);
