@@ -1,5 +1,11 @@
 # @udecode/plate-indent
 
+## 18.3.0
+
+### Patch Changes
+
+- [#1931](https://github.com/udecode/plate/pull/1931) by [@zbeyens](https://github.com/zbeyens) – Fix: `toggleIndentList` should indent only the lowest block (nested case).
+
 ## 18.2.0
 
 ## 18.1.1
