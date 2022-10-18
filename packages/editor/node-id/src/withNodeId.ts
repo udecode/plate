@@ -1,13 +1,13 @@
 import {
   defaultsDeepToNodes,
+  isAncestor,
   PlateEditor,
   queryNode,
   someNode,
+  TDescendant,
   TNode,
   TNodeEntry,
-  TDescendant,
   Value,
-  isAncestor,
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
@@ -42,7 +42,7 @@ export const withNodeId = <
       filter!(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
     );
   };
-  
+
   const deleteDuplicateIds = <N extends TDescendant>(node: N) => {
     // the id in the new node is already being used in the editor, we need to replace it with a new id
     if (
@@ -52,13 +52,12 @@ export const withNodeId = <
       delete node[idKey];
     }
 
-    if (!isAncestor(node))
-        return
+    if (!isAncestor(node)) return;
 
     node.children.forEach((child) => {
-        deleteDuplicateIds(child)
+      deleteDuplicateIds(child);
     });
-  }
+  };
 
   const query = {
     filter: filterNode,
@@ -71,7 +70,7 @@ export const withNodeId = <
       // clone to be able to write (read-only)
       const node = cloneDeep(operation.node);
 
-      deleteDuplicateIds(node)
+      deleteDuplicateIds(node);
 
       defaultsDeepToNodes({
         node,
