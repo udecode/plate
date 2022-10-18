@@ -56,7 +56,7 @@ export const withNodeId = <
         return
 
     node.children.forEach((child) => {
-        removeDuplicateId(child)
+        deleteDuplicateIds(child)
     });
   }
 
@@ -71,7 +71,7 @@ export const withNodeId = <
       // clone to be able to write (read-only)
       const node = cloneDeep(operation.node);
 
-      removeDuplicateIds(node)
+      deleteDuplicateIds(node)
 
       defaultsDeepToNodes({
         node,
