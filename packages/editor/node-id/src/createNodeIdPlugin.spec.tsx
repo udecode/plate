@@ -5,12 +5,12 @@ import {
   insertNodes,
   mergeNodes,
   PlateEditor,
-  splitNodes,
+  splitNodes
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import {
   ELEMENT_LI,
-  ELEMENT_UL,
+  ELEMENT_UL
 } from '../../../nodes/list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../nodes/paragraph/src/createParagraphPlugin';
 import { createNodeIdPlugin } from './createNodeIdPlugin';
@@ -50,6 +50,7 @@ describe('when inserting nodes', () => {
             options: {
               idCreator: getIdFactory(),
               allow: [ELEMENT_PARAGRAPH],
+              reuseId: true
             },
           }),
         ],
@@ -70,7 +71,7 @@ describe('when inserting nodes', () => {
 
       expect(input.children).toEqual(output.children);
     });
-  });
+  })
 
   describe('when exclude is p, inserting li and p', () => {
     it('should add an id to li but not p', () => {
