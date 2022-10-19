@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 18.3.1
+
+### Patch Changes
+
+- [#1940](https://github.com/udecode/plate/pull/1940) by [@mattwalo32](https://github.com/mattwalo32) – make withNodeId set ids on nested nodes that are inserted
+
 ## 18.2.0
 
 ## 18.1.1
