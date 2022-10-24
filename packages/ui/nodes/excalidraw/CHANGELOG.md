@@ -1,5 +1,11 @@
 # @udecode/plate-excalidraw
 
+## 18.4.0
+
+### Minor Changes
+
+- [#1943](https://github.com/udecode/plate/pull/1943) by [@firehudson](https://github.com/firehudson) – Upgrade Excalidraw Version from @excalidraw/excalidraw-next@0.8.0-69b6fbb to @excalidraw/excalidraw@0.12.0
+
 ## 18.2.0
 
 ## 18.1.1
