@@ -33,6 +33,12 @@ export interface ComboboxProps<TData = NoData>
   component?: RenderFunction<{ store: ComboboxStoreById }>;
 
   /**
+   * Whether to hide the combobox.
+   * @default !items.length
+   */
+  disabled?: boolean;
+
+  /**
    * Render combobox item.
    * @default text
    */
