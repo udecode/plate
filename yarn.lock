@@ -2260,13 +2260,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@excalidraw/excalidraw-next@npm:0.8.0-69b6fbb":
-  version: 0.8.0-69b6fbb
-  resolution: "@excalidraw/excalidraw-next@npm:0.8.0-69b6fbb"
+"@excalidraw/excalidraw@npm:0.12.0":
+  version: 0.12.0
+  resolution: "@excalidraw/excalidraw@npm:0.12.0"
+  dependencies:
+    dotenv: "npm:10.0.0"
   peerDependencies:
-    react: ^17.0.1
-    react-dom: ^17.0.1
-  checksum: 77dadfc202d4720a806210bf8b789cb7fcba621f2d4daf2933a84259318c9ab1f3f76f14718e5d1d98e8c99049492b121b55976a7c2f8f5af982cff6774741e7
+    react: ^17.0.2
+    react-dom: ^17.0.2
+  checksum: 5efa0b07dce72b8ea9dd320f32e2059b028efbf5e77f37adf3da3b37cf5fca9cb83f07ec3a61f42153ecba9affe83ee4480a58e11b67d77747af1654f8987703
   languageName: node
   linkType: hard
 
@@ -5490,7 +5492,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:18.2.1, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:18.3.1, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -5510,22 +5512,22 @@ __metadata:
     "@udecode/plate-heading": "npm:18.2.0"
     "@udecode/plate-highlight": "npm:18.2.0"
     "@udecode/plate-horizontal-rule": "npm:18.2.0"
-    "@udecode/plate-indent": "npm:18.2.0"
-    "@udecode/plate-indent-list": "npm:18.2.0"
+    "@udecode/plate-indent": "npm:18.3.0"
+    "@udecode/plate-indent-list": "npm:18.3.0"
     "@udecode/plate-kbd": "npm:18.2.0"
     "@udecode/plate-line-height": "npm:18.2.0"
     "@udecode/plate-link": "npm:18.2.0"
     "@udecode/plate-list": "npm:18.2.0"
     "@udecode/plate-media": "npm:18.2.0"
     "@udecode/plate-mention": "npm:18.2.0"
-    "@udecode/plate-node-id": "npm:18.2.0"
+    "@udecode/plate-node-id": "npm:18.3.1"
     "@udecode/plate-normalizers": "npm:18.2.0"
     "@udecode/plate-paragraph": "npm:18.2.0"
     "@udecode/plate-reset-node": "npm:18.2.0"
     "@udecode/plate-select": "npm:18.2.0"
     "@udecode/plate-selection": "npm:18.2.1"
     "@udecode/plate-serializer-csv": "npm:18.2.0"
-    "@udecode/plate-serializer-docx": "npm:18.2.0"
+    "@udecode/plate-serializer-docx": "npm:18.3.0"
     "@udecode/plate-serializer-html": "npm:18.2.0"
     "@udecode/plate-serializer-md": "npm:18.2.0"
     "@udecode/plate-table": "npm:18.2.0"
@@ -5580,12 +5582,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:18.2.0, @udecode/plate-indent-list@workspace:packages/nodes/indent-list":
+"@udecode/plate-indent-list@npm:18.3.0, @udecode/plate-indent-list@workspace:packages/nodes/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/nodes/indent-list"
   dependencies:
     "@udecode/plate-core": "npm:18.2.0"
-    "@udecode/plate-indent": "npm:18.2.0"
+    "@udecode/plate-indent": "npm:18.3.0"
     "@udecode/plate-list": "npm:18.2.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -5596,7 +5598,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent@npm:18.2.0, @udecode/plate-indent@workspace:packages/nodes/indent":
+"@udecode/plate-indent@npm:18.3.0, @udecode/plate-indent@workspace:packages/nodes/indent":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent@workspace:packages/nodes/indent"
   dependencies:
@@ -5730,7 +5732,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-node-id@npm:18.2.0, @udecode/plate-node-id@workspace:packages/editor/node-id":
+"@udecode/plate-node-id@npm:18.3.1, @udecode/plate-node-id@workspace:packages/editor/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/editor/node-id"
   dependencies:
@@ -5832,14 +5834,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:18.2.0, @udecode/plate-serializer-docx@workspace:packages/serializers/docx":
+"@udecode/plate-serializer-docx@npm:18.3.0, @udecode/plate-serializer-docx@workspace:packages/serializers/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializers/docx"
   dependencies:
     "@udecode/plate-core": "npm:18.2.0"
     "@udecode/plate-heading": "npm:18.2.0"
-    "@udecode/plate-indent": "npm:18.2.0"
-    "@udecode/plate-indent-list": "npm:18.2.0"
+    "@udecode/plate-indent": "npm:18.3.0"
+    "@udecode/plate-indent-list": "npm:18.3.0"
     "@udecode/plate-media": "npm:18.2.0"
     "@udecode/plate-paragraph": "npm:18.2.0"
     "@udecode/plate-table": "npm:18.2.0"
@@ -6077,7 +6079,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-excalidraw@workspace:packages/ui/nodes/excalidraw"
   dependencies:
-    "@excalidraw/excalidraw-next": "npm:0.8.0-69b6fbb"
+    "@excalidraw/excalidraw": "npm:0.12.0"
     "@udecode/plate-core": "npm:18.2.0"
     "@udecode/plate-styled-components": "npm:18.2.0"
   peerDependencies:
@@ -6336,11 +6338,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:18.2.1, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:18.3.1, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.2.1"
+    "@udecode/plate-headless": "npm:18.3.1"
     "@udecode/plate-styled-components": "npm:18.2.0"
     "@udecode/plate-ui-alignment": "npm:18.2.0"
     "@udecode/plate-ui-block-quote": "npm:18.2.0"
@@ -6376,8 +6378,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.2.1"
-    "@udecode/plate-ui": "npm:18.2.1"
+    "@udecode/plate-headless": "npm:18.3.1"
+    "@udecode/plate-ui": "npm:18.3.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -10773,6 +10775,13 @@ __metadata:
   version: 5.1.0
   resolution: "dotenv-expand@npm:5.1.0"
   checksum: 45ac32cdf6e194ed587ffc87745d3bacc8a831b73d70fef5c4d86294b4eb2e441b745df8fc031df38f5772276ec0f4af74999f4ff5d4e48b1f98cab3b720f394
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:10.0.0":
+  version: 10.0.0
+  resolution: "dotenv@npm:10.0.0"
+  checksum: b05c5dcae77bd3be9f08af019a4225c4a6b884bce1a6a2571a6883ed51c2f0d6a79ff92491013c63b01642aa703eeb6583c57ee88159c4d600708b9d251c0b78
   languageName: node
   linkType: hard
 
