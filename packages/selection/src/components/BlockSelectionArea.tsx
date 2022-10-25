@@ -27,7 +27,6 @@ export const useBlockSelectionArea = (
     if (!changed.added.length && !changed.removed.length) return;
 
     blockSelectionActions.setSelectedIds(changed);
-    blockSelectionActions.setSelectedIds(changed);
   };
 
   return {
