@@ -6021,7 +6021,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-combobox@npm:18.2.0, @udecode/plate-ui-combobox@workspace:packages/ui/combobox":
+"@udecode/plate-ui-combobox@npm:18.4.0, @udecode/plate-ui-combobox@workspace:packages/ui/combobox":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-combobox@workspace:packages/ui/combobox"
   dependencies:
@@ -6235,7 +6235,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-mention@npm:18.2.0, @udecode/plate-ui-mention@workspace:packages/ui/nodes/mention":
+"@udecode/plate-ui-mention@npm:18.4.0, @udecode/plate-ui-mention@workspace:packages/ui/nodes/mention":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-mention@workspace:packages/ui/nodes/mention"
   dependencies:
@@ -6243,7 +6243,7 @@ __metadata:
     "@udecode/plate-core": "npm:18.2.0"
     "@udecode/plate-mention": "npm:18.2.0"
     "@udecode/plate-styled-components": "npm:18.2.0"
-    "@udecode/plate-ui-combobox": "npm:18.2.0"
+    "@udecode/plate-ui-combobox": "npm:18.4.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -6338,7 +6338,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:18.3.1, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:18.4.0, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
@@ -6348,7 +6348,7 @@ __metadata:
     "@udecode/plate-ui-block-quote": "npm:18.2.0"
     "@udecode/plate-ui-button": "npm:18.2.0"
     "@udecode/plate-ui-code-block": "npm:18.2.0"
-    "@udecode/plate-ui-combobox": "npm:18.2.0"
+    "@udecode/plate-ui-combobox": "npm:18.4.0"
     "@udecode/plate-ui-cursor": "npm:18.2.0"
     "@udecode/plate-ui-dnd": "npm:18.2.0"
     "@udecode/plate-ui-find-replace": "npm:18.2.0"
@@ -6357,7 +6357,7 @@ __metadata:
     "@udecode/plate-ui-link": "npm:18.2.0"
     "@udecode/plate-ui-list": "npm:18.2.0"
     "@udecode/plate-ui-media": "npm:18.2.0"
-    "@udecode/plate-ui-mention": "npm:18.2.0"
+    "@udecode/plate-ui-mention": "npm:18.4.0"
     "@udecode/plate-ui-placeholder": "npm:18.2.0"
     "@udecode/plate-ui-table": "npm:18.2.0"
     "@udecode/plate-ui-toolbar": "npm:18.2.0"
@@ -6379,7 +6379,7 @@ __metadata:
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
     "@udecode/plate-headless": "npm:18.3.1"
-    "@udecode/plate-ui": "npm:18.3.1"
+    "@udecode/plate-ui": "npm:18.4.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
