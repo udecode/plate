@@ -5806,6 +5806,7 @@ __metadata:
   dependencies:
     "@udecode/plate-core": "npm:18.2.0"
     "@viselect/vanilla": "npm:^3.1.0"
+    copy-to-clipboard: "npm:^3.3.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -9442,6 +9443,15 @@ __metadata:
   dependencies:
     toggle-selection: "npm:^1.0.6"
   checksum: b73dbd1099d182c0d75fdac09e56499aac1bdc41c5f849cb4dcdec8d237c9ff8b659e21dc3d5f98c1f18fa64f7b3c78aa0126f9ca252019600d1005e6acd302a
+  languageName: node
+  linkType: hard
+
+"copy-to-clipboard@npm:^3.3.2":
+  version: 3.3.2
+  resolution: "copy-to-clipboard@npm:3.3.2"
+  dependencies:
+    toggle-selection: "npm:^1.0.6"
+  checksum: f6f10e7c1c8ed93ca4480c726259560d1f3e89c29665dbb6d922fa3eb218340bfc1e241096362fd9843fb89fc5e94fc3417e77af9174cf74f1eecd46786550e8
   languageName: node
   linkType: hard
 
