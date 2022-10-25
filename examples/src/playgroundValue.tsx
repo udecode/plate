@@ -2,7 +2,7 @@ import { alignValue } from './align/alignValue';
 import { autoformatValue } from './autoformat/autoformatValue';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
-import { getNodesWithId } from './dnd/getNodesWithId';
+import { mapNodeId } from './common/mapNodeId';
 import { excalidrawValue } from './excalidraw/excalidrawValue';
 import { exitBreakValue } from './exit-break/exitBreakValue';
 import { fontValue } from './font/fontValue';
@@ -23,7 +23,7 @@ import { deserializeMdValue } from './serializing-md/deserializeMdValue';
 import { softBreakValue } from './soft-break/softBreakValue';
 import { tableValue } from './table/tableValue';
 
-export const playgroundValue: any = getNodesWithId([
+export const playgroundValue: any = mapNodeId([
   ...forcedLayoutValue,
   ...basicMarksValue,
   ...kbdValue,
