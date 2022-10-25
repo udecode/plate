@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 18.5.0
+
+### Patch Changes
+
+- [#1947](https://github.com/udecode/plate/pull/1947) by [@zbeyens](https://github.com/zbeyens) – Default `idCreator` option is now a basic random operation (`Math.random().toString(36).substring(2, 7)`) instead of `Date.now()`
+
 ## 18.3.1
 
 ### Patch Changes
