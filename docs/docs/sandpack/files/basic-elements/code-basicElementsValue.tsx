@@ -1,10 +1,11 @@
 export const basicElementsValueCode = `/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
+import { mapNodeId } from '../common/mapNodeId';
 
 jsx;
 
-export const basicElementsValue: any = (
+export const basicElementsValue: any = mapNodeId(
   <fragment>
     <hh1>🧱 Elements</hh1>
     <hh2>🔥 Basic Elements</hh2>

@@ -1,94 +1,25 @@
 import React from 'react';
-import {
-  deselectEditor,
-  findNode,
-  focusEditor,
-  getEndPoint,
-  removeNodes,
-  useEditorRef,
-  useHotkeys,
-  UseHotkeysOptions,
-  withoutNormalizing,
-} from '@udecode/plate-core';
-import {
-  blockSelectionActions,
-  blockSelectionSelectors,
-} from '../blockSelectionStore';
+import { deselectEditor, useEditorRef } from '@udecode/plate-core';
+import { blockSelectionActions } from '../blockSelectionStore';
 import {
   SelectionArea,
   SelectionAreaProps,
   SelectionEvent,
 } from './SelectionArea';
 
-export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {
-  enterHotkeyOptions?: UseHotkeysOptions;
-  deleteHotkeyOptions?: UseHotkeysOptions;
-}
+export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {}
 
-export const useBlockSelectionArea = ({
-  enterHotkeyOptions,
-  deleteHotkeyOptions,
-  ...props
-}: BlockSelectionAreaProps): SelectionAreaProps => {
+export const useBlockSelectionArea = (
+  props: BlockSelectionAreaProps
+): SelectionAreaProps => {
   const editor = useEditorRef();
-
-  useHotkeys(
-    'enter',
-    () => {
-      if (blockSelectionSelectors.isSelecting()) {
-        // get the first block in the selection
-        const entry = findNode(editor, {
-          match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
-        });
-
-        if (entry) {
-          const [, path] = entry;
-
-          setTimeout(() => {
-            // focus the end of that block
-            focusEditor(editor, getEndPoint(editor, path));
-            blockSelectionActions.reset();
-          }, 0);
-        }
-      }
-    },
-    enterHotkeyOptions,
-    []
-  );
-
-  useHotkeys(
-    'backspace, delete',
-    () => {
-      if (blockSelectionSelectors.isSelecting()) {
-        withoutNormalizing(editor, () => {
-          blockSelectionSelectors.selectedIds().forEach((id) => {
-            const entry = findNode(editor, { match: { id } });
-
-            if (entry) {
-              const [, path] = entry;
-
-              removeNodes(editor, {
-                at: path,
-              });
-            }
-          });
-        });
-
-        setTimeout(() => {
-          blockSelectionActions.reset();
-        }, 0);
-      }
-    },
-    deleteHotkeyOptions,
-    []
-  );
 
   const onStart = ({ event, selection }: SelectionEvent) => {
     deselectEditor(editor);
 
     if (!event?.shiftKey) {
       selection.clearSelection();
-      blockSelectionActions.reset();
+      blockSelectionActions.resetSelectedIds();
     }
   };
 

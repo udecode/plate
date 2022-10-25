@@ -1,7 +1,7 @@
 import {
   ExcalidrawProps,
   LibraryItems,
-} from '@excalidraw/excalidraw-next/types/types';
+} from '@excalidraw/excalidraw/types/types';
 import { Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';

@@ -4,6 +4,7 @@ import { extractSelectableIds } from './utils/extractSelectableIds';
 
 export const blockSelectionStore = createStore('selection')({
   selectedIds: new Set(),
+  isSelecting: false,
 })
   .extendActions((set, get) => ({
     setSelectedIds: ({ added, removed }: ChangedElements) => {
@@ -14,13 +15,18 @@ export const blockSelectionStore = createStore('selection')({
       extractSelectableIds(removed).forEach((id) => next.delete(id));
 
       set.selectedIds(next);
+      set.isSelecting(true);
     },
-    reset: () => {
+    resetSelectedIds: () => {
       set.selectedIds(new Set());
+    },
+    unselect: () => {
+      set.selectedIds(new Set());
+      set.isSelecting(false);
     },
   }))
   .extendSelectors((set, get) => ({
-    isSelecting: () => get.selectedIds().size > 0,
+    isSelectingSome: () => get.selectedIds().size > 0,
     isSelected: (id?: string) => id && get.selectedIds().has(id),
   }));
 
