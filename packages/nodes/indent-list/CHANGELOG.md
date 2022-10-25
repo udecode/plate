@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 18.3.0
+
+### Minor Changes
+
+- [#1931](https://github.com/udecode/plate/pull/1931) by [@zbeyens](https://github.com/zbeyens) – Handle `Enter` key to outdent if empty.
+
 ## 18.2.0
 
 ## 18.1.3
