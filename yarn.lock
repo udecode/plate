@@ -5492,7 +5492,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:18.3.1, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:18.5.0, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -5520,12 +5520,12 @@ __metadata:
     "@udecode/plate-list": "npm:18.2.0"
     "@udecode/plate-media": "npm:18.2.0"
     "@udecode/plate-mention": "npm:18.2.0"
-    "@udecode/plate-node-id": "npm:18.3.1"
+    "@udecode/plate-node-id": "npm:18.5.0"
     "@udecode/plate-normalizers": "npm:18.2.0"
     "@udecode/plate-paragraph": "npm:18.2.0"
     "@udecode/plate-reset-node": "npm:18.2.0"
     "@udecode/plate-select": "npm:18.2.0"
-    "@udecode/plate-selection": "npm:18.2.1"
+    "@udecode/plate-selection": "npm:18.5.0"
     "@udecode/plate-serializer-csv": "npm:18.2.0"
     "@udecode/plate-serializer-docx": "npm:18.3.0"
     "@udecode/plate-serializer-html": "npm:18.2.0"
@@ -5732,7 +5732,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-node-id@npm:18.3.1, @udecode/plate-node-id@workspace:packages/editor/node-id":
+"@udecode/plate-node-id@npm:18.5.0, @udecode/plate-node-id@workspace:packages/editor/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/editor/node-id"
   dependencies:
@@ -5802,7 +5802,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:18.2.1, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:18.5.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6339,11 +6339,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:18.4.0, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:18.5.0, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.3.1"
+    "@udecode/plate-headless": "npm:18.5.0"
     "@udecode/plate-styled-components": "npm:18.2.0"
     "@udecode/plate-ui-alignment": "npm:18.2.0"
     "@udecode/plate-ui-block-quote": "npm:18.2.0"
@@ -6379,8 +6379,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.3.1"
-    "@udecode/plate-ui": "npm:18.4.0"
+    "@udecode/plate-headless": "npm:18.5.0"
+    "@udecode/plate-ui": "npm:18.5.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
