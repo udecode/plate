@@ -721,4 +721,52 @@ describe('when merging nodes', () => {
       expect(input.children).toEqual(output.children);
     });
   });
+
+  describe('when filter by path', () => {
+    it('should work', () => {
+      const input = ((
+        <editor>
+          <hp id={10}>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = (
+        <editor>
+          <hp id={10}>test</hp>
+          <hp>
+            <htext />
+          </hp>
+          <hli>
+            <hp id={1}>inserted</hp>
+          </hli>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              filter: ([, path]) => path.length === 2,
+            },
+          }),
+        ],
+      });
+
+      editor.insertBreak();
+      editor.insertNode(
+        (
+          <hli>
+            <hp>inserted</hp>
+          </hli>
+        ) as any
+      );
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
 });
