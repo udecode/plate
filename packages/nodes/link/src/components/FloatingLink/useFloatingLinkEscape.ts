@@ -10,14 +10,19 @@ export const useFloatingLinkEscape = () => {
   useHotkeys(
     'escape',
     () => {
-      if (floatingLinkSelectors.mode() !== 'insert') return;
+      if (floatingLinkSelectors.mode() !== 'edit') return;
+
+      if (floatingLinkSelectors.isEditing()) {
+        floatingLinkActions.show('edit');
+        focusEditor(editor, editor.selection!);
+        return;
+      }
 
       floatingLinkActions.hide();
-      focusEditor(editor, editor.selection!);
     },
     {
-      enableOnContentEditable: true,
       enableOnTags: ['INPUT'],
+      enableOnContentEditable: true,
     },
     []
   );
