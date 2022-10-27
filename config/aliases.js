@@ -7,6 +7,7 @@ module.exports = {
   '@udecode/plate-ui-alignment': 'ui/nodes/alignment',
   '@udecode/plate-ui-block-quote': 'ui/nodes/block-quote',
   '@udecode/plate-ui-button': 'ui/button',
+  '@udecode/plate-ui-cloud': 'ui/nodes/cloud',
   '@udecode/plate-ui-code-block': 'ui/nodes/code-block',
   '@udecode/plate-ui-combobox': 'ui/combobox',
   '@udecode/plate-ui-cursor': 'ui/cursor',

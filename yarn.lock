@@ -5382,6 +5382,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-cloud@npm:18.5.0, @udecode/plate-cloud@workspace:packages/cloud":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-cloud@workspace:packages/cloud"
+  dependencies:
+    "@udecode/plate-core": "npm:18.2.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-code-block@npm:18.2.0, @udecode/plate-code-block@workspace:packages/nodes/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/nodes/code-block"
@@ -5503,6 +5517,7 @@ __metadata:
     "@udecode/plate-block-quote": "npm:18.2.0"
     "@udecode/plate-break": "npm:18.2.0"
     "@udecode/plate-button": "npm:18.2.0"
+    "@udecode/plate-cloud": "npm:18.5.0"
     "@udecode/plate-code-block": "npm:18.2.0"
     "@udecode/plate-combobox": "npm:18.2.0"
     "@udecode/plate-core": "npm:18.2.0"
@@ -6004,6 +6019,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ui-cloud@npm:18.5.0, @udecode/plate-ui-cloud@workspace:packages/ui/nodes/cloud":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/nodes/cloud"
+  dependencies:
+    "@udecode/plate-cloud": "npm:18.5.0"
+    "@udecode/plate-core": "npm:18.2.0"
+    "@udecode/plate-styled-components": "npm:18.2.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-ui-code-block@npm:18.2.0, @udecode/plate-ui-code-block@workspace:packages/ui/nodes/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-code-block@workspace:packages/ui/nodes/code-block"
@@ -6348,6 +6379,7 @@ __metadata:
     "@udecode/plate-ui-alignment": "npm:18.2.0"
     "@udecode/plate-ui-block-quote": "npm:18.2.0"
     "@udecode/plate-ui-button": "npm:18.2.0"
+    "@udecode/plate-ui-cloud": "npm:18.5.0"
     "@udecode/plate-ui-code-block": "npm:18.2.0"
     "@udecode/plate-ui-combobox": "npm:18.4.0"
     "@udecode/plate-ui-cursor": "npm:18.2.0"

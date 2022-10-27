@@ -5,6 +5,7 @@ export const sidebarItems = [
   'basic-elements',
   'basic-marks',
   'block-selection',
+  'cloud',
   'cursor-overlay',
   'dnd',
   'editable-voids',

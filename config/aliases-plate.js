@@ -6,6 +6,7 @@ module.exports = {
   '@udecode/plate-block-quote': 'nodes/block-quote',
   '@udecode/plate-break': 'editor/break',
   '@udecode/plate-button': 'button',
+  '@udecode/plate-cloud': 'cloud',
   '@udecode/plate-code-block': 'nodes/code-block',
   '@udecode/plate-combobox': 'editor/combobox',
   '@udecode/plate-core': 'core',
