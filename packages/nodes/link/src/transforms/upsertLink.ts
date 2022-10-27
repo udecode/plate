@@ -34,6 +34,7 @@ export type UpsertLinkOptions<
   insertNodesOptions?: InsertNodesOptions<V>;
   unwrapNodesOptions?: UnwrapNodesOptions<V>;
   wrapNodesOptions?: WrapNodesOptions<V>;
+  isUrl?: (url: string) => boolean;
 };
 
 /**
@@ -52,6 +53,7 @@ export const upsertLink = <V extends Value>(
     target,
     insertTextInLink,
     insertNodesOptions,
+    isUrl = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK).isUrl,
   }: UpsertLinkOptions<V>
 ) => {
   const at = editor.selection;
@@ -70,11 +72,7 @@ export const upsertLink = <V extends Value>(
     return true;
   }
 
-  const { isUrl } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
-
-  if (!isUrl?.(url)) {
-    return;
-  }
+  if (!isUrl?.(url)) return;
 
   if (isDefined(text) && !text.length) {
     text = url;
