@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-indent-list",
-  "version": "18.2.0",
+  "version": "18.3.0",
   "description": "Indent list plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-core": "18.2.0",
-    "@udecode/plate-indent": "18.2.0",
+    "@udecode/plate-indent": "18.3.0",
     "@udecode/plate-list": "18.2.0"
   },
   "peerDependencies": {

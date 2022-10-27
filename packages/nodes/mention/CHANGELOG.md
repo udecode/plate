@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 18.5.1
+
 ## 18.2.0
 
 ## 18.1.1

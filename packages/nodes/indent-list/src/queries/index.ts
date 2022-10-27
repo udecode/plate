@@ -7,3 +7,4 @@ export * from './getIndentListSiblings';
 export * from './getNextIndentList';
 export * from './getPreviousIndentList';
 export * from './getSiblingIndentList';
+export * from './getSiblingListStyleType';

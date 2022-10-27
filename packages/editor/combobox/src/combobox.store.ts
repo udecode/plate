@@ -128,6 +128,7 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
       set.state((draft) => {
         draft.activeId = null;
         draft.highlightedIndex = 0;
+        draft.filteredItems = [];
         draft.items = [];
         draft.text = null;
         draft.targetRange = null;

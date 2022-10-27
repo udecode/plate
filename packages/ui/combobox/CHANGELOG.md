@@ -1,5 +1,13 @@
 # @udecode/plate-ui-combobox
 
+## 18.5.1
+
+## 18.4.0
+
+### Patch Changes
+
+- [#1945](https://github.com/udecode/plate/pull/1945) by [@zbeyens](https://github.com/zbeyens) – Combobox: `disabled` prop. Default is `!items.length`
+
 ## 18.2.0
 
 ## 18.1.2

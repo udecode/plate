@@ -5,6 +5,7 @@
 export * from './createIndentListPlugin';
 export * from './injectIndentListComponent';
 export * from './normalizeIndentList';
+export * from './onKeyDownIndentList';
 export * from './types';
 export * from './withIndentList';
 export * from './normalizers/index';

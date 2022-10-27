@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-excalidraw",
-  "version": "18.2.0",
+  "version": "18.4.0",
   "description": "Excalidraw plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
+    "@excalidraw/excalidraw": "0.12.0",
     "@udecode/plate-core": "18.2.0",
     "@udecode/plate-styled-components": "18.2.0"
   },

@@ -2,7 +2,7 @@
 
 import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createLinkPlugin } from '../createLinkPlugin';
+import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -10,10 +10,14 @@ jsx;
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';
 
-const createEditor = (editor: any) =>
+const createEditor = (editor: any, options?: LinkPlugin) =>
   createPlateEditor({
     editor,
-    plugins: [createLinkPlugin()],
+    plugins: [
+      createLinkPlugin({
+        options,
+      }),
+    ],
   });
 
 describe('upsertLink', () => {
@@ -408,6 +412,32 @@ describe('upsertLink', () => {
 
         expect(input.children).toEqual(output.children);
       });
+    });
+  });
+
+  describe('when isUrl always true', () => {
+    const input = (
+      <editor>
+        <hp>
+          insert link
+          <cursor />.
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          insert link<ha url="test">test</ha>.
+        </hp>
+      </editor>
+    ) as any;
+
+    it('should insert', () => {
+      const editor = createEditor(input);
+      upsertLink(editor, { url: 'test', isUrl: (_url) => true });
+
+      expect(input.children).toEqual(output.children);
     });
   });
 });

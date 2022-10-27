@@ -5,13 +5,13 @@ import {
 } from '@udecode/plate-core';
 
 export interface BlockStartAreaProps extends HTMLPropsAs<'div'> {
-  placement: 'top' | 'bottom' | 'left' | 'right';
-  size: number;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+  size?: string | number;
 }
 
 export const useBlockStartArea = ({
-  placement,
-  size,
+  placement = 'left',
+  size = 'auto',
   ...props
 }: BlockStartAreaProps): HTMLPropsAs<'div'> => {
   return {
