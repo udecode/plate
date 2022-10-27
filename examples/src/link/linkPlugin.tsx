@@ -3,7 +3,4 @@ import { MyPlatePlugin } from '../typescript/plateTypes';
 
 export const linkPlugin: Partial<MyPlatePlugin<LinkPlugin>> = {
   renderAfterEditable: PlateFloatingLink,
-  options: {
-    forceSubmit: true,
-  },
 };
