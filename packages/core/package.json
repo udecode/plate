@@ -14,12 +14,10 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@radix-ui/react-slot": "^0.1.2",
+    "@radix-ui/react-slot": "^1.0.1",
     "@udecode/zustood": "^1.1.1",
     "clsx": "^1.1.1",
     "jotai": "^1.7.2",
