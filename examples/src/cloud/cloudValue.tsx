@@ -26,5 +26,28 @@ export const cloudValue: any = (
       file, drag and dropping a file or clicking the insert file or insert
       attachment button in the toolbar.
     </hp>
+    <element type="cloud_attachment" url="#a" filename="hello.txt" bytes={1024}>
+      <htext />
+    </element>
+    <element type="cloud_attachment" url="#b" filename="hello.txt" bytes={1024}>
+      <htext />
+    </element>
+    <element type="cloud_attachment" url="#c" filename="hello.txt" bytes={1024}>
+      <htext />
+    </element>
+    <element type="cloud_attachment" url="#d" filename="hello.txt" bytes={1024}>
+      <htext />
+    </element>
+    <element type="cloud_attachment" url="#e" filename="hello.txt" bytes={1024}>
+      <htext />
+    </element>
+    <element
+      type="cloud_attachment"
+      url="#state-not-found"
+      filename="hello.txt"
+      bytes={1024}
+    >
+      <htext />
+    </element>
   </fragment>
 );

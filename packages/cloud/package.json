@@ -19,7 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "18.2.0"
+    "@portive/client": "10.0.2",
+    "@udecode/plate-core": "18.2.0",
+    "nanoid": "^3.3.4",
+    "zustand": "^3.7.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

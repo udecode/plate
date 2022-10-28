@@ -18,8 +18,9 @@ export interface CloudAttachmentElementProps<V extends Value>
 
 export interface CloudAttachmentElementStyles {
   file: CSSProp;
-  fileIcon: SVGSVGElement;
+  filename: CSSProp;
+  caption: CSSProp;
   body: CSSProp;
   download: CSSProp;
-  downloadIcon: SVGSVGElement;
+  downloadIcon: CSSProp;
 }

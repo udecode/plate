@@ -3,4 +3,6 @@
  */
 
 export * from './attachment/index';
+export * from './cloud/index';
 export * from './image/index';
+export * from './upload/index';

@@ -3,3 +3,4 @@
  */
 
 export * from './CloudAttachmentElement/index';
+export * from './StatusBar/index';
