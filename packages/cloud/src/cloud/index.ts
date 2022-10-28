@@ -6,4 +6,4 @@ export * from './createCloudPlugin';
 export * from './handlers';
 export * from './types';
 export * from './uploadFiles';
-export * from './withOverrides';
+export * from './withCloudOverrides';

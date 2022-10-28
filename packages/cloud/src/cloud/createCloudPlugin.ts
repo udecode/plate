@@ -1,7 +1,7 @@
 import { createPluginFactory, Value } from '@udecode/plate-core';
 import { onDrop, onPaste } from './handlers';
 import { CloudEditor, CloudPlugin } from './types';
-import { withCloudOverrides } from './withOverrides';
+import { withCloudOverrides } from './withCloudOverrides';
 
 export const createCloudPlugin = createPluginFactory<
   CloudPlugin,

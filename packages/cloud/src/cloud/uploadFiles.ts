@@ -32,6 +32,7 @@ export function uploadFile<V extends Value = Value>(
     onBeforeFetch(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
       if (fileEvent.type === 'image') {
+        console.log(1111);
         editor.cloud.imageFileHandlers?.onStart?.(fileEvent);
       } else {
         editor.cloud.genericFileHandlers?.onStart?.(fileEvent);

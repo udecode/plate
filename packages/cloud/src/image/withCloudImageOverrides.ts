@@ -1,32 +1,26 @@
-import {
-  EElementOrText,
-  insertNode,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-core';
-// import { Atom, atom, useAtom } from 'jotai';
-import { Node, Transforms } from 'slate';
-import { CloudEditor, CloudPlugin } from '../cloud/types';
-import { Upload } from '../upload/types';
-import { ELEMENT_CLOUD_ATTACHMENT } from './createCloudAttachmentPlugin';
-import { TCloudAttachmentElement } from './types';
+import { EElementOrText, insertNode, Value } from '@udecode/plate-core';
+import { CloudEditor } from '../cloud/types';
+import { TCloudImageElement } from './types';
 
-type CloudAttachmentValue = TCloudAttachmentElement[];
+// type CloudImageValue = TCloudImageElement[];
 
 // const uploadMap = new Map<string, Atom<Upload>>();
 
-export function withOverrides<
+export function withCloudImageOverrides<
   V extends Value = Value,
   E extends CloudEditor<V> = CloudEditor<V>
 >(editor: E) {
-  editor.cloud.genericFileHandlers = {
+  editor.cloud.imageFileHandlers = {
     onStart(e) {
       console.log('start', e);
-      const node: EElementOrText<CloudAttachmentValue> = {
-        type: 'cloud_attachment',
+      const node: TCloudImageElement = {
+        type: 'cloud_image',
         url: e.id,
-        filename: e.file.name,
         bytes: e.file.size,
+        width: e.width,
+        height: e.height,
+        maxWidth: e.width,
+        maxHeight: e.height,
         children: [{ text: '' }],
       };
       insertNode<Value>(editor, node);

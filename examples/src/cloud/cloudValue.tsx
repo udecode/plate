@@ -13,6 +13,22 @@ export const cloudValue: any = (
       each user. Supports high DPI files for retina devices and regular files
       for speedier delivery for everyone else.
     </hp>
+
+    <hh3>Cloud Images</hh3>
+    <hp>Samples of cloud images.</hp>
+    <element
+      type="cloud_image"
+      url="https://files.portive.com/f/demo/6hndj3bdag7eqbpb2794s--1920x1440.jpg"
+      bytes={654196}
+      width={320}
+      height={240}
+      maxWidth={1920}
+      maxHeight={1440}
+    >
+      <htext />
+    </element>
+    <hh3>Cloud Attachments</hh3>
+    <hp>Samples of cloud attachments.</hp>
     <element
       type="cloud_attachment"
       url="https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt"

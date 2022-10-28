@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   createCloudAttachmentPlugin,
+  createCloudImagePlugin,
   createCloudPlugin,
   Plate,
   PlateProvider,
@@ -22,6 +23,7 @@ const plugins = createMyPlugins(
       },
     }),
     createCloudAttachmentPlugin(),
+    createCloudImagePlugin(),
   ],
   {
     components: plateUI,
