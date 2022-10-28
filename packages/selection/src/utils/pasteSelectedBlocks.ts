@@ -1,8 +1,6 @@
 import {
   deselect,
-  ELEMENT_DEFAULT,
   focusEditor,
-  getPluginType,
   getStartPoint,
   insertData,
   insertNodes,
@@ -27,17 +25,12 @@ export const pasteSelectedBlocks = <V extends Value>(
     focusEditor(editor, getStartPoint(editor, path));
 
     if (!isElementEmpty(editor, node as any)) {
-      insertNodes(
-        editor,
-        {
-          type: getPluginType(editor, ELEMENT_DEFAULT),
-          children: [{ text: '' }],
-        } as any,
-        {
-          at: Path.next(path),
-          select: true,
-        }
-      );
+      const at = Path.next(path);
+
+      insertNodes(editor, editor.blockFactory({}, at), {
+        at,
+        select: true,
+      });
     }
 
     // quick fix until we find a way to merge history
