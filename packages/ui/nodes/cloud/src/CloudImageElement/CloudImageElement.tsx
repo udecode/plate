@@ -38,6 +38,11 @@ export const CloudImageElement = <V extends Value>(
         <span
           contentEditable={false}
           style={{
+            /**
+             * NOTE:
+             * This code pretty much needs to be this way or things stop working
+             * so this cannot be overrided in the `.styles.ts` file.
+             */
             position: 'relative',
             display: 'inline-block',
             /**
@@ -68,15 +73,7 @@ export const CloudImageElement = <V extends Value>(
             height={element.height}
             alt=""
           />
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              marginTop: -6,
-              left: 16,
-              right: 16,
-            }}
-          >
+          <div css={styles.statusBarContainer?.css}>
             <StatusBar upload={upload} />
           </div>
         </span>

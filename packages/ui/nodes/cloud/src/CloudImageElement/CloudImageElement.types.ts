@@ -14,6 +14,7 @@ export interface CloudImageElementProps<V extends Value>
 
 export interface CloudImageElementStyles {
   img: CSSProp;
+  statusBarContainer: CSSProp;
   // filename: CSSProp;
   // caption: CSSProp;
   // body: CSSProp;
