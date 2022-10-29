@@ -69,7 +69,7 @@ export function FailBar({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function StatusBar(props: { upload: Upload; children: JSX.Element }) {
+export function StatusBar(props: { upload: Upload; children?: JSX.Element }) {
   const { upload, children } = props;
   switch (upload.status) {
     case 'progress':
@@ -77,9 +77,9 @@ export function StatusBar(props: { upload: Upload; children: JSX.Element }) {
     case 'error':
       return <FailBar>Upload Failed</FailBar>;
     case 'not-found':
-      return <FailBar>Upload State Not Found</FailBar>;
+      return <FailBar>State Not Found</FailBar>;
     case 'success':
-      return children;
+      return children || null;
     default:
       throw new Error(`Should be unreachable`);
   }

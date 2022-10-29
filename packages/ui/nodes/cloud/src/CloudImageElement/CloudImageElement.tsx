@@ -27,37 +27,61 @@ export const CloudImageElement = <V extends Value>(
   console.log({ element, upload });
 
   return (
-    <div
-      css={styles.root.css}
-      {...attributes}
-      {...rootProps}
-      {...nodeProps}
-      contentEditable={false}
-      draggable
-    >
-      <img
-        src={element.url}
-        width={element.width}
-        height={element.height}
-        alt=""
-      />
-      {/* <div css={styles.file?.css}>
-        <AttachFile width={24} height={24} />
+    <>
+      <div
+        css={styles.root.css}
+        {...attributes}
+        {...rootProps}
+        {...nodeProps}
+        draggable
+      >
+        <span
+          contentEditable={false}
+          style={{
+            position: 'relative',
+            display: 'inline-block',
+            /**
+             * This is required so that we don't get an extra gap at the bottom.
+             * When display is 'inline-block' we get some extra space at the bottom
+             * for the descenders because the content is expected to co-exist with text.
+             *
+             * Setting vertical-align to top, bottom or middle fixes this because it is
+             * no longer baseline which causes the issue.
+             *
+             * This is usually an issue with 'img' but also affects this scenario.
+             *
+             * https://stackoverflow.com/questions/5804256/image-inside-div-has-extra-space-below-the-image
+             *
+             * Also, make sure that <img> on the inside is display: 'block'.
+             */
+            verticalAlign: 'top',
+            /**
+             * Disable user select. We use our own selection display.
+             */
+            userSelect: 'none',
+          }}
+        >
+          <img
+            css={styles.img?.css}
+            src={upload.status !== 'not-found' ? upload.url : ''}
+            width={element.width}
+            height={element.height}
+            alt=""
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              marginTop: -6,
+              left: 16,
+              right: 16,
+            }}
+          >
+            <StatusBar upload={upload} />
+          </div>
+        </span>
+        {children}
       </div>
-      <div css={styles.body?.css}>
-        <div css={styles.filename?.css}>{element.filename}</div>
-        <StatusBar upload={upload}>
-          <div css={styles.caption?.css}>{element.bytes} bytes</div>
-        </StatusBar>
-      </div>
-      <div css={styles.download?.css}>
-        {upload.status === 'success' && (
-          <a href={element.url} target="_blank" rel="noreferrer">
-            <CloudDownload css={styles.downloadIcon?.css} />
-          </a>
-        )}
-      </div> */}
-      {children}
-    </div>
+    </>
   );
 };

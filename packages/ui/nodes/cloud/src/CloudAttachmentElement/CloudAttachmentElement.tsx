@@ -30,19 +30,18 @@ export const CloudAttachmentElement = <V extends Value>(
       {...attributes}
       {...rootProps}
       {...nodeProps}
-      contentEditable={false}
       draggable
     >
-      <div css={styles.file?.css}>
+      <div css={styles.file?.css} contentEditable={false}>
         <AttachFile width={24} height={24} />
       </div>
-      <div css={styles.body?.css}>
+      <div css={styles.body?.css} contentEditable={false}>
         <div css={styles.filename?.css}>{element.filename}</div>
         <StatusBar upload={upload}>
           <div css={styles.caption?.css}>{element.bytes} bytes</div>
         </StatusBar>
       </div>
-      <div css={styles.download?.css}>
+      <div css={styles.download?.css} contentEditable={false}>
         {upload.status === 'success' && (
           <a href={element.url} target="_blank" rel="noreferrer">
             <CloudDownload css={styles.downloadIcon?.css} />

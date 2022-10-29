@@ -35,31 +35,55 @@ export type CloudEditorProps = {
   };
 };
 
-export type GenericFileEvent = {
+/**
+ * The part of the FileEvent shared between the GenericFileEvent and the
+ * ImageFileEvent.
+ */
+export type FileEventBase = {
   id: string;
-  type: 'generic';
   file: File;
+  url: string;
 };
 
+/**
+ * FileEvent for files that are not images
+ */
+export type GenericFileEvent = {
+  type: 'generic';
+} & FileEventBase;
+
+/**
+ * FileEvent for files that are images
+ */
 export type ImageFileEvent = {
-  id: string;
   type: 'image';
-  file: File;
   width: number;
   height: number;
-};
+} & FileEventBase;
 
+/**
+ * FileEvent for any type of file (generic or image)
+ */
 export type FileEvent = GenericFileEvent | ImageFileEvent;
 
+/**
+ * Indicates upload in progress
+ */
 export type ProgressEvent = {
   sentBytes: number;
   totalBytes: number;
 };
 
+/**
+ * Indicates an error during upload
+ */
 export type ErrorEvent = {
   message: string;
 };
 
+/**
+ * Indicates a successful upload
+ */
 export type SuccessEvent = {
   url: string;
 };

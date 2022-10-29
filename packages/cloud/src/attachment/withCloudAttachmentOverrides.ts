@@ -23,6 +23,7 @@ export function withCloudAttachmentOverrides<
       insertNode<Value>(editor, node);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
+        url: e.url,
         sentBytes: 0,
         totalBytes: e.file.size,
       });
@@ -31,6 +32,7 @@ export function withCloudAttachmentOverrides<
       console.log('progress', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
+        url: e.url,
         sentBytes: e.sentBytes,
         totalBytes: e.totalBytes,
       });
@@ -39,6 +41,7 @@ export function withCloudAttachmentOverrides<
       console.log('error', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'error',
+        url: e.url,
         message: e.message,
       });
     },

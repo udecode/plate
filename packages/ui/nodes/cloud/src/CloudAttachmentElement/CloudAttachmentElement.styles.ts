@@ -14,7 +14,12 @@ export const getCloudAttachmentElementStyles = <V extends Value>(
       // container
       root: [
         tw`relative flex items-center h-10 max-w-sm gap-2 p-4 my-4 bg-black bg-white border border-gray-200 border-solid rounded-lg`,
-        focused && selected && tw`border-blue-400`,
+        focused &&
+          selected &&
+          tw`border-blue-400` &&
+          css`
+            box-shadow: 0 0 1px 3px #60a5fa;
+          `,
       ],
       // file icon
       file: [tw`flex-shrink-0 text-gray-400`],

@@ -3,6 +3,7 @@
  */
 export type UploadProgress = {
   status: 'progress';
+  url: string;
   sentBytes: number;
   totalBytes: number;
 };
@@ -21,6 +22,7 @@ export type UploadSuccess = {
  */
 export type UploadError = {
   status: 'error';
+  url: string;
   message: string;
 };
 
@@ -29,6 +31,7 @@ export type UploadError = {
  */
 export type UploadStateNotFound = {
   status: 'not-found';
+  // no url here
 };
 
 export type Upload =

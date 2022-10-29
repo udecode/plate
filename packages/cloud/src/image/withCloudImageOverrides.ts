@@ -1,24 +1,26 @@
-import { EElementOrText, insertNode, Value } from '@udecode/plate-core';
+import { resizeIn } from '@portive/client';
+import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-core';
 import { CloudEditor } from '../cloud/types';
-import { TCloudImageElement } from './types';
-
-// type CloudImageValue = TCloudImageElement[];
-
-// const uploadMap = new Map<string, Atom<Upload>>();
+import { CloudImagePlugin, TCloudImageElement } from './types';
 
 export function withCloudImageOverrides<
   V extends Value = Value,
   E extends CloudEditor<V> = CloudEditor<V>
->(editor: E) {
+>(editor: E, plugin: WithPlatePlugin<CloudImagePlugin, V, E>) {
   editor.cloud.imageFileHandlers = {
     onStart(e) {
       console.log('start', e);
+      const { maxInitialWidth, maxInitialHeight } = plugin.options;
+      const { width, height } = resizeIn(
+        { width: e.width, height: e.height },
+        { width: maxInitialWidth || 320, height: maxInitialHeight || 320 }
+      );
       const node: TCloudImageElement = {
         type: 'cloud_image',
         url: e.id,
         bytes: e.file.size,
-        width: e.width,
-        height: e.height,
+        width,
+        height,
         maxWidth: e.width,
         maxHeight: e.height,
         children: [{ text: '' }],
@@ -26,6 +28,7 @@ export function withCloudImageOverrides<
       insertNode<Value>(editor, node);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
+        url: e.url,
         sentBytes: 0,
         totalBytes: e.file.size,
       });
@@ -34,6 +37,7 @@ export function withCloudImageOverrides<
       console.log('progress', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
+        url: e.url,
         sentBytes: e.sentBytes,
         totalBytes: e.totalBytes,
       });
@@ -42,6 +46,7 @@ export function withCloudImageOverrides<
       console.log('error', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'error',
+        url: e.url,
         message: e.message,
       });
     },

@@ -9,6 +9,7 @@ function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
       id,
       type: 'image',
       file: clientFile.file,
+      url: clientFile.objectUrl,
       width: clientFile.width,
       height: clientFile.height,
     };
@@ -17,6 +18,7 @@ function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
     id,
     type: 'generic',
     file: clientFile.file,
+    url: clientFile.objectUrl,
   };
 }
 

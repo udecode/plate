@@ -13,7 +13,7 @@ export interface CloudImageElementProps<V extends Value>
   extends StyledElementProps<V, TCloudImageElement, CloudImageElementStyles> {}
 
 export interface CloudImageElementStyles {
-  // file: CSSProp;
+  img: CSSProp;
   // filename: CSSProp;
   // caption: CSSProp;
   // body: CSSProp;

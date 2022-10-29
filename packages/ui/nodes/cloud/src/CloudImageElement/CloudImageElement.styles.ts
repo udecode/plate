@@ -12,7 +12,15 @@ export const getCloudImageElementStyles = <V extends Value>(
     { prefixClassNames: 'CloudAttachmentElement', ...props },
     {
       // container
-      root: [tw`relative my-4`, focused && selected && tw`border-blue-400`],
+      root: [tw`relative my-4`],
+      img: [
+        tw`rounded-lg`,
+        focused &&
+          selected &&
+          css`
+            box-shadow: 0 0 1px 3px #60a5fa;
+          `,
+      ],
       // // file icon
       // file: [tw`flex-shrink-0 text-gray-400`],
       // filename: [tw`text-base`],
