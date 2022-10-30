@@ -2,7 +2,9 @@ import {
   createPluginFactory,
   getEndPoint,
   getStartPoint,
+  isCollapsed,
   resetEditorChildren,
+  setNodes,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
@@ -18,40 +20,54 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
   handlers: {
     onKeyDown: onKeyDownResetNode,
   },
-  withOverrides: (editor) => {
+  withOverrides: (editor, { options }) => {
     const { deleteFragment, deleteBackward } = editor;
 
-    const deleteFragmentPlugin = () => {
-      const { selection } = editor;
-      if (!selection) return;
+    if (!options.disableEditorReset) {
+      const deleteFragmentPlugin = () => {
+        const { selection } = editor;
+        if (!selection) return;
 
-      const start = getStartPoint(editor, []);
-      const end = getEndPoint(editor, []);
+        const start = getStartPoint(editor, []);
+        const end = getEndPoint(editor, []);
 
-      if (
-        (Point.equals(selection.anchor, start) &&
-          Point.equals(selection.focus, end)) ||
-        (Point.equals(selection.focus, start) &&
-          Point.equals(selection.anchor, end))
-      ) {
-        resetEditorChildren(editor, {
-          insertOptions: { select: true },
-        });
-        return true;
-      }
-    };
+        if (
+          (Point.equals(selection.anchor, start) &&
+            Point.equals(selection.focus, end)) ||
+          (Point.equals(selection.focus, start) &&
+            Point.equals(selection.anchor, end))
+        ) {
+          resetEditorChildren(editor, {
+            insertOptions: { select: true },
+          });
+          return true;
+        }
+      };
 
-    editor.deleteFragment = (direction) => {
-      if (deleteFragmentPlugin()) return;
+      editor.deleteFragment = (direction) => {
+        if (deleteFragmentPlugin()) return;
 
-      deleteFragment(direction);
-    };
+        deleteFragment(direction);
+      };
+    }
 
-    editor.deleteBackward = (unit) => {
-      if (deleteFragmentPlugin()) return;
+    if (!options.disableFirstBlockReset) {
+      editor.deleteBackward = (unit) => {
+        const { selection } = editor;
+        if (selection && isCollapsed(selection)) {
+          const start = getStartPoint(editor, []);
 
-      deleteBackward(unit);
-    };
+          if (Point.equals(selection.anchor, start)) {
+            const { children, ...props } = editor.blockFactory({}, [0]);
+
+            setNodes(editor, props, { at: [0] });
+            return;
+          }
+        }
+
+        deleteBackward(unit);
+      };
+    }
 
     return editor;
   },
