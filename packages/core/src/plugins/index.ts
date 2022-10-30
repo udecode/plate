@@ -7,6 +7,7 @@ export * from './createEventEditorPlugin';
 export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
+export * from './createNodeFactoryPlugin';
 export * from './createPrevSelectionPlugin';
 export * from './createReactPlugin';
 export * from './onKeyDownToggleElement';

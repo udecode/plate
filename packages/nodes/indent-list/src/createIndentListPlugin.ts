@@ -24,7 +24,7 @@ export interface IndentListPlugin {
   /**
    * Map html element to list style type.
    */
-  getListStyleType: (element: HTMLElement) => ListStyleType;
+  getListStyleType?: (element: HTMLElement) => ListStyleType;
 }
 
 export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({
@@ -87,7 +87,7 @@ export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({
       isElement: true,
       getNode: (element) => ({
         type: getPluginType(editor, ELEMENT_DEFAULT),
-        listStyleType: options.getListStyleType(element),
+        listStyleType: options.getListStyleType?.(element),
         // gdoc uses aria-level attribute
         indent: Number(element.getAttribute('aria-level')),
       }),
