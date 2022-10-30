@@ -1,5 +1,14 @@
 # @udecode/plate-node-id
 
+## 18.6.0
+
+### Minor Changes
+
+- [#1953](https://github.com/udecode/plate/pull/1953) by [@zbeyens](https://github.com/zbeyens) – `withNodeId`:
+  - `filter` option was not passing the node `path` but always `[]`
+  - add `queryNode` to `split_node` operation
+  - delete splitted node id if not allowed
+
 ## 18.5.0
 
 ### Patch Changes

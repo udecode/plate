@@ -1,5 +1,7 @@
 # @udecode/plate-table-ui
 
+## 18.6.0
+
 ## 18.2.0
 
 ## 18.1.2
