@@ -1,5 +1,14 @@
 # @udecode/plate-link
 
+## 18.6.0
+
+### Patch Changes
+
+- [#1955](https://github.com/udecode/plate/pull/1955) by [@zbeyens](https://github.com/zbeyens) –
+  - feat:`LinkPlugin` new option `forceSubmit?: boolean`. When true and inserting a link, `enter` key should submit even when url is invalid
+  - fix: when inserting a link, `enter` key should now submit even another key is pressed
+  - fix: hotkey to trigger floating link (`cmd+k` by default) should prevent default
+
 ## 18.2.0
 
 ## 18.1.1
