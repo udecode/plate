@@ -76,4 +76,35 @@ describe('createResetNodePlugin', () => {
       expect(editor.children).toEqual(output.children);
     });
   });
+
+  describe('when delete at first block start', () => {
+    const input = (
+      <editor>
+        <hh1 test="test">
+          <cursor />
+          test
+        </hh1>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          <cursor />
+          test
+        </hp>
+      </editor>
+    ) as any;
+
+    it('should reset', () => {
+      const editor = createPlateUIEditor({
+        editor: input,
+        plugins: [createResetNodePlugin()],
+      });
+
+      editor.deleteBackward();
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
 });

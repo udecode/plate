@@ -1,10 +1,15 @@
 import {
   createPluginFactory,
   getEndPoint,
+  getNode,
+  getNodeProps,
   getStartPoint,
   isCollapsed,
   resetEditorChildren,
   setNodes,
+  TElement,
+  unsetNodes,
+  withoutNormalizing,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
@@ -58,9 +63,15 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
           const start = getStartPoint(editor, []);
 
           if (Point.equals(selection.anchor, start)) {
+            const node = getNode<TElement>(editor, [0])!;
+
             const { children, ...props } = editor.blockFactory({}, [0]);
 
-            setNodes(editor, props, { at: [0] });
+            // replace props
+            withoutNormalizing(editor, () => {
+              unsetNodes(editor, Object.keys(getNodeProps(node)), { at: [0] });
+              setNodes(editor, props, { at: [0] });
+            });
             return;
           }
         }
