@@ -28,6 +28,7 @@ export type UsePlateEffectsProps<
           inlineVoid?: boolean;
           insertData?: boolean;
           history?: boolean;
+          nodeFactory?: boolean;
           react?: boolean;
           selection?: boolean;
         }

@@ -10,6 +10,16 @@ import {
 } from '../slate/index';
 import { removeNodeChildren } from './removeNodeChildren';
 
+export interface ReplaceNodeChildrenOptions<
+  N extends EElementOrText<V>,
+  V extends Value = Value
+> {
+  at: Path;
+  nodes: N | N[];
+  removeOptions?: Omit<RemoveNodesOptions<V>, 'at'>;
+  insertOptions?: Omit<InsertNodesOptions<V>, 'at'>;
+}
+
 /**
  * Replace node children: remove then insert.
  */
@@ -18,17 +28,7 @@ export const replaceNodeChildren = <
   V extends Value = Value
 >(
   editor: TEditor<V>,
-  {
-    at,
-    nodes,
-    insertOptions,
-    removeOptions,
-  }: {
-    at: Path;
-    nodes: N | N[];
-    removeOptions?: Omit<RemoveNodesOptions<V>, 'at'>;
-    insertOptions?: Omit<InsertNodesOptions<V>, 'at'>;
-  }
+  { at, nodes, insertOptions, removeOptions }: ReplaceNodeChildrenOptions<N, V>
 ) => {
   withoutNormalizing(editor, () => {
     removeNodeChildren(editor, at, removeOptions);

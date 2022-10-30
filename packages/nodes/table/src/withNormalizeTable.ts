@@ -1,5 +1,4 @@
 import {
-  ELEMENT_DEFAULT,
   getBlockAbove,
   getParentNode,
   getPluginType,
@@ -69,16 +68,9 @@ export const withNormalizeTable = <
         }
 
         if (isText(children[0])) {
-          wrapNodeChildren<TElement>(
-            editor,
-            {
-              type: getPluginType(editor, ELEMENT_DEFAULT),
-              children: [{ text: '' }],
-            },
-            {
-              at: path,
-            }
-          );
+          wrapNodeChildren<TElement>(editor, editor.blockFactory({}, path), {
+            at: path,
+          });
 
           return;
         }

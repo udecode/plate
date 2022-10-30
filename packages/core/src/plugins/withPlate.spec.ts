@@ -8,12 +8,14 @@ import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';
 import { KEY_INLINE_VOID } from './createInlineVoidPlugin';
 import { KEY_INSERT_DATA } from './createInsertDataPlugin';
+import { KEY_NODE_FACTORY } from './createNodeFactoryPlugin';
 import { KEY_PREV_SELECTION } from './createPrevSelectionPlugin';
 import { withPlate } from './withPlate';
 
 const coreKeys = [
   'react',
   'history',
+  KEY_NODE_FACTORY,
   KEY_EVENT_EDITOR,
   KEY_INLINE_VOID,
   KEY_INSERT_DATA,

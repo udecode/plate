@@ -27,4 +27,6 @@ export interface ResetNodePlugin<
   E extends PlateEditor<V> = PlateEditor<V>
 > {
   rules?: ResetNodePluginRule<V, E>[];
+  disableFirstBlockReset?: boolean;
+  disableEditorReset?: boolean;
 }
