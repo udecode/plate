@@ -3,8 +3,6 @@ import {
   getEndPoint,
   getStartPoint,
   resetEditorChildren,
-  select,
-  withoutNormalizing,
 } from '@udecode/plate-core';
 import { Point } from 'slate';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
@@ -21,7 +19,7 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
     onKeyDown: onKeyDownResetNode,
   },
   withOverrides: (editor) => {
-    const { deleteFragment } = editor;
+    const { deleteFragment, deleteBackward } = editor;
 
     const deleteFragmentPlugin = () => {
       const { selection } = editor;
@@ -36,9 +34,8 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
         (Point.equals(selection.focus, start) &&
           Point.equals(selection.anchor, end))
       ) {
-        withoutNormalizing(editor, () => {
-          resetEditorChildren(editor);
-          select(editor, [0]);
+        resetEditorChildren(editor, {
+          insertOptions: { select: true },
         });
         return true;
       }
@@ -48,6 +45,12 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
       if (deleteFragmentPlugin()) return;
 
       deleteFragment(direction);
+    };
+
+    editor.deleteBackward = (unit) => {
+      if (deleteFragmentPlugin()) return;
+
+      deleteBackward(unit);
     };
 
     return editor;

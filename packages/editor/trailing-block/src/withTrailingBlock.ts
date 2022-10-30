@@ -36,7 +36,6 @@ export const withTrailingBlock = <
       ) {
         const at = lastChild ? Path.next(lastChild[1]) : [0];
 
-        console.log(editor.children);
         insertElements(editor, editor.blockFactory({}, at), { at });
         return;
       }
