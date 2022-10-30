@@ -1,5 +1,7 @@
 # @udecode/plate-selection
 
+## 18.6.0
+
 ## 18.5.0
 
 ### Minor Changes

@@ -1,5 +1,22 @@
 # @udecode/plate-core
 
+## 18.6.0
+
+### Minor Changes
+
+- [#1959](https://github.com/udecode/plate/pull/1959) by [@zbeyens](https://github.com/zbeyens) –
+  - Default editor value is now overridable with `editor.childrenFactory()`
+  - New core plugin `nodeFactory`, extends the editor with:
+    - `blockFactory: (node) => TElement`, can be used to create the default editor block
+    - `childrenFactory: () => Value`
+  - New transform `resetEditorChildren`: Replace editor children by `editor.childrenFactory()`.
+
+### Patch Changes
+
+- [#1957](https://github.com/udecode/plate/pull/1957) by [@tmilewski](https://github.com/tmilewski) – fix: update `@radix-ui/react-slot` to eliminate conflicting peer dependencies
+
+- [#1953](https://github.com/udecode/plate/pull/1953) by [@zbeyens](https://github.com/zbeyens) – `applyDeepToNodes`: new option `path`
+
 ## 18.2.0
 
 ### Minor Changes

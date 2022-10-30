@@ -1,5 +1,7 @@
 # @udecode/plate-combobox
 
+## 18.6.0
+
 ## 18.5.1
 
 ### Patch Changes

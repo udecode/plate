@@ -1,5 +1,7 @@
 # @udecode/plate-ui-popper
 
+## 18.6.0
+
 ## 18.2.0
 
 ## 18.1.1

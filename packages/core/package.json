@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "18.2.0",
+  "version": "18.6.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -14,7 +14,9 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "types": "dist/index.d.ts",
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.1",
