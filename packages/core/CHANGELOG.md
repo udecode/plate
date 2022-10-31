@@ -1,5 +1,16 @@
 # @udecode/plate-core
 
+## 18.7.0
+
+### Minor Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) –
+  - Default editor value is now overridable with `editor.childrenFactory()`
+  - New core plugin `nodeFactory`, extends the editor with:
+    - `blockFactory: (node) => TElement`, can be used to create the default editor block
+    - `childrenFactory: () => Value`
+  - New transform `resetEditorChildren`: Replace editor children by `editor.childrenFactory()`.
+
 ## 18.6.0
 
 ### Minor Changes
