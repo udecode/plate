@@ -36,7 +36,7 @@ export const CloudToolbarButtons = () => {
         Await Finish Uploads
       </button>
       <span style={{ marginLeft: 16 }}>
-        Note: Output will be shown in console
+        Note: After clicking a button, output will be shown in console.
       </span>
     </>
   );
