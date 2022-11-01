@@ -5,3 +5,4 @@
 export * from './CloudImageElement.styles';
 export * from './CloudImageElement';
 export * from './CloudImageElement.types';
+export * from './types';

@@ -14,7 +14,7 @@ export const getCloudImageElementStyles = <V extends Value>(
       // container
       root: [tw`relative my-4`],
       img: [
-        tw`rounded-lg`,
+        tw`block rounded-lg`,
         focused &&
           selected &&
           css`
