@@ -6,6 +6,7 @@ export type UploadProgress = {
   url: string;
   sentBytes: number;
   totalBytes: number;
+  finishPromise: Promise<UploadSuccess | UploadError>;
 };
 
 /**

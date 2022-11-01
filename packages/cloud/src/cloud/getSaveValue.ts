@@ -1,5 +1,4 @@
 import { Value } from '@udecode/plate-core';
-import { Descendant } from 'slate';
 import { Upload } from '../upload/types';
 
 /**
@@ -8,9 +7,9 @@ import { Upload } from '../upload/types';
  * We don't put this in a `types.ts` file because it really only has use in
  * this one method.
  */
-type MaybeOriginNode = {
+type MaybeUploadNode = {
   url?: unknown;
-  children?: MaybeOriginNode[];
+  children?: MaybeUploadNode[];
   [key: string]: unknown;
 };
 
@@ -26,10 +25,10 @@ export function isStoreRef(url: string) {
  * Recursive part of `normalizeOrigins` function with correct types.
  */
 function _getSaveValue(
-  nodes: MaybeOriginNode[],
+  nodes: MaybeUploadNode[],
   uploads: Record<string, Upload>
-): MaybeOriginNode[] {
-  const nextNodes: MaybeOriginNode[] = [];
+): MaybeUploadNode[] {
+  const nextNodes: MaybeUploadNode[] = [];
   for (const node of nodes) {
     if ('url' in node) {
       /**
@@ -107,5 +106,5 @@ export function getSaveValue<V extends Value>(
   nodes: V,
   uploads: Record<string, Upload>
 ): V {
-  return _getSaveValue(nodes as MaybeOriginNode[], uploads) as V;
+  return _getSaveValue(nodes as MaybeUploadNode[], uploads) as V;
 }

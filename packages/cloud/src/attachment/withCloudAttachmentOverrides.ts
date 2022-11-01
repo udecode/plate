@@ -1,5 +1,7 @@
 import { EElementOrText, insertNode, Value } from '@udecode/plate-core';
+import Defer from 'p-defer';
 import { CloudEditor } from '../cloud/types';
+import { UploadError, UploadSuccess } from '../upload';
 import { TCloudAttachmentElement } from './types';
 
 type CloudAttachmentValue = TCloudAttachmentElement[];
@@ -10,6 +12,16 @@ export function withCloudAttachmentOverrides<
   V extends Value = Value,
   E extends CloudEditor<V> = CloudEditor<V>
 >(editor: E) {
+  /**
+   * We create a deferredFinish which is an object with a `promise` and a way
+   * to `resolve` or `reject` the Promise outside of the Promise. We use
+   * `p-defer` library to do this. The `finish` Promise gets added to the
+   * `origin` object so we can await `origin.finish` during the save process
+   * to wait for all the files to finish uploading.
+   */
+  const deferredFinish = Defer<UploadSuccess | UploadError>();
+  const finishPromise = deferredFinish.promise;
+
   editor.cloud.genericFileHandlers = {
     onStart(e) {
       console.log('start', e);
@@ -26,6 +38,7 @@ export function withCloudAttachmentOverrides<
         url: e.url,
         sentBytes: 0,
         totalBytes: e.file.size,
+        finishPromise,
       });
     },
     onProgress(e) {
@@ -35,22 +48,27 @@ export function withCloudAttachmentOverrides<
         url: e.url,
         sentBytes: e.sentBytes,
         totalBytes: e.totalBytes,
+        finishPromise,
       });
     },
     onError(e) {
       console.log('error', e);
-      editor.cloud.useUploadStore.getState().setUpload(e.id, {
+      const upload: UploadError = {
         status: 'error',
         url: e.url,
         message: e.message,
-      });
+      };
+      editor.cloud.useUploadStore.getState().setUpload(e.id, upload);
+      deferredFinish.resolve(upload);
     },
     onSuccess(e) {
       console.log('success', e);
-      editor.cloud.useUploadStore.getState().setUpload(e.id, {
+      const upload: UploadSuccess = {
         status: 'success',
         url: e.url,
-      });
+      };
+      editor.cloud.useUploadStore.getState().setUpload(e.id, upload);
+      deferredFinish.resolve(upload);
     },
   };
   return editor;

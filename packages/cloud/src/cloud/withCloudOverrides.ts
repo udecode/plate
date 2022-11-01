@@ -1,8 +1,9 @@
 import { createClient } from '@portive/client';
 import { Value, WithPlatePlugin } from '@udecode/plate-core';
 import { createUploadStore } from '../upload/createUploadStore';
+import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';
-import { CloudEditor, CloudPlugin } from './types';
+import { CloudEditor, CloudPlugin, FinishUploadsOptions } from './types';
 import { uploadFiles } from './uploadFiles';
 
 export function withCloudOverrides<
@@ -30,6 +31,9 @@ export function withCloudOverrides<
         editor.children,
         useUploadStore.getState().uploads
       );
+    },
+    finishUploads: async (options: FinishUploadsOptions) => {
+      return finishUploads(editor, options);
     },
   };
   return editor;

@@ -15,6 +15,8 @@ export type CloudEditor<V extends Value = Value> = PlateEditor<V> &
   ReactEditor &
   CloudEditorProps<V>;
 
+export type FinishUploadsOptions = { maxTimeoutInMs?: number };
+
 export type CloudEditorProps<V extends Value = Value> = {
   cloud: {
     client: Client;
@@ -33,6 +35,8 @@ export type CloudEditorProps<V extends Value = Value> = {
       onSuccess?: (e: ImageFileEvent & SuccessEvent) => void;
     };
     getSaveValue: () => V;
+    finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
+    // save: (options: { maxTimeoutInMs?: number }) => Promise<V>;
   };
 };
 

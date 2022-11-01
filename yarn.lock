@@ -5418,7 +5418,10 @@ __metadata:
   dependencies:
     "@portive/client": "npm:10.0.2"
     "@udecode/plate-core": "npm:18.2.0"
+    delay: "npm:5.0.0"
     nanoid: "npm:^3.3.4"
+    p-defer: "npm:^3.0"
+    zustand: "npm:^3.7.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -10431,6 +10434,13 @@ __metadata:
     rimraf: "npm:^3.0.2"
     slash: "npm:^3.0.0"
   checksum: 0e019956fe117683045b82d61cfdb801185e6ec9e217958f0fccefe6c1e4d0e0774716e1b851359246592bef106c88178f9cc038b9a09715c1b147b9bc180f89
+  languageName: node
+  linkType: hard
+
+"delay@npm:5.0.0":
+  version: 5.0.0
+  resolution: "delay@npm:5.0.0"
+  checksum: 87bf4782172e10cd253043238916ed409c24bdfc4365cc2eca8f427a7fb9592eb99680364363bef0e92a5aee137730d094e4fcdc6a91fed28deffc58b4fb8458
   languageName: node
   linkType: hard
 
@@ -18367,6 +18377,13 @@ __metadata:
   version: 0.5.0
   resolution: "outdent@npm:0.5.0"
   checksum: cfc32e7dc8599559d95440ef66fe190feef180fb149edff1c815969ebbfa71e8aebc127fd305a33c2bfcbd613d6939f0ce3b6446aece44b73b0ef07bca443190
+  languageName: node
+  linkType: hard
+
+"p-defer@npm:^3.0":
+  version: 3.0.0
+  resolution: "p-defer@npm:3.0.0"
+  checksum: dc6926bd18249134946cfdc1b8479ac29ab3835bd9f1e9a9c863eefe3c97cdab541838544db0650ea18138b2b9ff64b9425cfd98f32f9ab5de1ad28dc5333629
   languageName: node
   linkType: hard
 
