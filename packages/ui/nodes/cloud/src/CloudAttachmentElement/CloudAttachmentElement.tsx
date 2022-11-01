@@ -37,7 +37,12 @@ export const CloudAttachmentElement = <V extends Value>(
       </div>
       <div css={styles.bodyContainer?.css} contentEditable={false}>
         <div css={styles.bodyFilename?.css}>{element.filename}</div>
-        <StatusBar upload={upload}>
+        <StatusBar
+          upload={upload}
+          progressBarTrackCss={styles.progressBarTrack?.css}
+          progressBarBarCss={styles.progressBarBar?.css}
+          failBarCss={styles.failBar?.css}
+        >
           <div css={styles.bodyCaption?.css}>{element.bytes} bytes</div>
         </StatusBar>
       </div>

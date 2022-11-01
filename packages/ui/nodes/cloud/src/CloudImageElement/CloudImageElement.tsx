@@ -91,7 +91,12 @@ export const CloudImageElement = <V extends Value>(
           alt=""
         />
         <div css={styles.statusBarContainer?.css}>
-          <StatusBar upload={upload} />
+          <StatusBar
+            upload={upload}
+            progressBarTrackCss={styles.progressBarTrack?.css}
+            progressBarBarCss={styles.progressBarBar?.css}
+            failBarCss={styles.failBar?.css}
+          />
         </div>
         {selected && focused && (
           <ResizeControls element={element} size={size} setSize={setSize} />

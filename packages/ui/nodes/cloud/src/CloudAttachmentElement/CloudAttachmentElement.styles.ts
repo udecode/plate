@@ -2,6 +2,7 @@ import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
+import { statusBarStyleValues } from '../StatusBar/StatusBar.styles';
 import { CloudAttachmentElementStyleProps } from './CloudAttachmentElement.types';
 
 export const getCloudAttachmentElementStyles = <V extends Value>(
@@ -31,6 +32,7 @@ export const getCloudAttachmentElementStyles = <V extends Value>(
       // download
       downloadContainer: [tw`flex-shrink-0 w-8 h-8 ml-4 duration-200`],
       downloadIcon: [tw`text-gray-400 cursor-pointer hover:text-blue-500`],
+      ...statusBarStyleValues,
     }
   );
 };

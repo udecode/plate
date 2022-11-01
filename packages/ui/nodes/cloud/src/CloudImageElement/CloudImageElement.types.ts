@@ -2,6 +2,7 @@ import { TCloudImageElement } from '@udecode/plate-cloud';
 import { Value } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
+import { CloudStatusBarStyles } from '../StatusBar/StatusBar.types';
 
 export interface CloudImageElementStyleProps<V extends Value>
   extends CloudImageElementProps<V> {
@@ -12,7 +13,7 @@ export interface CloudImageElementStyleProps<V extends Value>
 export interface CloudImageElementProps<V extends Value>
   extends StyledElementProps<V, TCloudImageElement, CloudImageElementStyles> {}
 
-export interface CloudImageElementStyles {
+export interface CloudImageElementStyles extends CloudStatusBarStyles {
   img: CSSProp;
   statusBarContainer: CSSProp;
   // filename: CSSProp;

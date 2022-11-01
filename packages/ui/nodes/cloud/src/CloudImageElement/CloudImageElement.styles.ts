@@ -2,6 +2,7 @@ import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
+import { statusBarStyleValues } from '../StatusBar/StatusBar.styles';
 import { CloudImageElementStyleProps } from './CloudImageElement.types';
 
 export const getCloudImageElementStyles = <V extends Value>(
@@ -22,6 +23,7 @@ export const getCloudImageElementStyles = <V extends Value>(
           `,
       ],
       statusBarContainer: [tw`absolute top-[50%] left-2 right-2 -mt-2`],
+      ...statusBarStyleValues,
     }
   );
 };
