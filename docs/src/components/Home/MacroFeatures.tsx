@@ -25,12 +25,22 @@ const macroFeatures = [
       </>
     ),
   },
+  // {
+  //   title: 'Centralized Configuration & State',
+  //   description: (
+  //     <>
+  //       A store is used to handle multiple editor out of the box. You can
+  //       configure all your elements and marks in a single place.
+  //     </>
+  //   ),
+  // },
   {
-    title: 'Centralized Configuration & State',
+    title: 'Plate Cloud: Image and Attachment uploads',
     description: (
       <>
-        A store is used to handle multiple editor out of the box. You can
-        configure all your elements and marks in a single place.
+        New! Plate introduces its official cloud image and attachment upload
+        service with image resizing. Quickly add upload support to any Plate
+        editor and support your favorite editor.
       </>
     ),
   },
