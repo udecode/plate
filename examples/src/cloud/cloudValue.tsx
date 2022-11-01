@@ -6,7 +6,7 @@ jsx;
 
 export const cloudValue: any = (
   <fragment>
-    <hh2>☁️ Cloud Uploads - Images and Attachments</hh2>
+    <hh2>☁️ Plate Cloud Uploads - Images and Attachments</hh2>
     <hp>
       Plate's official cloud upload service with attachments and images.
       Includes server-side image resizing which delivers optimized images to
