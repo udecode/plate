@@ -21,14 +21,15 @@ export const getCloudAttachmentElementStyles = <V extends Value>(
             box-shadow: 0 0 1px 3px #60a5fa;
           `,
       ],
-      // file icon
-      file: [tw`flex-shrink-0 text-gray-400`],
-      filename: [tw`text-base`],
-      caption: [tw`text-sm text-gray-500`],
-      // filename and progress bar
-      body: [tw`flex-grow`],
+      // attachment icon
+      attachmentContainer: [tw`flex-shrink-0 text-gray-400`],
+      attachmentIcon: [],
+      // body
+      bodyContainer: [tw`flex-grow`],
+      bodyFilename: [tw`text-base`],
+      bodyCaption: [tw`text-sm text-gray-500`],
       // download
-      download: [tw`flex-shrink-0 w-8 h-8 ml-4 duration-200`],
+      downloadContainer: [tw`flex-shrink-0 w-8 h-8 ml-4 duration-200`],
       downloadIcon: [tw`text-gray-400 cursor-pointer hover:text-blue-500`],
     }
   );

@@ -17,10 +17,11 @@ export interface CloudAttachmentElementProps<V extends Value>
   > {}
 
 export interface CloudAttachmentElementStyles {
-  file: CSSProp;
-  filename: CSSProp;
-  caption: CSSProp;
-  body: CSSProp;
-  download: CSSProp;
+  attachmentContainer: CSSProp;
+  attachmentIcon: CSSProp;
+  bodyContainer: CSSProp;
+  bodyFilename: CSSProp;
+  bodyCaption: CSSProp;
+  downloadContainer: CSSProp;
   downloadIcon: CSSProp;
 }
