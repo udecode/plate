@@ -13,9 +13,9 @@ export type CloudPlugin = ClientOptions & {
 
 export type CloudEditor<V extends Value = Value> = PlateEditor<V> &
   ReactEditor &
-  CloudEditorProps;
+  CloudEditorProps<V>;
 
-export type CloudEditorProps = {
+export type CloudEditorProps<V extends Value = Value> = {
   cloud: {
     client: Client;
     uploadFiles: (msg: any) => void;
@@ -32,6 +32,7 @@ export type CloudEditorProps = {
       onError?: (e: ImageFileEvent & ErrorEvent) => void;
       onSuccess?: (e: ImageFileEvent & SuccessEvent) => void;
     };
+    getSaveValue: () => V;
   };
 };
 

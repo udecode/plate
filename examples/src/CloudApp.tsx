@@ -7,10 +7,12 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
+import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
 import { cloudValue } from './cloud/cloudValue';
 import { uploadStoreInitialValue } from './cloud/uploadStoreInitialValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
+import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -31,7 +33,12 @@ const plugins = createMyPlugins(
 );
 
 export default () => (
-  <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
+  <>
+    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+      <Toolbar>
+        <CloudToolbarButtons />
+      </Toolbar>
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  </>
 );
