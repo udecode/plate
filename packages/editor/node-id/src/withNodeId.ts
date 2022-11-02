@@ -1,12 +1,13 @@
 import {
-  defaultsDeepToNodes,
-  PlateEditor,
+  applyDeepToNodes,
+  defaultsDeepToNodes,PlateEditor,
   queryNode,
   someNode,
+  TDescendant,
   TNode,
   TNodeEntry,
   Value,
-  WithPlatePlugin,
+  WithPlatePlugin
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeIdPlugin } from './createNodeIdPlugin';
@@ -41,6 +42,15 @@ export const withNodeId = <
     );
   };
 
+  const removeIdFromNodeIfDuplicate = <N extends TDescendant>(node: N) => {
+    if (
+      !reuseId ||
+      someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })
+    ) {
+      delete node[idKey];
+    }
+  };
+
   const query = {
     filter: filterNode,
     allow,
@@ -52,16 +62,17 @@ export const withNodeId = <
       // clone to be able to write (read-only)
       const node = cloneDeep(operation.node);
 
-      // the id in the new node is already being used in the editor, we need to replace it with a new id
-      if (
-        !reuseId ||
-        someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })
-      ) {
-        delete node[idKey];
-      }
+      // Delete ids from node that are already being used
+      applyDeepToNodes({ 
+        node, 
+        query, 
+        source: {}, 
+        apply: removeIdFromNodeIfDuplicate 
+      })
 
       defaultsDeepToNodes({
         node,
+        path: operation.path,
         source: idPropsCreator,
         query,
       });
@@ -75,10 +86,10 @@ export const withNodeId = <
     if (operation.type === 'split_node') {
       const node = operation.properties as TNode;
 
-      // only for elements (node with a type) or all nodes if `filterText=false`
-      if (queryNode([node, []], query)) {
-        let id = operation.properties[idKey];
+      let id = operation.properties[idKey];
 
+      // only for elements (node with a type) or all nodes if `filterText=false`
+      if (queryNode([node, operation.path], query)) {
         /**
          * Create a new id if:
          * - the id in the new node is already being used in the editor or,
@@ -102,6 +113,11 @@ export const withNodeId = <
             [idKey]: id,
           },
         });
+      }
+
+      // if the node is allowed, we don't want to use the same id
+      if (id) {
+        delete operation.properties[idKey];
       }
     }
 

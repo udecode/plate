@@ -1,5 +1,17 @@
 # @udecode/plate-combobox
 
+## 18.7.0
+
+## 18.6.0
+
+## 18.5.1
+
+### Patch Changes
+
+- [#1950](https://github.com/udecode/plate/pull/1950) by [@guldenmw](https://github.com/guldenmw) – Combobox store: Clear `filteredItems` on reset
+
+## 18.2.0
+
 ## 18.1.1
 
 ## 17.0.3

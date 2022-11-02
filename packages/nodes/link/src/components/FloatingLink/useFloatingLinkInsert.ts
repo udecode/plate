@@ -37,7 +37,9 @@ export const useFloatingLinkInsert = ({
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,
-    () => {
+    (e) => {
+      e.preventDefault();
+
       triggerFloatingLinkInsert(editor, {
         focused,
       });

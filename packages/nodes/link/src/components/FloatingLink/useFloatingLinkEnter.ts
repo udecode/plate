@@ -5,8 +5,10 @@ export const useFloatingLinkEnter = () => {
   const editor = useEditorRef();
 
   useHotkeys(
-    'enter',
+    '*',
     (e) => {
+      if (e.key !== 'Enter') return;
+
       if (submitFloatingLink(editor)) {
         e.preventDefault();
       }

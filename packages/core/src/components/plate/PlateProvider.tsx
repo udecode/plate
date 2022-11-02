@@ -1,16 +1,13 @@
 import React, { FC, useMemo } from 'react';
 import { normalizeEditor, Value } from '../../slate/index';
-import { PLATE_SCOPE, plateStore } from '../../stores/index';
 import {
-  ELEMENT_DEFAULT,
-  PlateEditor,
-  PlateStoreState,
-} from '../../types/index';
-import {
-  createPlateEditor,
-  getPluginType,
-  normalizeInitialValue,
-} from '../../utils/index';
+  GLOBAL_PLATE_SCOPE,
+  PLATE_SCOPE,
+  plateIdAtom,
+  plateStore,
+} from '../../stores/index';
+import { PlateEditor, PlateStoreState } from '../../types/index';
+import { createPlateEditor, normalizeInitialValue } from '../../utils/index';
 import { JotaiProvider } from '../../utils/misc/jotai';
 import { withHOC } from '../../utils/react/withHOC';
 import {
@@ -37,7 +34,7 @@ export interface PlateProviderProps<
   normalizeInitialValue?: boolean;
 }
 
-export const PlateProvider = <
+const PlateProviderContent = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
@@ -77,12 +74,7 @@ export const PlateProvider = <
       if (!currValue) {
         currValue = editor.children.length
           ? editor.children
-          : ([
-              {
-                type: getPluginType(editor, ELEMENT_DEFAULT),
-                children: [{ text: '' }],
-              },
-            ] as V);
+          : (editor.childrenFactory() as V);
       }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);
@@ -117,9 +109,25 @@ export const PlateProvider = <
       ]}
       scope={id}
     >
-      <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      <JotaiProvider
+        initialValues={[[plateIdAtom, id]]}
+        scope={GLOBAL_PLATE_SCOPE}
+      >
+        <PlateProviderEffects {...props}>{children}</PlateProviderEffects>
+      </JotaiProvider>
     </JotaiProvider>
   );
+};
+
+export const PlateProvider = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  props: PlateProviderProps<V, E>
+) => {
+  const { id } = props;
+
+  return <PlateProviderContent key={id?.toString()} {...props} />;
 };
 
 export const withPlateProvider = <T,>(Component: FC<T>, hocProps?: T) =>

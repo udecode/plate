@@ -24,7 +24,9 @@ export const onKeyDownResetNode = <
 ): KeyboardHandlerReturnType => (event) => {
   let reset;
 
-  if (editor.selection && isCollapsed(editor.selection)) {
+  if (!editor.selection) return;
+
+  if (isCollapsed(editor.selection)) {
     rules!.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
       if (hotkey && isHotkey(hotkey, event as any)) {
         if (

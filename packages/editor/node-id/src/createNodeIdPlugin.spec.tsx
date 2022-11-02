@@ -5,12 +5,12 @@ import {
   insertNodes,
   mergeNodes,
   PlateEditor,
-  splitNodes,
+  splitNodes
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import {
   ELEMENT_LI,
-  ELEMENT_UL,
+  ELEMENT_UL
 } from '../../../nodes/list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../nodes/paragraph/src/createParagraphPlugin';
 import { createNodeIdPlugin } from './createNodeIdPlugin';
@@ -50,6 +50,7 @@ describe('when inserting nodes', () => {
             options: {
               idCreator: getIdFactory(),
               allow: [ELEMENT_PARAGRAPH],
+              reuseId: true
             },
           }),
         ],
@@ -70,7 +71,7 @@ describe('when inserting nodes', () => {
 
       expect(input.children).toEqual(output.children);
     });
-  });
+  })
 
   describe('when exclude is p, inserting li and p', () => {
     it('should add an id to li but not p', () => {
@@ -717,6 +718,54 @@ describe('when merging nodes', () => {
       editor.undo();
       editor.redo();
       editor.undo();
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when filter by path', () => {
+    it('should work', () => {
+      const input = ((
+        <editor>
+          <hp id={10}>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = (
+        <editor>
+          <hp id={10}>test</hp>
+          <hp>
+            <htext />
+          </hp>
+          <hli>
+            <hp id={1}>inserted</hp>
+          </hli>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              filter: ([, path]) => path.length === 2,
+            },
+          }),
+        ],
+      });
+
+      editor.insertBreak();
+      editor.insertNode(
+        (
+          <hli>
+            <hp>inserted</hp>
+          </hli>
+        ) as any
+      );
 
       expect(input.children).toEqual(output.children);
     });

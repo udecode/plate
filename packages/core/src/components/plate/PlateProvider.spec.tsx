@@ -5,8 +5,7 @@ import {
   usePlateEditorRef,
   usePlateSelectors,
 } from '../../stores/index';
-import { ELEMENT_DEFAULT } from '../../types/index';
-import { createPlateEditor, getPluginType } from '../../utils/index';
+import { createPlateEditor } from '../../utils/index';
 import { PlateProvider } from './PlateProvider';
 
 describe('PlateProvider', () => {
@@ -47,16 +46,6 @@ describe('PlateProvider', () => {
         });
 
         expect(result.current.id).toBe('test');
-      });
-      it('should be not find editor with default id', async () => {
-        const wrapper = ({ children }: any) => (
-          <PlateProvider id="test">{children}</PlateProvider>
-        );
-        const { result } = renderHook(() => usePlateEditorRef(), {
-          wrapper,
-        });
-
-        expect(result.current).toBeNull();
       });
     });
   });
@@ -116,12 +105,7 @@ describe('PlateProvider', () => {
           wrapper,
         });
 
-        expect(result.current).toEqual([
-          {
-            type: getPluginType(editor, ELEMENT_DEFAULT),
-            children: [{ text: '' }],
-          },
-        ]);
+        expect(result.current).toEqual(editor.childrenFactory());
       });
     });
   });
@@ -147,6 +131,91 @@ describe('PlateProvider', () => {
         rerender({ plugins: [{ key: 'test2' }] });
 
         expect(result.current[result.current.length - 1].key).toBe('test2');
+      });
+    });
+  });
+
+  describe('when id updates', () => {
+    it('should remount PlateProvider', () => {
+      const _plugins = [{ key: 'test1' }];
+
+      const wrapper = ({ children, id }: any) => (
+        <PlateProvider id={id} plugins={id === 1 ? _plugins : undefined}>
+          {children}
+        </PlateProvider>
+      );
+      const { result, rerender } = renderHook(
+        ({ id }) => usePlateSelectors(id).plugins(),
+        {
+          wrapper,
+          initialProps: { id: 1 },
+        }
+      );
+
+      expect(result.current[result.current.length - 1].key).toBe('test1');
+
+      rerender({ id: 2 });
+
+      expect(result.current[result.current.length - 1].key).not.toBe('test1');
+    });
+  });
+
+  describe('usePlateSelectors().id()', () => {
+    describe('when PlateProvider has an id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">{children}</PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe('test');
+      });
+    });
+
+    describe('when PlateProvider without id > PlateProvider with id', () => {
+      it('should be the one without id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider>
+            <PlateProvider id="test">{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(PLATE_SCOPE);
+      });
+    });
+
+    describe('when PlateProvider with id > PlateProvider without id > select id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">
+            <PlateProvider>{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors('test').id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe('test');
+      });
+    });
+
+    describe('when PlateProvider with id > PlateProvider without id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <PlateProvider id="test">
+            <PlateProvider>{children}</PlateProvider>
+          </PlateProvider>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(PLATE_SCOPE);
       });
     });
   });

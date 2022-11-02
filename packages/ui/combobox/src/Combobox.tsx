@@ -153,8 +153,12 @@ export const Combobox = <TData extends Data = NoData>({
   filter,
   sort,
   floatingOptions,
+  disabled: _disabled,
   ...props
 }: ComboboxProps<TData>) => {
+  const storeItems = useComboboxSelectors.items();
+  const disabled = _disabled ?? (!storeItems.length && !props.items?.length);
+
   const editor = useEditorState();
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
@@ -192,7 +196,8 @@ export const Combobox = <TData extends Data = NoData>({
     !combobox ||
     !editor.selection ||
     focusedEditorId !== editor.id ||
-    activeId !== id
+    activeId !== id ||
+    disabled
   ) {
     return null;
   }

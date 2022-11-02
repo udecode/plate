@@ -1,5 +1,17 @@
 # @udecode/plate-table
 
+## 18.7.0
+
+## 18.6.0
+
+## 18.2.0
+
+## 18.1.2
+
+### Patch Changes
+
+- [#1914](https://github.com/udecode/plate/pull/1914) by [@zbeyens](https://github.com/zbeyens) – fix: `deleteColumn` supports table with different row sizes
+
 ## 18.1.1
 
 ## 17.0.3

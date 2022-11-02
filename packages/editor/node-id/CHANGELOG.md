@@ -1,5 +1,30 @@
 # @udecode/plate-node-id
 
+## 18.7.0
+
+## 18.6.0
+
+### Minor Changes
+
+- [#1953](https://github.com/udecode/plate/pull/1953) by [@zbeyens](https://github.com/zbeyens) – `withNodeId`:
+  - `filter` option was not passing the node `path` but always `[]`
+  - add `queryNode` to `split_node` operation
+  - delete splitted node id if not allowed
+
+## 18.5.0
+
+### Patch Changes
+
+- [#1947](https://github.com/udecode/plate/pull/1947) by [@zbeyens](https://github.com/zbeyens) – Default `idCreator` option is now a basic random operation (`Math.random().toString(36).substring(2, 7)`) instead of `Date.now()`
+
+## 18.3.1
+
+### Patch Changes
+
+- [#1940](https://github.com/udecode/plate/pull/1940) by [@mattwalo32](https://github.com/mattwalo32) – make withNodeId set ids on nested nodes that are inserted
+
+## 18.2.0
+
 ## 18.1.1
 
 ## 17.0.3

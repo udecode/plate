@@ -1,3 +1,4 @@
+import { atom } from 'jotai';
 import {
   createAtomStore,
   GetRecord,
@@ -7,7 +8,7 @@ import {
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
-import { Scope } from '../../utils/index';
+import { isDefined, Scope, useAtom } from '../../utils/index';
 
 /**
  * A unique id used as a provider scope.
@@ -17,6 +18,14 @@ import { Scope } from '../../utils/index';
 export type PlateId = Scope;
 
 export const PLATE_SCOPE = Symbol('plate');
+export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
+
+export const plateIdAtom = atom(PLATE_SCOPE);
+
+/**
+ * Get the closest `Plate` id.
+ */
+export const usePlateId = () => useAtom(plateIdAtom, GLOBAL_PLATE_SCOPE)[0];
 
 export const createPlateStore = <
   V extends Value = Value,
@@ -36,8 +45,8 @@ export const createPlateStore = <
   renderLeaf = null,
   value = null as any,
   ...state
-}: Partial<PlateStoreState<V, E>> = {}) =>
-  createAtomStore(
+}: Partial<PlateStoreState<V, E>> = {}) => {
+  const stores = createAtomStore(
     {
       decorate,
       editor,
@@ -59,6 +68,21 @@ export const createPlateStore = <
       name: 'plate',
     }
   );
+
+  return {
+    plateStore: stores.plateStore,
+    usePlateStore: (_id?: PlateId) => {
+      const closestId = usePlateId();
+
+      // get targeted store if id defined or if the store is found
+      if (isDefined(_id) || stores.usePlateStore(_id).get.id(_id)) {
+        return stores.usePlateStore(_id);
+      }
+
+      return stores.usePlateStore(closestId);
+    },
+  };
+};
 
 export const { plateStore, usePlateStore } = createPlateStore();
 

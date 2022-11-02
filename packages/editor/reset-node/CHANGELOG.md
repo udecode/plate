@@ -1,5 +1,29 @@
 # @udecode/plate-reset-node
 
+## 18.7.0
+
+### Minor Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) –
+  - Delete when selecting the whole document (e.g. `cmd+a`) will now reset the editor children. Also happens on `deleteBackward` when the value is empty.
+  - Delete when cursor is at the start of the document will now reset the first block (i.e. type)
+    - Fixes #1861
+
+### Patch Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) – Fix: unset block props on delete backward at first block start
+
+## 18.6.0
+
+### Minor Changes
+
+- [#1959](https://github.com/udecode/plate/pull/1959) by [@zbeyens](https://github.com/zbeyens) –
+  - Delete when selecting the whole document (e.g. `cmd+a`) will now reset the editor children. Also happens on `deleteBackward` when the value is empty.
+  - Delete when cursor is at the start of the document will now reset the first block (i.e. type)
+    - Fixes #1861
+
+## 18.2.0
+
 ## 18.1.1
 
 ## 17.0.3

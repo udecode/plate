@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw-next/types/types';
+import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
 import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { TExcalidrawProps } from '../../types';
@@ -23,7 +23,7 @@ export const ExcalidrawElement = <V extends Value>(
 
   const [Excalidraw, setExcalidraw] = useState<any>(null);
   useEffect(() => {
-    import('@excalidraw/excalidraw-next').then((comp) =>
+    import('@excalidraw/excalidraw').then((comp) =>
       setExcalidraw(comp.default)
     );
   });
