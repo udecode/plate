@@ -1,6 +1,6 @@
 import React, { ForwardedRef, useCallback, useEffect, useRef } from 'react';
 import composeRefs from '@seznam/compose-react-refs';
-import { Thread as ThreadType, User } from '../../types';
+import { Thread as ThreadType, User } from '@udecode/plate-comments';
 import { emailRegexExpression, nameRegexExpression } from '../../utils';
 import { PlateContacts } from '../Contacts/PlateContacts';
 import { textAreaCss } from './styles';

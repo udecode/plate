@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-core';
 import { last } from 'lodash';
 import { Path, Transforms } from 'slate';
-import { isTextNode } from '../queries/isTextNode';
+import { isTextNode } from '../queries';
 import { changeSelectionToBeBasedOnTheNextNode } from './changeSelectionToBeBasedOnTheNextNode';
 
 export const insertTextAtTheEndOfAThreadNode = (

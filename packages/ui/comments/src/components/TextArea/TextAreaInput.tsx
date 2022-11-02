@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
+import { Thread, User } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { Thread, User } from '../../types';
 import { doesContactMatchString } from '../../utils';
 import {
   threadTextAreaActions,

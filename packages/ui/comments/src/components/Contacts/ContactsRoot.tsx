@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Corner, DefaultFocusState, MDCMenu } from '@material/menu';
+import { User } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { User } from '../../types';
 
 export type ContactsRootProps = {
   contacts: User[];

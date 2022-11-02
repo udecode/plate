@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { usePlateEditorRef } from '@udecode/plate-core';
-import { cloneDeep } from 'lodash';
-import { findThreadNodeEntries, isFirstComment } from '../../queries';
 import {
+  Comment,
   deleteThreadAtSelection,
+  findThreadNodeEntries,
+  isFirstComment,
+  Thread as ThreadType,
   upsertThread,
   upsertThreadAtSelection,
-} from '../../transforms';
-import { Comment, Thread as ThreadType, User } from '../../types';
+  User,
+} from '@udecode/plate-comments';
+import { usePlateEditorRef } from '@udecode/plate-core';
+import { cloneDeep } from 'lodash';
 import { findMentionedUsers, nullUser } from '../../utils';
 import { determineAssigningVerb as determineAssigningVerbBase } from '../../utils/determineAssigningVerb';
 import { PlateAssignedToHeader } from '../AssignedToHeader';

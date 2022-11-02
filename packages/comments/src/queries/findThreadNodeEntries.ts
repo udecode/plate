@@ -7,12 +7,14 @@ import {
 import { NodeEntry } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 
-export function* findThreadNodeEntries<V extends Value>(
+export function findThreadNodeEntries<V extends Value>(
   editor: PlateEditor<V>
-): Generator<NodeEntry<any>, void, undefined> {
+): NodeEntry<any>[] {
   const type = getPluginType(editor, ELEMENT_THREAD);
-  yield* getNodeEntries(editor, {
-    at: [],
-    match: { type },
-  });
+  return [
+    ...getNodeEntries(editor, {
+      at: [],
+      match: { type },
+    }),
+  ];
 }

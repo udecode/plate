@@ -1,6 +1,6 @@
-import '@material/menu-surface/dist/mdc.menu-surface.css';
+// import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React, { useCallback, useState } from 'react';
-import { Comment, Thread, User } from '../../types';
+import { Comment, Thread, User } from '@udecode/plate-comments';
 import { generateThreadLink } from '../../utils';
 import { PlateAvatar } from '../Avatar';
 import { PlateMenuButton } from '../MenuButton';

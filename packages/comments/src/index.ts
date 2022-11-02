@@ -3,8 +3,7 @@
  */
 
 export * from './createThreadPlugin';
-export * from './types';
-export * from './hooks/index';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './utils/index';
+export * from './types';
+export * from './utils';

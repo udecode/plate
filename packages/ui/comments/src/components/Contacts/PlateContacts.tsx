@@ -1,7 +1,7 @@
-import '@material/list/dist/mdc.list.css';
-import '@material/menu/dist/mdc.menu.css';
+// import '@material/list/dist/mdc.list.css';
+// import '@material/menu/dist/mdc.menu.css';
 import React from 'react';
-import { User } from '../../types';
+import { User } from '@udecode/plate-comments';
 import { Avatar } from '../Avatar';
 import { Contacts } from './Contacts';
 import { contactAvatarImageCss } from './styles';

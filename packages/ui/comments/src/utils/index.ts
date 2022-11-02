@@ -10,5 +10,5 @@ export * from './findMentionedUsers';
 export * from './generateThreadLink';
 export * from './generateUserDisplayIdentifier';
 export * from './isClickInsideThreads';
-export * from './isThread';
+export * from '../../../../comments/src/utils/isThread';
 export * from './useLoggedInUser';

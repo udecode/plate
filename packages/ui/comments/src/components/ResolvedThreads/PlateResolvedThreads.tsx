@@ -1,7 +1,7 @@
 import React from 'react';
+import { User } from '@udecode/plate-comments';
 import { usePlateEditorState } from '@udecode/plate-core';
-import { findThreadNodeEntries } from '../../queries';
-import { User } from '../../types';
+import { findThreadNodeEntries } from '../../../../../comments/src/queries';
 import { nullUser } from '../../utils';
 import { PlateThread } from '../Thread/PlateThread';
 import {
@@ -20,7 +20,7 @@ export const PlateResolvedThreads = (props: PlateResolvedThreadsProps) => {
 
   const editor = usePlateEditorState()!;
 
-  const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
+  const threadNodeEntries = findThreadNodeEntries(editor);
 
   const resolvedThreads = threadNodeEntries
     .map(([threadNodeEntry]) => threadNodeEntry.thread)

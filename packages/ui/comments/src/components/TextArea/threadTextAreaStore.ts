@@ -1,5 +1,5 @@
+import { User } from '@udecode/plate-comments';
 import { createStore } from '@udecode/plate-core';
-import { User } from '../../types';
 
 type ThreadTextAreaState = {
   areContactsShown: boolean;

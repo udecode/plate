@@ -1,9 +1,5 @@
 import React, { MouseEventHandler, useCallback } from 'react';
-import {
-  useEventPlateId,
-  usePlateEditorState,
-  withPlateProvider,
-} from '@udecode/plate-core';
+import { withPlateProvider } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export type AddThreadToolbarButtonProps = {
@@ -15,17 +11,12 @@ export const useAddThreadToolbarButton = (
 ) => {
   const { id, onAddThread, ...otherProps } = props;
 
-  const eventPlateId = useEventPlateId(id);
-  const editor = usePlateEditorState(eventPlateId)!;
-
   const onMouseDown = useCallback<MouseEventHandler<HTMLSpanElement>>(
     (event) => {
-      if (editor) {
-        event.preventDefault();
-        onAddThread?.();
-      }
+      event.preventDefault();
+      onAddThread?.();
     },
-    [editor, onAddThread]
+    [onAddThread]
   );
 
   return { ...otherProps, onMouseDown };

@@ -1,6 +1,6 @@
 import React from 'react';
+import { Thread, User } from '@udecode/plate-comments';
 import { css } from 'styled-components';
-import { Thread, User } from '../../types';
 import { useLoggedInUser } from '../../utils/useLoggedInUser';
 import { PlateAvatar } from '../Avatar';
 import { PlateReOpenThreadButton } from '../ReOpenThreadButton';

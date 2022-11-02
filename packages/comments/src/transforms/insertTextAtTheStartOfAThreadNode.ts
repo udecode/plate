@@ -1,8 +1,6 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { Path, Transforms } from 'slate';
-import { isTextNode } from '../queries/isTextNode';
-import { retrieveNode } from '../queries/retrieveNode';
-import { retrievePreviousSibling } from '../queries/retrievePreviousSibling';
+import { isTextNode, retrieveNode, retrievePreviousSibling } from '../queries';
 import { changeSelectionToBeBasedOnThePreviousNode } from './changeSelectionToBeBasedOnThePreviousNode';
 
 export const insertTextAtTheStartOfAThreadNode = (

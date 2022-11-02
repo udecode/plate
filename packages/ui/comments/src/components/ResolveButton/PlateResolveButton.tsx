@@ -1,7 +1,7 @@
 import React from 'react';
 import { IconButton } from '@mui/material';
 import { Check } from '@styled-icons/material';
-import { Thread } from '../../types';
+import { Thread } from '@udecode/plate-comments';
 import { ResolveButton } from './ResolveButton';
 import { resolveButtonCss } from './styles';
 

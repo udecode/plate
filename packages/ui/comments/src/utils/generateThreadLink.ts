@@ -1,4 +1,4 @@
-import { Thread } from '../types';
+import { Thread } from '@udecode/plate-comments';
 
 export const generateThreadLink = (thread: Thread) => {
   const url = new URL(window.location.href);

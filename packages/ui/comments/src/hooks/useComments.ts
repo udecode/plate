@@ -1,5 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  changeSelectionToBeBasedOnTheNextNode,
+  Comment,
+  deleteThread,
+  determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft,
+  ELEMENT_THREAD,
+  findSelectedThreadNodeEntry,
+  findThreadNodeEntries,
+  isTextNode,
+  replaceComment,
+  Thread,
+  ThreadElement,
+  upsertThreadAtSelection,
+  User,
+} from '@udecode/plate-comments';
+import {
   getAboveNode,
   getNextSiblingNodes,
   getParentNode,
@@ -16,20 +31,7 @@ import { clamp, cloneDeep } from 'lodash';
 import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { v4 as createV4UUID } from 'uuid';
-import { ELEMENT_THREAD } from '../createThreadPlugin';
-import {
-  determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft,
-  findSelectedThreadNodeEntry,
-  findThreadNodeEntries,
-  isTextNode,
-} from '../queries';
-import {
-  changeSelectionToBeBasedOnTheNextNode,
-  deleteThread,
-  replaceComment,
-  upsertThreadAtSelection,
-} from '../transforms';
-import { Comment, Thread, ThreadElement, ThreadPosition, User } from '../types';
+import { ThreadPosition } from '../types';
 import { determineAbsolutePosition } from '../utils';
 
 const ACTIVE_THREAD_COLOR = '#fcc934';

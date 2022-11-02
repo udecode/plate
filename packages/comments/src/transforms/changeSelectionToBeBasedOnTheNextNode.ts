@@ -1,6 +1,6 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
-import { isDocumentEnd } from '../queries/isDocumentEnd';
+import { isDocumentEnd } from '../queries';
 
 export const changeSelectionToBeBasedOnTheNextNode = (editor: PlateEditor) => {
   if (isDocumentEnd(editor)) {

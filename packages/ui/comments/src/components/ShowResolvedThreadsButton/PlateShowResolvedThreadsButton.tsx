@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import { Popover } from '@mui/material';
+import { User } from '@udecode/plate-comments';
 import {
   useEventPlateId,
   usePlateEditorState,
   withPlateProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
-import { User } from '../../types';
 import { PlateResolvedThreads } from '../ResolvedThreads/PlateResolvedThreads';
 
 type ToggleShowThreadsButtonProps = {
@@ -25,9 +25,6 @@ export const ToggleShowThreadsButton = withPlateProvider(
       ...otherProps
     } = props;
 
-    const eventPlateId = useEventPlateId(id);
-    const editor = usePlateEditorState(eventPlateId)!;
-
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
       null
     );
@@ -37,16 +34,10 @@ export const ToggleShowThreadsButton = withPlateProvider(
       setAnchorEl(null);
     }, []);
 
-    const onMouseDown = useCallback(
-      (event) => {
-        if (!editor) {
-          return;
-        }
-        event.preventDefault();
-        setAnchorEl(event.currentTarget);
-      },
-      [editor]
-    );
+    const onMouseDown = useCallback((event) => {
+      event.preventDefault();
+      setAnchorEl(event.currentTarget);
+    }, []);
 
     return (
       <div>

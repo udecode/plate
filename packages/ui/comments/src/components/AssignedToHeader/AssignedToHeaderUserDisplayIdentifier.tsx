@@ -1,10 +1,10 @@
+import { User } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
 import { capitalize } from 'lodash';
-import { User } from '../../types';
 import { generateUserDisplayIdentifier, useLoggedInUser } from '../../utils';
 
 export type AssignedToHeaderUserDisplayIdentifierProps = {

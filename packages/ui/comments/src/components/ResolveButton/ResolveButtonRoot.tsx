@@ -1,9 +1,9 @@
+import { Thread } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { Thread } from '../../types';
 
 export type ResolveButtonRootProps = {
   thread: Thread;

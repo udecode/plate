@@ -1,6 +1,6 @@
 import React from 'react';
 import { AccountCircle } from '@styled-icons/material';
-import { User } from '../../types';
+import { User } from '@udecode/plate-comments';
 import { Avatar } from './Avatar';
 import {
   avatarAccountCircleCss,

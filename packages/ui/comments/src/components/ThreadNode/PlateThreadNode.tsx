@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
+import { ThreadElement as TThreadElement } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
-import { ThreadElement as TThreadElement } from '../../types';
 import {
   threadElementResolvedCss,
   threadElementRootCss,

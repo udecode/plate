@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Thread as ThreadType, User } from '../../types';
+import { Thread as ThreadType, User } from '@udecode/plate-comments';
 import { PlateTextArea } from '../TextArea/PlateTextArea';
 import {
   threadCommentEditingActionsCss,

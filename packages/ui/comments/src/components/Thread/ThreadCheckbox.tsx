@@ -1,6 +1,6 @@
 import React from 'react';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
-import { User } from '../../types';
+import { User } from '@udecode/plate-comments';
 import { generateUserDisplayIdentifier, useLoggedInUser } from '../../utils';
 
 export type ThreadCheckboxProps = {

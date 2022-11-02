@@ -8,9 +8,9 @@ import {
 } from '@udecode/plate-core';
 import { Editor, Location, NodeEntry, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { findSelectedThreadNodeEntry } from '../queries/findSelectedThreadNodeEntry';
+import { findSelectedThreadNodeEntry } from '../queries';
 import { Thread, ThreadElement, ThreadNodeData } from '../types';
-import { isThread } from '../utils/isThread';
+import { isThread } from '../utils';
 import { wrapWithThread } from './wrapWithThread';
 
 export const upsertThread = <V extends Value>(

@@ -1,9 +1,9 @@
+import { User } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { User } from '../../types';
 
 export type AvatarImageProps = {
   user: User;
