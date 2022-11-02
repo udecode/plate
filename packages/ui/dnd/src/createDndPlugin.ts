@@ -1,6 +1,10 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory, createStore } from '@udecode/plate-core';
 
 export const KEY_DND = 'dnd';
+
+export const dndStore = createStore(KEY_DND)({
+  isDragging: false,
+});
 
 export const createDndPlugin = createPluginFactory({
   key: KEY_DND,
