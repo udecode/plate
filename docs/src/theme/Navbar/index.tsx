@@ -112,7 +112,7 @@ function Navbar(): JSX.Element {
             <NavbarItem {...item} key={i} />
           ))}
           <div>
-            <a href="/docs/plugins/plate-cloud">
+            <a href="/docs/plugins/cloud">
               <span style={{ marginLeft: 16, top: 2, position: 'relative' }}>
                 <PlateCloudLogo />
               </span>

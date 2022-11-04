@@ -15,6 +15,16 @@ import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
+console.log('Plate', Plate);
+console.log('PlateProvider', PlateProvider);
+/**
+ * FIXME:
+ * These currently aren't visible in docs for some reason.
+ */
+console.log('createCloudAttachmentPlugin', createCloudAttachmentPlugin);
+console.log('createCloudImagePlugin', createCloudImagePlugin);
+console.log('createCloudPlugin', createCloudPlugin);
+
 const plugins = createMyPlugins(
   [
     ...basicNodesPlugins,
