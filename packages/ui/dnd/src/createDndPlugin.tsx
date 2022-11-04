@@ -4,7 +4,7 @@ import { DndScroller } from './components/index';
 import { dndStore } from './dndStore';
 
 export interface DndPlugin {
-  disableScroller?: boolean;
+  enableScroller?: boolean;
 }
 
 export const KEY_DND = 'dnd';
@@ -17,7 +17,7 @@ export const createDndPlugin = createPluginFactory<DndPlugin>({
     onDrop: (editor) => () => editor.isDragging as boolean,
   },
   then: (editor, { options }) => ({
-    renderAfterEditable: !options?.disableScroller
+    renderAfterEditable: options?.enableScroller
       ? () => <DndScroller />
       : undefined,
   }),
