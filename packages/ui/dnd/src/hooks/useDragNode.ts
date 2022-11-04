@@ -1,5 +1,6 @@
 import { DragSourceHookSpec, useDrag } from 'react-dnd';
 import { TEditor, Value } from '@udecode/plate-core';
+import { dndStore } from '../dndStore';
 import { DragItemNode } from '../types';
 
 export interface UseDragNodeOptions
@@ -28,6 +29,7 @@ export const useDragNode = <V extends Value>(
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
     () => ({
       item(monitor) {
+        dndStore.set.isDragging(true);
         editor.isDragging = true;
         document.body.classList.add('dragging');
 
@@ -42,6 +44,7 @@ export const useDragNode = <V extends Value>(
         isDragging: monitor.isDragging(),
       }),
       end: () => {
+        dndStore.set.isDragging(false);
         editor.isDragging = false;
         document.body.classList.remove('dragging');
       },

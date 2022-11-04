@@ -125,7 +125,7 @@ const App = () => {
           createKbdPlugin(),
           createNodeIdPlugin(),
           createBlockSelectionPlugin(),
-          createDndPlugin(),
+          createDndPlugin({ options: { enableScroller: true } }),
           dragOverCursorPlugin,
           createIndentPlugin(indentPlugin),
           createAutoformatPlugin<
