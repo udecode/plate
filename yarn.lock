@@ -6071,6 +6071,7 @@ __metadata:
     "@tippyjs/react": "npm:^4.2.6"
     "@udecode/plate-core": "npm:18.7.0"
     "@udecode/plate-styled-components": "npm:18.7.0"
+    raf: "npm:^3.4.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
@@ -11904,7 +11905,6 @@ __metadata:
     "@styled-icons/foundation": "npm:10.28.0"
     "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
-    "@types/raf": "npm:^3.4.0"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
@@ -11912,8 +11912,6 @@ __metadata:
     "@udecode/plate-ui-excalidraw": "workspace:^"
     nanoid: "npm:3.3.4"
     prism-react-renderer: "npm:^1.2.0"
-    raf: "npm:^3.4.1"
-    react-dnd-scrolling: "npm:^1.2.4"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"
   languageName: unknown
@@ -13392,7 +13390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:3.x, hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.2":
+"hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -16342,13 +16340,6 @@ __metadata:
   dependencies:
     lodash._reinterpolate: "npm:^3.0.0"
   checksum: 2dfd0463e1a8e8709345eeab76007deab3688b549dbc2fde1dd5de0d53fbf1d2bcd4c5f003756f5baaf6540386511c7c7babbe80894f43f5b95de653e50510cb
-  languageName: node
-  linkType: hard
-
-"lodash.throttle@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "lodash.throttle@npm:4.1.1"
-  checksum: 798dd59dd44b99c274f214698bf4aa8c337264ce843654399e6b610333c6fb67e3a0467c96c149fa0a8b5a22f16d811b66313575e52c6705eb999333f505c079
   languageName: node
   linkType: hard
 
@@ -20119,7 +20110,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.x, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -20491,36 +20482,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-display-name@npm:^0.2.5":
-  version: 0.2.5
-  resolution: "react-display-name@npm:0.2.5"
-  checksum: 7d185d15c0354847c2d922f80f4e0b2bd68dea45b297176a7bc3c3e5ecf1f31c932f925efd99ca1dbf4ec16a93111bb9a0acd312ddeb53dc284f7a526728d5d6
-  languageName: node
-  linkType: hard
-
 "react-dnd-html5-backend@npm:^15.1.3":
   version: 15.1.3
   resolution: "react-dnd-html5-backend@npm:15.1.3"
   dependencies:
     dnd-core: "npm:15.1.2"
   checksum: 54f4254f5d7a98aa1b088f8997d276b4bec304e11b76f0137f462b68dad05ad39eb58b4286e3d5b0252e6c64ddd1b46159667b0d9abc5b20a8d279c9625a9264
-  languageName: node
-  linkType: hard
-
-"react-dnd-scrolling@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "react-dnd-scrolling@npm:1.2.4"
-  dependencies:
-    hoist-non-react-statics: "npm:3.x"
-    lodash.throttle: "npm:^4.1.1"
-    prop-types: "npm:15.x"
-    raf: "npm:^3.4.1"
-    react-display-name: "npm:^0.2.5"
-  peerDependencies:
-    react: 16.x || 17.x || 18.x
-    react-dnd: 10.x || 11.x || 14.x || 15.x || 16.x
-    react-dom: 16.x || 17.x || 18.x
-  checksum: 160723a67ba0b1b3a649d1bea7a0887a16bd31d81d0c3e7d302578a4fdbcab19303c96c43df499bd36d19f3e9c694a94ce9422424db59189f5c6332cf094c198
   languageName: node
   linkType: hard
 
@@ -21852,6 +21819,7 @@ __metadata:
     "@types/marked": "npm:^4.0.3"
     "@types/node": "npm:^17.0.31"
     "@types/prismjs": "npm:^1.26.0"
+    "@types/raf": "npm:^3.4.0"
     "@types/react": "npm:17.0.47"
     "@types/react-dom": "npm:17.0.17"
     "@types/styled-components": "npm:5.1.9"

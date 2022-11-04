@@ -20,20 +20,22 @@ const components = withStyledDraggables(plateUI);
 const initialValue = basicElementsValue;
 
 const plugins = createMyPlugins(
-  [createBasicElementsPlugin(), createNodeIdPlugin(), createDndPlugin()],
+  [
+    createBasicElementsPlugin(),
+    createNodeIdPlugin(),
+    createDndPlugin({ options: { enableScroller: true } }),
+  ],
   {
     components,
   }
 );
 
-export default () => {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={initialValue}
-      />
-    </DndProvider>
-  );
-};
+export default () => (
+  <DndProvider backend={HTML5Backend}>
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={initialValue}
+    />
+  </DndProvider>
+);
