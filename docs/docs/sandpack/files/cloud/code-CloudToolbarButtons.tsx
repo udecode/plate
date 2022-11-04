@@ -1,4 +1,4 @@
-import React from 'react';
+export const cloudToolbarButtonsCode = `import React from 'react';
 import { CloudEditor, useEventPlateId } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
@@ -26,7 +26,7 @@ export const CloudToolbarButtons = () => {
     // NOTE: We don't use backtick with curly brace replacement because it
     // doesn't work with gen:code script at time of writing.
     // eslint-disable-next-line no-console
-    console.log(`end finishUploads in ms:`, end - start);
+    console.log(\`end finishUploads in ms:\`, end - start);
   };
 
   return (
@@ -42,4 +42,9 @@ export const CloudToolbarButtons = () => {
       </span>
     </>
   );
+};
+`;
+
+export const cloudToolbarButtonsFile = {
+  '/cloud/CloudToolbarButtons.tsx': cloudToolbarButtonsCode,
 };

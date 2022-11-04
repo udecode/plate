@@ -1,43 +1,36 @@
 ---
-slug: /plugins/media
-title: Media
+slug: /plugins/plate-cloud
+title: Plate Cloud
 ---
 
-This package implements the media plugins for Plate. It allows inserting
-embeddable media such as images, YouTube or Vimeo videos and tweets into your
-editor.
+Plate Cloud is the official Plate plugin and cloud service for image and attachment uploads, automatic server-side image resizing, and future Plate cloud services.
 
-> For easy cloud uploads of images and attachment including server-side image resizing, please see our official [Plate Cloud](/docs/plugins/plate-cloud) service and associated plugin.
+It supports:
 
-It also provides the following features:
+- Drag and drop uploading of images and attachments
+- Paste uploading of images and attachments
+- Using a file picker for uploading images and attachment
+- Drag resize of images with server-side image resizing which optimizes download speed
+- Automatically delivers high DPI images to high DPI devices and normal sized images to everyone else
 
-- editable caption below the media
-- resizable
+Your usage of Plate Cloud supports the development of Plate.
 
-Media providers supported by this plugin:
-
-- video:
-  - youtube
-  - vimeo
-  - dailymotion
-  - youku
-  - coub
-- twitter
+You can start by [getting a free Portive API key](https://admin.portive.com/).
 
 ### Installation
 
 ```bash npm2yarn
 npm install @udecode/plate
 # or
-npm install @udecode/plate-media
-npm install @udecode/plate-ui-media
+npm install @udecode/plate-cloud
+npm install @udecode/plate-ui-cloud
 ```
 
 ### Usage
 
-import { MediaSandpack } from './MediaSandpack';
+import { CloudSandpack } from './CloudSandpack';
 
-<MediaSandpack />
+<CloudSandpack />
 
 ### Options
 

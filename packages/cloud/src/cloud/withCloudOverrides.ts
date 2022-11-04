@@ -32,7 +32,7 @@ export function withCloudOverrides<
         useUploadStore.getState().uploads
       );
     },
-    finishUploads: async (options: FinishUploadsOptions) => {
+    finishUploads: async (options?: FinishUploadsOptions) => {
       return finishUploads(editor, options);
     },
   };

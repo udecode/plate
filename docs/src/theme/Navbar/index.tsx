@@ -17,7 +17,6 @@ import NavbarItem from '@theme/NavbarItem';
 import SearchBar from '@theme/SearchBar';
 import Toggle from '@theme/Toggle';
 import clsx from 'clsx';
-import Link from 'next/link';
 import { PlateCloudLogo } from './components/PlateCloudlogo';
 import QuickSocialLinksView from './components/QuickSocialLinksView/index';
 import styles from './styles.module.css';
@@ -113,7 +112,7 @@ function Navbar(): JSX.Element {
             <NavbarItem {...item} key={i} />
           ))}
           <div>
-            <a href="/docs/plate-cloud">
+            <a href="/docs/plugins/plate-cloud">
               <span style={{ marginLeft: 16, top: 2, position: 'relative' }}>
                 <PlateCloudLogo />
               </span>

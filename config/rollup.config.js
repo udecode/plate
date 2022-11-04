@@ -47,6 +47,7 @@ const plugins = [
   // resolves local modules by default.
   resolve({
     browser: true,
+    preferBuiltins: true,
     // modulesOnly: true,
   }),
 

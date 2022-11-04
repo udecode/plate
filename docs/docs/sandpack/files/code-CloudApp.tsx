@@ -1,4 +1,4 @@
-import React from 'react';
+export const cloudAppCode = `import React from 'react';
 import {
   createCloudAttachmentPlugin,
   createCloudImagePlugin,
@@ -45,3 +45,8 @@ export default () => (
     </PlateProvider>
   </>
 );
+`;
+
+export const cloudAppFile = {
+  '/CloudApp.tsx': cloudAppCode,
+};
