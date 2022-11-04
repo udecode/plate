@@ -28,7 +28,7 @@ export const useFloatingLinkInsert = ({
   const editor = useEditorRef();
   const focused = useFocused();
   const mode = useFloatingLinkSelectors().mode();
-  const open = useFloatingLinkSelectors().open();
+  const open = useFloatingLinkSelectors().isOpen(editor.id);
 
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
@@ -58,6 +58,7 @@ export const useFloatingLinkInsert = ({
   });
 
   const { update, style, floating } = useVirtualFloatingLink({
+    editorId: editor.id,
     open: open && mode === 'insert',
     getBoundingClientRect: getSelectionBoundingClientRect,
     whileElementsMounted: () => {},
