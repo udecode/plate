@@ -1,6 +1,6 @@
 import { DragSourceHookSpec, useDrag } from 'react-dnd';
 import { TEditor, Value } from '@udecode/plate-core';
-import { dndStore } from '../createDndPlugin';
+import { dndStore } from '../dndStore';
 import { DragItemNode } from '../types';
 
 export interface UseDragNodeOptions

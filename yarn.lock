@@ -4840,6 +4840,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/raf@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "@types/raf@npm:3.4.0"
+  checksum: db424cc192bfe57d87db9c2751f033bfe2bb174f6dac9055cb197d89e9854b3faed4aed92c6476d75922354ac32967f193bbe5852cf88decff737432f01c2941
+  languageName: node
+  linkType: hard
+
 "@types/react-dom@npm:17.0.17":
   version: 17.0.17
   resolution: "@types/react-dom@npm:17.0.17"
@@ -11897,6 +11904,7 @@ __metadata:
     "@styled-icons/foundation": "npm:10.28.0"
     "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
+    "@types/raf": "npm:^3.4.0"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
@@ -11904,6 +11912,7 @@ __metadata:
     "@udecode/plate-ui-excalidraw": "workspace:^"
     nanoid: "npm:3.3.4"
     prism-react-renderer: "npm:^1.2.0"
+    raf: "npm:^3.4.1"
     react-dnd-scrolling: "npm:^1.2.4"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"

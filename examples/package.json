@@ -17,7 +17,6 @@
     "@udecode/plate-ui-excalidraw": "workspace:^",
     "nanoid": "3.3.4",
     "prism-react-renderer": "^1.2.0",
-    "react-dnd-scrolling": "^1.2.4",
     "styled-components": "5.3.1"
   },
   "devDependencies": {
