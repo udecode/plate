@@ -1,10 +1,11 @@
 import React from 'react';
 import { createPluginFactory } from '@udecode/plate-core';
-import { DndScroller } from './components/index';
+import { DndScroller, ScrollerProps } from './components/index';
 import { dndStore } from './dndStore';
 
 export interface DndPlugin {
   enableScroller?: boolean;
+  scrollerProps?: Partial<ScrollerProps>;
 }
 
 export const KEY_DND = 'dnd';
@@ -17,8 +18,8 @@ export const createDndPlugin = createPluginFactory<DndPlugin>({
     onDrop: (editor) => () => editor.isDragging as boolean,
   },
   then: (editor, { options }) => ({
-    renderAfterEditable: options?.enableScroller
-      ? () => <DndScroller />
+    renderAfterEditable: options.enableScroller
+      ? () => <DndScroller {...options?.scrollerProps} />
       : undefined,
   }),
 });

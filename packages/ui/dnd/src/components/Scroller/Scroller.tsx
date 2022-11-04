@@ -1,7 +1,7 @@
 import React from 'react';
-import { EdgeScroller, EdgeScrollerProps } from './EdgeScroller';
+import { ScrollArea, ScrollAreaProps } from './ScrollArea';
 
-export type ScrollerProps = Omit<EdgeScrollerProps, 'placement'>;
+export type ScrollerProps = Omit<ScrollAreaProps, 'placement'>;
 /**
  * Set up an edge scroller at the top of the page for scrolling up.
  * One at the bottom for scrolling down.
@@ -9,8 +9,8 @@ export type ScrollerProps = Omit<EdgeScrollerProps, 'placement'>;
 export const Scroller = (props: ScrollerProps) => {
   return (
     <>
-      <EdgeScroller placement="top" {...props} />
-      <EdgeScroller placement="bottom" {...props} />
+      <ScrollArea placement="top" {...props} />
+      <ScrollArea placement="bottom" {...props} />
     </>
   );
 };

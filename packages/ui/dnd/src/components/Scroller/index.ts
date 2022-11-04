@@ -3,5 +3,5 @@
  */
 
 export * from './DndScroller';
-export * from './EdgeScroller';
+export * from './ScrollArea';
 export * from './Scroller';

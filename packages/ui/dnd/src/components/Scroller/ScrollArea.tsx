@@ -16,28 +16,27 @@ const getCoords = (e: any) => {
   return { x: e.clientX, y: e.clientY };
 };
 
-export interface EdgeScrollerProps extends HTMLAttributes<HTMLDivElement> {
+export interface ScrollAreaProps {
   placement: 'top' | 'bottom';
   enabled?: boolean;
   height?: number;
-  speed?: number;
   zIndex?: number;
   minStrength?: number;
   strengthMultiplier?: number;
   containerRef?: RefObject<any>;
+  scrollAreaProps?: HTMLAttributes<HTMLDivElement>;
 }
 
-export const EdgeScroller = ({
+export const ScrollArea = ({
   placement,
   enabled = true,
   height = 100,
   zIndex = 10000,
   minStrength = 0.15,
   strengthMultiplier = 25,
-  style: _style,
   containerRef,
-  ...props
-}: EdgeScrollerProps) => {
+  scrollAreaProps,
+}: ScrollAreaProps) => {
   const ref = useRef<HTMLDivElement>();
 
   const scaleYRef = useRef(0);
@@ -53,7 +52,7 @@ export const EdgeScroller = ({
     width: '100%',
     opacity: 0,
     zIndex,
-    ..._style,
+    ...scrollAreaProps?.style,
   };
 
   if (placement === 'top') {
@@ -142,7 +141,7 @@ export const EdgeScroller = ({
       // touchmove events don't seem to work across siblings, so we unfortunately
       // would have to attach the listeners to the body
       onTouchMove={handleEvent}
-      {...props}
+      {...scrollAreaProps}
     />
   );
 };
