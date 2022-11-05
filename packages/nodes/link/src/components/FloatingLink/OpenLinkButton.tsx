@@ -7,6 +7,7 @@ import {
   getPluginType,
   HTMLPropsAs,
   useEditorRef,
+  usePlateSelection,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { TLinkElement } from '../../types';
@@ -15,13 +16,15 @@ export const useOpenLinkButton = (
   props: HTMLPropsAs<'a'>
 ): HTMLPropsAs<'a'> => {
   const editor = useEditorRef();
+  const selection = usePlateSelection();
 
   const entry = useMemo(
     () =>
       findNode<TLinkElement>(editor, {
         match: { type: getPluginType(editor, ELEMENT_LINK) },
       }),
-    [editor]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor, selection]
   );
 
   if (!entry) {
