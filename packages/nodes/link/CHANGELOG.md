@@ -1,5 +1,13 @@
 # @udecode/plate-link
 
+## 18.8.1
+
+### Patch Changes
+
+- [#1970](https://github.com/udecode/plate/pull/1970) by [@O4epegb](https://github.com/O4epegb) –
+  - Fixes #1771
+  - Fixes #1967
+
 ## 18.7.0
 
 ## 18.6.0
