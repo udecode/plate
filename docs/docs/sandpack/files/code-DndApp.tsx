@@ -10,7 +10,6 @@ import {
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
-import { getNodesWithId } from './dnd/getNodesWithId';
 import { withStyledDraggables } from './dnd/withStyledDraggables';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
@@ -18,10 +17,14 @@ import { createMyPlugins, MyValue } from './typescript/plateTypes';
 const components = withStyledDraggables(plateUI);
 
 // set id to each block
-const initialValue = getNodesWithId(basicElementsValue);
+const initialValue = basicElementsValue;
 
 const plugins = createMyPlugins(
-  [createBasicElementsPlugin(), createNodeIdPlugin(), createDndPlugin()],
+  [
+    createBasicElementsPlugin(),
+    createNodeIdPlugin(),
+    createDndPlugin({ options: { enableScroller: true } }),
+  ],
   {
     components,
   }
