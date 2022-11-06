@@ -89,6 +89,7 @@
     "@types/marked": "^4.0.3",
     "@types/node": "^17.0.31",
     "@types/prismjs": "^1.26.0",
+    "@types/raf": "^3.4.0",
     "@types/react": "17.0.47",
     "@types/react-dom": "17.0.17",
     "@types/styled-components": "5.1.9",

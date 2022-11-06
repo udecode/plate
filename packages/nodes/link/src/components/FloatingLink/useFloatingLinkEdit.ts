@@ -35,7 +35,7 @@ export const useFloatingLinkEdit = ({
   const editor = useEditorRef();
   const keyEditor = usePlateSelectors().keyEditor();
   const mode = useFloatingLinkSelectors().mode();
-  const open = useFloatingLinkSelectors().open();
+  const open = useFloatingLinkSelectors().isOpen(editor.id);
 
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
@@ -61,6 +61,7 @@ export const useFloatingLinkEdit = ({
   const isOpen = open && mode === 'edit';
 
   const { update, style, floating } = useVirtualFloatingLink({
+    editorId: editor.id,
     open: isOpen,
     getBoundingClientRect,
     ...floatingOptions,
@@ -73,7 +74,7 @@ export const useFloatingLinkEdit = ({
         match: { type: getPluginType(editor, ELEMENT_LINK) },
       })
     ) {
-      floatingLinkActions.show('edit');
+      floatingLinkActions.show('edit', editor.id);
       update();
       return;
     }
