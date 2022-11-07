@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ThreadElement as TThreadElement } from '@udecode/plate-comments';
+import { TThreadElement } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import {
   getRootProps,

@@ -1,6 +1,6 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { isText, PlateEditor } from '@udecode/plate-core';
 import { Path, Transforms } from 'slate';
-import { isTextNode, retrieveNode, retrievePreviousSibling } from '../queries';
+import { retrievePreviousSibling } from '../queries';
 import { changeSelectionToBeBasedOnThePreviousNode } from './changeSelectionToBeBasedOnThePreviousNode';
 
 export const insertTextAtTheStartOfAThreadNode = (
@@ -13,11 +13,7 @@ export const insertTextAtTheStartOfAThreadNode = (
     editor,
     editor.selection!.focus.path
   );
-  if (
-    previousSiblingNodeEntry &&
-    // @ts-ignore
-    isTextNode(retrieveNode(previousSiblingNodeEntry))
-  ) {
+  if (previousSiblingNodeEntry && isText(previousSiblingNodeEntry[0])) {
     changeSelectionToBeBasedOnThePreviousNode(editor);
   } else {
     const insertPath = threadPath;

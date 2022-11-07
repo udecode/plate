@@ -7,10 +7,9 @@ import {
   ELEMENT_THREAD,
   findSelectedThreadNodeEntry,
   findThreadNodeEntries,
-  isTextNode,
   replaceComment,
   Thread,
-  ThreadElement,
+  TThreadElement,
   upsertThreadAtSelection,
   User,
 } from '@udecode/plate-comments';
@@ -20,6 +19,7 @@ import {
   getParentNode,
   getPluginType,
   isEndPoint,
+  isText,
   TAncestor,
   TDescendant,
   usePlateEditorState,
@@ -71,7 +71,10 @@ export const useComments = (
     newThreadThreadNodeEntry,
     setNewThreadThreadNodeEntry,
   ] = useState<NodeEntry | null>(null);
-  const [previousThreadNode, setPreviousThreadNode] = useState<ThreadElement>();
+  const [
+    previousThreadNode,
+    setPreviousThreadNode,
+  ] = useState<TThreadElement>();
   const [
     hasThreadIdInURLBeenHandled,
     setHasThreadIdInURLBeenHandled,
@@ -300,13 +303,13 @@ export const useComments = (
     }
 
     const type = getPluginType(editor, ELEMENT_THREAD);
-    let threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
+    let threadNodeEntry = getAboveNode<TThreadElement & TAncestor>(editor, {
       match: { type },
     });
 
     if (!threadNodeEntry && selection) {
       if (Range.isCollapsed(selection)) {
-        threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
+        threadNodeEntry = getAboveNode<TThreadElement & TAncestor>(editor, {
           at: Editor.after(editor as any, selection.anchor, {
             distance: 1,
             unit: 'character',
@@ -374,7 +377,7 @@ export const useComments = (
   useEffect(() => {
     if (editor && selection && Range.isCollapsed(selection)) {
       const threadType = getPluginType(editor, ELEMENT_THREAD);
-      const threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
+      const threadNodeEntry = getAboveNode<TThreadElement & TAncestor>(editor, {
         match: {
           type: threadType,
         },
@@ -389,7 +392,7 @@ export const useComments = (
               parent,
               threadPath
             ) as any) as TDescendant[];
-            if (siblings.length >= 1 && isTextNode(siblings[0])) {
+            if (siblings.length >= 1 && isText(siblings[0])) {
               changeSelectionToBeBasedOnTheNextNode(editor);
             }
           }
