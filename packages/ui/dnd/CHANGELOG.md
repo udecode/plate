@@ -1,5 +1,7 @@
 # @udecode/plate-dnd
 
+## 18.9.0
+
 ## 18.8.0
 
 ### Minor Changes
