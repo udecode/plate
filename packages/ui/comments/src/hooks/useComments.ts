@@ -5,8 +5,8 @@ import {
   deleteThread,
   determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft,
   ELEMENT_THREAD,
-  findSelectedThreadNodeEntry,
-  findThreadNodeEntries,
+  getAboveThreadNode,
+  getThreadNodeEntries,
   replaceComment,
   Thread,
   TThreadElement,
@@ -148,7 +148,7 @@ export const useComments = (
 
   const normalizeThreadColor = useCallback(() => {
     if (!editor) return;
-    const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+    const threadNodeEntry = getAboveThreadNode(editor);
     if (!threadNodeEntry) return;
     const [threadNode] = threadNodeEntry;
     const threadDomNode = ReactEditor.toDOMNode(
@@ -179,7 +179,7 @@ export const useComments = (
     }
 
     const threadId = parseInt(threadIdQueryParam, 10);
-    const threadNodeEntries = findThreadNodeEntries(editor);
+    const threadNodeEntries = getThreadNodeEntries(editor);
     const threadNodeEntriesArray = Array.from(threadNodeEntries);
     const threadNodeEntry = threadNodeEntriesArray.find(
       (entry: NodeEntry<any>) => entry[0].thread.id === threadId
@@ -285,7 +285,7 @@ export const useComments = (
     }
 
     if (thread) {
-      const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+      const threadNodeEntry = getAboveThreadNode(editor);
       const threadFromNode = threadNodeEntry ? threadNodeEntry[0].thread : null;
       setThread(threadFromNode);
     }

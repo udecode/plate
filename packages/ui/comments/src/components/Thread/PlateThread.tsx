@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Comment,
   deleteThreadAtSelection,
-  findThreadNodeEntries,
+  getThreadNodeEntries,
   isFirstComment,
   Thread as ThreadType,
   upsertThread,
@@ -155,9 +155,9 @@ export const PlateThread = (props: PlateThreadProps) => {
 
   const onReOpenThread = useCallback(() => {
     if (!editor) return;
-    const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
+    const threadNodeEntries = Array.from(getThreadNodeEntries(editor));
     const threadNodeEntry = threadNodeEntries.find(
-      ([threadNode]) => threadNode.thread.id === thread.id
+      ([threadNode]) => (threadNode.thread as ThreadType).id === thread.id
     );
     if (threadNodeEntry) {
       const [, threadNodePath] = threadNodeEntry;

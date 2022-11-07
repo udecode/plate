@@ -19,15 +19,17 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@emotion/react": "11.10.5",
+    "@emotion/styled": "11.10.5",
     "@material/menu": "14.0.0",
     "@material/menu-surface": "^13.0.0",
-    "@mui/material": "5.10.5",
+    "@mui/material": "5.10.12",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-comments": "18.8.1",
     "@udecode/plate-core": "18.7.0",
     "@udecode/plate-styled-components": "18.7.0",
     "@udecode/plate-ui-toolbar": "18.7.0",
-    "nanoid": "^4.0.0"
+    "nanoid": "3.3.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
