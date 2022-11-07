@@ -10,7 +10,9 @@ export const createThreadPlugin = createPluginFactory<ThreadPlugin>({
   isInline: true,
   withOverrides(editor) {
     const { insertText } = editor;
+
     editor.insertText = insertTextThreadPlugin.bind(null, editor, insertText);
+
     return editor;
   },
 });
