@@ -7,9 +7,7 @@ import {
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { TThreadElement } from '../types';
 
-export const findSelectedThreadNodeEntry = <V extends Value>(
-  editor: PlateEditor<V>
-) =>
+export const getAboveThreadNode = <V extends Value>(editor: PlateEditor<V>) =>
   getAboveNode<TThreadElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_THREAD) },
   });

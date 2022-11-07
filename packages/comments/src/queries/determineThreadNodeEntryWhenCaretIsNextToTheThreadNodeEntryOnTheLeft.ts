@@ -1,5 +1,10 @@
-import { getAboveNode, getPluginType, PlateEditor } from '@udecode/plate-core';
-import { Editor, Range } from 'slate';
+import {
+  getAboveNode,
+  getPluginType,
+  getPointAfter,
+  PlateEditor,
+} from '@udecode/plate-core';
+import { Range } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { TThreadElement } from '../types';
 
@@ -17,7 +22,7 @@ export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLef
       ? editor.selection.anchor
       : editor.selection.focus;
     const threadNodeEntry1 = getAboveNode<TThreadElement>(editor, {
-      at: Editor.after(editor as any, firstPoint, {
+      at: getPointAfter(editor, firstPoint, {
         distance: 1,
         unit: 'character',
       }),

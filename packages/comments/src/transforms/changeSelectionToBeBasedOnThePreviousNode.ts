@@ -1,15 +1,14 @@
-import { PlateEditor } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { moveSelection, PlateEditor } from '@udecode/plate-core';
 
 export const changeSelectionToBeBasedOnThePreviousNode = (
   editor: PlateEditor
 ) => {
-  Transforms.move(editor as any, {
+  moveSelection(editor, {
     distance: 1,
     unit: 'character',
     reverse: true,
   });
-  Transforms.move(editor as any, {
+  moveSelection(editor, {
     distance: 1,
     unit: 'character',
   });

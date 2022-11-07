@@ -1,5 +1,11 @@
-import { isText, PlateEditor } from '@udecode/plate-core';
-import { Path, Transforms } from 'slate';
+import {
+  collapseSelection,
+  insertNodes,
+  isText,
+  PlateEditor,
+  select,
+} from '@udecode/plate-core';
+import { Path } from 'slate';
 import { retrievePreviousSibling } from '../queries';
 import { changeSelectionToBeBasedOnThePreviousNode } from './changeSelectionToBeBasedOnThePreviousNode';
 
@@ -17,15 +23,15 @@ export const insertTextAtTheStartOfAThreadNode = (
     changeSelectionToBeBasedOnThePreviousNode(editor);
   } else {
     const insertPath = threadPath;
-    Transforms.insertNodes(
-      editor as any,
+    insertNodes(
+      editor,
       { text },
       {
         at: insertPath,
       }
     );
-    Transforms.select(editor as any, insertPath);
-    Transforms.collapse(editor as any, { edge: 'end' });
+    select(editor, insertPath);
+    collapseSelection(editor, { edge: 'end' });
     insertHasBeenHandled = true;
   }
 

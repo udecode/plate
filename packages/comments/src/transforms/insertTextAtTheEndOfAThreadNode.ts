@@ -1,11 +1,14 @@
 import {
+  collapseSelection,
   getNextSiblingNodes,
   getParentNode,
+  insertNodes,
   isText,
   PlateEditor,
+  select,
 } from '@udecode/plate-core';
 import { last } from 'lodash';
-import { Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { changeSelectionToBeBasedOnTheNextNode } from './changeSelectionToBeBasedOnTheNextNode';
 
 export const insertTextAtTheEndOfAThreadNode = (
@@ -24,21 +27,21 @@ export const insertTextAtTheEndOfAThreadNode = (
       const insertPath = threadPath
         .slice(0, threadPath.length - 1)
         .concat([last(threadPath)! + 1]);
-      Transforms.insertNodes(
-        editor as any,
+      insertNodes(
+        editor,
         { text },
         {
           at: insertPath,
           hanging: true,
         }
       );
-      Transforms.select(
-        editor as any,
+      select(
+        editor,
         threadPath
           .slice(0, threadPath.length - 1)
           .concat([last(threadPath)! + 2])
       );
-      Transforms.collapse(editor as any, { edge: 'end' });
+      collapseSelection(editor, { edge: 'end' });
       insertHasBeenHandled = true;
     }
   }

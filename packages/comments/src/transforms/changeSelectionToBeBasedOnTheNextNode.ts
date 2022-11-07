@@ -1,17 +1,21 @@
-import { PlateEditor } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import {
+  getEndPoint,
+  moveSelection,
+  PlateEditor,
+  select,
+} from '@udecode/plate-core';
 import { isDocumentEnd } from '../queries';
 
 export const changeSelectionToBeBasedOnTheNextNode = (editor: PlateEditor) => {
   if (isDocumentEnd(editor)) {
-    const endPoint = Editor.end(editor as any, []);
-    Transforms.select(editor as any, endPoint);
+    const endPoint = getEndPoint(editor, []);
+    select(editor, endPoint);
   } else {
-    Transforms.move(editor as any, {
+    moveSelection(editor, {
       distance: 1,
       unit: 'character',
     });
-    Transforms.move(editor as any, {
+    moveSelection(editor, {
       distance: 1,
       unit: 'character',
       reverse: true,

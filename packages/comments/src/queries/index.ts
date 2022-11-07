@@ -3,7 +3,7 @@
  */
 
 export * from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
-export * from './findSelectedThreadNodeEntry';
+export * from './getAboveThreadNode';
 export * from './getThreadNodeEntries';
 export * from './isDocumentEnd';
 export * from './isFirstComment';
