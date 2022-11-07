@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { PlateSideThread, useComments } from '@udecode/plate-ui-comments';
 
-const user = {
+export const commentUser = {
   id: '1',
   name: 'John Doe',
   email: 'osama@gmail.com',
   avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
 };
 
-const retrieveUser = () => user;
+const retrieveUser = () => commentUser;
 
 export const Comments = (props: any) => {
   const { setCommentActions } = props;
@@ -19,7 +19,7 @@ export const Comments = (props: any) => {
   }, [commentActions, setCommentActions]);
 
   const retrieveUserByEmailAddress = (email: string) => {
-    const foundUser = [user].find((u) => u.email === email);
+    const foundUser = [commentUser].find((u) => u.email === email);
     if (foundUser) {
       return foundUser;
     }
@@ -38,7 +38,7 @@ export const Comments = (props: any) => {
       onSubmitComment={commentActions.onSubmitComment}
       onCancelCreateThread={commentActions.onCancelCreateThread}
       onResolveThread={commentActions.onResolveThread}
-      fetchContacts={() => [user]}
+      fetchContacts={() => [commentUser]}
       retrieveUser={retrieveUser}
       retrieveUserByEmailAddress={retrieveUserByEmailAddress}
     />

@@ -8,7 +8,7 @@ import {
   ToggleShowThreadsButton,
 } from '@udecode/plate-ui-comments';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { Comments } from './comments/Comments';
+import { Comments, commentUser } from './comments/Comments';
 import { commentsValue } from './comments/commentsValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -21,13 +21,6 @@ const plugins = createMyPlugins([...basicNodesPlugins, createThreadPlugin()], {
     [ELEMENT_THREAD]: PlateThreadNode,
   },
 });
-
-const user = {
-  id: '1',
-  name: 'John Doe',
-  email: 'osama@gmail.com',
-  avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
-};
 
 export default () => {
   const [commentActions, setCommentActions] = useState<any>();
@@ -43,8 +36,8 @@ export default () => {
         ) : null}
 
         <ToggleShowThreadsButton
-          fetchContacts={() => [user]}
-          retrieveUser={() => user}
+          fetchContacts={() => [commentUser]}
+          retrieveUser={() => commentUser}
           icon={<Comment />}
         />
       </Toolbar>
