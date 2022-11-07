@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEditableProps } from '@udecode/plate-core';
 import {
   FloatingLink,
   LaunchIcon,
@@ -18,8 +19,10 @@ import {
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
-export const PlateFloatingLink = () => {
+export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
   const isEditing = useFloatingLinkSelectors().isEditing();
+
+  if (readOnly) return null;
 
   const input = (
     <div tw="flex flex-col w-[330px]">

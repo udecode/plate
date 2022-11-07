@@ -61,7 +61,7 @@ export const PlateEditable = <V extends Value = Value>({
       afterEditable = (
         <>
           {afterEditable}
-          {renderAfterEditable()}
+          {renderAfterEditable(editableProps)}
         </>
       );
     }
@@ -70,7 +70,7 @@ export const PlateEditable = <V extends Value = Value>({
       beforeEditable = (
         <>
           {beforeEditable}
-          {renderBeforeEditable()}
+          {renderBeforeEditable(editableProps)}
         </>
       );
     }
