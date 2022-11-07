@@ -28,9 +28,9 @@ import {
   usePlateSelectors,
 } from '@udecode/plate-core';
 import { clamp, cloneDeep } from 'lodash';
+import { nanoid } from 'nanoid';
 import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { v4 as createV4UUID } from 'uuid';
 import { ThreadPosition } from '../types';
 import { determineAbsolutePosition } from '../utils';
 
@@ -212,7 +212,7 @@ export const useComments = (
   const onAddThread = useCallback(() => {
     if (editor && selection) {
       const newThread: Thread = {
-        id: createV4UUID(),
+        id: nanoid(),
         comments: [],
         isResolved: false,
         createdBy: retrieveUser(),
@@ -252,7 +252,7 @@ export const useComments = (
   const onSubmitComment = useCallback(
     (commentText: string, assignedTo = undefined) => {
       const comment = {
-        id: createV4UUID(),
+        id: nanoid(),
         text: commentText,
         createdAt: Date.now(),
         createdBy: retrieveUser(),

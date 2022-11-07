@@ -22,11 +22,9 @@ export interface Thread {
   assignedTo?: User;
 }
 
-export interface ThreadNodeData {
+export interface TThreadElement extends TElement {
   thread: Thread;
   selected: boolean;
 }
-
-export type ThreadElement = TElement & ThreadNodeData;
 
 export interface ThreadPlugin {}

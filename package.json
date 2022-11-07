@@ -92,6 +92,7 @@
     "@types/raf": "^3.4.0",
     "@types/react": "17.0.47",
     "@types/react-dom": "17.0.17",
+    "@types/scriptjs": "0.0.2",
     "@types/styled-components": "5.1.9",
     "@types/validator": "^13.7.2",
     "@typescript-eslint/eslint-plugin": "^5.23.0",

@@ -2,42 +2,32 @@
   "name": "@udecode/plate-ui-comments",
   "version": "0.13.1",
   "description": "Comments UI for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin",
-    "comments"
-  ],
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/xolvio/plate/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xolvio/plate.git",
-    "directory": "packages/ui/collaboration/comments"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/ui/comments"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "style": "dist/index.css",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "@emotion/react": "11.10.4",
-    "@emotion/styled": "11.10.4",
     "@material/menu": "14.0.0",
     "@material/menu-surface": "^13.0.0",
     "@mui/material": "5.10.5",
-    "@seznam/compose-react-refs": "^1.0.6",
     "@styled-icons/material": "^10.34.0",
-    "@udecode/plate-comments": "^0.5.0",
-    "@udecode/plate-core": "16.5.0",
-    "@udecode/plate-styled-components": "16.5.0",
+    "@udecode/plate-comments": "18.8.1",
+    "@udecode/plate-core": "18.7.0",
+    "@udecode/plate-styled-components": "18.7.0",
     "@udecode/plate-ui-toolbar": "18.7.0",
-    "uuid": "9.0.0"
+    "nanoid": "^4.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -47,16 +37,12 @@
     "slate-react": ">=0.74.2",
     "styled-components": ">=5.0.0"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {
-    "@types/uuid": "8.3.4",
-    "@udecode/plate-ui": "17.0.3",
-    "@vitejs/plugin-react": "^2.0.1",
-    "vite": "^3.0.9"
-  },
-  "scripts": {
-    "start": "vite"
   }
 }

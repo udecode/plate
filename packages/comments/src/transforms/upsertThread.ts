@@ -4,12 +4,13 @@ import {
   getPluginType,
   isCollapsed,
   PlateEditor,
+  TNodeProps,
   Value,
 } from '@udecode/plate-core';
 import { Editor, Location, NodeEntry, Range, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { findSelectedThreadNodeEntry } from '../queries';
-import { Thread, ThreadElement, ThreadNodeData } from '../types';
+import { Thread, TThreadElement } from '../types';
 import { isThread } from '../utils';
 import { wrapWithThread } from './wrapWithThread';
 
@@ -19,8 +20,8 @@ export const upsertThread = <V extends Value>(
     at,
     thread,
     elementProps,
-  }: { thread: Thread; at: Location; elementProps?: Partial<ThreadNodeData> }
-): NodeEntry<ThreadElement> | undefined => {
+  }: { thread: Thread; at: Location; elementProps?: TNodeProps<TThreadElement> }
+): NodeEntry<TThreadElement> | undefined => {
   const type = getPluginType(editor, ELEMENT_THREAD);
   const isRange = Range.isRange(at);
 
@@ -38,7 +39,7 @@ export const upsertThread = <V extends Value>(
   });
 
   if (threadNodeEntry2) {
-    Transforms.setNodes<ThreadElement>(
+    Transforms.setNodes<TThreadElement>(
       editor as any,
       {
         thread,

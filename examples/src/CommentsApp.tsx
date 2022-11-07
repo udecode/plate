@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { AddComment, Comment } from '@styled-icons/material';
+import { Plate } from '@udecode/plate';
 import { createThreadPlugin, ELEMENT_THREAD } from '@udecode/plate-comments';
-import { createPlugins, Plate } from '@udecode/plate-core';
-import { createPlateUI } from '@udecode/plate-ui';
 import {
   AddThreadToolbarButton,
   PlateThreadNode,
   ToggleShowThreadsButton,
 } from '@udecode/plate-ui-comments';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { Comments } from './comments/Comments';
 import { commentsValue } from './comments/commentsValue';
+import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
+import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-const components = createPlateUI({
-  [ELEMENT_THREAD]: PlateThreadNode,
-});
-
-const plugins = createPlugins([...[createThreadPlugin()]], {
-  components,
+const plugins = createMyPlugins([...basicNodesPlugins, createThreadPlugin()], {
+  components: {
+    ...plateUI,
+    [ELEMENT_THREAD]: PlateThreadNode,
+  },
 });
 
 const user = {
@@ -31,7 +33,7 @@ export default () => {
   const [commentActions, setCommentActions] = useState<any>();
 
   return (
-    <div>
+    <>
       <Toolbar>
         {commentActions?.onAddThread ? (
           <AddThreadToolbarButton
@@ -39,23 +41,21 @@ export default () => {
             onAddThread={commentActions.onAddThread}
           />
         ) : null}
+
         <ToggleShowThreadsButton
           fetchContacts={() => [user]}
           retrieveUser={() => user}
           icon={<Comment />}
         />
       </Toolbar>
-      <Plate
-        id="main"
-        editableProps={{
-          placeholder: 'Enter some plain text...',
-        }}
-        initialValue={commentsValue}
+
+      <Plate<MyValue>
+        editableProps={editableProps}
         plugins={plugins}
-        onChange={(value) => console.log(JSON.stringify(value))}
+        initialValue={commentsValue}
       >
         <Comments setCommentActions={setCommentActions} />
       </Plate>
-    </div>
+    </>
   );
 };

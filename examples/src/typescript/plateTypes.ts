@@ -73,6 +73,7 @@ import {
   usePlateStates,
   WithOverride,
 } from '@udecode/plate';
+import { ELEMENT_THREAD, TThreadElement } from '@udecode/plate-comments';
 // import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,
@@ -125,10 +126,16 @@ export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
 }
 
+export interface MyThreadElement extends TThreadElement {
+  type: typeof ELEMENT_THREAD;
+  children: RichText[];
+}
+
 export type MyInlineElement =
   | MyLinkElement
   | MyMentionElement
-  | MyMentionInputElement;
+  | MyMentionInputElement
+  | MyThreadElement;
 export type MyInlineDescendant = MyInlineElement | RichText;
 export type MyInlineChildren = MyInlineDescendant[];
 

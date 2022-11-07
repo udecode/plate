@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-core';
 import { Editor, Range } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { ThreadElement } from '../types';
+import { TThreadElement } from '../types';
 
 export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft = (
   editor: PlateEditor
@@ -20,7 +20,7 @@ export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLef
     const secondPoint = Range.isBackward(editor.selection)
       ? editor.selection.anchor
       : editor.selection.focus;
-    const threadNodeEntry1 = getAboveNode<ThreadElement & TAncestor>(editor, {
+    const threadNodeEntry1 = getAboveNode<TThreadElement & TAncestor>(editor, {
       at: Editor.after(editor as any, firstPoint, {
         distance: 1,
         unit: 'character',
@@ -28,10 +28,13 @@ export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLef
       match: { type },
     });
     if (threadNodeEntry1) {
-      const threadNodeEntry2 = getAboveNode<ThreadElement & TAncestor>(editor, {
-        at: secondPoint,
-        match: { type },
-      });
+      const threadNodeEntry2 = getAboveNode<TThreadElement & TAncestor>(
+        editor,
+        {
+          at: secondPoint,
+          match: { type },
+        }
+      );
       if (threadNodeEntry2 && threadNodeEntry1[0] === threadNodeEntry2[0]) {
         threadNodeEntry = threadNodeEntry1;
       }

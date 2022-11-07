@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { ThreadElement } from '../types';
+import { TThreadElement } from '../types';
 import { insertTextAtTheEndOfAThreadNode } from './insertTextAtTheEndOfAThreadNode';
 import { insertTextAtTheStartOfAThreadNode } from './insertTextAtTheStartOfAThreadNode';
 
@@ -21,7 +21,7 @@ export const insertTextThreadPlugin = (
 
   if (editor.selection && Range.isCollapsed(editor.selection)) {
     const threadType = getPluginType(editor, ELEMENT_THREAD);
-    const threadNodeEntry = getAboveNode<ThreadElement & TAncestor>(editor, {
+    const threadNodeEntry = getAboveNode<TThreadElement & TAncestor>(editor, {
       match: {
         type: threadType,
       },

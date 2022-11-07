@@ -6,12 +6,12 @@ import {
 } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { ThreadElement } from '../types';
+import { TThreadElement } from '../types';
 
 export const findSelectedThreadNodeEntry = <V extends Value>(
   editor: PlateEditor<V>
 ) => {
   return getAboveNode(editor, {
     match: { type: getPluginType(editor, ELEMENT_THREAD) },
-  }) as NodeEntry<ThreadElement> | undefined;
+  }) as NodeEntry<TThreadElement> | undefined;
 };

@@ -1,11 +1,11 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
-import { ThreadElement } from '../types';
+import { TThreadElement } from '../types';
 import { upsertThread } from './upsertThread';
 
 export const selectThread = (
   editor: PlateEditor,
-  threadEntry: NodeEntry<ThreadElement>
+  threadEntry: NodeEntry<TThreadElement>
 ) => {
   const [threadNode, threadPath] = threadEntry;
   if (!threadNode.selected) {

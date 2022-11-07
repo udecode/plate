@@ -1,31 +1,25 @@
 {
   "name": "@udecode/plate-comments",
-  "version": "0.5.0",
-  "description": "Comments for Plate",
-  "keywords": [
-    "slate",
-    "plate",
-    "plugin",
-    "comments"
-  ],
+  "version": "18.8.1",
+  "description": "Plate plugin for comments",
+  "license": "MIT",
   "homepage": "https://plate.udecode.io",
-  "bugs": {
-    "url": "https://github.com/xolvio/plate/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xolvio/plate.git",
-    "directory": "packages/collaboration/comments"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/comments"
   },
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "16.5.0"
+    "@udecode/plate-core": "18.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -34,6 +28,11 @@
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.74.2"
   },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "publishConfig": {
     "access": "public"
   }

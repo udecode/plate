@@ -1,4 +1,6 @@
-export const commentsValue = [
+import { MyValue } from '../typescript/plateTypes';
+
+export const commentsValue: MyValue = [
   {
     type: 'p',
     children: [

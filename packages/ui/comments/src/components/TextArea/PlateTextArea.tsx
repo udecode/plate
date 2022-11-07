@@ -1,5 +1,5 @@
 import React, { ForwardedRef, useCallback, useEffect, useRef } from 'react';
-import composeRefs from '@seznam/compose-react-refs';
+import useMergedRef from '@react-hook/merged-ref';
 import { Thread as ThreadType, User } from '@udecode/plate-comments';
 import { emailRegexExpression, nameRegexExpression } from '../../utils';
 import { PlateContacts } from '../Contacts/PlateContacts';
@@ -145,7 +145,7 @@ export const PlateTextArea = React.forwardRef<
     <div className="mdc-menu-surface--anchor">
       <TextArea.Input
         {...props}
-        ref={composeRefs(textAreaRef, ref)}
+        ref={useMergedRef(textAreaRef, ref)}
         css={textAreaCss}
         retrieveMentionStringAtCaretPosition={
           retrieveMentionStringAtCaretPosition
