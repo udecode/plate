@@ -50,12 +50,17 @@ export const useFloatingLinkInsert = ({
     [focused]
   );
 
-  const ref = useOnClickOutside(() => {
-    if (floatingLinkSelectors.mode() === 'insert') {
-      floatingLinkActions.hide();
-      focusEditor(editor, editor.selection!);
+  const ref = useOnClickOutside(
+    () => {
+      if (floatingLinkSelectors.mode() === 'insert') {
+        floatingLinkActions.hide();
+        focusEditor(editor, editor.selection!);
+      }
+    },
+    {
+      disabled: !open,
     }
-  });
+  );
 
   const { update, style, floating } = useVirtualFloatingLink({
     editorId: editor.id,
