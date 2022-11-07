@@ -24,7 +24,7 @@ export const ExcalidrawElement = <V extends Value>(
   const [Excalidraw, setExcalidraw] = useState<any>(null);
   useEffect(() => {
     import('@excalidraw/excalidraw').then((comp) =>
-      setExcalidraw(comp.default)
+      setExcalidraw(comp.Excalidraw)
     );
   });
 
