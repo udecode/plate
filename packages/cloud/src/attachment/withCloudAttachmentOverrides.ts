@@ -1,8 +1,13 @@
-import { EElementOrText, insertNode, Value } from '@udecode/plate-core';
+import {
+  EElementOrText,
+  insertNode,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-core';
 import Defer from 'p-defer';
 import { CloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
-import { TCloudAttachmentElement } from './types';
+import { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
 
 type CloudAttachmentValue = TCloudAttachmentElement[];
 
@@ -11,7 +16,8 @@ type CloudAttachmentValue = TCloudAttachmentElement[];
 export function withCloudAttachmentOverrides<
   V extends Value = Value,
   E extends CloudEditor<V> = CloudEditor<V>
->(editor: E) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+>(editor: E, plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>) {
   /**
    * We create a deferredFinish which is an object with a `promise` and a way
    * to `resolve` or `reject` the Promise outside of the Promise. We use
