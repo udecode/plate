@@ -5,7 +5,7 @@ import { ReactEditor } from 'slate-react';
 import { CloudEditor } from './types';
 import { uploadFiles } from './uploadFiles';
 
-export function onDrop<V extends Value = Value>(
+export function onDropCloud<V extends Value = Value>(
   editor: CloudEditor<V>,
   e: React.DragEvent<Element>
 ): boolean {
@@ -27,7 +27,7 @@ export function onDrop<V extends Value = Value>(
   return true;
 }
 
-export function onPaste<V extends Value = Value>(
+export function onPasteCloud<V extends Value = Value>(
   editor: CloudEditor<V>,
   e: React.ClipboardEvent<Element>
 ): boolean {
