@@ -1,7 +1,7 @@
 {
   "name": "@udecode/plate-cloud",
   "version": "18.5.0",
-  "description": "add cloud based image and attachment uploads to plate",
+  "description": "Plate plugin to add cloud based image and attachment uploads",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
