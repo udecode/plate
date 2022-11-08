@@ -21,7 +21,6 @@ export function withCloudImageOverrides<
 
   editor.cloud.imageFileHandlers = {
     onStart(e) {
-      console.log('start', e);
       const { maxInitialWidth, maxInitialHeight } = plugin.options;
       const { width, height } = resizeIn(
         { width: e.width, height: e.height },
@@ -47,7 +46,6 @@ export function withCloudImageOverrides<
       });
     },
     onProgress(e) {
-      console.log('progress', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
         url: e.url,
@@ -57,7 +55,6 @@ export function withCloudImageOverrides<
       });
     },
     onError(e) {
-      console.log('error', e);
       const upload: UploadError = {
         status: 'error',
         url: e.url,
@@ -67,7 +64,6 @@ export function withCloudImageOverrides<
       deferredFinish.resolve(upload);
     },
     onSuccess(e) {
-      console.log('success', e);
       const upload: UploadSuccess = {
         status: 'success',
         url: e.url,

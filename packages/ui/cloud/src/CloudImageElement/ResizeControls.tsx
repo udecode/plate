@@ -3,7 +3,6 @@ import { resizeInWidth } from '@portive/client';
 import { PlateCloudEditor, TCloudImageElement } from '@udecode/plate-cloud';
 import { Element, Transforms } from 'slate';
 import { ReactEditor, useSlateStatic } from 'slate-react';
-import { useImageContext } from './ImageContext';
 import { ImageSize, SetImageSize } from './types';
 // import { ImageFileInterface } from '../types';
 // import { useHostedImageContext } from './hosted-image-context';

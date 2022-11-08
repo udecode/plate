@@ -3,7 +3,7 @@ import { Value, WithPlatePlugin } from '@udecode/plate-core';
 import { createUploadStore } from '../upload/createUploadStore';
 import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';
-import { PlateCloudEditor, CloudPlugin, FinishUploadsOptions } from './types';
+import { CloudPlugin, FinishUploadsOptions, PlateCloudEditor } from './types';
 import { uploadFiles } from './uploadFiles';
 
 export function withCloudOverrides<

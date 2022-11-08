@@ -30,7 +30,6 @@ export function withCloudAttachmentOverrides<
 
   editor.cloud.genericFileHandlers = {
     onStart(e) {
-      console.log('start', e);
       const node: EElementOrText<CloudAttachmentValue> = {
         type: 'cloud_attachment',
         url: e.id,
@@ -48,7 +47,6 @@ export function withCloudAttachmentOverrides<
       });
     },
     onProgress(e) {
-      console.log('progress', e);
       editor.cloud.useUploadStore.getState().setUpload(e.id, {
         status: 'progress',
         url: e.url,
@@ -58,7 +56,6 @@ export function withCloudAttachmentOverrides<
       });
     },
     onError(e) {
-      console.log('error', e);
       const upload: UploadError = {
         status: 'error',
         url: e.url,
@@ -68,7 +65,6 @@ export function withCloudAttachmentOverrides<
       deferredFinish.resolve(upload);
     },
     onSuccess(e) {
-      console.log('success', e);
       const upload: UploadSuccess = {
         status: 'success',
         url: e.url,

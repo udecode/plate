@@ -1,7 +1,7 @@
 import { Value } from '@udecode/plate-core';
 import delay from 'delay';
 import { getInProgressUploads } from './getInProgressUploads';
-import { PlateCloudEditor, FinishUploadsOptions } from './types';
+import { FinishUploadsOptions, PlateCloudEditor } from './types';
 
 const TEN_MINUTES = 1000 * 60 * 60;
 

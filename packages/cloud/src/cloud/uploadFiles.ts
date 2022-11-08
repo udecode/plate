@@ -1,7 +1,7 @@
 import { ClientFile, uploadFile as uploadFileToPortive } from '@portive/client';
 import { Value } from '@udecode/plate-core';
 import { nanoid } from 'nanoid';
-import { PlateCloudEditor, FileEvent, ProgressEvent } from './types';
+import { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 
 function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
   if (clientFile.type === 'image') {
@@ -34,7 +34,6 @@ export function uploadFile<V extends Value = Value>(
     onBeforeFetch(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
       if (fileEvent.type === 'image') {
-        console.log(1111);
         editor.cloud.imageFileHandlers?.onStart?.(fileEvent);
       } else {
         editor.cloud.genericFileHandlers?.onStart?.(fileEvent);

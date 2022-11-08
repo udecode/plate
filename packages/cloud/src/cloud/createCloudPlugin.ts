@@ -1,6 +1,6 @@
 import { createPluginFactory, Value } from '@udecode/plate-core';
 import { onDropCloud, onPasteCloud } from './handlers';
-import { PlateCloudEditor, CloudPlugin } from './types';
+import { CloudPlugin, PlateCloudEditor } from './types';
 import { withCloudOverrides } from './withCloudOverrides';
 
 export const KEY_CLOUD = 'cloud';
