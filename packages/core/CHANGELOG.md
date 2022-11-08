@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 18.9.0
+
+### Minor Changes
+
+- [#1978](https://github.com/udecode/plate/pull/1978) by [@zbeyens](https://github.com/zbeyens) – Plugin fields `renderBeforeEditable` and `renderAfterEditable` now have `TEditableProps` passed as the first parameter.
+
 ## 18.7.0
 
 ### Minor Changes
