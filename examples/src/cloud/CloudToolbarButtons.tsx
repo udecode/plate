@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudEditor, useEventPlateId } from '@udecode/plate';
+import { PlateCloudEditor, useEventPlateId } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 const buttonStyle: React.CSSProperties = {
@@ -11,7 +11,7 @@ const buttonStyle: React.CSSProperties = {
 };
 
 export const CloudToolbarButtons = () => {
-  const editor = useMyPlateEditorRef(useEventPlateId()) as CloudEditor;
+  const editor = useMyPlateEditorRef(useEventPlateId()) as PlateCloudEditor;
   const getSaveValue = () => {
     // eslint-disable-next-line no-console
     console.log(editor.cloud.getSaveValue());

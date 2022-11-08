@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { resizeInWidth } from '@portive/client';
-import { CloudEditor, TCloudImageElement } from '@udecode/plate-cloud';
+import { PlateCloudEditor, TCloudImageElement } from '@udecode/plate-cloud';
 import { Element, Transforms } from 'slate';
 import { ReactEditor, useSlateStatic } from 'slate-react';
 import { useImageContext } from './ImageContext';
@@ -108,7 +108,7 @@ export function ResizeControls({
   size: ImageSize;
   setSize: SetImageSize;
 }) {
-  const editor = useSlateStatic() as CloudEditor;
+  const editor = useSlateStatic() as PlateCloudEditor;
   const [isResizing, setIsResizing] = useState(false);
 
   const currentSizeRef = useRef<{ width: number; height: number }>();

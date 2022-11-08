@@ -1,5 +1,5 @@
 import { useSlateStatic } from 'slate-react';
-import { CloudEditor } from '../cloud/types';
+import { PlateCloudEditor } from '../cloud/types';
 import { Upload } from './types';
 
 /**
@@ -7,7 +7,7 @@ import { Upload } from './types';
  * Upload object from it.
  */
 export function useUpload(id: string): Upload {
-  const editor = useSlateStatic() as CloudEditor;
+  const editor = useSlateStatic() as PlateCloudEditor;
   /**
    * We call this even if it's not always required because it calls `useStore`
    * which is a React hook which means it needs to be called consistently.

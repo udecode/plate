@@ -1,13 +1,13 @@
 import { resizeIn } from '@portive/client';
 import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-core';
 import Defer from 'p-defer';
-import { CloudEditor } from '../cloud/types';
+import { PlateCloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
 import { CloudImagePlugin, TCloudImageElement } from './types';
 
 export function withCloudImageOverrides<
   V extends Value = Value,
-  E extends CloudEditor<V> = CloudEditor<V>
+  E extends PlateCloudEditor<V> = PlateCloudEditor<V>
 >(editor: E, plugin: WithPlatePlugin<CloudImagePlugin, V, E>) {
   /**
    * We create a deferredFinish which is an object with a `promise` and a way

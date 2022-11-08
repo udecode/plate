@@ -3,12 +3,12 @@ import { Value, WithPlatePlugin } from '@udecode/plate-core';
 import { createUploadStore } from '../upload/createUploadStore';
 import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';
-import { CloudEditor, CloudPlugin, FinishUploadsOptions } from './types';
+import { PlateCloudEditor, CloudPlugin, FinishUploadsOptions } from './types';
 import { uploadFiles } from './uploadFiles';
 
 export function withCloudOverrides<
   V extends Value = Value,
-  E extends CloudEditor<V> = CloudEditor<V>
+  E extends PlateCloudEditor<V> = PlateCloudEditor<V>
 >(editor: E, plugin: WithPlatePlugin<CloudPlugin, V, E>) {
   const {
     apiKey,

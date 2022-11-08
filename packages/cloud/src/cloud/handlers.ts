@@ -2,11 +2,11 @@ import React from 'react';
 import { Value } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { CloudEditor } from './types';
+import { PlateCloudEditor } from './types';
 import { uploadFiles } from './uploadFiles';
 
 export function onDropCloud<V extends Value = Value>(
-  editor: CloudEditor<V>,
+  editor: PlateCloudEditor<V>,
   e: React.DragEvent<Element>
 ): boolean {
   const { files } = e.dataTransfer;
@@ -28,7 +28,7 @@ export function onDropCloud<V extends Value = Value>(
 }
 
 export function onPasteCloud<V extends Value = Value>(
-  editor: CloudEditor<V>,
+  editor: PlateCloudEditor<V>,
   e: React.ClipboardEvent<Element>
 ): boolean {
   const { files } = e.clipboardData;

@@ -11,7 +11,7 @@ export type CloudPlugin = ClientOptions & {
   uploadStoreInitialValue?: Record<string, Upload>;
 };
 
-export type CloudEditor<V extends Value = Value> = PlateEditor<V> &
+export type PlateCloudEditor<V extends Value = Value> = PlateEditor<V> &
   ReactEditor &
   CloudEditorProps<V>;
 

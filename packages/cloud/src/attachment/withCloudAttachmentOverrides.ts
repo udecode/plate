@@ -5,7 +5,7 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import Defer from 'p-defer';
-import { CloudEditor } from '../cloud/types';
+import { PlateCloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
 import { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
 
@@ -15,7 +15,7 @@ type CloudAttachmentValue = TCloudAttachmentElement[];
 
 export function withCloudAttachmentOverrides<
   V extends Value = Value,
-  E extends CloudEditor<V> = CloudEditor<V>
+  E extends PlateCloudEditor<V> = PlateCloudEditor<V>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 >(editor: E, plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>) {
   /**

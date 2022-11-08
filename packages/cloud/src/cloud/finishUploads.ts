@@ -1,7 +1,7 @@
 import { Value } from '@udecode/plate-core';
 import delay from 'delay';
 import { getInProgressUploads } from './getInProgressUploads';
-import { CloudEditor, FinishUploadsOptions } from './types';
+import { PlateCloudEditor, FinishUploadsOptions } from './types';
 
 const TEN_MINUTES = 1000 * 60 * 60;
 
@@ -14,7 +14,7 @@ const TEN_MINUTES = 1000 * 60 * 60;
  * amount of time.
  */
 export async function finishUploads<V extends Value>(
-  editor: CloudEditor<V>,
+  editor: PlateCloudEditor<V>,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> {
   const { uploads } = editor.cloud.useUploadStore.getState();

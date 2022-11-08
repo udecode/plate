@@ -1,7 +1,7 @@
 import { ClientFile, uploadFile as uploadFileToPortive } from '@portive/client';
 import { Value } from '@udecode/plate-core';
 import { nanoid } from 'nanoid';
-import { CloudEditor, FileEvent, ProgressEvent } from './types';
+import { PlateCloudEditor, FileEvent, ProgressEvent } from './types';
 
 function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
   if (clientFile.type === 'image') {
@@ -23,7 +23,7 @@ function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
 }
 
 export function uploadFile<V extends Value = Value>(
-  editor: CloudEditor<V>,
+  editor: PlateCloudEditor<V>,
   file: File
 ) {
   const id = `#${nanoid()}`;
@@ -85,7 +85,7 @@ export function uploadFile<V extends Value = Value>(
 }
 
 export function uploadFiles<V extends Value = Value>(
-  editor: CloudEditor<V>,
+  editor: PlateCloudEditor<V>,
   files: Iterable<File>
 ) {
   for (const file of files) {
