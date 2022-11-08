@@ -17,7 +17,7 @@ export function withCloudOverrides<
     uploadStoreInitialValue,
   } = plugin.options;
   const client = createClient({ apiKey, authToken, apiOrigin });
-  const useUploadStore = createUploadStore({
+  const uploadStore = createUploadStore({
     uploads: uploadStoreInitialValue || {},
   });
   editor.cloud = {
@@ -25,12 +25,9 @@ export function withCloudOverrides<
     uploadFiles: (files: Iterable<File>) => {
       uploadFiles(editor, files);
     },
-    useUploadStore,
+    uploadStore,
     getSaveValue: () => {
-      return getSaveValue<V>(
-        editor.children,
-        useUploadStore.getState().uploads
-      );
+      return getSaveValue<V>(editor.children, uploadStore.get.uploads());
     },
     finishUploads: async (options?: FinishUploadsOptions) => {
       return finishUploads(editor, options);

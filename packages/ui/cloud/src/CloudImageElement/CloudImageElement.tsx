@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AttachFile } from '@styled-icons/material/AttachFile';
-import { CloudDownload } from '@styled-icons/material/CloudDownload';
 import { useUpload } from '@udecode/plate-cloud';
 import { Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
@@ -9,7 +7,6 @@ import { StatusBar } from '../StatusBar';
 import { getCloudImageElementStyles } from './CloudImageElement.styles';
 import { CloudImageElementProps } from './CloudImageElement.types';
 import { generateSrcAndSrcSet } from './generateSrcAndSrcSet';
-import { ImageContext } from './ImageContext';
 import { ResizeControls } from './ResizeControls';
 
 export const CloudImageElement = <V extends Value>(

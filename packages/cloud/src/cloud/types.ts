@@ -21,7 +21,7 @@ export type CloudEditorProps<V extends Value = Value> = {
   cloud: {
     client: Client;
     uploadFiles: (msg: any) => void;
-    useUploadStore: ReturnType<typeof createUploadStore>;
+    uploadStore: ReturnType<typeof createUploadStore>;
     genericFileHandlers?: {
       onStart?: (e: FileEvent) => void;
       onProgress?: (e: FileEvent & ProgressEvent) => void;

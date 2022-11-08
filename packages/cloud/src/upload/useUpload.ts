@@ -12,9 +12,16 @@ export function useUpload(id: string): Upload {
    * We call this even if it's not always required because it calls `useStore`
    * which is a React hook which means it needs to be called consistently.
    */
-  const upload: Upload = editor.cloud.useUploadStore(
-    (state) => state.uploads[id] || { status: 'not-found' }
-  );
+  // const upload: Upload = editor.cloud.useUploadStore(
+  //   (state) => state.uploads[id] || { status: 'not-found' }
+  // );
+  const upload: Upload = editor.cloud.uploadStore.use.upload(id) || {
+    status: 'not-found',
+  };
+
+  // (
+  //   (state) => state.uploads[id] || { status: 'not-found' }
+  // );
   if (id.includes('/')) {
     return {
       status: 'success',

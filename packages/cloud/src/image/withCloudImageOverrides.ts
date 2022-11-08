@@ -37,7 +37,7 @@ export function withCloudImageOverrides<
         children: [{ text: '' }],
       };
       insertNode<Value>(editor, node);
-      editor.cloud.useUploadStore.getState().setUpload(e.id, {
+      editor.cloud.uploadStore.set.upload(e.id, {
         status: 'progress',
         url: e.url,
         sentBytes: 0,
@@ -46,7 +46,7 @@ export function withCloudImageOverrides<
       });
     },
     onProgress(e) {
-      editor.cloud.useUploadStore.getState().setUpload(e.id, {
+      editor.cloud.uploadStore.set.upload(e.id, {
         status: 'progress',
         url: e.url,
         sentBytes: e.sentBytes,
@@ -60,7 +60,7 @@ export function withCloudImageOverrides<
         url: e.url,
         message: e.message,
       };
-      editor.cloud.useUploadStore.getState().setUpload(e.id, upload);
+      editor.cloud.uploadStore.set.upload(e.id, upload);
       deferredFinish.resolve(upload);
     },
     onSuccess(e) {
@@ -68,7 +68,7 @@ export function withCloudImageOverrides<
         status: 'success',
         url: e.url,
       };
-      editor.cloud.useUploadStore.getState().setUpload(e.id, upload);
+      editor.cloud.uploadStore.set.upload(e.id, upload);
       deferredFinish.resolve(upload);
     },
   };
