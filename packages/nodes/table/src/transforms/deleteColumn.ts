@@ -5,6 +5,7 @@ import {
   removeNodes,
   setNodes,
   someNode,
+  TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
@@ -55,6 +56,9 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       withoutNormalizing(editor, () => {
         tableEntry[0].children.forEach((row, rowIdx) => {
           pathToDelete[replacePathPos] = rowIdx;
+
+          // for rows with different lengths
+          if ((row.children as TElement[]).length < replacePathPos + 1) return;
 
           removeNodes(editor, {
             at: pathToDelete,

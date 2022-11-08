@@ -1,5 +1,43 @@
 # @udecode/plate-indent-list
 
+## 18.9.0
+
+## 18.7.0
+
+### Minor Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) –
+  - Now supports pasting google docs lists
+  - New option: `getListStyleType`: Map html element to list style type.
+
+## 18.6.0
+
+### Minor Changes
+
+- [#1959](https://github.com/udecode/plate/pull/1959) by [@zbeyens](https://github.com/zbeyens) –
+  - Now supports pasting google docs lists
+  - New option: `getListStyleType`: Map html element to list style type.
+
+## 18.3.0
+
+### Minor Changes
+
+- [#1931](https://github.com/udecode/plate/pull/1931) by [@zbeyens](https://github.com/zbeyens) – Handle `Enter` key to outdent if empty.
+
+## 18.2.0
+
+## 18.1.3
+
+### Patch Changes
+
+- [#1918](https://github.com/udecode/plate/pull/1918) by [@zbeyens](https://github.com/zbeyens) – Fix indent 0
+
+## 18.1.2
+
+### Patch Changes
+
+- [#1915](https://github.com/udecode/plate/pull/1915) by [@zbeyens](https://github.com/zbeyens) – fix: support indent 0
+
 ## 18.1.1
 
 ## 17.0.3

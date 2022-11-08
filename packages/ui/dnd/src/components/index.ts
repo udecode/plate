@@ -7,3 +7,4 @@ export * from './Draggable';
 export * from './Draggable.types';
 export * from './grabberTooltipProps';
 export * from './withDraggable';
+export * from './Scroller/index';

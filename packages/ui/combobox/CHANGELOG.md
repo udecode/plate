@@ -1,5 +1,27 @@
 # @udecode/plate-ui-combobox
 
+## 18.9.0
+
+## 18.7.0
+
+## 18.6.0
+
+## 18.5.1
+
+## 18.4.0
+
+### Patch Changes
+
+- [#1945](https://github.com/udecode/plate/pull/1945) by [@zbeyens](https://github.com/zbeyens) – Combobox: `disabled` prop. Default is `!items.length`
+
+## 18.2.0
+
+## 18.1.2
+
+### Patch Changes
+
+- [#1914](https://github.com/udecode/plate/pull/1914) by [@zbeyens](https://github.com/zbeyens) – fix: do not display combobox if there is no items
+
 ## 18.1.1
 
 ## 17.0.3

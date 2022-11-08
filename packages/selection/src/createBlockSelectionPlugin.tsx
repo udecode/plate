@@ -3,12 +3,14 @@ import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-core';
 import { BlockSelectable } from './components/BlockSelectable';
 import { BlockSelectionArea } from './components/BlockSelectionArea';
 import { BlockStartArea } from './components/BlockStartArea';
-import { blockSelectionActions } from './blockSelectionStore';
+import { onChangeBlockSelection } from './onChangeBlockSelection';
+import { useHooksBlockSelection } from './useHooksBlockSelection';
 
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
   query?: QueryNodeOptions;
+  onKeyDownSelecting?: (e: KeyboardEvent) => void;
 }
 
 export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlugin>(
@@ -28,10 +30,9 @@ export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlug
         }),
     },
     handlers: {
-      onFocus: () => () => {
-        blockSelectionActions.reset();
-      },
+      onChange: onChangeBlockSelection,
     },
+    useHooks: useHooksBlockSelection,
     renderAboveEditable: ({ children }) => (
       <BlockSelectionArea>
         <BlockStartArea size={28} placement="left" />

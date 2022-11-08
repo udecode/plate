@@ -1,5 +1,4 @@
 import {
-  ELEMENT_DEFAULT,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -110,10 +109,7 @@ export const withDeleteTable = <
           cellEntries.forEach(([, cellPath]) => {
             replaceNodeChildren<TElement>(editor, {
               at: cellPath,
-              nodes: {
-                type: getPluginType(editor, ELEMENT_DEFAULT),
-                children: [{ text: '' }],
-              },
+              nodes: editor.blockFactory(),
             });
           });
 

@@ -6,6 +6,7 @@ import {
   createIndentListPlugin,
   createIndentPlugin,
   createParagraphPlugin,
+  createResetNodePlugin,
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
   Plate,
@@ -49,6 +50,7 @@ const plugins = createMyPlugins(
         },
       },
     }),
+    createResetNodePlugin(),
   ],
   {
     components: plateUI,
