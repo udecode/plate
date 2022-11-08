@@ -28,6 +28,7 @@ export const sidebarItems = [
   'multi-editors',
   'multiple-editors',
   'placeholder',
+  'plate',
   'plate-cloud',
   'playground',
   'preview-md',
