@@ -40,10 +40,6 @@ import {
 } from '@udecode/plate-headless';
 import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
 import { BlockquoteElement } from '@udecode/plate-ui-block-quote';
-import {
-  CloudAttachmentElement,
-  CloudImageElement,
-} from '@udecode/plate-ui-cloud';
 import { CodeLineElement, CodeSyntaxLeaf } from '@udecode/plate-ui-code-block';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { LinkElement } from '@udecode/plate-ui-link';
@@ -66,8 +62,6 @@ export const createPlateUI = <T extends string = string>(
 ) => {
   const components = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-    [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
-    [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
     // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,

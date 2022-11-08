@@ -1,11 +1,16 @@
 import React from 'react';
+import { Plate, PlateProvider } from '@udecode/plate';
 import {
   createCloudAttachmentPlugin,
   createCloudImagePlugin,
   createCloudPlugin,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+  ELEMENT_CLOUD_ATTACHMENT,
+  ELEMENT_CLOUD_IMAGE,
+} from '@udecode/plate-cloud';
+import {
+  CloudAttachmentElement,
+  CloudImageElement,
+} from '@udecode/plate-ui-cloud';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 // import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
 import { cloudValue } from './cloud/cloudValue';
@@ -43,7 +48,11 @@ const plugins = createMyPlugins(
     }),
   ],
   {
-    components: plateUI,
+    components: {
+      ...plateUI,
+      [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
+      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+    },
   }
 );
 
