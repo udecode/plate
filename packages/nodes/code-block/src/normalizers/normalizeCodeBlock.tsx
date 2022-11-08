@@ -7,7 +7,6 @@ import {
   TElement,
   TNodeEntry,
   Value,
-  wrapNodes,
 } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../constants';
 

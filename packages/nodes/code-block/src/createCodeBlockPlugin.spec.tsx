@@ -106,7 +106,10 @@ describe('code block deserialization', () => {
       const output = ((
         <editor>
           <hcodeblock>
-            <hcodeline>test</hcodeline>
+            <hcodeline>
+              test
+              <cursor />
+            </hcodeline>
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
@@ -116,6 +119,7 @@ describe('code block deserialization', () => {
         editor: input,
         plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
       });
+
       editor.deleteBackward('character');
       expect(editor.children).toEqual(output.children);
     });
