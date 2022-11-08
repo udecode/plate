@@ -6054,9 +6054,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-cloud@npm:18.5.0, @udecode/plate-ui-cloud@workspace:packages/ui/nodes/cloud":
+"@udecode/plate-ui-cloud@npm:18.5.0, @udecode/plate-ui-cloud@workspace:packages/ui/cloud":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/nodes/cloud"
+  resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/cloud"
   dependencies:
     "@udecode/plate-cloud": "npm:18.5.0"
     "@udecode/plate-core": "npm:18.2.0"
