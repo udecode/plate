@@ -19,8 +19,9 @@ export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
 
   const { normalizeNode } = editor;
   return ([node, path]: TNodeEntry) => {
+    normalizeNode([node, path]);
     if (!isElement(node)) {
-      return normalizeNode([node, path]);
+      return;
     }
 
     const isCodeBlockRoot = node.type === codeBlockType;
@@ -30,13 +31,12 @@ export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
         ([child]) => child.type !== codeLineType
       );
       if (nonCodeLine) {
-        return setNodes<TElement>(
+        setNodes<TElement>(
           editor,
           { type: codeLineType },
           { at: nonCodeLine[1] }
         );
       }
-      return normalizeNode([node, path]);
     }
   };
 };

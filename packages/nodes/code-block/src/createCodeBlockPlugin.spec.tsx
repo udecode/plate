@@ -107,7 +107,7 @@ describe('code block deserialization', () => {
         <editor>
           <hcodeblock>
             <hcodeline>
-              test
+              Line 1
               <cursor />
             </hcodeline>
           </hcodeblock>
