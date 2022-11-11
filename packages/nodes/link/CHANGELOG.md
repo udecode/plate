@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 18.9.1
+
+### Patch Changes
+
+- [#1981](https://github.com/udecode/plate/pull/1981) by [@O4epegb](https://github.com/O4epegb) – Fix floating link escape handling
+
 ## 18.9.0
 
 ### Patch Changes
