@@ -1,6 +1,11 @@
 /** @jsx jsx */
 
-import { getPlugin, HotkeyPlugin, Hotkeys } from '@udecode/plate-core';
+import {
+  getPlugin,
+  HotkeyPlugin,
+  Hotkeys,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
@@ -391,6 +396,46 @@ it('should unhang before indentation', () => {
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
   expect(editor.children).toEqual(output.children);
+});
+
+it('should NOT not adjust selection length when unhanging ranges', () => {
+  const input = (
+    <editor>
+      <hp>
+        Some Text <anchor />
+        More Text
+        <focus />
+      </hp>
+    </editor>
+  ) as any;
+  const editor: PlateEditor<any> = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  const selectionBefore = editor.selection;
+
+  onKeyDownList(
+    editor,
+    getPlugin<HotkeyPlugin>(editor, 'list')
+  )(
+    new KeyboardEvent('keydown', {
+      key: 'Tab',
+    }) as any // Using a native keyboard event but this wants a React.KeyboardEvent.
+  );
+  expect(editor.selection).toEqual(selectionBefore);
+
+  // Do the same with shift tab.
+  onKeyDownList(
+    editor,
+    getPlugin<HotkeyPlugin>(editor, 'list')
+  )(
+    new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+    }) as any // Using a native keyboard event but this wants a React.KeyboardEvent.
+  );
+  expect(editor.selection).toEqual(selectionBefore);
 });
 
 it('should convert top-level list item into body upon unindent if enableResetOnShiftTab is true', () => {
