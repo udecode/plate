@@ -12,13 +12,22 @@ export const useFloatingLinkEscape = () => {
 
   useHotkeys(
     'escape',
-    () => {
-      if (floatingLinkSelectors.mode() !== 'edit') return;
+    (e) => {
+      if (!floatingLinkSelectors.mode()) return;
 
-      if (floatingLinkSelectors.isEditing()) {
+      e.preventDefault();
+
+      if (
+        floatingLinkSelectors.mode() === 'edit' &&
+        floatingLinkSelectors.isEditing()
+      ) {
         floatingLinkActions.show('edit', editor.id);
         focusEditor(editor, editor.selection!);
         return;
+      }
+
+      if (floatingLinkSelectors.mode() === 'insert') {
+        focusEditor(editor, editor.selection!);
       }
 
       floatingLinkActions.hide();
