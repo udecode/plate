@@ -1,8 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { resizeInWidth } from '@portive/client';
 import { PlateCloudEditor, TCloudImageElement } from '@udecode/plate-cloud';
-import { Element, Transforms } from 'slate';
-import { ReactEditor, useSlateStatic } from 'slate-react';
+import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-core';
 import { ImageSize, SetImageSize } from './types';
 // import { ImageFileInterface } from '../types';
 // import { useHostedImageContext } from './hosted-image-context';
@@ -107,7 +106,7 @@ export function ResizeControls({
   size: ImageSize;
   setSize: SetImageSize;
 }) {
-  const editor = useSlateStatic() as PlateCloudEditor;
+  const editor = useEditorRef() as PlateCloudEditor;
   const [isResizing, setIsResizing] = useState(false);
 
   const currentSizeRef = useRef<{ width: number; height: number }>();
@@ -156,15 +155,11 @@ export function ResizeControls({
         document.removeEventListener('mouseup', onDocumentMouseUp);
         document.body.style.cursor = originalCursor;
 
-        const at = ReactEditor.findPath(editor, element as Element);
+        const at = findNodePath(editor, element);
 
         if (!currentSizeRef.current) return;
 
-        Transforms.setNodes<TCloudImageElement>(
-          editor,
-          currentSizeRef.current,
-          { at }
-        );
+        setNodes<TCloudImageElement>(editor, currentSizeRef.current, { at });
       }
 
       /**
