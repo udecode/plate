@@ -12,6 +12,7 @@ import {
   CloudImageElement,
 } from '@udecode/plate-ui-cloud';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
+import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
 // import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
 import { cloudValue } from './cloud/cloudValue';
 import { uploadStoreInitialValue } from './cloud/uploadStoreInitialValue';
@@ -19,16 +20,6 @@ import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
-
-console.log('Plate', Plate);
-console.log('PlateProvider', PlateProvider);
-/**
- * FIXME:
- * These currently aren't visible in docs for some reason.
- */
-console.log('createCloudAttachmentPlugin', createCloudAttachmentPlugin);
-console.log('createCloudImagePlugin', createCloudImagePlugin);
-console.log('createCloudPlugin', createCloudPlugin);
 
 const plugins = createMyPlugins(
   [
@@ -59,7 +50,9 @@ const plugins = createMyPlugins(
 export default () => (
   <>
     <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
-      <Toolbar>{/* <CloudToolbarButtons /> */}</Toolbar>
+      <Toolbar>
+        <CloudToolbarButtons />
+      </Toolbar>
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>
   </>

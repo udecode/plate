@@ -1,7 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/plate-core';
-import { Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import { findEventRange, select, Value } from '@udecode/plate-core';
 import { PlateCloudEditor } from './types';
 import { uploadFiles } from './uploadFiles';
 
@@ -21,9 +19,12 @@ export const onDropCloud = <V extends Value = Value>(
    * location. Find the location from the event and upload the files at that
    * location.
    */
-  const at = ReactEditor.findEventRange(editor, e);
-  Transforms.select(editor, at);
+  const at = findEventRange(editor, e);
+  if (!at) return false;
+
+  select(editor, at);
   uploadFiles(editor, files);
+
   return true;
 };
 
@@ -33,8 +34,10 @@ export const onPasteCloud = <V extends Value = Value>(
 ): boolean => {
   const { files } = e.clipboardData;
   if (files.length === 0) return false;
+
   e.preventDefault();
   e.stopPropagation();
   uploadFiles<V>(editor, files);
+
   return true;
 };
