@@ -3,7 +3,7 @@ import { Value } from '@udecode/plate-core';
 import { nanoid } from 'nanoid';
 import { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 
-function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
+const createFileEvent = (id: string, clientFile: ClientFile): FileEvent => {
   if (clientFile.type === 'image') {
     return {
       id,
@@ -20,12 +20,12 @@ function createFileEvent(id: string, clientFile: ClientFile): FileEvent {
     file: clientFile.file,
     url: clientFile.objectUrl,
   };
-}
+};
 
-export function uploadFile<V extends Value = Value>(
+export const uploadFile = <V extends Value = Value>(
   editor: PlateCloudEditor<V>,
   file: File
-) {
+) => {
   const id = `#${nanoid()}`;
   const { client } = editor.cloud;
   uploadFileToPortive({
@@ -81,13 +81,13 @@ export function uploadFile<V extends Value = Value>(
       }
     },
   });
-}
+};
 
-export function uploadFiles<V extends Value = Value>(
+export const uploadFiles = <V extends Value = Value>(
   editor: PlateCloudEditor<V>,
   files: Iterable<File>
-) {
+) => {
   for (const file of files) {
     uploadFile(editor, file);
   }
-}
+};

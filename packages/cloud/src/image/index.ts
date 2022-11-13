@@ -4,4 +4,4 @@
 
 export * from './createCloudImagePlugin';
 export * from './types';
-export * from './withCloudImageOverrides';
+export * from './withCloudImage';

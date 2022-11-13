@@ -11,18 +11,16 @@ type MaybeUploadNode = {
  * Returns `true` only if the `url` passed in looks like it's not a real URL
  * but rather a reference to be used to do a lookup in our uploads store.
  */
-export function isStoreRef(url: string) {
-  return url.startsWith('#');
-}
+export const isStoreRef = (url: string) => url.startsWith('#');
 
 /**
  * Recursive part of `normalizeOrigins` function with correct types.
  */
-function _getInProgressUploads(
+const _getInProgressUploads = (
   nodes: MaybeUploadNode[],
   uploads: Record<string, Upload>,
   progressUploads: UploadProgress[]
-): UploadProgress[] {
+): UploadProgress[] => {
   for (const node of nodes) {
     if ('url' in node) {
       /**
@@ -69,7 +67,7 @@ function _getInProgressUploads(
     }
   }
   return progressUploads;
-}
+};
 
 /**
  * Takes an array of `nodes` and a lookup for `origins` and normalizes the
@@ -86,14 +84,14 @@ function _getInProgressUploads(
  * we only depend on the knowledge that `children`, if present, is an Array
  * of nodes.
  */
-export function getInProgressUploads(
+export const getInProgressUploads = (
   nodes: Descendant[],
   origins: Record<string, Upload>
-): UploadProgress[] {
+): UploadProgress[] => {
   const progressUploads: UploadProgress[] = [];
   return _getInProgressUploads(
     nodes as MaybeUploadNode[],
     origins,
     progressUploads
   );
-}
+};

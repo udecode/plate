@@ -1,17 +1,17 @@
 import { createPluginFactory, Value } from '@udecode/plate-core';
 import { PlateCloudEditor } from '../cloud/types';
 import { CloudAttachmentPlugin } from './types';
-import { withCloudAttachmentOverrides } from './withCloudAttachmentOverrides';
+import { withCloudAttachment } from './withCloudAttachment';
 
 export const ELEMENT_CLOUD_ATTACHMENT = 'cloud_attachment';
 
 export const createCloudAttachmentPlugin = createPluginFactory<
   CloudAttachmentPlugin,
   Value,
-  PlateCloudEditor<Value>
+  PlateCloudEditor
 >({
   key: ELEMENT_CLOUD_ATTACHMENT,
   isElement: true,
   isVoid: true,
-  withOverrides: withCloudAttachmentOverrides,
+  withOverrides: withCloudAttachment,
 });

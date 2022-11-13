@@ -4,4 +4,4 @@
 
 export * from './createCloudAttachmentPlugin';
 export * from './types';
-export * from './withCloudAttachmentOverrides';
+export * from './withCloudAttachment';

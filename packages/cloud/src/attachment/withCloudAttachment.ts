@@ -13,11 +13,14 @@ type CloudAttachmentValue = TCloudAttachmentElement[];
 
 // const uploadMap = new Map<string, Atom<Upload>>();
 
-export function withCloudAttachmentOverrides<
+export const withCloudAttachment = <
   V extends Value = Value,
   E extends PlateCloudEditor<V> = PlateCloudEditor<V>
+>(
+  editor: E,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
->(editor: E, plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>) {
+  plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>
+) => {
   /**
    * We create a deferredFinish which is an object with a `promise` and a way
    * to `resolve` or `reject` the Promise outside of the Promise. We use
@@ -73,5 +76,6 @@ export function withCloudAttachmentOverrides<
       deferredFinish.resolve(upload);
     },
   };
+
   return editor;
-}
+};

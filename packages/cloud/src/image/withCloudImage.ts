@@ -5,10 +5,13 @@ import { PlateCloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
 import { CloudImagePlugin, TCloudImageElement } from './types';
 
-export function withCloudImageOverrides<
+export const withCloudImage = <
   V extends Value = Value,
   E extends PlateCloudEditor<V> = PlateCloudEditor<V>
->(editor: E, plugin: WithPlatePlugin<CloudImagePlugin, V, E>) {
+>(
+  editor: E,
+  plugin: WithPlatePlugin<CloudImagePlugin, V, E>
+) => {
   /**
    * We create a deferredFinish which is an object with a `promise` and a way
    * to `resolve` or `reject` the Promise outside of the Promise. We use
@@ -72,5 +75,6 @@ export function withCloudImageOverrides<
       deferredFinish.resolve(upload);
     },
   };
+
   return editor;
-}
+};

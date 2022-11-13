@@ -16,7 +16,7 @@ export const createUploadStore = (
     uploads: Record<string, Upload>;
   } = { uploads: {} }
 ) => {
-  return createStore('uploads')({ uploads: initialUploads })
+  return createStore('upload')({ uploads: initialUploads })
     .extendActions((set, get) => ({
       upload: (id: string, upload: Upload): void => {
         const uploads = get.uploads();

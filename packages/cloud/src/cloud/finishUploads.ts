@@ -13,13 +13,13 @@ const TEN_MINUTES = 1000 * 60 * 60;
  * method will return. This can be used if you only want to wait a certain
  * amount of time.
  */
-export async function finishUploads<V extends Value>(
+export const finishUploads = async <V extends Value>(
   editor: PlateCloudEditor<V>,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
-): Promise<void> {
+): Promise<void> => {
   const uploads = editor.cloud.uploadStore.get.uploads();
   const uploadingOrigins = getInProgressUploads(editor.children, uploads);
   const finishPromises = uploadingOrigins.map((origin) => origin.finishPromise);
   const timeoutPromise = delay(maxTimeoutInMs, { value: 'timeout' });
   await Promise.race([Promise.all(finishPromises), timeoutPromise]);
-}
+};

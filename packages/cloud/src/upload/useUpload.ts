@@ -1,4 +1,4 @@
-import { useSlateStatic } from 'slate-react';
+import { useEditorRef } from '@udecode/plate-core';
 import { PlateCloudEditor } from '../cloud/types';
 import { Upload } from './types';
 
@@ -6,8 +6,9 @@ import { Upload } from './types';
  * Takes an `element` (which it only needs for its `id`) and returns the
  * Upload object from it.
  */
-export function useUpload(id: string): Upload {
-  const editor = useSlateStatic() as PlateCloudEditor;
+export const useUpload = (id: string): Upload => {
+  const editor = useEditorRef() as PlateCloudEditor;
+
   /**
    * We call this even if it's not always required because it calls `useStore`
    * which is a React hook which means it needs to be called consistently.
@@ -29,4 +30,4 @@ export function useUpload(id: string): Upload {
     };
   }
   return upload;
-}
+};

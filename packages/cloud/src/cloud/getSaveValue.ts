@@ -17,17 +17,15 @@ type MaybeUploadNode = {
  * Returns `true` only if the `url` passed in looks like it's not a real URL
  * but rather a reference to be used to do a lookup in our uploads store.
  */
-export function isStoreRef(url: string) {
-  return url.startsWith('#');
-}
+export const isStoreRef = (url: string) => url.startsWith('#');
 
 /**
  * Recursive part of `normalizeOrigins` function with correct types.
  */
-function _getSaveValue(
+const _getSaveValue = (
   nodes: MaybeUploadNode[],
   uploads: Record<string, Upload>
-): MaybeUploadNode[] {
+): MaybeUploadNode[] => {
   const nextNodes: MaybeUploadNode[] = [];
   for (const node of nodes) {
     if ('url' in node) {
@@ -85,7 +83,7 @@ function _getSaveValue(
     nextNodes.push(node);
   }
   return nextNodes;
-}
+};
 
 /**
  * Takes an array of `nodes` and a lookup for `origins` and normalizes the
@@ -102,9 +100,7 @@ function _getSaveValue(
  * we only depend on the knowledge that `children`, if present, is an Array
  * of nodes.
  */
-export function getSaveValue<V extends Value>(
+export const getSaveValue = <V extends Value>(
   nodes: V,
   uploads: Record<string, Upload>
-): V {
-  return _getSaveValue(nodes as MaybeUploadNode[], uploads) as V;
-}
+): V => _getSaveValue(nodes as MaybeUploadNode[], uploads) as V;

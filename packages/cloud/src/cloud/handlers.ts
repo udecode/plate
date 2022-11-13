@@ -5,10 +5,10 @@ import { ReactEditor } from 'slate-react';
 import { PlateCloudEditor } from './types';
 import { uploadFiles } from './uploadFiles';
 
-export function onDropCloud<V extends Value = Value>(
+export const onDropCloud = <V extends Value = Value>(
   editor: PlateCloudEditor<V>,
-  e: React.DragEvent<Element>
-): boolean {
+  e: React.DragEvent
+): boolean => {
   const { files } = e.dataTransfer;
   if (files.length === 0) return false;
   /**
@@ -25,16 +25,16 @@ export function onDropCloud<V extends Value = Value>(
   Transforms.select(editor, at);
   uploadFiles(editor, files);
   return true;
-}
+};
 
-export function onPasteCloud<V extends Value = Value>(
+export const onPasteCloud = <V extends Value = Value>(
   editor: PlateCloudEditor<V>,
-  e: React.ClipboardEvent<Element>
-): boolean {
+  e: React.ClipboardEvent
+): boolean => {
   const { files } = e.clipboardData;
   if (files.length === 0) return false;
   e.preventDefault();
   e.stopPropagation();
   uploadFiles<V>(editor, files);
   return true;
-}
+};

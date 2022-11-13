@@ -1,17 +1,17 @@
 import { createPluginFactory, Value } from '@udecode/plate-core';
 import { onDropCloud, onPasteCloud } from './handlers';
 import { CloudPlugin, PlateCloudEditor } from './types';
-import { withCloudOverrides } from './withCloudOverrides';
+import { withCloud } from './withCloud';
 
 export const KEY_CLOUD = 'cloud';
 
 export const createCloudPlugin = createPluginFactory<
   CloudPlugin,
   Value,
-  PlateCloudEditor<Value>
+  PlateCloudEditor
 >({
   key: KEY_CLOUD,
-  withOverrides: withCloudOverrides,
+  withOverrides: withCloud,
   handlers: {
     onDrop: (editor) => (e) => onDropCloud(editor, e),
     onPaste: (editor) => (e) => onPasteCloud(editor, e),
