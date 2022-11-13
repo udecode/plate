@@ -43,7 +43,6 @@ export const onKeyDownList = <
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
-      anchor.offset = 0;
       const unHungRange = unhangRange(editor, { anchor, focus });
       if (unHungRange) {
         workRange = unHungRange;
