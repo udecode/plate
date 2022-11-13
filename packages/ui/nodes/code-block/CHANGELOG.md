@@ -1,5 +1,7 @@
 # @udecode/plate-code-block-ui
 
+## 18.9.2
+
 ## 18.9.0
 
 ## 18.7.0
