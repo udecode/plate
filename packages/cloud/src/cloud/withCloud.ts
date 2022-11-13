@@ -1,18 +1,21 @@
 import { Client, createClient } from '@portive/client';
-import { Value, WithPlatePlugin } from '@udecode/plate-core';
+import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-core';
 import { createUploadStore } from '../upload/createUploadStore';
 import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';
-import { CloudPlugin, FinishUploadsOptions, PlateCloudEditor } from './types';
+import { CloudEditorProps, CloudPlugin, FinishUploadsOptions } from './types';
 import { uploadFiles } from './uploadFiles';
 
 export const withCloud = <
   V extends Value = Value,
-  E extends PlateCloudEditor<V> = PlateCloudEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
+  EE extends E & CloudEditorProps<V> = E & CloudEditorProps<V>
 >(
-  editor: E,
+  e: E,
   plugin: WithPlatePlugin<CloudPlugin, V, E>
 ) => {
+  const editor = e as EE;
+
   const {
     apiKey,
     authToken,

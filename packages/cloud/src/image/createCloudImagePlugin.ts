@@ -8,7 +8,7 @@ export const ELEMENT_CLOUD_IMAGE = 'cloud_image';
 export const createCloudImagePlugin = createPluginFactory<
   CloudImagePlugin,
   Value,
-  PlateCloudEditor<Value>
+  PlateCloudEditor
 >({
   key: ELEMENT_CLOUD_IMAGE,
   isElement: true,

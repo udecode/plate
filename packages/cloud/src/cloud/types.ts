@@ -1,6 +1,5 @@
 import { Client, ClientOptions } from '@portive/client';
 import { PlateEditor, Value } from '@udecode/plate-core';
-import { ReactEditor } from 'slate-react';
 import { Upload } from '../upload';
 import { createUploadStore } from '../upload/createUploadStore';
 
@@ -12,7 +11,6 @@ export type CloudPlugin = ClientOptions & {
 };
 
 export type PlateCloudEditor<V extends Value = Value> = PlateEditor<V> &
-  ReactEditor &
   CloudEditorProps<V>;
 
 export type FinishUploadsOptions = { maxTimeoutInMs?: number };
