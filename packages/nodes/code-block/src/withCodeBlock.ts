@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-core';
+import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { insertCodeLine } from './transforms';
@@ -34,6 +35,8 @@ export const withCodeBlock = <
   };
 
   editor.insertFragment = insertFragmentCodeBlock(editor);
+
+  editor.normalizeNode = normalizeCodeBlock(editor);
 
   return editor;
 };
