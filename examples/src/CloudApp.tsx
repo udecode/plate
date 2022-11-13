@@ -13,7 +13,6 @@ import {
 } from '@udecode/plate-ui-cloud';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
-// import { CloudToolbarButtons } from './cloud/CloudToolbarButtons';
 import { cloudValue } from './cloud/cloudValue';
 import { uploadStoreInitialValue } from './cloud/uploadStoreInitialValue';
 import { editableProps } from './common/editableProps';
