@@ -88,4 +88,40 @@ describe('code block deserialization', () => {
       expect(editor.children).toEqual(output.children);
     });
   });
+
+  describe('deleting lines after the codeblock', () => {
+    it('it should normalized inserted nodes into code lines', () => {
+      const input = ((
+        <editor>
+          <hcodeblock>
+            <hcodeline>Line 1</hcodeline>
+            <hcodeline>
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+          <hp>Line 3</hp>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = ((
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              Line 1
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+          <hp>Line 3</hp>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateUIEditor({
+        editor: input,
+        plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
+      });
+
+      editor.deleteBackward('character');
+      expect(editor.children).toEqual(output.children);
+    });
+  });
 });
