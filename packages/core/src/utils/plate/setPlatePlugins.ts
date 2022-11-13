@@ -17,6 +17,10 @@ import {
   KEY_INSERT_DATA,
 } from '../../plugins/createInsertDataPlugin';
 import {
+  createNodeFactoryPlugin,
+  KEY_NODE_FACTORY,
+} from '../../plugins/createNodeFactoryPlugin';
+import {
   createPrevSelectionPlugin,
   KEY_PREV_SELECTION,
 } from '../../plugins/createPrevSelectionPlugin';
@@ -55,6 +59,12 @@ export const setPlatePlugins = <
     if (typeof dcp !== 'object' || !dcp?.history) {
       plugins.push(
         (editor?.pluginsByKey?.history as any) ?? createHistoryPlugin()
+      );
+    }
+    if (typeof dcp !== 'object' || !dcp?.nodeFactory) {
+      plugins.push(
+        (editor?.pluginsByKey?.[KEY_NODE_FACTORY] as any) ??
+          createNodeFactoryPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp?.eventEditor) {

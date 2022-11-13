@@ -1,5 +1,19 @@
 # @udecode/plate-link-ui
 
+## 18.9.1
+
+## 18.9.0
+
+### Patch Changes
+
+- [#1978](https://github.com/udecode/plate/pull/1978) by [@zbeyens](https://github.com/zbeyens) – Fix: don't render `FloatingLink` on `readOnly`
+
+## 18.8.1
+
+## 18.7.0
+
+## 18.6.0
+
 ## 18.2.0
 
 ## 18.1.1

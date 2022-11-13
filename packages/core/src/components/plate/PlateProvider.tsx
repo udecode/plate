@@ -6,16 +6,8 @@ import {
   plateIdAtom,
   plateStore,
 } from '../../stores/index';
-import {
-  ELEMENT_DEFAULT,
-  PlateEditor,
-  PlateStoreState,
-} from '../../types/index';
-import {
-  createPlateEditor,
-  getPluginType,
-  normalizeInitialValue,
-} from '../../utils/index';
+import { PlateEditor, PlateStoreState } from '../../types/index';
+import { createPlateEditor, normalizeInitialValue } from '../../utils/index';
 import { JotaiProvider } from '../../utils/misc/jotai';
 import { withHOC } from '../../utils/react/withHOC';
 import {
@@ -82,12 +74,7 @@ const PlateProviderContent = <
       if (!currValue) {
         currValue = editor.children.length
           ? editor.children
-          : ([
-              {
-                type: getPluginType(editor, ELEMENT_DEFAULT),
-                children: [{ text: '' }],
-              },
-            ] as V);
+          : (editor.childrenFactory() as V);
       }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);

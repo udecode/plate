@@ -1,5 +1,25 @@
 # @udecode/plate-indent-list
 
+## 18.9.2
+
+## 18.9.0
+
+## 18.7.0
+
+### Minor Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) –
+  - Now supports pasting google docs lists
+  - New option: `getListStyleType`: Map html element to list style type.
+
+## 18.6.0
+
+### Minor Changes
+
+- [#1959](https://github.com/udecode/plate/pull/1959) by [@zbeyens](https://github.com/zbeyens) –
+  - Now supports pasting google docs lists
+  - New option: `getListStyleType`: Map html element to list style type.
+
 ## 18.3.0
 
 ### Minor Changes

@@ -1,9 +1,4 @@
-import {
-  ELEMENT_DEFAULT,
-  getPluginType,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 import { TablePlugin } from '../types';
 
@@ -16,15 +11,7 @@ export interface GetEmptyCellNodeOptions extends TablePlugin {
 
 export const getEmptyCellNode = <V extends Value>(
   editor: PlateEditor<V>,
-  {
-    header,
-    newCellChildren = [
-      {
-        type: getPluginType(editor, ELEMENT_DEFAULT),
-        children: [{ text: '' }],
-      },
-    ],
-  }: GetEmptyCellNodeOptions
+  { header, newCellChildren = [editor.blockFactory()] }: GetEmptyCellNodeOptions
 ) => {
   return {
     type: header

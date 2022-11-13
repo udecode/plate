@@ -1,5 +1,17 @@
 # @udecode/plate-list
 
+## 18.9.2
+
+### Patch Changes
+
+- [#1986](https://github.com/udecode/plate/pull/1986) by [@charrondev](https://github.com/charrondev) – Fix Tab and Shift+Tab adjust selection ranges with the list plugin.
+
+## 18.9.0
+
+## 18.7.0
+
+## 18.6.0
+
 ## 18.2.0
 
 ## 18.1.1

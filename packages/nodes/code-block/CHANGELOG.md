@@ -1,5 +1,17 @@
 # @udecode/plate-code-block
 
+## 18.9.2
+
+### Patch Changes
+
+- [#1911](https://github.com/udecode/plate/pull/1911) by [@charrondev](https://github.com/charrondev) – Ensure children of code blocks are always normalized into code lines
+
+## 18.9.0
+
+## 18.7.0
+
+## 18.6.0
+
 ## 18.2.0
 
 ## 18.1.1

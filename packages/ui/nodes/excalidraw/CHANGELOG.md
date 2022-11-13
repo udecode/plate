@@ -1,5 +1,15 @@
 # @udecode/plate-excalidraw
 
+## 18.9.0
+
+### Patch Changes
+
+- [#1975](https://github.com/udecode/plate/pull/1975) by [@firehudson](https://github.com/firehudson) – Fix import for Excalidraw component
+
+## 18.7.0
+
+## 18.6.0
+
 ## 18.4.0
 
 ### Minor Changes

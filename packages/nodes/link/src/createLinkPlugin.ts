@@ -8,6 +8,8 @@ import { withLink } from './withLink';
 export const ELEMENT_LINK = 'a';
 
 export interface LinkPlugin {
+  forceSubmit?: boolean;
+
   /**
    * Allow custom config for rangeBeforeOptions.
    * @example default

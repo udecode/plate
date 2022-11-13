@@ -5,8 +5,7 @@ import {
   usePlateEditorRef,
   usePlateSelectors,
 } from '../../stores/index';
-import { ELEMENT_DEFAULT } from '../../types/index';
-import { createPlateEditor, getPluginType } from '../../utils/index';
+import { createPlateEditor } from '../../utils/index';
 import { PlateProvider } from './PlateProvider';
 
 describe('PlateProvider', () => {
@@ -106,12 +105,7 @@ describe('PlateProvider', () => {
           wrapper,
         });
 
-        expect(result.current).toEqual([
-          {
-            type: getPluginType(editor, ELEMENT_DEFAULT),
-            children: [{ text: '' }],
-          },
-        ]);
+        expect(result.current).toEqual(editor.childrenFactory());
       });
     });
   });

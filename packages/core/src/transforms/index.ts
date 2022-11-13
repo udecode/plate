@@ -9,6 +9,7 @@ export * from './moveChildren';
 export * from './removeMark';
 export * from './removeNodeChildren';
 export * from './replaceNodeChildren';
+export * from './resetEditorChildren';
 export * from './selectEditor';
 export * from './selectEndOfBlockAboveSelection';
 export * from './setElements';
