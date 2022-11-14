@@ -5442,7 +5442,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-cloud@npm:18.5.0, @udecode/plate-cloud@workspace:packages/cloud":
+"@udecode/plate-cloud@npm:18.10.0, @udecode/plate-cloud@workspace:packages/cloud":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cloud@workspace:packages/cloud"
   dependencies:
@@ -6128,7 +6128,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/cloud"
   dependencies:
-    "@udecode/plate-cloud": "npm:18.5.0"
+    "@udecode/plate-cloud": "npm:18.10.0"
     "@udecode/plate-core": "npm:18.2.0"
     "@udecode/plate-styled-components": "npm:18.2.0"
   peerDependencies:
