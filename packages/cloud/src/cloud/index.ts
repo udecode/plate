@@ -3,6 +3,9 @@
  */
 
 export * from './createCloudPlugin';
+export * from './finishUploads';
+export * from './getInProgressUploads';
+export * from './getSaveValue';
 export * from './handlers';
 export * from './types';
 export * from './uploadFiles';

@@ -9,6 +9,7 @@ export const getCloudAttachmentElementStyles = <V extends Value>(
   props: CloudAttachmentElementStyleProps<V>
 ) => {
   const { focused, selected } = props;
+
   return createStyles(
     { prefixClassNames: 'CloudAttachmentElement', ...props },
     {
