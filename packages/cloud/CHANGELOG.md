@@ -1,5 +1,11 @@
 # @udecode/plate-cloud
 
+## 18.10.1
+
+### Patch Changes
+
+- [#1991](https://github.com/udecode/plate/pull/1991) by [@zbeyens](https://github.com/zbeyens) – fix
+
 ## 18.10.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "18.9.2",
+  "version": "18.10.1",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -21,12 +21,12 @@
   "dependencies": {
     "@udecode/plate-alignment": "18.9.0",
     "@udecode/plate-autoformat": "18.9.0",
-    "@udecode/plate-basic-elements": "18.9.2",
+    "@udecode/plate-basic-elements": "18.10.1",
     "@udecode/plate-basic-marks": "18.9.0",
     "@udecode/plate-block-quote": "18.9.0",
     "@udecode/plate-break": "18.9.0",
     "@udecode/plate-button": "18.9.0",
-    "@udecode/plate-code-block": "18.9.2",
+    "@udecode/plate-code-block": "18.10.1",
     "@udecode/plate-combobox": "18.9.0",
     "@udecode/plate-core": "18.9.0",
     "@udecode/plate-find-replace": "18.9.0",
@@ -52,7 +52,7 @@
     "@udecode/plate-serializer-csv": "18.9.0",
     "@udecode/plate-serializer-docx": "18.9.2",
     "@udecode/plate-serializer-html": "18.9.0",
-    "@udecode/plate-serializer-md": "18.9.2",
+    "@udecode/plate-serializer-md": "18.10.1",
     "@udecode/plate-table": "18.9.0",
     "@udecode/plate-trailing-block": "18.9.0"
   },
