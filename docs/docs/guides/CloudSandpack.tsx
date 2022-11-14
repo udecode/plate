@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  cloudDeps,
   commonDeps,
   plateTestUtilsDeps,
   toolbarDeps,
@@ -23,6 +24,7 @@ export const CloudSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
       ...toolbarDeps,
+      ...cloudDeps,
     }}
     appCode={cloudAppCode}
     files={{

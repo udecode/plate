@@ -4,7 +4,7 @@ This package implements the UI for the official Plate Cloud Image and Attachment
 
 ## Documentation
 
-Check out [Plate Cloud](https://plate.udecode.io/docs/plugins/cloud).
+Check out [Plate Cloud](https://plate.udecode.io/docs/guides/cloud).
 
 ## API
 
