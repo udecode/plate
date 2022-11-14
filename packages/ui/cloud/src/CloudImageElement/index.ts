@@ -5,4 +5,7 @@
 export * from './CloudImageElement.styles';
 export * from './CloudImageElement';
 export * from './CloudImageElement.types';
+export * from './ImageContext';
+export * from './ResizeControls';
+export * from './generateSrcAndSrcSet';
 export * from './types';
