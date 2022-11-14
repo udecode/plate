@@ -1,0 +1,44 @@
+{
+  "name": "@udecode/plate-cloud",
+  "version": "18.5.0",
+  "description": "Plate plugin to add cloud based image and attachment uploads",
+  "license": "MIT",
+  "homepage": "https://plate.udecode.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/cloud"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@portive/client": "10.0.2",
+    "@udecode/plate-core": "18.2.0",
+    "delay": "5.0.0",
+    "nanoid": "^3.3.4",
+    "p-defer": "^3.0",
+    "zustand": "^3.7.2"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.78.0",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.79.0"
+  },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
