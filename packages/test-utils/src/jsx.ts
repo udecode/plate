@@ -1,8 +1,11 @@
 /* eslint-disable prettier/prettier */
 // @ts-ignore
-import { createHyperscript, createText as createTestText } from "slate-hyperscript";
-import { HyperscriptShorthands } from "slate-hyperscript/dist/hyperscript";
-import { createText } from "./hyperscript/creators";
+import {
+  createHyperscript,
+  createText as createTestText,
+} from 'slate-hyperscript';
+import { HyperscriptShorthands } from 'slate-hyperscript/dist/hyperscript';
+import { createText } from './hyperscript/creators';
 
 declare global {
   namespace JSX {

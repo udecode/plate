@@ -40,6 +40,7 @@ module.exports = {
           items: [
             'plugins/alignment',
             'plugins/basic-elements',
+            'plugins/cloud',
             'plugins/excalidraw',
             'plugins/horizontal-rule',
             'plugins/indent',

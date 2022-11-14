@@ -17,6 +17,7 @@ import NavbarItem from '@theme/NavbarItem';
 import SearchBar from '@theme/SearchBar';
 import Toggle from '@theme/Toggle';
 import clsx from 'clsx';
+import { PlateCloudLogo } from './components/PlateCloudlogo';
 import QuickSocialLinksView from './components/QuickSocialLinksView/index';
 import styles from './styles.module.css';
 
@@ -110,6 +111,13 @@ function Navbar(): JSX.Element {
           {rightItems.map((item, i) => (
             <NavbarItem {...item} key={i} />
           ))}
+          <div>
+            <a href="/docs/plugins/cloud">
+              <span style={{ marginLeft: 16, top: 2, position: 'relative' }}>
+                <PlateCloudLogo />
+              </span>
+            </a>
+          </div>
           <QuickSocialLinksView className={styles.displayOnlyInLargeViewport} />
           {!disableColorModeSwitch && (
             <Toggle
