@@ -1,4 +1,6 @@
 import {
+  cloudUiVersion,
+  cloudVersion,
   excalidrawVersion,
   juiceVersion,
   plateVersion,
@@ -20,6 +22,11 @@ export const juiceDeps = {
 
 export const selectionDeps = {
   '@udecode/plate-selection': selectionVersion,
+};
+
+export const cloudDeps = {
+  '@udecode/plate-cloud': cloudVersion,
+  '@udecode/plate-ui-cloud': cloudUiVersion,
 };
 
 export const commonDeps = {
