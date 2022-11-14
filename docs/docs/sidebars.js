@@ -26,6 +26,7 @@ module.exports = {
         'guides/store',
         'guides/multiple-editors',
         'guides/typescript',
+        'guides/cloud',
       ],
       collapsed: false,
     },
@@ -40,7 +41,6 @@ module.exports = {
           items: [
             'plugins/alignment',
             'plugins/basic-elements',
-            'plugins/cloud',
             'plugins/excalidraw',
             'plugins/horizontal-rule',
             'plugins/indent',
