@@ -17,7 +17,7 @@ Includes:
 
 ## Documentation
 
-- Check out [Plate Cloud](http://localhost:3001/docs/plugins/cloud).
+- Check out [Plate Cloud](https://plate.udecode.io/docs/plugins/cloud).
 
 ## API
 
