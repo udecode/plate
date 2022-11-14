@@ -1,17 +1,12 @@
 import { Descendant } from 'slate';
 import { Upload, UploadProgress } from '../upload/types';
+import { isStoreRef } from './getSaveValue';
 
 type MaybeUploadNode = {
   url?: unknown;
   children?: MaybeUploadNode[];
   [key: string]: unknown;
 };
-
-/**
- * Returns `true` only if the `url` passed in looks like it's not a real URL
- * but rather a reference to be used to do a lookup in our uploads store.
- */
-export const isStoreRef = (url: string) => url.startsWith('#');
 
 /**
  * Recursive part of `normalizeOrigins` function with correct types.
