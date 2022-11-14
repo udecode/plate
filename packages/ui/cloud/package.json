@@ -21,14 +21,15 @@
   "dependencies": {
     "@udecode/plate-cloud": "18.10.1",
     "@udecode/plate-core": "18.2.0",
-    "@udecode/plate-styled-components": "18.2.0"
+    "@udecode/plate-styled-components": "18.9.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.78.0",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.79.0"
+    "slate-react": ">=0.79.0",
+    "styled-components": ">=5.0.0"
   },
   "keywords": [
     "plate",
