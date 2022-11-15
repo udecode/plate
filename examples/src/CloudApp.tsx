@@ -25,7 +25,8 @@ const plugins = createMyPlugins(
     ...basicNodesPlugins,
     createCloudPlugin({
       options: {
-        apiKey: process.env.NEXT_PUBLIC_PORTIVE_API_KEY,
+        authToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1UFoyZTdlN0tUVzh0MjQifQ.eyJpYXQiOjE2Njg0NTUxMDksImV4cCI6MTcwMDAxMjcwOX0.xEznN3Wl6GqN57wsDGq0Z6giI4TvU32gvmMJUzcg2No',
         uploadStoreInitialValue, // don't need to specify this in actual app
       },
     }),
