@@ -3986,17 +3986,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-compose-refs@npm:0.1.0":
-  version: 0.1.0
-  resolution: "@radix-ui/react-compose-refs@npm:0.1.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.13.10"
-  peerDependencies:
-    react: ^16.8 || ^17.0
-  checksum: 1a0e9c054b2ca2eb7870f0eeadd155b6bfc8d692c284aa0535afb7e5797c6406df5016273bf3a3f750fc014df5927d7d6178d39d9e362651b6e2dc2d0eddca85
-  languageName: node
-  linkType: hard
-
 "@radix-ui/react-compose-refs@npm:1.0.0":
   version: 1.0.0
   resolution: "@radix-ui/react-compose-refs@npm:1.0.0"
@@ -4005,18 +3994,6 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0
   checksum: a94b99f31f21fca1598a2a0c1360df65014d2d551ce4a64f4cb202387a106223fb9921e2d343a9b12b9c28d8da490ad4b7cf071f60341f4da1593fa1cb62a3d5
-  languageName: node
-  linkType: hard
-
-"@radix-ui/react-slot@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "@radix-ui/react-slot@npm:0.1.2"
-  dependencies:
-    "@babel/runtime": "npm:^7.13.10"
-    "@radix-ui/react-compose-refs": "npm:0.1.0"
-  peerDependencies:
-    react: ^16.8 || ^17.0
-  checksum: 6bdf9f79f37e663b34aa204d1d7c7e6e4e1304a7b2a1593bc9c608e0eb8d2252ca31df3d70e5e2a8b3aeb2ec552777fc6bb0b1f9d8609f850384b76fd6242cd4
   languageName: node
   linkType: hard
 
@@ -5442,16 +5419,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-cloud@npm:18.10.1, @udecode/plate-cloud@workspace:packages/cloud":
+"@udecode/plate-cloud@npm:18.10.1, @udecode/plate-cloud@workspace:^, @udecode/plate-cloud@workspace:packages/cloud":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cloud@workspace:packages/cloud"
   dependencies:
     "@portive/client": "npm:10.0.2"
-    "@udecode/plate-core": "npm:18.2.0"
+    "@udecode/plate-core": "npm:18.9.0"
     delay: "npm:5.0.0"
     nanoid: "npm:^3.3.4"
     p-defer: "npm:^3.0"
-    zustand: "npm:^3.7.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -5491,29 +5467,6 @@ __metadata:
     slate-react: ">=0.79.0"
   languageName: unknown
   linkType: soft
-
-"@udecode/plate-core@npm:18.2.0":
-  version: 18.2.0
-  resolution: "@udecode/plate-core@npm:18.2.0"
-  dependencies:
-    "@radix-ui/react-slot": "npm:^0.1.2"
-    "@udecode/zustood": "npm:^1.1.1"
-    clsx: "npm:^1.1.1"
-    jotai: "npm:^1.7.2"
-    lodash: "npm:^4.17.21"
-    nanoid: "npm:^3.3.4"
-    react-hotkeys-hook: "npm:^3.4.6"
-    use-deep-compare: "npm:^1.1.0"
-    zustand: "npm:^3.7.2"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.78.0"
-    slate-history: ">=0.66.0"
-    slate-react: ">=0.79.0"
-  checksum: ca36ee2f8c0d81884b263c6704b3bd4b1bc2063c547c38584118194f115507082182ae49f90a82618fc15d12700445f0da76aeea76a8f04c19c7cc89f0314a81
-  languageName: node
-  linkType: hard
 
 "@udecode/plate-core@npm:18.9.0, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
@@ -5999,24 +5952,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-styled-components@npm:18.2.0":
-  version: 18.2.0
-  resolution: "@udecode/plate-styled-components@npm:18.2.0"
-  dependencies:
-    "@udecode/plate-core": "npm:18.2.0"
-    clsx: "npm:^1.1.1"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    react-is: ">=16.8.0"
-    slate: ">=0.78.0"
-    slate-history: ">=0.66.0"
-    slate-react: ">=0.79.0"
-    styled-components: ">=5.0.0"
-  checksum: 2c10f17f215db92cc241a5f900cffb9d97df420f26dd040647b4185fae8360c1af081ae3ebfa3acf2c1911c9d78edf76d06737ac9028f3b7a65da9be6ae0df1b
-  languageName: node
-  linkType: hard
-
 "@udecode/plate-styled-components@npm:18.9.0, @udecode/plate-styled-components@workspace:packages/ui/styled-components":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-styled-components@workspace:packages/ui/styled-components"
@@ -6128,15 +6063,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/cloud"
   dependencies:
+    "@portive/client": "npm:10.0.2"
     "@udecode/plate-cloud": "npm:18.10.1"
-    "@udecode/plate-core": "npm:18.2.0"
-    "@udecode/plate-styled-components": "npm:18.2.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-styled-components": "npm:18.9.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-react: ">=0.79.0"
+    styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
 
@@ -12052,6 +11989,7 @@ __metadata:
     "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
     "@udecode/plate": "workspace:^"
+    "@udecode/plate-cloud": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
