@@ -5442,7 +5442,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-cloud@npm:18.10.1, @udecode/plate-cloud@workspace:packages/cloud":
+"@udecode/plate-cloud@npm:18.10.1, @udecode/plate-cloud@workspace:^, @udecode/plate-cloud@workspace:packages/cloud":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cloud@workspace:packages/cloud"
   dependencies:
@@ -5999,24 +5999,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-styled-components@npm:18.2.0":
-  version: 18.2.0
-  resolution: "@udecode/plate-styled-components@npm:18.2.0"
-  dependencies:
-    "@udecode/plate-core": "npm:18.2.0"
-    clsx: "npm:^1.1.1"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    react-is: ">=16.8.0"
-    slate: ">=0.78.0"
-    slate-history: ">=0.66.0"
-    slate-react: ">=0.79.0"
-    styled-components: ">=5.0.0"
-  checksum: 2c10f17f215db92cc241a5f900cffb9d97df420f26dd040647b4185fae8360c1af081ae3ebfa3acf2c1911c9d78edf76d06737ac9028f3b7a65da9be6ae0df1b
-  languageName: node
-  linkType: hard
-
 "@udecode/plate-styled-components@npm:18.9.0, @udecode/plate-styled-components@workspace:packages/ui/styled-components":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-styled-components@workspace:packages/ui/styled-components"
@@ -6128,15 +6110,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-cloud@workspace:packages/ui/cloud"
   dependencies:
+    "@portive/client": "npm:10.0.2"
     "@udecode/plate-cloud": "npm:18.10.1"
-    "@udecode/plate-core": "npm:18.2.0"
-    "@udecode/plate-styled-components": "npm:18.2.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-styled-components": "npm:18.9.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-react: ">=0.79.0"
+    styled-components: ">=5.0.0"
   languageName: unknown
   linkType: soft
 
@@ -12052,6 +12036,7 @@ __metadata:
     "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
     "@udecode/plate": "workspace:^"
+    "@udecode/plate-cloud": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"

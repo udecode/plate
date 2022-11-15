@@ -11,6 +11,7 @@
     "@styled-icons/material": "10.28.0",
     "@tippyjs/react": "4.2.5",
     "@udecode/plate": "workspace:^",
+    "@udecode/plate-cloud": "workspace:^",
     "@udecode/plate-juice": "workspace:^",
     "@udecode/plate-selection": "workspace:^",
     "@udecode/plate-test-utils": "workspace:^",

@@ -42,7 +42,7 @@ const plugins = createMyPlugins(
     components: {
       ...plateUI,
       [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
-      // [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
     },
   }
 );
