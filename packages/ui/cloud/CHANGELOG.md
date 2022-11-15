@@ -1,5 +1,11 @@
 # @udecode/plate-ui-cloud
 
+## 18.10.2
+
+### Patch Changes
+
+- [#1995](https://github.com/udecode/plate/pull/1995) by [@zbeyens](https://github.com/zbeyens) – fix build
+
 ## 18.10.1
 
 ### Patch Changes
