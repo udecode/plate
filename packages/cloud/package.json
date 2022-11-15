@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-cloud",
-  "version": "18.10.1",
+  "version": "18.10.2",
   "description": "Plate plugin to add cloud based image and attachment uploads",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
