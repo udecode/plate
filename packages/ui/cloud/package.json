@@ -1,13 +1,13 @@
 {
   "name": "@udecode/plate-ui-cloud",
-  "version": "18.10.0",
+  "version": "18.10.1",
   "description": "UI for Plate Cloud image and attachments for use with official Plate cloud services",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/ui/nodes/horizontal-rule"
+    "directory": "packages/ui/cloud"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-cloud": "18.10.0",
+    "@udecode/plate-cloud": "18.10.1",
     "@udecode/plate-core": "18.2.0",
     "@udecode/plate-styled-components": "18.2.0"
   },
