@@ -21,18 +21,17 @@ You can start by [getting a free Portive API key](https://admin.portive.com/).
 
 ```bash npm2yarn
 npm install @udecode/plate
-# or
 npm install @udecode/plate-cloud
 npm install @udecode/plate-ui-cloud
 ```
 
 ### Usage
 
+To use Plate Cloud, you will need to [get a free Portive API key](https://www.portive.com/).
 
+To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
 
-
-
-import { CloudSandpack } from "./CloudSandpack";
+import { CloudSandpack } from './CloudSandpack';
 
 <CloudSandpack />
 
@@ -43,11 +42,13 @@ import { CloudSandpack } from "./CloudSandpack";
  * CloudPlugin options
  */
 export type CloudPlugin = {
-  /**
+    /**
    * Options for connecting to the official Portive Cloud service
+   *
+   * Either `apiKey` or `authToken` must be provided
    */
-  apiKey?: Resolvable<string>;
-  authToken?: Resolvable<string>;
+  apiKey?: string | () => string | () => Promise<string>;
+  authToken?: string | () => string | () => Promise<string>;
   apiOrigin?: string;
   /**
    * Only used for testing to prepopulate the current state of uploads
