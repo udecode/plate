@@ -14,12 +14,13 @@ export const mentionOnKeyDownHandler: <V extends Value>(
   editor
 ) => (event) => {
   if (isHotkey('escape', event)) {
-    event.preventDefault();
     const currentMentionInput = findMentionInput(editor)!;
     if (currentMentionInput) {
+      event.preventDefault();
       removeMentionInput(editor, currentMentionInput[1]);
+      return true;
     }
-    return true;
+    return false;
   }
 
   return moveSelectionByOffset(editor, options)(event);
