@@ -1,9 +1,9 @@
 import { PlateEditor, Value } from '@udecode/plate-core';
-import { KeyboardEventHandler } from '../../../mention/src/handlers/KeyboardEventHandler';
 import {
+  KeyboardEventHandler,
   moveSelectionByOffset,
   MoveSelectionByOffsetOptions,
-} from '../../../mention/src/handlers/moveSelectionByOffset';
+} from '@udecode/plate-mention';
 
 export const emojiOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
