@@ -5490,6 +5490,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-emoji@workspace:packages/nodes/emoji":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
+  dependencies:
+    "@udecode/plate-combobox": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-mention": "npm:18.9.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-find-replace@npm:18.9.0, @udecode/plate-find-replace@workspace:packages/decorators/find-replace":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-find-replace@workspace:packages/decorators/find-replace"
@@ -6142,6 +6158,24 @@ __metadata:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+    styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji"
+  dependencies:
+    "@udecode/plate-combobox": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-styled-components": "npm:18.9.0"
+    "@udecode/plate-ui-combobox": "npm:18.9.0"
+  peerDependencies:
+    react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.78.0"
     slate-history: ">=0.66.0"

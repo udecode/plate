@@ -12,6 +12,7 @@ import { commonFiles } from './common/code-commonFiles';
 import { cursorOverlayFiles } from './cursor-overlay/code-cursorOverlayFiles';
 import { dndFiles } from './dnd/code-dndFiles';
 import { editableVoidsFiles } from './editable-voids/code-editableVoidsFiles';
+import { emojiFiles } from './emoji/code-emojiFiles';
 import { excalidrawFiles } from './excalidraw/code-excalidrawFiles';
 import { exitBreakFiles } from './exit-break/code-exitBreakFiles';
 import { findReplaceFiles } from './find-replace/code-findReplaceFiles';
@@ -60,6 +61,7 @@ export const rootFiles = {
   ...cursorOverlayFiles,
   ...dndFiles,
   ...editableVoidsFiles,
+  ...emojiFiles,
   ...excalidrawFiles,
   ...exitBreakFiles,
   ...findReplaceFiles,
