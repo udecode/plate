@@ -32,4 +32,6 @@ export const triggerFloatingLinkEdit = <V extends Value>(
   floatingLinkActions.text(text);
 
   floatingLinkActions.isEditing(true);
+
+  return true;
 };

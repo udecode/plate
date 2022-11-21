@@ -38,11 +38,9 @@ export const useFloatingLinkInsert = ({
   useHotkeys(
     triggerFloatingLinkHotkeys!,
     (e) => {
-      e.preventDefault();
-
-      triggerFloatingLinkInsert(editor, {
-        focused,
-      });
+      if (triggerFloatingLinkInsert(editor, { focused })) {
+        e.preventDefault();
+      }
     },
     {
       enableOnContentEditable: true,
