@@ -3,6 +3,7 @@ import {
   createComboboxPlugin,
   createEmojiPlugin,
   EmojiCombobox,
+  EmojiComboboxStyles,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
@@ -25,6 +26,6 @@ export default () => (
     initialValue={emojiValue}
     onChange={(e) => console.info(e)}
   >
-    <EmojiCombobox />
+    <EmojiCombobox styles={EmojiComboboxStyles()} />
   </Plate>
 );
