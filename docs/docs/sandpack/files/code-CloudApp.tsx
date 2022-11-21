@@ -25,6 +25,12 @@ const plugins = createMyPlugins(
     ...basicNodesPlugins,
     createCloudPlugin({
       options: {
+        /**
+         * You can use either a Portive API Key \`apiKey\` or an Auth Token
+         * \`authToken\` generated from the API Key.
+         * https://www.portive.com/docs/auth/intro
+         */
+        // apiKey: 'PRTV_xxxx_xxxx'
         authToken:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1UFoyZTdlN0tUVzh0MjQifQ.eyJpYXQiOjE2Njg0NTUxMDksImV4cCI6MTcwMDAxMjcwOX0.xEznN3Wl6GqN57wsDGq0Z6giI4TvU32gvmMJUzcg2No',
         uploadStoreInitialValue, // don't need to specify this in actual app
