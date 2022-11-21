@@ -26,13 +26,13 @@ export const getEmojiOnSelectItem = <
 
     withoutMergingHistory(editor, () =>
       deleteText(editor, {
-        distance: emojiTriggeringController.getTextSize(),
+        distance: emojiTriggeringController!.getTextSize(),
         reverse: true,
       })
     );
-    emojiTriggeringController.reset();
+    emojiTriggeringController!.reset();
 
-    const value = createEmoji(item);
+    const value = createEmoji!(item);
     insertText(editor, value);
 
     // move the selection after the element

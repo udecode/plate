@@ -10,7 +10,7 @@ import {
 import { Combobox, ComboboxProps } from '@udecode/plate-ui-combobox';
 import { EmojiComboboxItem } from './EmojiComboboxItem';
 
-export interface EmojiComboboxProps<TData extends Data = NoData>
+export interface TEmojiCombobox<TData extends Data = NoData>
   extends Partial<ComboboxProps<TData>> {
   pluginKey?: string;
   onSelectItem?: ComboboxOnSelectItem<TData> | null;
@@ -20,9 +20,7 @@ export const useEmojiCombobox = (pluginKey: string) => {
   const editor = usePlateEditorRef();
   const { trigger } = getPluginOptions<EmojiPlugin>(editor, pluginKey);
 
-  const onSelectItem: ComboboxOnSelectItem<Data> = getEmojiOnSelectItem({
-    key: pluginKey,
-  });
+  const onSelectItem = getEmojiOnSelectItem({ key: pluginKey });
 
   return {
     trigger: trigger!,
@@ -34,7 +32,7 @@ export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
   pluginKey = ELEMENT_EMOJI,
   id = pluginKey,
   ...props
-}: EmojiComboboxProps<TData>) => {
+}: TEmojiCombobox<TData>) => {
   const { trigger, onSelectItem } = useEmojiCombobox(pluginKey);
 
   return (

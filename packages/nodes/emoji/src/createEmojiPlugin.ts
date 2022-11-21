@@ -2,7 +2,7 @@ import { createPluginFactory } from '@udecode/plate-core';
 import { EmojiCombobox } from '@udecode/plate-ui-emoji';
 import { ELEMENT_EMOJI, ELEMENT_EMOJI_INPUT, TRIGGER } from './constants';
 import { getOnKeyDownEmoji } from './handlers';
-import { EmojiPlugin } from './types';
+import { EmojiComboboxProps, EmojiPlugin } from './types';
 import { EmojiTriggeringController } from './utils';
 import { withEmoji } from './withEmoji';
 
@@ -38,5 +38,5 @@ export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
       emojiTriggeringController,
     },
   }),
-  renderAfterEditable: EmojiCombobox,
+  renderAfterEditable: EmojiCombobox as EmojiComboboxProps,
 });
