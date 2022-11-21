@@ -19,9 +19,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@emoji-mart/data": "1.0.8",
     "@udecode/plate-combobox": "18.9.0",
-    "@udecode/plate-core": "18.9.0",
-    "@udecode/plate-mention": "18.9.0"
+    "@udecode/plate-core": "18.9.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
