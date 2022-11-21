@@ -26,6 +26,6 @@ export default () => (
     initialValue={emojiValue}
     onChange={(e) => console.info(e)}
   >
-    <EmojiCombobox styles={EmojiComboboxStyles()} />
+    <EmojiCombobox />
   </Plate>
 );
