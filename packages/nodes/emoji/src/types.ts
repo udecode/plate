@@ -6,6 +6,7 @@ export interface CreateEmoji<TData extends Data> {
 }
 
 export interface EmojiPluginOptions<TData extends Data = NoData> {
+  trigger: string;
   createEmoji: CreateEmoji<TData>;
   emojiTriggeringController: IEmojiTriggeringController;
   id?: string;
