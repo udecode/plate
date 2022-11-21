@@ -24,6 +24,7 @@ export class IndexSearch {
 
   constructor(protected data: IndexSearchData) {
     this.keys = Object.keys(data.emojis);
+    // console.log('data.emojis', data);
   }
 
   search(input: string) {
@@ -34,6 +35,7 @@ export class IndexSearch {
   get() {
     return this.result.map((key) => {
       const emoji = this.data.emojis[key];
+      // console.log('emoji', emoji);
       // return {
       //   id: emoji.id,
       //   name: emoji.name,
@@ -41,6 +43,7 @@ export class IndexSearch {
       // };
       return {
         key: emoji.id,
+        emoji: emoji.skins[0].native,
         text: emoji.skins[0].native,
       };
     });

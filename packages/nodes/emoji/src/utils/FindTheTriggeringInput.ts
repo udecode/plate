@@ -5,40 +5,51 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-core';
-import { BaseRange } from 'slate';
+import { BasePoint, BaseRange } from 'slate';
 import { IEmojiTriggeringController } from './EmojiTriggeringController';
+
+const getNextPoint = <V extends Value>(
+  editor: PlateEditor<V>,
+  endPoint: BasePoint
+) =>
+  getPointBefore(editor, endPoint, {
+    unit: 'character',
+    distance: 1,
+  });
+
+const getFoundText = <V extends Value>(
+  editor: PlateEditor<V>,
+  start: BaseRange,
+  end?: BasePoint
+) => getEditorString(editor, getRange(editor, start, end));
+
+const isBreakingCharInText = (text: string) => /^\s/.test(text);
 
 export const FindTheTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
   emojiTriggeringController: IEmojiTriggeringController
 ) => (text = '') => {
   const selection = editor.selection as BaseRange;
+  const startPoint = editor.selection as BaseRange;
   let currentText = text;
 
   let endPoint = selection.anchor;
-  let beforePoint;
-  let i = emojiTriggeringController.getOptions().maxTextToSearch;
+  let nextPoint;
+  let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
 
   do {
     emojiTriggeringController.setText(currentText);
     if (emojiTriggeringController.hasTriggeringMark) break;
 
-    beforePoint = getPointBefore(editor, endPoint, {
-      unit: 'character',
-      distance: 1,
-    });
+    nextPoint = getNextPoint(editor, endPoint);
+    const foundText = getFoundText(editor, startPoint, nextPoint);
 
-    const foundText = getEditorString(
-      editor,
-      getRange(editor, selection, beforePoint)
-    );
-
-    endPoint = beforePoint!;
+    endPoint = nextPoint!;
     currentText = `${foundText}${text}`;
 
-    if (/^\s/.test(foundText)) {
+    if (isBreakingCharInText(foundText)) {
       emojiTriggeringController.reset();
       break;
     }
-  } while (--i > 0);
+  } while (--repeat > 0);
 };
