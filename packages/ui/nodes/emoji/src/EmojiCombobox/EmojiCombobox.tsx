@@ -16,17 +16,14 @@ export interface EmojiComboboxProps<TData extends Data = NoData>
 
 export const useEmojiCombobox = (pluginKey: string) => {
   const editor = usePlateEditorRef();
-
   const { trigger } = getPluginOptions<EmojiPlugin>(editor, pluginKey);
 
-  const onSelectItem = () => {
-    return getEmojiOnSelectItem({
-      key: pluginKey,
-    });
-  };
+  const onSelectItem: ComboboxOnSelectItem<Data> = getEmojiOnSelectItem({
+    key: pluginKey,
+  });
 
   return {
-    trigger: trigger ?? ':',
+    trigger: trigger!,
     onSelectItem,
   };
 };
