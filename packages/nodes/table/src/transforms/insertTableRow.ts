@@ -20,8 +20,18 @@ export const insertTableRow = <V extends Value>(
   {
     header,
     fromRow,
+    at,
     disableSelect,
-  }: { header?: boolean; fromRow?: Path; disableSelect?: boolean } = {}
+  }: {
+    header?: boolean;
+    fromRow?: Path;
+    /**
+     * Exact path of the row to insert the column at.
+     * Will overrule `fromRow`.
+     */
+    at?: Path;
+    disableSelect?: boolean;
+  } = {}
 ) => {
   const trEntry = fromRow
     ? findNode(editor, {
@@ -55,7 +65,7 @@ export const insertTableRow = <V extends Value>(
         newCellChildren,
       }),
       {
-        at: Path.next(trPath),
+        at: Path.isPath(at) ? at : Path.next(trPath),
       }
     );
   });
@@ -67,8 +77,11 @@ export const insertTableRow = <V extends Value>(
     if (!cellEntry) return;
 
     const [, nextCellPath] = cellEntry;
-
-    nextCellPath[nextCellPath.length - 2] += 1;
+    if (Path.isPath(at)) {
+      nextCellPath[nextCellPath.length - 2] = at[at.length - 2];
+    } else {
+      nextCellPath[nextCellPath.length - 2] += 1;
+    }
 
     select(editor, nextCellPath);
   }
