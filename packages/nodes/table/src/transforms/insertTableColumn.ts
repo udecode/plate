@@ -21,6 +21,7 @@ export const insertTableColumn = <V extends Value>(
   {
     disableSelect,
     fromCell,
+    at,
     header,
   }: {
     header?: boolean;
@@ -29,6 +30,12 @@ export const insertTableColumn = <V extends Value>(
      * Path of the cell to insert the column from.
      */
     fromCell?: Path;
+
+    /**
+     * Exact path of the cell to insert the column at.
+     * Will overrule `fromCell`.
+     */
+    at?: Path;
 
     /**
      * Disable selection after insertion.
@@ -56,8 +63,16 @@ export const insertTableColumn = <V extends Value>(
 
   const [tableNode, tablePath] = tableEntry;
 
-  const nextCellPath = Path.next(cellPath);
-  const nextColIndex = cellPath[cellPath.length - 1] + 1;
+  let nextCellPath: Path;
+  let nextColIndex: number;
+
+  if (Path.isPath(at)) {
+    nextCellPath = at;
+    nextColIndex = at[at.length - 1];
+  } else {
+    nextCellPath = Path.next(cellPath);
+    nextColIndex = cellPath[cellPath.length - 1] + 1;
+  }
   const currentRowIndex = cellPath[cellPath.length - 2];
 
   const { newCellChildren } = getPluginOptions<TablePlugin, V>(
@@ -69,7 +84,11 @@ export const insertTableColumn = <V extends Value>(
     // for each row, insert a new cell
     tableNode.children.forEach((row, rowIndex) => {
       const insertCellPath = [...nextCellPath];
-      insertCellPath[cellPath.length - 2] = rowIndex;
+      if (Path.isPath(at)) {
+        insertCellPath[at.length - 2] = rowIndex;
+      } else {
+        insertCellPath[cellPath.length - 2] = rowIndex;
+      }
 
       const isHeaderRow =
         header === undefined
