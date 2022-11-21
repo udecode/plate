@@ -7,8 +7,8 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { IndexSearch } from './utils/IndexSearch';
-import { EmojiPluginOptions } from './types';
-import { FindTheTriggeringInput } from './utils';
+import { EmojiPlugin } from './types';
+import { getFindTriggeringInput } from './utils';
 
 export const withEmoji = <
   V extends Value = Value,
@@ -17,12 +17,12 @@ export const withEmoji = <
   editor: E,
   {
     options: { id, emojiTriggeringController },
-  }: WithPlatePlugin<EmojiPluginOptions, V, E>
+  }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
   const { apply, insertText } = editor;
   const indexSearch = new IndexSearch(data);
 
-  const findTheTriggeringInput = FindTheTriggeringInput(
+  const findTheTriggeringInput = getFindTriggeringInput(
     editor,
     emojiTriggeringController
   );

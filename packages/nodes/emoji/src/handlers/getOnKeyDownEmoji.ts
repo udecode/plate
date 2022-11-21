@@ -44,7 +44,7 @@ const moveSelectionByOffset: <V extends Value>(
 };
 // ------>
 
-export const emojiOnKeyDownHandler: <V extends Value>(
+export const getOnKeyDownEmoji: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
 ) => (editor: PlateEditor<V>) => KeyboardEventHandler = (options) => (
   editor

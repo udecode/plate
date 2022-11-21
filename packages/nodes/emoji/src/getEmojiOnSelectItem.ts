@@ -9,7 +9,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { ELEMENT_EMOJI } from './constants';
-import { EmojiItemData, EmojiPluginOptions } from './types';
+import { EmojiItemData, EmojiPlugin } from './types';
 
 export const getEmojiOnSelectItem = <
   TData extends EmojiItemData = EmojiItemData
@@ -18,7 +18,7 @@ export const getEmojiOnSelectItem = <
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
   const {
     options: { createEmoji, emojiTriggeringController },
-  } = getPlugin<EmojiPluginOptions>(editor as any, key);
+  } = getPlugin<EmojiPlugin>(editor as any, key);
 
   withoutNormalizing(editor, () => {
     // console.log('item', item);

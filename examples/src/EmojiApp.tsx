@@ -24,7 +24,5 @@ export default () => (
     plugins={plugins}
     initialValue={emojiValue}
     onChange={(e) => console.info(e)}
-  >
-    <EmojiCombobox />
-  </Plate>
+  />
 );

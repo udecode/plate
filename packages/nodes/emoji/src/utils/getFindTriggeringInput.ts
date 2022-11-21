@@ -25,7 +25,7 @@ const getFoundText = <V extends Value>(
 
 const isBreakingCharInText = (text: string) => /^\s/.test(text);
 
-export const FindTheTriggeringInput = <V extends Value>(
+export const getFindTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
   emojiTriggeringController: IEmojiTriggeringController
 ) => (text = '') => {

@@ -3,5 +3,5 @@
  */
 
 export * from './EmojiTriggeringController';
-export * from './FindTheTriggeringInput';
+export * from './getFindTriggeringInput';
 export * from './IndexSearch';

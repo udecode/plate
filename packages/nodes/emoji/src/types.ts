@@ -12,9 +12,7 @@ export interface CreateEmoji<TData extends EmojiItemData = EmojiItemData> {
   (data: TComboboxItem<TData>): string;
 }
 
-export interface EmojiPluginOptions<
-  TData extends EmojiItemData = EmojiItemData
-> {
+export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
   trigger: string;
   createEmoji: CreateEmoji<TData>;
   emojiTriggeringController: IEmojiTriggeringController;
