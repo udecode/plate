@@ -1,13 +1,17 @@
 import React from 'react';
-import { TComboboxItem } from '@udecode/plate-combobox';
 import { EmojiItemData } from '@udecode/plate-emoji';
+import { ComboboxItemProps } from '@udecode/plate-ui-combobox';
 
 export const EmojiComboboxItem = ({
   item,
-}: TComboboxItem<EmojiItemData>): JSX.Element => {
+}: ComboboxItemProps<EmojiItemData>): JSX.Element => {
+  const {
+    data: { id, emoji },
+  } = item;
+
   return (
     <div>
-      {item.data.emoji} :{item.data.id}:
+      {emoji} :{id}:
     </div>
   );
 };

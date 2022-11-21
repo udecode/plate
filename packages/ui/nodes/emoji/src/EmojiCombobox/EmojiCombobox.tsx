@@ -3,6 +3,7 @@ import { ComboboxOnSelectItem, Data, NoData } from '@udecode/plate-combobox';
 import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-core';
 import {
   ELEMENT_EMOJI,
+  EmojiItemData,
   EmojiPluginOptions,
   getEmojiOnSelectItem,
 } from '@udecode/plate-emoji';
@@ -29,7 +30,7 @@ export const useEmojiCombobox = (pluginKey: string) => {
   };
 };
 
-export const EmojiCombobox = <TData extends Data = NoData>({
+export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
   pluginKey = ELEMENT_EMOJI,
   id = pluginKey,
   ...props
