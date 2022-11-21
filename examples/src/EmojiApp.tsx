@@ -3,7 +3,6 @@ import {
   createComboboxPlugin,
   createEmojiPlugin,
   EmojiCombobox,
-  EmojiComboboxStyles,
   Plate,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
