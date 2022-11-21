@@ -87,10 +87,11 @@ export const useFloatingLinkEdit = ({
   useHotkeys(
     triggerFloatingLinkHotkeys!,
     (e) => {
-      e.preventDefault();
-
-      if (floatingLinkSelectors.mode() === 'edit') {
-        triggerFloatingLinkEdit(editor);
+      if (
+        floatingLinkSelectors.mode() === 'edit' &&
+        triggerFloatingLinkEdit(editor)
+      ) {
+        e.preventDefault();
       }
     },
     {
