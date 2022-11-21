@@ -1,71 +1,45 @@
 import {
   comboboxActions,
   ComboboxOnSelectItem,
-  comboboxSelectors,
   Data,
   NoData,
 } from '@udecode/plate-combobox';
 import {
-  getBlockAbove,
+  deleteText,
   getPlugin,
-  insertNodes,
   insertText,
-  isEndPoint,
   moveSelection,
   PlatePluginKey,
-  removeNodes,
-  select,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { ELEMENT_EMOJI, ELEMENT_EMOJI_INPUT } from './constants';
-import { EmojiPlugin, TEmojiElement } from './types';
+import { ELEMENT_EMOJI } from './constants';
+import { EmojiPluginOptions } from './types';
 
 export const getEmojiOnSelectItem = <TData extends Data = NoData>({
   key = ELEMENT_EMOJI,
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
-  const targetRange = comboboxSelectors.targetRange();
-  if (!targetRange) return;
-
   const {
-    type,
-    options: { insertSpaceAfterEmoji, createEmojiNode },
-  } = getPlugin<EmojiPlugin>(editor as any, key);
-
-  const pathAbove = getBlockAbove(editor)?.[1];
-  const isBlockEnd = () =>
-    editor.selection &&
-    pathAbove &&
-    isEndPoint(editor, editor.selection.anchor, pathAbove);
+    options: { createEmoji, emojiTriggeringController },
+  } = getPlugin<EmojiPluginOptions>(editor as any, key);
 
   withoutNormalizing(editor, () => {
-    // Selectors are sensitive to operations, it's better to create everything
-    // before the editor state is changed. For example, asking for text after
-    // removeNodes below will return null.
-    const props = createEmojiNode!(item, {
-      search: comboboxSelectors.text() ?? '',
-    });
-
-    select(editor, targetRange);
+    // console.log('item', item);
+    // console.log('EC ==>', JSON.stringify(emojiTriggeringController, null, 2));
 
     withoutMergingHistory(editor, () =>
-      removeNodes(editor, {
-        match: (node) => node.type === ELEMENT_EMOJI_INPUT,
+      deleteText(editor, {
+        distance: emojiTriggeringController.getTextSize(),
+        reverse: true,
       })
     );
+    emojiTriggeringController.reset();
 
-    insertNodes<TEmojiElement>(editor, {
-      type,
-      children: [{ text: '' }],
-      ...props,
-    } as TEmojiElement);
+    const value = createEmoji(item);
+    insertText(editor, value);
 
     // move the selection after the element
     moveSelection(editor, { unit: 'offset' });
-
-    if (isBlockEnd() && insertSpaceAfterEmoji) {
-      insertText(editor, ' ');
-    }
   });
 
   return comboboxActions.reset();

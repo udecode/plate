@@ -1,23 +1,22 @@
 import { createPluginFactory } from '@udecode/plate-core';
 import { ELEMENT_EMOJI, ELEMENT_EMOJI_INPUT } from './constants';
 import { emojiOnKeyDownHandler } from './handlers';
-import { EmojiPlugin } from './types';
-// import { isSelectionInMentionInput } from './queries';
-// import { withMention } from './withMention';
+import { EmojiPluginOptions } from './types';
+import { EmojiTriggeringController } from './utils';
+import { withEmoji } from './withEmoji';
 
-export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
+export const createEmojiPlugin = createPluginFactory<EmojiPluginOptions>({
   key: ELEMENT_EMOJI,
   isElement: true,
   isInline: true,
   isVoid: true,
   handlers: {
     onKeyDown: emojiOnKeyDownHandler(),
-    // onKeyDown: emojiOnKeyDownHandler({ query: isSelectionInMentionInput }),
   },
-  // withOverrides: withMention,
+  withOverrides: withEmoji,
   options: {
-    trigger: ':',
-    createEmojiNode: (item) => ({ value: item.text }),
+    createEmoji: (item) => item.text,
+    emojiTriggeringController: new EmojiTriggeringController(':'),
   },
   plugins: [
     {
@@ -26,9 +25,11 @@ export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
       isInline: true,
     },
   ],
-  then: (_, { key }) => ({
+  then: (_, { key, options: { createEmoji, emojiTriggeringController } }) => ({
     options: {
       id: key,
+      createEmoji,
+      emojiTriggeringController,
     },
   }),
 });

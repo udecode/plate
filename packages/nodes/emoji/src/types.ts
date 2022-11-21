@@ -1,28 +1,12 @@
 import { Data, NoData, TComboboxItem } from '@udecode/plate-combobox';
-import { TElement, TNodeProps } from '@udecode/plate-core';
+import { IEmojiTriggeringController } from './utils';
 
-export interface TEmojiElement extends TElement {
-  value: string;
+export interface CreateEmoji<TData extends Data> {
+  (item: TComboboxItem<TData>): string;
 }
 
-export interface TEmojiInputElement extends TElement {
-  trigger: string;
-}
-
-export interface CreateEmojiNode<TData extends Data> {
-  (
-    item: TComboboxItem<TData>,
-    meta: CreateEmojiNodeMeta
-  ): TNodeProps<TEmojiElement>;
-}
-
-export interface CreateEmojiNodeMeta {
-  search: string;
-}
-
-export interface EmojiPlugin<TData extends Data = NoData> {
-  createEmojiNode?: CreateEmojiNode<TData>;
+export interface EmojiPluginOptions<TData extends Data = NoData> {
+  createEmoji: CreateEmoji<TData>;
+  emojiTriggeringController: IEmojiTriggeringController;
   id?: string;
-  trigger?: string;
-  insertSpaceAfterEmoji?: boolean;
 }
