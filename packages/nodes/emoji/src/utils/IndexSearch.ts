@@ -1,3 +1,6 @@
+import { TComboboxItem } from '@udecode/plate-combobox';
+import { EmojiItemData } from '../types';
+
 type Skins = {
   unified: string;
   native: string;
@@ -24,7 +27,6 @@ export class IndexSearch {
 
   constructor(protected data: IndexSearchData) {
     this.keys = Object.keys(data.emojis);
-    // console.log('data.emojis', data);
   }
 
   search(input: string) {
@@ -33,19 +35,19 @@ export class IndexSearch {
   }
 
   get() {
-    return this.result.map((key) => {
-      const emoji = this.data.emojis[key];
-      // console.log('emoji', emoji);
-      // return {
-      //   id: emoji.id,
-      //   name: emoji.name,
-      //   native: emoji.skins[0].native,
-      // };
-      return {
-        key: emoji.id,
+    return this.result.map((key) => this.getEmoji(this.data.emojis[key]));
+  }
+
+  private getEmoji(emoji: Emoji): TComboboxItem<EmojiItemData> {
+    return {
+      key: emoji.id,
+      text: emoji.name,
+      data: {
+        id: emoji.id,
         emoji: emoji.skins[0].native,
-        text: emoji.skins[0].native,
-      };
-    });
+        name: emoji.name,
+        text: emoji.name,
+      },
+    };
   }
 }

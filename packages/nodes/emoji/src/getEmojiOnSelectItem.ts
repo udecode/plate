@@ -1,9 +1,4 @@
-import {
-  comboboxActions,
-  ComboboxOnSelectItem,
-  Data,
-  NoData,
-} from '@udecode/plate-combobox';
+import { comboboxActions, ComboboxOnSelectItem } from '@udecode/plate-combobox';
 import {
   deleteText,
   getPlugin,
@@ -14,9 +9,11 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { ELEMENT_EMOJI } from './constants';
-import { EmojiPluginOptions } from './types';
+import { EmojiItemData, EmojiPluginOptions } from './types';
 
-export const getEmojiOnSelectItem = <TData extends Data = NoData>({
+export const getEmojiOnSelectItem = <
+  TData extends EmojiItemData = EmojiItemData
+>({
   key = ELEMENT_EMOJI,
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
   const {

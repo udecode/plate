@@ -16,7 +16,7 @@ export const createEmojiPlugin = createPluginFactory<EmojiPluginOptions>({
   withOverrides: withEmoji,
   options: {
     trigger: TRIGGER,
-    createEmoji: (item) => item.text,
+    createEmoji: (item) => item.data.emoji,
     emojiTriggeringController: new EmojiTriggeringController(TRIGGER),
   },
   plugins: [

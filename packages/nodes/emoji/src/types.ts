@@ -1,11 +1,20 @@
-import { Data, NoData, TComboboxItem } from '@udecode/plate-combobox';
+import { TComboboxItem } from '@udecode/plate-combobox';
 import { IEmojiTriggeringController } from './utils';
 
-export interface CreateEmoji<TData extends Data> {
-  (item: TComboboxItem<TData>): string;
+export type EmojiItemData = {
+  id: string;
+  emoji: string;
+  name: string;
+  text: string;
+};
+
+export interface CreateEmoji<TData extends EmojiItemData = EmojiItemData> {
+  (data: TComboboxItem<TData>): string;
 }
 
-export interface EmojiPluginOptions<TData extends Data = NoData> {
+export interface EmojiPluginOptions<
+  TData extends EmojiItemData = EmojiItemData
+> {
   trigger: string;
   createEmoji: CreateEmoji<TData>;
   emojiTriggeringController: IEmojiTriggeringController;
