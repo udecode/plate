@@ -25,8 +25,8 @@ export class IndexSearch {
   protected keys: string[] = [];
   protected result: string[] = [];
 
-  constructor(protected data: IndexSearchData) {
-    this.keys = Object.keys(data.emojis);
+  constructor(protected data?: IndexSearchData) {
+    if (data) this.keys = Object.keys(data.emojis);
   }
 
   search(input: string) {
@@ -35,7 +35,9 @@ export class IndexSearch {
   }
 
   get() {
-    return this.result.map((key) => this.getEmoji(this.data.emojis[key]));
+    return this.data
+      ? this.result.map((key) => this.getEmoji(this.data!.emojis[key]))
+      : [];
   }
 
   private getEmoji(emoji: Emoji): TComboboxItem<EmojiItemData> {
