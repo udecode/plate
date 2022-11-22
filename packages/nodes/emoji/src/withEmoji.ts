@@ -1,4 +1,4 @@
-import data from '@emoji-mart/data';
+// import data from '@emoji-mart/data';
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
   isCollapsed,
@@ -19,7 +19,7 @@ export const withEmoji = <
     options: { id, emojiTriggeringController },
   }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
-  const indexSearch = new IndexSearch(data);
+  const indexSearch = new IndexSearch([]);
 
   const findTheTriggeringInput = getFindTriggeringInput(
     editor,
