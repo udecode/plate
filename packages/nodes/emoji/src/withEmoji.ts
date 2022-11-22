@@ -1,4 +1,3 @@
-// import data from '@emoji-mart/data';
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
   isCollapsed,

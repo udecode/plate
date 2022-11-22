@@ -1,5 +1,6 @@
 import { TComboboxItem } from '@udecode/plate-combobox';
 import { EmojiItemData } from '../types';
+import { fetchEmojiData } from './fetchData';
 
 type Skins = {
   unified: string;
@@ -24,9 +25,15 @@ type IndexSearchData = {
 export class IndexSearch {
   protected keys: string[] = [];
   protected result: string[] = [];
+  protected data?: IndexSearchData;
 
-  constructor(protected data?: IndexSearchData) {
-    if (data) this.keys = Object.keys(data.emojis);
+  constructor() {
+    fetchEmojiData().then((data) => {
+      if (data) {
+        this.data = data;
+        this.keys = Object.keys(data.emojis);
+      }
+    });
   }
 
   search(input: string) {
