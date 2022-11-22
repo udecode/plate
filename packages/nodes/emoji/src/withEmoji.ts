@@ -19,41 +19,36 @@ export const withEmoji = <
     options: { id, emojiTriggeringController },
   }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
-  const { apply, insertText } = editor;
   const indexSearch = new IndexSearch(data);
 
   const findTheTriggeringInput = getFindTriggeringInput(
     editor,
-    emojiTriggeringController
+    emojiTriggeringController!
   );
 
+  const { apply, insertText } = editor;
+
   editor.insertText = (text) => {
-    // console.log('==========>>>>>> INSERT TEXT:', text);
     const { selection } = editor;
     if (!selection || !isCollapsed(selection)) return insertText(text);
 
     findTheTriggeringInput(text);
-    // console.log('emojiTriggeringController', emojiTriggeringController);
-    // console.log('EC ==>', JSON.stringify(emojiTriggeringController, null, 2));
 
     return insertText(text);
   };
 
   editor.apply = (operation) => {
-    // console.log('==========>>>>>> APPLY ->');
-    // console.log(operation);
-
     apply(operation);
 
     switch (operation.type) {
       case 'set_selection':
-        emojiTriggeringController.reset();
+        emojiTriggeringController!.reset();
         comboboxActions.reset();
         break;
 
       case 'insert_text':
-        if (emojiTriggeringController.isTriggering) {
-          indexSearch.search(emojiTriggeringController.getText());
+        if (emojiTriggeringController!.isTriggering) {
+          indexSearch.search(emojiTriggeringController!.getText());
           comboboxActions.items(indexSearch.get());
           comboboxActions.open({
             activeId: id!,
@@ -65,8 +60,8 @@ export const withEmoji = <
 
       case 'remove_text':
         findTheTriggeringInput();
-        if (emojiTriggeringController.isTriggering) {
-          indexSearch.search(emojiTriggeringController.getText());
+        if (emojiTriggeringController!.isTriggering) {
+          indexSearch.search(emojiTriggeringController!.getText());
           comboboxActions.items(indexSearch.get());
           comboboxActions.open({
             activeId: id!,
@@ -76,7 +71,7 @@ export const withEmoji = <
           break;
         }
 
-        emojiTriggeringController.reset();
+        emojiTriggeringController!.reset();
         comboboxActions.reset();
         break;
     }

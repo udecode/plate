@@ -21,9 +21,6 @@ export const getEmojiOnSelectItem = <
   } = getPlugin<EmojiPlugin>(editor as any, key);
 
   withoutNormalizing(editor, () => {
-    // console.log('item', item);
-    // console.log('EC ==>', JSON.stringify(emojiTriggeringController, null, 2));
-
     withoutMergingHistory(editor, () =>
       deleteText(editor, {
         distance: emojiTriggeringController!.getTextSize(),
