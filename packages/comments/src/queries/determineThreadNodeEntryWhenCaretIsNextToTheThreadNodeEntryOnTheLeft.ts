@@ -3,13 +3,16 @@ import {
   getPluginType,
   getPointAfter,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { TThreadElement } from '../types';
 
-export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft = (
-  editor: PlateEditor
+export const determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft = <
+  V extends Value = Value
+>(
+  editor: PlateEditor<V>
 ) => {
   let threadNodeEntry;
 

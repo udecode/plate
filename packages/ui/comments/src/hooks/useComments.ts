@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  changeSelectionToBeBasedOnTheNextNode,
   Comment,
   deleteThread,
   determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft,
   ELEMENT_THREAD,
   getAboveThreadNode,
   getThreadNodeEntries,
+  rebaseSelectionFromNextNode,
   replaceComment,
   Thread,
   TThreadElement,
-  upsertThreadAtSelection,
+  upsertThread,
   User,
 } from '@udecode/plate-comments';
 import {
@@ -141,7 +141,7 @@ export const useComments = (
   const onCancelCreateThread = useCallback(() => {
     if (editor && newThreadThreadNodeEntry) {
       const [, path] = newThreadThreadNodeEntry;
-      deleteThread(editor, path);
+      deleteThread(editor, { at: path });
       setNewThreadThreadNodeEntry(null);
     }
   }, [editor, newThreadThreadNodeEntry]);
@@ -162,7 +162,7 @@ export const useComments = (
     if (!editor || !thread) return;
     const newThread = cloneDeep(thread);
     newThread.isResolved = true;
-    upsertThreadAtSelection(editor, newThread);
+    upsertThread(editor, { thread: newThread });
     normalizeThreadColor();
     hideThread();
   }, [editor, hideThread, normalizeThreadColor, thread]);
@@ -220,10 +220,9 @@ export const useComments = (
         isResolved: false,
         createdBy: retrieveUser(),
       };
-      const newThreadThreadNodeEntry2 = upsertThreadAtSelection(
-        editor,
-        newThread
-      );
+      const newThreadThreadNodeEntry2 = upsertThread(editor, {
+        thread: newThread,
+      });
       // @ts-ignore
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
@@ -232,7 +231,7 @@ export const useComments = (
   const updateThread = useCallback(
     (newThread: Thread): void => {
       if (editor) {
-        upsertThreadAtSelection(editor, newThread);
+        upsertThread(editor, { thread: newThread });
         setNewThreadThreadNodeEntry(null);
         setThread(newThread);
       }
@@ -393,7 +392,7 @@ export const useComments = (
               threadPath
             ) as any) as TDescendant[];
             if (siblings.length >= 1 && isText(siblings[0])) {
-              changeSelectionToBeBasedOnTheNextNode(editor);
+              rebaseSelectionFromNextNode(editor);
             }
           }
         }

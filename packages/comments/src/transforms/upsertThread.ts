@@ -20,11 +20,17 @@ import { wrapWithThread } from './wrapWithThread';
 export const upsertThread = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    at,
+    at = editor.selection,
     thread,
     elementProps,
-  }: { thread: Thread; at: Location; elementProps?: TNodeProps<TThreadElement> }
+  }: {
+    thread: Thread;
+    at?: Location | null;
+    elementProps?: TNodeProps<TThreadElement>;
+  }
 ): NodeEntry<TThreadElement> | undefined => {
+  if (!at) return;
+
   const type = getPluginType(editor, ELEMENT_THREAD);
   const isRange = Range.isRange(at);
 

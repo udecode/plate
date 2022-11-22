@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Comment,
-  deleteThreadAtSelection,
+  deleteThread,
   getThreadNodeEntries,
   isFirstComment,
   Thread as ThreadType,
   upsertThread,
-  upsertThreadAtSelection,
   User,
 } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
@@ -170,19 +169,13 @@ export const PlateThread = (props: PlateThreadProps) => {
     }
   }, [editor, thread]);
 
-  const deleteThread = useCallback(() => {
-    if (editor) {
-      deleteThreadAtSelection(editor);
-    }
-  }, [editor]);
-
   const deleteComment = useCallback(
     (comment) => {
       if (editor) {
         thread.comments = thread.comments.filter(
           (comment2) => comment2 !== comment
         );
-        upsertThreadAtSelection(editor, thread);
+        upsertThread(editor, { thread });
       }
     },
     [editor, thread]
@@ -191,12 +184,12 @@ export const PlateThread = (props: PlateThreadProps) => {
   const onDelete = useCallback(
     (comment: Comment) => {
       if (isFirstComment(thread, comment)) {
-        deleteThread();
+        deleteThread(editor);
       } else {
         deleteComment(comment);
       }
     },
-    [deleteComment, deleteThread, thread]
+    [deleteComment, editor, thread]
   );
 
   const determineSubmitButtonText = useCallback(() => {

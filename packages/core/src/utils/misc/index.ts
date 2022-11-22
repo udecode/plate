@@ -13,6 +13,7 @@ export * from './hotkeys';
 export * from './isUrl';
 export * from './jotai';
 export * from './mergeProps';
+export * from './nanoid';
 export * from './react-hotkeys-hook';
 export * from './type-utils';
 export * from './zustood';

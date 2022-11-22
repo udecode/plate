@@ -4,15 +4,22 @@ import {
   isText,
   PlateEditor,
   select,
+  TText,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { retrievePreviousSibling } from '../queries';
-import { changeSelectionToBeBasedOnThePreviousNode } from './changeSelectionToBeBasedOnThePreviousNode';
+import { rebaseSelectionFromPreviousNode } from './rebaseSelectionFromPreviousNode';
 
-export const insertTextAtTheStartOfAThreadNode = (
-  editor: PlateEditor,
-  threadPath: Path,
-  text: string
+export const insertTextAtThreadNodeStart = <V extends Value = Value>(
+  editor: PlateEditor<V>,
+  {
+    at,
+    text,
+  }: {
+    text: string;
+    at: Path;
+  }
 ) => {
   let insertHasBeenHandled = false;
   const previousSiblingNodeEntry = retrievePreviousSibling(
@@ -20,17 +27,16 @@ export const insertTextAtTheStartOfAThreadNode = (
     editor.selection!.focus.path
   );
   if (previousSiblingNodeEntry && isText(previousSiblingNodeEntry[0])) {
-    changeSelectionToBeBasedOnThePreviousNode(editor);
+    rebaseSelectionFromPreviousNode(editor);
   } else {
-    const insertPath = threadPath;
-    insertNodes(
+    insertNodes<TText>(
       editor,
       { text },
       {
-        at: insertPath,
+        at,
       }
     );
-    select(editor, insertPath);
+    select(editor, at);
     collapseSelection(editor, { edge: 'end' });
     insertHasBeenHandled = true;
   }

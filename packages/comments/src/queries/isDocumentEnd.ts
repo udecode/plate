@@ -1,7 +1,14 @@
-import { getEndPoint, isEndPoint, PlateEditor } from '@udecode/plate-core';
+import {
+  getEndPoint,
+  isEndPoint,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 
-export const isDocumentEnd = (editor: PlateEditor) => {
+export const isDocumentEnd = <V extends Value = Value>(
+  editor: PlateEditor<V>
+) => {
   if (editor.selection) {
     const point = editor.selection.focus;
     const endPoint = getEndPoint(editor, []);

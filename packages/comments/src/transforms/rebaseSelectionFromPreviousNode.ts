@@ -1,7 +1,7 @@
-import { moveSelection, PlateEditor } from '@udecode/plate-core';
+import { moveSelection, PlateEditor, Value } from '@udecode/plate-core';
 
-export const changeSelectionToBeBasedOnThePreviousNode = (
-  editor: PlateEditor
+export const rebaseSelectionFromPreviousNode = <V extends Value = Value>(
+  editor: PlateEditor<V>
 ) => {
   moveSelection(editor, {
     distance: 1,
