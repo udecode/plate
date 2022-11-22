@@ -3,3 +3,4 @@
  */
 
 export * from './EmojiCombobox';
+export * from './EmojiComboboxItem';
