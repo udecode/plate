@@ -22,7 +22,6 @@
     "@portive/client": "10.0.2",
     "@udecode/plate-core": "18.9.0",
     "delay": "5.0.0",
-    "nanoid": "^3.3.4",
     "p-defer": "^3.0"
   },
   "peerDependencies": {

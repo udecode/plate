@@ -20,6 +20,7 @@ import {
   getPluginType,
   isEndPoint,
   isText,
+  nanoid,
   TAncestor,
   TDescendant,
   usePlateEditorState,
@@ -28,7 +29,6 @@ import {
   usePlateSelectors,
 } from '@udecode/plate-core';
 import { clamp, cloneDeep } from 'lodash';
-import { nanoid } from 'nanoid';
 import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ThreadPosition } from '../types';
