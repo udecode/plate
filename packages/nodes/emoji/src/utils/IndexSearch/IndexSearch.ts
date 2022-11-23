@@ -1,5 +1,6 @@
 import data from '@emoji-mart/data';
 import { TComboboxItem } from '@udecode/plate-combobox';
+import { EMOJI_MAX_RESULT } from '../../constants';
 import { EmojiItemData } from '../../types';
 import { IPrepareData, PrepareData } from './PrepareData';
 import { Emoji } from './types';
@@ -17,6 +18,7 @@ export abstract class AIndexSearch<
   protected data: IPrepareData;
   protected result: string[] = [];
   protected scores = {};
+  protected maxResult = EMOJI_MAX_RESULT;
 
   constructor() {
     this.data = new PrepareData(data);
@@ -61,10 +63,13 @@ export abstract class AIndexSearch<
   }
 
   get() {
-    return this.result.map((key) => {
+    const emojis = [];
+    for (const key of this.result) {
       const emoji = this.data?.getEmoji(key);
-      return this.transform(emoji!);
-    });
+      emojis.push(this.transform(emoji!));
+      if (emojis.length >= this.maxResult) break;
+    }
+    return emojis;
   }
 
   protected abstract transform(emoji: Emoji): RData;
