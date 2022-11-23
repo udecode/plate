@@ -14,34 +14,61 @@ interface IIndexSearch<R> {
 export abstract class AIndexSearch<
   RData extends IndexSearchReturnData = IndexSearchReturnData
 > implements IIndexSearch<RData> {
-  protected hash: Record<string, string> = {};
-  protected keys: string[] = [];
+  protected data?: IPrepareData;
   protected result: string[] = [];
-
-  protected prepareData?: IPrepareData;
+  protected scores = {};
 
   constructor() {
-    if (this.prepareData) return;
+    if (this.data) return;
 
     fetchEmojiData().then((library) => {
       if (library) {
-        this.prepareData = new PrepareData(library);
+        this.data = new PrepareData(library);
       }
     });
   }
 
   search(input: string): this {
-    const regex = new RegExp(`${input.toLowerCase()}`);
-    this.result = this.prepareData!.keys.filter((key) => regex.test(key)).map(
-      (key) => this.prepareData!.hash[key]
-    );
+    const value = input.toLowerCase();
+
+    this.createSearchResult(value);
+    this.sortResult(this.result, this.scores);
 
     return this;
   }
 
+  private createSearchResult(value: string) {
+    this.scores = {};
+    this.result = [];
+
+    for (const key of this.data!.keys) {
+      const score = key.indexOf(`${value}`);
+      if (score === -1) continue;
+
+      const emojiId = this.data!.getEmojiId(key);
+      this.result.push(emojiId);
+
+      this.scores[emojiId] || (this.scores[emojiId] = 0);
+      this.scores[emojiId] += emojiId === value ? 0 : score + 1;
+    }
+  }
+
+  private sortResult(result: string[], scores: {}) {
+    result.sort((a, b) => {
+      const aScore = scores[a];
+      const bScore = scores[b];
+
+      if (aScore === bScore) {
+        return a.localeCompare(b);
+      }
+
+      return aScore - bScore;
+    });
+  }
+
   get() {
     return this.result.map((key) => {
-      const emoji = this.prepareData?.emojis[key];
+      const emoji = this.data?.getEmoji(key);
       return this.transform(emoji!);
     });
   }

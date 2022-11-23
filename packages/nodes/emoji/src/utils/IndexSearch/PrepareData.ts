@@ -4,8 +4,8 @@ type THash = Record<string, string>;
 
 export interface IPrepareData {
   keys: string[];
-  hash: THash;
-  emojis: Emojis;
+  getEmoji: (key: string) => Emoji;
+  getEmojiId: (key: string) => string;
 }
 
 export class PrepareData implements IPrepareData {
@@ -19,7 +19,7 @@ export class PrepareData implements IPrepareData {
   }
 
   private init() {
-    Object.values(this.emojis).forEach((emoji) => {
+    Object.values(this._emojis).forEach((emoji) => {
       const searchableString = this.createSearchableString(emoji);
       this._keys.push(searchableString);
       this._hash[searchableString] = emoji.id;
@@ -39,11 +39,11 @@ export class PrepareData implements IPrepareData {
     return this._keys;
   }
 
-  get hash(): THash {
-    return this._hash;
+  getEmoji(key: string) {
+    return this._emojis[key];
   }
 
-  get emojis(): Emojis {
-    return this._emojis;
+  getEmojiId(key: string) {
+    return this._hash[key];
   }
 }
