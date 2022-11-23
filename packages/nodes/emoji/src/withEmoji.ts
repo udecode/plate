@@ -17,7 +17,7 @@ export const withEmoji = <
     options: { id, emojiTriggeringController },
   }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
-  const emojiIndexSearch = new EmojiIndexSearch();
+  const emojiIndexSearch = EmojiIndexSearch.getInstance();
 
   const findTheTriggeringInput = getFindTriggeringInput(
     editor,
