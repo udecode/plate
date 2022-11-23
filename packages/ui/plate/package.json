@@ -37,7 +37,8 @@
     "@udecode/plate-ui-mention": "18.10.3",
     "@udecode/plate-ui-placeholder": "18.9.0",
     "@udecode/plate-ui-table": "18.9.0",
-    "@udecode/plate-ui-toolbar": "18.9.0"
+    "@udecode/plate-ui-toolbar": "18.9.0",
+    "use-context-selector": "1.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
