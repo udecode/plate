@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 18.11.0
+
+### Patch Changes
+
+- [#2005](https://github.com/udecode/plate/pull/2005) by [@O4epegb](https://github.com/O4epegb) – Fix link hotkey prevent default
+
 ## 18.9.1
 
 ### Patch Changes
