@@ -3,7 +3,6 @@ import {
   deleteText,
   getPlugin,
   insertText,
-  moveSelection,
   PlatePluginKey,
   withoutMergingHistory,
   withoutNormalizing,
@@ -31,9 +30,6 @@ export const getEmojiOnSelectItem = <
 
     const value = createEmoji!(item);
     insertText(editor, value);
-
-    // move the selection after the element
-    moveSelection(editor, { unit: 'offset' });
   });
 
   return comboboxActions.reset();
