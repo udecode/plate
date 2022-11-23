@@ -1,6 +1,6 @@
+import data from '@emoji-mart/data';
 import { TComboboxItem } from '@udecode/plate-combobox';
 import { EmojiItemData } from '../../types';
-import { fetchEmojiData } from './fetchData';
 import { IPrepareData, PrepareData } from './PrepareData';
 import { Emoji } from './types';
 
@@ -14,25 +14,19 @@ interface IIndexSearch<R> {
 export abstract class AIndexSearch<
   RData extends IndexSearchReturnData = IndexSearchReturnData
 > implements IIndexSearch<RData> {
-  protected data?: IPrepareData;
+  protected data: IPrepareData;
   protected result: string[] = [];
   protected scores = {};
 
   constructor() {
-    if (this.data) return;
-
-    fetchEmojiData().then((library) => {
-      if (library) {
-        this.data = new PrepareData(library);
-      }
-    });
+    this.data = new PrepareData(data);
   }
 
   search(input: string): this {
     const value = input.toLowerCase();
 
     this.createSearchResult(value);
-    this.sortResult(this.result, this.scores);
+    this.sortResultByScores(this.result, this.scores);
 
     return this;
   }
@@ -53,7 +47,7 @@ export abstract class AIndexSearch<
     }
   }
 
-  private sortResult(result: string[], scores: {}) {
+  private sortResultByScores(result: string[], scores: {}) {
     result.sort((a, b) => {
       const aScore = scores[a];
       const bScore = scores[b];

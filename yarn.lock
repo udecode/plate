@@ -2195,6 +2195,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emoji-mart/data@npm:1.0.8":
+  version: 1.0.8
+  resolution: "@emoji-mart/data@npm:1.0.8"
+  checksum: cb00536fd664b81f6f6850616b42a5e51412bdc7a3b05b154a4260b3b0444b2dfddf92fdc507bfc4f559bbe51b79a732b19bf96a1723d5e17cee3e57044e6fe8
+  languageName: node
+  linkType: hard
+
 "@emotion/is-prop-valid@npm:^0.8.7, @emotion/is-prop-valid@npm:^0.8.8":
   version: 0.8.8
   resolution: "@emotion/is-prop-valid@npm:0.8.8"
@@ -5494,6 +5501,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
   dependencies:
+    "@emoji-mart/data": "npm:1.0.8"
     "@udecode/plate-combobox": "npm:18.9.0"
     "@udecode/plate-core": "npm:18.9.0"
   peerDependencies:
