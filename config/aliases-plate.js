@@ -10,6 +10,7 @@ module.exports = {
   '@udecode/plate-code-block': 'nodes/code-block',
   '@udecode/plate-combobox': 'editor/combobox',
   '@udecode/plate-core': 'core',
+  '@udecode/plate-emoji': 'nodes/emoji',
   '@udecode/plate-serializer-csv': 'serializers/csv',
   '@udecode/plate-serializer-docx': 'serializers/docx',
   '@udecode/plate-find-replace': 'decorators/find-replace',

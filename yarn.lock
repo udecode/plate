@@ -2195,6 +2195,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emoji-mart/data@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "@emoji-mart/data@npm:1.0.8"
+  checksum: cb00536fd664b81f6f6850616b42a5e51412bdc7a3b05b154a4260b3b0444b2dfddf92fdc507bfc4f559bbe51b79a732b19bf96a1723d5e17cee3e57044e6fe8
+  languageName: node
+  linkType: hard
+
 "@emotion/is-prop-valid@npm:^0.8.7, @emotion/is-prop-valid@npm:^0.8.8":
   version: 0.8.8
   resolution: "@emotion/is-prop-valid@npm:0.8.8"
@@ -5490,6 +5497,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-emoji@workspace:packages/nodes/emoji":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
+  dependencies:
+    "@emoji-mart/data": "npm:^1.0.8"
+    "@udecode/plate-combobox": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-find-replace@npm:18.9.0, @udecode/plate-find-replace@workspace:packages/decorators/find-replace":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-find-replace@workspace:packages/decorators/find-replace"
@@ -6150,6 +6173,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji"
+  dependencies:
+    "@udecode/plate-combobox": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-styled-components": "npm:18.9.0"
+    "@udecode/plate-ui-combobox": "npm:18.9.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.78.0"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.79.0"
+    styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-ui-excalidraw@workspace:^, @udecode/plate-ui-excalidraw@workspace:packages/ui/nodes/excalidraw":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-excalidraw@workspace:packages/ui/nodes/excalidraw"
@@ -6436,6 +6477,7 @@ __metadata:
     "@udecode/plate-ui-placeholder": "npm:18.9.0"
     "@udecode/plate-ui-table": "npm:18.9.0"
     "@udecode/plate-ui-toolbar": "npm:18.9.0"
+    use-context-selector: "npm:1.4.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
@@ -25040,6 +25082,23 @@ __metadata:
     react-native:
       optional: true
   checksum: e1730079c90988c15c66d9823faac766b282afde37c78a31fb59811525765a86e8e8b074dedba3789b6473a18cfa410b7b78da3f86555fc4b686046044f4f35c
+  languageName: node
+  linkType: hard
+
+"use-context-selector@npm:1.4.1":
+  version: 1.4.1
+  resolution: "use-context-selector@npm:1.4.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: "*"
+    react-native: "*"
+    scheduler: ">=0.19.0"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: fe3f9d4a205033178b03f7a9a84e8a7a3eb88ed6d854c82be946a33e81989fe301f1f116db73bbe499271db6a77cfedd8bc034a92113f6f873c8480277313f2b
   languageName: node
   linkType: hard
 

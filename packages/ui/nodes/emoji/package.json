@@ -1,0 +1,43 @@
+{
+  "name": "@udecode/plate-ui-emoji",
+  "version": "18.10.1",
+  "description": "Emoji UI for Plate",
+  "license": "MIT",
+  "homepage": "https://plate.udecode.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/ui/nodes/emoji"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@udecode/plate-combobox": "18.9.0",
+    "@udecode/plate-core": "18.9.0",
+    "@udecode/plate-styled-components": "18.9.0",
+    "@udecode/plate-ui-combobox": "18.9.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.78.0",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.79.0",
+    "styled-components": ">=5.0.0"
+  },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
