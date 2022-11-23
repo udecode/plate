@@ -9,13 +9,22 @@ export interface IPrepareData {
 }
 
 export class PrepareData implements IPrepareData {
+  protected static instance?: IPrepareData;
   protected _hash: THash = {};
   protected _keys: string[] = [];
   protected _emojis: Emojis;
 
-  constructor(library: EmojiLibrary) {
+  private constructor(library: EmojiLibrary) {
     this._emojis = library.emojis;
     this.init();
+  }
+
+  public static getInstance(library: EmojiLibrary) {
+    if (!PrepareData.instance) {
+      PrepareData.instance = new PrepareData(library);
+    }
+
+    return PrepareData.instance;
   }
 
   private init() {

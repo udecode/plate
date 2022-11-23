@@ -21,7 +21,7 @@ export abstract class AIndexSearch<
   protected maxResult = EMOJI_MAX_RESULT;
 
   constructor() {
-    this.data = new PrepareData(data);
+    this.data = PrepareData.getInstance(data);
   }
 
   search(input: string): this {
