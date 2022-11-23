@@ -18,7 +18,7 @@ export const useAssignedToHeaderUserDisplayIdentifier = (
   const { retrieveUser, assignedTo } = props;
   const loggedInUser = useLoggedInUser(retrieveUser);
   const isAssignedToLoggedInUser = loggedInUser?.id === assignedTo.id;
-
+  PlateAssignedToHeader;
   const text = capitalize(
     generateUserDisplayIdentifier({
       user: assignedTo,

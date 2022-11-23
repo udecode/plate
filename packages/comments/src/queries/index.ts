@@ -4,7 +4,7 @@
 
 export * from './determineThreadNodeEntryWhenCaretIsNextToTheThreadNodeEntryOnTheLeft';
 export * from './getAboveThreadNode';
+export * from './getPreviousSiblingNode';
 export * from './getThreadNodeEntries';
 export * from './isDocumentEnd';
 export * from './isFirstComment';
-export * from './retrievePreviousSibling';

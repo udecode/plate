@@ -1,11 +1,10 @@
-import { PlateEditor, Value } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-core';
 import { TThreadElement } from '../types';
 import { upsertThread } from './upsertThread';
 
 export const deselectThread = <V extends Value = Value>(
   editor: PlateEditor<V>,
-  entry: NodeEntry<TThreadElement>
+  entry: TNodeEntry<TThreadElement>
 ) => {
   const [node, path] = entry;
 

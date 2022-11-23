@@ -14,23 +14,30 @@ import {
   User,
 } from '@udecode/plate-comments';
 import {
+  blurEditor,
+  collapseSelection,
+  deselect,
+  focusEditor,
   getAboveNode,
   getNextSiblingNodes,
   getParentNode,
   getPluginType,
+  getPointAfter,
   isEndPoint,
   isText,
   nanoid,
+  select,
   TAncestor,
   TDescendant,
+  TNodeEntry,
+  toDOMNode,
   usePlateEditorState,
   usePlateId,
   usePlateSelection,
   usePlateSelectors,
 } from '@udecode/plate-core';
 import { clamp, cloneDeep } from 'lodash';
-import { BaseEditor, Editor, NodeEntry, Range, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import { Range } from 'slate';
 import { ThreadPosition } from '../types';
 import { determineAbsolutePosition } from '../utils';
 
@@ -70,7 +77,7 @@ export const useComments = (
   const [
     newThreadThreadNodeEntry,
     setNewThreadThreadNodeEntry,
-  ] = useState<NodeEntry | null>(null);
+  ] = useState<TNodeEntry | null>(null);
   const [
     previousThreadNode,
     setPreviousThreadNode,
@@ -86,22 +93,16 @@ export const useComments = (
         return;
       }
       const [node] = threadNodeEntry;
-      const selectionDOMNode = ReactEditor.toDOMNode(
-        editor as ReactEditor,
-        node
-      );
+      const selectionDOMNode = toDOMNode(editor, node);
       const selectionDOMNodePosition = determineAbsolutePosition(
-        selectionDOMNode
+        selectionDOMNode!
       );
 
-      const editorDOMNode = ReactEditor.toDOMNode(
-        editor as ReactEditor,
-        editor
-      );
+      const editorDOMNode = toDOMNode(editor, editor);
       const {
         x: editorX,
         width: editorWidth,
-      } = editorDOMNode.getBoundingClientRect();
+      } = editorDOMNode!.getBoundingClientRect();
 
       const sideThreadWidth = 418;
       const padding = 16;
@@ -133,8 +134,8 @@ export const useComments = (
   const hideThread = useCallback(() => {
     if (thread) {
       setThread(null);
-      ReactEditor.blur(editor as ReactEditor);
-      Transforms.deselect(editor as BaseEditor);
+      blurEditor(editor);
+      deselect(editor);
     }
   }, [editor, thread]);
 
@@ -151,11 +152,8 @@ export const useComments = (
     const threadNodeEntry = getAboveThreadNode(editor);
     if (!threadNodeEntry) return;
     const [threadNode] = threadNodeEntry;
-    const threadDomNode = ReactEditor.toDOMNode(
-      editor as ReactEditor,
-      threadNode
-    );
-    threadDomNode.style.backgroundColor = '';
+    const threadDomNode = toDOMNode(editor, threadNode);
+    threadDomNode!.style.backgroundColor = '';
   }, [editor]);
 
   const onResolveThread = useCallback(() => {
@@ -182,25 +180,22 @@ export const useComments = (
     const threadNodeEntries = getThreadNodeEntries(editor);
     const threadNodeEntriesArray = Array.from(threadNodeEntries);
     const threadNodeEntry = threadNodeEntriesArray.find(
-      (entry: NodeEntry<any>) => entry[0].thread.id === threadId
+      (entry: TNodeEntry) => (entry[0] as TThreadElement).thread.id === threadId
     );
     if (!threadNodeEntry) {
       return;
     }
 
-    ReactEditor.focus(editor as ReactEditor);
-    Transforms.select(editor as BaseEditor, threadNodeEntry[1]);
-    Transforms.collapse(editor as BaseEditor, { edge: 'start' });
+    focusEditor(editor);
+    select(editor, threadNodeEntry[1]);
+    collapseSelection(editor, { edge: 'start' });
     showThread(threadNodeEntry);
 
     // eslint-disable-next-line no-inner-declarations
     const position = () => {
       requestAnimationFrame(() => {
-        const domNode = ReactEditor.toDOMNode(
-          editor as ReactEditor,
-          threadNodeEntry[0]
-        );
-        domNode.scrollIntoView();
+        const domNode = toDOMNode(editor, threadNodeEntry[0]);
+        domNode!.scrollIntoView();
         updateThreadPosition(threadNodeEntry);
       });
     };
@@ -309,7 +304,7 @@ export const useComments = (
     if (!threadNodeEntry && selection) {
       if (Range.isCollapsed(selection)) {
         threadNodeEntry = getAboveNode<TThreadElement & TAncestor>(editor, {
-          at: Editor.after(editor as any, selection.anchor, {
+          at: getPointAfter(editor, selection.anchor, {
             distance: 1,
             unit: 'character',
           }),
@@ -331,10 +326,7 @@ export const useComments = (
     if (previousThreadNode) {
       let previousThreadNodeDomNode;
       try {
-        previousThreadNodeDomNode = ReactEditor.toDOMNode(
-          editor as any,
-          previousThreadNode
-        );
+        previousThreadNodeDomNode = toDOMNode(editor, previousThreadNode);
       } catch (error) {}
 
       if (previousThreadNodeDomNode) {
@@ -348,7 +340,7 @@ export const useComments = (
       const threadNode = threadNodeEntry[0];
       let domNode;
       try {
-        domNode = ReactEditor.toDOMNode(editor as any, threadNode);
+        domNode = toDOMNode(editor, threadNode);
       } catch (error) {}
       if (domNode) {
         domNode.style.backgroundColor = threadNode.thread.isResolved

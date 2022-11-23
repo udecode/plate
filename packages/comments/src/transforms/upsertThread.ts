@@ -7,15 +7,16 @@ import {
   PlateEditor,
   select,
   setNodes,
+  TNodeEntry,
   TNodeProps,
   Value,
 } from '@udecode/plate-core';
-import { Location, NodeEntry, Range } from 'slate';
+import { Location, Range } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { getAboveThreadNode } from '../queries';
 import { Thread, TThreadElement } from '../types';
-import { isThread } from '../utils';
-import { wrapWithThread } from './wrapWithThread';
+import { isThreadNode } from '../utils';
+import { wrapNodesInThread } from './wrapNodesInThread';
 
 export const upsertThread = <V extends Value>(
   editor: PlateEditor<V>,
@@ -28,7 +29,7 @@ export const upsertThread = <V extends Value>(
     at?: Location | null;
     elementProps?: TNodeProps<TThreadElement>;
   }
-): NodeEntry<TThreadElement> | undefined => {
+): TNodeEntry<TThreadElement> | undefined => {
   if (!at) return;
 
   const type = getPluginType(editor, ELEMENT_THREAD);
@@ -57,7 +58,7 @@ export const upsertThread = <V extends Value>(
       { at: threadNodeEntry2[1] }
     );
   } else {
-    wrapWithThread(editor, { at, thread, elementProps });
+    wrapNodesInThread(editor, { at, thread, elementProps });
   }
 
   if (isRange) {
@@ -65,7 +66,7 @@ export const upsertThread = <V extends Value>(
       at: [],
       match(node: any) {
         // @ts-ignore
-        return isThread(editor, node) && node.thread.id === thread.id;
+        return isThreadNode(editor, node) && node.thread.id === thread.id;
       },
     });
     const [, threadPath] = threadNodeEntry!;

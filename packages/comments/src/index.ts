@@ -3,7 +3,9 @@
  */
 
 export * from './createThreadPlugin';
+export * from './types';
+export * from './withInsertTextThread';
+export * from './withThread';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './types';
-export * from './utils';
+export * from './utils/index';

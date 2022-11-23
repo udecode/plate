@@ -9,7 +9,7 @@ import { Location } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { Thread, TThreadElement } from '../types';
 
-export const wrapWithThread = <V extends Value>(
+export const wrapNodesInThread = <V extends Value>(
   editor: PlateEditor<V>,
   options: {
     thread: Thread;

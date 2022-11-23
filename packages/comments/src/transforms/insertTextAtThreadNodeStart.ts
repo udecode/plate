@@ -8,7 +8,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { retrievePreviousSibling } from '../queries';
+import { getPreviousSiblingNode } from '../queries';
 import { rebaseSelectionFromPreviousNode } from './rebaseSelectionFromPreviousNode';
 
 export const insertTextAtThreadNodeStart = <V extends Value = Value>(
@@ -22,7 +22,7 @@ export const insertTextAtThreadNodeStart = <V extends Value = Value>(
   }
 ) => {
   let insertHasBeenHandled = false;
-  const previousSiblingNodeEntry = retrievePreviousSibling(
+  const previousSiblingNodeEntry = getPreviousSiblingNode(
     editor,
     editor.selection!.focus.path
   );

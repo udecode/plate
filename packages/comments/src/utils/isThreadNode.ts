@@ -2,7 +2,7 @@ import { getPluginType, PlateEditor, TNode, Value } from '@udecode/plate-core';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { TThreadElement } from '../types';
 
-export const isThread = <V extends Value>(
+export const isThreadNode = <V extends Value>(
   editor: PlateEditor<V>,
   node: TNode
 ): node is TThreadElement => {
