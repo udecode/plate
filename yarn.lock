@@ -5497,7 +5497,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-emoji@workspace:packages/nodes/emoji":
+"@udecode/plate-emoji@npm:18.11.0, @udecode/plate-emoji@workspace:packages/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
   dependencies:
@@ -5584,6 +5584,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:18.10.1"
     "@udecode/plate-combobox": "npm:18.9.0"
     "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-emoji": "npm:18.11.0"
     "@udecode/plate-find-replace": "npm:18.9.0"
     "@udecode/plate-floating": "npm:18.9.0"
     "@udecode/plate-font": "npm:18.9.0"
@@ -6173,7 +6174,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
+"@udecode/plate-ui-emoji@npm:18.11.0, @udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji"
   dependencies:
@@ -6467,6 +6468,7 @@ __metadata:
     "@udecode/plate-ui-combobox": "npm:18.9.0"
     "@udecode/plate-ui-cursor": "npm:18.9.0"
     "@udecode/plate-ui-dnd": "npm:18.10.1"
+    "@udecode/plate-ui-emoji": "npm:18.11.0"
     "@udecode/plate-ui-find-replace": "npm:18.9.0"
     "@udecode/plate-ui-font": "npm:18.9.0"
     "@udecode/plate-ui-line-height": "npm:18.9.0"
