@@ -33,7 +33,7 @@ export const ExcalidrawToolbarButton = ({
         focusEditor(editor, editor.selection ?? editor.prevSelection!);
 
         setTimeout(() => {
-          insertExcalidraw(editor, {});
+          insertExcalidraw(editor);
         }, 0);
       }}
       {...props}
