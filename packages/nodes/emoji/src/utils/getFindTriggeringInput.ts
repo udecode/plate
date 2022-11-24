@@ -38,6 +38,8 @@ export const getFindTriggeringInput = <V extends Value>(
   let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
 
   do {
+    if (!endPoint.offset) break;
+
     emojiTriggeringController.setText(currentText);
     if (emojiTriggeringController.hasTriggeringMark) break;
 
