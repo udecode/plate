@@ -112,7 +112,8 @@ function Navbar(): JSX.Element {
             <NavbarItem {...item} key={i} />
           ))}
           <div>
-            <a href="/docs/guides/cloud">
+            {/* eslint-disable-next-line react/jsx-no-target-blank */}
+            <a href="https://www.portive.com/" target="_blank">
               <span style={{ marginLeft: 16, top: 2, position: 'relative' }}>
                 <PlateCloudLogo />
               </span>
