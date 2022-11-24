@@ -3,3 +3,4 @@
  */
 
 export * from './ExcalidrawElement/index';
+export * from './ExcalidrawToolbarButton/index';

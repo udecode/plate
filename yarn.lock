@@ -6199,6 +6199,7 @@ __metadata:
     "@excalidraw/excalidraw": "npm:0.12.0"
     "@udecode/plate-core": "npm:18.9.0"
     "@udecode/plate-styled-components": "npm:18.9.0"
+    "@udecode/plate-ui-toolbar": "npm:18.9.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
