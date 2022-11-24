@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 18.11.2
+
 ## 18.11.1
 
 ### Patch Changes
