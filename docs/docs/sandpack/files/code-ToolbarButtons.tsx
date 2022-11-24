@@ -22,6 +22,7 @@ import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
+import { ExcalidrawElementToolbarButton  } from './excalidraw/ExcalidrawElementToolbarButton'
 
 export const ToolbarButtons = () => {
   const colorTooltip: TippyProps = { content: 'Text color' };
@@ -51,6 +52,7 @@ export const ToolbarButtons = () => {
       <ImageToolbarButton icon={<Image />} />
       <MediaEmbedToolbarButton icon={<OndemandVideo />} />
       <TableToolbarButtons />
+      <ExcalidrawElementToolbarButton />
     </>
   );
 };
