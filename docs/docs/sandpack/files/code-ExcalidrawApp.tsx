@@ -1,21 +1,15 @@
 export const excalidrawAppCode = `import React from 'react';
-import { 
-  createSelectOnBackspacePlugin,
-  Plate,
-  PlateProvider,
-  HeadingToolbar,
-} from '@udecode/plate';
+import { createSelectOnBackspacePlugin, Plate } from '@udecode/plate';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
-import { Pencil } from '@styled-icons/boxicons-regular';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { excalidrawValue } from './excalidraw/excalidrawValue';
-import { ExcalidrawElementToolbarButton } from './excalidraw/ExcalidrawToolbarButton';
 import { MyPlatePlugin, MyValue } from './typescript/plateTypes';
+
 const plugins: MyPlatePlugin[] = [
   ...basicNodesPlugins,
   createExcalidrawPlugin({
@@ -25,13 +19,13 @@ const plugins: MyPlatePlugin[] = [
     options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
   }),
 ];
+
 export default () => (
-  <PlateProvider<MyValue> plugins={plugins} initialValue={excalidrawValue}>
-    <HeadingToolbar>
-      <ExcalidrawElementToolbarButton icon={<div>excalidraw</div>} />
-    </HeadingToolbar>
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
+  <Plate<MyValue>
+    editableProps={editableProps}
+    initialValue={excalidrawValue}
+    plugins={plugins}
+  />
 );
 `;
 
