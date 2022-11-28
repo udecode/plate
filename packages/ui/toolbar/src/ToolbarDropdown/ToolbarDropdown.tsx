@@ -1,6 +1,7 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode } from 'react';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
+import { useDropdownControls } from './useDropdownControls';
 
 type ToolbarDropdownProps = {
   control: ReactNode;
@@ -17,43 +18,22 @@ export const ToolbarDropdown = ({
   onOpen,
   onClose,
 }: ToolbarDropdownProps) => {
-  const [
-    referenceElement,
-    setReferenceElement,
-  ] = useState<HTMLDivElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
-    null
-  );
-
-  useEffect(() => {
-    const listener = (ev: MouseEvent) => {
-      if (open) {
-        if (referenceElement && ev.composedPath().includes(referenceElement)) {
-          return;
-        }
-        if (popperElement && ev.composedPath().includes(popperElement)) {
-          return;
-        }
-
-        onClose?.(ev);
-      }
-    };
-    document.body.addEventListener('mousedown', listener);
-    return () => {
-      document.body.removeEventListener('mousedown', listener);
-    };
-  }, [onClose, open, popperElement, referenceElement]);
+  const {
+    styles,
+    referenceElementRef,
+    popperElementRef,
+  } = useDropdownControls({ open, onClose });
 
   return (
     <>
-      <div ref={setReferenceElement} onMouseDown={onOpen}>
+      <div ref={referenceElementRef} onMouseDown={onOpen}>
         {control}
       </div>
 
       <div
-        ref={setPopperElement}
+        ref={popperElementRef}
         css={[
-          tw`absolute bg-white top-10`,
+          tw` bg-white`,
           !open && tw`hidden`,
           css`
             border: 1px solid #ccc;
@@ -61,6 +41,7 @@ export const ToolbarDropdown = ({
             z-index: 1;
           `,
         ]}
+        style={styles}
       >
         {children}
       </div>
