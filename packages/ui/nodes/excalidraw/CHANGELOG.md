@@ -1,5 +1,11 @@
 # @udecode/plate-excalidraw
 
+## 18.12.0
+
+### Minor Changes
+
+- [#2014](https://github.com/udecode/plate/pull/2014) by [@firehudson](https://github.com/firehudson) – Add toolbar button to allow adding excalidraw board on demand
+
 ## 18.9.0
 
 ### Patch Changes

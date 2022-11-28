@@ -1,10 +1,9 @@
+import { excalidrawElementToolbarButtonFile } from './code-ExcalidrawElementToolbarButton';
 import { excalidrawValueFile } from './code-excalidrawValue';
 import { initialDataExcalidrawFile } from './code-initialDataExcalidraw';
-import { excalidrawToolbarButtonFile } from './code-ExcalidrawToolbarButton';
-
 
 export const excalidrawFiles = {
+  ...excalidrawElementToolbarButtonFile,
   ...excalidrawValueFile,
   ...initialDataExcalidrawFile,
-  ...excalidrawToolbarButtonFile,
 };
