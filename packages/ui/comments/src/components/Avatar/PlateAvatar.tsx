@@ -1,6 +1,6 @@
 import React from 'react';
 import { AccountCircle } from '@styled-icons/material';
-import { User } from '@udecode/plate-comments';
+import { useCommentsSelectors } from '@udecode/plate-comments';
 import { Avatar } from './Avatar';
 import {
   avatarAccountCircleCss,
@@ -8,10 +8,14 @@ import {
   avatarRootCss,
 } from './styles';
 
-export type PlateAvatarProps = { user: User };
+export type PlateAvatarProps = { userId: string };
 
 export const PlateAvatar = (props: PlateAvatarProps) => {
-  const { user } = props;
+  const { userId } = props;
+
+  const user = useCommentsSelectors().user(userId);
+  if (!user) return null;
+
   return (
     <div css={avatarRootCss}>
       {user.avatarUrl ? (

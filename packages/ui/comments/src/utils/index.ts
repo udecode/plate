@@ -3,11 +3,8 @@
  */
 
 export * from './constants';
-export * from './determineAbsolutePosition';
-export * from './determineAssigningVerb';
 export * from './doesContactMatchString';
-export * from './findMentionedUsers';
-export * from './generateThreadLink';
-export * from './generateUserDisplayIdentifier';
+export * from './getCommentUrl';
+export * from './getElementAbsolutePosition';
+export * from './getUserName';
 export * from './isClickInsideThreads';
-export * from './useLoggedInUser';

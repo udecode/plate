@@ -6094,7 +6094,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:18.9.0, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:18.9.0, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -6752,7 +6752,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-comments@workspace:packages/ui/comments":
+"@udecode/plate-ui-comments@workspace:^, @udecode/plate-ui-comments@workspace:packages/ui/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-comments@workspace:packages/ui/comments"
   dependencies:
@@ -12684,10 +12684,12 @@ __metadata:
     "@tippyjs/react": "npm:4.2.5"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-cloud": "workspace:^"
+    "@udecode/plate-comments": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-ui-cloud": "workspace:^"
+    "@udecode/plate-ui-comments": "workspace:^"
     "@udecode/plate-ui-excalidraw": "workspace:^"
     prism-react-renderer: "npm:^1.2.0"
     styled-components: "npm:5.3.1"

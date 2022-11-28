@@ -1,0 +1,51 @@
+import React, { useCallback } from 'react';
+import { Popover } from '@mui/material';
+import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
+import { PlateResolvedComments } from '../ResolvedComments/index';
+
+type PlateShowResolvedCommentsButtonProps = ToolbarButtonProps;
+
+export const PlateShowResolvedCommentsButton = (
+  props: PlateShowResolvedCommentsButtonProps
+) => {
+  const {
+    id,
+    fetchContacts,
+    renderContainer,
+    retrieveUser,
+    ...otherProps
+  } = props;
+
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+    null
+  );
+  const areThreadsShown = Boolean(anchorEl);
+
+  const handleClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const onMouseDown = useCallback((event) => {
+    event.preventDefault();
+    setAnchorEl(event.currentTarget);
+  }, []);
+
+  return (
+    <div>
+      <ToolbarButton
+        active={areThreadsShown}
+        onMouseDown={onMouseDown}
+        {...otherProps}
+      />
+      <Popover
+        id={areThreadsShown ? 'simple-popover' : undefined}
+        open={areThreadsShown}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <PlateResolvedComments />
+      </Popover>
+    </div>
+  );
+};

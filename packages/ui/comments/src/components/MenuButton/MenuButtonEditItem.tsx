@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-core';
 
 export type MenuButtonEditItemProps = {
-  onEdit: () => void;
+  onEdit?: () => void;
 } & HTMLPropsAs<'div'>;
 
 export const useMenuButtonEditItem = (

@@ -1,5 +1,5 @@
-import { TextAreaInput } from './TextAreaInput';
+import { CommentTextArea } from './CommentTextArea';
 
 export const TextArea = {
-  Input: TextAreaInput,
+  Input: CommentTextArea,
 };

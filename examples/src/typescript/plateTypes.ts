@@ -73,7 +73,7 @@ import {
   usePlateStates,
   WithOverride,
 } from '@udecode/plate';
-import { ELEMENT_THREAD, TThreadElement } from '@udecode/plate-comments';
+import { TCommentText } from '@udecode/plate-comments';
 // import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,
@@ -92,7 +92,7 @@ export type PlainText = {
   text: string;
 };
 
-export interface RichText extends TText {
+export interface RichText extends TText, TCommentText {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
@@ -126,16 +126,10 @@ export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
 }
 
-export interface MyThreadElement extends TThreadElement {
-  type: typeof ELEMENT_THREAD;
-  children: RichText[];
-}
-
 export type MyInlineElement =
   | MyLinkElement
   | MyMentionElement
-  | MyMentionInputElement
-  | MyThreadElement;
+  | MyMentionInputElement;
 export type MyInlineDescendant = MyInlineElement | RichText;
 export type MyInlineChildren = MyInlineDescendant[];
 

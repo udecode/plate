@@ -1,30 +1,35 @@
-import { TElement } from '@udecode/plate-core';
+import { TText, Value } from '@udecode/plate-core';
 
-export interface User {
+export interface CommentUser {
   id: string;
   name: string;
-  email: string;
   avatarUrl?: string;
 }
 
-export interface Comment {
-  id: any;
-  text: string;
+export interface BaseComment {
+  id: string;
+
+  value: Value;
+
   createdAt: number;
-  createdBy: User;
+
+  userId: string;
 }
 
-export interface Thread {
-  id: any;
-  comments: Comment[];
-  isResolved: boolean;
-  createdBy: User;
-  assignedTo?: User;
+export interface ReplyComment extends BaseComment {
+  threadId?: string;
 }
 
-export interface TThreadElement extends TElement {
-  thread: Thread;
-  selected: boolean;
+export interface ThreadComment extends BaseComment {
+  isResolved?: boolean;
 }
 
-export interface ThreadPlugin {}
+export type Comment = ThreadComment | ReplyComment;
+
+// TODO: check TThreadElement, TThread
+export interface TCommentText extends TText {
+  comment?: boolean;
+  comments?: Record<string, boolean>;
+}
+
+export interface CommentsPlugin {}

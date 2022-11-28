@@ -1,46 +1,19 @@
-import React, { useEffect } from 'react';
-import { PlateSideThread, useComments } from '@udecode/plate-ui-comments';
+import React, { useEffect, useState } from 'react';
+import { commentsActions } from '@udecode/plate-comments';
+import { PlateFloatingComments } from '@udecode/plate-ui-comments';
+import { commentsData, usersData } from './constants';
 
-export const commentUser = {
-  id: '1',
-  name: 'John Doe',
-  email: 'osama@gmail.com',
-  avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
-};
-
-const retrieveUser = () => commentUser;
-
-export const Comments = (props: any) => {
-  const { setCommentActions } = props;
-  const commentActions = useComments({ retrieveUser });
+export const Comments = () => {
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setCommentActions(commentActions);
-  }, [commentActions, setCommentActions]);
+    commentsActions.comments(commentsData);
+    commentsActions.users(usersData);
 
-  const retrieveUserByEmailAddress = (email: string) => {
-    const foundUser = [commentUser].find((u) => u.email === email);
-    if (foundUser) {
-      return foundUser;
-    }
-    return null;
-  };
+    setLoaded(true);
+  }, []);
 
-  if (!commentActions.thread) {
-    return null;
-  }
+  if (!loaded) return null;
 
-  return (
-    <PlateSideThread
-      thread={commentActions.thread}
-      position={commentActions.position}
-      onSaveComment={commentActions.onSaveComment}
-      onSubmitComment={commentActions.onSubmitComment}
-      onCancelCreateThread={commentActions.onCancelCreateThread}
-      onResolveThread={commentActions.onResolveThread}
-      fetchContacts={() => [commentUser]}
-      retrieveUser={retrieveUser}
-      retrieveUserByEmailAddress={retrieveUserByEmailAddress}
-    />
-  );
+  return <PlateFloatingComments />;
 };

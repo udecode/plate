@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-core';
 
 export type MenuButtonDeleteItemProps = {
-  onDelete: () => void;
+  onDelete?: () => void;
 } & HTMLPropsAs<'div'>;
 
 export const useMenuButtonDeleteItem = (

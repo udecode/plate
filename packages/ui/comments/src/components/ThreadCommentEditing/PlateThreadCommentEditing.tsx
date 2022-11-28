@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Thread as ThreadType, User } from '@udecode/plate-comments';
-import { PlateTextArea } from '../TextArea/PlateTextArea';
+import { PlateCommentTextArea } from '../TextArea/PlateCommentTextArea';
 import {
   threadCommentEditingActionsCss,
   threadCommentEditingCancelButtonCss,
@@ -10,59 +9,48 @@ import {
 import { ThreadCommentEditing } from './ThreadCommentEditing';
 
 export type PlateThreadCommentEditingProps = {
-  thread: ThreadType;
-  defaultText: string;
-  onSave: (text: string) => void;
-  onCancel: () => void;
-  fetchContacts: () => User[];
+  commentId: string;
+  defaultText?: string;
+  onSave?: (text: string) => void;
+  onCancel?: () => void;
 };
 
 export const PlateThreadCommentEditing = (
   props: PlateThreadCommentEditingProps
 ) => {
-  const { thread, defaultText, fetchContacts, onSave } = props;
+  const { commentId, defaultText = '', onSave } = props;
 
   const [value, setValue] = useState<string>(defaultText);
-  const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
-    false
-  );
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const onSubmit = useCallback(() => {
-    onSave(value);
+    onSave?.(value);
   }, [value, onSave]);
 
   const onValueChange = useCallback((newValue) => {
     setValue(newValue);
   }, []);
 
-  useEffect(
-    function onShow() {
-      const textArea = textAreaRef.current!;
-      textArea.focus();
-      const { length } = textArea.value;
-      textArea.setSelectionRange(length, length);
-    },
-    [textAreaRef, thread]
-  );
+  useEffect(() => {
+    const textArea = textAreaRef.current!;
+    textArea.focus();
+    const { length } = textArea.value;
+    textArea.setSelectionRange(length, length);
+  }, [textAreaRef]);
 
   return (
     <div css={threadCommentEditingRootCss}>
-      <PlateTextArea
-        fetchContacts={fetchContacts}
-        haveContactsBeenClosed={haveContactsBeenClosed}
+      <PlateCommentTextArea
+        ref={textAreaRef}
+        commentId={commentId}
         onSubmit={onSubmit}
         onValueChange={onValueChange}
-        ref={textAreaRef}
-        setHaveContactsBeenClosed={setHaveContactsBeenClosed}
-        thread={thread}
-        value={value}
       />
       <div css={threadCommentEditingActionsCss}>
         <ThreadCommentEditing.SaveButton
           {...props}
-          value={value}
+          commentId={commentId}
           css={threadCommentEditingSaveButtonCss}
         >
           Save

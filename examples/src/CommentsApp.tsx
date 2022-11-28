@@ -1,54 +1,43 @@
-import React, { useState } from 'react';
-import { AddComment, Comment } from '@styled-icons/material';
-import { Plate } from '@udecode/plate';
-import { createThreadPlugin, ELEMENT_THREAD } from '@udecode/plate-comments';
+import React from 'react';
+import { AddComment } from '@styled-icons/material';
+import { Plate, PlateProvider } from '@udecode/plate';
+import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import {
-  AddThreadToolbarButton,
-  PlateThreadNode,
-  ToggleShowThreadsButton,
+  CommentToolbarButton,
+  PlateCommentLeaf,
 } from '@udecode/plate-ui-comments';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { Comments, commentUser } from './comments/Comments';
-import { commentsValue } from './comments/commentsValue';
+import { Comments } from './comments/Comments';
+import { commentsValue } from './comments/constants';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-const plugins = createMyPlugins([...basicNodesPlugins, createThreadPlugin()], {
-  components: {
-    ...plateUI,
-    [ELEMENT_THREAD]: PlateThreadNode,
-  },
-});
+const plugins = createMyPlugins(
+  [
+    ...basicNodesPlugins,
+    createCommentsPlugin({
+      renderAfterEditable: () => <Comments />,
+    }),
+  ],
+  {
+    components: {
+      ...plateUI,
+      [MARK_COMMENT]: PlateCommentLeaf,
+    },
+  }
+);
 
 export default () => {
-  const [commentActions, setCommentActions] = useState<any>();
-
   return (
-    <>
+    <PlateProvider plugins={plugins} initialValue={commentsValue}>
       <Toolbar>
-        {commentActions?.onAddThread ? (
-          <AddThreadToolbarButton
-            icon={<AddComment />}
-            onAddThread={commentActions.onAddThread}
-          />
-        ) : null}
-
-        <ToggleShowThreadsButton
-          fetchContacts={() => [commentUser]}
-          retrieveUser={() => commentUser}
-          icon={<Comment />}
-        />
+        <CommentToolbarButton icon={<AddComment />} />
+        {/* <ToggleShowThreadsButton icon={<Comment />} /> */}
       </Toolbar>
 
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={commentsValue}
-      >
-        <Comments setCommentActions={setCommentActions} />
-      </Plate>
-    </>
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
   );
 };

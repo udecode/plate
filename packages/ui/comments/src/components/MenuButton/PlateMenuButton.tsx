@@ -5,10 +5,10 @@ import { MenuButton } from './MenuButton';
 import { menuButtonCss, menuButtonItemCss } from './styles';
 
 export type MenuButtonProps = {
-  showLinkToThisComment: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onLinkToThisComment: () => void;
+  showLinkToThisComment?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onLinkToThisComment?: () => void;
 };
 
 export const PlateMenuButton = (props: MenuButtonProps) => {
