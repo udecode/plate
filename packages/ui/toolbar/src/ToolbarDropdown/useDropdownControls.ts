@@ -1,74 +1,65 @@
-import { useEffect, useRef } from 'react';
-import { usePopper } from 'react-popper';
+import { useEffect } from 'react';
+import { ExtendedRefs, flip, useFloating } from '@udecode/plate-floating';
 
 type useDropdownControlsProps = {
   open: boolean;
   onClose?: (ev: MouseEvent) => void;
 };
 
+const closeAllExceptSelectedOneListener = ({
+  open,
+  onClose,
+  refs,
+}: useDropdownControlsProps & { refs: ExtendedRefs<HTMLElement> }) => (
+  ev: MouseEvent
+) => {
+  if (open) {
+    const target = ev.target as HTMLElement;
+    if (refs.reference.current?.contains(target)) {
+      return;
+    }
+    if (refs.floating.current?.contains(target)) {
+      return;
+    }
+
+    onClose?.(ev);
+  }
+};
+
 export const useDropdownControls = ({
   open,
   onClose,
 }: useDropdownControlsProps) => {
-  const referenceElementRef = useRef<HTMLDivElement | null>(null);
-  const popperElementRef = useRef<HTMLDivElement | null>(null);
-
-  const { styles, update } = usePopper<
-    'offset' | 'flip' | 'vertical-positioning'
-  >(referenceElementRef.current, popperElementRef.current, {
-    placement: 'bottom-start',
+  const {
+    x,
+    y,
+    reference,
+    floating,
+    strategy,
+    refs,
+  } = useFloating<HTMLElement>({
+    open,
     strategy: 'fixed',
-    modifiers: [
-      {
-        name: 'offset',
-        options: {
-          offset: [0, 0],
-        },
-      },
-    ],
+    placement: 'bottom-start',
+    middleware: [flip()],
   });
 
   useEffect(() => {
-    if (open) {
-      update && update();
-    }
-  }, [open, update]);
-
-  useEffect(() => {
-    const closeAllExceptSelectedOneListener = (ev: MouseEvent) => {
-      if (open) {
-        if (
-          referenceElementRef.current &&
-          ev.composedPath().includes(referenceElementRef.current)
-        ) {
-          return;
-        }
-        if (
-          popperElementRef.current &&
-          ev.composedPath().includes(popperElementRef.current)
-        ) {
-          return;
-        }
-
-        onClose?.(ev);
-      }
-    };
-
-    document.body.addEventListener(
-      'mousedown',
-      closeAllExceptSelectedOneListener
-    );
+    const listener = closeAllExceptSelectedOneListener({ open, onClose, refs });
+    document.body.addEventListener('mousedown', listener);
     return () => {
-      document.body.removeEventListener(
-        'mousedown',
-        closeAllExceptSelectedOneListener
-      );
+      document.body.removeEventListener('mousedown', listener);
     };
-  }, [onClose, open]);
+  }, [onClose, open, refs]);
 
   return {
-    styles: styles.popper,
-    referenceElementRef,
-    popperElementRef,
+    styles: {
+      position: strategy,
+      top: y ?? 0,
+      left: x ?? 0,
+      width: 'max-content',
+    },
+    reference,
+    floating,
   };
 };
