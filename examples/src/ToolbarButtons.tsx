@@ -19,10 +19,10 @@ import {
 import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
+import { ExcalidrawElementToolbarButton } from './excalidraw/ExcalidrawElementToolbarButton';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
-import { ExcalidrawElementToolbarButton  } from './excalidraw/ExcalidrawElementToolbarButton'
 
 export const ToolbarButtons = () => {
   const colorTooltip: TippyProps = { content: 'Text color' };

@@ -101,7 +101,7 @@ describe('ColorPickerToolbarDropdown', () => {
       });
 
       it('should open the color picker', () => {
-        expect(screen.getByTestId('ColorPicker')).not.toBeVisible();
+        expect(() => screen.getByTestId('ColorPicker')).toThrowError();
 
         openToolbar();
 
@@ -125,8 +125,7 @@ describe('ColorPickerToolbarDropdown', () => {
           },
         ]);
 
-        const value = await screen.findByTestId('ColorPicker');
-        expect(value).not.toBeVisible();
+        expect(() => screen.getByTestId('ColorPicker')).toThrowError();
       });
 
       it(`should clear selected ${target}`, async () => {
@@ -147,8 +146,7 @@ describe('ColorPickerToolbarDropdown', () => {
           },
         ]);
 
-        const value = await screen.findByTestId('ColorPicker');
-        expect(value).not.toBeVisible();
+        expect(() => screen.getByTestId('ColorPicker')).toThrowError();
       });
     });
   };
