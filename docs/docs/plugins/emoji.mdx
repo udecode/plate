@@ -1,0 +1,41 @@
+---
+slug: /plugins/emoji
+title: Emoji
+---
+
+The emoji plugin is using the [combobox plugin](docs/plugins/combobox).
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate
+# or
+npm install @udecode/plate-combobox
+npm install @udecode/plate-emoji
+npm install @udecode/plate-ui-combobox
+npm install @udecode/plate-ui-emoji
+```
+
+### Usage
+
+
+import { EmojiSandpack } from "./EmojiSandpack";
+
+<EmojiSandpack />
+
+### Options
+
+```ts
+interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
+  trigger?: string;
+  createEmoji?: CreateEmoji<TData>;
+  emojiTriggeringController?: IEmojiTriggeringController;
+  id?: string;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/emoji/src/createEmojiPlugin.ts)
+- [packages/ui/nodes/emoji](https://github.com/udecode/plate/tree/main/packages/ui/nodes/emoji/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

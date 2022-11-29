@@ -23,7 +23,6 @@ export default () => (
     editableProps={editableProps}
     plugins={plugins}
     initialValue={emojiValue}
-    onChange={(e) => console.info(e)}
   />
 );
 `;
