@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "18.11.2",
+  "version": "18.12.1",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-headless": "18.11.2",
-    "@udecode/plate-ui": "18.11.2"
+    "@udecode/plate-ui": "18.12.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
