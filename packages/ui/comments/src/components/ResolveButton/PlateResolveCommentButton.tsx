@@ -1,12 +1,17 @@
 import React from 'react';
 import { IconButton } from '@mui/material';
 import { Check } from '@styled-icons/material';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { useCommentById, useCommentsSelectors } from '../CommentsProvider';
 import {
   ResolveButtonCommentRootProps,
   ResolveCommentButton,
 } from './ResolveCommentButton';
-import { resolveButtonCss } from './styles';
+
+export const resolveButtonCss = css`
+  ${tw`w-full h-full`}
+`;
 
 export const PlateResolveCommentButton = (
   props: ResolveButtonCommentRootProps

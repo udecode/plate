@@ -7,7 +7,11 @@ import { commentsData, usersData } from './constants';
 
 export const Comments = ({ children }: { children: ReactNode }) => {
   return (
-    <CommentsProvider comments={commentsData} users={usersData}>
+    <CommentsProvider
+      comments={commentsData}
+      users={usersData}
+      currentUserId="1"
+    >
       {children}
 
       <PlateFloatingComments />

@@ -4,3 +4,5 @@
 
 export * from './PlateFloatingCommentsContent';
 export * from './styles';
+export { PlateNewCommentSubmitButton } from '../NewCommentSubmitButton/PlateNewCommentSubmitButton';
+export { PlateCommentReplies } from './PlateCommentReplies';

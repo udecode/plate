@@ -7,4 +7,3 @@ export * from './CommentLinkDialogCloseButton';
 export * from './CommentLinkDialogInput';
 export * from './PlateCommentLinkDialog';
 export * from './ThreadLinkDialogCopyLinkButton';
-export * from './styles';

@@ -4,7 +4,12 @@ import { MyValue } from '../typescript/plateTypes';
 export const usersData = {
   1: {
     id: '1',
-    name: 'John Doe',
+    name: 'Foo',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
+  },
+  2: {
+    id: '2',
+    name: 'Bar',
     avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
   },
 };
@@ -29,6 +34,13 @@ export const commentsData: Record<string, TComment> = {
     isResolved: true,
     createdAt: 1663453740180,
   },
+  4: {
+    id: '4',
+    userId: '2',
+    value: [{ type: 'p', children: [{ text: 'This is a reply.' }] }],
+    threadId: '3',
+    createdAt: 1663453740181,
+  },
 };
 
 export const commentsValue: MyValue = [
@@ -47,7 +59,6 @@ export const commentsValue: MyValue = [
   {
     type: 'p',
     children: [
-      { text: '' },
       {
         text: 'Lorem',
         comment: true,

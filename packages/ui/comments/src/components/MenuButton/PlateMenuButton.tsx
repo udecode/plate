@@ -1,15 +1,21 @@
 import React, { MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import { MoreVert } from '@styled-icons/material';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { MenuButton } from './MenuButton';
-import { menuButtonCss, menuButtonItemCss } from './styles';
 
 export type MenuButtonProps = {
   showLinkToThisComment?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onLinkToThisComment?: () => void;
 };
+
+export const menuButtonCss = css`
+  ${tw`p-1`};
+`;
+
+export const menuButtonItemCss = css`
+  ${tw`w-full h-full`};
+`;
 
 export const PlateMenuButton = (props: MenuButtonProps) => {
   const { showLinkToThisComment } = props;

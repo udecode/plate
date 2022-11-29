@@ -1,9 +1,11 @@
 import { getCommentKey, MARK_COMMENT } from '@udecode/plate-comments';
 import {
   deselectEditor,
+  isExpanded,
+  isText,
   nanoid,
+  setNodes,
   usePlateEditorRef,
-  withoutNormalizing,
 } from '@udecode/plate-core';
 import { useCommentsActions } from './CommentsProvider';
 
@@ -14,35 +16,37 @@ export const useAddCommentMark = () => {
 
   return () => {
     const { selection } = editor;
-    if (!selection) return;
+    if (!isExpanded(selection)) return;
 
     const id = nanoid();
 
-    withoutNormalizing(editor, () => {
-      // add comment prop to inline elements
-      // const entries = getNodes(editor, {
-      //   // TODO
-      // });
-      //
-      // Array.from(entries).forEach(([, path]) => {
-      //   setNodes(
-      //     editor,
-      //     {
-      //       [key]: comment,
-      //     },
-      //     { at: path }
-      //   );
-      // });
+    // add comment prop to inline elements
+    // const entries = getNodes(editor, {
+    //   // TODO
+    // });
+    //
+    // Array.from(entries).forEach(([, path]) => {
+    //   setNodes(
+    //     editor,
+    //     {
+    //       [key]: comment,
+    //     },
+    //     { at: path }
+    //   );
+    // });
 
-      editor.addMark(MARK_COMMENT, true);
-      editor.addMark(getCommentKey(id), true);
+    setNodes(
+      editor,
+      { [MARK_COMMENT]: true, [getCommentKey(id)]: true },
+      { match: isText, split: true }
+    );
 
-      setAddingCommentId(id);
+    try {
+      deselectEditor(editor);
+    } catch (err) {}
+
+    setTimeout(() => {
       setActiveCommentId(id);
-
-      try {
-        deselectEditor(editor);
-      } catch (err) {}
-    });
+    }, 0);
   };
 };

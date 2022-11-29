@@ -4,4 +4,3 @@
 
 export * from './CommentsPositioner';
 export * from './PlateFloatingComments';
-export * from './styles';

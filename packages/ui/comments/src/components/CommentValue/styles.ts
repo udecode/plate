@@ -2,7 +2,7 @@ import { css } from 'styled-components';
 import tw from 'twin.macro';
 
 export const threadCommentEditingRootCss = css`
-  ${tw`bg-white cursor-default block text-sm px-3 pt-0 pb-3 relative text-left text-black whitespace-normal`};
+  ${tw`bg-white cursor-default block text-sm relative text-left text-black whitespace-normal`};
   font-weight: normal;
   unicode-bidi: isolate;
   outline: none;

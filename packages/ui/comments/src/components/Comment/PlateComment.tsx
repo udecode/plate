@@ -8,9 +8,9 @@ import {
   useCommentUser,
 } from '../CommentProvider';
 import { useCommentById } from '../CommentsProvider';
+import { PlateCommentValue } from '../CommentValue/PlateCommentValue';
 import { PlateMenuButton } from '../MenuButton';
 import { PlateResolveCommentButton } from '../ResolveButton';
-import { PlateCommentValue } from '../ThreadCommentEditing/PlateCommentValue';
 import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
 import {
   commentsHeaderCss,
@@ -48,7 +48,7 @@ const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
   return (
     <div css={threadCommentRootCss}>
       <div css={commentsHeaderCss}>
-        <PlateAvatar />
+        <PlateAvatar userId={comment.userId} />
 
         <div css={threadCommentHeaderInfoCss}>
           <div css={threadCommentHeaderUserNameCss}>{user?.name}</div>
@@ -66,11 +66,13 @@ const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
         ) : null}
       </div>
 
-      {isEditing ? (
-        <PlateCommentValue />
-      ) : (
-        <div css={threadCommentTextCss}>{commentText}</div>
-      )}
+      <div tw="pl-10">
+        {isEditing ? (
+          <PlateCommentValue />
+        ) : (
+          <div css={threadCommentTextCss}>{commentText}</div>
+        )}
+      </div>
     </div>
   );
 };

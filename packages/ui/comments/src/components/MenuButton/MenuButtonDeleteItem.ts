@@ -4,15 +4,12 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 
-export type MenuButtonDeleteItemProps = {
-  onDelete?: () => void;
-} & HTMLPropsAs<'div'>;
+export type MenuButtonDeleteItemProps = {} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonDeleteItem = (
   props: MenuButtonDeleteItemProps
 ): HTMLPropsAs<'div'> => {
-  const { onDelete } = props;
-  return { ...props, onClick: onDelete };
+  return { onClick: () => {}, ...props };
 };
 
 export const MenuButtonDeleteItem = createComponentAs<MenuButtonDeleteItemProps>(

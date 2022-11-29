@@ -4,4 +4,3 @@
 
 export * from './AvatarImage';
 export * from './PlateAvatar';
-export * from './styles';

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PlateCommentTextArea } from '../TextArea/PlateCommentTextArea';
+import { PlateCommentTextArea } from '../CommentTextArea/PlateCommentTextArea';
 import { CommentValueActions } from './CommentValueActions';
 import {
   threadCommentEditingActionsCss,

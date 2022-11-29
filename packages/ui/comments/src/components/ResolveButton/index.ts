@@ -5,4 +5,3 @@
 export * from './PlateResolveCommentButton';
 export * from './ResolveCommentButton';
 export * from './ResolveCommentButton';
-export * from './styles';

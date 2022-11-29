@@ -20,10 +20,6 @@ import {
   createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
 } from '../../plugins/createNodeFactoryPlugin';
-import {
-  createPrevSelectionPlugin,
-  KEY_PREV_SELECTION,
-} from '../../plugins/createPrevSelectionPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import {
   createDeserializeHtmlPlugin,
@@ -86,10 +82,10 @@ export const setPlatePlugins = <
       );
     }
     if (typeof dcp !== 'object' || !dcp?.selection) {
-      plugins.push(
-        (editor?.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
-          createPrevSelectionPlugin()
-      );
+      // plugins.push(
+      //   (editor?.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
+      //     createPrevSelectionPlugin()
+      // );
     }
     if (typeof dcp !== 'object' || !dcp?.deserializeHtml) {
       plugins.push(

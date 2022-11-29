@@ -29,6 +29,8 @@ export const createPrevSelectionPlugin = createPluginFactory({
         return;
       }
 
+      console.log(operation);
+
       apply(operation);
     };
 

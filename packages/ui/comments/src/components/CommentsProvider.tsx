@@ -1,6 +1,13 @@
 import React, { ReactNode } from 'react';
 import { CommentUser, TComment } from '@udecode/plate-comments';
-import { createAtomStore, JotaiProvider } from '@udecode/plate-core';
+import {
+  createAtomStore,
+  getNodeString,
+  JotaiProvider,
+  nanoid,
+  Value,
+  WithPartial,
+} from '@udecode/plate-core';
 import { useJotaiProviderInitialValues } from './useJotaiProviderInitialValues';
 
 export const SCOPE_COMMENTS = Symbol('comments');
@@ -27,6 +34,8 @@ export interface CommentsStoreState {
   activeCommentId: string | null;
 
   addingCommentId: string | null;
+
+  editingValue: Value;
 
   // commentFactory: (comment: CommentFactoryParam): Comment => {
   //   return {
@@ -62,6 +71,8 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
 
     addingCommentId: null,
 
+    editingValue: [{ type: 'p', children: [{ text: '' }] }],
+
     // commentFactory: (comment: CommentFactoryParam): Comment => {
     //   return {
     //     id: nanoid(),
@@ -95,7 +106,7 @@ export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;
 export const useCommentsActions = () => useCommentsStore().set;
 
-export const useCommentById = (id: string | null): TComment | null => {
+export const useCommentById = (id?: string | null): TComment | null => {
   const comments = useCommentsSelectors().comments();
   if (!id) return null;
 
@@ -117,17 +128,69 @@ export const useCurrentUser = (): CommentUser | null => {
   return users[currentUserId];
 };
 
-export const useSetComment = (id: string | null) => {
+export const useEditingCommentText = () => {
+  const editingValue = useCommentsSelectors().editingValue();
+
+  return getNodeString(editingValue?.[0]);
+};
+
+export const useResetCommentEditingValue = () => {
+  const setEditingValue = useCommentsActions().editingValue();
+
+  return () => {
+    setEditingValue([{ type: 'p', children: [{ text: '' }] }]);
+  };
+};
+
+export const useSetComment = (id?: string | null) => {
   const comment = useCommentById(id);
 
   const [comments, setComments] = useCommentsStates().comments();
 
   return (value: Partial<TComment>) => {
-    if (!id) return;
+    if (!value.id) return;
 
     setComments({
       ...comments,
-      [id]: { ...comment, ...value } as any,
+      [value.id]: { ...comment, ...value } as any,
+    });
+  };
+};
+
+export const useAddRawComment = () => {
+  const [comments, setComments] = useCommentsStates().comments();
+  const currentUserId = useCommentsSelectors().currentUserId();
+
+  return (id: string) => {
+    if (!currentUserId) return;
+
+    setComments({
+      ...comments,
+      [id]: {
+        id,
+        userId: currentUserId,
+      },
+    } as any);
+  };
+};
+
+export const useAddComment = () => {
+  const [comments, setComments] = useCommentsStates().comments();
+  const currentUserId = useCommentsSelectors().currentUserId();
+
+  return (value: WithPartial<TComment, 'id' | 'userId' | 'createdAt'>) => {
+    if (!currentUserId) return;
+
+    const id = value.id ?? nanoid();
+
+    setComments({
+      ...comments,
+      [id]: {
+        id,
+        userId: currentUserId,
+        createdAt: Date.now(),
+        ...value,
+      },
     });
   };
 };

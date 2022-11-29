@@ -1,44 +1,39 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useOnClickOutside } from '@udecode/plate-core';
 import { SCOPE_ACTIVE_COMMENT } from '../ActiveCommentProvider';
+import { PlateAvatar } from '../Avatar/index';
 import { PlateComment } from '../Comment';
+import { CommentProvider, useCommentReplies } from '../CommentProvider';
 import {
-  CommentProvider,
-  useCommentReplies,
-  useCommentText,
-} from '../CommentProvider';
-import { useCommentsActions, useCommentsSelectors } from '../CommentsProvider';
-import { PlateCommentTextArea } from '../TextArea';
+  useCommentById,
+  useCommentsActions,
+  useCommentsSelectors,
+} from '../CommentsProvider';
+import { PlateCommentTextArea } from '../CommentTextArea';
+import { PlateNewCommentSubmitButton } from '../NewCommentSubmitButton/PlateNewCommentSubmitButton';
+import { PlateCommentReplies } from './PlateCommentReplies';
 import {
-  cancelCommentButtonCss,
   commentActionsCss,
   commentFormCss,
   commentsRootCss,
-  submitCommentButtonCss,
   threadCommentInputReplyCss,
 } from './styles';
 
 export type PlateFloatingCommentsContentProps = {
-  showResolveCommentButton: boolean;
-  showUnresolveCommentButton: boolean;
-  showMoreButton: boolean;
   disableForm?: boolean;
 };
 
 export const PlateFloatingCommentsContent = (
   props: PlateFloatingCommentsContentProps
 ) => {
-  const { showMoreButton, disableForm } = props;
+  const { disableForm } = props;
 
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
-  const commentText = useCommentText(activeCommentId);
-  const commentReplies = useCommentReplies(activeCommentId);
+  const currentUserId = useCommentsSelectors().currentUserId();
+  const activeComment = useCommentById(activeCommentId);
+  const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const submitButtonText = useMemo(() => (!commentText ? 'Comment' : 'Reply'), [
-    commentText,
-  ]);
 
   const ref = useRef(null);
 
@@ -50,51 +45,47 @@ export const PlateFloatingCommentsContent = (
   );
 
   return (
-    <CommentProvider scope={SCOPE_ACTIVE_COMMENT} id={activeCommentId}>
+    <CommentProvider
+      key={activeCommentId}
+      id={activeCommentId}
+      scope={SCOPE_ACTIVE_COMMENT}
+    >
       <div css={commentsRootCss} ref={ref}>
-        <PlateComment
-          key={activeCommentId}
-          commentId={activeCommentId}
-          showResolveCommentButton
-          showUnresolveCommentButton
-          showMoreButton={showMoreButton}
-          showLinkToThisComment
-        />
+        {!!activeComment && (
+          <>
+            <PlateComment
+              key={activeCommentId}
+              commentId={activeCommentId}
+              showResolveCommentButton
+              showUnresolveCommentButton
+              // showMoreButton={showMoreButton}
+              showLinkToThisComment
+            />
 
-        {Object.keys(commentReplies).map((id) => (
-          <PlateComment
-            key={id}
-            commentId={id}
-            showMoreButton={showMoreButton}
-          />
-        ))}
+            <PlateCommentReplies />
+          </>
+        )}
 
-        <div>
-          {!disableForm ? (
-            <div
-              css={[
-                commentFormCss,
-                !!commentReplies.length && threadCommentInputReplyCss,
-              ]}
-            >
-              <PlateCommentTextArea ref={textAreaRef} />
+        {!!currentUserId && !disableForm && (
+          <div
+            css={[
+              commentFormCss,
+              !!commentReplies.length && threadCommentInputReplyCss,
+            ]}
+          >
+            <div tw="flex space-x-2 w-full">
+              <PlateAvatar userId={currentUserId} />
 
-              <div css={commentActionsCss}>
-                <button
-                  type="button"
-                  css={submitCommentButtonCss}
-                  disabled={!commentText?.trim().length}
-                >
-                  {submitButtonText}
-                </button>
+              <div tw="flex flex-col flex-grow space-y-2">
+                <PlateCommentTextArea ref={textAreaRef} />
 
-                <button css={cancelCommentButtonCss} type="button">
-                  Cancel
-                </button>
+                <div css={commentActionsCss}>
+                  <PlateNewCommentSubmitButton />
+                </div>
               </div>
             </div>
-          ) : null}
-        </div>
+          </div>
+        )}
       </div>
     </CommentProvider>
   );

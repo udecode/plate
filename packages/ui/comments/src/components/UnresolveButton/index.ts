@@ -4,5 +4,3 @@
 
 export * from './PlateUnresolveCommentButton';
 export * from './UnresolveCommentButton';
-export * from './UnresolveCommentButtonRoot';
-export * from './styles';

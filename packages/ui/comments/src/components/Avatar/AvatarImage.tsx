@@ -3,13 +3,15 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { useCommentUser } from '../CommentProvider';
+import { useUserById } from '../CommentsProvider';
 
-export type AvatarImageProps = {} & HTMLPropsAs<'img'>;
+export type AvatarImageProps = { userId: string } & HTMLPropsAs<'img'>;
 
-export const useAvatarImage = (props: AvatarImageProps): HTMLPropsAs<'img'> => {
-  const user = useCommentUser();
-
+export const useAvatarImage = ({
+  userId,
+  ...props
+}: AvatarImageProps): HTMLPropsAs<'img'> => {
+  const user = useUserById(userId);
   const src = user?.avatarUrl;
   const alt = `Avatar of ${user?.name}`;
 

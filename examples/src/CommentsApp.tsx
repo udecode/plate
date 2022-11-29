@@ -15,12 +15,7 @@ import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
-  [
-    ...basicNodesPlugins,
-    createCommentsPlugin({
-      renderAfterEditable: () => <Comments />,
-    }),
-  ],
+  [...basicNodesPlugins, createCommentsPlugin()],
   {
     components: {
       ...plateUI,

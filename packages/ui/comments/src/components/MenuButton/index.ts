@@ -7,4 +7,3 @@ export * from './MenuButtonDeleteItem';
 export * from './MenuButtonEditItem';
 export * from './MenuButtonLinkItem';
 export * from './PlateMenuButton';
-export * from './styles';

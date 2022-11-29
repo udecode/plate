@@ -4,15 +4,12 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 
-export type MenuButtonLinkItemProps = {
-  onLinkToThisComment?: () => void;
-} & HTMLPropsAs<'div'>;
+export type MenuButtonLinkItemProps = {} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonLinkItem = (
   props: MenuButtonLinkItemProps
 ): HTMLPropsAs<'div'> => {
-  const { onLinkToThisComment } = props;
-  return { ...props, onClick: onLinkToThisComment };
+  return { onClick: () => {}, ...props };
 };
 
 export const MenuButtonLinkItem = createComponentAs<MenuButtonLinkItemProps>(

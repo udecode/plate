@@ -39,17 +39,13 @@ export const PlateCommentHeader = (props: PlateCommentHeaderProps) => {
       ]}
     >
       <div css={userHeaderAvatarContainerCss}>
-        <PlateAvatar />
+        <PlateAvatar userId={comment.userId} />
       </div>
 
       <div css={userHeaderAssignedToContainerCss}>
         <div css={userHeaderAssignedToTextCss}>Author</div>
 
-        <CommentUserName
-          {...props}
-          userId={comment.userId}
-          css={commentUserCss}
-        />
+        <CommentUserName {...props} css={commentUserCss} />
       </div>
 
       <div css={userHeaderActionsCss}>

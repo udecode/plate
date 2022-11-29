@@ -4,15 +4,12 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 
-export type MenuButtonEditItemProps = {
-  onEdit?: () => void;
-} & HTMLPropsAs<'div'>;
+export type MenuButtonEditItemProps = {} & HTMLPropsAs<'div'>;
 
 export const useMenuButtonEditItem = (
   props: MenuButtonEditItemProps
 ): HTMLPropsAs<'div'> => {
-  const { onEdit } = props;
-  return { ...props, onClick: onEdit };
+  return { onClick: () => {}, ...props };
 };
 
 export const MenuButtonEditItem = createComponentAs<MenuButtonEditItemProps>(

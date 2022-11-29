@@ -4,4 +4,3 @@
 
 export * from './CommentTextArea';
 export * from './PlateCommentTextArea';
-export * from './styles';
