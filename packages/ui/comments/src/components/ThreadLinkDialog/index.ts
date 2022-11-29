@@ -3,7 +3,7 @@
  */
 
 export * from './CommentLinkDialog';
-export * from './CommentLinkDialogCloseButtonRoot';
+export * from './CommentLinkDialogCloseButton';
 export * from './CommentLinkDialogInput';
 export * from './PlateCommentLinkDialog';
 export * from './ThreadLinkDialogCopyLinkButton';

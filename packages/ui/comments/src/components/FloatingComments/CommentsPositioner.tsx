@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  useActiveCommentNode,
-  useCommentsSelectors,
-} from '@udecode/plate-comments';
-import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
@@ -11,6 +7,8 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-core';
 import { getCommentPosition } from '../../hooks/index';
+import { useCommentsSelectors } from '../CommentsProvider';
+import { useActiveCommentNode } from '../useActiveCommentNode';
 
 export interface CommentsPositionerProps extends HTMLPropsAs<'div'> {}
 

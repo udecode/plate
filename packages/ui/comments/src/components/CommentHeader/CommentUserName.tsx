@@ -1,4 +1,3 @@
-import { useCommentsSelectors } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
@@ -6,19 +5,17 @@ import {
 } from '@udecode/plate-core';
 import { capitalize } from 'lodash';
 import { getUserName } from '../../utils';
+import { useCommentUser } from '../CommentProvider';
+import { useCommentsSelectors } from '../CommentsProvider';
 
-export type CommentUserNameProps = {
-  userId: string | null;
-} & HTMLPropsAs<'div'>;
+export type CommentUserNameProps = {} & HTMLPropsAs<'div'>;
 
 export const useCommentUserName = (
   props: CommentUserNameProps
 ): HTMLPropsAs<'div'> => {
-  const { userId } = props;
-
   const currentUserId = useCommentsSelectors().currentUserId();
-  const user = useCommentsSelectors().user(userId);
-  const isCurrentUser = currentUserId === userId;
+  const user = useCommentUser();
+  const isCurrentUser = currentUserId === user?.id;
 
   const text = capitalize(
     getUserName({

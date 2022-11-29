@@ -1,7 +1,8 @@
 import React from 'react';
-import { useCommentsSelectors } from '@udecode/plate-comments';
 import { css } from 'styled-components';
 import { PlateAvatar } from '../Avatar';
+import { useComment } from '../CommentProvider';
+import { useCommentsSelectors } from '../CommentsProvider';
 import { PlateResolveCommentButton } from '../ResolveButton';
 import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
 import { CommentUserName } from './CommentUserName';
@@ -15,19 +16,14 @@ import {
 } from './styles';
 
 type PlateCommentHeaderProps = {
-  commentId: string;
   showResolveCommentButton: boolean;
   showUnresolveCommentButton: boolean;
 };
 
 export const PlateCommentHeader = (props: PlateCommentHeaderProps) => {
-  const {
-    commentId,
-    showUnresolveCommentButton,
-    showResolveCommentButton,
-  } = props;
+  const { showUnresolveCommentButton, showResolveCommentButton } = props;
 
-  const comment = useCommentsSelectors().comment(commentId);
+  const comment = useComment()!;
 
   const currentUserId = useCommentsSelectors().currentUserId();
   const isCurrentUser = currentUserId === comment.userId;
@@ -43,7 +39,7 @@ export const PlateCommentHeader = (props: PlateCommentHeaderProps) => {
       ]}
     >
       <div css={userHeaderAvatarContainerCss}>
-        <PlateAvatar userId={comment.userId} />
+        <PlateAvatar />
       </div>
 
       <div css={userHeaderAssignedToContainerCss}>

@@ -1,13 +1,13 @@
-import { ThreadComment } from '../types';
-import { useCommentsSelectors } from './commentsStore';
+import { TComment } from '@udecode/plate-comments';
+import { useCommentsSelectors } from './CommentsProvider';
 
 export const useResolvedComments = () => {
   const comments = useCommentsSelectors().comments();
 
-  const res: ThreadComment[] = [];
+  const res: TComment[] = [];
 
   Object.keys(comments).forEach((key) => {
-    const comment = comments[key] as ThreadComment;
+    const comment = comments[key];
     if (comment?.isResolved) {
       res.push(comment);
     }

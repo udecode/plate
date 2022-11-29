@@ -1,24 +1,22 @@
-import { commentsActions } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
+import { useCommentsSelectors, useSetComment } from '../CommentsProvider';
 
-export type UnresolveCommentButtonRootProps = HTMLPropsAs<'div'> & {
-  commentId: string;
-  onUnresolveComment?: (id: string) => void;
-};
+export type UnresolveCommentButtonRootProps = HTMLPropsAs<'div'> & {};
 
 export const useUnresolveCommentButtonRoot = ({
-  commentId,
-  onUnresolveComment,
   ...props
 }: UnresolveCommentButtonRootProps): HTMLPropsAs<'div'> => {
+  const activeCommentId = useCommentsSelectors().activeCommentId();
+  const setComments = useSetComment(activeCommentId);
+
   return {
     onClick: () => {
-      onUnresolveComment?.(commentId);
-      commentsActions.setComment(commentId, {
+      // onUnresolveComment?.(commentId);
+      setComments({
         isResolved: false,
       });
     },

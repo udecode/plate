@@ -6,7 +6,7 @@ export interface CommentUser {
   avatarUrl?: string;
 }
 
-export interface BaseComment {
+export interface TComment {
   id: string;
 
   value: Value;
@@ -14,17 +14,10 @@ export interface BaseComment {
   createdAt: number;
 
   userId: string;
-}
 
-export interface ReplyComment extends BaseComment {
   threadId?: string;
-}
-
-export interface ThreadComment extends BaseComment {
   isResolved?: boolean;
 }
-
-export type Comment = ThreadComment | ReplyComment;
 
 // TODO: check TThreadElement, TThread
 export interface TCommentText extends TText {

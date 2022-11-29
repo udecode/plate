@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import {
-  commentsActions,
   getCommentKeyId,
   isCommentKey,
   TCommentText,
 } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
-import { useCommentColors } from './useCommentColors';
+import { useCommentsActions } from '../CommentsProvider';
 
 export const PlateCommentLeaf = <V extends Value = Value>(
   props: StyledLeafProps<V, TCommentText>
 ) => {
   const { children, nodeProps, leaf } = props;
 
-  const { backgroundColor } = useCommentColors(leaf);
-
   const [commentIds, setCommentIds] = useState<string[]>([]);
+  const setActiveCommentId = useCommentsActions().activeCommentId();
 
   useEffect(() => {
     const ids: string[] = [];
@@ -38,10 +36,9 @@ export const PlateCommentLeaf = <V extends Value = Value>(
       nodeProps={{
         onMouseDown: (e: MouseEvent) => {
           e.stopPropagation();
-          console.log(lastCommentId);
-          commentsActions.activeCommentId(lastCommentId);
+          setActiveCommentId(lastCommentId);
         },
-        style: { backgroundColor },
+        style: { backgroundColor: `rgba(255,212,0, 0.56)` },
         ...nodeProps,
       }}
     >

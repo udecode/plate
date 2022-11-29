@@ -1,23 +1,19 @@
-import { useCommentsSelectors } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
+import { useCommentUser } from '../CommentProvider';
 
-export type AvatarImageProps = {
-  userId: string;
-} & HTMLPropsAs<'img'>;
+export type AvatarImageProps = {} & HTMLPropsAs<'img'>;
 
 export const useAvatarImage = (props: AvatarImageProps): HTMLPropsAs<'img'> => {
-  const { userId } = props;
-
-  const user = useCommentsSelectors().user(userId);
+  const user = useCommentUser();
 
   const src = user?.avatarUrl;
   const alt = `Avatar of ${user?.name}`;
 
-  return { ...props, src, alt };
+  return { src, alt, ...props };
 };
 
 export const AvatarImage = createComponentAs<AvatarImageProps>((props) => {

@@ -1,6 +1,6 @@
+import { findCommentNodeById } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
-import { useCommentsSelectors } from './commentsStore';
-import { findCommentNodeById } from './findCommentNodeById';
+import { useCommentsSelectors } from './CommentsProvider';
 
 export const useActiveCommentNode = () => {
   const editor = usePlateEditorRef();

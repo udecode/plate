@@ -1,26 +1,20 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useCommentsSelectors } from '@udecode/plate-comments';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
   useComposedRef,
 } from '@udecode/plate-core';
+import { SCOPE_ACTIVE_COMMENT } from '../ActiveCommentProvider';
+import { useComment } from '../CommentProvider';
 
-export type CommentTextAreaProps = {
-  commentId: string;
-  onValueChange?: (newValue: string) => void;
-  onSubmit?: () => void;
-} & HTMLPropsAs<'textarea'>;
+export type CommentTextAreaProps = {} & HTMLPropsAs<'textarea'>;
 
 export const useCommentTextArea = ({
-  commentId,
-  onValueChange,
-  onSubmit,
   ref: _ref,
   ...props
 }: CommentTextAreaProps): HTMLPropsAs<'textarea'> => {
-  const comment = useCommentsSelectors().comment(commentId);
+  const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
 
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const ref = useComposedRef(textAreaRef, _ref);
@@ -36,12 +30,9 @@ export const useCommentTextArea = ({
 
   const placeholder = `${!comment.value ? 'Reply...' : 'Add a comment...'}`;
 
-  const onChange = useCallback(
-    (event) => {
-      onValueChange?.(event.target.value);
-    },
-    [onValueChange]
-  );
+  const onChange = useCallback(() => {
+    // onValueChange?.(event.target.value);
+  }, []);
 
   return { placeholder, rows: 1, onChange, ref, ...props };
 };

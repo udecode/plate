@@ -1,27 +1,22 @@
 import React, { MouseEventHandler, useCallback } from 'react';
-import { addCommentMark } from '@udecode/plate-comments';
-import { usePlateEditorRef } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
+import { useAddCommentMark } from './useAddCommentMark';
 
-export type CommentToolbarButtonProps = {
-  onAddThread?: () => void;
-} & ToolbarButtonProps;
+export type CommentToolbarButtonProps = ToolbarButtonProps;
 
 export const useCommentToolbarButton = (props: CommentToolbarButtonProps) => {
-  const { onAddThread, ...otherProps } = props;
-
-  const editor = usePlateEditorRef();
+  const addCommentMark = useAddCommentMark();
 
   const onMouseDown = useCallback<MouseEventHandler<HTMLSpanElement>>(
     (event) => {
       event.preventDefault();
 
-      addCommentMark(editor);
+      addCommentMark();
     },
-    [editor]
+    [addCommentMark]
   );
 
-  return { ...otherProps, onMouseDown };
+  return { onMouseDown, ...props };
 };
 
 export const CommentToolbarButton = (props: CommentToolbarButtonProps) => {

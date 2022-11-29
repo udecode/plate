@@ -1,10 +1,16 @@
 // import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React from 'react';
-import { useCommentsSelectors } from '@udecode/plate-comments';
 import { PlateAvatar } from '../Avatar';
+import {
+  CommentProvider,
+  useComment,
+  useCommentText,
+  useCommentUser,
+} from '../CommentProvider';
+import { useCommentById } from '../CommentsProvider';
 import { PlateMenuButton } from '../MenuButton';
 import { PlateResolveCommentButton } from '../ResolveButton';
-import { PlateThreadCommentEditing } from '../ThreadCommentEditing/PlateThreadCommentEditing';
+import { PlateCommentValue } from '../ThreadCommentEditing/PlateCommentValue';
 import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
 import {
   commentsHeaderCss,
@@ -24,18 +30,17 @@ type PlateCommentProps = {
   disableTextarea?: boolean;
 };
 
-export const PlateComment = (props: PlateCommentProps) => {
+const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
   const {
-    commentId,
     showLinkToThisComment,
     showMoreButton,
     showUnresolveCommentButton,
     showResolveCommentButton,
   } = props;
 
-  const comment = useCommentsSelectors().comment(commentId);
-  const commentText = useCommentsSelectors().commentText(commentId);
-  const user = useCommentsSelectors().commentUser(commentId);
+  const comment = useComment()!;
+  const commentText = useCommentText();
+  const user = useCommentUser();
 
   // TODO
   const isEditing = false;
@@ -43,7 +48,7 @@ export const PlateComment = (props: PlateCommentProps) => {
   return (
     <div css={threadCommentRootCss}>
       <div css={commentsHeaderCss}>
-        <PlateAvatar userId={comment.userId} />
+        <PlateAvatar />
 
         <div css={threadCommentHeaderInfoCss}>
           <div css={threadCommentHeaderUserNameCss}>{user?.name}</div>
@@ -52,13 +57,9 @@ export const PlateComment = (props: PlateCommentProps) => {
           </div>
         </div>
 
-        {showResolveCommentButton ? (
-          <PlateResolveCommentButton commentId={commentId} />
-        ) : null}
+        {showResolveCommentButton ? <PlateResolveCommentButton /> : null}
 
-        {showUnresolveCommentButton && (
-          <PlateUnresolveCommentButton commentId={commentId} />
-        )}
+        {showUnresolveCommentButton && <PlateUnresolveCommentButton />}
 
         {showMoreButton ? (
           <PlateMenuButton showLinkToThisComment={showLinkToThisComment} />
@@ -66,10 +67,21 @@ export const PlateComment = (props: PlateCommentProps) => {
       </div>
 
       {isEditing ? (
-        <PlateThreadCommentEditing commentId={commentId} />
+        <PlateCommentValue />
       ) : (
         <div css={threadCommentTextCss}>{commentText}</div>
       )}
     </div>
+  );
+};
+
+export const PlateComment = ({ commentId, ...props }: PlateCommentProps) => {
+  const comment = useCommentById(commentId);
+  if (!comment) return null;
+
+  return (
+    <CommentProvider id={commentId}>
+      <PlateCommentContent {...props} />
+    </CommentProvider>
   );
 };

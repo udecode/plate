@@ -3,4 +3,3 @@
  */
 
 export * from './PlateCommentLeaf';
-export * from './useCommentColors';

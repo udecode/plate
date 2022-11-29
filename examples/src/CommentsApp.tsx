@@ -32,12 +32,14 @@ const plugins = createMyPlugins(
 export default () => {
   return (
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
-      <Toolbar>
-        <CommentToolbarButton icon={<AddComment />} />
-        {/* <ToggleShowThreadsButton icon={<Comment />} /> */}
-      </Toolbar>
+      <Comments>
+        <Toolbar>
+          <CommentToolbarButton icon={<AddComment />} />
+          {/* <ToggleShowThreadsButton icon={<Comment />} /> */}
+        </Toolbar>
 
-      <Plate<MyValue> editableProps={editableProps} />
+        <Plate<MyValue> editableProps={editableProps} />
+      </Comments>
     </PlateProvider>
   );
 };

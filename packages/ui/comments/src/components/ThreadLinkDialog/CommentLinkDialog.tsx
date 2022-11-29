@@ -1,9 +1,9 @@
-import { CommentLinkDialogCloseButtonRoot } from './CommentLinkDialogCloseButtonRoot';
+import { CommentLinkDialogCloseButton } from './CommentLinkDialogCloseButton';
 import { CommentLinkDialogInput } from './CommentLinkDialogInput';
-import { CommentLinkDialogCopyLinkRoot } from './ThreadLinkDialogCopyLinkButton';
+import { CommentLinkDialogCopyLink } from './ThreadLinkDialogCopyLinkButton';
 
 export const CommentLinkDialog = {
-  CloseButtonRoot: CommentLinkDialogCloseButtonRoot,
-  CopyLinkRoot: CommentLinkDialogCopyLinkRoot,
+  CloseButton: CommentLinkDialogCloseButton,
+  CopyLink: CommentLinkDialogCopyLink,
   Input: CommentLinkDialogInput,
 };

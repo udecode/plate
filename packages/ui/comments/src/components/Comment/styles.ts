@@ -8,19 +8,16 @@ export const threadCommentRootCss = css`
 export const commentsHeaderCss = css`
   ${tw`box-content cursor-default flex items-center h-10 text-sm m-0 p-3 text-left text-black whitespace-nowrap`};
   font-weight: normal;
-  direction: ltr;
 `;
 
 export const threadCommentHeaderInfoCss = css`
   ${tw`cursor-pointer flex flex-col justify-center flex-grow text-sm pl-2 text-left text-black truncate`};
   font-weight: normal;
-  direction: ltr;
   align-items: start;
 `;
 
 export const threadCommentHeaderUserNameCss = css`
   ${tw`cursor-default self-stretch font-medium h-4 text-sm leading-5 my-0 ml-0 mr-1 text-left tracking-wide truncate`};
-  direction: ltr;
   color: rgba(60, 64, 67, 1);
 `;
 

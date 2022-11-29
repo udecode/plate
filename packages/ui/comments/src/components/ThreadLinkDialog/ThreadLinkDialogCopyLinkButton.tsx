@@ -4,26 +4,26 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 import { getCommentUrl } from '../../utils/index';
+import { useCommentSelectors } from '../CommentProvider';
 
-export type ThreadLinkDialogCopyLinkRootProps = {
-  commentId: string;
-} & HTMLPropsAs<'div'>;
+export type CommentLinkDialogCopyLinkProps = {} & HTMLPropsAs<'div'>;
 
-export const useThreadLinkDialogCopyLinkRoot = ({
-  commentId,
+export const useCommentLinkDialogCopyLink = ({
   ...props
-}: ThreadLinkDialogCopyLinkRootProps): HTMLPropsAs<'div'> => {
+}: CommentLinkDialogCopyLinkProps): HTMLPropsAs<'div'> => {
+  const id = useCommentSelectors().id();
+
   return {
     onClick: () => {
-      navigator.clipboard.writeText(getCommentUrl(commentId));
+      navigator.clipboard.writeText(getCommentUrl(id));
     },
     ...props,
   };
 };
 
-export const CommentLinkDialogCopyLinkRoot = createComponentAs<ThreadLinkDialogCopyLinkRootProps>(
+export const CommentLinkDialogCopyLink = createComponentAs<CommentLinkDialogCopyLinkProps>(
   (props) => {
-    const htmlProps = useThreadLinkDialogCopyLinkRoot(props);
+    const htmlProps = useCommentLinkDialogCopyLink(props);
     return createElementAs('div', htmlProps);
   }
 );

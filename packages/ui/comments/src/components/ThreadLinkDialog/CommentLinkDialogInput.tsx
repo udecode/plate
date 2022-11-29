@@ -4,16 +4,18 @@ import {
   HTMLPropsAs,
 } from '@udecode/plate-core';
 import { getCommentUrl } from '../../utils/index';
+import { useCommentSelectors } from '../CommentProvider';
 
-export type CommentLinkDialogInputProps = {
-  commentId: string;
-} & HTMLPropsAs<'input'>;
+export type CommentLinkDialogInputProps = {} & HTMLPropsAs<'input'>;
 
 export const useCommentLinkDialogInput = ({
-  commentId,
   ...props
 }: CommentLinkDialogInputProps): HTMLPropsAs<'input'> => {
-  return { defaultValue: getCommentUrl(commentId), readOnly: true, ...props };
+  return {
+    defaultValue: getCommentUrl(useCommentSelectors().id()),
+    readOnly: true,
+    ...props,
+  };
 };
 
 export const CommentLinkDialogInput = createComponentAs<CommentLinkDialogInputProps>(

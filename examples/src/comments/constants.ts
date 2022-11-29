@@ -1,4 +1,4 @@
-import { Comment } from '@udecode/plate-comments';
+import { TComment } from '@udecode/plate-comments';
 import { MyValue } from '../typescript/plateTypes';
 
 export const usersData = {
@@ -9,7 +9,7 @@ export const usersData = {
   },
 };
 
-export const commentsData: Record<string, Comment> = {
+export const commentsData: Record<string, TComment> = {
   1: {
     id: '1',
     userId: '1',

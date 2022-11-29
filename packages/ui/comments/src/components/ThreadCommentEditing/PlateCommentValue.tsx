@@ -1,32 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PlateCommentTextArea } from '../TextArea/PlateCommentTextArea';
+import { CommentValueActions } from './CommentValueActions';
 import {
   threadCommentEditingActionsCss,
   threadCommentEditingCancelButtonCss,
   threadCommentEditingRootCss,
   threadCommentEditingSaveButtonCss,
 } from './styles';
-import { ThreadCommentEditing } from './ThreadCommentEditing';
 
-export type PlateThreadCommentEditingProps = {
-  commentId: string;
+export type PlateCommentValueProps = {
   defaultText?: string;
-  onSave?: (text: string) => void;
-  onCancel?: () => void;
 };
 
-export const PlateThreadCommentEditing = (
-  props: PlateThreadCommentEditingProps
-) => {
-  const { commentId, defaultText = '', onSave } = props;
+export const PlateCommentValue = (props: PlateCommentValueProps) => {
+  const { defaultText = '' } = props;
 
   const [value, setValue] = useState<string>(defaultText);
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const onSubmit = useCallback(() => {
-    onSave?.(value);
-  }, [value, onSave]);
+    // onSave?.(value);
+  }, []);
 
   const onValueChange = useCallback((newValue) => {
     setValue(newValue);
@@ -41,26 +36,20 @@ export const PlateThreadCommentEditing = (
 
   return (
     <div css={threadCommentEditingRootCss}>
-      <PlateCommentTextArea
-        ref={textAreaRef}
-        commentId={commentId}
-        onSubmit={onSubmit}
-        onValueChange={onValueChange}
-      />
+      <PlateCommentTextArea ref={textAreaRef} />
       <div css={threadCommentEditingActionsCss}>
-        <ThreadCommentEditing.SaveButton
+        <CommentValueActions.SaveButton
           {...props}
-          commentId={commentId}
           css={threadCommentEditingSaveButtonCss}
         >
           Save
-        </ThreadCommentEditing.SaveButton>
-        <ThreadCommentEditing.CancelButton
+        </CommentValueActions.SaveButton>
+        <CommentValueActions.CancelButton
           {...props}
           css={threadCommentEditingCancelButtonCss}
         >
           Cancel
-        </ThreadCommentEditing.CancelButton>
+        </CommentValueActions.CancelButton>
       </div>
     </div>
   );

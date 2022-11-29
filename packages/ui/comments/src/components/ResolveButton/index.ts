@@ -3,6 +3,6 @@
  */
 
 export * from './PlateResolveCommentButton';
-export * from './ResolveButtonCommentRoot';
+export * from './ResolveCommentButton';
 export * from './ResolveCommentButton';
 export * from './styles';

@@ -1,6 +1,6 @@
-import { Comment, TCommentText } from '../types';
+import { TComment, TCommentText } from '../types';
 
-export const isThreadComment = (node: TCommentText, comment: Comment) => {
+export const isThreadComment = (node: TCommentText, comment: TComment) => {
   // const comment = getCommentValue(node, )
   // return node.comments.indexOf(comment) === 0;
   // TODO

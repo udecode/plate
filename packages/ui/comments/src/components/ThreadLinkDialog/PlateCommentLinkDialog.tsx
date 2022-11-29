@@ -8,10 +8,6 @@ import {
   commentLinkDialogInputCss,
 } from './styles';
 
-export type PlateCommentLinkDialogProps = {
-  commentId: string;
-};
-
 const style = {
   position: 'absolute' as const,
   top: '50%',
@@ -29,7 +25,7 @@ const style = {
 /**
  * wip
  */
-export const PlateCommentLinkDialog = (props: PlateCommentLinkDialogProps) => {
+export const PlateCommentLinkDialog = () => {
   return (
     <>
       <Modal open>
@@ -39,21 +35,20 @@ export const PlateCommentLinkDialog = (props: PlateCommentLinkDialogProps) => {
               Link to thread
             </Typography>
             <IconButton color="error">
-              <CommentLinkDialog.CloseButtonRoot {...props}>
+              <CommentLinkDialog.CloseButton>
                 <Close size={22} />
-              </CommentLinkDialog.CloseButtonRoot>
+              </CommentLinkDialog.CloseButton>
             </IconButton>
           </div>
           <CommentLinkDialog.Input
-            {...props}
             type="text"
             css={commentLinkDialogInputCss}
           />
           <div css={commentLinkDialogCopyButtonCss}>
             <Button variant="text" color="primary" size="small">
-              <CommentLinkDialog.CopyLinkRoot {...props}>
+              <CommentLinkDialog.CopyLink>
                 <Typography>Copy link</Typography>
-              </CommentLinkDialog.CopyLinkRoot>
+              </CommentLinkDialog.CopyLink>
             </Button>
           </div>
         </Box>
