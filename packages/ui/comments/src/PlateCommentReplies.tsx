@@ -2,7 +2,7 @@ import React from 'react';
 import {
   SCOPE_ACTIVE_COMMENT,
   useCommentReplies,
-} from '../../../comments/src/stores/comment/CommentProvider';
+} from '@udecode/plate-comments';
 import { PlateComment } from './PlateComment';
 
 export const PlateCommentReplies = () => {

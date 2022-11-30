@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
+import { useCommentsSelectors } from '@udecode/plate-comments';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { useCommentsSelectors } from '../../../comments/src/stores/comments/CommentsProvider';
 import { PlateAvatar } from './PlateAvatar';
 import { PlateCommentNewSubmitButton } from './PlateCommentNewSubmitButton';
 import { PlateCommentNewTextarea } from './PlateCommentNewTextarea';

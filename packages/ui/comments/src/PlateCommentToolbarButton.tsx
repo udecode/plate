@@ -1,7 +1,6 @@
 import React, { MouseEventHandler, useCallback } from 'react';
+import { useAddCommentMark, useCommentsActions } from '@udecode/plate-comments';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
-import { useCommentsActions } from '../../../comments/src/stores/comments/CommentsProvider';
-import { useAddCommentMark } from '../../../comments/src/stores/comments/useAddCommentMark';
 
 export type CommentToolbarButtonProps = ToolbarButtonProps;
 

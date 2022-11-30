@@ -1,17 +1,15 @@
 import React, { useRef } from 'react';
-import { unsetCommentNodesById } from '@udecode/plate-comments';
-import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-core';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
 import {
   CommentProvider,
   SCOPE_ACTIVE_COMMENT,
-} from '../../../comments/src/stores/comment/CommentProvider';
-import {
+  unsetCommentNodesById,
   useCommentById,
   useCommentsActions,
   useCommentsSelectors,
-} from '../../../comments/src/stores/comments/CommentsProvider';
+} from '@udecode/plate-comments';
+import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-core';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { PlateComment } from './PlateComment';
 import { PlateCommentNewForm } from './PlateCommentNewForm';
 import { PlateCommentReplies } from './PlateCommentReplies';

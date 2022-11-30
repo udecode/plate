@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { CommentsPositioner } from '@udecode/plate-comments';
+import {
+  CommentsPositioner,
+  useCommentsSelectors,
+  useResetNewCommentValue,
+} from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import {
-  useCommentsSelectors,
-  useResetNewCommentValue,
-} from '../../../comments/src/stores/comments/CommentsProvider';
 import { PlateFloatingCommentsContent } from './PlateFloatingCommentsContent';
 
 export const floatingCommentsRootCss = css`

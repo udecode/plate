@@ -3,13 +3,11 @@ import {
   getCommentKeyId,
   isCommentKey,
   TCommentText,
+  useCommentsActions,
+  useCommentsSelectors,
 } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
-import {
-  useCommentsActions,
-  useCommentsSelectors,
-} from '../../../comments/src/stores/comments/CommentsProvider';
 
 export const PlateCommentLeaf = <V extends Value = Value>(
   props: StyledLeafProps<V, TCommentText>

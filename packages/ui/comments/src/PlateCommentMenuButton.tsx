@@ -3,15 +3,13 @@ import {
   CommentDeleteButton,
   CommentEditButton,
   MoreVertIcon,
+  useCommentActions,
+  useCommentSelectors,
 } from '@udecode/plate-comments';
 import { PlateButton, plateButtonCss } from '@udecode/plate-ui-button';
 import { floatingRootCss, ToolbarDropdown } from '@udecode/plate-ui-toolbar';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import {
-  useCommentActions,
-  useCommentSelectors,
-} from '../../../comments/src/stores/comment/CommentProvider';
 
 export const PlateCommentMenuButton = () => {
   const isMenuOpen = useCommentSelectors().isMenuOpen();

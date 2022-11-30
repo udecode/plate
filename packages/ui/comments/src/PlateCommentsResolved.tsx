@@ -1,7 +1,7 @@
 import React from 'react';
+import { useCommentsResolved } from '@udecode/plate-comments';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { useCommentsResolved } from '../../../comments/src/stores/comments/useCommentsResolved';
 import { PlateComment } from './PlateComment';
 
 export const resolvedCommentsRootCss = css`

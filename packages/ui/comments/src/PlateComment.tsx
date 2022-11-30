@@ -1,17 +1,15 @@
 import React from 'react';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
 import {
   CommentProvider,
   useComment,
+  useCommentById,
   useCommentSelectors,
+  useCommentsSelectors,
   useCommentText,
   useCommentUser,
-} from '../../../comments/src/stores/comment/CommentProvider';
-import {
-  useCommentById,
-  useCommentsSelectors,
-} from '../../../comments/src/stores/comments/CommentsProvider';
+} from '@udecode/plate-comments';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { PlateAvatar } from './PlateAvatar';
 import { PlateCommentMenuButton } from './PlateCommentMenuButton';
 import { PlateCommentResolveButton } from './PlateCommentResolveButton';
