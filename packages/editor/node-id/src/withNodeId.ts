@@ -1,13 +1,14 @@
 import {
   applyDeepToNodes,
-  defaultsDeepToNodes,PlateEditor,
+  defaultsDeepToNodes,
+  PlateEditor,
   queryNode,
   someNode,
   TDescendant,
   TNode,
   TNodeEntry,
   Value,
-  WithPlatePlugin
+  WithPlatePlugin,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeIdPlugin } from './createNodeIdPlugin';
@@ -63,12 +64,12 @@ export const withNodeId = <
       const node = cloneDeep(operation.node);
 
       // Delete ids from node that are already being used
-      applyDeepToNodes({ 
-        node, 
-        query, 
-        source: {}, 
-        apply: removeIdFromNodeIfDuplicate 
-      })
+      applyDeepToNodes({
+        node,
+        query,
+        source: {},
+        apply: removeIdFromNodeIfDuplicate,
+      });
 
       defaultsDeepToNodes({
         node,
