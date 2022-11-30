@@ -1,5 +1,5 @@
 import { TNode } from '@udecode/plate-core';
-import { getCommentKey } from './utils';
+import { getCommentKey } from './getCommentKey';
 
 /**
  * Whether the node has a comment id.

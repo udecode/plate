@@ -4,7 +4,8 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
-import { getCommentCount, removeCommentMark } from './utils/utils';
+import { removeCommentMark } from './transforms/removeCommentMark';
+import { getCommentCount } from './utils/getCommentCount';
 import { MARK_COMMENT } from './constants';
 import { CommentsPlugin } from './types';
 

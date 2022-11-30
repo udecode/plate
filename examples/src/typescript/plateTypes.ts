@@ -53,6 +53,7 @@ import {
   PlateProps,
   PluginOptions,
   SerializeHtml,
+  TCommentText,
   TElement,
   TImageElement,
   TLinkElement,
@@ -73,7 +74,6 @@ import {
   usePlateStates,
   WithOverride,
 } from '@udecode/plate';
-import { TCommentText } from '@udecode/plate-comments';
 // import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,

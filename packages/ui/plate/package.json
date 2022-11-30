@@ -26,6 +26,7 @@
     "@udecode/plate-ui-button": "18.9.0",
     "@udecode/plate-ui-code-block": "18.12.1",
     "@udecode/plate-ui-combobox": "18.9.0",
+    "@udecode/plate-ui-comments": "18.9.0",
     "@udecode/plate-ui-cursor": "18.9.0",
     "@udecode/plate-ui-dnd": "18.10.1",
     "@udecode/plate-ui-emoji": "18.11.0",

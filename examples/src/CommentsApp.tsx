@@ -1,11 +1,13 @@
 import React from 'react';
 import { AddComment } from '@styled-icons/material';
-import { Plate, PlateProvider } from '@udecode/plate';
-import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import {
-  CommentToolbarButton,
+  createCommentsPlugin,
+  MARK_COMMENT,
+  Plate,
   PlateCommentLeaf,
-} from '@udecode/plate-ui-comments';
+  PlateCommentToolbarButton,
+  PlateProvider,
+} from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { Comments } from './comments/Comments';
 import { commentsValue } from './comments/constants';
@@ -29,7 +31,7 @@ export default () => {
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
       <Comments>
         <Toolbar>
-          <CommentToolbarButton icon={<AddComment />} />
+          <PlateCommentToolbarButton icon={<AddComment />} />
           {/* <ToggleShowThreadsButton icon={<Comment />} /> */}
         </Toolbar>
 

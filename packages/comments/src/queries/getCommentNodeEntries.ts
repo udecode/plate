@@ -8,7 +8,7 @@ export const getCommentNodeEntries = <V extends Value>(
   return [
     ...getNodeEntries<TCommentText>(editor, {
       at: [],
-      match: (n) => isCommentText(editor, n),
+      match: (n) => isCommentText(n),
     }),
   ];
 };

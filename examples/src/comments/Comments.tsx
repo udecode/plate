@@ -1,8 +1,5 @@
 import React, { ReactNode } from 'react';
-import {
-  CommentsProvider,
-  PlateFloatingComments,
-} from '@udecode/plate-ui-comments';
+import { CommentsProvider, PlateFloatingComments } from '@udecode/plate';
 import { commentsData, usersData } from './constants';
 
 export const Comments = ({ children }: { children: ReactNode }) => {
