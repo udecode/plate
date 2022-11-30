@@ -2,9 +2,9 @@ import React from 'react';
 import { css } from 'styled-components';
 import { PlateAvatar } from '../Avatar';
 import { useComment } from '../CommentProvider';
+import { PlateResolveCommentButton } from '../CommentResolveButton';
 import { useCommentsSelectors } from '../CommentsProvider';
-import { PlateResolveCommentButton } from '../ResolveButton';
-import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
+import { PlateUnresolveCommentButton } from '../CommentUnresolveButton/index';
 import { CommentUserName } from './CommentUserName';
 import {
   commentUserCss,

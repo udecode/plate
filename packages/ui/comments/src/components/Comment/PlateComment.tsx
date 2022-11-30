@@ -1,16 +1,16 @@
 import React from 'react';
 import { PlateAvatar } from '../Avatar';
+import { PlateCommentMenuButton } from '../CommentMenuButton';
 import {
   CommentProvider,
   useComment,
   useCommentText,
   useCommentUser,
 } from '../CommentProvider';
+import { PlateResolveCommentButton } from '../CommentResolveButton';
 import { useCommentById } from '../CommentsProvider';
+import { PlateUnresolveCommentButton } from '../CommentUnresolveButton/index';
 import { PlateCommentValue } from '../CommentValue/PlateCommentValue';
-import { PlateCommmentMenuButton } from '../MenuButton';
-import { PlateResolveCommentButton } from '../ResolveButton';
-import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
 import {
   commentsHeaderCss,
   threadCommentHeaderCreatedDateCss,
@@ -54,7 +54,7 @@ const PlateCommentContent = () => {
           )
         ) : null}
 
-        {!isReplyComment ? <PlateCommmentMenuButton /> : null}
+        {!isReplyComment ? <PlateCommentMenuButton /> : null}
       </div>
 
       <div tw="pl-10">

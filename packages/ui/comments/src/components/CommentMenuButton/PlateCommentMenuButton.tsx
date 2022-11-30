@@ -15,7 +15,7 @@ export const menuButtonItemCss = css`
   ${tw`w-full h-full`};
 `;
 
-export const PlateCommmentMenuButton = () => {
+export const PlateCommentMenuButton = () => {
   const setMenuRef = useCommentsActions().menuRef();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -36,7 +36,7 @@ export const PlateCommmentMenuButton = () => {
   };
 
   return (
-    <div ref={ref}>
+    <div>
       <IconButton color="default" onClick={onClick} css={menuButtonCss}>
         <MoreVert size={22} />
       </IconButton>
@@ -48,17 +48,19 @@ export const PlateCommmentMenuButton = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <MenuItem onClick={onClose}>
-          <EditCommentButton css={menuButtonItemCss}>
-            Edit comment
-          </EditCommentButton>
-        </MenuItem>
+        <div ref={ref}>
+          <MenuItem onClick={onClose}>
+            <EditCommentButton css={menuButtonItemCss}>
+              Edit comment
+            </EditCommentButton>
+          </MenuItem>
 
-        <MenuItem onClick={onClose}>
-          <DeleteCommentButton css={menuButtonItemCss}>
-            Delete comment
-          </DeleteCommentButton>
-        </MenuItem>
+          <MenuItem onClick={onClose}>
+            <DeleteCommentButton css={menuButtonItemCss}>
+              Delete comment
+            </DeleteCommentButton>
+          </MenuItem>
+        </div>
 
         {/* {showLinkToThisComment && ( */}
         {/*  <MenuItem onClick={handleClose}> */}

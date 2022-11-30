@@ -5,4 +5,4 @@
 export * from './DeleteCommentButton';
 export * from './EditCommentButton';
 export * from './LinkCommentButton';
-export * from './PlateCommmentMenuButton';
+export * from './PlateCommentMenuButton';
