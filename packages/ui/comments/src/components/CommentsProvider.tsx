@@ -37,6 +37,8 @@ export interface CommentsStoreState {
 
   editingValue: Value;
 
+  menuRef: React.RefObject<HTMLDivElement> | null;
+
   // commentFactory: (comment: CommentFactoryParam): Comment => {
   //   return {
   //     id: nanoid(),
@@ -72,6 +74,8 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
     addingCommentId: null,
 
     editingValue: [{ type: 'p', children: [{ text: '' }] }],
+
+    menuRef: null,
 
     // commentFactory: (comment: CommentFactoryParam): Comment => {
     //   return {
@@ -195,12 +199,16 @@ export const useAddComment = () => {
   };
 };
 
-export const useUnsetComment = (id: string) => {
+export const useRemoveComment = () => {
   const [comments, setComments] = useCommentsStates().comments();
 
-  delete comments[id];
+  return (id: string | null) => {
+    if (!id) return;
 
-  setComments({
-    ...comments,
-  });
+    delete comments[id];
+
+    setComments({
+      ...comments,
+    });
+  };
 };

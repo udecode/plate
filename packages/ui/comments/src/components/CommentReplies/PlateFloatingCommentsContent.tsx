@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { useOnClickOutside } from '@udecode/plate-core';
+import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-core';
+import { unsetCommentNodesById } from '../../../../../comments/src/utils/unsetCommentNodesById';
 import { SCOPE_ACTIVE_COMMENT } from '../ActiveCommentProvider';
 import { PlateAvatar } from '../Avatar/index';
 import { PlateComment } from '../Comment';
@@ -30,18 +31,29 @@ export const PlateFloatingCommentsContent = (
 
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
   const currentUserId = useCommentsSelectors().currentUserId();
+  const menuRef = useCommentsSelectors().menuRef();
   const activeComment = useCommentById(activeCommentId);
   const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);
   const setActiveCommentId = useCommentsActions().activeCommentId();
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const editor = usePlateEditorRef();
 
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const ref = useRef(null);
+
+  const refs = [ref];
+  if (menuRef) refs.push(menuRef);
+
+  console.log(menuRef);
 
   useOnClickOutside(
     () => {
+      if (!activeComment) {
+        unsetCommentNodesById(editor, { id: activeCommentId });
+      }
+
       setActiveCommentId(null);
     },
-    { refs: [ref] }
+    { refs }
   );
 
   return (
@@ -53,14 +65,7 @@ export const PlateFloatingCommentsContent = (
       <div css={commentsRootCss} ref={ref}>
         {!!activeComment && (
           <>
-            <PlateComment
-              key={activeCommentId}
-              commentId={activeCommentId}
-              showResolveCommentButton
-              showUnresolveCommentButton
-              // showMoreButton={showMoreButton}
-              showLinkToThisComment
-            />
+            <PlateComment key={activeCommentId} commentId={activeCommentId} />
 
             <PlateCommentReplies />
           </>

@@ -15,14 +15,7 @@ import {
   userHeaderRootCss,
 } from './styles';
 
-type PlateCommentHeaderProps = {
-  showResolveCommentButton: boolean;
-  showUnresolveCommentButton: boolean;
-};
-
-export const PlateCommentHeader = (props: PlateCommentHeaderProps) => {
-  const { showUnresolveCommentButton, showResolveCommentButton } = props;
-
+export const PlateCommentHeader = (props) => {
   const comment = useComment()!;
 
   const currentUserId = useCommentsSelectors().currentUserId();
@@ -49,12 +42,8 @@ export const PlateCommentHeader = (props: PlateCommentHeaderProps) => {
       </div>
 
       <div css={userHeaderActionsCss}>
-        {showResolveCommentButton ? (
-          <PlateResolveCommentButton {...props} />
-        ) : null}
-        {showUnresolveCommentButton ? (
-          <PlateUnresolveCommentButton {...props} />
-        ) : null}
+        <PlateResolveCommentButton {...props} />
+        <PlateUnresolveCommentButton {...props} />
       </div>
     </div>
   );

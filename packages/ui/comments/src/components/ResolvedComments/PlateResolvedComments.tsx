@@ -33,14 +33,7 @@ export const PlateResolvedComments = () => {
       <h2 css={resolvedCommentsHeaderCss}>Resolved comments</h2>
       <div css={resolvedCommentsBodyCss}>
         {resolvedComments.map((comment) => (
-          <PlateComment
-            key={comment.id}
-            commentId={comment.id}
-            showResolveCommentButton={false}
-            showUnresolveCommentButton
-            showMoreButton={false}
-            disableTextarea
-          />
+          <PlateComment key={comment.id} commentId={comment.id} />
         ))}
       </div>
     </div>

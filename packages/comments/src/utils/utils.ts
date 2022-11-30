@@ -1,7 +1,5 @@
-import { PlateEditor, Value, withoutNormalizing } from '@udecode/plate-core';
 import { MARK_COMMENT } from '../constants';
 import { TCommentText } from '../types';
-import { findCommentNode } from './findCommentNode';
 
 export const getCommentKey = (id: string) => `${MARK_COMMENT}_${id}`;
 
@@ -25,19 +23,4 @@ export const getCommentKeys = (node: TCommentText) => {
   });
 
   return keys;
-};
-
-export const removeCommentMark = <V extends Value>(editor: PlateEditor<V>) => {
-  const nodeEntry = findCommentNode(editor);
-  if (!nodeEntry) return;
-
-  const keys = getCommentKeys(nodeEntry[0]);
-
-  withoutNormalizing(editor, () => {
-    keys.forEach((key) => {
-      editor.removeMark(key);
-    });
-
-    editor.removeMark(MARK_COMMENT);
-  });
 };

@@ -15,20 +15,38 @@ export const PlateCommentLeaf = <V extends Value = Value>(
 
   const [commentIds, setCommentIds] = useState<string[]>([]);
   const setActiveCommentId = useCommentsActions().activeCommentId();
+  const [commentCount, setCommentCount] = useState(1);
 
   useEffect(() => {
     const ids: string[] = [];
+    let count = 0;
 
     Object.keys(leaf).forEach((key) => {
       if (isCommentKey(key)) {
         ids.push(getCommentKeyId(key));
+        count++;
       }
     });
 
+    setCommentCount(count);
     setCommentIds(ids);
   }, [leaf]);
 
   const lastCommentId = commentIds[commentIds.length - 1];
+
+  let aboveChildren = <>{children}</>;
+
+  for (let i = 1; i < commentCount; i++) {
+    aboveChildren = (
+      <span
+        style={{
+          backgroundColor: 'rgba(255,212,0, 0.28)',
+        }}
+      >
+        {aboveChildren}
+      </span>
+    );
+  }
 
   return (
     <StyledLeaf
@@ -38,11 +56,13 @@ export const PlateCommentLeaf = <V extends Value = Value>(
           e.stopPropagation();
           setActiveCommentId(lastCommentId);
         },
-        style: { backgroundColor: `rgba(255,212,0, 0.56)` },
+        style: {
+          backgroundColor: `rgba(255,212,0, 0.28)`,
+        },
         ...nodeProps,
       }}
     >
-      {children}
+      {aboveChildren}
     </StyledLeaf>
   );
 };

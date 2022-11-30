@@ -1,4 +1,3 @@
-// import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React from 'react';
 import { PlateAvatar } from '../Avatar';
 import {
@@ -9,7 +8,7 @@ import {
 } from '../CommentProvider';
 import { useCommentById } from '../CommentsProvider';
 import { PlateCommentValue } from '../CommentValue/PlateCommentValue';
-import { PlateMenuButton } from '../MenuButton';
+import { PlateCommmentMenuButton } from '../MenuButton';
 import { PlateResolveCommentButton } from '../ResolveButton';
 import { PlateUnresolveCommentButton } from '../UnresolveButton/index';
 import {
@@ -23,22 +22,11 @@ import {
 
 type PlateCommentProps = {
   commentId: string;
-  showResolveCommentButton?: boolean;
-  showUnresolveCommentButton?: boolean;
-  showMoreButton?: boolean;
-  showLinkToThisComment?: boolean;
-  disableTextarea?: boolean;
 };
 
-const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
-  const {
-    showLinkToThisComment,
-    showMoreButton,
-    showUnresolveCommentButton,
-    showResolveCommentButton,
-  } = props;
-
+const PlateCommentContent = () => {
   const comment = useComment()!;
+  const isReplyComment = !!comment.threadId;
   const commentText = useCommentText();
   const user = useCommentUser();
 
@@ -52,18 +40,21 @@ const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
 
         <div css={threadCommentHeaderInfoCss}>
           <div css={threadCommentHeaderUserNameCss}>{user?.name}</div>
+
           <div css={threadCommentHeaderCreatedDateCss}>
             {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>
 
-        {showResolveCommentButton ? <PlateResolveCommentButton /> : null}
-
-        {showUnresolveCommentButton && <PlateUnresolveCommentButton />}
-
-        {showMoreButton ? (
-          <PlateMenuButton showLinkToThisComment={showLinkToThisComment} />
+        {!isReplyComment ? (
+          comment.isResolved ? (
+            <PlateUnresolveCommentButton />
+          ) : (
+            <PlateResolveCommentButton />
+          )
         ) : null}
+
+        {!isReplyComment ? <PlateCommmentMenuButton /> : null}
       </div>
 
       <div tw="pl-10">
@@ -77,13 +68,13 @@ const PlateCommentContent = (props: Omit<PlateCommentProps, 'commentId'>) => {
   );
 };
 
-export const PlateComment = ({ commentId, ...props }: PlateCommentProps) => {
+export const PlateComment = ({ commentId }: PlateCommentProps) => {
   const comment = useCommentById(commentId);
   if (!comment) return null;
 
   return (
-    <CommentProvider id={commentId}>
-      <PlateCommentContent {...props} />
+    <CommentProvider key={commentId} id={commentId}>
+      <PlateCommentContent />
     </CommentProvider>
   );
 };

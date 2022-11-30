@@ -11,7 +11,6 @@ import { useCommentsActions } from './CommentsProvider';
 
 export const useAddCommentMark = () => {
   const editor = usePlateEditorRef();
-  const setAddingCommentId = useCommentsActions().addingCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
 
   return () => {
