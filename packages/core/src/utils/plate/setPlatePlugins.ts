@@ -25,6 +25,10 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import {
+  createPrevSelectionPlugin,
+  KEY_PREV_SELECTION,
+} from '../../plugins/index';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
@@ -82,10 +86,10 @@ export const setPlatePlugins = <
       );
     }
     if (typeof dcp !== 'object' || !dcp?.selection) {
-      // plugins.push(
-      //   (editor?.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
-      //     createPrevSelectionPlugin()
-      // );
+      plugins.push(
+        (editor?.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
+          createPrevSelectionPlugin()
+      );
     }
     if (typeof dcp !== 'object' || !dcp?.deserializeHtml) {
       plugins.push(
