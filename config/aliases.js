@@ -13,6 +13,7 @@ module.exports = {
   '@udecode/plate-ui-comments': 'ui/comments',
   '@udecode/plate-ui-cursor': 'ui/cursor',
   '@udecode/plate-ui-dnd': 'ui/dnd',
+  '@udecode/plate-ui-emoji': 'ui/nodes/emoji',
   '@udecode/plate-ui-find-replace': 'ui/find-replace',
   '@udecode/plate-ui-font': 'ui/nodes/font',
   '@udecode/plate-ui-horizontal-rule': 'ui/nodes/horizontal-rule',

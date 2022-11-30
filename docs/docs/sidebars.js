@@ -55,7 +55,12 @@ module.exports = {
         {
           type: 'category',
           label: 'Inline Elements',
-          items: ['plugins/link', 'plugins/combobox', 'plugins/mention'],
+          items: [
+            'plugins/link',
+            'plugins/combobox',
+            'plugins/emoji',
+            'plugins/mention',
+          ],
           collapsed: false,
         },
         {

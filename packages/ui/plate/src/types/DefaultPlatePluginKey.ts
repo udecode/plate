@@ -12,6 +12,7 @@ import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
+import { ELEMENT_EMOJI, ELEMENT_EMOJI_INPUT } from '@udecode/plate-emoji';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
   ELEMENT_H1,
@@ -44,6 +45,8 @@ export type DefaultPlatePluginKey =
   | typeof ELEMENT_BLOCKQUOTE
   | typeof ELEMENT_CODE_BLOCK
   | typeof ELEMENT_CODE_LINE
+  | typeof ELEMENT_EMOJI
+  | typeof ELEMENT_EMOJI_INPUT
   | typeof ELEMENT_H1
   | typeof ELEMENT_H2
   | typeof ELEMENT_H3

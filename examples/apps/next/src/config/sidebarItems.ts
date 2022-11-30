@@ -9,6 +9,7 @@ export const sidebarItems = [
   'cursor-overlay',
   'dnd',
   'editable-voids',
+  'emoji',
   'excalidraw',
   'exit-break',
   'find-replace',

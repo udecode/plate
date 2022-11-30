@@ -19,6 +19,7 @@ import {
 import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from './basic-marks/BasicMarkToolbarButtons';
+import { ExcalidrawElementToolbarButton } from './excalidraw/ExcalidrawElementToolbarButton';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
@@ -51,6 +52,7 @@ export const ToolbarButtons = () => {
       <ImageToolbarButton icon={<Image />} />
       <MediaEmbedToolbarButton icon={<OndemandVideo />} />
       <TableToolbarButtons />
+      <ExcalidrawElementToolbarButton />
     </>
   );
 };

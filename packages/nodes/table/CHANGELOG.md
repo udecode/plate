@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 18.11.0
+
+### Patch Changes
+
+- [#2006](https://github.com/udecode/plate/pull/2006) by [@Raigen](https://github.com/Raigen) – `insertTableColumn`, `insertTableRow`: new option `at`
+
 ## 18.9.0
 
 ## 18.7.0

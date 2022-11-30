@@ -1,5 +1,7 @@
 # @udecode/plate-alignment-ui
 
+## 18.12.1
+
 ## 18.9.0
 
 ## 18.7.0

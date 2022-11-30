@@ -3,6 +3,7 @@ import {
   commonDeps,
   excalidrawDeps,
   plateTestUtilsDeps,
+  toolbarDeps,
 } from '../sandpack/code-deps';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
@@ -22,6 +23,7 @@ export const ExcalidrawSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
       ...excalidrawDeps,
+      ...toolbarDeps,
     }}
     appCode={excalidrawAppCode}
     files={{
