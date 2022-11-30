@@ -4,7 +4,6 @@ import { PlateAvatar } from '../Avatar';
 import { useComment } from '../CommentProvider';
 import { PlateResolveCommentButton } from '../CommentResolveButton';
 import { useCommentsSelectors } from '../CommentsProvider';
-import { PlateUnresolveCommentButton } from '../CommentUnresolveButton/index';
 import { CommentUserName } from './CommentUserName';
 import {
   commentUserCss,
@@ -15,19 +14,19 @@ import {
   userHeaderRootCss,
 } from './styles';
 
-export const PlateCommentHeader = (props) => {
+export const PlateCommentHeader = () => {
   const comment = useComment()!;
 
-  const currentUserId = useCommentsSelectors().currentUserId();
-  const isCurrentUser = currentUserId === comment.userId;
+  const myUserId = useCommentsSelectors().myUserId();
+  const isMyUser = myUserId === comment.userId;
 
   return (
     <div
       css={[
         userHeaderRootCss,
         css`
-          color: ${isCurrentUser ? 'white' : 'rgb(60, 64, 67)'};
-          background-color: ${isCurrentUser ? '#1a73e8' : '#e8f0fe'};
+          color: ${isMyUser ? 'white' : 'rgb(60, 64, 67)'};
+          background-color: ${isMyUser ? '#1a73e8' : '#e8f0fe'};
         `,
       ]}
     >
@@ -38,12 +37,11 @@ export const PlateCommentHeader = (props) => {
       <div css={userHeaderAssignedToContainerCss}>
         <div css={userHeaderAssignedToTextCss}>Author</div>
 
-        <CommentUserName {...props} css={commentUserCss} />
+        <CommentUserName css={commentUserCss} />
       </div>
 
       <div css={userHeaderActionsCss}>
-        <PlateResolveCommentButton {...props} />
-        <PlateUnresolveCommentButton {...props} />
+        <PlateResolveCommentButton />
       </div>
     </div>
   );

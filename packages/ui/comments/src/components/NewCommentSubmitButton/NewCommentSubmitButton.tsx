@@ -35,7 +35,7 @@ export const useNewCommentSubmitButton = ({
     onClick: () => {
       if (isReplyComment) {
         addComment({
-          threadId: comment.id,
+          parentId: comment.id,
           value: editingValue,
         });
       } else {

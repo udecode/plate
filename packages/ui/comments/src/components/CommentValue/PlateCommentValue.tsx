@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { PlateCommentTextArea } from '../CommentTextArea/PlateCommentTextArea';
 import { CommentValueActions } from './CommentValueActions';
 import {
@@ -15,17 +15,13 @@ export type PlateCommentValueProps = {
 export const PlateCommentValue = (props: PlateCommentValueProps) => {
   const { defaultText = '' } = props;
 
-  const [value, setValue] = useState<string>(defaultText);
-
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const onSubmit = useCallback(() => {
     // onSave?.(value);
   }, []);
 
-  const onValueChange = useCallback((newValue) => {
-    setValue(newValue);
-  }, []);
+  const onValueChange = useCallback(() => {}, []);
 
   useEffect(() => {
     const textArea = textAreaRef.current!;
@@ -37,6 +33,7 @@ export const PlateCommentValue = (props: PlateCommentValueProps) => {
   return (
     <div css={threadCommentEditingRootCss}>
       <PlateCommentTextArea ref={textAreaRef} />
+
       <div css={threadCommentEditingActionsCss}>
         <CommentValueActions.SaveButton
           {...props}
@@ -44,6 +41,7 @@ export const PlateCommentValue = (props: PlateCommentValueProps) => {
         >
           Save
         </CommentValueActions.SaveButton>
+
         <CommentValueActions.CancelButton
           {...props}
           css={threadCommentEditingCancelButtonCss}

@@ -30,8 +30,7 @@ export const PlateFloatingCommentsContent = (
   const { disableForm } = props;
 
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
-  const currentUserId = useCommentsSelectors().currentUserId();
-  const menuRef = useCommentsSelectors().menuRef();
+  const myUserId = useCommentsSelectors().myUserId();
   const activeComment = useCommentById(activeCommentId);
   const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);
   const setActiveCommentId = useCommentsActions().activeCommentId();
@@ -40,10 +39,8 @@ export const PlateFloatingCommentsContent = (
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const ref = useRef(null);
 
-  const refs = [ref];
-  if (menuRef) refs.push(menuRef);
-
-  console.log(menuRef);
+  const refs: any[] = [ref];
+  // if (menuRef) refs.push(menuRef);
 
   useOnClickOutside(
     () => {
@@ -71,7 +68,7 @@ export const PlateFloatingCommentsContent = (
           </>
         )}
 
-        {!!currentUserId && !disableForm && (
+        {!!myUserId && !disableForm && (
           <div
             css={[
               commentFormCss,
@@ -79,7 +76,7 @@ export const PlateFloatingCommentsContent = (
             ]}
           >
             <div tw="flex space-x-2 w-full">
-              <PlateAvatar userId={currentUserId} />
+              <PlateAvatar userId={myUserId} />
 
               <div tw="flex flex-col flex-grow space-y-2">
                 <PlateCommentTextArea ref={textAreaRef} />

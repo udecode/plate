@@ -2,12 +2,12 @@ import { CommentUser } from '@udecode/plate-comments';
 
 export const getUserName = ({
   user,
-  isCurrentUser,
+  isMyUser,
 }: {
   user: CommentUser | null;
-  isCurrentUser: boolean;
+  isMyUser: boolean;
 }): string => {
   if (!user) return 'unknown';
 
-  return isCurrentUser ? 'you' : user.name;
+  return isMyUser ? 'you' : user.name;
 };

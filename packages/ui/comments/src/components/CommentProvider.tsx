@@ -13,11 +13,13 @@ export const SCOPE_COMMENT = Symbol('comment');
 
 export interface CommentStoreState {
   id: string;
+  isMenuOpen: boolean;
 }
 
 export const { commentStore, useCommentStore } = createAtomStore(
   {
     id: '',
+    isMenuOpen: false,
   } as CommentStoreState,
   {
     name: 'comment',
@@ -63,7 +65,7 @@ export const useCommentReplies = (scope?: Scope) => {
     const comment = comments[id];
     if (!comment) return null;
 
-    if (comment.threadId === commentId) {
+    if (comment.parentId === commentId) {
       replies[id] = comment;
     }
   });

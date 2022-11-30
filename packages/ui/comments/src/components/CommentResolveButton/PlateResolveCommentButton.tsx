@@ -1,32 +1,25 @@
 import React from 'react';
-import { IconButton } from '@mui/material';
-import { Check } from '@styled-icons/material';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
-import { useCommentById, useCommentsSelectors } from '../CommentsProvider';
+import { PlateButton } from '@udecode/plate-ui-button';
+import { useComment } from '../CommentProvider';
+import { CheckIcon } from './CheckIcon';
+import { RefreshIcon } from './RefreshIcon';
 import {
-  ResolveButtonCommentRootProps,
-  ResolveCommentButton,
-} from './ResolveCommentButton';
+  ResolveButtonCommentProps,
+  useResolveCommentButton,
+} from './useResolveCommentButton';
 
-export const resolveButtonCss = css`
-  ${tw`w-full h-full`}
-`;
+export const PlateResolveCommentButton = (props: ResolveButtonCommentProps) => {
+  const buttonProps = useResolveCommentButton(props);
 
-export const PlateResolveCommentButton = (
-  props: ResolveButtonCommentRootProps
-) => {
-  const comment = useCommentById(useCommentsSelectors().activeCommentId());
-  const currentUserId = useCommentsSelectors().currentUserId();
+  const comment = useComment()!;
 
   return (
-    <IconButton>
-      <ResolveCommentButton css={resolveButtonCss} {...props}>
-        <Check
-          size={22}
-          color={currentUserId === comment?.userId ? 'white' : 'default'}
-        />
-      </ResolveCommentButton>
-    </IconButton>
+    <PlateButton tw="p-1" {...buttonProps}>
+      {comment.isResolved ? (
+        <RefreshIcon tw="w-6 h-6 text-gray-500" />
+      ) : (
+        <CheckIcon tw="w-6 h-6 text-gray-500" />
+      )}
+    </PlateButton>
   );
 };

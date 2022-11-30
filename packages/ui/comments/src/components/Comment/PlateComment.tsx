@@ -8,8 +8,7 @@ import {
   useCommentUser,
 } from '../CommentProvider';
 import { PlateResolveCommentButton } from '../CommentResolveButton';
-import { useCommentById } from '../CommentsProvider';
-import { PlateUnresolveCommentButton } from '../CommentUnresolveButton/index';
+import { useCommentById, useCommentsSelectors } from '../CommentsProvider';
 import { PlateCommentValue } from '../CommentValue/PlateCommentValue';
 import {
   commentsHeaderCss,
@@ -26,9 +25,12 @@ type PlateCommentProps = {
 
 const PlateCommentContent = () => {
   const comment = useComment()!;
-  const isReplyComment = !!comment.threadId;
+  const isReplyComment = !!comment.parentId;
   const commentText = useCommentText();
   const user = useCommentUser();
+  const myUserId = useCommentsSelectors().myUserId();
+
+  const isMyComment = myUserId === comment.userId;
 
   // TODO
   const isEditing = false;
@@ -46,15 +48,13 @@ const PlateCommentContent = () => {
           </div>
         </div>
 
-        {!isReplyComment ? (
-          comment.isResolved ? (
-            <PlateUnresolveCommentButton />
-          ) : (
-            <PlateResolveCommentButton />
-          )
-        ) : null}
+        {isMyComment && (
+          <div tw="flex space-x-1">
+            {!isReplyComment ? <PlateResolveCommentButton /> : null}
 
-        {!isReplyComment ? <PlateCommentMenuButton /> : null}
+            <PlateCommentMenuButton />
+          </div>
+        )}
       </div>
 
       <div tw="pl-10">

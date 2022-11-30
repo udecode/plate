@@ -13,14 +13,14 @@ export type CommentUserNameProps = {} & HTMLPropsAs<'div'>;
 export const useCommentUserName = (
   props: CommentUserNameProps
 ): HTMLPropsAs<'div'> => {
-  const currentUserId = useCommentsSelectors().currentUserId();
+  const myUserId = useCommentsSelectors().myUserId();
   const user = useCommentUser();
-  const isCurrentUser = currentUserId === user?.id;
+  const isMyUser = myUserId === user?.id;
 
   const text = capitalize(
     getUserName({
       user,
-      isCurrentUser,
+      isMyUser,
     })
   );
   return { ...props, children: text };

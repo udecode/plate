@@ -10,7 +10,6 @@ export const usersData = {
   2: {
     id: '2',
     name: 'Bar',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
   },
 };
 
@@ -37,9 +36,18 @@ export const commentsData: Record<string, TComment> = {
   4: {
     id: '4',
     userId: '2',
-    value: [{ type: 'p', children: [{ text: 'This is a reply.' }] }],
-    threadId: '3',
+    value: [
+      { type: 'p', children: [{ text: "This is a reply I can't edit." }] },
+    ],
+    parentId: '2',
     createdAt: 1663453740181,
+  },
+  5: {
+    id: '4',
+    userId: '1',
+    value: [{ type: 'p', children: [{ text: 'This is a reply I can edit.' }] }],
+    parentId: '2',
+    createdAt: 1663453740182,
   },
 };
 

@@ -56,22 +56,22 @@ export const _aaa = 1;
 //   return newThread;
 // };
 //
-// const handleThreadIdInURL = useCallback(() => {
+// const handleparentIdInURL = useCallback(() => {
 //   if (!editor) {
 //     return;
 //   }
 //
 //   const url = new URL(window.location.href);
-//   const threadIdQueryParam = url.searchParams.get('thread');
-//   if (!threadIdQueryParam) {
+//   const parentIdQueryParam = url.searchParams.get('thread');
+//   if (!parentIdQueryParam) {
 //     return;
 //   }
 //
-//   const threadId = parseInt(threadIdQueryParam, 10);
+//   const parentId = parseInt(parentIdQueryParam, 10);
 //   const threadNodeEntries = getThreadNodeEntries(editor);
 //   const threadNodeEntriesArray = Array.from(threadNodeEntries);
 //   const threadNodeEntry = threadNodeEntriesArray.find(
-//     (entry: TNodeEntry) => (entry[0] as TThreadElement).thread.id === threadId
+//     (entry: TNodeEntry) => (entry[0] as TThreadElement).thread.id === parentId
 //   );
 //   if (!threadNodeEntry) {
 //     return;

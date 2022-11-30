@@ -9,13 +9,29 @@ export interface CommentUser {
 export interface TComment {
   id: string;
 
+  /**
+   * Slate value of the document.
+   */
   value: Value;
 
+  /**
+   * @default Date.now()
+   */
   createdAt: number;
 
+  /**
+   * Author id.
+   */
   userId: string;
 
-  threadId?: string;
+  /**
+   * Parent comment id it replies to.
+   */
+  parentId?: string;
+
+  /**
+   * Whether the comment is resolved.
+   */
   isResolved?: boolean;
 }
 

@@ -3,5 +3,5 @@
  */
 
 export * from './PlateResolveCommentButton';
-export * from './ResolveCommentButton';
-export * from './ResolveCommentButton';
+export * from './useResolveCommentButton';
+export * from './useResolveCommentButton';

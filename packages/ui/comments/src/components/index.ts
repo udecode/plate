@@ -18,4 +18,3 @@ export * from './ShowResolvedCommentsButton/index';
 export * from './CommentTextArea/index';
 export * from './CommentValue/index';
 export * from './CommentLinkDialog/index';
-export * from './CommentUnresolveButton/index';

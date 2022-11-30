@@ -1,8 +1,8 @@
 import React from 'react';
-import { AccountCircle } from '@styled-icons/material';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { useUserById } from '../CommentsProvider';
+import { AccountCircleIcon } from './AccountCircleIcon';
 import { AvatarImage } from './AvatarImage';
 
 export const avatarRootCss = css`
@@ -33,7 +33,7 @@ export const PlateAvatar = ({ userId }: { userId: string }) => {
       {user.avatarUrl ? (
         <AvatarImage css={avatarImageCss} userId={userId} />
       ) : (
-        <AccountCircle css={avatarAccountCircleCss} />
+        <AccountCircleIcon css={avatarAccountCircleCss} viewBox="0 0 24 24" />
       )}
     </div>
   );

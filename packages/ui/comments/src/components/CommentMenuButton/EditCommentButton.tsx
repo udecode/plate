@@ -1,20 +1,22 @@
-import {
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-} from '@udecode/plate-core';
-
-export type EditCommentButtonProps = {} & HTMLPropsAs<'div'>;
+import React from 'react';
+import { PlateButton, PlateButtonProps } from '@udecode/plate-ui-button';
+import { useCommentActions } from '../CommentProvider';
 
 export const useEditCommentButton = (
-  props: EditCommentButtonProps
-): HTMLPropsAs<'div'> => {
-  return { onClick: () => {}, ...props };
+  props: PlateButtonProps
+): PlateButtonProps => {
+  const setIsMenuOpen = useCommentActions().isMenuOpen();
+
+  return {
+    onClick: () => {
+      setIsMenuOpen(false);
+    },
+    ...props,
+  };
 };
 
-export const EditCommentButton = createComponentAs<EditCommentButtonProps>(
-  (props) => {
-    const htmlProps = useEditCommentButton(props);
-    return createElementAs('div', htmlProps);
-  }
-);
+export const EditCommentButton = (props: PlateButtonProps) => {
+  const htmlProps = useEditCommentButton(props);
+
+  return <PlateButton {...htmlProps} />;
+};

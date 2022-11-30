@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-core';
 import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
-import { useCommentsActions } from '../CommentsProvider';
+import { useCommentsActions, useCommentsSelectors } from '../CommentsProvider';
 
 export const PlateCommentLeaf = <V extends Value = Value>(
   props: StyledLeafProps<V, TCommentText>
@@ -15,6 +15,7 @@ export const PlateCommentLeaf = <V extends Value = Value>(
 
   const [commentIds, setCommentIds] = useState<string[]>([]);
   const setActiveCommentId = useCommentsActions().activeCommentId();
+  const comments = useCommentsSelectors().comments();
   const [commentCount, setCommentCount] = useState(1);
 
   useEffect(() => {
@@ -22,15 +23,21 @@ export const PlateCommentLeaf = <V extends Value = Value>(
     let count = 0;
 
     Object.keys(leaf).forEach((key) => {
-      if (isCommentKey(key)) {
-        ids.push(getCommentKeyId(key));
-        count++;
-      }
+      if (!isCommentKey(key)) return;
+
+      const id = getCommentKeyId(key);
+
+      console.log(comments, id);
+
+      if (comments[id]?.isResolved) return;
+
+      ids.push(getCommentKeyId(key));
+      count++;
     });
 
     setCommentCount(count);
     setCommentIds(ids);
-  }, [leaf]);
+  }, [comments, leaf]);
 
   const lastCommentId = commentIds[commentIds.length - 1];
 
@@ -47,6 +54,9 @@ export const PlateCommentLeaf = <V extends Value = Value>(
       </span>
     );
   }
+
+  // hide resolved comments
+  if (!commentCount) return <>{children}</>;
 
   return (
     <StyledLeaf

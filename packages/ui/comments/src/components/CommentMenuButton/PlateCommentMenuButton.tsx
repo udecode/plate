@@ -1,11 +1,13 @@
-import React, { MouseEvent, useEffect, useRef, useState } from 'react';
-import { IconButton, Menu, MenuItem } from '@mui/material';
-import { MoreVert } from '@styled-icons/material';
+import React, { useEffect, useRef } from 'react';
+import { PlateButton } from '@udecode/plate-ui-button';
+import { floatingRootCss, ToolbarDropdown } from '@udecode/plate-ui-toolbar';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
+import { useCommentActions, useCommentSelectors } from '../CommentProvider';
 import { useCommentsActions } from '../CommentsProvider';
 import { DeleteCommentButton } from './DeleteCommentButton';
 import { EditCommentButton } from './EditCommentButton';
+import { MoreVertIcon } from './MoreVertIcon';
 
 export const menuButtonCss = css`
   ${tw`p-1`};
@@ -17,59 +19,45 @@ export const menuButtonItemCss = css`
 
 export const PlateCommentMenuButton = () => {
   const setMenuRef = useCommentsActions().menuRef();
+  const isMenuOpen = useCommentSelectors().isMenuOpen();
+  const setIsMenuOpen = useCommentActions().isMenuOpen();
 
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const ref = useRef(null);
-
-  const open = Boolean(anchorEl);
 
   useEffect(() => {
     setMenuRef(ref);
   }, [setMenuRef]);
 
-  const onClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const onClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
     <div>
-      <IconButton color="default" onClick={onClick} css={menuButtonCss}>
-        <MoreVert size={22} />
-      </IconButton>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={onClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      <ToolbarDropdown
+        control={
+          <PlateButton css={menuButtonCss}>
+            <MoreVertIcon tw="w-6 h-6 text-gray-500" />
+          </PlateButton>
+        }
+        open={isMenuOpen}
+        onOpen={() => setIsMenuOpen(true)}
+        onClose={() => setIsMenuOpen(false)}
       >
-        <div ref={ref}>
-          <MenuItem onClick={onClose}>
-            <EditCommentButton css={menuButtonItemCss}>
-              Edit comment
-            </EditCommentButton>
-          </MenuItem>
+        <div
+          tw="flex flex-col relative"
+          css={[
+            floatingRootCss,
+            css`
+              width: 150px;
+            `,
+          ]}
+        >
+          <EditCommentButton tw="justify-start px-4 py-2">
+            Edit comment
+          </EditCommentButton>
 
-          <MenuItem onClick={onClose}>
-            <DeleteCommentButton css={menuButtonItemCss}>
-              Delete comment
-            </DeleteCommentButton>
-          </MenuItem>
+          <DeleteCommentButton tw="justify-start px-4 py-2">
+            Delete comment
+          </DeleteCommentButton>
         </div>
-
-        {/* {showLinkToThisComment && ( */}
-        {/*  <MenuItem onClick={handleClose}> */}
-        {/*    <MenuButton.LinkItem {...props} css={menuButtonItemCss}> */}
-        {/*      Link to this thread */}
-        {/*    </MenuButton.LinkItem> */}
-        {/*  </MenuItem> */}
-        {/* )} */}
-      </Menu>
+      </ToolbarDropdown>
     </div>
   );
 };

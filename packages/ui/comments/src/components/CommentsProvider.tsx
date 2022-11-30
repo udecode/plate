@@ -16,7 +16,7 @@ export interface CommentsStoreState {
   /**
    * Id of the current user.
    */
-  currentUserId: string | null;
+  myUserId: string | null;
 
   /**
    * Users data.
@@ -43,7 +43,7 @@ export interface CommentsStoreState {
   //   return {
   //     id: nanoid(),
   //     createdAt: Date.now(),
-  //     userId: commentsStore.get.currentUserId() as any,
+  //     userId: commentsStore.get.myUserId() as any,
   //     ...comment,
   //   };
   // },
@@ -54,7 +54,7 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
     /**
      * Id of the current user.
      */
-    currentUserId: null,
+    myUserId: null,
 
     /**
      * Users data.
@@ -81,7 +81,7 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
     //   return {
     //     id: nanoid(),
     //     createdAt: Date.now(),
-    //     userId: commentsStore.get.currentUserId() as any,
+    //     userId: commentsStore.get.myUserId() as any,
     //     ...comment,
     //   };
     // },
@@ -124,12 +124,12 @@ export const useUserById = (id: string | null): CommentUser | null => {
   return users[id];
 };
 
-export const useCurrentUser = (): CommentUser | null => {
+export const useMyUser = (): CommentUser | null => {
   const users = useCommentsSelectors().users();
-  const currentUserId = useCommentsSelectors().currentUserId();
-  if (!currentUserId) return null;
+  const myUserId = useCommentsSelectors().myUserId();
+  if (!myUserId) return null;
 
-  return users[currentUserId];
+  return users[myUserId];
 };
 
 export const useEditingCommentText = () => {
@@ -146,33 +146,33 @@ export const useResetCommentEditingValue = () => {
   };
 };
 
-export const useSetComment = (id?: string | null) => {
+export const useUpdateComment = (id?: string | null) => {
   const comment = useCommentById(id);
 
   const [comments, setComments] = useCommentsStates().comments();
 
   return (value: Partial<TComment>) => {
-    if (!value.id) return;
+    if (!id) return;
 
     setComments({
       ...comments,
-      [value.id]: { ...comment, ...value } as any,
+      [id]: { ...comment, ...value } as any,
     });
   };
 };
 
 export const useAddRawComment = () => {
   const [comments, setComments] = useCommentsStates().comments();
-  const currentUserId = useCommentsSelectors().currentUserId();
+  const myUserId = useCommentsSelectors().myUserId();
 
   return (id: string) => {
-    if (!currentUserId) return;
+    if (!myUserId) return;
 
     setComments({
       ...comments,
       [id]: {
         id,
-        userId: currentUserId,
+        userId: myUserId,
       },
     } as any);
   };
@@ -180,10 +180,10 @@ export const useAddRawComment = () => {
 
 export const useAddComment = () => {
   const [comments, setComments] = useCommentsStates().comments();
-  const currentUserId = useCommentsSelectors().currentUserId();
+  const myUserId = useCommentsSelectors().myUserId();
 
   return (value: WithPartial<TComment, 'id' | 'userId' | 'createdAt'>) => {
-    if (!currentUserId) return;
+    if (!myUserId) return;
 
     const id = value.id ?? nanoid();
 
@@ -191,7 +191,7 @@ export const useAddComment = () => {
       ...comments,
       [id]: {
         id,
-        userId: currentUserId,
+        userId: myUserId,
         createdAt: Date.now(),
         ...value,
       },
