@@ -1,11 +1,11 @@
 import { createPluginFactory, isUrl } from '@udecode/plate-core';
-// import { deserializeMd } from './utils';
+import { deserializeMd } from './utils';
 
 export const KEY_DESERIALIZE_MD = 'deserializeMd';
 
 export const createDeserializeMdPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_MD,
-  then: () => ({
+  then: (editor) => ({
     editor: {
       insertData: {
         format: 'text/plain',
@@ -22,7 +22,7 @@ export const createDeserializeMdPlugin = createPluginFactory({
           }
           return true;
         },
-        // getFragment: ({ data }) => deserializeMd(editor, data),
+        getFragment: ({ data }) => deserializeMd(editor, data),
       },
     },
   }),
