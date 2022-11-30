@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 18.12.2
+
+### Patch Changes
+
+- [#2032](https://github.com/udecode/plate/pull/2032) by [@neko-neko](https://github.com/neko-neko) – Fixed deserialization for markdown.
+
 ## 18.11.0
 
 ## 18.10.1
