@@ -1,19 +1,18 @@
 import React from 'react';
-import { AddComment } from '@styled-icons/material';
 import {
   createCommentsPlugin,
   MARK_COMMENT,
   Plate,
   PlateCommentLeaf,
-  PlateCommentToolbarButton,
+  PlateFloatingComments,
   PlateProvider,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { Comments } from './comments/Comments';
+import { CommentBalloonToolbar } from './comments/CommentBalloonToolbar';
 import { commentsValue } from './comments/constants';
+import { MyCommentsProvider } from './comments/MyCommentsProvider';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
-import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -29,14 +28,13 @@ const plugins = createMyPlugins(
 export default () => {
   return (
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
-      <Comments>
-        <Toolbar>
-          <PlateCommentToolbarButton icon={<AddComment />} />
-          {/* <ToggleShowThreadsButton icon={<Comment />} /> */}
-        </Toolbar>
+      <MyCommentsProvider>
+        <Plate<MyValue> editableProps={editableProps}>
+          <CommentBalloonToolbar />
+        </Plate>
 
-        <Plate<MyValue> editableProps={editableProps} />
-      </Comments>
+        <PlateFloatingComments />
+      </MyCommentsProvider>
     </PlateProvider>
   );
 };

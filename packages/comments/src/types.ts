@@ -35,10 +35,11 @@ export interface TComment {
   isResolved?: boolean;
 }
 
-// TODO: check TThreadElement, TThread
 export interface TCommentText extends TText {
   comment?: boolean;
   comments?: Record<string, boolean>;
 }
 
-export interface CommentsPlugin {}
+export interface CommentsPlugin {
+  hotkey?: string;
+}

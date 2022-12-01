@@ -29,8 +29,6 @@ export const useCommentsPositioner = (props: CommentsPositionerProps = {}) => {
     const domNode = toDOMNode(editor, node);
     if (!domNode) return;
 
-    domNode!.scrollIntoView();
-
     const newPosition = getCommentPosition(editor, node);
     if (!newPosition) return;
 

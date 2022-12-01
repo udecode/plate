@@ -7,10 +7,10 @@ export const getCommentPosition = <V extends Value>(
   editor: PlateEditor<V>,
   node: TCommentText
 ) => {
-  const threadDOMNode = toDOMNode(editor, node);
-  if (!threadDOMNode) return;
+  const DOMNode = toDOMNode(editor, node);
+  if (!DOMNode) return;
 
-  const threadDOMNodePosition = getElementAbsolutePosition(threadDOMNode);
+  const DOMNodePosition = getElementAbsolutePosition(DOMNode);
 
   const editorDOMNode = toDOMNode(editor, editor);
   if (!editorDOMNode) return;
@@ -20,14 +20,14 @@ export const getCommentPosition = <V extends Value>(
     width: editorWidth,
   } = editorDOMNode.getBoundingClientRect();
 
-  const sideThreadWidth = 418;
+  const sidebarWidth = 418;
   const padding = 16;
 
   return {
     left: clamp(
       editorX + editorWidth + 16,
-      window.innerWidth - (sideThreadWidth + padding)
+      window.innerWidth - (sidebarWidth + padding)
     ),
-    top: threadDOMNodePosition.top,
+    top: DOMNodePosition.top,
   };
 };

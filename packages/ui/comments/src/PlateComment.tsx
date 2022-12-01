@@ -24,18 +24,18 @@ export const commentsHeaderCss = css`
   font-weight: normal;
 `;
 
-export const threadCommentHeaderInfoCss = css`
+export const commentHeaderInfoCss = css`
   ${tw`cursor-pointer flex flex-col ml-2 justify-center flex-grow text-sm text-left text-black truncate`};
   font-weight: normal;
   align-items: start;
 `;
 
-export const threadCommentHeaderUserNameCss = css`
+export const commentHeaderUserNameCss = css`
   ${tw`cursor-default self-stretch font-medium h-4 text-sm leading-5 text-left tracking-wide truncate`};
   color: rgba(60, 64, 67, 1);
 `;
 
-export const threadCommentHeaderCreatedDateCss = css`
+export const commentHeaderCreatedDateCss = css`
   ${tw`text-xs leading-4 tracking-wide`};
   color: rgba(60, 64, 67, 1);
 `;
@@ -59,10 +59,10 @@ const PlateCommentContent = () => {
       <div css={commentsHeaderCss}>
         <PlateAvatar userId={comment.userId} />
 
-        <div css={threadCommentHeaderInfoCss}>
-          <div css={threadCommentHeaderUserNameCss}>{user?.name}</div>
+        <div css={commentHeaderInfoCss}>
+          <div css={commentHeaderUserNameCss}>{user?.name}</div>
 
-          <div css={threadCommentHeaderCreatedDateCss}>
+          <div css={commentHeaderCreatedDateCss}>
             {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>

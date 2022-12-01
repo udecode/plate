@@ -17,7 +17,7 @@ export const PlateCommentsShowResolvedButton = (
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-  const areThreadsShown = Boolean(anchorEl);
+  const isActive = Boolean(anchorEl);
 
   // const handleClose = useCallback(() => {
   //   setAnchorEl(null);
@@ -31,13 +31,13 @@ export const PlateCommentsShowResolvedButton = (
   return (
     <div>
       <ToolbarButton
-        active={areThreadsShown}
+        active={isActive}
         onMouseDown={onMouseDown}
         {...otherProps}
       />
       {/* <Popover */}
-      {/*  id={areThreadsShown ? 'simple-popover' : undefined} */}
-      {/*  open={areThreadsShown} */}
+      {/*  id={isActive ? 'simple-popover' : undefined} */}
+      {/*  open={isActive} */}
       {/*  anchorEl={anchorEl} */}
       {/*  onClose={handleClose} */}
       {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} */}
