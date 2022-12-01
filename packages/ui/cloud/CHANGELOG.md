@@ -1,5 +1,7 @@
 # @udecode/plate-ui-cloud
 
+## 18.13.0
+
 ## 18.10.2
 
 ### Patch Changes

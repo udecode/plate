@@ -1,5 +1,18 @@
 # @udecode/plate-core
 
+## 18.13.0
+
+### Minor Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - new queries:
+    - `getPreviousSiblingNode`
+    - `isDocumentEnd`
+  - new utils:
+    - `getJotaiProviderInitialValues`: get jotai provider initial values from props
+    - exports `nanoid`
+  - new dependency: `nanoid`
+
 ## 18.9.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 18.13.0
+
 ## 18.10.3
 
 ### Patch Changes

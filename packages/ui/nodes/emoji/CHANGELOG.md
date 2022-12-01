@@ -1,5 +1,7 @@
 # @udecode/plate-ui-emoji
 
+## 18.13.0
+
 ## 18.11.0
 
 ### Minor Changes

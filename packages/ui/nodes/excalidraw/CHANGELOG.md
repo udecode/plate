@@ -1,5 +1,7 @@
 # @udecode/plate-excalidraw
 
+## 18.13.0
+
 ## 18.12.1
 
 ## 18.12.0
