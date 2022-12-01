@@ -3,3 +3,4 @@
  */
 
 export * from './ToolbarDropdown';
+export * from './useDropdownControls';
