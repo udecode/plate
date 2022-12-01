@@ -15,13 +15,17 @@ export const PlateCommentLeaf = <V extends Value = Value>(
   const { children, nodeProps, leaf } = props;
 
   const [commentIds, setCommentIds] = useState<string[]>([]);
+  const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const comments = useCommentsSelectors().comments();
   const [commentCount, setCommentCount] = useState(1);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     const ids: string[] = [];
     let count = 0;
+
+    let _isActive = false;
 
     Object.keys(leaf).forEach((key) => {
       if (!isCommentKey(key)) return;
@@ -30,28 +34,43 @@ export const PlateCommentLeaf = <V extends Value = Value>(
 
       if (comments[id]?.isResolved) return;
 
+      if (id === activeCommentId) {
+        _isActive = true;
+        setIsActive(true);
+      }
+
       ids.push(getCommentKeyId(key));
       count++;
     });
 
+    if (!_isActive && isActive) {
+      setIsActive(false);
+    }
+
     setCommentCount(count);
     setCommentIds(ids);
-  }, [comments, leaf]);
+  }, [activeCommentId, comments, isActive, leaf]);
 
   const lastCommentId = commentIds[commentIds.length - 1];
 
   let aboveChildren = <>{children}</>;
 
-  for (let i = 1; i < commentCount; i++) {
-    aboveChildren = (
-      <span
-        style={{
-          backgroundColor: 'rgba(255,212,0, 0.28)',
-        }}
-      >
-        {aboveChildren}
-      </span>
-    );
+  const backgroundColor = isActive
+    ? 'rgb(255, 212, 0)'
+    : 'rgba(255, 212, 0, 0.14)';
+
+  if (!isActive) {
+    for (let i = 1; i < commentCount; i++) {
+      aboveChildren = (
+        <span
+          style={{
+            backgroundColor: 'rgba(255, 212, 0, 0.14)',
+          }}
+        >
+          {aboveChildren}
+        </span>
+      );
+    }
   }
 
   // hide resolved comments
@@ -66,7 +85,8 @@ export const PlateCommentLeaf = <V extends Value = Value>(
           setActiveCommentId(lastCommentId);
         },
         style: {
-          backgroundColor: `rgba(255,212,0, 0.28)`,
+          backgroundColor,
+          borderBottom: '2px solid rgb(255, 212, 0)',
         },
         ...nodeProps,
       }}
