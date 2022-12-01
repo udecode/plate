@@ -1,4 +1,4 @@
-# @udecode/plate-comments
+# @udecode/plate-ui-comments
 
 ## 18.13.0
 

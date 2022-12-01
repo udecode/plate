@@ -1,5 +1,12 @@
 # @udecode/plate-styled-components
 
+## 18.13.0
+
+### Patch Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - `PortalBody`: returns `children` if `document` is undefined (SSR)
+
 ## 18.9.0
 
 ## 18.7.0

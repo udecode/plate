@@ -1,5 +1,12 @@
 # @udecode/plate-cloud
 
+## 18.13.0
+
+### Patch Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - vendor: remove `nanoid` from deps
+
 ## 18.10.2
 
 ### Patch Changes
