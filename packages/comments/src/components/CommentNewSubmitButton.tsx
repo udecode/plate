@@ -14,6 +14,7 @@ import {
 export const useCommentNewSubmitButton = ({
   ...props
 }: ButtonProps): ButtonProps => {
+  const onCommentAdd = useCommentsSelectors().onCommentAdd();
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
   const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
   const newValue = useCommentsSelectors().newValue();
@@ -31,17 +32,19 @@ export const useCommentNewSubmitButton = ({
     disabled: !editingCommentText?.trim().length,
     children: submitButtonText,
     onClick: () => {
-      if (isReplyComment) {
-        addComment({
-          parentId: comment.id,
-          value: newValue,
-        });
-      } else {
-        addComment({
-          id: activeCommentId,
-          value: newValue,
-        });
-      }
+      const newComment = isReplyComment
+        ? {
+            parentId: comment.id,
+            value: newValue,
+          }
+        : {
+            id: activeCommentId,
+            value: newValue,
+          };
+
+      addComment(newComment);
+      onCommentAdd?.(newComment);
+
       resetNewCommentValue();
     },
     ...props,

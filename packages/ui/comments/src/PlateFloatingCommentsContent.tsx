@@ -1,13 +1,9 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   CommentProvider,
   SCOPE_ACTIVE_COMMENT,
-  unsetCommentNodesById,
-  useCommentById,
-  useCommentsActions,
-  useCommentsSelectors,
+  useFloatingCommentsContentState,
 } from '@udecode/plate-comments';
-import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-core';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { PlateComment } from './PlateComment';
@@ -29,27 +25,12 @@ export const PlateFloatingCommentsContent = (
 ) => {
   const { disableForm } = props;
 
-  const activeCommentId = useCommentsSelectors().activeCommentId()!;
-  const myUserId = useCommentsSelectors().myUserId();
-  const activeComment = useCommentById(activeCommentId);
-  const setActiveCommentId = useCommentsActions().activeCommentId();
-  const editor = usePlateEditorRef();
-
-  const ref = useRef(null);
-
-  const hasNoComment = !activeComment;
-  const refs: any[] = [ref];
-
-  useOnClickOutside(
-    () => {
-      if (!activeComment) {
-        unsetCommentNodesById(editor, { id: activeCommentId });
-      }
-
-      setActiveCommentId(null);
-    },
-    { refs }
-  );
+  const {
+    ref,
+    activeCommentId,
+    hasNoComment,
+    myUserId,
+  } = useFloatingCommentsContentState();
 
   return (
     <CommentProvider

@@ -5,9 +5,13 @@ import {
   useCommentSelectors,
   useCommentText,
 } from '../stores/comment/CommentProvider';
-import { useUpdateComment } from '../stores/comments/CommentsProvider';
+import {
+  useCommentsSelectors,
+  useUpdateComment,
+} from '../stores/comments/CommentsProvider';
 
 export const useCommentEditSaveButton = ({ ...props }: ButtonProps) => {
+  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const editingValue = useCommentSelectors().editingValue();
   const setEditingValue = useCommentActions().editingValue();
   const id = useCommentSelectors().id();
@@ -22,7 +26,9 @@ export const useCommentEditSaveButton = ({ ...props }: ButtonProps) => {
     });
 
     setEditingValue(null);
-  }, [editingValue, setEditingValue, updateComment]);
+
+    onCommentUpdate?.({ value: editingValue });
+  }, [editingValue, onCommentUpdate, setEditingValue, updateComment]);
 
   return {
     onClick,

@@ -11,6 +11,7 @@ import { unsetCommentNodesById } from '../utils/index';
 
 export const useCommentDeleteButton = (props: ButtonProps): ButtonProps => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
+  const onCommentDelete = useCommentsSelectors().onCommentDelete();
   const id = useCommentSelectors().id();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const removeComment = useRemoveComment();
@@ -24,6 +25,8 @@ export const useCommentDeleteButton = (props: ButtonProps): ButtonProps => {
       } else {
         removeComment(id);
       }
+
+      onCommentDelete?.(id);
     },
     ...props,
   };

@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   CommentsPositioner,
-  useCommentsSelectors,
-  useResetNewCommentValue,
+  useFloatingCommentsState,
 } from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
@@ -14,23 +13,9 @@ export const floatingCommentsRootCss = css`
 `;
 
 export const PlateFloatingComments = () => {
-  const activeCommentId = useCommentsSelectors().activeCommentId();
-  const resetNewCommentValue = useResetNewCommentValue();
-  const [loaded, setLoaded] = useState(false);
+  const { loaded, activeCommentId } = useFloatingCommentsState();
 
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
-  // reset comment editing value when active comment id changes
-  useEffect(() => {
-    if (activeCommentId) {
-      resetNewCommentValue();
-    }
-  }, [activeCommentId, resetNewCommentValue]);
-
-  if (!loaded) return null;
-  if (!activeCommentId) return null;
+  if (!loaded || !activeCommentId) return null;
 
   return (
     <PortalBody>

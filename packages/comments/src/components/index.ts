@@ -20,3 +20,6 @@ export * from './CommentResolveButton';
 export * from './CommentUserName';
 export * from './CommentsPositioner';
 export * from './icons/index';
+export * from './useCommentAddButton';
+export * from './useFloatingCommentsState';
+export * from './useFloatingCommentsContentState';

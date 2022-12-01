@@ -19,10 +19,6 @@ export const PlateCommentsShowResolvedButton = (
   );
   const isActive = Boolean(anchorEl);
 
-  // const handleClose = useCallback(() => {
-  //   setAnchorEl(null);
-  // }, []);
-
   const onMouseDown = useCallback((event) => {
     event.preventDefault();
     setAnchorEl(event.currentTarget);

@@ -10,6 +10,7 @@ import {
 export const useCommentResolveButton = ({
   ...props
 }: ButtonProps): ButtonProps => {
+  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const updateComment = useUpdateComment(activeCommentId);
@@ -20,9 +21,13 @@ export const useCommentResolveButton = ({
     onClick: () => {
       const isResolved = !comment.isResolved;
 
-      updateComment({
+      const value = {
         isResolved,
-      });
+      };
+
+      updateComment(value);
+
+      onCommentUpdate?.(value);
 
       if (isResolved) {
         setActiveCommentId(null);

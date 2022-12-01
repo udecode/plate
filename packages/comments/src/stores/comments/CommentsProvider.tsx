@@ -39,14 +39,9 @@ export interface CommentsStoreState {
 
   focusTextarea: boolean;
 
-  // commentFactory: (comment: CommentFactoryParam): Comment => {
-  //   return {
-  //     id: nanoid(),
-  //     createdAt: Date.now(),
-  //     userId: commentsStore.get.myUserId() as any,
-  //     ...comment,
-  //   };
-  // },
+  onCommentAdd: ((value: Partial<TComment>) => void) | null;
+  onCommentUpdate: ((value: Partial<TComment>) => void) | null;
+  onCommentDelete: ((id: string) => void) | null;
 }
 
 export const { commentsStore, useCommentsStore } = createAtomStore(
@@ -77,14 +72,9 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
 
     focusTextarea: false,
 
-    // commentFactory: (comment: CommentFactoryParam): Comment => {
-    //   return {
-    //     id: nanoid(),
-    //     createdAt: Date.now(),
-    //     userId: commentsStore.get.myUserId() as any,
-    //     ...comment,
-    //   };
-    // },
+    onCommentAdd: null,
+    onCommentUpdate: null,
+    onCommentDelete: null,
   } as CommentsStoreState,
   {
     name: 'comments',

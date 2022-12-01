@@ -10,6 +10,7 @@ export const PlateCommentValue = () => {
   useEffect(() => {
     const textarea = textareaRef.current!;
     textarea.focus();
+
     const { length } = textarea.value;
     textarea.setSelectionRange(length, length);
   }, [textareaRef]);
