@@ -22,7 +22,7 @@ export const markTooltip: TippyProps = {
   placement: 'top',
 };
 
-export const MarkBalloonToolbar = ({ children }: { children: ReactNode }) => {
+export const MarkBalloonToolbar = ({ children }: { children?: ReactNode }) => {
   const editor = useMyPlateEditorRef();
 
   const arrow = false;
