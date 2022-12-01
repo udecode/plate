@@ -7,16 +7,18 @@ import {
   markTooltip,
 } from '../balloon-toolbar/MarkBalloonToolbar';
 
-export const commentTooltip: TippyProps = {
-  content: 'Comment (⌘+⇧+M)',
-  ...markTooltip,
-};
+export const CommentBalloonToolbar = () => {
+  const commentTooltip: TippyProps = {
+    content: 'Comment (⌘+⇧+M)',
+    ...markTooltip,
+  };
 
-export const CommentBalloonToolbar = () => (
-  <MarkBalloonToolbar>
-    <PlateCommentToolbarButton icon={<Chat />} tooltip={commentTooltip} />
-  </MarkBalloonToolbar>
-);
+  return (
+    <MarkBalloonToolbar>
+      <PlateCommentToolbarButton icon={<Chat />} tooltip={commentTooltip} />
+    </MarkBalloonToolbar>
+  );
+};
 `;
 
 export const commentBalloonToolbarFile = {

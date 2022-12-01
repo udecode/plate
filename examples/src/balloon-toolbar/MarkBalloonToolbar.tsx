@@ -1,3 +1,4 @@
+import 'tippy.js/dist/tippy.css';
 import React, { ReactNode } from 'react';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
