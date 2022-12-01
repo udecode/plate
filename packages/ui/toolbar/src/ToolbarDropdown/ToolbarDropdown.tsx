@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
+import { floatingRootCss } from '../styles';
 import { useDropdownControls } from './useDropdownControls';
 
 type ToolbarDropdownProps = {
@@ -30,18 +29,7 @@ export const ToolbarDropdown = ({
       </div>
 
       {open && (
-        <div
-          ref={floating}
-          css={[
-            tw` bg-white`,
-            css`
-              border: 1px solid #ccc;
-              box-shadow: 0 1px 3px 0 #ccc;
-              z-index: 1;
-            `,
-          ]}
-          style={styles}
-        >
+        <div ref={floating} css={floatingRootCss} style={styles}>
           {children}
         </div>
       )}

@@ -39,8 +39,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {
-    "@types/scriptjs": "0.0.2"
   }
 }

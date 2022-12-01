@@ -3,3 +3,6 @@
  */
 
 export * from './EmojiIndexSearch';
+export * from './IndexSearch';
+export * from './PrepareData';
+export * from './types';

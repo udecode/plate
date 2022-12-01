@@ -4117,6 +4117,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/pluginutils@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "@rollup/pluginutils@npm:5.0.2"
+  dependencies:
+    "@types/estree": "npm:^1.0.0"
+    estree-walker: "npm:^2.0.2"
+    picomatch: "npm:^2.3.1"
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: c8e01caaf5d63c23f82ad6a1402cd8878718b298c29e09e57592dfffa18e01c389242610c41cb608f429828d13ef0848ff83fa474bbfe568966a9a8b2e93d25a
+  languageName: node
+  linkType: hard
+
 "@sinclair/typebox@npm:^0.23.3":
   version: 0.23.5
   resolution: "@sinclair/typebox@npm:0.23.5"
@@ -4620,6 +4636,13 @@ __metadata:
   version: 0.0.39
   resolution: "@types/estree@npm:0.0.39"
   checksum: 17875aa97e2734f4a6c5d1e7d4978888961f4c890694c6e0d1c51b17b3eaceba6be1478cf76c50730860002766e4a05c3e8afa12cccbcd5f0b628c458b607357
+  languageName: node
+  linkType: hard
+
+"@types/estree@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@types/estree@npm:1.0.0"
+  checksum: 474df434e3a469cb7a68d44c8b7ac3a21bca344fa3b49651c3451d0f3662ff0c3b2ba52149cbc5b9c9a9f3f1ac37958c163ef29b65a8b36fccb5ccb2acfc9b08
   languageName: node
   linkType: hard
 
@@ -5433,7 +5456,6 @@ __metadata:
     "@portive/client": "npm:10.0.2"
     "@udecode/plate-core": "npm:18.9.0"
     delay: "npm:5.0.0"
-    nanoid: "npm:^3.3.4"
     p-defer: "npm:^3.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -5472,6 +5494,21 @@ __metadata:
     slate: ">=0.78.0"
     slate-history: ">=0.66.0"
     slate-react: ">=0.79.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-comments@npm:18.9.0, @udecode/plate-comments@workspace:packages/comments":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-comments@workspace:packages/comments"
+  dependencies:
+    "@udecode/plate-button": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.66.1"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.74.2"
   languageName: unknown
   linkType: soft
 
@@ -5583,6 +5620,7 @@ __metadata:
     "@udecode/plate-button": "npm:18.9.0"
     "@udecode/plate-code-block": "npm:18.10.1"
     "@udecode/plate-combobox": "npm:18.9.0"
+    "@udecode/plate-comments": "npm:18.9.0"
     "@udecode/plate-core": "npm:18.9.0"
     "@udecode/plate-emoji": "npm:18.11.2"
     "@udecode/plate-find-replace": "npm:18.9.0"
@@ -5781,7 +5819,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
-    "@types/scriptjs": "npm:0.0.2"
     "@udecode/plate-core": "npm:18.9.0"
     js-video-url-parser: "npm:^0.5.1"
     re-resizable: "npm:^6.9.9"
@@ -6137,6 +6174,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ui-comments@npm:18.9.0, @udecode/plate-ui-comments@workspace:packages/ui/comments":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui-comments@workspace:packages/ui/comments"
+  dependencies:
+    "@udecode/plate-comments": "npm:18.9.0"
+    "@udecode/plate-core": "npm:18.9.0"
+    "@udecode/plate-styled-components": "npm:18.9.0"
+    "@udecode/plate-ui-button": "npm:18.9.0"
+    "@udecode/plate-ui-toolbar": "npm:18.12.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.66.1"
+    slate-history: ">=0.66.0"
+    slate-react: ">=0.74.2"
+    styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-ui-cursor@npm:18.9.0, @udecode/plate-ui-cursor@workspace:packages/ui/cursor":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-cursor@workspace:packages/ui/cursor"
@@ -6467,6 +6523,7 @@ __metadata:
     "@udecode/plate-ui-button": "npm:18.9.0"
     "@udecode/plate-ui-code-block": "npm:18.12.1"
     "@udecode/plate-ui-combobox": "npm:18.9.0"
+    "@udecode/plate-ui-comments": "npm:18.9.0"
     "@udecode/plate-ui-cursor": "npm:18.9.0"
     "@udecode/plate-ui-dnd": "npm:18.10.1"
     "@udecode/plate-ui-emoji": "npm:18.11.0"
@@ -11943,7 +12000,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"estree-walker@npm:^2.0.1":
+"estree-walker@npm:^2.0.1, estree-walker@npm:^2.0.2":
   version: 2.0.2
   resolution: "estree-walker@npm:2.0.2"
   checksum: 6fd7656e20b3c8f1fa74cd3d922e09d2cc9815ba5ea2d4cc0d5f16870b00e4c40d9aaae5efeb26299ea684a89b8e64868f42ecdddd45e8d18283f47098c9943a
@@ -12040,7 +12097,6 @@ __metadata:
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-ui-cloud": "workspace:^"
     "@udecode/plate-ui-excalidraw": "workspace:^"
-    nanoid: "npm:3.3.4"
     prism-react-renderer: "npm:^1.2.0"
     styled-components: "npm:5.3.1"
     typescript: "npm:4.6.4"
@@ -17453,7 +17509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:3.3.4, nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
+"nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
   bin:
@@ -21806,6 +21862,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup-plugin-import-css@npm:^3.0.3":
+  version: 3.1.0
+  resolution: "rollup-plugin-import-css@npm:3.1.0"
+  dependencies:
+    "@rollup/pluginutils": "npm:^5.0.2"
+  peerDependencies:
+    rollup: ^2.x.x || ^3.x.x
+  checksum: 47ddeef7b1c93e41bd11909df10fdc4d7af7cca43fbb99a183353d6aa6d29fdda846ca20146dfb2e036b2bf082b09fc18e3bbd3dcd486b97c607fde60d0591f5
+  languageName: node
+  linkType: hard
+
 "rollup-plugin-includepaths@npm:^0.2.4":
   version: 0.2.4
   resolution: "rollup-plugin-includepaths@npm:0.2.4"
@@ -21987,6 +22054,7 @@ __metadata:
     "@types/raf": "npm:^3.4.0"
     "@types/react": "npm:17.0.47"
     "@types/react-dom": "npm:17.0.17"
+    "@types/scriptjs": "npm:0.0.2"
     "@types/styled-components": "npm:5.1.9"
     "@types/validator": "npm:^13.7.2"
     "@typescript-eslint/eslint-plugin": "npm:^5.23.0"
@@ -22038,6 +22106,7 @@ __metadata:
     rollup: "npm:^2.72.1"
     rollup-plugin-babel: "npm:^4.4.0"
     rollup-plugin-commonjs: "npm:^10.1.0"
+    rollup-plugin-import-css: "npm:^3.0.3"
     rollup-plugin-includepaths: "npm:^0.2.4"
     rollup-plugin-json: "npm:^4.0.0"
     rollup-plugin-node-builtins: "npm:^2.1.2"

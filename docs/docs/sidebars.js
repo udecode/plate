@@ -68,6 +68,7 @@ module.exports = {
           label: 'Marks',
           items: [
             'plugins/basic-marks',
+            'plugins/comments',
             'plugins/font',
             'plugins/highlight',
             'plugins/kbd',

@@ -20,15 +20,15 @@ import {
   createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
 } from '../../plugins/createNodeFactoryPlugin';
-import {
-  createPrevSelectionPlugin,
-  KEY_PREV_SELECTION,
-} from '../../plugins/createPrevSelectionPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import {
+  createPrevSelectionPlugin,
+  KEY_PREV_SELECTION,
+} from '../../plugins/index';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';

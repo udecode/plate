@@ -10,6 +10,7 @@ module.exports = {
   '@udecode/plate-ui-cloud': 'ui/cloud',
   '@udecode/plate-ui-code-block': 'ui/nodes/code-block',
   '@udecode/plate-ui-combobox': 'ui/combobox',
+  '@udecode/plate-ui-comments': 'ui/comments',
   '@udecode/plate-ui-cursor': 'ui/cursor',
   '@udecode/plate-ui-dnd': 'ui/dnd',
   '@udecode/plate-ui-emoji': 'ui/nodes/emoji',

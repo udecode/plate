@@ -32,6 +32,11 @@ export const plateButtonCss = [
   `,
 ];
 
+export const primaryButtonCss = [
+  plateButtonCss,
+  tw`bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 active:text-white`,
+];
+
 export const PlateButton = ({
   size,
   px,
