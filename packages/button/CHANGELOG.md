@@ -1,5 +1,12 @@
 # @udecode/plate-button
 
+## 18.13.0
+
+### Patch Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - export `ButtonProps`
+
 ## 18.9.0
 
 ## 18.7.0

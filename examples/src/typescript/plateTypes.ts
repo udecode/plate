@@ -53,6 +53,7 @@ import {
   PlateProps,
   PluginOptions,
   SerializeHtml,
+  TCommentText,
   TElement,
   TImageElement,
   TLinkElement,
@@ -91,7 +92,7 @@ export type PlainText = {
   text: string;
 };
 
-export interface RichText extends TText {
+export interface RichText extends TText, TCommentText {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;

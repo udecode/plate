@@ -13,20 +13,19 @@ const buttonStyle: React.CSSProperties = {
 export const CloudToolbarButtons = () => {
   const editor = useMyPlateEditorRef(useEventPlateId()) as PlateCloudEditor;
   const getSaveValue = () => {
-    // eslint-disable-next-line no-console
-    console.log(editor.cloud.getSaveValue());
+    console.info(editor.cloud.getSaveValue());
   };
 
   const finishUploads = async () => {
     const start = new Date().getTime();
     // eslint-disable-next-line no-console
-    console.log('start finishUploads');
+    console.info('start finishUploads');
     await editor.cloud.finishUploads();
     const end = new Date().getTime();
     // NOTE: We don't use backtick with curly brace replacement because it
     // doesn't work with gen:code script at time of writing.
     // eslint-disable-next-line no-console
-    console.log(`end finishUploads in ms:`, end - start);
+    console.info(`end finishUploads in ms:`, end - start);
   };
 
   return (

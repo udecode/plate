@@ -1,5 +1,16 @@
 # @udecode/plate-ui
 
+## 18.13.0
+
+### Minor Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - new plugin: comments
+
+## 18.12.2
+
+## 18.12.1
+
 ## 18.11.2
 
 ## 18.11.1

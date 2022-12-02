@@ -9,6 +9,7 @@ module.exports = {
   '@udecode/plate-cloud': 'cloud',
   '@udecode/plate-code-block': 'nodes/code-block',
   '@udecode/plate-combobox': 'editor/combobox',
+  '@udecode/plate-comments': 'comments',
   '@udecode/plate-core': 'core',
   '@udecode/plate-emoji': 'nodes/emoji',
   '@udecode/plate-serializer-csv': 'serializers/csv',

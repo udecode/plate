@@ -10,6 +10,7 @@ import {
   createCodeBlockPlugin,
   createCodePlugin,
   createComboboxPlugin,
+  createCommentsPlugin,
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
@@ -45,6 +46,7 @@ import {
   createUnderlinePlugin,
   MentionCombobox,
   Plate,
+  PlateFloatingComments,
   PlateProvider,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
@@ -56,7 +58,8 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { alignPlugin } from './align/alignPlugin';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
-import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
+import { CommentBalloonToolbar } from './comments/CommentBalloonToolbar';
+import { MyCommentsProvider } from './comments/MyCommentsProvider';
 import { editableProps } from './common/editableProps';
 import { CursorOverlayContainer } from './cursor-overlay/CursorOverlayContainer';
 import { dragOverCursorPlugin } from './cursor-overlay/dragOverCursorPlugin';
@@ -141,6 +144,7 @@ const App = () => {
           createSelectOnBackspacePlugin(selectOnBackspacePlugin),
           createComboboxPlugin(),
           createMentionPlugin(),
+          createCommentsPlugin(),
           createDeserializeMdPlugin(),
           createDeserializeCsvPlugin(),
           createDeserializeDocxPlugin(),
@@ -160,15 +164,19 @@ const App = () => {
           <ToolbarButtons />
         </Toolbar>
 
-        <div ref={containerRef} style={styles.container}>
-          <Plate editableProps={editableProps}>
-            <MarkBalloonToolbar />
+        <MyCommentsProvider>
+          <div ref={containerRef} style={styles.container}>
+            <Plate editableProps={editableProps}>
+              <CommentBalloonToolbar />
 
-            <MentionCombobox items={MENTIONABLES} />
+              <MentionCombobox items={MENTIONABLES} />
 
-            <CursorOverlayContainer containerRef={containerRef} />
-          </Plate>
-        </div>
+              <CursorOverlayContainer containerRef={containerRef} />
+            </Plate>
+          </div>
+
+          <PlateFloatingComments />
+        </MyCommentsProvider>
       </PlateProvider>
     </DndProvider>
   );

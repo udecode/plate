@@ -14,7 +14,7 @@ export const insertExcalidraw = <V extends Value>(
   {
     key = ELEMENT_EXCALIDRAW,
     ...props
-  } : TNodeProps<TExcalidrawElement> & PlatePluginKey= {}
+  }: TNodeProps<TExcalidrawElement> & PlatePluginKey = {}
 ): void => {
   if (!editor.selection) return;
 

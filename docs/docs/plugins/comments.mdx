@@ -1,0 +1,40 @@
+---
+slug: /plugins/comments
+title: Comments
+---
+
+The comments plugin enables support for adding comments to text as marks.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate
+# or
+npm install @udecode/plate-comments
+npm install @udecode/plate-ui-comments
+```
+
+### Usage
+
+- Select text, then:
+  - Click on the comment button to add a comment.
+  - You can also use the hotkey `⌘+⇧+M`.
+
+
+import { CommentsSandpack } from "./CommentsSandpack";
+
+<CommentsSandpack />
+
+### Options
+
+```ts
+interface CommentsPlugin {
+  hotkey?: string;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/comments/src/createCommentsPlugin.ts)
+- [packages/ui/comments](https://github.com/udecode/plate/tree/main/packages/ui/comments/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

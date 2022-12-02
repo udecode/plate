@@ -1,4 +1,5 @@
-import React from 'react';
+import 'tippy.js/dist/tippy.css';
+import React, { ReactNode } from 'react';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
@@ -13,25 +14,26 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const MarkBalloonToolbar = () => {
+export const markTooltip: TippyProps = {
+  arrow: true,
+  delay: 0,
+  duration: [200, 0],
+  hideOnClick: false,
+  offset: [0, 17],
+  placement: 'top',
+};
+
+export const MarkBalloonToolbar = ({ children }: { children?: ReactNode }) => {
   const editor = useMyPlateEditorRef();
 
   const arrow = false;
   const theme = 'dark';
-  const tooltip: TippyProps = {
-    arrow: true,
-    delay: 0,
-    duration: [200, 0],
-    hideOnClick: false,
-    offset: [0, 17],
-    placement: 'top',
-  };
 
-  const boldTooltip: TippyProps = { content: 'Bold (⌘B)', ...tooltip };
-  const italicTooltip: TippyProps = { content: 'Italic (⌘I)', ...tooltip };
+  const boldTooltip: TippyProps = { content: 'Bold (⌘+B)', ...markTooltip };
+  const italicTooltip: TippyProps = { content: 'Italic (⌘+I)', ...markTooltip };
   const underlineTooltip: TippyProps = {
-    content: 'Underline (⌘U)',
-    ...tooltip,
+    content: 'Underline (⌘+U)',
+    ...markTooltip,
   };
 
   return (
@@ -51,6 +53,7 @@ export const MarkBalloonToolbar = () => {
         icon={<FormatUnderlined />}
         tooltip={underlineTooltip}
       />
+      {children}
     </BalloonToolbar>
   );
 };

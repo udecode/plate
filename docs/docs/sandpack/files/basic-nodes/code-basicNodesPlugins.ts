@@ -1,17 +1,10 @@
-export const basicNodesPluginsCode = `import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
-import { basicElementsPlugins } from '../basic-elements/basicElementsPlugins';
+export const basicNodesPluginsCode = `import { basicElementsPlugins } from '../basic-elements/basicElementsPlugins';
 import { basicMarksPlugins } from '../basic-marks/basicMarksPlugins';
 import { plateUI } from '../common/plateUI';
-import { emojiPlugin } from '../emoji/emojiPlugin';
 import { createMyPlugins } from '../typescript/plateTypes';
 
 export const basicNodesPlugins = createMyPlugins(
-  [
-    ...basicElementsPlugins,
-    ...basicMarksPlugins,
-    createComboboxPlugin(),
-    createEmojiPlugin(emojiPlugin),
-  ],
+  [...basicElementsPlugins, ...basicMarksPlugins],
   {
     components: plateUI,
   }

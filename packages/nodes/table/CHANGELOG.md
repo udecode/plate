@@ -1,5 +1,12 @@
 # @udecode/plate-table
 
+## 18.13.0
+
+### Patch Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - fix import
+
 ## 18.11.0
 
 ### Patch Changes

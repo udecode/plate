@@ -8,6 +8,7 @@ import { basicMarksFiles } from './basic-marks/code-basicMarksFiles';
 import { basicNodesFiles } from './basic-nodes/code-basicNodesFiles';
 import { basicPluginsFiles } from './basic-plugins/code-basicPluginsFiles';
 import { cloudFiles } from './cloud/code-cloudFiles';
+import { commentsFiles } from './comments/code-commentsFiles';
 import { commonFiles } from './common/code-commonFiles';
 import { cursorOverlayFiles } from './cursor-overlay/code-cursorOverlayFiles';
 import { dndFiles } from './dnd/code-dndFiles';
@@ -57,6 +58,7 @@ export const rootFiles = {
   ...basicNodesFiles,
   ...basicPluginsFiles,
   ...cloudFiles,
+  ...commentsFiles,
   ...commonFiles,
   ...cursorOverlayFiles,
   ...dndFiles,

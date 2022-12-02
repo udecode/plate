@@ -1,6 +1,5 @@
 import { ClientFile, uploadFile as uploadFileToPortive } from '@portive/client';
-import { Value } from '@udecode/plate-core';
-import { nanoid } from 'nanoid';
+import { nanoid, Value } from '@udecode/plate-core';
 import { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 
 const createFileEvent = (id: string, clientFile: ClientFile): FileEvent => {
