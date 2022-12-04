@@ -20,11 +20,13 @@ export const parseMediaUrl = <V extends Value>(
     url,
   }: {
     pluginKey: string;
-    url: string;
+    url?: string;
   }
-): EmbedUrlData => {
+): EmbedUrlData | undefined => {
+  if (!url) return;
+
   const { rules } = getPluginOptions<MediaPlugin, V>(editor, pluginKey);
-  if (!rules) return { url };
+  if (!rules) return;
 
   for (const { parser, component } of rules) {
     const parsed = parser(url);
@@ -32,6 +34,4 @@ export const parseMediaUrl = <V extends Value>(
       return { ...parsed, component };
     }
   }
-
-  return { url };
 };
