@@ -1,5 +1,7 @@
 # @udecode/plate-ui
 
+## 18.13.1
+
 ## 18.13.0
 
 ### Minor Changes
