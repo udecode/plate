@@ -2,6 +2,7 @@ import { Dispatch, Reducer, useCallback, useReducer } from 'react';
 import { PlateEditor, Value } from '@udecode/plate-core';
 import { i18n } from '../constants';
 import { getEmojiOnInsert } from '../getEmojiOnInsert';
+import { i18nProps, IconList } from '../types';
 import { AIndexSearch } from './IndexSearch/IndexSearch';
 import { Emoji, IEmojiFlyoutLibrary } from './IndexSearch';
 
@@ -11,8 +12,8 @@ export type EmojiPickerProps = {
   indexSearch: AIndexSearch<Emoji>;
 };
 
-export type EmojiPickerState = {
-  i18n: any;
+export type TEmojiPickerState<T extends JSX.Element = JSX.Element> = {
+  i18n: i18nProps;
   searchValue: string;
   setSearch: (value: string) => void;
   clearSearch: () => void;
@@ -22,6 +23,7 @@ export type EmojiPickerState = {
   setEmoji: (emoji?: Emoji) => void;
   selectEmoji: (emoji: Emoji) => void;
   emojiLibrary: IEmojiFlyoutLibrary;
+  icons: IconList<T>;
   emoji?: Emoji;
 };
 
@@ -86,7 +88,7 @@ export const useEmojiPicker = ({
   editor,
   emojiLibrary,
   indexSearch,
-}: EmojiPickerProps): EmojiPickerState => {
+}: EmojiPickerProps): Omit<TEmojiPickerState, 'icons'> => {
   const [state, dispatch] = EmojiPickerState();
 
   const handleSearchInput = useCallback(

@@ -1,3 +1,5 @@
+import { i18nProps } from './types';
+
 export const ELEMENT_EMOJI = 'emoji';
 // export const ELEMENT_EMOJI_INPUT = 'emoji_input';
 
@@ -22,7 +24,7 @@ export const DEFAULT_FREQUENTLY_USED_EMOJI = [
   'heart',
 ];
 
-export const i18n = {
+export const i18n: i18nProps = {
   search: 'Search',
   clear: 'Clear',
   searchNoResultsTitle: 'Oh no!',
