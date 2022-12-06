@@ -1,9 +1,9 @@
-import { Dispatch, Reducer, useCallback, useEffect, useReducer } from 'react';
+import { Dispatch, Reducer, useCallback, useReducer } from 'react';
 import { PlateEditor, Value } from '@udecode/plate-core';
 import { i18n } from '../constants';
 import { getEmojiOnInsert } from '../getEmojiOnInsert';
 import { AIndexSearch } from './IndexSearch/IndexSearch';
-import { Emoji, EmojiCategories, IEmojiFlyoutLibrary } from './IndexSearch';
+import { Emoji, IEmojiFlyoutLibrary } from './IndexSearch';
 
 export type EmojiPickerProps = {
   editor: PlateEditor<Value>;
@@ -22,7 +22,6 @@ export type EmojiPickerState = {
   setEmoji: (emoji?: Emoji) => void;
   selectEmoji: (emoji: Emoji) => void;
   emojiLibrary: IEmojiFlyoutLibrary;
-  emojiCategories?: EmojiCategories;
   emoji?: Emoji;
 };
 
@@ -32,7 +31,6 @@ type EmojiPickerStateProps = {
   isSearching: boolean;
   searchResult: Emoji[];
   emoji?: Emoji;
-  emojiCategories?: EmojiCategories;
 };
 
 const initialState: EmojiPickerStateProps = {
@@ -41,7 +39,6 @@ const initialState: EmojiPickerStateProps = {
   hasFound: false,
   isSearching: false,
   searchResult: [],
-  emojiCategories: undefined,
 };
 
 export type EmojiPickerDispatchType = {
@@ -149,13 +146,6 @@ export const useEmojiPicker = ({
     [editor]
   );
 
-  useEffect(() => {
-    dispatch({
-      type: 'SET_EMOJI_CATEGORIES',
-      payload: { emojiCategories: emojiLibrary.getCategories() },
-    });
-  }, [dispatch, emojiLibrary]);
-
   return {
     i18n,
     searchValue: state.searchValue,
@@ -167,7 +157,6 @@ export const useEmojiPicker = ({
     emoji: state.emoji,
     setEmoji,
     selectEmoji,
-    emojiCategories: state.emojiCategories,
     emojiLibrary,
   };
 };
