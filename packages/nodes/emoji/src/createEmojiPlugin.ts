@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { ELEMENT_EMOJI, ELEMENT_EMOJI_INPUT, EMOJI_TRIGGER } from './constants';
+import { ELEMENT_EMOJI, EMOJI_TRIGGER } from './constants';
 import { getOnKeyDownEmoji } from './handlers';
 import { EmojiPlugin } from './types';
 import { EmojiTriggeringController } from './utils';
@@ -19,13 +19,6 @@ export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
     createEmoji: (item) => item.data.emoji,
     emojiTriggeringController: new EmojiTriggeringController(EMOJI_TRIGGER),
   },
-  plugins: [
-    {
-      key: ELEMENT_EMOJI_INPUT,
-      isElement: true,
-      isInline: true,
-    },
-  ],
   then: (
     _,
     { key, options: { trigger, createEmoji, emojiTriggeringController } }

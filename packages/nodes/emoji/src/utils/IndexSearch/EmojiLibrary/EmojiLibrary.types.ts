@@ -29,7 +29,7 @@ export type Emoji = {
   version: number;
 };
 
-export type Emojis = Record<any, Emoji>;
+export type Emojis = Record<string, Emoji>;
 
 export type EmojiLibrary = {
   aliases: any;
@@ -37,3 +37,16 @@ export type EmojiLibrary = {
   emojis: Emojis;
   sheet: any;
 };
+
+export type EmojiCategories = Array<{
+  id: string;
+  emojis: string[];
+}>;
+
+export type THash = Record<string, string>;
+
+export interface IEmojiLibrary {
+  keys: string[];
+  getEmoji: (key: string) => Emoji;
+  getEmojiId: (key: string) => string;
+}
