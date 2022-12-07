@@ -2,6 +2,8 @@ import { TComboboxItem } from '@udecode/plate-combobox';
 import { TEditableProps, Value } from '@udecode/plate-core';
 import { IEmojiTriggeringController } from './utils';
 
+type ReverseMap<T> = T[keyof T];
+
 export type EmojiComboboxProps = (
   editableProps: TEditableProps<Value>
 ) => JSX.Element | null;
@@ -24,18 +26,21 @@ export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
   id?: string;
 }
 
-export type CategoryList =
-  | 'activity'
-  | 'custom'
-  | 'flags'
-  | 'foods'
-  | 'frequent'
-  | 'nature'
-  | 'objects'
-  | 'people'
-  | 'places'
-  | 'search'
-  | 'symbols';
+export const EmojiCategoryType = {
+  Activity: 'activity',
+  Custom: 'custom',
+  Flags: 'flags',
+  Foods: 'foods',
+  Frequent: 'frequent',
+  Nature: 'nature',
+  Objects: 'objects',
+  People: 'people',
+  Places: 'places',
+  Search: 'search',
+  Symbols: 'symbols',
+} as const;
+
+export type EmojiCategoryList = ReverseMap<typeof EmojiCategoryType>;
 
 export type i18nProps = {
   search: string;
@@ -43,12 +48,15 @@ export type i18nProps = {
   searchNoResultsTitle: string;
   searchNoResultsSubtitle: string;
   pick: string;
-  categories: Record<CategoryList, string>;
+  categories: Record<EmojiCategoryList, string>;
   skins: Record<'choose' | '1' | '2' | '3' | '4' | '5' | '6', string>;
 };
 
 export type IconList<T = string> = {
-  categories: Record<Exclude<CategoryList, 'search'>, { outline: T; solid: T }>;
+  categories: Record<
+    Exclude<EmojiCategoryList, 'search'>,
+    { outline: T; solid: T }
+  >;
   search: {
     loupe: T;
     delete: T;
