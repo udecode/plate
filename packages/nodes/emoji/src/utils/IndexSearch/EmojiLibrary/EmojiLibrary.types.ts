@@ -15,6 +15,8 @@
  *    };
  */
 
+import { EmojiCategoryList } from '../../../types';
+
 type Skin = {
   unified: string;
   native: string;
@@ -39,7 +41,7 @@ export type EmojiLibrary = {
 };
 
 export type EmojiCategories = Array<{
-  id: string;
+  id: EmojiCategoryList;
   emojis: string[];
 }>;
 

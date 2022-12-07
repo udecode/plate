@@ -2,7 +2,12 @@ import { Dispatch, Reducer, useCallback, useReducer } from 'react';
 import { PlateEditor, Value } from '@udecode/plate-core';
 import { i18n } from '../constants';
 import { getEmojiOnInsert } from '../getEmojiOnInsert';
-import { i18nProps, IconList } from '../types';
+import {
+  EmojiCategoryList,
+  EmojiCategoryType,
+  i18nProps,
+  IconList,
+} from '../types';
 import { AIndexSearch } from './IndexSearch/IndexSearch';
 import { Emoji, IEmojiFlyoutLibrary } from './IndexSearch';
 
@@ -24,6 +29,7 @@ export type TEmojiPickerState<T extends JSX.Element = JSX.Element> = {
   selectEmoji: (emoji: Emoji) => void;
   emojiLibrary: IEmojiFlyoutLibrary;
   icons: IconList<T>;
+  handleCategoryClick: (id: EmojiCategoryList) => void;
   emoji?: Emoji;
 };
 
@@ -33,6 +39,7 @@ type EmojiPickerStateProps = {
   isSearching: boolean;
   searchResult: Emoji[];
   emoji?: Emoji;
+  category: EmojiCategoryList;
 };
 
 const initialState: EmojiPickerStateProps = {
@@ -41,6 +48,7 @@ const initialState: EmojiPickerStateProps = {
   hasFound: false,
   isSearching: false,
   searchResult: [],
+  category: EmojiCategoryType.Frequent,
 };
 
 export type EmojiPickerDispatchType = {
@@ -73,7 +81,6 @@ const EmojiPickerState = (): [
         };
       case 'SET_SEARCH':
       case 'SET_EMOJI':
-      case 'SET_EMOJI_CATEGORIES':
         return { ...state, ...payload };
       default: {
         throw new Error(`Unhandled action type: ${type}`);
@@ -148,6 +155,10 @@ export const useEmojiPicker = ({
     [editor]
   );
 
+  const handleCategoryClick = (id: EmojiCategoryList) => {
+    console.log('id', id);
+  };
+
   return {
     i18n,
     searchValue: state.searchValue,
@@ -160,5 +171,6 @@ export const useEmojiPicker = ({
     setEmoji,
     selectEmoji,
     emojiLibrary,
+    handleCategoryClick,
   };
 };
