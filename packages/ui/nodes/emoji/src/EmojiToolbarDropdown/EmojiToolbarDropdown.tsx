@@ -3,8 +3,8 @@ import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
 import {
   EmojiFlyoutIndexSearch,
   EmojiFlyoutLibrary,
-  TEmojiPickerState,
   useEmojiPicker,
+  UseEmojiPickerType,
 } from '@udecode/plate-emoji';
 import {
   ToolbarButton,
@@ -17,7 +17,7 @@ import icons from '../icons';
 type EmojiToolbarDropdownProps = {
   pluginKey: string;
   icon: ReactNode;
-  EmojiPickerComponent?: (props: TEmojiPickerState) => JSX.Element;
+  EmojiPickerComponent?: (props: UseEmojiPickerType) => JSX.Element;
 } & ToolbarButtonProps;
 
 export const EmojiToolbarDropdown = ({

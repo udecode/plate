@@ -1,4 +1,4 @@
-import { EmojiCategoryList, TEmojiPickerState } from '@udecode/plate-emoji';
+import { EmojiCategoryList, UseEmojiPickerType } from '@udecode/plate-emoji';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
@@ -11,7 +11,7 @@ export interface EmojiPickerNavigationStyles {
 }
 
 export type EmojiPickerNavigationProps = StyledProps<EmojiPickerNavigationStyles> &
-  Pick<TEmojiPickerState, 'i18n' | 'emojiLibrary' | 'icons'> & {
+  Pick<UseEmojiPickerType, 'i18n' | 'emojiLibrary' | 'icons'> & {
     onClick: (id: EmojiCategoryList) => void;
   };
 

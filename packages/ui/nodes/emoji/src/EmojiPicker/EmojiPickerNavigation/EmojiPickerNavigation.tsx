@@ -15,16 +15,16 @@ export const EmojiPickerNavigation = ({
   return (
     <nav id="emoji-nav" css={root.css}>
       <div css={tw`relative flex`}>
-        {emojiLibrary.getCategories().map((category) => (
+        {emojiLibrary.getCategories().map((categoryId) => (
           <button
-            key={category.id}
-            aria-label={i18n.categories[category.id]}
-            title={i18n.categories[category.id]}
+            key={categoryId}
+            aria-label={i18n.categories[categoryId]}
+            title={i18n.categories[categoryId]}
             type="button"
             css={button?.css}
-            onClick={() => onClick(category.id)}
+            onClick={() => onClick(categoryId)}
           >
-            {icons.categories[category.id].outline}
+            {icons.categories[categoryId].outline}
           </button>
         ))}
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEmojiPickerState } from '@udecode/plate-emoji';
+import { UseEmojiPickerType } from '@udecode/plate-emoji';
 import { EmojiPickerContent } from '../EmojiPickerContent';
 import { EmojiPickerNavigation } from '../EmojiPickerNavigation';
 import { EmojiPickerPreview } from '../EmojiPickerPreview';
@@ -20,7 +20,8 @@ export const EmojiPicker = ({
   emojiLibrary,
   icons,
   handleCategoryClick,
-}: TEmojiPickerState) => {
+  scrollRef,
+}: UseEmojiPickerType) => {
   const { root } = getEmojiPickerStyles();
 
   return (
@@ -44,6 +45,7 @@ export const EmojiPicker = ({
         isSearching={isSearching}
         searchResult={searchResult}
         selectEmoji={selectEmoji}
+        scrollRef={scrollRef}
       />
       <EmojiPickerPreview
         i18n={i18n}

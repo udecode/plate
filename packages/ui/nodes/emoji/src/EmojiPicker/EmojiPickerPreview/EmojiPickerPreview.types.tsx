@@ -1,4 +1,4 @@
-import { TEmojiPickerState } from '@udecode/plate-emoji';
+import { UseEmojiPickerType } from '@udecode/plate-emoji';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
@@ -11,10 +11,10 @@ export interface EmojiPickerPreviewStyles {
 }
 
 export type EmojiPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
-  Pick<TEmojiPickerState, 'emoji'>;
+  Pick<UseEmojiPickerType, 'emoji'>;
 
 export type EmojiPickerPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
-  Pick<TEmojiPickerState, 'emoji' | 'hasFound'>;
+  Pick<UseEmojiPickerType, 'emoji' | 'hasFound'>;
 
 export interface EmojiPickerPreviewStyleProps
   extends StyledProps<EmojiPickerPreviewStyles> {}

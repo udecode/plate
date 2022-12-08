@@ -1,9 +1,10 @@
 import React, { memo, useMemo } from 'react';
-import { Emoji } from '@udecode/plate-emoji';
+import { Emoji, GridRow } from '@udecode/plate-emoji';
 import { getEmojiPickerContentStyles } from './EmojiPickerContent.styles';
 import {
   ButtonProps,
   EmojiPickerContentProps,
+  RowOfButtonsProps,
 } from './EmojiPickerContent.types';
 
 const Button = memo(
@@ -31,6 +32,26 @@ const Button = memo(
   }
 );
 
+const RowOfButtons = memo(
+  ({ row, emojiLibrary, setEmoji, selectEmoji }: RowOfButtonsProps) => (
+    <div
+      key={row.id}
+      data-index={row.id}
+      css={{ display: 'flex', 'flex-direction': 'row' }}
+    >
+      {row.emojis.map((emojiId, index) => (
+        <Button
+          key={emojiId}
+          index={index}
+          emoji={emojiLibrary.getEmoji(emojiId)}
+          onClick={selectEmoji}
+          onMouseHandler={setEmoji}
+        />
+      ))}
+    </div>
+  )
+);
+
 export const EmojiPickerContent = ({
   i18n,
   setEmoji,
@@ -38,25 +59,28 @@ export const EmojiPickerContent = ({
   emojiLibrary,
   isSearching = false,
   searchResult,
+  scrollRef,
   ...props
 }: EmojiPickerContentProps) => {
   const styles = getEmojiPickerContentStyles({ ...props });
 
   const EmojiList = useMemo(
     () =>
-      emojiLibrary.getCategories().map((category) => (
-        <div key={category.id} data-id={category.id}>
-          <div css={styles.sticky?.css}>{i18n.categories[category.id]}</div>
+      emojiLibrary.getCategories().map((categoryId) => (
+        <div key={categoryId} data-id={categoryId}>
+          <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
           <div css={styles.category?.css}>
-            {category.emojis.map((emojiId: string, index: any) => (
-              <Button
-                key={emojiId}
-                index={index}
-                emoji={emojiLibrary.getEmoji(emojiId)}
-                onClick={selectEmoji}
-                onMouseHandler={setEmoji}
-              />
-            ))}
+            {emojiLibrary
+              .getEmojisInRows(categoryId)
+              .rows.map((row: GridRow, index) => (
+                <RowOfButtons
+                  key={index}
+                  emojiLibrary={emojiLibrary}
+                  row={row}
+                  selectEmoji={selectEmoji}
+                  setEmoji={setEmoji}
+                />
+              ))}
           </div>
         </div>
       )),
@@ -91,7 +115,7 @@ export const EmojiPickerContent = ({
   );
 
   return (
-    <div css={styles.root.css}>
+    <div css={styles.root.css} data-id="scroll" ref={scrollRef}>
       <div css={styles.content?.css}>
         {isSearching ? SearchList : EmojiList}
       </div>
