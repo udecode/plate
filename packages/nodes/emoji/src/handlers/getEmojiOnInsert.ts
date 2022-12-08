@@ -5,8 +5,8 @@ import {
   PlatePluginKey,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { KEY_EMOJI } from './constants';
-import { EmojiItemData, EmojiPlugin } from './types';
+import { KEY_EMOJI } from '../constants';
+import { EmojiItemData, EmojiPlugin } from '../types';
 
 export const getEmojiOnInsert = <TData extends EmojiItemData = EmojiItemData>({
   key = KEY_EMOJI,

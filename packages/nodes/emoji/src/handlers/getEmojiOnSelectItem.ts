@@ -7,8 +7,8 @@ import {
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { KEY_EMOJI } from './constants';
-import { EmojiItemData, EmojiPlugin } from './types';
+import { KEY_EMOJI } from '../constants';
+import { EmojiItemData, EmojiPlugin } from '../types';
 
 export const getEmojiOnSelectItem = <
   TData extends EmojiItemData = EmojiItemData
