@@ -3,7 +3,10 @@ import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import { EmojiCategoryList } from '../../types';
 import { Emoji } from '../EmojiLibrary';
-import { observeCategories } from '../EmojiObserver';
+import {
+  observeCategories,
+  SetFocusedAndVisibleSectionsType,
+} from '../EmojiObserver';
 import { EmojiPickerState } from './EmojiPickerState';
 import {
   UseEmojiPickerProps,
@@ -19,11 +22,14 @@ export const useEmojiPicker = ({
   const [state, dispatch] = EmojiPickerState();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const setFocusedCategory = useCallback(
-    (categoryId: EmojiCategoryList) => {
+  const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
+    (visibleSections, categoryId) => {
       dispatch({
-        type: 'SET_FOCUSED_CATEGORY',
-        payload: { focusedCategory: categoryId },
+        type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
+        payload: {
+          focusedCategory: categoryId,
+          visibleCategories: visibleSections,
+        },
       });
     },
     [dispatch]
@@ -88,31 +94,34 @@ export const useEmojiPicker = ({
 
   const handleCategoryClick = useCallback(
     (categoryId: EmojiCategoryList) => {
-      setFocusedCategory(categoryId);
+      dispatch({
+        type: 'SET_FOCUSED_CATEGORY',
+        payload: { focusedCategory: categoryId },
+      });
     },
-    [setFocusedCategory]
+    [dispatch]
   );
 
   useEffect(() => {
     if (isOpen && !state.isSearching) {
-      observeCategories(scrollRef, emojiLibrary, setFocusedCategory);
+      observeCategories({
+        ancestorRef: scrollRef,
+        emojiLibrary,
+        setFocusedAndVisibleSections,
+      });
     }
-  }, [emojiLibrary, isOpen, state.isSearching, setFocusedCategory]);
+  }, [emojiLibrary, isOpen, state.isSearching, setFocusedAndVisibleSections]);
 
   return {
     i18n,
-    searchValue: state.searchValue,
     setSearch,
     clearSearch,
-    hasFound: state.hasFound,
-    searchResult: state.searchResult,
-    isSearching: state.isSearching,
     emoji: state.emoji,
     setEmoji,
     selectEmoji,
     emojiLibrary,
     handleCategoryClick,
-    focusedCategory: state.focusedCategory,
     scrollRef,
+    ...state,
   };
 };

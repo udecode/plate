@@ -4,7 +4,6 @@ export const KEY_EMOJI = 'emoji';
 
 export const EMOJI_TRIGGER = ':';
 export const EMOJI_MAX_RESULT = 90;
-export const EMOJI_ROWS_PER_RENDER = 10;
 
 export const DEFAULT_FREQUENTLY_USED_EMOJI = [
   '+1',
