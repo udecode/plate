@@ -5,6 +5,7 @@ import { Emoji, IEmojiFlyoutLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from '../IndexSearch/IndexSearch';
 
 export type UseEmojiPickerProps = {
+  isOpen: boolean;
   editor: PlateEditor<Value>;
   emojiLibrary: IEmojiFlyoutLibrary;
   indexSearch: AIndexSearch<Emoji>;
@@ -23,6 +24,7 @@ export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   emojiLibrary: IEmojiFlyoutLibrary;
   icons: IconList<T>;
   handleCategoryClick: (id: EmojiCategoryList) => void;
+  focusedCategory: EmojiCategoryList | undefined;
   scrollRef: MutableRefObject<HTMLDivElement | null>;
   emoji?: Emoji;
 };

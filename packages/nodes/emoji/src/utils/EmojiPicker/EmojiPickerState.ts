@@ -11,7 +11,7 @@ const initialState: EmojiPickerStateProps = {
   hasFound: false,
   isSearching: false,
   searchResult: [],
-  category: EmojiCategoryType.Frequent,
+  focusedCategory: undefined,
 };
 
 export const EmojiPickerState = (): [
@@ -30,15 +30,18 @@ export const EmojiPickerState = (): [
           searchValue: '',
           isSearching: false,
           hasFound: false,
+          focusedCategory: EmojiCategoryType.Frequent,
         };
       case 'UPDATE_SEARCH_RESULT':
         return {
           ...state,
           ...payload,
           isSearching: true,
+          focusedCategory: undefined,
         };
       case 'SET_SEARCH':
       case 'SET_EMOJI':
+      case 'SET_FOCUSED_CATEGORY':
         return { ...state, ...payload };
       default: {
         throw new Error(`Unhandled action type: ${type}`);

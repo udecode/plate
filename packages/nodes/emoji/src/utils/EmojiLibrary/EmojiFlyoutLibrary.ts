@@ -10,6 +10,10 @@ import {
 import { EmojiInlineLibrary } from './EmojiInlineLibrary';
 import { EmojiLibrary } from './EmojiLibrary.types';
 
+// section
+// header
+// rows
+
 export class EmojiFlyoutLibrary
   extends EmojiInlineLibrary
   implements IEmojiFlyoutLibrary {
@@ -92,5 +96,13 @@ export class EmojiFlyoutLibrary
 
   getEmojisInRows(categoryId: EmojiCategoryList) {
     return this.grid.get(categoryId)!;
+  }
+
+  getGrid() {
+    return this.grid;
+  }
+
+  getSection(sectionId: EmojiCategoryList) {
+    return this.grid.get(sectionId);
   }
 }
