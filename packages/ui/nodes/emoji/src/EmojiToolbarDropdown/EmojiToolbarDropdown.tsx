@@ -41,6 +41,7 @@ export const EmojiToolbarDropdown = ({
     emojiFlyoutLibrary
   );
   const emojiPickerState = useEmojiPicker({
+    isOpen,
     editor,
     emojiLibrary: emojiFlyoutLibrary,
     indexSearch: emojiFlyoutIndexSearch,

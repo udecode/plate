@@ -7,7 +7,7 @@ export const getEmojiPickerContentStyles = (
   props?: EmojiPickerContentStyleProps
 ) =>
   createStyles(
-    { prefixClassNames: 'EmojiPickerPreview', ...props },
+    { prefixClassNames: 'EmojiPickerContent', ...props },
     {
       root: [tw`px-3 overflow-x-hidden overflow-y-auto h-full min-h-[50%]`],
       content: [tw`h-full w-[288px]`],

@@ -66,24 +66,28 @@ export const EmojiPickerContent = ({
 
   const EmojiList = useMemo(
     () =>
-      emojiLibrary.getCategories().map((categoryId) => (
-        <div key={categoryId} data-id={categoryId}>
-          <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
-          <div css={styles.category?.css}>
-            {emojiLibrary
-              .getEmojisInRows(categoryId)
-              .rows.map((row: GridRow, index) => (
-                <RowOfButtons
-                  key={index}
-                  emojiLibrary={emojiLibrary}
-                  row={row}
-                  selectEmoji={selectEmoji}
-                  setEmoji={setEmoji}
-                />
-              ))}
+      emojiLibrary.getCategories().map((categoryId) => {
+        const { root } = emojiLibrary.getSection(categoryId);
+        // console.log('root', root);
+        return (
+          <div key={categoryId} data-id={categoryId} ref={root}>
+            <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
+            <div css={styles.category?.css}>
+              {emojiLibrary
+                .getEmojisInRows(categoryId)
+                .rows.map((row: GridRow, index) => (
+                  <RowOfButtons
+                    key={index}
+                    emojiLibrary={emojiLibrary}
+                    row={row}
+                    selectEmoji={selectEmoji}
+                    setEmoji={setEmoji}
+                  />
+                ))}
+            </div>
           </div>
-        </div>
-      )),
+        );
+      }),
     [emojiLibrary, i18n.categories, selectEmoji, setEmoji, styles]
   );
 
