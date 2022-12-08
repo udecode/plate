@@ -11,12 +11,23 @@ import {
 } from './useEmojiPicker.types';
 
 export const useEmojiPicker = ({
+  isOpen,
   editor,
   emojiLibrary,
   indexSearch,
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons'> => {
   const [state, dispatch] = EmojiPickerState();
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const setFocusedCategory = useCallback(
+    (categoryId: EmojiCategoryList) => {
+      dispatch({
+        type: 'SET_FOCUSED_CATEGORY',
+        payload: { focusedCategory: categoryId },
+      });
+    },
+    [dispatch]
+  );
 
   const handleSearchInput = useCallback(
     (input: string) => {
@@ -75,14 +86,18 @@ export const useEmojiPicker = ({
     [editor]
   );
 
-  useEffect(() => {
-    observeCategories(scrollRef);
-  }, []);
+  const handleCategoryClick = useCallback(
+    (categoryId: EmojiCategoryList) => {
+      setFocusedCategory(categoryId);
+    },
+    [setFocusedCategory]
+  );
 
-  const handleCategoryClick = (id: EmojiCategoryList) => {
-    // eslint-disable-next-line no-console
-    console.log('id', id);
-  };
+  useEffect(() => {
+    if (isOpen && !state.isSearching) {
+      observeCategories(scrollRef, emojiLibrary, setFocusedCategory);
+    }
+  }, [emojiLibrary, isOpen, state.isSearching, setFocusedCategory]);
 
   return {
     i18n,
@@ -97,6 +112,7 @@ export const useEmojiPicker = ({
     selectEmoji,
     emojiLibrary,
     handleCategoryClick,
+    focusedCategory: state.focusedCategory,
     scrollRef,
   };
 };

@@ -13,12 +13,14 @@ export type EmojiCategory = {
 };
 export type EmojiCategories = Array<EmojiCategory>;
 
-export interface IEmojiFlyoutLibrary extends IEmojiLibrary {
-  getCategories: () => EmojiCategoryList[];
-  getEmojisInRows: (categoryId: EmojiCategoryList) => { rows: GridRow[] };
-}
-
 export type TGridCategory = {
   root: RefObject<HTMLDivElement>;
   rows: GridRow[];
 };
+
+export interface IEmojiFlyoutLibrary extends IEmojiLibrary {
+  getCategories: () => EmojiCategoryList[];
+  getEmojisInRows: (categoryId: EmojiCategoryList) => TGridCategory;
+  getGrid: () => Map<EmojiCategoryList, TGridCategory>;
+  getSection: (sectionId: EmojiCategoryList) => TGridCategory | undefined;
+}

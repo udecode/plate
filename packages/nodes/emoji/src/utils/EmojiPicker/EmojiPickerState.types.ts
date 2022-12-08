@@ -7,7 +7,7 @@ export type EmojiPickerStateProps = {
   isSearching: boolean;
   searchResult: Emoji[];
   emoji?: Emoji;
-  category: EmojiCategoryList;
+  focusedCategory?: EmojiCategoryList;
 };
 
 export type EmojiPickerStateDispatch = {
