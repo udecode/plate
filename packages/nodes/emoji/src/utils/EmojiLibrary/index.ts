@@ -3,7 +3,7 @@
  */
 
 export * from './EmojiLibrary.types';
-export * from './EmojiInlineLibrary';
 export * from './EmojiInlineLibrary.types';
+export * from './EmojiInlineLibrary';
 export * from './EmojiFlyoutLibrary.types';
 export * from './EmojiFlyoutLibrary';

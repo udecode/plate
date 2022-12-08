@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import { EmojiCategoryList } from '../../types';
+import { Emoji } from '../EmojiLibrary';
 import { observeCategories } from '../EmojiObserver';
-import { Emoji } from '../IndexSearch';
 import { EmojiPickerState } from './EmojiPickerState';
 import {
   UseEmojiPickerProps,
