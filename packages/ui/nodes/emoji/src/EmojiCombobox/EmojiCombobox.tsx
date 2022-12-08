@@ -2,10 +2,10 @@ import React from 'react';
 import { ComboboxOnSelectItem, Data, NoData } from '@udecode/plate-combobox';
 import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-core';
 import {
-  ELEMENT_EMOJI,
   EmojiItemData,
   EmojiPlugin,
   getEmojiOnSelectItem,
+  KEY_EMOJI,
 } from '@udecode/plate-emoji';
 import { Combobox, ComboboxProps } from '@udecode/plate-ui-combobox';
 import { EmojiComboboxItem } from './EmojiComboboxItem';
@@ -29,7 +29,7 @@ export const useEmojiCombobox = (pluginKey: string) => {
 };
 
 export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
-  pluginKey = ELEMENT_EMOJI,
+  pluginKey = KEY_EMOJI,
   id = pluginKey,
   ...props
 }: TEmojiCombobox<TData>) => {

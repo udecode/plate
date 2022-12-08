@@ -5,11 +5,11 @@ import {
   PlatePluginKey,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { ELEMENT_EMOJI } from './constants';
+import { KEY_EMOJI } from './constants';
 import { EmojiItemData, EmojiPlugin } from './types';
 
 export const getEmojiOnInsert = <TData extends EmojiItemData = EmojiItemData>({
-  key = ELEMENT_EMOJI,
+  key = KEY_EMOJI,
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
   const {
     options: { createEmoji },

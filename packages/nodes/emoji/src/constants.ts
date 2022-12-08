@@ -1,7 +1,6 @@
 import { i18nProps } from './types';
 
-export const ELEMENT_EMOJI = 'emoji';
-// export const ELEMENT_EMOJI_INPUT = 'emoji_input';
+export const KEY_EMOJI = 'emoji';
 
 export const EMOJI_TRIGGER = ':';
 export const EMOJI_MAX_RESULT = 90;
