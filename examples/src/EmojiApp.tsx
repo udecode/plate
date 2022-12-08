@@ -3,8 +3,8 @@ import { EmojiEmotions } from '@styled-icons/material/EmojiEmotions';
 import {
   createComboboxPlugin,
   createEmojiPlugin,
-  ELEMENT_EMOJI,
   EmojiToolbarDropdown,
+  KEY_EMOJI,
   Plate,
   PlateProvider,
 } from '@udecode/plate';
@@ -34,10 +34,7 @@ export default () => (
     onChange={(e) => console.info(e)}
   >
     <Toolbar>
-      <EmojiToolbarDropdown
-        pluginKey={ELEMENT_EMOJI}
-        icon={<EmojiEmotions />}
-      />
+      <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
     </Toolbar>
 
     <Plate<MyValue> editableProps={editableProps} />

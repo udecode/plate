@@ -10,9 +10,9 @@ import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { TippyProps } from '@tippyjs/react';
 import {
   ColorPickerToolbarDropdown,
-  ELEMENT_EMOJI,
   EmojiToolbarDropdown,
   ImageToolbarButton,
+  KEY_EMOJI,
   LineHeightToolbarDropdown,
   LinkToolbarButton,
   MARK_BG_COLOR,
@@ -49,10 +49,7 @@ export const ToolbarButtons = () => {
         selectedIcon={<Check />}
         tooltip={bgTooltip}
       />
-      <EmojiToolbarDropdown
-        pluginKey={ELEMENT_EMOJI}
-        icon={<EmojiEmotions />}
-      />
+      <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
       <LineHeightToolbarDropdown icon={<LineWeight />} />
       <AlignToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
