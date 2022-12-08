@@ -15,8 +15,6 @@
  *    };
  */
 
-import { EmojiCategoryList } from '../../../types';
-
 type Skin = {
   unified: string;
   native: string;
@@ -35,17 +33,10 @@ export type Emojis = Record<string, Emoji>;
 
 export type EmojiLibrary = {
   aliases: any;
-  categories: any;
+  categories: any[];
   emojis: Emojis;
   sheet: any;
 };
-
-export type EmojiCategories = Array<{
-  id: EmojiCategoryList;
-  emojis: string[];
-}>;
-
-export type THash = Record<string, string>;
 
 export interface IEmojiLibrary {
   keys: string[];

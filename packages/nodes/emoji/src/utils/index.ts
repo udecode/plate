@@ -3,6 +3,5 @@
  */
 
 export * from './EmojiTriggeringController';
-export * from './getFindTriggeringInput';
 export * from './IndexSearch';
-export * from './useEmojiPicker';
+export * from './EmojiPicker';

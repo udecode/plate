@@ -4,7 +4,6 @@
 
 export * from './constants';
 export * from './createEmojiPlugin';
-export * from './getEmojiOnSelectItem';
 export * from './types';
 export * from './withEmoji';
 export * from './handlers';

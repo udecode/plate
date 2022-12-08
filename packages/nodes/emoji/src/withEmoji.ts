@@ -5,8 +5,9 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
+import { getFindTriggeringInput } from './handlers';
 import { EmojiPlugin } from './types';
-import { EmojiInlineIndexSearch, getFindTriggeringInput } from './utils';
+import { EmojiInlineIndexSearch } from './utils';
 
 export const withEmoji = <
   V extends Value = Value,

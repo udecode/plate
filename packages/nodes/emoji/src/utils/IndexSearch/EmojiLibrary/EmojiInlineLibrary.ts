@@ -1,10 +1,10 @@
 import emojiMartData from '@emoji-mart/data';
+import { THash } from './EmojiInlineLibrary.types';
 import {
   Emoji,
   EmojiLibrary,
   Emojis,
   IEmojiLibrary,
-  THash,
 } from './EmojiLibrary.types';
 
 export class EmojiInlineLibrary implements IEmojiLibrary {
