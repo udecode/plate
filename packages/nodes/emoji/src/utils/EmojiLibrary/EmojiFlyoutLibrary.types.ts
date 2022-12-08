@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import { EmojiCategoryList } from '../../../types';
+import { EmojiCategoryList } from '../../types';
 import { IEmojiLibrary } from './EmojiLibrary.types';
 
 export type GridRow = {
