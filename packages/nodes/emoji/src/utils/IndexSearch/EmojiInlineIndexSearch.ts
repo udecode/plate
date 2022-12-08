@@ -1,4 +1,4 @@
-import { Emoji, EmojiInlineLibrary, IEmojiLibrary } from './EmojiLibrary';
+import { Emoji, EmojiInlineLibrary, IEmojiLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from './IndexSearch';
 
 export class EmojiInlineIndexSearch extends AIndexSearch {
