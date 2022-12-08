@@ -1,35 +1,26 @@
-import { createRef } from 'react';
 import emojiMartData from '@emoji-mart/data';
 import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../constants';
 import { EmojiCategoryList } from '../../types';
-import {
-  GridRow,
-  IEmojiFlyoutLibrary,
-  TGridCategory,
-} from './EmojiFlyoutLibrary.types';
+import { EmojiFlyoutGrid } from './EmojiFlyoutGrid';
+import { IEmojiFlyoutLibrary } from './EmojiFlyoutLibrary.types';
 import { EmojiInlineLibrary } from './EmojiInlineLibrary';
 import { EmojiLibrary } from './EmojiLibrary.types';
-
-// section
-// header
-// rows
 
 export class EmojiFlyoutLibrary
   extends EmojiInlineLibrary
   implements IEmojiFlyoutLibrary {
   private static instance?: EmojiFlyoutLibrary;
 
-  private perLine = 8;
   private categories: EmojiCategoryList[] = [];
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
-  private grid = new Map<EmojiCategoryList, TGridCategory>();
+  private _grid: EmojiFlyoutGrid;
 
   private constructor(library: EmojiLibrary = emojiMartData) {
     super(library);
 
     this.addFrequentCategory();
     this.initCategories(library.categories);
-    this.initGrid();
+    this._grid = new EmojiFlyoutGrid(this.categories, this.emojis);
   }
 
   public static getInstance(library: EmojiLibrary = emojiMartData) {
@@ -52,57 +43,11 @@ export class EmojiFlyoutLibrary
     }
   }
 
-  private initGrid() {
-    let rowsCount = 0;
-    this.categories.forEach((categoryId) => {
-      const rows = this.initRows(this.emojis[categoryId as any], rowsCount);
-      rowsCount += rows.length;
-      this.grid.set(categoryId, { root: createRef(), rows });
-    });
-  }
-
-  private initRows(emojis: string[], index: number) {
-    const rows: GridRow[] = [];
-    let loop = Math.floor(emojis.length / this.perLine);
-    if (emojis.length % this.perLine !== 0) {
-      loop++;
-    }
-
-    let i = 0;
-    while (i < loop) {
-      this.addRow(rows, emojis, i, index + ++i);
-    }
-
-    return rows;
-  }
-
-  private addRow(
-    rows: GridRow[],
-    emojis: string[],
-    lastPosition: number,
-    rowIndex: number
-  ) {
-    const start = lastPosition * this.perLine;
-    const end = start + this.perLine;
-    rows.push({
-      emojis: emojis.slice(start, end),
-      id: rowIndex,
-    });
-  }
-
-  getCategories() {
+  public getCategories() {
     return this.categories;
   }
 
-  getEmojisInRows(categoryId: EmojiCategoryList) {
-    return this.grid.get(categoryId)!;
-  }
-
-  getGrid() {
-    return this.grid;
-  }
-
-  getSection(sectionId: EmojiCategoryList) {
-    return this.grid.get(sectionId);
+  public getGrid() {
+    return this._grid;
   }
 }

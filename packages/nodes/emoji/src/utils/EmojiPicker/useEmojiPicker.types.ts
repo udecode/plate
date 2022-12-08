@@ -3,6 +3,7 @@ import { PlateEditor, Value } from '@udecode/plate-core';
 import { EmojiCategoryList, i18nProps, IconList } from '../../types';
 import { Emoji, IEmojiFlyoutLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from '../IndexSearch/IndexSearch';
+import { MapEmojiCategoryType } from './EmojiPickerState.types';
 
 export type UseEmojiPickerProps = {
   isOpen: boolean;
@@ -24,7 +25,8 @@ export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   emojiLibrary: IEmojiFlyoutLibrary;
   icons: IconList<T>;
   handleCategoryClick: (id: EmojiCategoryList) => void;
-  focusedCategory: EmojiCategoryList | undefined;
+  visibleCategories: MapEmojiCategoryType;
   scrollRef: MutableRefObject<HTMLDivElement | null>;
+  focusedCategory?: EmojiCategoryList;
   emoji?: Emoji;
 };

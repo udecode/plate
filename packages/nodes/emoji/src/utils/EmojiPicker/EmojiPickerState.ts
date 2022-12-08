@@ -12,6 +12,7 @@ const initialState: EmojiPickerStateProps = {
   isSearching: false,
   searchResult: [],
   focusedCategory: undefined,
+  visibleCategories: new Map(),
 };
 
 export const EmojiPickerState = (): [
@@ -42,6 +43,7 @@ export const EmojiPickerState = (): [
       case 'SET_SEARCH':
       case 'SET_EMOJI':
       case 'SET_FOCUSED_CATEGORY':
+      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
         return { ...state, ...payload };
       default: {
         throw new Error(`Unhandled action type: ${type}`);

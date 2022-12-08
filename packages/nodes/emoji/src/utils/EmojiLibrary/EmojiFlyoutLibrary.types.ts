@@ -1,5 +1,6 @@
 import { RefObject } from 'react';
 import { EmojiCategoryList } from '../../types';
+import { EmojiFlyoutGrid } from './EmojiFlyoutGrid';
 import { IEmojiLibrary } from './EmojiLibrary.types';
 
 export type GridRow = {
@@ -20,7 +21,7 @@ export type TGridCategory = {
 
 export interface IEmojiFlyoutLibrary extends IEmojiLibrary {
   getCategories: () => EmojiCategoryList[];
-  getEmojisInRows: (categoryId: EmojiCategoryList) => TGridCategory;
-  getGrid: () => Map<EmojiCategoryList, TGridCategory>;
-  getSection: (sectionId: EmojiCategoryList) => TGridCategory | undefined;
+  getGrid: () => EmojiFlyoutGrid;
 }
+
+export type EmojisListType = Partial<Record<EmojiCategoryList, string[]>>;
