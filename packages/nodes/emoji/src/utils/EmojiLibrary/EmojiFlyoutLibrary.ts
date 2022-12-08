@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 import emojiMartData from '@emoji-mart/data';
-import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../../constants';
-import { EmojiCategoryList } from '../../../types';
+import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../constants';
+import { EmojiCategoryList } from '../../types';
 import {
   GridRow,
   IEmojiFlyoutLibrary,

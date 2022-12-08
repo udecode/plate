@@ -5,3 +5,4 @@
 export * from './EmojiTriggeringController';
 export * from './IndexSearch';
 export * from './EmojiPicker';
+export * from './EmojiLibrary';

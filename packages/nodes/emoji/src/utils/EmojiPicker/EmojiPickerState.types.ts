@@ -1,5 +1,5 @@
 import { EmojiCategoryList } from '../../types';
-import { Emoji } from '../IndexSearch';
+import { Emoji } from '../EmojiLibrary';
 
 export type EmojiPickerStateProps = {
   searchValue: string;

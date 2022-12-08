@@ -1,8 +1,7 @@
 import { MutableRefObject } from 'react';
 import { PlateEditor, Value } from '@udecode/plate-core';
 import { EmojiCategoryList, i18nProps, IconList } from '../../types';
-import { Emoji } from '../IndexSearch';
-import { IEmojiFlyoutLibrary } from '../IndexSearch/EmojiLibrary/EmojiFlyoutLibrary.types';
+import { Emoji, IEmojiFlyoutLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from '../IndexSearch/IndexSearch';
 
 export type UseEmojiPickerProps = {
