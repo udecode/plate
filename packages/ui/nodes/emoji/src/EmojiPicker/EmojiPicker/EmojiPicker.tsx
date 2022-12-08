@@ -21,6 +21,7 @@ export const EmojiPicker = ({
   icons,
   handleCategoryClick,
   focusedCategory,
+  visibleCategories,
   scrollRef,
 }: UseEmojiPickerType) => {
   const { root } = getEmojiPickerStyles();
@@ -46,6 +47,7 @@ export const EmojiPicker = ({
         emojiLibrary={emojiLibrary}
         isSearching={isSearching}
         searchResult={searchResult}
+        visibleCategories={visibleCategories}
         selectEmoji={selectEmoji}
         scrollRef={scrollRef}
       />

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Emoji, GridRow } from '@udecode/plate-emoji';
 import { getEmojiPickerContentStyles } from './EmojiPickerContent.styles';
 import {
@@ -59,23 +59,37 @@ export const EmojiPickerContent = ({
   emojiLibrary,
   isSearching = false,
   searchResult,
+  visibleCategories,
   scrollRef,
   ...props
 }: EmojiPickerContentProps) => {
   const styles = getEmojiPickerContentStyles({ ...props });
 
+  const isCategoryVisible = useCallback(
+    (categoryId: any) => {
+      return visibleCategories.has(categoryId)
+        ? visibleCategories.get(categoryId)! > 0
+        : false;
+    },
+    [visibleCategories]
+  );
+
   const EmojiList = useMemo(
     () =>
       emojiLibrary.getCategories().map((categoryId) => {
-        const { root } = emojiLibrary.getSection(categoryId);
-        // console.log('root', root);
+        const { root, rows } = emojiLibrary.getGrid().section(categoryId);
+
         return (
           <div key={categoryId} data-id={categoryId} ref={root}>
             <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
-            <div css={styles.category?.css}>
-              {emojiLibrary
-                .getEmojisInRows(categoryId)
-                .rows.map((row: GridRow, index) => (
+            <div
+              css={styles.category?.css}
+              style={{
+                height: rows.length * 36,
+              }}
+            >
+              {isCategoryVisible(categoryId) &&
+                rows.map((row: GridRow, index) => (
                   <RowOfButtons
                     key={index}
                     emojiLibrary={emojiLibrary}
@@ -88,7 +102,14 @@ export const EmojiPickerContent = ({
           </div>
         );
       }),
-    [emojiLibrary, i18n.categories, selectEmoji, setEmoji, styles]
+    [
+      emojiLibrary,
+      i18n.categories,
+      isCategoryVisible,
+      selectEmoji,
+      setEmoji,
+      styles,
+    ]
   );
 
   const SearchList = useMemo(
