@@ -9,7 +9,34 @@ export const getEmojiPickerContentStyles = (
   createStyles(
     { prefixClassNames: 'EmojiPickerContent', ...props },
     {
-      root: [tw`px-3 overflow-x-hidden overflow-y-auto h-full min-h-[50%]`],
+      root: [
+        tw`px-3 overflow-x-hidden overflow-y-auto h-full min-h-[50%]`,
+        css`
+          ::-webkit-scrollbar {
+            width: 16px;
+          }
+
+          ::-webkit-scrollbar-button {
+            width: 0;
+            height: 0;
+            display: none;
+          }
+
+          :hover::-webkit-scrollbar-thumb {
+            background-color: #f3f4f6;
+          }
+
+          ::-webkit-scrollbar-thumb {
+            min-height: 65px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+          }
+
+          ::-webkit-scrollbar-track {
+            border: 0;
+          }
+        `,
+      ],
       content: [tw`h-full w-[288px]`],
       sticky: [
         tw`sticky z-[1] backdrop-blur-[4px] bg-white/90  font-medium -top-px py-1 px-1`,
