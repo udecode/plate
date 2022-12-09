@@ -10,11 +10,15 @@ export interface EmojiPickerPreviewStyles {
   text?: CSSProp;
 }
 
+export type EmojiPickerPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
+  Pick<UseEmojiPickerType, 'emoji' | 'hasFound' | 'isSearching' | 'i18n'>;
+
 export type EmojiPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
   Pick<UseEmojiPickerType, 'emoji'>;
 
-export type EmojiPickerPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
-  Pick<UseEmojiPickerType, 'emoji' | 'hasFound'>;
+export type NoEmojiPreviewProps = StyledProps<EmojiPickerPreviewStyles> &
+  Pick<UseEmojiPickerType, 'i18n'>;
+export type PickAnEmojiPreviewProps = NoEmojiPreviewProps;
 
 export interface EmojiPickerPreviewStyleProps
   extends StyledProps<EmojiPickerPreviewStyles> {}
