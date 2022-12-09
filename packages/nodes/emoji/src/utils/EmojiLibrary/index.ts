@@ -5,5 +5,5 @@
 export * from './EmojiLibrary.types';
 export * from './EmojiInlineLibrary.types';
 export * from './EmojiInlineLibrary';
-export * from './EmojiFlyoutLibrary.types';
-export * from './EmojiFlyoutLibrary';
+export * from './EmojiFloatingLibrary.types';
+export * from './EmojiFloatingLibrary';

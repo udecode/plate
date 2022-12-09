@@ -1,19 +1,19 @@
 import { Emoji, IEmojiLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from './IndexSearch';
 
-export class EmojiFlyoutIndexSearch extends AIndexSearch<Emoji> {
-  protected static instance?: EmojiFlyoutIndexSearch;
+export class EmojiFloatingIndexSearch extends AIndexSearch<Emoji> {
+  protected static instance?: EmojiFloatingIndexSearch;
 
   private constructor(protected library: IEmojiLibrary) {
     super(library);
   }
 
   public static getInstance(library: IEmojiLibrary) {
-    if (!EmojiFlyoutIndexSearch.instance) {
-      EmojiFlyoutIndexSearch.instance = new EmojiFlyoutIndexSearch(library);
+    if (!EmojiFloatingIndexSearch.instance) {
+      EmojiFloatingIndexSearch.instance = new EmojiFloatingIndexSearch(library);
     }
 
-    return EmojiFlyoutIndexSearch.instance;
+    return EmojiFloatingIndexSearch.instance;
   }
 
   protected transform(emoji: Emoji) {
