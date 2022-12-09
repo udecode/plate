@@ -1,34 +1,35 @@
 import emojiMartData from '@emoji-mart/data';
 import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../constants';
 import { EmojiCategoryList } from '../../types';
-import { EmojiFlyoutGrid } from './EmojiFlyoutGrid';
-import { IEmojiFlyoutLibrary } from './EmojiFlyoutLibrary.types';
+import { EmojiFloatingGrid } from './EmojiFloatingGrid';
+import { IEmojiFloatingLibrary } from './EmojiFloatingLibrary.types';
 import { EmojiInlineLibrary } from './EmojiInlineLibrary';
 import { EmojiLibrary } from './EmojiLibrary.types';
 
-export class EmojiFlyoutLibrary
+export class EmojiFloatingLibrary
   extends EmojiInlineLibrary
-  implements IEmojiFlyoutLibrary {
-  private static instance?: EmojiFlyoutLibrary;
+  implements IEmojiFloatingLibrary {
+  private static instance?: EmojiFloatingLibrary;
 
   private categories: EmojiCategoryList[] = [];
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
-  private _grid: EmojiFlyoutGrid;
+  private _grid: EmojiFloatingGrid;
 
   private constructor(library: EmojiLibrary = emojiMartData) {
     super(library);
 
     this.addFrequentCategory();
     this.initCategories(library.categories);
-    this._grid = new EmojiFlyoutGrid(this.categories, this.emojis);
+    this._grid = new EmojiFloatingGrid(this.categories, this.emojis);
+    // this._grid.setPerLine();
   }
 
   public static getInstance(library: EmojiLibrary = emojiMartData) {
-    if (!EmojiFlyoutLibrary.instance) {
-      EmojiFlyoutLibrary.instance = new EmojiFlyoutLibrary(library);
+    if (!EmojiFloatingLibrary.instance) {
+      EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(library);
     }
 
-    return EmojiFlyoutLibrary.instance;
+    return EmojiFloatingLibrary.instance;
   }
 
   private addFrequentCategory() {

@@ -13,6 +13,7 @@ const initialState: EmojiPickerStateProps = {
   searchResult: [],
   focusedCategory: undefined,
   visibleCategories: new Map(),
+  // settings: {},
 };
 
 export const EmojiPickerState = (): [
@@ -40,9 +41,16 @@ export const EmojiPickerState = (): [
           isSearching: true,
           focusedCategory: undefined,
         };
+      case 'SET_FOCUSED_CATEGORY':
+        return {
+          ...state,
+          ...payload,
+          searchValue: '',
+          isSearching: false,
+          hasFound: false,
+        };
       case 'SET_SEARCH':
       case 'SET_EMOJI':
-      case 'SET_FOCUSED_CATEGORY':
       case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
         return { ...state, ...payload };
       default: {

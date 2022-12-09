@@ -1,5 +1,5 @@
 import { TComboboxItem } from '@udecode/plate-combobox';
-import { EMOJI_MAX_RESULT } from '../../constants';
+import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 import { EmojiItemData } from '../../types';
 import { Emoji, IEmojiLibrary } from '../EmojiLibrary';
 
@@ -15,7 +15,7 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
   implements IIndexSearch<RData> {
   protected result: string[] = [];
   protected scores = {};
-  protected maxResult = EMOJI_MAX_RESULT;
+  protected maxResult = EMOJI_MAX_SEARCH_RESULT;
 
   protected constructor(protected library: IEmojiLibrary) {}
 

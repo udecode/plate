@@ -1,13 +1,13 @@
 import { createRef } from 'react';
 import { EmojiCategoryList } from '../../types';
-import { IEmojiFlyoutGrid } from './EmojiFlyoutGrid.types';
+import { IEmojiFloatingGrid } from './EmojiFloatingGrid.types';
 import {
   EmojisListType,
   GridRow,
   TGridCategory,
-} from './EmojiFlyoutLibrary.types';
+} from './EmojiFloatingLibrary.types';
 
-export class EmojiFlyoutGrid implements IEmojiFlyoutGrid {
+export class EmojiFloatingGrid implements IEmojiFloatingGrid {
   private perLine = 8;
   private grid = new Map<EmojiCategoryList, TGridCategory>();
 

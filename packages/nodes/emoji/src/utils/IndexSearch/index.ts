@@ -4,4 +4,4 @@
 
 export * from './IndexSearch';
 export * from './EmojiInlineIndexSearch';
-export * from './EmojiFlyoutIndexSearch';
+export * from './EmojiFloatingIndexSearch';

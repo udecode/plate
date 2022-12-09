@@ -98,8 +98,15 @@ export const useEmojiPicker = ({
         type: 'SET_FOCUSED_CATEGORY',
         payload: { focusedCategory: categoryId },
       });
+
+      const { root } = emojiLibrary.getGrid().section(categoryId);
+      root.current?.scrollIntoView({
+        behavior: 'smooth',
+      });
+      root.current?.scrollIntoView();
+      // console.log('categoryId', root.current);
     },
-    [dispatch]
+    [dispatch, emojiLibrary]
   );
 
   useEffect(() => {

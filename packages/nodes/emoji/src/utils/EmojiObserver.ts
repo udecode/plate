@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { EmojiCategoryList } from '../types';
-import { IEmojiFlyoutLibrary } from './EmojiLibrary';
+import { IEmojiFloatingLibrary } from './EmojiLibrary';
 import { MapEmojiCategoryType } from './EmojiPicker';
 
 const setVisibleSections = (
@@ -30,7 +30,7 @@ export type SetFocusedAndVisibleSectionsType = (
 
 export type ObserverCategoriesType = {
   ancestorRef: MutableRefObject<HTMLDivElement | null>;
-  emojiLibrary: IEmojiFlyoutLibrary;
+  emojiLibrary: IEmojiFloatingLibrary;
   setFocusedAndVisibleSections: SetFocusedAndVisibleSectionsType;
 };
 
