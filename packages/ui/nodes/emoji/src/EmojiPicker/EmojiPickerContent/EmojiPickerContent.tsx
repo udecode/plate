@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Emoji, GridRow } from '@udecode/plate-emoji';
 import { getEmojiPickerContentStyles } from './EmojiPickerContent.styles';
 import {
@@ -74,46 +74,44 @@ export const EmojiPickerContent = ({
     [visibleCategories]
   );
 
-  const EmojiList = useMemo(
-    () =>
-      emojiLibrary.getCategories().map((categoryId) => {
-        const { root, rows } = emojiLibrary.getGrid().section(categoryId);
+  const EmojiList = useCallback(() => {
+    return emojiLibrary.getCategories().map((categoryId) => {
+      const { root, rows } = emojiLibrary.getGrid().section(categoryId);
 
-        return (
-          <div key={categoryId} data-id={categoryId} ref={root}>
-            <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
-            <div
-              css={styles.category?.css}
-              style={{
-                height: rows.length * 36,
-              }}
-            >
-              {isCategoryVisible(categoryId) &&
-                rows.map((row: GridRow, index) => (
-                  <RowOfButtons
-                    key={index}
-                    emojiLibrary={emojiLibrary}
-                    row={row}
-                    selectEmoji={selectEmoji}
-                    setEmoji={setEmoji}
-                  />
-                ))}
-            </div>
+      return (
+        <div key={categoryId} data-id={categoryId} ref={root}>
+          <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
+          <div
+            css={styles.category?.css}
+            style={{
+              height: rows.length * 36,
+            }}
+          >
+            {isCategoryVisible(categoryId) &&
+              rows.map((row: GridRow, index) => (
+                <RowOfButtons
+                  key={index}
+                  emojiLibrary={emojiLibrary}
+                  row={row}
+                  selectEmoji={selectEmoji}
+                  setEmoji={setEmoji}
+                />
+              ))}
           </div>
-        );
-      }),
-    [
-      emojiLibrary,
-      i18n.categories,
-      isCategoryVisible,
-      selectEmoji,
-      setEmoji,
-      styles,
-    ]
-  );
+        </div>
+      );
+    });
+  }, [
+    emojiLibrary,
+    i18n.categories,
+    isCategoryVisible,
+    selectEmoji,
+    setEmoji,
+    styles,
+  ]);
 
-  const SearchList = useMemo(
-    () => (
+  const SearchList = useCallback(() => {
+    return (
       <div data-id="search">
         <div css={styles.sticky?.css}>{i18n.categories.search}</div>
         <div css={styles.category?.css}>
@@ -128,21 +126,20 @@ export const EmojiPickerContent = ({
           ))}
         </div>
       </div>
-    ),
-    [
-      emojiLibrary,
-      i18n.categories.search,
-      searchResult,
-      selectEmoji,
-      setEmoji,
-      styles,
-    ]
-  );
+    );
+  }, [
+    emojiLibrary,
+    i18n.categories.search,
+    searchResult,
+    selectEmoji,
+    setEmoji,
+    styles,
+  ]);
 
   return (
     <div css={styles.root.css} data-id="scroll" ref={scrollRef}>
       <div css={styles.content?.css}>
-        {isSearching ? SearchList : EmojiList}
+        {isSearching ? SearchList() : EmojiList()}
       </div>
     </div>
   );

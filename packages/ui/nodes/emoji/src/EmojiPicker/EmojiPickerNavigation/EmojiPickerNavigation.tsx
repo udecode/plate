@@ -1,11 +1,11 @@
 import React from 'react';
-import { EmojiCategoryList, IEmojiFlyoutLibrary } from '@udecode/plate-emoji';
+import { EmojiCategoryList, IEmojiFloatingLibrary } from '@udecode/plate-emoji';
 import tw from 'twin.macro';
 import { getEmojiPickerNavigationStyles } from './EmojiPickerNavigation.styles';
 import { EmojiPickerNavigationProps } from './EmojiPickerNavigation.types';
 
 const getBarProperty = (
-  emojiLibrary: IEmojiFlyoutLibrary,
+  emojiLibrary: IEmojiFloatingLibrary,
   focusedCategory?: EmojiCategoryList
 ) => {
   let width = 0;

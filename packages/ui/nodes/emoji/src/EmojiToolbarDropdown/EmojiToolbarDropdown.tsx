@@ -1,8 +1,8 @@
 import React, { ReactNode, useCallback, useState } from 'react';
 import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
 import {
-  EmojiFlyoutIndexSearch,
-  EmojiFlyoutLibrary,
+  EmojiFloatingIndexSearch,
+  EmojiFloatingLibrary,
   useEmojiPicker,
   UseEmojiPickerType,
 } from '@udecode/plate-emoji';
@@ -36,15 +36,15 @@ export const EmojiToolbarDropdown = ({
     setIsOpen((open) => !open);
   }, []);
 
-  const emojiFlyoutLibrary = EmojiFlyoutLibrary.getInstance();
-  const emojiFlyoutIndexSearch = EmojiFlyoutIndexSearch.getInstance(
-    emojiFlyoutLibrary
+  const emojiFloatingLibrary = EmojiFloatingLibrary.getInstance();
+  const emojiFloatingIndexSearch = EmojiFloatingIndexSearch.getInstance(
+    emojiFloatingLibrary
   );
   const emojiPickerState = useEmojiPicker({
     isOpen,
     editor,
-    emojiLibrary: emojiFlyoutLibrary,
-    indexSearch: emojiFlyoutIndexSearch,
+    emojiLibrary: emojiFloatingLibrary,
+    indexSearch: emojiFloatingIndexSearch,
   });
 
   return (
