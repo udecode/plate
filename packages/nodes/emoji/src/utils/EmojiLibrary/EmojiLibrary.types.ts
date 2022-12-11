@@ -18,7 +18,6 @@
 type Skin = {
   unified: string;
   native: string;
-  // shortcodes?: string;
 };
 
 export type Emoji = {

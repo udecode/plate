@@ -3,7 +3,7 @@ import { i18nProps } from './types';
 export const KEY_EMOJI = 'emoji';
 
 export const EMOJI_TRIGGER = ':';
-export const EMOJI_MAX_RESULT = 90;
+export const EMOJI_MAX_SEARCH_RESULT = 60;
 
 export const DEFAULT_FREQUENTLY_USED_EMOJI = [
   '+1',
