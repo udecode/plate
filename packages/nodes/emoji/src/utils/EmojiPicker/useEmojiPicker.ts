@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { createRef, useCallback, useEffect, useRef } from 'react';
 import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import { EmojiCategoryList } from '../../types';
@@ -20,7 +20,10 @@ export const useEmojiPicker = ({
   indexSearch,
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons'> => {
   const [state, dispatch] = EmojiPickerState();
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const refs = useRef({
+    contentRoot: createRef<HTMLDivElement>(),
+    content: createRef<HTMLDivElement>(),
+  });
 
   const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
     (visibleSections, categoryId) => {
@@ -99,12 +102,27 @@ export const useEmojiPicker = ({
         payload: { focusedCategory: categoryId },
       });
 
-      const { root } = emojiLibrary.getGrid().section(categoryId);
-      root.current?.scrollIntoView({
-        behavior: 'smooth',
-      });
-      root.current?.scrollIntoView();
-      // console.log('categoryId', root.current);
+      const getSectionPositionToScrollIntoView = () => {
+        const trashHold = 1;
+        const { root } = emojiLibrary.getGrid().section(categoryId);
+        const contentRootScrollTop =
+          refs.current.contentRoot.current?.scrollTop ?? 0;
+        const contentRootTopPosition =
+          refs.current.contentRoot.current?.getBoundingClientRect().top ?? 0;
+        const sectionTopPosition =
+          root.current?.getBoundingClientRect().top ?? 0;
+
+        return (
+          trashHold +
+          contentRootScrollTop +
+          sectionTopPosition -
+          contentRootTopPosition
+        );
+      };
+
+      if (refs.current.contentRoot.current) {
+        refs.current.contentRoot.current.scrollTop = getSectionPositionToScrollIntoView();
+      }
     },
     [dispatch, emojiLibrary]
   );
@@ -112,7 +130,7 @@ export const useEmojiPicker = ({
   useEffect(() => {
     if (isOpen && !state.isSearching) {
       observeCategories({
-        ancestorRef: scrollRef,
+        ancestorRef: refs.current.contentRoot,
         emojiLibrary,
         setFocusedAndVisibleSections,
       });
@@ -128,7 +146,7 @@ export const useEmojiPicker = ({
     selectEmoji,
     emojiLibrary,
     handleCategoryClick,
-    scrollRef,
+    refs,
     ...state,
   };
 };
