@@ -19,8 +19,8 @@ export type EmojiPickerContentProps = StyledProps<EmojiPickerContentStyles> &
     | 'emojiLibrary'
     | 'isSearching'
     | 'searchResult'
-    | 'scrollRef'
     | 'visibleCategories'
+    | 'refs'
   >;
 
 export interface EmojiPickerContentStyleProps

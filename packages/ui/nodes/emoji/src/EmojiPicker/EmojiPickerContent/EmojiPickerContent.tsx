@@ -60,7 +60,7 @@ export const EmojiPickerContent = ({
   isSearching = false,
   searchResult,
   visibleCategories,
-  scrollRef,
+  refs,
   ...props
 }: EmojiPickerContentProps) => {
   const styles = getEmojiPickerContentStyles({ ...props });
@@ -137,8 +137,8 @@ export const EmojiPickerContent = ({
   ]);
 
   return (
-    <div css={styles.root.css} data-id="scroll" ref={scrollRef}>
-      <div css={styles.content?.css}>
+    <div css={styles.root.css} data-id="scroll" ref={refs.current.contentRoot}>
+      <div css={styles.content?.css} ref={refs.current.content}>
         {isSearching ? SearchList() : EmojiList()}
       </div>
     </div>

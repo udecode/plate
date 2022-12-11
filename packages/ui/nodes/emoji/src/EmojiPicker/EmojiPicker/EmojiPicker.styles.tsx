@@ -6,6 +6,6 @@ export const getEmojiPickerStyles = (props?: EmojiPickerStyleProps) =>
   createStyles(
     { prefixClassNames: 'EmojiPicker', ...props },
     {
-      root: [tw` w-[312px] h-[350px] flex flex-col bg-white`],
+      root: [tw` w-[316px] h-[350px] flex flex-col bg-white`],
     }
   );

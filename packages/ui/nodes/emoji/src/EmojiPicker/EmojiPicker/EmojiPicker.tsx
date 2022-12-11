@@ -22,7 +22,7 @@ export const EmojiPicker = ({
   handleCategoryClick,
   focusedCategory,
   visibleCategories,
-  scrollRef,
+  refs,
 }: UseEmojiPickerType) => {
   const { root } = getEmojiPickerStyles();
 
@@ -49,7 +49,7 @@ export const EmojiPicker = ({
         searchResult={searchResult}
         visibleCategories={visibleCategories}
         selectEmoji={selectEmoji}
-        scrollRef={scrollRef}
+        refs={refs}
       />
       <EmojiPickerPreview
         i18n={i18n}
