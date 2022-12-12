@@ -1,34 +1,34 @@
-import data from '@emoji-mart/data';
 import { TComboboxItem } from '@udecode/plate-combobox';
-import { EMOJI_MAX_RESULT } from '../../constants';
+import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 import { EmojiItemData } from '../../types';
-import { IPrepareData, PrepareData } from './PrepareData';
-import { Emoji } from './types';
+import { Emoji, IEmojiLibrary } from '../EmojiLibrary';
 
 type IndexSearchReturnData = TComboboxItem<EmojiItemData>;
 
 interface IIndexSearch<R> {
   search: (input: string) => void;
+  hasFound: () => boolean;
   get: () => R[];
 }
 
-export abstract class AIndexSearch<
-  RData extends IndexSearchReturnData = IndexSearchReturnData
-> implements IIndexSearch<RData> {
-  protected data: IPrepareData;
+export abstract class AIndexSearch<RData = IndexSearchReturnData>
+  implements IIndexSearch<RData> {
   protected result: string[] = [];
   protected scores = {};
-  protected maxResult = EMOJI_MAX_RESULT;
+  protected maxResult = EMOJI_MAX_SEARCH_RESULT;
 
-  constructor() {
-    this.data = new PrepareData(data);
-  }
+  protected constructor(protected library: IEmojiLibrary) {}
 
   search(input: string): this {
     const value = input.toLowerCase();
 
-    this.createSearchResult(value);
-    this.sortResultByScores(this.result, this.scores);
+    if (value) {
+      this.createSearchResult(value);
+      this.sortResultByScores(this.result, this.scores);
+    } else {
+      this.scores = {};
+      this.result = [];
+    }
 
     return this;
   }
@@ -37,11 +37,11 @@ export abstract class AIndexSearch<
     this.scores = {};
     this.result = [];
 
-    for (const key of this.data!.keys) {
+    for (const key of this.library!.keys) {
       const score = key.indexOf(`${value}`);
       if (score === -1) continue;
 
-      const emojiId = this.data!.getEmojiId(key);
+      const emojiId = this.library!.getEmojiId(key);
       this.result.push(emojiId);
 
       this.scores[emojiId] || (this.scores[emojiId] = 0);
@@ -62,10 +62,14 @@ export abstract class AIndexSearch<
     });
   }
 
+  hasFound() {
+    return !!this.result.length;
+  }
+
   get() {
     const emojis = [];
     for (const key of this.result) {
-      const emoji = this.data?.getEmoji(key);
+      const emoji = this.library?.getEmoji(key);
       emojis.push(this.transform(emoji!));
       if (emojis.length >= this.maxResult) break;
     }

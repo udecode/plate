@@ -7,14 +7,15 @@ import {
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { ELEMENT_EMOJI } from './constants';
-import { EmojiItemData, EmojiPlugin } from './types';
+import { KEY_EMOJI } from '../constants';
+import { EmojiItemData, EmojiPlugin } from '../types';
 
 export const getEmojiOnSelectItem = <
   TData extends EmojiItemData = EmojiItemData
->({
-  key = ELEMENT_EMOJI,
-}: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
+>({ key = KEY_EMOJI }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (
+  editor,
+  item
+) => {
   const {
     options: { createEmoji, emojiTriggeringController },
   } = getPlugin<EmojiPlugin>(editor as any, key);

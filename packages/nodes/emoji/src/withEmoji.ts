@@ -5,8 +5,9 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
+import { getFindTriggeringInput } from './handlers';
 import { EmojiPlugin } from './types';
-import { EmojiIndexSearch, getFindTriggeringInput } from './utils';
+import { EmojiInlineIndexSearch } from './utils';
 
 export const withEmoji = <
   V extends Value = Value,
@@ -17,7 +18,7 @@ export const withEmoji = <
     options: { id, emojiTriggeringController },
   }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
-  const emojiIndexSearch = EmojiIndexSearch.getInstance();
+  const emojiInlineIndexSearch = EmojiInlineIndexSearch.getInstance();
 
   const findTheTriggeringInput = getFindTriggeringInput(
     editor,
@@ -47,7 +48,9 @@ export const withEmoji = <
       case 'insert_text':
         if (emojiTriggeringController!.isTriggering) {
           const searchText = emojiTriggeringController!.getText();
-          comboboxActions.items(emojiIndexSearch.search(searchText).get());
+          comboboxActions.items(
+            emojiInlineIndexSearch.search(searchText).get()
+          );
           comboboxActions.open({
             activeId: id!,
             text: '',
@@ -60,7 +63,9 @@ export const withEmoji = <
         findTheTriggeringInput();
         if (emojiTriggeringController!.isTriggering) {
           const searchText = emojiTriggeringController!.getText();
-          comboboxActions.items(emojiIndexSearch.search(searchText).get());
+          comboboxActions.items(
+            emojiInlineIndexSearch.search(searchText).get()
+          );
           comboboxActions.open({
             activeId: id!,
             text: '',

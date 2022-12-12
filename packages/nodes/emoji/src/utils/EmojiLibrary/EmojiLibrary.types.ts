@@ -18,7 +18,6 @@
 type Skin = {
   unified: string;
   native: string;
-  // shortcodes?: string;
 };
 
 export type Emoji = {
@@ -29,11 +28,17 @@ export type Emoji = {
   version: number;
 };
 
-export type Emojis = Record<any, Emoji>;
+export type Emojis = Record<string, Emoji>;
 
 export type EmojiLibrary = {
   aliases: any;
-  categories: any;
+  categories: any[];
   emojis: Emojis;
   sheet: any;
 };
+
+export interface IEmojiLibrary {
+  keys: string[];
+  getEmoji: (key: string) => Emoji;
+  getEmojiId: (key: string) => string;
+}

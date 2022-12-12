@@ -1,19 +1,18 @@
-import { Emoji, EmojiLibrary, Emojis } from './types';
+import emojiMartData from '@emoji-mart/data';
+import { THash } from './EmojiInlineLibrary.types';
+import {
+  Emoji,
+  EmojiLibrary,
+  Emojis,
+  IEmojiLibrary,
+} from './EmojiLibrary.types';
 
-type THash = Record<string, string>;
-
-export interface IPrepareData {
-  keys: string[];
-  getEmoji: (key: string) => Emoji;
-  getEmojiId: (key: string) => string;
-}
-
-export class PrepareData implements IPrepareData {
+export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _hash: THash = {};
   protected _keys: string[] = [];
   protected _emojis: Emojis;
 
-  constructor(library: EmojiLibrary) {
+  constructor(library: EmojiLibrary = emojiMartData) {
     this._emojis = library.emojis;
     this.init();
   }
@@ -39,8 +38,8 @@ export class PrepareData implements IPrepareData {
     return this._keys;
   }
 
-  getEmoji(key: string) {
-    return this._emojis[key];
+  getEmoji(id: string) {
+    return this._emojis[id];
   }
 
   getEmojiId(key: string) {
