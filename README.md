@@ -37,7 +37,7 @@ This repository comes with a lot of plugins, including elements, marks, serializ
 
 Plate uses jotai for state management and is designed to support decoupled design systems. It comes with a default design system, but you can also plug in your own.
 
-With more than 50 packages, `@udecode/plate` enforces separation of concerns for improved build optimization and versioning. It is also extensible, with all plugins accepting options and their functions being exported. Additionally, it is tree-shakeable and comes with heavy TypeScript support.
+With more than 50 packages, `@udecode/plate` enforces separation of concerns for improved build optimization and versioning. It is also extensible, with all plugins accepting options and their functions being exported. Finally, it is tree-shakeable and comes with heavy TypeScript support.
 
 ## Motivation
 
