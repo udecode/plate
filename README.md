@@ -45,7 +45,7 @@ Are you tired of struggling to build your own custom editor from scratch? Do you
 
 With Plate, building your own editor is as simple as using a single <Plate> component. But don't let its simplicity fool you - Plate is packed with powerful features to help you create the perfect editor for your needs. It uses Jotai for state management, and offers a default design system or the ability to plug in your own. Plus, with over 50 packages for individual features, you can easily customize and optimize your editor.
 
-But that's not all - Plate also supports extensibility and comes with TypeScript support for even stronger type checking. And with Tree-shaking support, you can be sure your editor will be as efficient as possible.
+But that's not all - Plate also supports extensibility and comes with TypeScript support for even stronger type checking.
 
 Don't spend any more time struggling to build your custom editor. Try Plate today and start building the perfect editor for your needs!
 
