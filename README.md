@@ -33,7 +33,7 @@ DM [@zbeyens](https://github.com/zbeyens) to get added to the list if your offer
 
 Plate is a plugin system for Slate and React to make it easier to build fully-featured editors. It handles things like node rendering, events handlers, serializing, and normalizing so you don't have to.
 
-This repository comes with a lot of plugins, including elements, marks, serializers, normalizers, queries, transforms, and components. To get started, you only need to use the <Plate> component.
+This repository comes with a lot of plugins, including elements, marks, serializers, normalizers, queries, transforms, and components.
 
 Plate uses jotai for state management and is designed to support decoupled design systems. It comes with a default design system, but you can also plug in your own.
 
