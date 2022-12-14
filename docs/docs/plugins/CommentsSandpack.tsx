@@ -4,6 +4,7 @@ import {
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
+import { tippyCode } from '../sandpack/code-files';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { balloonToolbarFiles } from '../sandpack/files/balloon-toolbar/code-balloonToolbarFiles';
 import { basicElementsPluginsFile } from '../sandpack/files/basic-elements/code-basicElementsPlugins';
@@ -24,6 +25,7 @@ export const CommentsSandpack = () => (
       ...toolbarDeps,
     }}
     appCode={commentsAppCode}
+    cssCode={tippyCode}
     files={{
       ...balloonToolbarFiles,
       ...basicNodesFiles,

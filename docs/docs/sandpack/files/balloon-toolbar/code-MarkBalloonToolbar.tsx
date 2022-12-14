@@ -1,5 +1,4 @@
-export const markBalloonToolbarCode = `import 'tippy.js/dist/tippy.css';
-import React, { ReactNode } from 'react';
+export const markBalloonToolbarCode = `import React, { ReactNode } from 'react';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
