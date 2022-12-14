@@ -36,7 +36,6 @@ export const EmojiCategoryType = {
   Objects: 'objects',
   People: 'people',
   Places: 'places',
-  Search: 'search',
   Symbols: 'symbols',
 } as const;
 
@@ -45,6 +44,7 @@ export type EmojiCategoryList = Exclude<EmojiCategoryAll, 'search'>;
 
 export type i18nProps = {
   search: string;
+  searchResult: string;
   clear: string;
   searchNoResultsTitle: string;
   searchNoResultsSubtitle: string;

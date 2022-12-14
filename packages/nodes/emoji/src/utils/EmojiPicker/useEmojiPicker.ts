@@ -25,6 +25,18 @@ export const useEmojiPicker = ({
     content: createRef<HTMLDivElement>(),
   });
 
+  const updateFrequentEmojis = useCallback(
+    (emojiId: string) => {
+      emojiLibrary.updateFrequentCategory(emojiId);
+
+      dispatch({
+        type: 'UPDATE_FREQUENT_EMOJIS',
+        payload: { frequentEmoji: emojiId },
+      });
+    },
+    [dispatch, emojiLibrary]
+  );
+
   const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
     (visibleSections, categoryId) => {
       dispatch({
@@ -91,8 +103,9 @@ export const useEmojiPicker = ({
           text: emoji.name,
         },
       });
+      updateFrequentEmojis(emoji.id);
     },
-    [editor]
+    [editor, updateFrequentEmojis]
   );
 
   const handleCategoryClick = useCallback(

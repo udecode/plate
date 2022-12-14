@@ -11,6 +11,7 @@ export type EmojiPickerStateProps = {
   visibleCategories: MapEmojiCategoryType;
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
+  frequentEmoji?: string;
 };
 
 export type EmojiPickerStateDispatch = {

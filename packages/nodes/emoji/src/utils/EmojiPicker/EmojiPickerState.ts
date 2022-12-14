@@ -13,7 +13,7 @@ const initialState: EmojiPickerStateProps = {
   searchResult: [],
   focusedCategory: undefined,
   visibleCategories: new Map(),
-  // settings: {},
+  frequentEmoji: undefined,
 };
 
 export const EmojiPickerState = (): [
@@ -49,6 +49,7 @@ export const EmojiPickerState = (): [
           isSearching: false,
           hasFound: false,
         };
+      case 'UPDATE_FREQUENT_EMOJIS':
       case 'SET_SEARCH':
       case 'SET_EMOJI':
       case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
