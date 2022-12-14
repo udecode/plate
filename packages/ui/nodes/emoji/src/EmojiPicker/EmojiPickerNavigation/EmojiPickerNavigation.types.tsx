@@ -18,3 +18,7 @@ export type EmojiPickerNavigationProps = StyledProps<EmojiPickerNavigationStyles
 
 export interface EmojiPickerNavigationStyleProps
   extends StyledProps<EmojiPickerNavigationStyles> {}
+
+export type CategoryButtonProps = {
+  categoryId: EmojiCategoryList;
+};

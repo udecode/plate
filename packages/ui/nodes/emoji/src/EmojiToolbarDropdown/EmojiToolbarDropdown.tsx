@@ -1,8 +1,15 @@
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
 import {
   EmojiFloatingIndexSearch,
   EmojiFloatingLibrary,
+  FrequentEmojiStorage,
   useEmojiPicker,
   UseEmojiPickerType,
 } from '@udecode/plate-emoji';
@@ -31,21 +38,30 @@ export const EmojiToolbarDropdown = ({
   const editor = usePlateEditorState(id);
   const isActive = !!editor?.selection;
   const [isOpen, setIsOpen] = useState(false);
+  const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
+  const emojiFloatingIndexSearchRef = useRef<EmojiFloatingIndexSearch>();
 
   const onToggle = useCallback(() => {
     setIsOpen((open) => !open);
   }, []);
 
-  const emojiFloatingLibrary = EmojiFloatingLibrary.getInstance();
-  const emojiFloatingIndexSearch = EmojiFloatingIndexSearch.getInstance(
-    emojiFloatingLibrary
-  );
   const emojiPickerState = useEmojiPicker({
     isOpen,
     editor,
-    emojiLibrary: emojiFloatingLibrary,
-    indexSearch: emojiFloatingIndexSearch,
+    emojiLibrary: emojiFloatingLibraryRef.current!,
+    indexSearch: emojiFloatingIndexSearchRef.current!,
   });
+
+  useEffect(() => {
+    const frequentEmojiStorage = new FrequentEmojiStorage();
+    emojiFloatingLibraryRef.current = EmojiFloatingLibrary.getInstance(
+      frequentEmojiStorage
+    );
+
+    emojiFloatingIndexSearchRef.current = EmojiFloatingIndexSearch.getInstance(
+      emojiFloatingLibraryRef.current
+    );
+  }, []);
 
   return (
     <ToolbarDropdown
