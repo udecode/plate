@@ -39,7 +39,7 @@ const RowOfButtons = memo(
       data-index={row.id}
       css={{ display: 'flex', 'flex-direction': 'row' }}
     >
-      {row.emojis.map((emojiId, index) => (
+      {row.elements.map((emojiId, index) => (
         <Button
           key={emojiId}
           index={index}
@@ -81,12 +81,7 @@ export const EmojiPickerContent = ({
       return (
         <div key={categoryId} data-id={categoryId} ref={root}>
           <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
-          <div
-            css={styles.category?.css}
-            style={{
-              height: rows.length * 36,
-            }}
-          >
+          <div css={styles.category?.css} style={{ height: rows.length * 36 }}>
             {isCategoryVisible(categoryId) &&
               rows.map((row: GridRow, index) => (
                 <RowOfButtons
@@ -113,7 +108,7 @@ export const EmojiPickerContent = ({
   const SearchList = useCallback(() => {
     return (
       <div data-id="search">
-        <div css={styles.sticky?.css}>{i18n.categories.search}</div>
+        <div css={styles.sticky?.css}>{i18n.searchResult}</div>
         <div css={styles.category?.css}>
           {searchResult.map((emoji: Emoji, index: number) => (
             <Button
@@ -129,7 +124,7 @@ export const EmojiPickerContent = ({
     );
   }, [
     emojiLibrary,
-    i18n.categories.search,
+    i18n.searchResult,
     searchResult,
     selectEmoji,
     setEmoji,

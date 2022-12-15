@@ -39,8 +39,7 @@ export const EmojiCategoryType = {
   Symbols: 'symbols',
 } as const;
 
-export type EmojiCategoryAll = ReverseMap<typeof EmojiCategoryType>;
-export type EmojiCategoryList = Exclude<EmojiCategoryAll, 'search'>;
+export type EmojiCategoryList = ReverseMap<typeof EmojiCategoryType>;
 
 export type i18nProps = {
   search: string;
@@ -49,7 +48,7 @@ export type i18nProps = {
   searchNoResultsTitle: string;
   searchNoResultsSubtitle: string;
   pick: string;
-  categories: Record<EmojiCategoryAll, string>;
+  categories: Record<EmojiCategoryList, string>;
   skins: Record<'choose' | '1' | '2' | '3' | '4' | '5' | '6', string>;
 };
 

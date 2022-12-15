@@ -1,7 +1,8 @@
+import { RefObject } from 'react';
 import { EmojiCategoryList } from '../../types';
-import { TGridCategory } from './EmojiFloatingLibrary.types';
+import { IGrid } from './Grid.types';
 
-export interface IEmojiFloatingGrid {
-  values: () => IterableIterator<TGridCategory>;
-  section: (sectionId: EmojiCategoryList) => TGridCategory;
-}
+export type EmojiFloatingGridType = IGrid<
+  RefObject<HTMLDivElement>,
+  EmojiCategoryList
+>;
