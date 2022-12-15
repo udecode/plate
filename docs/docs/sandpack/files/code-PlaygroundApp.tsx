@@ -15,6 +15,7 @@ import {
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
   createDndPlugin,
+  createEmojiPlugin,
   createExitBreakPlugin,
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
@@ -64,6 +65,7 @@ import { editableProps } from './common/editableProps';
 import { CursorOverlayContainer } from './cursor-overlay/CursorOverlayContainer';
 import { dragOverCursorPlugin } from './cursor-overlay/dragOverCursorPlugin';
 import { withStyledDraggables } from './dnd/withStyledDraggables';
+import { emojiPlugin } from './emoji/emojiPlugin';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from './forced-layout/forcedLayoutPlugin';
 import { indentPlugin } from './indent/indentPlugin';
@@ -149,6 +151,7 @@ const App = () => {
           createDeserializeCsvPlugin(),
           createDeserializeDocxPlugin(),
           createJuicePlugin() as MyPlatePlugin,
+          createEmojiPlugin(emojiPlugin),
         ],
         {
           components: withStyledDraggables(components),

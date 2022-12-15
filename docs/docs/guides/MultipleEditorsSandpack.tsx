@@ -4,6 +4,7 @@ import {
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
+import { tippyCode } from '../sandpack/code-files';
 import { CommonSandpack } from '../sandpack/CommonSandpack';
 import { markBalloonToolbarFile } from '../sandpack/files/balloon-toolbar/code-MarkBalloonToolbar';
 import { basicElementsFiles } from '../sandpack/files/basic-elements/code-basicElementsFiles';
@@ -22,6 +23,7 @@ export const MultipleEditorsSandpack = () => (
     previewSize={7}
     deps={{ ...commonDeps, ...plateTestUtilsDeps, ...toolbarDeps }}
     appCode={multipleEditorsAppCode}
+    cssCode={tippyCode}
     files={{
       ...markBalloonToolbarFile,
       ...mediaFiles,
