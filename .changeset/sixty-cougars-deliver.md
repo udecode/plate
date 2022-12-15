@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-ui-emoji': patch
+'@udecode/plate-emoji': patch
 ---
 
 fix es module
