@@ -22,7 +22,8 @@
     "@udecode/plate-combobox": "18.13.0",
     "@udecode/plate-core": "18.13.0",
     "@udecode/plate-styled-components": "18.13.0",
-    "@udecode/plate-ui-combobox": "18.13.0"
+    "@udecode/plate-ui-combobox": "18.13.0",
+    "@udecode/plate-ui-emoji": "18.13.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
