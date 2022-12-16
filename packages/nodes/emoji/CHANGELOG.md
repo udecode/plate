@@ -1,5 +1,11 @@
 # @udecode/plate-emoji
 
+## 18.13.2
+
+### Patch Changes
+
+- [#2063](https://github.com/udecode/plate/pull/2063) by [@zbeyens](https://github.com/zbeyens) – fix es module
+
 ## 18.13.0
 
 ## 18.11.2
