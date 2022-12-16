@@ -6236,9 +6236,9 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:18.13.0"
     "@udecode/plate-core": "npm:18.13.0"
+    "@udecode/plate-emoji": "npm:18.13.0"
     "@udecode/plate-styled-components": "npm:18.13.0"
     "@udecode/plate-ui-combobox": "npm:18.13.0"
-    "@udecode/plate-ui-emoji": "npm:18.13.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
