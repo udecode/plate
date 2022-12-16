@@ -1,8 +1,11 @@
 import emojiMartData from '@emoji-mart/data';
-import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../constants';
-import { EmojiCategoryList } from '../../types';
+import { EmojiCategoryList, EmojiSettingsType } from '../../types';
 import { EmojiFloatingGrid } from './EmojiFloatingGrid';
-import { IEmojiFloatingLibrary } from './EmojiFloatingLibrary.types';
+import { EmojiFloatingGridType } from './EmojiFloatingGrid.types';
+import {
+  IEmojiFloatingLibrary,
+  IFrequentEmojiStorage,
+} from './EmojiFloatingLibrary.types';
 import { EmojiInlineLibrary } from './EmojiInlineLibrary';
 import { EmojiLibrary } from './EmojiLibrary.types';
 
@@ -13,20 +16,37 @@ export class EmojiFloatingLibrary
 
   private categories: EmojiCategoryList[] = [];
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
-  private _grid: EmojiFloatingGrid;
+  private grid: EmojiFloatingGridType;
 
-  private constructor(library: EmojiLibrary = emojiMartData) {
+  private constructor(
+    protected settings: EmojiSettingsType,
+    protected localStorage: IFrequentEmojiStorage,
+    protected library: EmojiLibrary = emojiMartData
+  ) {
     super(library);
 
-    this.addFrequentCategory();
+    if (settings.showFrequent.value) {
+      this.addFrequentCategory();
+    }
     this.initCategories(library.categories);
-    this._grid = new EmojiFloatingGrid(this.categories, this.emojis);
-    // this._grid.setPerLine();
+    this.grid = new EmojiFloatingGrid(
+      this.categories,
+      this.emojis,
+      settings.perLine.value
+    );
   }
 
-  public static getInstance(library: EmojiLibrary = emojiMartData) {
+  public static getInstance(
+    settings: EmojiSettingsType,
+    localStorage: IFrequentEmojiStorage,
+    library: EmojiLibrary = emojiMartData
+  ) {
     if (!EmojiFloatingLibrary.instance) {
-      EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(library);
+      EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(
+        settings,
+        localStorage,
+        library
+      );
     }
 
     return EmojiFloatingLibrary.instance;
@@ -34,7 +54,7 @@ export class EmojiFloatingLibrary
 
   private addFrequentCategory() {
     this.categories.push('frequent');
-    this.emojis.frequent = DEFAULT_FREQUENTLY_USED_EMOJI;
+    this.emojis.frequent = this.localStorage.getList();
   }
 
   private initCategories(categoriesLibrary: any) {
@@ -44,11 +64,16 @@ export class EmojiFloatingLibrary
     }
   }
 
+  public updateFrequentCategory(emojiId: string) {
+    this.localStorage.update(emojiId);
+    this.grid.addSection('frequent', this.localStorage.getList());
+  }
+
   public getCategories() {
     return this.categories;
   }
 
   public getGrid() {
-    return this._grid;
+    return this.grid;
   }
 }

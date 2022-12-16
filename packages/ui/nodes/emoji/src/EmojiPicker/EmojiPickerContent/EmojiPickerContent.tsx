@@ -61,9 +61,11 @@ export const EmojiPickerContent = ({
   searchResult,
   visibleCategories,
   refs,
+  settings,
   ...props
 }: EmojiPickerContentProps) => {
   const styles = getEmojiPickerContentStyles({ ...props });
+  const getRowWidth = settings.perLine.value * settings.buttonSize.value;
 
   const isCategoryVisible = useCallback(
     (categoryId: any) => {
@@ -77,11 +79,20 @@ export const EmojiPickerContent = ({
   const EmojiList = useCallback(() => {
     return emojiLibrary.getCategories().map((categoryId) => {
       const { root, rows } = emojiLibrary.getGrid().section(categoryId);
+      const { buttonSize } = settings;
 
       return (
-        <div key={categoryId} data-id={categoryId} ref={root}>
+        <div
+          key={categoryId}
+          data-id={categoryId}
+          ref={root}
+          style={{ width: getRowWidth }}
+        >
           <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
-          <div css={styles.category?.css} style={{ height: rows.length * 36 }}>
+          <div
+            css={styles.category?.css}
+            style={{ height: rows.length * buttonSize.value }}
+          >
             {isCategoryVisible(categoryId) &&
               rows.map((row: GridRow, index) => (
                 <RowOfButtons
@@ -98,16 +109,18 @@ export const EmojiPickerContent = ({
     });
   }, [
     emojiLibrary,
+    getRowWidth,
     i18n.categories,
     isCategoryVisible,
     selectEmoji,
     setEmoji,
+    settings,
     styles,
   ]);
 
   const SearchList = useCallback(() => {
     return (
-      <div data-id="search">
+      <div data-id="search" style={{ width: getRowWidth }}>
         <div css={styles.sticky?.css}>{i18n.searchResult}</div>
         <div css={styles.category?.css}>
           {searchResult.map((emoji: Emoji, index: number) => (
@@ -124,6 +137,7 @@ export const EmojiPickerContent = ({
     );
   }, [
     emojiLibrary,
+    getRowWidth,
     i18n.searchResult,
     searchResult,
     selectEmoji,

@@ -1,14 +1,10 @@
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
 import {
   EmojiFloatingIndexSearch,
   EmojiFloatingLibrary,
+  EmojiSettings,
+  EmojiSettingsType,
   FrequentEmojiStorage,
   useEmojiPicker,
   UseEmojiPickerType,
@@ -23,7 +19,7 @@ import icons from '../icons';
 
 type EmojiToolbarDropdownProps = {
   pluginKey: string;
-  icon: ReactNode;
+  settings: EmojiSettingsType;
   EmojiPickerComponent?: (props: UseEmojiPickerType) => JSX.Element;
 } & ToolbarButtonProps;
 
@@ -32,6 +28,7 @@ export const EmojiToolbarDropdown = ({
   icon,
   EmojiPickerComponent = EmojiPicker,
   pluginKey,
+  settings = EmojiSettings,
   ...rest
 }: EmojiToolbarDropdownProps) => {
   id = useEventPlateId(id);
@@ -53,15 +50,18 @@ export const EmojiToolbarDropdown = ({
   });
 
   useEffect(() => {
-    const frequentEmojiStorage = new FrequentEmojiStorage();
+    const frequentEmojiStorage = new FrequentEmojiStorage({
+      limit: settings.showFrequent.limit,
+    });
     emojiFloatingLibraryRef.current = EmojiFloatingLibrary.getInstance(
+      settings,
       frequentEmojiStorage
     );
 
     emojiFloatingIndexSearchRef.current = EmojiFloatingIndexSearch.getInstance(
       emojiFloatingLibraryRef.current
     );
-  }, []);
+  }, [settings]);
 
   return (
     <ToolbarDropdown
@@ -70,7 +70,11 @@ export const EmojiToolbarDropdown = ({
       onOpen={onToggle}
       onClose={onToggle}
     >
-      <EmojiPickerComponent {...emojiPickerState} icons={icons} />
+      <EmojiPickerComponent
+        {...emojiPickerState}
+        icons={icons}
+        settings={settings}
+      />
     </ToolbarDropdown>
   );
 };

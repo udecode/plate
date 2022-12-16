@@ -6,7 +6,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { BasePoint, BaseRange } from 'slate';
-import { IEmojiTriggeringController } from '../utils/EmojiTriggeringController';
+import { IEmojiTriggeringController } from '../utils';
 
 const getNextPoint = <V extends Value>(
   editor: PlateEditor<V>,

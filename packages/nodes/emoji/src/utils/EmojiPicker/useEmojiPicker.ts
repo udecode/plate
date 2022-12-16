@@ -18,7 +18,7 @@ export const useEmojiPicker = ({
   editor,
   emojiLibrary,
   indexSearch,
-}: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons'> => {
+}: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
   const [state, dispatch] = EmojiPickerState();
   const refs = useRef({
     contentRoot: createRef<HTMLDivElement>(),

@@ -23,8 +23,10 @@ export const EmojiPicker = ({
   focusedCategory,
   visibleCategories,
   refs,
+  settings,
+  ...props
 }: UseEmojiPickerType) => {
-  const { root } = getEmojiPickerStyles();
+  const { root } = getEmojiPickerStyles(props);
 
   return (
     <div css={root.css}>
@@ -49,6 +51,7 @@ export const EmojiPicker = ({
         searchResult={searchResult}
         visibleCategories={visibleCategories}
         selectEmoji={selectEmoji}
+        settings={settings}
         refs={refs}
       />
       <EmojiPickerPreview
