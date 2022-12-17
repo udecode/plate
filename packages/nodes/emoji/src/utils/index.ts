@@ -3,7 +3,6 @@
  */
 
 export * from './Grid';
-export * from './Grid.types';
 export * from './EmojiTriggeringController.types';
 export * from './EmojiTriggeringController';
 export * from './IndexSearch';

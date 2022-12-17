@@ -1,14 +1,14 @@
 import { EmojiCategoryList } from '../../types';
 import { Emoji } from '../EmojiLibrary';
 
-export type MapEmojiCategoryType = Map<EmojiCategoryList, number>;
+export type MapEmojiCategoryList = Map<EmojiCategoryList, number>;
 
 export type EmojiPickerStateProps = {
   searchValue: string;
   hasFound: boolean;
   isSearching: boolean;
   searchResult: Emoji[];
-  visibleCategories: MapEmojiCategoryType;
+  visibleCategories: MapEmojiCategoryList;
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
   frequentEmoji?: string;

@@ -1,11 +1,11 @@
 import { MutableRefObject } from 'react';
 import { EmojiCategoryList } from '../types';
 import { IEmojiFloatingLibrary } from './EmojiLibrary';
-import { MapEmojiCategoryType } from './EmojiPicker';
+import { MapEmojiCategoryList } from './EmojiPicker';
 
 const setVisibleSections = (
   entries: IntersectionObserverEntry[],
-  visibleSections: MapEmojiCategoryType
+  visibleSections: MapEmojiCategoryList
 ) => {
   for (const entry of entries) {
     const id = (entry.target as HTMLDivElement).dataset.id as EmojiCategoryList;
@@ -14,7 +14,7 @@ const setVisibleSections = (
 };
 
 const getSectionInFocus = (
-  visibleSections: MapEmojiCategoryType
+  visibleSections: MapEmojiCategoryList
 ): EmojiCategoryList | undefined => {
   for (const [id, ratio] of visibleSections) {
     if (ratio) {
@@ -24,7 +24,7 @@ const getSectionInFocus = (
 };
 
 export type SetFocusedAndVisibleSectionsType = (
-  visibleSections: MapEmojiCategoryType,
+  visibleSections: MapEmojiCategoryList,
   categoryId?: EmojiCategoryList
 ) => void;
 
@@ -44,7 +44,7 @@ export const observeCategories = ({
     threshold: [0.0, 1.0],
   };
 
-  const visibleSections: MapEmojiCategoryType = new Map();
+  const visibleSections: MapEmojiCategoryList = new Map();
 
   const observer = new IntersectionObserver((entries) => {
     setVisibleSections(entries, visibleSections);
@@ -53,8 +53,8 @@ export const observeCategories = ({
     setFocusedAndVisibleSections(visibleSections, focusedSectionId);
   }, observerOptions);
 
-  for (const { root } of emojiLibrary.getGrid().values()) {
-    if (root.current) observer.observe(root.current);
+  for (const section of emojiLibrary.getGrid().sections()) {
+    if (section.root.current) observer.observe(section.root.current);
   }
 
   return observer;

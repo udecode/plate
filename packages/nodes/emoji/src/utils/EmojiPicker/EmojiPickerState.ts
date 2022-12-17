@@ -1,5 +1,5 @@
 import { Dispatch, Reducer, useReducer } from 'react';
-import { EmojiCategoryType } from '../../types';
+import { EmojiCategory } from '../../types';
 import {
   EmojiPickerStateDispatch,
   EmojiPickerStateProps,
@@ -32,7 +32,7 @@ export const EmojiPickerState = (): [
           searchValue: '',
           isSearching: false,
           hasFound: false,
-          focusedCategory: EmojiCategoryType.Frequent,
+          focusedCategory: EmojiCategory.Frequent,
         };
       case 'UPDATE_SEARCH_RESULT':
         return {

@@ -77,36 +77,41 @@ export const EmojiPickerContent = ({
   );
 
   const EmojiList = useCallback(() => {
-    return emojiLibrary.getCategories().map((categoryId) => {
-      const { root, rows } = emojiLibrary.getGrid().section(categoryId);
-      const { buttonSize } = settings;
+    return emojiLibrary
+      .getGrid()
+      .sections()
+      .map(({ id: categoryId }) => {
+        const section = emojiLibrary.getGrid().section(categoryId);
+        const { buttonSize } = settings;
 
-      return (
-        <div
-          key={categoryId}
-          data-id={categoryId}
-          ref={root}
-          style={{ width: getRowWidth }}
-        >
-          <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
+        return (
           <div
-            css={styles.category?.css}
-            style={{ height: rows.length * buttonSize.value }}
+            key={categoryId}
+            data-id={categoryId}
+            ref={section.root}
+            style={{ width: getRowWidth }}
           >
-            {isCategoryVisible(categoryId) &&
-              rows.map((row: GridRow, index) => (
-                <RowOfButtons
-                  key={index}
-                  emojiLibrary={emojiLibrary}
-                  row={row}
-                  selectEmoji={selectEmoji}
-                  setEmoji={setEmoji}
-                />
-              ))}
+            <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
+            <div
+              css={styles.category?.css}
+              style={{ height: section.getRows().length * buttonSize.value }}
+            >
+              {isCategoryVisible(categoryId) &&
+                section
+                  .getRows()
+                  .map((row: GridRow, index) => (
+                    <RowOfButtons
+                      key={index}
+                      emojiLibrary={emojiLibrary}
+                      row={row}
+                      selectEmoji={selectEmoji}
+                      setEmoji={setEmoji}
+                    />
+                  ))}
+            </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
   }, [
     emojiLibrary,
     getRowWidth,

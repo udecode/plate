@@ -2,13 +2,13 @@ import { MutableRefObject, RefObject } from 'react';
 import { PlateEditor, Value } from '@udecode/plate-core';
 import {
   EmojiCategoryList,
+  EmojiIconList,
   EmojiSettingsType,
   i18nProps,
-  IconList,
 } from '../../types';
 import { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary';
 import { AIndexSearch } from '../IndexSearch/IndexSearch';
-import { MapEmojiCategoryType } from './EmojiPickerState.types';
+import { MapEmojiCategoryList } from './EmojiPickerState.types';
 
 export type MutableRefs = MutableRefObject<{
   contentRoot: RefObject<HTMLDivElement> | undefined;
@@ -33,9 +33,9 @@ export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   setEmoji: (emoji?: Emoji) => void;
   selectEmoji: (emoji: Emoji) => void;
   emojiLibrary: IEmojiFloatingLibrary;
-  icons: IconList<T>;
+  icons: EmojiIconList<T>;
   handleCategoryClick: (id: EmojiCategoryList) => void;
-  visibleCategories: MapEmojiCategoryType;
+  visibleCategories: MapEmojiCategoryList;
   refs: MutableRefs;
   settings: EmojiSettingsType;
   focusedCategory?: EmojiCategoryList;

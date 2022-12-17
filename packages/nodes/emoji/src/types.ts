@@ -4,6 +4,24 @@ import { IEmojiTriggeringController } from './utils';
 
 type ReverseMap<T> = T[keyof T];
 
+export type EmojiSettingsType = {
+  buttonSize: {
+    value: number;
+  };
+  categories: {
+    value?: EmojiCategoryList[];
+  };
+  perLine: {
+    value: number;
+  };
+  showFrequent: {
+    value: boolean;
+    limit?: number;
+    key?: string;
+    prefix?: string;
+  };
+};
+
 export type EmojiComboboxProps = (
   editableProps: TEditableProps<Value>
 ) => JSX.Element | null;
@@ -26,7 +44,7 @@ export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
   id?: string;
 }
 
-export const EmojiCategoryType = {
+export const EmojiCategory = {
   Activity: 'activity',
   Custom: 'custom',
   Flags: 'flags',
@@ -39,7 +57,7 @@ export const EmojiCategoryType = {
   Symbols: 'symbols',
 } as const;
 
-export type EmojiCategoryList = ReverseMap<typeof EmojiCategoryType>;
+export type EmojiCategoryList = ReverseMap<typeof EmojiCategory>;
 
 export type i18nProps = {
   search: string;
@@ -52,7 +70,7 @@ export type i18nProps = {
   skins: Record<'choose' | '1' | '2' | '3' | '4' | '5' | '6', string>;
 };
 
-export type IconList<T = string> = {
+export type EmojiIconList<T = string> = {
   categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
   search: {
     loupe: T;

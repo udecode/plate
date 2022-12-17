@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconList } from '@udecode/plate-emoji';
+import { EmojiIconList } from '@udecode/plate-emoji';
 
 const categories = {
   activity: {
@@ -152,4 +152,4 @@ const search = {
   ),
 };
 
-export default { categories, search } as IconList<JSX.Element>;
+export default { categories, search } as EmojiIconList<JSX.Element>;

@@ -1,4 +1,9 @@
-import { EmojiCategoryType, EmojiSettingsType, i18nProps } from './types';
+import {
+  EmojiCategory,
+  EmojiCategoryList,
+  EmojiSettingsType,
+  i18nProps,
+} from './types';
 import { EmojiTriggeringControllerOptions, FrequentEmojis } from './utils';
 
 export const KEY_EMOJI = 'emoji';
@@ -11,22 +16,30 @@ export const EMOJI_TRIGGERING_CONTROLLER_OPTIONS: EmojiTriggeringControllerOptio
   maxTextToSearch: 30,
 };
 
+export const defaultCategories: EmojiCategoryList[] = [
+  EmojiCategory.People,
+  EmojiCategory.Nature,
+  EmojiCategory.Foods,
+  EmojiCategory.Activity,
+  EmojiCategory.Places,
+  EmojiCategory.Objects,
+  EmojiCategory.Symbols,
+  EmojiCategory.Flags,
+];
+
 export const EmojiSettings: EmojiSettingsType = {
   buttonSize: {
     value: 36,
   },
   perLine: {
-    value: 10,
+    value: 8,
   },
   showFrequent: {
-    value: false,
+    value: true,
     limit: 16,
   },
   categories: {
-    value: [],
-  },
-  buttonRadius: {
-    value: '100%',
+    value: undefined,
   },
 };
 
@@ -46,7 +59,7 @@ export const DEFAULT_FREQUENTLY_USED_EMOJI: FrequentEmojis = {
   heart: 1,
 };
 
-export const NUM_OF_CATEGORIES = Object.values(EmojiCategoryType).length;
+export const NUM_OF_CATEGORIES = Object.values(EmojiCategory).length;
 
 export const i18n: i18nProps = {
   search: 'Search all emoji',

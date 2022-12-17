@@ -117,13 +117,14 @@ export const useEmojiPicker = ({
 
       const getSectionPositionToScrollIntoView = () => {
         const trashHold = 1;
-        const { root } = emojiLibrary.getGrid().section(categoryId);
+        const section = emojiLibrary.getGrid().section(categoryId);
+
         const contentRootScrollTop =
           refs.current.contentRoot.current?.scrollTop ?? 0;
         const contentRootTopPosition =
           refs.current.contentRoot.current?.getBoundingClientRect().top ?? 0;
         const sectionTopPosition =
-          root.current?.getBoundingClientRect().top ?? 0;
+          section?.root.current?.getBoundingClientRect().top ?? 0;
 
         return (
           trashHold +

@@ -1,7 +1,12 @@
 import emojiMartData from '@emoji-mart/data';
-import { EmojiCategoryList, EmojiSettingsType } from '../../types';
-import { EmojiFloatingGrid } from './EmojiFloatingGrid';
+import { defaultCategories } from '../../constants';
+import {
+  EmojiCategory,
+  EmojiCategoryList,
+  EmojiSettingsType,
+} from '../../types';
 import { EmojiFloatingGridType } from './EmojiFloatingGrid.types';
+import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 import {
   IEmojiFloatingLibrary,
   IFrequentEmojiStorage,
@@ -14,7 +19,7 @@ export class EmojiFloatingLibrary
   implements IEmojiFloatingLibrary {
   private static instance?: EmojiFloatingLibrary;
 
-  private categories: EmojiCategoryList[] = [];
+  private categories: EmojiCategoryList[] = defaultCategories;
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
   private grid: EmojiFloatingGridType;
 
@@ -25,15 +30,16 @@ export class EmojiFloatingLibrary
   ) {
     super(library);
 
-    if (settings.showFrequent.value) {
-      this.addFrequentCategory();
-    }
-    this.initCategories(library.categories);
-    this.grid = new EmojiFloatingGrid(
+    this.categories = settings.categories.value ?? this.categories;
+
+    this.initEmojis(library.categories);
+
+    this.grid = new EmojiFloatingGridBuilder(
+      this.localStorage,
       this.categories,
       this.emojis,
-      settings.perLine.value
-    );
+      settings
+    ).build();
   }
 
   public static getInstance(
@@ -52,28 +58,26 @@ export class EmojiFloatingLibrary
     return EmojiFloatingLibrary.instance;
   }
 
-  private addFrequentCategory() {
-    this.categories.push('frequent');
-    this.emojis.frequent = this.localStorage.getList();
-  }
-
-  private initCategories(categoriesLibrary: any) {
+  private initEmojis(categoriesLibrary: any) {
     for (const category of categoriesLibrary) {
-      this.categories.push(category.id);
       this.emojis[category.id] = category.emojis;
     }
   }
 
   public updateFrequentCategory(emojiId: string) {
     this.localStorage.update(emojiId);
-    this.grid.addSection('frequent', this.localStorage.getList());
-  }
-
-  public getCategories() {
-    return this.categories;
+    this.grid.updateSection(
+      EmojiCategory.Frequent,
+      this.localStorage.getList()
+    );
   }
 
   public getGrid() {
     return this.grid;
+  }
+
+  public indexOf(focusedCategory: EmojiCategoryList) {
+    const index = this.grid.indexOf(focusedCategory);
+    return index < 1 ? 0 : index;
   }
 }

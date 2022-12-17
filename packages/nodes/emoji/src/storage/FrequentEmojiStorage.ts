@@ -1,4 +1,5 @@
 import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../constants';
+import { EmojiCategory } from '../types';
 import {
   FrequentEmojis,
   FrequentEmojiStorageProps,
@@ -9,7 +10,7 @@ import { LocalStorage } from './LocalStorage';
 export class FrequentEmojiStorage implements IFrequentEmojiStorage {
   protected limit = 8;
   protected prefix = 'emoji';
-  protected key = 'frequent';
+  protected key = EmojiCategory.Frequent;
   protected localStorage;
 
   constructor(

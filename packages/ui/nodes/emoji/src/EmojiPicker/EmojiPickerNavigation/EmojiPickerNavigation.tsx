@@ -14,9 +14,9 @@ const getBarProperty = (
   let width = 0;
   let position = 0;
   if (focusedCategory) {
-    width = 100 / emojiLibrary.getCategories().length;
+    width = 100 / emojiLibrary.getGrid().size;
     position = focusedCategory
-      ? emojiLibrary.getCategories().indexOf(focusedCategory) * 100
+      ? emojiLibrary.indexOf(focusedCategory) * 100
       : 0;
   }
 
@@ -48,7 +48,9 @@ export const EmojiPickerNavigation = ({
         `}
         onClick={() => onClick(categoryId)}
       >
-        {icons.categories[categoryId].outline}
+        <span style={{ width: '20px', height: '20px' }}>
+          {icons.categories[categoryId].outline}
+        </span>
       </button>
     );
   };
@@ -56,9 +58,12 @@ export const EmojiPickerNavigation = ({
   return (
     <nav id="emoji-nav" css={root.css}>
       <div css={tw`relative flex`}>
-        {emojiLibrary.getCategories().map((categoryId) => (
-          <CategoryButton categoryId={categoryId} key={categoryId} />
-        ))}
+        {emojiLibrary
+          .getGrid()
+          .sections()
+          .map(({ id }) => (
+            <CategoryButton categoryId={id} key={id} />
+          ))}
         <div
           css={bar?.css}
           style={{
