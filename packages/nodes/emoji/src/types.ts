@@ -4,6 +4,24 @@ import { IEmojiTriggeringController } from './utils';
 
 type ReverseMap<T> = T[keyof T];
 
+export type EmojiSettingsType = {
+  buttonSize: {
+    value: number;
+  };
+  categories: {
+    value?: EmojiCategoryList[];
+  };
+  perLine: {
+    value: number;
+  };
+  showFrequent: {
+    value: boolean;
+    limit?: number;
+    key?: string;
+    prefix?: string;
+  };
+};
+
 export type EmojiComboboxProps = (
   editableProps: TEditableProps<Value>
 ) => JSX.Element | null;
@@ -26,7 +44,7 @@ export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
   id?: string;
 }
 
-export const EmojiCategoryType = {
+export const EmojiCategory = {
   Activity: 'activity',
   Custom: 'custom',
   Flags: 'flags',
@@ -36,24 +54,23 @@ export const EmojiCategoryType = {
   Objects: 'objects',
   People: 'people',
   Places: 'places',
-  Search: 'search',
   Symbols: 'symbols',
 } as const;
 
-export type EmojiCategoryAll = ReverseMap<typeof EmojiCategoryType>;
-export type EmojiCategoryList = Exclude<EmojiCategoryAll, 'search'>;
+export type EmojiCategoryList = ReverseMap<typeof EmojiCategory>;
 
 export type i18nProps = {
   search: string;
+  searchResult: string;
   clear: string;
   searchNoResultsTitle: string;
   searchNoResultsSubtitle: string;
   pick: string;
-  categories: Record<EmojiCategoryAll, string>;
+  categories: Record<EmojiCategoryList, string>;
   skins: Record<'choose' | '1' | '2' | '3' | '4' | '5' | '6', string>;
 };
 
-export type IconList<T = string> = {
+export type EmojiIconList<T = string> = {
   categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
   search: {
     loupe: T;

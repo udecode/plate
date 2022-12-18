@@ -6,7 +6,7 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { BasePoint, BaseRange } from 'slate';
-import { IEmojiTriggeringController } from '../utils/EmojiTriggeringController';
+import { IEmojiTriggeringController } from '../utils';
 
 const getNextPoint = <V extends Value>(
   editor: PlateEditor<V>,
@@ -38,7 +38,7 @@ export const getFindTriggeringInput = <V extends Value>(
   let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
 
   do {
-    if (!endPoint.offset) break;
+    if (!endPoint) break;
 
     emojiTriggeringController.setText(currentText);
     if (emojiTriggeringController.hasTriggeringMark) break;

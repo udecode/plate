@@ -1,22 +1,8 @@
-type EmojiTriggeringControllerOptions = {
-  limitTriggeringChars: number;
-  maxTextToSearch: number;
-};
-
-export interface IEmojiTriggeringController {
-  isTriggering: boolean;
-  hasTriggeringMark: boolean;
-  getText: () => string;
-  setText: (text: string) => void;
-  reset: () => void;
-  getOptions: () => EmojiTriggeringControllerOptions;
-  getTextSize: () => number;
-}
-
-export const defaultEmojiTriggeringControllerOptions = {
-  limitTriggeringChars: 3,
-  maxTextToSearch: 30,
-};
+import { EMOJI_TRIGGERING_CONTROLLER_OPTIONS } from '../constants';
+import {
+  EmojiTriggeringControllerOptions,
+  IEmojiTriggeringController,
+} from './EmojiTriggeringController.types';
 
 export class EmojiTriggeringController implements IEmojiTriggeringController {
   protected text = '';
@@ -26,7 +12,7 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
 
   constructor(
     protected trigger = ':',
-    protected options: EmojiTriggeringControllerOptions = defaultEmojiTriggeringControllerOptions
+    protected options: EmojiTriggeringControllerOptions = EMOJI_TRIGGERING_CONTROLLER_OPTIONS
   ) {}
 
   setText(text: string) {

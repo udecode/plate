@@ -1,5 +1,5 @@
 import { Dispatch, Reducer, useReducer } from 'react';
-import { EmojiCategoryType } from '../../types';
+import { EmojiCategory } from '../../types';
 import {
   EmojiPickerStateDispatch,
   EmojiPickerStateProps,
@@ -13,7 +13,7 @@ const initialState: EmojiPickerStateProps = {
   searchResult: [],
   focusedCategory: undefined,
   visibleCategories: new Map(),
-  // settings: {},
+  frequentEmoji: undefined,
 };
 
 export const EmojiPickerState = (): [
@@ -32,7 +32,7 @@ export const EmojiPickerState = (): [
           searchValue: '',
           isSearching: false,
           hasFound: false,
-          focusedCategory: EmojiCategoryType.Frequent,
+          focusedCategory: EmojiCategory.Frequent,
         };
       case 'UPDATE_SEARCH_RESULT':
         return {
@@ -49,6 +49,7 @@ export const EmojiPickerState = (): [
           isSearching: false,
           hasFound: false,
         };
+      case 'UPDATE_FREQUENT_EMOJIS':
       case 'SET_SEARCH':
       case 'SET_EMOJI':
       case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':

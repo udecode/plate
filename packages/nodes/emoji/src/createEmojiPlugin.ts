@@ -7,9 +7,6 @@ import { withEmoji } from './withEmoji';
 
 export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
   key: KEY_EMOJI,
-  isElement: true,
-  isInline: true,
-  isVoid: true,
   handlers: {
     onKeyDown: getOnKeyDownEmoji(),
   },

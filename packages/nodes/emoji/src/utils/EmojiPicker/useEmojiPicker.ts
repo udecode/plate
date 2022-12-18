@@ -18,12 +18,24 @@ export const useEmojiPicker = ({
   editor,
   emojiLibrary,
   indexSearch,
-}: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons'> => {
+}: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
   const [state, dispatch] = EmojiPickerState();
   const refs = useRef({
     contentRoot: createRef<HTMLDivElement>(),
     content: createRef<HTMLDivElement>(),
   });
+
+  const updateFrequentEmojis = useCallback(
+    (emojiId: string) => {
+      emojiLibrary.updateFrequentCategory(emojiId);
+
+      dispatch({
+        type: 'UPDATE_FREQUENT_EMOJIS',
+        payload: { frequentEmoji: emojiId },
+      });
+    },
+    [dispatch, emojiLibrary]
+  );
 
   const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
     (visibleSections, categoryId) => {
@@ -91,8 +103,9 @@ export const useEmojiPicker = ({
           text: emoji.name,
         },
       });
+      updateFrequentEmojis(emoji.id);
     },
-    [editor]
+    [editor, updateFrequentEmojis]
   );
 
   const handleCategoryClick = useCallback(
@@ -104,13 +117,14 @@ export const useEmojiPicker = ({
 
       const getSectionPositionToScrollIntoView = () => {
         const trashHold = 1;
-        const { root } = emojiLibrary.getGrid().section(categoryId);
+        const section = emojiLibrary.getGrid().section(categoryId);
+
         const contentRootScrollTop =
           refs.current.contentRoot.current?.scrollTop ?? 0;
         const contentRootTopPosition =
           refs.current.contentRoot.current?.getBoundingClientRect().top ?? 0;
         const sectionTopPosition =
-          root.current?.getBoundingClientRect().top ?? 0;
+          section?.root.current?.getBoundingClientRect().top ?? 0;
 
         return (
           trashHold +

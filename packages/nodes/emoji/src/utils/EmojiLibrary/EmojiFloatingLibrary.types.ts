@@ -1,27 +1,24 @@
-import { RefObject } from 'react';
 import { EmojiCategoryList } from '../../types';
-import { EmojiFloatingGrid } from './EmojiFloatingGrid';
+import { EmojiFloatingGridType } from './EmojiFloatingGrid.types';
 import { IEmojiLibrary } from './EmojiLibrary.types';
 
-export type GridRow = {
-  emojis: string[];
-  id: number;
+export type FrequentEmojis = Record<string, number>;
+
+export type FrequentEmojiStorageProps = {
+  prefix?: string;
+  key?: string;
+  limit?: number;
 };
 
-export type EmojiCategory = {
-  id: EmojiCategoryList;
-  emojis: string[];
-};
-export type EmojiCategories = Array<EmojiCategory>;
-
-export type TGridCategory = {
-  root: RefObject<HTMLDivElement>;
-  rows: GridRow[];
-};
-
-export interface IEmojiFloatingLibrary extends IEmojiLibrary {
-  getCategories: () => EmojiCategoryList[];
-  getGrid: () => EmojiFloatingGrid;
+export interface IFrequentEmojiStorage {
+  update: (emojiId: string) => any;
+  get(): FrequentEmojis;
+  getList: () => string[];
+  set: (value: any) => void;
 }
 
-export type EmojisListType = Partial<Record<EmojiCategoryList, string[]>>;
+export interface IEmojiFloatingLibrary extends IEmojiLibrary {
+  getGrid: () => EmojiFloatingGridType;
+  indexOf: (focusedCategory: EmojiCategoryList) => number;
+  updateFrequentCategory: (emojiId: string) => void;
+}
