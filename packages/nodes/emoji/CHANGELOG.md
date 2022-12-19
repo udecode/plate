@@ -1,5 +1,11 @@
 # @udecode/plate-emoji
 
+## 18.14.0
+
+### Minor Changes
+
+- [#2071](https://github.com/udecode/plate/pull/2071) by [@bojangles-m](https://github.com/bojangles-m) – Toolbar emoji UI.
+
 ## 18.13.2
 
 ### Patch Changes
