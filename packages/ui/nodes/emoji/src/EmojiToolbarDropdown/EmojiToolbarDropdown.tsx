@@ -19,7 +19,7 @@ import icons from '../icons';
 
 type EmojiToolbarDropdownProps = {
   pluginKey: string;
-  settings: EmojiSettingsType;
+  settings?: EmojiSettingsType;
   EmojiPickerComponent?: (props: UseEmojiPickerType) => JSX.Element;
 } & ToolbarButtonProps;
 
@@ -33,7 +33,6 @@ export const EmojiToolbarDropdown = ({
 }: EmojiToolbarDropdownProps) => {
   id = useEventPlateId(id);
   const editor = usePlateEditorState(id);
-  const isActive = !!editor?.selection;
   const [isOpen, setIsOpen] = useState(false);
   const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
   const emojiFloatingIndexSearchRef = useRef<EmojiFloatingIndexSearch>();
@@ -65,7 +64,7 @@ export const EmojiToolbarDropdown = ({
 
   return (
     <ToolbarDropdown
-      control={<ToolbarButton active={isActive} icon={icon} {...rest} />}
+      control={<ToolbarButton active={isOpen} icon={icon} {...rest} />}
       open={isOpen}
       onOpen={onToggle}
       onClose={onToggle}
