@@ -4,3 +4,4 @@
 
 export * from './EmojiCombobox';
 export * from './EmojiToolbarDropdown';
+export * from './EmojiPicker';
