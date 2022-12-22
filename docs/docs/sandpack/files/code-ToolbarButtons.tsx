@@ -1,4 +1,5 @@
 export const toolbarButtonsCode = `import React from 'react';
+import { EmojiEmotions } from '@styled-icons/material';
 import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';
@@ -9,7 +10,9 @@ import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { TippyProps } from '@tippyjs/react';
 import {
   ColorPickerToolbarDropdown,
+  EmojiToolbarDropdown,
   ImageToolbarButton,
+  KEY_EMOJI,
   LineHeightToolbarDropdown,
   LinkToolbarButton,
   MARK_BG_COLOR,
@@ -46,6 +49,7 @@ export const ToolbarButtons = () => {
         selectedIcon={<Check />}
         tooltip={bgTooltip}
       />
+      <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
       <LineHeightToolbarDropdown icon={<LineWeight />} />
       <AlignToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
