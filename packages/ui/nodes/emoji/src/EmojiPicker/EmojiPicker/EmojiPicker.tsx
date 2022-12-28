@@ -3,7 +3,10 @@ import { UseEmojiPickerType } from '@udecode/plate-emoji';
 import { EmojiPickerContent } from '../EmojiPickerContent';
 import { EmojiPickerNavigation } from '../EmojiPickerNavigation';
 import { EmojiPickerPreview } from '../EmojiPickerPreview';
-import { EmojiPickerSearchBar } from '../EmojiPickerSearchBar';
+import {
+  EmojiPickerSearchAndClear,
+  EmojiPickerSearchBar,
+} from '../EmojiPickerSearchBar';
 import { getEmojiPickerStyles } from './EmojiPicker.styles';
 
 export const EmojiPicker = ({
@@ -40,9 +43,14 @@ export const EmojiPicker = ({
       <EmojiPickerSearchBar
         i18n={i18n}
         setSearch={setSearch}
-        clearSearch={clearSearch}
         searchValue={searchValue}
-      />
+      >
+        <EmojiPickerSearchAndClear
+          i18n={i18n}
+          clearSearch={clearSearch}
+          searchValue={searchValue}
+        />
+      </EmojiPickerSearchBar>
       <EmojiPickerContent
         i18n={i18n}
         setEmoji={setEmoji}
