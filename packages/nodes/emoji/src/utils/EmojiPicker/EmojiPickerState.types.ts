@@ -1,7 +1,7 @@
 import { EmojiCategoryList } from '../../types';
 import { Emoji } from '../EmojiLibrary';
 
-export type MapEmojiCategoryList = Map<EmojiCategoryList, number>;
+export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 export type EmojiPickerStateProps = {
   searchValue: string;

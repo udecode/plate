@@ -9,13 +9,10 @@ import {
   useEmojiPicker,
   UseEmojiPickerType,
 } from '@udecode/plate-emoji';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-  ToolbarDropdown,
-} from '@udecode/plate-ui-toolbar';
+import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { EmojiPicker } from '../EmojiPicker';
 import icons from '../icons';
+import { ToolbarDropdown } from './ToolbarDropdown';
 
 type EmojiToolbarDropdownProps = {
   pluginKey: string;

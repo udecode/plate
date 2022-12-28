@@ -9,7 +9,7 @@ const setVisibleSections = (
 ) => {
   for (const entry of entries) {
     const id = (entry.target as HTMLDivElement).dataset.id as EmojiCategoryList;
-    visibleSections.set(id, entry.intersectionRatio);
+    visibleSections.set(id, entry.isIntersecting);
   }
 };
 
@@ -41,7 +41,7 @@ export const observeCategories = ({
 }: ObserverCategoriesType) => {
   const observerOptions = {
     root: ancestorRef.current,
-    threshold: [0.0, 1.0],
+    threshold: 0,
   };
 
   const visibleSections: MapEmojiCategoryList = new Map();

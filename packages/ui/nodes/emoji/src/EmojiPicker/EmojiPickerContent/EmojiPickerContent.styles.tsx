@@ -39,7 +39,7 @@ export const getEmojiPickerContentStyles = (
       ],
       content: [tw`h-full`],
       sticky: [
-        tw`sticky z-[1] backdrop-blur-[4px] bg-white/90  font-medium -top-px py-1 px-1`,
+        tw`sticky z-[1] backdrop-blur-[4px] bg-white/90 -top-px py-1 px-1`,
       ],
       category: [tw`relative flex flex-wrap`],
       button: [
