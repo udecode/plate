@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "18.14.0",
+  "version": "18.14.2",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -30,7 +30,7 @@
     "@udecode/plate-combobox": "18.13.0",
     "@udecode/plate-comments": "18.13.0",
     "@udecode/plate-core": "18.13.0",
-    "@udecode/plate-emoji": "18.14.0",
+    "@udecode/plate-emoji": "18.14.2",
     "@udecode/plate-find-replace": "18.13.0",
     "@udecode/plate-floating": "18.13.0",
     "@udecode/plate-font": "18.13.0",
