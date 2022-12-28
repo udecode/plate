@@ -3,3 +3,4 @@
  */
 
 export * from './EmojiPickerSearchBar';
+export * from './EmojiPickerSearchAndClear';
