@@ -132,7 +132,7 @@
 
 -   [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
    -   `TableElementBase` props:
-       -   replace `onRenderContainer` by `floatingOptions`
+       -   replace `onRenderContainer` by `floatingOptions` or by replacing `ELEMENT_TABLE` in the `createPlateUI` function.
    -   `TablePopover` is now a floating instead of tippy
    -   deps:
        -   replaced `plate-ui-popover` by `plate-floating`
