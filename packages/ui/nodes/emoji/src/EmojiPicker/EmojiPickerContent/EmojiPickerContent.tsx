@@ -70,7 +70,7 @@ export const EmojiPickerContent = ({
   const isCategoryVisible = useCallback(
     (categoryId: any) => {
       return visibleCategories.has(categoryId)
-        ? visibleCategories.get(categoryId)! > 0
+        ? visibleCategories.get(categoryId)
         : false;
     },
     [visibleCategories]
