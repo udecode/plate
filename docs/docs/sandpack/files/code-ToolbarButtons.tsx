@@ -1,6 +1,6 @@
 export const toolbarButtonsCode = `import React from 'react';
-import { EmojiEmotions } from '@styled-icons/material/EmojiEmotions';
 import { Check } from '@styled-icons/material/Check';
+import { EmojiEmotions } from '@styled-icons/material/EmojiEmotions';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { Image } from '@styled-icons/material/Image';
