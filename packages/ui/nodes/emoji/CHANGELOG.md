@@ -1,5 +1,13 @@
 # @udecode/plate-ui-emoji
 
+## 18.14.4
+
+### Patch Changes
+
+- [#2093](https://github.com/udecode/plate/pull/2093) by [@bojangles-m](https://github.com/bojangles-m) –
+  - Added prop to control toolbar (open or close) after selecting emoji.
+  - Set focus to editor after selection of emoji while in Firefox selections jumped on the beginning of the line.
+
 ## 18.14.2
 
 ### Patch Changes
