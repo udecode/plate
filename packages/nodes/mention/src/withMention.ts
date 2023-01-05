@@ -64,23 +64,25 @@ export const withMention = <
     );
   };
 
-  editor.insertTextData = (data) => {
-    const inMentionInput = findMentionInput(editor) !== undefined;
-    if (!inMentionInput) {
-      return insertTextData(data);
-    }
+  // editor.insertTextData = (data) => {
+  //   console.log('---> insertTextData');
+  //   const inMentionInput = findMentionInput(editor) !== undefined;
+  //   if (!inMentionInput) {
+  //     return insertTextData(data);
+  //   }
 
-    const text = data.getData('text/plain');
-    if (!text) {
-      return false;
-    }
+  //   const text = data.getData('text/plain');
+  //   if (!text) {
+  //     return false;
+  //   }
 
-    editor.insertText(stripNewLineAndTrim(text));
+  //   editor.insertText(stripNewLineAndTrim(text));
 
-    return true;
-  };
+  //   return true;
+  // };
 
   editor.deleteBackward = (unit) => {
+    console.log('-----> deleteBackward');
     const currentMentionInput = findMentionInput(editor);
     if (currentMentionInput && getNodeString(currentMentionInput[0]) === '') {
       return removeMentionInput(editor, currentMentionInput[1]);
@@ -149,6 +151,7 @@ export const withMention = <
   };
 
   editor.apply = (operation) => {
+    console.log('----> apply');
     apply(operation);
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
