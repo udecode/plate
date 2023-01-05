@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 18.14.3
+
+### Patch Changes
+
+- [#2090](https://github.com/udecode/plate/pull/2090) by [@OliverWales](https://github.com/OliverWales) – Respect editor read-only state in block selection hooks
+
 ## 18.13.0
 
 ## 18.9.0
