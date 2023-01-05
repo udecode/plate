@@ -16,13 +16,15 @@ export type MutableRefs = MutableRefObject<{
 }>;
 
 export type UseEmojiPickerProps = {
-  isOpen: boolean;
+  closeOnSelect: boolean;
   editor: PlateEditor<Value>;
   emojiLibrary: IEmojiFloatingLibrary;
   indexSearch: AIndexSearch<Emoji>;
 };
 
 export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
+  isOpen: boolean;
+  onToggle: () => void;
   i18n: i18nProps;
   searchValue: string;
   setSearch: (value: string) => void;
@@ -30,8 +32,8 @@ export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   isSearching: boolean;
   hasFound: boolean;
   searchResult: Emoji[];
-  setEmoji: (emoji?: Emoji) => void;
-  selectEmoji: (emoji: Emoji) => void;
+  onMouseOver: (emoji?: Emoji) => void;
+  onSelectEmoji: (emoji: Emoji) => void;
   emojiLibrary: IEmojiFloatingLibrary;
   icons: EmojiIconList<T>;
   handleCategoryClick: (id: EmojiCategoryList) => void;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
 import {
   EmojiFloatingIndexSearch,
@@ -18,6 +18,7 @@ type EmojiToolbarDropdownProps = {
   pluginKey: string;
   settings?: EmojiSettingsType;
   EmojiPickerComponent?: (props: UseEmojiPickerType) => JSX.Element;
+  closeOnSelect?: boolean;
 } & ToolbarButtonProps;
 
 export const EmojiToolbarDropdown = ({
@@ -26,20 +27,16 @@ export const EmojiToolbarDropdown = ({
   EmojiPickerComponent = EmojiPicker,
   pluginKey,
   settings = EmojiSettings,
+  closeOnSelect = true,
   ...rest
 }: EmojiToolbarDropdownProps) => {
   id = useEventPlateId(id);
   const editor = usePlateEditorState(id);
-  const [isOpen, setIsOpen] = useState(false);
   const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
   const emojiFloatingIndexSearchRef = useRef<EmojiFloatingIndexSearch>();
 
-  const onToggle = useCallback(() => {
-    setIsOpen((open) => !open);
-  }, []);
-
-  const emojiPickerState = useEmojiPicker({
-    isOpen,
+  const { onToggle, isOpen, ...emojiPickerState } = useEmojiPicker({
+    closeOnSelect,
     editor,
     emojiLibrary: emojiFloatingLibraryRef.current!,
     indexSearch: emojiFloatingIndexSearchRef.current!,
@@ -68,6 +65,8 @@ export const EmojiToolbarDropdown = ({
     >
       <EmojiPickerComponent
         {...emojiPickerState}
+        isOpen={isOpen}
+        onToggle={onToggle}
         icons={icons}
         settings={settings}
       />

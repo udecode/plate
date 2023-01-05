@@ -4,6 +4,7 @@ import { Emoji } from '../EmojiLibrary';
 export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 export type EmojiPickerStateProps = {
+  isOpen: boolean;
   searchValue: string;
   hasFound: boolean;
   isSearching: boolean;

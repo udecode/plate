@@ -1,5 +1,6 @@
 import { ComboboxOnSelectItem } from '@udecode/plate-combobox';
 import {
+  focusEditor,
   getPlugin,
   insertText,
   PlatePluginKey,
@@ -16,6 +17,8 @@ export const getEmojiOnInsert = <TData extends EmojiItemData = EmojiItemData>({
   } = getPlugin<EmojiPlugin>(editor as any, key);
 
   withoutNormalizing(editor, () => {
+    focusEditor(editor);
+
     const value = createEmoji!(item);
     insertText(editor, value);
   });

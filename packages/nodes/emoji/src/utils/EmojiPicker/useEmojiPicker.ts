@@ -14,10 +14,10 @@ import {
 } from './useEmojiPicker.types';
 
 export const useEmojiPicker = ({
-  isOpen,
   editor,
   emojiLibrary,
   indexSearch,
+  closeOnSelect,
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
   const [state, dispatch] = EmojiPickerState();
   const refs = useRef({
@@ -25,17 +25,11 @@ export const useEmojiPicker = ({
     content: createRef<HTMLDivElement>(),
   });
 
-  const updateFrequentEmojis = useCallback(
-    (emojiId: string) => {
-      emojiLibrary.updateFrequentCategory(emojiId);
-
-      dispatch({
-        type: 'UPDATE_FREQUENT_EMOJIS',
-        payload: { frequentEmoji: emojiId },
-      });
-    },
-    [dispatch, emojiLibrary]
-  );
+  const onToggle = useCallback(() => {
+    dispatch({
+      type: state.isOpen ? 'SET_CLOSE' : 'SET_OPEN',
+    });
+  }, [dispatch, state.isOpen]);
 
   const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
     (visibleSections, categoryId) => {
@@ -83,14 +77,29 @@ export const useEmojiPicker = ({
     dispatch({ type: 'CLEAR_SEARCH' });
   }, [dispatch]);
 
-  const setEmoji = useCallback(
+  const onMouseOver = useCallback(
     (emoji?: Emoji) => {
       dispatch({ type: 'SET_EMOJI', payload: { emoji } });
     },
     [dispatch]
   );
 
-  const selectEmoji = useCallback(
+  const updateFrequentEmojis = useCallback(
+    (emojiId: string) => {
+      emojiLibrary.updateFrequentCategory(emojiId);
+
+      dispatch({
+        type: 'UPDATE_FREQUENT_EMOJIS',
+        payload: {
+          frequentEmoji: emojiId,
+          isOpen: closeOnSelect ? false : state.isOpen,
+        },
+      });
+    },
+    [closeOnSelect, dispatch, emojiLibrary, state.isOpen]
+  );
+
+  const onSelectEmoji = useCallback(
     (emoji: Emoji) => {
       const selectItem = getEmojiOnInsert();
       selectItem(editor, {
@@ -103,6 +112,7 @@ export const useEmojiPicker = ({
           text: emoji.name,
         },
       });
+
       updateFrequentEmojis(emoji.id);
     },
     [editor, updateFrequentEmojis]
@@ -142,22 +152,28 @@ export const useEmojiPicker = ({
   );
 
   useEffect(() => {
-    if (isOpen && !state.isSearching) {
+    if (state.isOpen && !state.isSearching) {
       observeCategories({
         ancestorRef: refs.current.contentRoot,
         emojiLibrary,
         setFocusedAndVisibleSections,
       });
     }
-  }, [emojiLibrary, isOpen, state.isSearching, setFocusedAndVisibleSections]);
+  }, [
+    emojiLibrary,
+    state.isOpen,
+    state.isSearching,
+    setFocusedAndVisibleSections,
+  ]);
 
   return {
+    onToggle,
     i18n,
     setSearch,
     clearSearch,
     emoji: state.emoji,
-    setEmoji,
-    selectEmoji,
+    onMouseOver,
+    onSelectEmoji,
     emojiLibrary,
     handleCategoryClick,
     refs,
