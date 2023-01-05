@@ -6,6 +6,7 @@ import {
 } from './EmojiPickerState.types';
 
 const initialState: EmojiPickerStateProps = {
+  isOpen: false,
   searchValue: '',
   emoji: undefined,
   hasFound: false,
@@ -49,7 +50,23 @@ export const EmojiPickerState = (): [
           isSearching: false,
           hasFound: false,
         };
+      case 'SET_OPEN':
+        return {
+          ...state,
+          isOpen: true,
+        };
+      case 'SET_CLOSE':
+        return {
+          ...state,
+          emoji: undefined,
+          isOpen: false,
+        };
       case 'UPDATE_FREQUENT_EMOJIS':
+        return {
+          ...state,
+          ...payload,
+          emoji: undefined,
+        };
       case 'SET_SEARCH':
       case 'SET_EMOJI':
       case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':

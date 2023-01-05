@@ -14,8 +14,8 @@ export type EmojiPickerContentProps = StyledProps<EmojiPickerContentStyles> &
   Pick<
     UseEmojiPickerType,
     | 'i18n'
-    | 'setEmoji'
-    | 'selectEmoji'
+    | 'onMouseOver'
+    | 'onSelectEmoji'
     | 'emojiLibrary'
     | 'isSearching'
     | 'searchResult'
@@ -30,13 +30,13 @@ export interface EmojiPickerContentStyleProps
 export type ButtonProps = {
   index: number;
   emoji: Emoji;
-  onClick: (emoji: Emoji) => void;
-  onMouseHandler: (emoji?: Emoji) => void;
+  onSelect: (emoji: Emoji) => void;
+  onMouseOver: (emoji?: Emoji) => void;
 };
 
 export type RowOfButtonsProps = Pick<
   UseEmojiPickerType,
-  'setEmoji' | 'selectEmoji' | 'emojiLibrary'
+  'onMouseOver' | 'onSelectEmoji' | 'emojiLibrary'
 > & {
   row: GridRow;
 };

@@ -8,7 +8,7 @@ import {
 } from './EmojiPickerContent.types';
 
 const Button = memo(
-  ({ index, emoji, onClick, onMouseHandler, ...props }: ButtonProps) => {
+  ({ index, emoji, onSelect, onMouseOver, ...props }: ButtonProps) => {
     const { button, buttonBg } = getEmojiPickerContentStyles({ ...props });
 
     return (
@@ -18,9 +18,9 @@ const Button = memo(
         tabIndex={-1}
         css={button?.css}
         data-index={index}
-        onClick={() => onClick(emoji)}
-        onMouseEnter={() => onMouseHandler(emoji)}
-        onMouseLeave={() => onMouseHandler(undefined)}
+        onClick={() => onSelect(emoji)}
+        onMouseEnter={() => onMouseOver(emoji)}
+        onMouseLeave={() => onMouseOver(undefined)}
         className="group"
       >
         <div aria-hidden="true" css={buttonBg!.css} />
@@ -33,7 +33,7 @@ const Button = memo(
 );
 
 const RowOfButtons = memo(
-  ({ row, emojiLibrary, setEmoji, selectEmoji }: RowOfButtonsProps) => (
+  ({ row, emojiLibrary, onSelectEmoji, onMouseOver }: RowOfButtonsProps) => (
     <div
       key={row.id}
       data-index={row.id}
@@ -44,8 +44,8 @@ const RowOfButtons = memo(
           key={emojiId}
           index={index}
           emoji={emojiLibrary.getEmoji(emojiId)}
-          onClick={selectEmoji}
-          onMouseHandler={setEmoji}
+          onSelect={onSelectEmoji}
+          onMouseOver={onMouseOver}
         />
       ))}
     </div>
@@ -54,8 +54,8 @@ const RowOfButtons = memo(
 
 export const EmojiPickerContent = ({
   i18n,
-  setEmoji,
-  selectEmoji,
+  onSelectEmoji,
+  onMouseOver,
   emojiLibrary,
   isSearching = false,
   searchResult,
@@ -104,8 +104,8 @@ export const EmojiPickerContent = ({
                       key={index}
                       emojiLibrary={emojiLibrary}
                       row={row}
-                      selectEmoji={selectEmoji}
-                      setEmoji={setEmoji}
+                      onSelectEmoji={onSelectEmoji}
+                      onMouseOver={onMouseOver}
                     />
                   ))}
             </div>
@@ -117,8 +117,8 @@ export const EmojiPickerContent = ({
     getRowWidth,
     i18n.categories,
     isCategoryVisible,
-    selectEmoji,
-    setEmoji,
+    onSelectEmoji,
+    onMouseOver,
     settings,
     styles,
   ]);
@@ -133,8 +133,8 @@ export const EmojiPickerContent = ({
               key={emoji.id}
               index={index}
               emoji={emojiLibrary.getEmoji(emoji.id)}
-              onClick={selectEmoji}
-              onMouseHandler={setEmoji}
+              onSelect={onSelectEmoji}
+              onMouseOver={onMouseOver}
             />
           ))}
         </div>
@@ -145,8 +145,8 @@ export const EmojiPickerContent = ({
     getRowWidth,
     i18n.searchResult,
     searchResult,
-    selectEmoji,
-    setEmoji,
+    onSelectEmoji,
+    onMouseOver,
     styles,
   ]);
 
