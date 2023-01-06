@@ -5534,7 +5534,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-emoji@npm:18.14.2, @udecode/plate-emoji@workspace:packages/nodes/emoji":
+"@udecode/plate-emoji@npm:18.14.4, @udecode/plate-emoji@workspace:packages/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
   dependencies:
@@ -5607,7 +5607,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:18.14.3, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:18.14.4, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -5622,7 +5622,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:18.13.0"
     "@udecode/plate-comments": "npm:18.13.0"
     "@udecode/plate-core": "npm:18.13.0"
-    "@udecode/plate-emoji": "npm:18.14.2"
+    "@udecode/plate-emoji": "npm:18.14.4"
     "@udecode/plate-find-replace": "npm:18.13.0"
     "@udecode/plate-floating": "npm:18.13.0"
     "@udecode/plate-font": "npm:18.13.0"
@@ -6230,13 +6230,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-emoji@npm:18.14.2, @udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
+"@udecode/plate-ui-emoji@npm:18.14.4, @udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji"
   dependencies:
     "@udecode/plate-combobox": "npm:18.13.0"
     "@udecode/plate-core": "npm:18.13.0"
-    "@udecode/plate-emoji": "npm:18.14.2"
+    "@udecode/plate-emoji": "npm:18.14.4"
     "@udecode/plate-styled-components": "npm:18.13.0"
     "@udecode/plate-ui-combobox": "npm:18.13.0"
     "@udecode/plate-ui-toolbar": "npm:18.13.0"
@@ -6514,11 +6514,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:18.14.3, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:18.14.4, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.14.3"
+    "@udecode/plate-headless": "npm:18.14.4"
     "@udecode/plate-styled-components": "npm:18.13.0"
     "@udecode/plate-ui-alignment": "npm:18.13.0"
     "@udecode/plate-ui-block-quote": "npm:18.13.0"
@@ -6528,7 +6528,7 @@ __metadata:
     "@udecode/plate-ui-comments": "npm:18.13.0"
     "@udecode/plate-ui-cursor": "npm:18.13.0"
     "@udecode/plate-ui-dnd": "npm:18.13.0"
-    "@udecode/plate-ui-emoji": "npm:18.14.2"
+    "@udecode/plate-ui-emoji": "npm:18.14.4"
     "@udecode/plate-ui-find-replace": "npm:18.13.0"
     "@udecode/plate-ui-font": "npm:18.13.0"
     "@udecode/plate-ui-line-height": "npm:18.13.0"
@@ -6557,8 +6557,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:18.14.3"
-    "@udecode/plate-ui": "npm:18.14.3"
+    "@udecode/plate-headless": "npm:18.14.4"
+    "@udecode/plate-ui": "npm:18.14.4"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"

@@ -53,6 +53,7 @@ const PlateProviderContent = <
     decorate,
     renderElement,
     renderLeaf,
+    readOnly,
   } = props;
 
   const editor: E = useMemo(
@@ -101,6 +102,7 @@ const PlateProviderContent = <
         [plateStore.atom.editor, editor],
         [plateStore.atom.plugins, editor.plugins],
         [plateStore.atom.rawPlugins, _plugins],
+        [plateStore.atom.readOnly, readOnly],
         [plateStore.atom.value, value],
         [plateStore.atom.decorate, { fn: decorate }],
         [plateStore.atom.onChange, { fn: onChange }],

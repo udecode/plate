@@ -13,7 +13,7 @@ import { isUndefined, setPlatePlugins } from '../../utils/index';
 export type UsePlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
-> = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value'>> & {
+> = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value' | 'readOnly'>> & {
   plugins?: PlatePlugin<PluginOptions, V, E>[];
 } & Nullable<{
     /**
@@ -78,6 +78,7 @@ export const usePlateEffects = <
   decorate: decorateProp,
   renderElement: renderElementProp,
   renderLeaf: renderLeafProp,
+  readOnly: readOnlyProp,
 }: UsePlateEffectsProps<V, E>) => {
   const editor = usePlateEditorRef<V, E>(id);
 
@@ -89,12 +90,19 @@ export const usePlateEffects = <
   const [rawPlugins, setRawPlugins] = states.rawPlugins();
   const [, setPlugins] = states.plugins();
   const [onChange, setOnChange] = states.onChange();
+  const [readOnly, setReadOnly] = states.readOnly();
 
   // Store Slate.value
   usePlateStoreOnChange({
     state: value,
     setState: setValue,
     nextState: valueProp,
+  });
+
+  usePlateStoreOnChange({
+    state: readOnly,
+    setState: setReadOnly,
+    nextState: readOnlyProp,
   });
 
   usePlateStoreOnChange({

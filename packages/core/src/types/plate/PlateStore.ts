@@ -33,6 +33,9 @@ export type PlateStoreState<
    */
   rawPlugins: PlatePlugin<PluginOptions, V, E>[];
 
+  // Whether the editor is read-only.
+  readOnly: boolean;
+
   /**
    * Flattened plugins.
    */

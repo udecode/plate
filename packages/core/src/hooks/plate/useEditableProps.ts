@@ -17,6 +17,7 @@ export const useEditableProps = ({
   const editor = usePlateEditorRef(id);
   const selectors = usePlateSelectors(id);
   const keyDecorate = selectors.keyDecorate();
+  const readOnly = selectors.readOnly();
   const storeDecorate = selectors.decorate()?.fn;
   const storeRenderLeaf = selectors.renderLeaf()?.fn;
   const storeRenderElement = selectors.renderElement()?.fn;
@@ -47,6 +48,7 @@ export const useEditableProps = ({
       decorate,
       renderElement,
       renderLeaf,
+      readOnly,
     };
 
     DOM_HANDLERS.forEach((handlerKey) => {
