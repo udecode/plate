@@ -1,5 +1,7 @@
 # @udecode/plate-horizontal-rule-ui
 
+## 19.0.0
+
 ## 18.15.0
 
 ## 18.13.0
