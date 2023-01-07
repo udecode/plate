@@ -28,7 +28,7 @@ export const useCommentResolveButton = ({
       updateComment(value);
 
       onCommentUpdate?.({
-        id: activeCommentId,
+        id: activeCommentId!,
         ...value,
       });
 
