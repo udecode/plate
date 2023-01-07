@@ -1,6 +1,7 @@
 import {
   cloudUiVersion,
   cloudVersion,
+  dndVersion,
   excalidrawVersion,
   juiceVersion,
   plateVersion,
@@ -29,6 +30,12 @@ export const cloudDeps = {
   '@udecode/plate-ui-cloud': cloudUiVersion,
 };
 
+export const dndDeps = {
+  '@udecode/plate-ui-dnd': dndVersion,
+  'react-dnd': '15.1.2',
+  'react-dnd-html5-backend': '15.1.3',
+};
+
 export const commonDeps = {
   '@udecode/plate': plateVersion,
   nanoid: '3.3.4',
@@ -40,8 +47,6 @@ export const commonDeps = {
   'slate-hyperscript': '0.77.0',
   'slate-react': '0.88.0',
   'styled-components': '5.3.1',
-  'react-dnd': '15.1.2',
-  'react-dnd-html5-backend': '15.1.3',
 };
 
 export const toolbarDeps = {
@@ -58,4 +63,5 @@ export const playgroundDeps = {
   ...excalidrawDeps,
   ...juiceDeps,
   ...selectionDeps,
+  ...dndDeps,
 };
