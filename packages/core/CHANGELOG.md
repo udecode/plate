@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.0.1
+
+### Patch Changes
+
+- [`8957172`](https://github.com/udecode/plate/commit/89571722d3e0e275af302cb4553e85f0edd0b912) by [@zbeyens](https://github.com/zbeyens) – fix: `editor.id` of type `Symbol`
+
 ## 19.0.0
 
 ### Major Changes
