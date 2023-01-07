@@ -4,6 +4,7 @@ import { useDeepCompareMemo } from 'use-deep-compare';
 import { TEditableProps } from '../../slate/types/TEditableProps';
 import { PlateId, usePlateSelectors } from '../../stores/index';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { isDefined } from '../../utils/index';
 import { DOM_HANDLERS } from '../../utils/misc/dom-attributes';
 import { pipeDecorate } from '../../utils/plate/pipeDecorate';
 import { pipeHandler } from '../../utils/plate/pipeHandler';
@@ -48,8 +49,11 @@ export const useEditableProps = ({
       decorate,
       renderElement,
       renderLeaf,
-      readOnly,
     };
+
+    if (isDefined(readOnly)) {
+      _props.readOnly = readOnly;
+    }
 
     DOM_HANDLERS.forEach((handlerKey) => {
       const handler = pipeHandler(editor, {
