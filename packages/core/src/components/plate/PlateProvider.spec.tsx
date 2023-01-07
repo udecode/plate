@@ -33,7 +33,7 @@ describe('PlateProvider', () => {
           wrapper,
         });
 
-        expect(result.current.id).toBe(PLATE_SCOPE);
+        expect(result.current.id).toBe(PLATE_SCOPE.toString());
       });
     });
     describe('when id is defined', () => {
