@@ -27,8 +27,8 @@ export const useCommentEditSaveButton = ({ ...props }: ButtonProps) => {
 
     setEditingValue(null);
 
-    onCommentUpdate?.({ value: editingValue });
-  }, [editingValue, onCommentUpdate, setEditingValue, updateComment]);
+    onCommentUpdate?.({ id, value: editingValue });
+  }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]);
 
   return {
     onClick,
