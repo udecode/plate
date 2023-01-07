@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   commonDeps,
+  dndDeps,
   plateTestUtilsDeps,
   toolbarDeps,
 } from '../sandpack/code-deps';
@@ -20,6 +21,7 @@ export const DndSandpack = () => (
       ...commonDeps,
       ...plateTestUtilsDeps,
       ...toolbarDeps,
+      ...dndDeps,
     }}
     appCode={dndAppCode}
     cssCode={tippyCode}

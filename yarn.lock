@@ -5642,7 +5642,6 @@ __metadata:
     "@udecode/plate-paragraph": "npm:18.13.0"
     "@udecode/plate-reset-node": "npm:18.13.0"
     "@udecode/plate-select": "npm:18.13.0"
-    "@udecode/plate-selection": "npm:18.14.3"
     "@udecode/plate-serializer-csv": "npm:18.13.0"
     "@udecode/plate-serializer-docx": "npm:18.13.1"
     "@udecode/plate-serializer-html": "npm:18.13.0"
@@ -5918,7 +5917,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:18.14.3, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6209,7 +6208,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui-dnd@npm:18.13.0, @udecode/plate-ui-dnd@workspace:packages/ui/dnd":
+"@udecode/plate-ui-dnd@workspace:^, @udecode/plate-ui-dnd@workspace:packages/ui/dnd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-dnd@workspace:packages/ui/dnd"
   dependencies:
@@ -6527,7 +6526,6 @@ __metadata:
     "@udecode/plate-ui-combobox": "npm:18.13.0"
     "@udecode/plate-ui-comments": "npm:18.13.0"
     "@udecode/plate-ui-cursor": "npm:18.13.0"
-    "@udecode/plate-ui-dnd": "npm:18.13.0"
     "@udecode/plate-ui-emoji": "npm:18.14.4"
     "@udecode/plate-ui-find-replace": "npm:18.13.0"
     "@udecode/plate-ui-font": "npm:18.13.0"
@@ -12098,6 +12096,7 @@ __metadata:
     "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-ui-cloud": "workspace:^"
+    "@udecode/plate-ui-dnd": "workspace:^"
     "@udecode/plate-ui-excalidraw": "workspace:^"
     prism-react-renderer: "npm:^1.2.0"
     styled-components: "npm:5.3.1"
