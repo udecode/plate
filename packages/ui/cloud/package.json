@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-cloud",
-  "version": "18.13.0",
+  "version": "18.15.0",
   "description": "UI for Plate Cloud image and attachments for use with official Plate cloud services",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,9 +20,9 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@portive/client": "10.0.2",
-    "@udecode/plate-cloud": "18.13.0",
-    "@udecode/plate-core": "18.13.0",
-    "@udecode/plate-styled-components": "18.13.0"
+    "@udecode/plate-cloud": "18.15.0",
+    "@udecode/plate-core": "18.15.0",
+    "@udecode/plate-styled-components": "18.15.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

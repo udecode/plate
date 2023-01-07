@@ -1,5 +1,7 @@
 # @udecode/plate-highlight
 
+## 18.15.0
+
 ## 18.13.0
 
 ## 18.9.0

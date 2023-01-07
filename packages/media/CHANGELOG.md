@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 18.15.0
+
 ## 18.13.1
 
 ### Patch Changes

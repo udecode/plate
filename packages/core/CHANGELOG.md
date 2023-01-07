@@ -1,5 +1,24 @@
 # @udecode/plate-core
 
+## 18.15.0
+
+### Minor Changes
+
+- [`2a72716`](https://github.com/udecode/plate/commit/2a7271665eeedc35b8b8f08f793d550503c7b85a) by [@zbeyens](https://github.com/zbeyens) –
+
+  - new `Plate` / `PlateProvider` prop: `readOnly`
+  - it's also stored in plate store, useful when `readOnly` is needed between `PlateProvider` and `Plate`.
+  - new selector: `usePlateReadOnly`
+  - (not mandatory) migration:
+
+  ```tsx
+  // from
+  <Plate editableProps={{readOnly: true}} />
+
+  // to
+  <Plate readOnly />
+  ```
+
 ## 18.13.0
 
 ### Minor Changes
