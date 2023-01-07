@@ -11,7 +11,7 @@ export interface WithPlateOptions<
 /**
  * Apply `withInlineVoid` and all plate plugins `withOverrides`.
  * Overrides:
- * - `plateId`: id of the editor.
+ * - `id`: id of the editor.
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: Plate options
  */
