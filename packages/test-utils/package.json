@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "peerDependencies": {
-    "slate": ">=0.78.0",
+    "slate": ">=0.87.0",
     "slate-hyperscript": ">=0.66.0"
   },
   "keywords": [

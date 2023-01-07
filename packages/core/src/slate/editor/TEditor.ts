@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { Editor, Path } from 'slate';
 import { UnknownObject } from '../../types/misc/AnyObject';
 import { Modify } from '../../types/misc/types';
 import { EElement, EElementOrText, TElement } from '../element/TElement';
@@ -17,6 +17,7 @@ export type ValueOf<E extends TEditor> = E['children'];
 export type TEditor<V extends Value = Value> = Modify<
   Editor,
   {
+    id: any;
     children: V;
     operations: TOperation[];
     marks: Record<string, any> | null;
@@ -24,13 +25,15 @@ export type TEditor<V extends Value = Value> = Modify<
     // Schema-specific node behaviors.
     isInline: <N extends TElement>(element: N) => boolean;
     isVoid: <N extends TElement>(element: N) => boolean;
+    markableVoid: <N extends TElement>(element: N) => boolean;
     normalizeNode: <N extends TNode>(entry: TNodeEntry<N>) => void;
 
     // Overrideable core actions.
     apply: <N extends TDescendant>(operation: TOperation<N>) => void;
     getFragment: <N extends TDescendant>() => N[];
     insertFragment: <N extends TDescendant>(fragment: N[]) => void;
-    insertNode: <N extends TDescendant>(node: N | N[]) => void;
+    insertNode: <N extends TDescendant>(node: N) => void;
+    getDirtyPaths: <N extends TDescendant>(operation: TOperation<N>) => Path[];
   }
 > &
   UnknownObject;

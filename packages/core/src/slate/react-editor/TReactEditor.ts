@@ -6,7 +6,11 @@ export type TReactEditor<V extends Value = Value> = TEditor<V> &
     ReactEditor,
     | 'insertData'
     | 'insertFragmentData'
-    | 'setFragmentData'
     | 'insertTextData'
+    | 'setFragmentData'
     | 'hasRange'
+    | 'hasTarget'
+    | 'hasEditableTarget'
+    | 'hasSelectableTarget'
+    | 'isTargetInsideNonReadonlyVoid'
   >;

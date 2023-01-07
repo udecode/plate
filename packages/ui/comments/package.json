@@ -28,9 +28,9 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
-    "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2",
+    "slate": ">=0.87.0",
+    "slate-history": ">=0.86.0",
+    "slate-react": ">=0.88.0",
     "styled-components": ">=5.0.0"
   },
   "keywords": [
