@@ -28,7 +28,6 @@
     "@udecode/plate-ui-combobox": "18.15.0",
     "@udecode/plate-ui-comments": "18.15.0",
     "@udecode/plate-ui-cursor": "18.15.0",
-    "@udecode/plate-ui-dnd": "18.15.0",
     "@udecode/plate-ui-emoji": "18.15.0",
     "@udecode/plate-ui-find-replace": "18.15.0",
     "@udecode/plate-ui-font": "18.15.0",
@@ -47,10 +46,10 @@
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.78.0",
-    "slate-history": ">=0.66.0",
+    "slate": ">=0.87.0",
+    "slate-history": ">=0.86.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.79.0",
+    "slate-react": ">=0.88.0",
     "styled-components": ">=5.0.0"
   },
   "keywords": [

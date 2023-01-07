@@ -15,6 +15,7 @@ export * from './PlatePluginComponent';
 export * from './PlatePluginInsertData';
 export * from './PlatePluginKey';
 export * from './PlatePluginProps';
+export * from './RenderAfterEditable';
 export * from './SerializeHtml';
 export * from './ToggleMarkPlugin';
 export * from './WithOverride';

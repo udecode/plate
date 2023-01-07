@@ -27,7 +27,7 @@ export type EmojiPickerContentProps = StyledProps<EmojiPickerContentStyles> &
 export interface EmojiPickerContentStyleProps
   extends StyledProps<EmojiPickerContentStyles> {}
 
-export type ButtonProps = {
+export type EmojiButtonProps = {
   index: number;
   emoji: Emoji;
   onSelect: (emoji: Emoji) => void;

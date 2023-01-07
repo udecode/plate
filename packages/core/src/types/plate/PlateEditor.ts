@@ -11,7 +11,6 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
   THistoryEditor<V> &
   TReactEditor<V> & {
     key: any;
-    id: string;
     plugins: WithPlatePlugin<{}, V>[];
     pluginsByKey: Record<PluginKey, WithPlatePlugin<{}, V>>;
     prevSelection: TRange | null;

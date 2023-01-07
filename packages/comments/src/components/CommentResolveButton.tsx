@@ -27,7 +27,10 @@ export const useCommentResolveButton = ({
 
       updateComment(value);
 
-      onCommentUpdate?.(value);
+      onCommentUpdate?.({
+        id: activeCommentId!,
+        ...value,
+      });
 
       if (isResolved) {
         setActiveCommentId(null);

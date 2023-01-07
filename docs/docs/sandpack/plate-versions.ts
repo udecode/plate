@@ -5,3 +5,4 @@ export const juiceVersion = '18.15.0';
 export const selectionVersion = '18.15.0';
 export const cloudVersion = '18.15.0';
 export const cloudUiVersion = '18.15.0';
+export const dndVersion = '18.15.0';

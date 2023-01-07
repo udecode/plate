@@ -50,7 +50,6 @@
     "@udecode/plate-paragraph": "18.15.0",
     "@udecode/plate-reset-node": "18.15.0",
     "@udecode/plate-select": "18.15.0",
-    "@udecode/plate-selection": "18.15.0",
     "@udecode/plate-serializer-csv": "18.15.0",
     "@udecode/plate-serializer-docx": "18.15.0",
     "@udecode/plate-serializer-html": "18.15.0",
@@ -61,10 +60,10 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.78.0",
-    "slate-history": ">=0.66.0",
+    "slate": ">=0.87.0",
+    "slate-history": ">=0.86.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.79.0"
+    "slate-react": ">=0.88.0"
   },
   "keywords": [
     "contentEditable",

@@ -16,6 +16,7 @@
     "@udecode/plate-selection": "workspace:^",
     "@udecode/plate-test-utils": "workspace:^",
     "@udecode/plate-ui-cloud": "workspace:^",
+    "@udecode/plate-ui-dnd": "workspace:^",
     "@udecode/plate-ui-excalidraw": "workspace:^",
     "prism-react-renderer": "^1.2.0",
     "styled-components": "5.3.1"

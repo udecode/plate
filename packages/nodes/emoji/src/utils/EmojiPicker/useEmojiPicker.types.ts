@@ -1,5 +1,5 @@
 import { MutableRefObject, RefObject } from 'react';
-import { PlateEditor, Value } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import {
   EmojiCategoryList,
   EmojiIconList,
@@ -17,7 +17,7 @@ export type MutableRefs = MutableRefObject<{
 
 export type UseEmojiPickerProps = {
   closeOnSelect: boolean;
-  editor: PlateEditor<Value>;
+  editor: PlateEditor;
   emojiLibrary: IEmojiFloatingLibrary;
   indexSearch: AIndexSearch<Emoji>;
 };

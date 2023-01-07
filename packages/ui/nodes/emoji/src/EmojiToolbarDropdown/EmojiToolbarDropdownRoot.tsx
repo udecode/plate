@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { useDropdownControls } from '@udecode/plate-ui-toolbar';
 import tw from 'twin.macro';
 
-type ToolbarDropdownProps = {
+type EmojiToolbarDropdownProps = {
   control: ReactNode;
   open: boolean;
   children: ReactNode;
@@ -10,13 +10,13 @@ type ToolbarDropdownProps = {
   onClose?: (ev: MouseEvent) => void;
 };
 
-export const ToolbarDropdown = ({
+export const EmojiToolbarDropdownRoot = ({
   control,
   children,
   open,
   onOpen,
   onClose,
-}: ToolbarDropdownProps) => {
+}: EmojiToolbarDropdownProps) => {
   const { styles, reference, floating } = useDropdownControls({
     open,
     onClose,

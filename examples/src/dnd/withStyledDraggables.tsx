@@ -17,8 +17,8 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  withDraggables,
 } from '@udecode/plate';
+import { withDraggables } from '@udecode/plate-ui-dnd';
 
 const styles = {
   grabber: { fontSize: 12 },

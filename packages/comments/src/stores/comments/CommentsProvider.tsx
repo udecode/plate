@@ -40,7 +40,9 @@ export interface CommentsStoreState {
   focusTextarea: boolean;
 
   onCommentAdd: ((value: Partial<TComment>) => void) | null;
-  onCommentUpdate: ((value: Partial<TComment>) => void) | null;
+  onCommentUpdate:
+    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
+    | null;
   onCommentDelete: ((id: string) => void) | null;
 }
 

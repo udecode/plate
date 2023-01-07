@@ -11,8 +11,8 @@ import {
 } from '@udecode/plate-emoji';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { EmojiPicker } from '../EmojiPicker';
-import icons from '../icons';
-import { ToolbarDropdown } from './ToolbarDropdown';
+import { emojiCategoryIcons, emojiSearchIcons } from '../icons';
+import { EmojiToolbarDropdownRoot } from './EmojiToolbarDropdownRoot';
 
 type EmojiToolbarDropdownProps = {
   pluginKey: string;
@@ -57,7 +57,7 @@ export const EmojiToolbarDropdown = ({
   }, [settings]);
 
   return (
-    <ToolbarDropdown
+    <EmojiToolbarDropdownRoot
       control={<ToolbarButton active={isOpen} icon={icon} {...rest} />}
       open={isOpen}
       onOpen={onToggle}
@@ -67,9 +67,12 @@ export const EmojiToolbarDropdown = ({
         {...emojiPickerState}
         isOpen={isOpen}
         onToggle={onToggle}
-        icons={icons}
+        icons={{
+          categories: emojiCategoryIcons,
+          search: emojiSearchIcons,
+        }}
         settings={settings}
       />
-    </ToolbarDropdown>
+    </EmojiToolbarDropdownRoot>
   );
 };

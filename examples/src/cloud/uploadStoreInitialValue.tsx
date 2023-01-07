@@ -1,11 +1,9 @@
-import { Upload } from '@udecode/plate';
-
 const GENERIC_URL =
   'https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt';
 const IMAGE_URL =
   'https://files.portive.com/f/demo/6hndj3bdag7eqbpb2794s--1920x1440.jpg';
 
-export const uploadStoreInitialValue: Record<string, Upload> = {
+export const uploadStoreInitialValue: any = {
   '#a': {
     status: 'progress',
     url: GENERIC_URL,
