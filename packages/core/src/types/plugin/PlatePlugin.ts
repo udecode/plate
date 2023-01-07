@@ -1,6 +1,5 @@
 import { FC, ReactNode } from 'react';
 import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/index';
 import { AnyObject } from '../misc/AnyObject';
 import { Nullable } from '../misc/Nullable';
 import { WithRequired } from '../misc/types';
@@ -15,6 +14,7 @@ import { PlatePluginComponent } from './PlatePluginComponent';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
 import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
+import { RenderAfterEditable } from './RenderAfterEditable';
 import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
 
@@ -165,16 +165,12 @@ export type PlatePlugin<
     /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: (
-      editableProps: TEditableProps<V>
-    ) => JSX.Element | null;
+    renderAfterEditable?: RenderAfterEditable<V>;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: (
-      editableProps: TEditableProps<V>
-    ) => JSX.Element | null;
+    renderBeforeEditable?: RenderAfterEditable<V>;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
