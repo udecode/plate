@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "18.13.1",
+  "version": "18.15.0",
   "description": "Docx serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,13 +19,13 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "18.13.0",
-    "@udecode/plate-heading": "18.13.0",
-    "@udecode/plate-indent": "18.13.0",
-    "@udecode/plate-indent-list": "18.13.0",
-    "@udecode/plate-media": "18.13.1",
-    "@udecode/plate-paragraph": "18.13.0",
-    "@udecode/plate-table": "18.13.0",
+    "@udecode/plate-core": "18.15.0",
+    "@udecode/plate-heading": "18.15.0",
+    "@udecode/plate-indent": "18.15.0",
+    "@udecode/plate-indent-list": "18.15.0",
+    "@udecode/plate-media": "18.15.0",
+    "@udecode/plate-paragraph": "18.15.0",
+    "@udecode/plate-table": "18.15.0",
     "validator": "^13.7.0"
   },
   "peerDependencies": {
