@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 18.15.0
+
 ## 18.13.0
 
 ### Minor Changes
