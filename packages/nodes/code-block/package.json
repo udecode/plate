@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-code-block",
-  "version": "19.0.0",
+  "version": "19.0.1",
   "description": "Code block plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.0.0",
+    "@udecode/plate-core": "19.0.1",
     "prismjs": "^1.25.0"
   },
   "peerDependencies": {

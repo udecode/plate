@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-block-quote",
-  "version": "19.0.0",
+  "version": "19.0.1",
   "description": "Block quote UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,9 +19,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-block-quote": "19.0.0",
-    "@udecode/plate-core": "19.0.0",
-    "@udecode/plate-styled-components": "19.0.0"
+    "@udecode/plate-block-quote": "19.0.1",
+    "@udecode/plate-core": "19.0.1",
+    "@udecode/plate-styled-components": "19.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
