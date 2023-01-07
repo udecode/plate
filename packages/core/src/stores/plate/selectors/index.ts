@@ -4,4 +4,5 @@
 
 export * from './usePlateEditorRef';
 export * from './usePlateEditorState';
+export * from './usePlateReadOnly';
 export * from './usePlateSelection';
