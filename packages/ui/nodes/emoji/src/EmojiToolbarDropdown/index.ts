@@ -3,4 +3,4 @@
  */
 
 export * from './EmojiToolbarDropdown';
-export * from './ToolbarDropdown';
+export * from './EmojiToolbarDropdownRoot';

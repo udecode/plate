@@ -2,13 +2,13 @@ import React, { memo, useCallback } from 'react';
 import { Emoji, GridRow } from '@udecode/plate-emoji';
 import { getEmojiPickerContentStyles } from './EmojiPickerContent.styles';
 import {
-  ButtonProps,
+  EmojiButtonProps,
   EmojiPickerContentProps,
   RowOfButtonsProps,
 } from './EmojiPickerContent.types';
 
 const Button = memo(
-  ({ index, emoji, onSelect, onMouseOver, ...props }: ButtonProps) => {
+  ({ index, emoji, onSelect, onMouseOver, ...props }: EmojiButtonProps) => {
     const { button, buttonBg } = getEmojiPickerContentStyles({ ...props });
 
     return (
