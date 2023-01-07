@@ -14,7 +14,6 @@ import {
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
-  createDndPlugin,
   createEmojiPlugin,
   createExitBreakPlugin,
   createFontBackgroundColorPlugin,
@@ -52,6 +51,7 @@ import {
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+import { createDndPlugin } from '@udecode/plate-ui-dnd';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,

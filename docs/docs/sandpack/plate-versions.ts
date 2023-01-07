@@ -1,8 +1,8 @@
-export const plateVersion = '18.15.0';
+export const plateVersion = '19.0.0';
 export const testUtilsVersion = '13.4.0';
-export const excalidrawVersion = '18.15.0';
-export const juiceVersion = '18.15.0';
-export const selectionVersion = '18.15.0';
-export const cloudVersion = '18.15.0';
-export const cloudUiVersion = '18.15.0';
-export const dndVersion = '18.15.0';
+export const excalidrawVersion = '19.0.0';
+export const juiceVersion = '19.0.0';
+export const selectionVersion = '19.0.0';
+export const cloudVersion = '19.0.0';
+export const cloudUiVersion = '19.0.0';
+export const dndVersion = '19.0.0';
