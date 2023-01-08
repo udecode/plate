@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, ButtonProps } from '@udecode/plate-button';
+import { nanoid } from '@udecode/plate-core';
 import {
   SCOPE_ACTIVE_COMMENT,
   useComment,
@@ -34,6 +35,7 @@ export const useCommentNewSubmitButton = ({
     onClick: () => {
       const newComment = isReplyComment
         ? {
+            id: nanoid(),
             parentId: comment.id,
             value: newValue,
           }
