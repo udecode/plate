@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 19.0.3
+
 ## 19.0.2
 
 ### Patch Changes
