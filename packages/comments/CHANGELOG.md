@@ -1,5 +1,11 @@
 # @udecode/plate-comments
 
+## 19.0.2
+
+### Patch Changes
+
+- [#2104](https://github.com/udecode/plate/pull/2104) by [@zbeyens](https://github.com/zbeyens) – Fixes #2103
+
 ## 19.0.1
 
 ## 19.0.0
