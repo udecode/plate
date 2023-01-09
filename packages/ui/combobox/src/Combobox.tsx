@@ -115,7 +115,7 @@ const ComboboxContent = <TData extends Data = NoData>(
               key={item.key}
               css={!highlighted ? styleItem?.css : highlightedItem?.css}
               className={
-                !highlighted ? styleItem?.className : highlightedItem?.css
+                !highlighted ? styleItem?.className : highlightedItem?.className
               }
               {...combobox.getItemProps({
                 item,
