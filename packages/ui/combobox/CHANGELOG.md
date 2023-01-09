@@ -1,5 +1,11 @@
 # @udecode/plate-ui-combobox
 
+## 19.0.4
+
+### Patch Changes
+
+- [#2111](https://github.com/udecode/plate/pull/2111) by [@bojangles-m](https://github.com/bojangles-m) – combobox: fix classname prop
+
 ## 19.0.3
 
 ## 19.0.1
