@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.0.3
+
+### Patch Changes
+
+- [#2108](https://github.com/udecode/plate/pull/2108) by [@zbeyens](https://github.com/zbeyens) – Fixes #2107
+
 ## 19.0.1
 
 ### Patch Changes
