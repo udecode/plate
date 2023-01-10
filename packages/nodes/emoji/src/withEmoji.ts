@@ -39,6 +39,10 @@ export const withEmoji = <
   editor.apply = (operation) => {
     apply(operation);
 
+    if (!emojiTriggeringController?.hasTriggeringMark) {
+      return;
+    }
+
     switch (operation.type) {
       case 'set_selection':
         emojiTriggeringController!.reset();
