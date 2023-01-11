@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 19.0.5
+
+### Patch Changes
+
+- [#2115](https://github.com/udecode/plate/pull/2115) by [@neko-neko](https://github.com/neko-neko) – Fix markdown string to Node conversion process not working properly in markdown string pasting.
+
 ## 19.0.3
 
 ## 19.0.1

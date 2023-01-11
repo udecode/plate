@@ -1,5 +1,11 @@
 # @udecode/plate-emoji
 
+## 19.0.5
+
+### Patch Changes
+
+- [#2114](https://github.com/udecode/plate/pull/2114) by [@bojangles-m](https://github.com/bojangles-m) – fix: Conflict with combobox. Only apply if the triggering mark is for Emoji and not any other
+
 ## 19.0.3
 
 ## 19.0.1
