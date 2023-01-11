@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 19.0.5
+
 ## 19.0.3
 
 ## 19.0.2
