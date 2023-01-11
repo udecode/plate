@@ -93,8 +93,6 @@ export const useHooksBlockSelection = <
             at: [],
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
-
-          blockSelectionActions.resetSelectedIds();
         }
       };
 
