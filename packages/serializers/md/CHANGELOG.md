@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 19.0.6
+
+### Patch Changes
+
+- [#2124](https://github.com/udecode/plate/pull/2124) by [@zbeyens](https://github.com/zbeyens) – Fix: Revert "Remove unnecessary query in deserialize markdown" to fix internal slate copy/pasting
+
 ## 19.0.5
 
 ### Patch Changes

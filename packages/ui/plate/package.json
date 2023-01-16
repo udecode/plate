@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "19.0.5",
+  "version": "19.0.6",
   "description": "Plate UI",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-headless": "19.0.5",
+    "@udecode/plate-headless": "19.0.6",
     "@udecode/plate-styled-components": "19.0.3",
     "@udecode/plate-ui-alignment": "19.0.3",
     "@udecode/plate-ui-block-quote": "19.0.3",
