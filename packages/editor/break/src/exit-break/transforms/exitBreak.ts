@@ -13,7 +13,7 @@ import { ExitBreakRule } from '../types';
 export const exitBreak = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    level = 0,
+    level = 1,
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     query = {},
     before,
@@ -27,12 +27,13 @@ export const exitBreak = <V extends Value>(
   if (queryEdge && !isEdge) return;
 
   const selectionPath = getPath(editor, editor.selection);
+  const slicedPath = selectionPath.slice(0, -level);
 
   let insertPath;
   if (before) {
-    insertPath = selectionPath.slice(0, level + 1);
+    insertPath = slicedPath;
   } else {
-    insertPath = Path.next(selectionPath.slice(0, level + 1));
+    insertPath = Path.next(slicedPath);
   }
 
   insertElements(
