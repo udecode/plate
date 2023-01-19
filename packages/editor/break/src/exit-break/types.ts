@@ -22,9 +22,14 @@ export interface ExitBreakRule {
   };
 
   /**
-   * Path level where to exit. Default is 1.
+   * Path level where to exit. Default is 0.
    */
   level?: number;
+
+  /**
+   * If true, exit relative to current level. Otherwise, exit at the given level. Default is false.
+   */
+  relative?: boolean;
 
   /**
    * Exit before the selected block if true.

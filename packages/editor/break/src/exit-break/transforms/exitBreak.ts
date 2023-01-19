@@ -14,6 +14,7 @@ export const exitBreak = <V extends Value>(
   editor: PlateEditor<V>,
   {
     level = 0,
+    relative = false,
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     query = {},
     before,
@@ -28,11 +29,15 @@ export const exitBreak = <V extends Value>(
 
   const selectionPath = getPath(editor, editor.selection);
 
+  const slicedPath = relative
+    ? selectionPath.slice(0, -level)
+    : selectionPath.slice(0, level + 1);
+
   let insertPath;
   if (before) {
-    insertPath = selectionPath.slice(0, level + 1);
+    insertPath = slicedPath;
   } else {
-    insertPath = Path.next(selectionPath.slice(0, level + 1));
+    insertPath = Path.next(slicedPath);
   }
 
   insertElements(
