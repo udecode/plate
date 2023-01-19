@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "19.0.6",
+  "version": "19.0.7",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -24,7 +24,7 @@
     "@udecode/plate-basic-elements": "19.0.3",
     "@udecode/plate-basic-marks": "19.0.3",
     "@udecode/plate-block-quote": "19.0.3",
-    "@udecode/plate-break": "19.0.3",
+    "@udecode/plate-break": "19.0.7",
     "@udecode/plate-button": "19.0.3",
     "@udecode/plate-code-block": "19.0.3",
     "@udecode/plate-combobox": "19.0.3",
