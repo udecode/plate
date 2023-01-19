@@ -1,5 +1,11 @@
 # @udecode/plate-break
 
+## 19.0.7
+
+### Patch Changes
+
+- [#2129](https://github.com/udecode/plate/pull/2129) by [@OliverWales](https://github.com/OliverWales) – adds a new option relative?: boolean to the exit break plugin that allows the exit point ("level" property) to be relative to the current level rather than absolute. It is optional and default false to not introduce any breaking change. Also adds a passing fix to a doc typo. This allows the exit break plugin to be useful in editors with nested blocks e.g. tables (fixes #2128)
+
 ## 19.0.3
 
 ## 19.0.1
