@@ -5421,7 +5421,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-break@npm:19.0.3, @udecode/plate-break@workspace:packages/editor/break":
+"@udecode/plate-break@npm:19.0.7, @udecode/plate-break@workspace:packages/editor/break":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-break@workspace:packages/editor/break"
   dependencies:
@@ -5607,7 +5607,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-headless@npm:19.0.6, @udecode/plate-headless@workspace:packages/headless":
+"@udecode/plate-headless@npm:19.0.7, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -5616,7 +5616,7 @@ __metadata:
     "@udecode/plate-basic-elements": "npm:19.0.3"
     "@udecode/plate-basic-marks": "npm:19.0.3"
     "@udecode/plate-block-quote": "npm:19.0.3"
-    "@udecode/plate-break": "npm:19.0.3"
+    "@udecode/plate-break": "npm:19.0.7"
     "@udecode/plate-button": "npm:19.0.3"
     "@udecode/plate-code-block": "npm:19.0.3"
     "@udecode/plate-combobox": "npm:19.0.3"
@@ -6513,11 +6513,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-ui@npm:19.0.6, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:19.0.7, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:19.0.6"
+    "@udecode/plate-headless": "npm:19.0.7"
     "@udecode/plate-styled-components": "npm:19.0.3"
     "@udecode/plate-ui-alignment": "npm:19.0.3"
     "@udecode/plate-ui-block-quote": "npm:19.0.3"
@@ -6555,8 +6555,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:19.0.6"
-    "@udecode/plate-ui": "npm:19.0.6"
+    "@udecode/plate-headless": "npm:19.0.7"
+    "@udecode/plate-ui": "npm:19.0.7"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
