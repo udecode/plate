@@ -19,18 +19,9 @@
     "sourceMap": true,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017"
+    "target": "es2017",
+    "outDir": "dist"
   },
   "files": ["scripts/types/twin.d.ts"],
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "dist",
-    "**/dist",
-    "**/__tests__/**",
-    "**/*.stories.*",
-    "**/*.spec*",
-    "**/*fixture*",
-    "**/*template*"
-  ]
+  "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }
