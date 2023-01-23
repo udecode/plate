@@ -34,10 +34,10 @@ export const withList = <
     deleteForward(unit);
   };
 
-  editor.deleteFragment = () => {
+  editor.deleteFragment = (direction) => {
     if (deleteFragmentList(editor)) return;
 
-    deleteFragment();
+    deleteFragment(direction);
   };
 
   editor.insertFragment = insertFragmentList(editor);
