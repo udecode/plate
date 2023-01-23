@@ -23,13 +23,5 @@
     "outDir": "dist"
   },
   "files": ["scripts/types/twin.d.ts"],
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "dist",
-    "**/dist",
-    "**/*.stories.*",
-    "**/*fixture*",
-    "**/*template*"
-  ]
+  "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }
