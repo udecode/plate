@@ -24,6 +24,7 @@ export type UsePlateEffectsProps<
       | {
           deserializeAst?: boolean;
           deserializeHtml?: boolean;
+          editorProtocol?: boolean;
           eventEditor?: boolean;
           inlineVoid?: boolean;
           insertData?: boolean;

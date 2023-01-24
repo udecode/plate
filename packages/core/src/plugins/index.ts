@@ -3,6 +3,7 @@
  */
 
 export * from './createDeserializeAstPlugin';
+export * from './createEditorProtocolPlugin';
 export * from './createEventEditorPlugin';
 export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';

@@ -1,5 +1,4 @@
 import { Editor } from 'slate';
-import { EMarks } from '../text/TText';
 import { TEditor, Value } from './TEditor';
 
 /**
@@ -9,7 +8,7 @@ import { TEditor, Value } from './TEditor';
  * If the selection is currently collapsed, the removal will be stored on
  * `editor.marks` and applied to the text inserted next.
  */
-export const removeEditorMark = <V extends Value, M extends EMarks<V>>(
+export const removeEditorMark = <V extends Value>(
   editor: TEditor<V>,
-  key: {} extends M ? string : keyof M & string
-): void => Editor.removeMark(editor as any, key);
+  key: string
+) => Editor.removeMark(editor as any, key);

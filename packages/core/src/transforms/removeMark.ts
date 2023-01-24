@@ -3,18 +3,15 @@ import { Range } from 'slate';
 import { getMarks } from '../slate/editor/getMarks';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { isText } from '../slate/text/isText';
-import { EMarks } from '../slate/text/TText';
 import { SetNodesOptions } from '../slate/transforms/setNodes';
 import { unsetNodes } from '../slate/transforms/unsetNodes';
 
-export interface RemoveMarkOptions<
-  V extends Value = Value,
-  K extends keyof EMarks<V> = keyof EMarks<V>
-> extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
+export interface RemoveMarkOptions<V extends Value = Value>
+  extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
   /**
    * Mark or the array of marks that will be removed
    */
-  key: K | K[];
+  key: string | string[];
 
   /**
    * When location is not a Range,
@@ -32,9 +29,9 @@ export interface RemoveMarkOptions<
 /**
  * Remove mark and trigger `onChange` if collapsed selection.
  */
-export const removeMark = <V extends Value, K extends keyof EMarks<V>>(
+export const removeMark = <V extends Value>(
   editor: TEditor<V>,
-  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions<V, K>
+  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions<V>
 ) => {
   const selection = at ?? editor.selection;
   key = castArray(key);
@@ -48,7 +45,7 @@ export const removeMark = <V extends Value, K extends keyof EMarks<V>>(
         ...rest,
       });
     } else if (editor.selection) {
-      const marks: Partial<EMarks<V>> = { ...(getMarks(editor) || {}) };
+      const marks = getMarks(editor) ?? {};
       key.forEach((k) => {
         delete marks[k];
       });

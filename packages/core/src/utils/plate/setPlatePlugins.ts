@@ -4,6 +4,10 @@ import {
   KEY_DESERIALIZE_AST,
 } from '../../plugins/createDeserializeAstPlugin';
 import {
+  createEditorProtocolPlugin,
+  KEY_EDITOR_PROTOCOL,
+} from '../../plugins/createEditorProtocolPlugin';
+import {
   createEventEditorPlugin,
   KEY_EVENT_EDITOR,
 } from '../../plugins/createEventEditorPlugin';
@@ -101,6 +105,12 @@ export const setPlatePlugins = <
       plugins.push(
         (editor?.pluginsByKey?.[KEY_DESERIALIZE_AST] as any) ??
           createDeserializeAstPlugin()
+      );
+    }
+    if (typeof dcp !== 'object' || !dcp?.editorProtocol) {
+      plugins.push(
+        (editor?.pluginsByKey?.[KEY_EDITOR_PROTOCOL] as any) ??
+          createEditorProtocolPlugin()
       );
     }
   }

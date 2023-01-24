@@ -93,7 +93,7 @@ export const withDeleteTable = <
     return deleteForward(unit);
   };
 
-  editor.deleteFragment = () => {
+  editor.deleteFragment = (direction) => {
     isRangeInSameBlock(editor, {
       match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
     });
@@ -124,7 +124,7 @@ export const withDeleteTable = <
       }
     }
 
-    deleteFragment();
+    deleteFragment(direction);
   };
 
   return editor;

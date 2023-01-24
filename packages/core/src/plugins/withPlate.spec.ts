@@ -5,6 +5,7 @@ import { getPlugin } from '../utils/plate/getPlugin';
 import { createTEditor } from '../utils/slate/createTEditor';
 import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
+import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';
 import { KEY_INLINE_VOID } from './createInlineVoidPlugin';
 import { KEY_INSERT_DATA } from './createInsertDataPlugin';
@@ -22,6 +23,7 @@ const coreKeys = [
   KEY_PREV_SELECTION,
   KEY_DESERIALIZE_HTML,
   KEY_DESERIALIZE_AST,
+  KEY_EDITOR_PROTOCOL,
 ];
 
 describe('withPlate', () => {
