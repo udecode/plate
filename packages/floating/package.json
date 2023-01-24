@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "19.1.0",
+  "version": "19.1.1",
   "description": "Floating UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.6.6",
-    "@udecode/plate-core": "19.1.0"
+    "@udecode/plate-core": "19.1.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
