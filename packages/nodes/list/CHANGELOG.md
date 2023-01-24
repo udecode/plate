@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 19.1.0
+
+### Patch Changes
+
+- [#2141](https://github.com/udecode/plate/pull/2141) by [@12joan](https://github.com/12joan) – Fix crash when deleting line ending in \n
+
 ## 19.0.3
 
 ## 19.0.1

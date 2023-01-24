@@ -1,5 +1,11 @@
 # @udecode/plate-emoji
 
+## 19.1.0
+
+### Patch Changes
+
+- [#2139](https://github.com/udecode/plate/pull/2139) by [@zbeyens](https://github.com/zbeyens) – Fix: key navigation with emoji plugin
+
 ## 19.0.5
 
 ### Patch Changes

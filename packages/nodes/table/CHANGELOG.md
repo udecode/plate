@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 19.1.0
+
+### Patch Changes
+
+- [#2142](https://github.com/udecode/plate/pull/2142) by [@zbeyens](https://github.com/zbeyens) – fix: pass `deleteFragment` params
+
 ## 19.0.3
 
 ## 19.0.1

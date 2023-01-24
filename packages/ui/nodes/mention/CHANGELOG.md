@@ -1,5 +1,7 @@
 # @udecode/plate-mention-ui
 
+## 19.1.0
+
 ## 19.0.4
 
 ## 19.0.3

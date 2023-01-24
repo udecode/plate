@@ -1,5 +1,14 @@
 # @udecode/plate-core
 
+## 19.1.0
+
+### Minor Changes
+
+- [#2142](https://github.com/udecode/plate/pull/2142) by [@zbeyens](https://github.com/zbeyens) –
+  - New core plugin: `editorProtocol` following https://github.com/udecode/editor-protocol core specs
+    - Fixes https://github.com/udecode/editor-protocol/issues/81
+  - Slate types: replaced editor mark types by `string`. Derived types from `EMarks<V>` are often unusable.
+
 ## 19.0.3
 
 ### Patch Changes
