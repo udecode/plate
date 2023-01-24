@@ -1,5 +1,5 @@
+import { Simplify, UnionToIntersection } from '../../types/index';
 import { UnknownObject } from '../../types/misc/AnyObject';
-import { Simplify, UnionToIntersection } from '../../types/misc/types';
 import { TEditor, Value } from '../editor/TEditor';
 import { TElement } from '../element/TElement';
 import { TNode, TNodeProps } from '../node/TNode';
