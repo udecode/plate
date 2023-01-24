@@ -1,4 +1,4 @@
-import { getBlockAbove, isSelectionAtBlockStart } from '../queries/index';
+import { getBlockAbove } from '../queries/index';
 import { getMarks, isExpanded, isStartPoint, Value } from '../slate/index';
 import { removeMark } from '../transforms/index';
 import { PlateEditor } from '../types/index';
@@ -52,16 +52,6 @@ export const withEditorProtocol = <
   editor.deleteFragment = (direction) => {
     deleteFragment(direction);
 
-    if (isSelectionAtBlockStart(editor)) {
-      const marks = getMarks(editor);
-
-      if (marks) {
-        // remove all marks
-        removeMark(editor, {
-          key: Object.keys(marks) as any,
-        });
-      }
-    }
     resetMarks();
   };
 
