@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.1.1
+
+### Patch Changes
+
+- [#2151](https://github.com/udecode/plate/pull/2151) by [@zbeyens](https://github.com/zbeyens) – fix: use `removeEditorMark` in editorProtocol plugin
+
 ## 19.1.0
 
 ### Minor Changes

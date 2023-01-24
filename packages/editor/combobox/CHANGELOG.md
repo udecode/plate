@@ -1,5 +1,7 @@
 # @udecode/plate-combobox
 
+## 19.1.1
+
 ## 19.1.0
 
 ## 19.0.3

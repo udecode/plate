@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "19.1.0",
+  "version": "19.1.1",
   "description": "Markdown serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,13 +19,13 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-block-quote": "19.1.0",
-    "@udecode/plate-code-block": "19.1.0",
-    "@udecode/plate-core": "19.1.0",
-    "@udecode/plate-heading": "19.1.0",
-    "@udecode/plate-link": "19.1.0",
-    "@udecode/plate-list": "19.1.0",
-    "@udecode/plate-paragraph": "19.1.0",
+    "@udecode/plate-block-quote": "19.1.1",
+    "@udecode/plate-code-block": "19.1.1",
+    "@udecode/plate-core": "19.1.1",
+    "@udecode/plate-heading": "19.1.1",
+    "@udecode/plate-link": "19.1.1",
+    "@udecode/plate-list": "19.1.1",
+    "@udecode/plate-paragraph": "19.1.1",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.8.6",
     "unified": "^9.2.1"
