@@ -1,5 +1,4 @@
-import { getMarks, TEditor, Value } from '../slate/index';
-import { removeMark } from './removeMark';
+import { getMarks, removeEditorMark, TEditor, Value } from '../slate/index';
 
 /**
  * Remove selection marks.
@@ -11,7 +10,7 @@ export const removeSelectionMark = <V extends Value = Value>(
   if (!marks) return;
 
   // remove all marks
-  removeMark(editor, {
-    key: Object.keys(marks),
+  Object.keys(marks).forEach((key) => {
+    removeEditorMark(editor, key);
   });
 };
