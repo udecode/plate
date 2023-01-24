@@ -1,6 +1,6 @@
-import { getBlockAbove } from '../queries/index';
-import { getMarks, isExpanded, isStartPoint, Value } from '../slate/index';
-import { removeMark } from '../transforms/index';
+import { isSelectionAtBlockStart } from '../queries/index';
+import { Value } from '../slate/index';
+import { removeSelectionMark } from '../transforms/index';
 import { PlateEditor } from '../types/index';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 
@@ -15,25 +15,8 @@ export const withEditorProtocol = <
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   const resetMarks = () => {
-    // move to isSelectionAtBlockStart
-    const path = getBlockAbove(editor)?.[1];
-    if (!path) return;
-
-    let isAtBlockStart = isStartPoint(editor, editor.selection?.focus, path);
-    isAtBlockStart =
-      isAtBlockStart ||
-      (isExpanded(editor.selection) &&
-        isStartPoint(editor, editor.selection?.anchor, path));
-
-    if (isAtBlockStart) {
-      const marks = getMarks(editor);
-
-      if (marks) {
-        // remove all marks
-        removeMark(editor, {
-          key: Object.keys(marks) as any,
-        });
-      }
+    if (isSelectionAtBlockStart(editor)) {
+      removeSelectionMark(editor);
     }
   };
 
