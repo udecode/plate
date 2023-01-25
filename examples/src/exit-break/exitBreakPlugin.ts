@@ -19,6 +19,7 @@ export const exitBreakPlugin: Partial<MyPlatePlugin<ExitBreakPlugin>> = {
           allow: KEYS_HEADING,
         },
         relative: true,
+        level: 1,
       },
     ],
   },
