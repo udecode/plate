@@ -3,14 +3,9 @@
  */
 import { isHtmlText } from './isHtmlText';
 
-// export const htmlTextNewLineToNull = (node: HTMLElement | ChildNode) => {
-//   if (isHtmlText(node)) {
-//     return node.nodeValue === '\n' && null : node.textContent;
-//   }
-// };
-
 export const htmlTextNodeToString = (node: HTMLElement | ChildNode) => {
   if (isHtmlText(node)) {
-    return node.nodeValue === '\n' ? null : node.textContent;
+    const trimmedText = node.textContent?.replace(/^\n+|\n+$/g, '') ?? '';
+    return trimmedText.length > 0 ? trimmedText : null;
   }
 };
