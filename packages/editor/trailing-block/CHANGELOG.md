@@ -1,5 +1,7 @@
 # @udecode/plate-trailing-block
 
+## 19.2.0
+
 ## 19.1.1
 
 ## 19.1.0
