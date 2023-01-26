@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.2.0
+
+### Minor Changes
+
+- [#2156](https://github.com/udecode/plate/pull/2156) by [@12joan](https://github.com/12joan) – Trim \n characters from start and end of text nodes when deserializing HTML
+
 ## 19.1.1
 
 ### Patch Changes
