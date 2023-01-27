@@ -1,5 +1,4 @@
 ---
-'examples': patch
 '@udecode/plate-code-block': patch
 ---
 
