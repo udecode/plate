@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-table": patch
+'@udecode/plate-table': patch
 ---
 
-Implement onCopy for cell range selections #2137
+Override setFragmentData for table range selections #2137

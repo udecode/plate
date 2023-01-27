@@ -1,6 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
 import { insertTableColumn, insertTableRow } from './transforms/index';
-import { onCopyTable } from './onCopyTable';
 import { onKeyDownTable } from './onKeyDownTable';
 import { TablePlugin } from './types';
 import { withTable } from './withTable';
@@ -18,7 +17,6 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
   isElement: true,
   handlers: {
     onKeyDown: onKeyDownTable,
-    onCopy: onCopyTable,
   },
   deserializeHtml: {
     rules: [{ validNodeName: 'TABLE' }],
