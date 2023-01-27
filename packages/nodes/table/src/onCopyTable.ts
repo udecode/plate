@@ -2,6 +2,7 @@ import { ClipboardEvent } from 'react';
 import {
   DOMHandlerReturnType,
   getEndPoint,
+  getPluginType,
   getStartPoint,
   PlateEditor,
   select,
@@ -11,6 +12,7 @@ import {
 } from '@udecode/plate-core';
 import copyToClipboard from 'copy-to-clipboard';
 import { Path } from 'slate';
+import { ELEMENT_TH } from './createTablePlugin';
 import { getTableGridAbove } from './queries';
 
 // Based on packages/selection/src/utils/copySelectedBlocks.ts
@@ -60,7 +62,10 @@ export const onCopyTable = <
           const rowPath = tablePath.concat(y + rowIndex);
 
           const cellStrings: string[] = [];
-          const rowElement = document.createElement('tr'); // TODO: handle header rows
+          const rowElement =
+            row.type === getPluginType(editor, ELEMENT_TH)
+              ? document.createElement('th')
+              : document.createElement('tr');
 
           rowCells.forEach((_, cellIndex) => {
             const cellPath = rowPath.concat(x + cellIndex);
