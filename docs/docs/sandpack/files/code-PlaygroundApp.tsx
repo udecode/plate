@@ -3,6 +3,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   AutoformatPlugin,
+  CodeBlockElement,
   createAlignPlugin,
   createAutoformatPlugin,
   createBlockquotePlugin,
@@ -44,6 +45,7 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
+  ELEMENT_CODE_BLOCK,
   MentionCombobox,
   Plate,
   PlateFloatingComments,
@@ -87,6 +89,7 @@ import { playgroundValue } from './playgroundValue';
 import { ToolbarButtons } from './ToolbarButtons';
 
 let components = createPlateUI({
+  [ELEMENT_CODE_BLOCK]: CodeBlockElement,
   [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
   // customize your components by plugin key
 });
