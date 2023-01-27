@@ -51,6 +51,14 @@ describe('outdent code line', () => {
         </editor>
       ) as any) as PlateEditor;
 
+      const output = ((
+        <editor>
+          <hcodeblock>
+            <hcodeline>test</hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any) as PlateEditor;
+
       const editor = createPlateUIEditor({
         editor: input,
         plugins: [createCodeBlockPlugin()],
@@ -61,7 +69,7 @@ describe('outdent code line', () => {
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(input.children);
+      expect(input.children).toEqual(output.children);
     });
   });
 });
