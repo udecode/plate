@@ -6,6 +6,7 @@ import { withInsertFragmentTable } from './withInsertFragmentTable';
 import { withInsertTextTable } from './withInsertTextTable';
 import { withNormalizeTable } from './withNormalizeTable';
 import { withSelectionTable } from './withSelectionTable';
+import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
 export const withTable = <
   V extends Value = Value,
@@ -20,6 +21,7 @@ export const withTable = <
   editor = withInsertFragmentTable<V, E>(editor, plugin);
   editor = withInsertTextTable<V, E>(editor, plugin);
   editor = withSelectionTable<V, E>(editor);
+  editor = withSetFragmentDataTable<V, E>(editor);
 
   return editor;
 };
