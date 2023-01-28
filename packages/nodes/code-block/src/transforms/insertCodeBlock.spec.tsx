@@ -99,6 +99,19 @@ describe('insert code block', () => {
         </editor>
       ) as any) as PlateEditor;
 
+      const output = ((
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            before <anchor />
+            selection
+            <focus />
+            after
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any) as PlateEditor;
+
       const editor = createPlateUIEditor({
         editor: input,
         plugins: [createCodeBlockPlugin()],
@@ -106,7 +119,7 @@ describe('insert code block', () => {
 
       insertCodeBlock(editor);
 
-      expect(input.children).toEqual(input.children);
+      expect(input.children).toEqual(output.children);
     });
   });
 });
