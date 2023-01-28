@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 19.3.0
+
+### Patch Changes
+
+- [#2165](https://github.com/udecode/plate/pull/2165) by [@OliverWales](https://github.com/OliverWales) – Override setFragmentData for table range selections #2137
+
 ## 19.2.0
 
 ## 19.1.1

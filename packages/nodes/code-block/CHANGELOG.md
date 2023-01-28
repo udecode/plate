@@ -1,5 +1,15 @@
 # @udecode/plate-code-block
 
+## 19.3.0
+
+### Minor Changes
+
+- [#2167](https://github.com/udecode/plate/pull/2167) by [@12joan](https://github.com/12joan) – Add isCodeBlockEmpty and isSelectionAtCodeBlockStart queries for use with the reset node plugin
+
+### Patch Changes
+
+- [#2163](https://github.com/udecode/plate/pull/2163) by [@12joan](https://github.com/12joan) – Various fixes relating to code block
+
 ## 19.2.0
 
 ## 19.1.1
