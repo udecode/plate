@@ -2,6 +2,8 @@ export const mentionAppCode = `import React from 'react';
 import {
   createComboboxPlugin,
   createMentionPlugin,
+  getBlockAbove,
+  isStartPoint,
   MentionCombobox,
   MentionElement,
   Plate,
@@ -29,7 +31,17 @@ const plugins = createMyPlugins(
     createMentionPlugin({
       key: '/',
       component: MentionElement,
-      options: { trigger: '/' },
+      options: {
+        trigger: '/',
+        query: (editor) => {
+          const blockPath = getBlockAbove(editor)?.[1];
+          return (
+            !!editor.selection &&
+            !!blockPath &&
+            isStartPoint(editor, editor.selection.anchor, blockPath)
+          );
+        },
+      },
     }),
   ],
   {
