@@ -27,7 +27,6 @@
     "@udecode/plate-list": "19.2.0",
     "@udecode/plate-paragraph": "19.2.0",
     "remark-parse": "^9.0.0",
-    "remark-slate": "^1.8.6",
     "unified": "^9.2.1"
   },
   "peerDependencies": {
