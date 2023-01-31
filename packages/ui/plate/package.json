@@ -37,6 +37,7 @@
     "@udecode/plate-ui-media": "19.1.1",
     "@udecode/plate-ui-mention": "19.1.1",
     "@udecode/plate-ui-placeholder": "19.1.1",
+    "@udecode/plate-ui-suggestion": "19.1.1",
     "@udecode/plate-ui-table": "19.1.1",
     "@udecode/plate-ui-toolbar": "19.1.1",
     "use-context-selector": "1.4.1"

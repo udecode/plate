@@ -37,5 +37,6 @@ export * from '@udecode/plate-serializer-csv';
 export * from '@udecode/plate-serializer-docx';
 export * from '@udecode/plate-serializer-html';
 export * from '@udecode/plate-serializer-md';
+export * from '@udecode/plate-suggestion';
 export * from '@udecode/plate-table';
 export * from '@udecode/plate-trailing-block';

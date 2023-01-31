@@ -54,6 +54,7 @@
     "@udecode/plate-serializer-docx": "19.1.1",
     "@udecode/plate-serializer-html": "19.1.1",
     "@udecode/plate-serializer-md": "19.1.1",
+    "@udecode/plate-suggestion": "19.1.1",
     "@udecode/plate-table": "19.1.1",
     "@udecode/plate-trailing-block": "19.1.1"
   },
