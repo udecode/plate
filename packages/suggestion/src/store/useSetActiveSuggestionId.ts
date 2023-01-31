@@ -9,7 +9,7 @@ export const useSetActiveSuggestionId = () => {
   >();
   const setActiveSuggestionId = useSuggestionActions().activeSuggestionId();
 
-  return (value: string) => {
+  return (value: string | null) => {
     setActiveSuggestionId(value);
     editor.activeSuggestionId = value;
   };

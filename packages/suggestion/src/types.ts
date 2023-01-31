@@ -40,5 +40,5 @@ export interface SuggestionPlugin {
 
 export interface SuggestionEditorProps {
   isSuggesting?: boolean;
-  activeSuggestionId?: string;
+  activeSuggestionId?: string | null;
 }

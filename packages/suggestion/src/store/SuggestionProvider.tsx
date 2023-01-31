@@ -56,7 +56,8 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
      */
     suggestions: {},
 
-    isSuggesting: false,
+    // TODO
+    isSuggesting: true,
 
     /**
      * Id of the active suggestion. If null, no suggestion is active.

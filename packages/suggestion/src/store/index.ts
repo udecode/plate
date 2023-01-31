@@ -3,4 +3,5 @@
  */
 
 export * from './SuggestionProvider';
+export * from './useSetActiveSuggestionId';
 export * from './useSetIsSuggesting';

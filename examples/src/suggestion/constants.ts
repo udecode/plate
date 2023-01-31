@@ -45,7 +45,7 @@ export const suggestionValue: MyValue = [
       {
         text: 'paragraph',
         suggestion: true,
-        suggestion_1: true,
+        suggestionId: 1,
       },
       { text: '.' },
     ],
@@ -56,13 +56,13 @@ export const suggestionValue: MyValue = [
       {
         text: 'Lorem',
         suggestion: true,
-        suggestion_2: true,
+        suggestionId: 2,
       },
       { text: 'amet' },
       {
         text: 'paragraph',
         suggestion: true,
-        suggestion_3: true,
+        suggestionId: 3,
       },
       {
         text:

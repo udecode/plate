@@ -24,15 +24,19 @@ export const useHooksSuggestion = <
   const setActiveSuggestionId = useSetActiveSuggestionId();
 
   useEffect(() => {
+    const resetActiveSuggestion = () => {
+      setActiveSuggestionId(null);
+    };
+
     const suggestionEntry = findNode(editor, {
       match: (n) => isText(n) && n[MARK_SUGGESTION],
     });
-    if (!suggestionEntry) return;
+    if (!suggestionEntry) return resetActiveSuggestion();
 
     const [suggestionNode] = suggestionEntry;
 
     const id = getSuggestionId(suggestionNode);
-    if (!id) return;
+    if (!id) return resetActiveSuggestion();
 
     setActiveSuggestionId(id);
   }, [editor, key, setActiveSuggestionId]);
