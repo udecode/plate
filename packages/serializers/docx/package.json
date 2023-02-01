@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "19.3.0",
+  "version": "19.4.1",
   "description": "Docx serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -22,7 +22,7 @@
     "@udecode/plate-core": "19.2.0",
     "@udecode/plate-heading": "19.2.0",
     "@udecode/plate-indent": "19.2.0",
-    "@udecode/plate-indent-list": "19.2.0",
+    "@udecode/plate-indent-list": "19.4.1",
     "@udecode/plate-media": "19.2.0",
     "@udecode/plate-paragraph": "19.2.0",
     "@udecode/plate-table": "19.3.0",
