@@ -37,6 +37,7 @@ module.exports = {
   '@udecode/plate-reset-node': 'editor/reset-node',
   '@udecode/plate-select': 'editor/select',
   '@udecode/plate-selection': 'selection',
+  '@udecode/plate-tabbable': 'editor/tabbable',
   '@udecode/plate-table': 'nodes/table',
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'editor/trailing-block',
