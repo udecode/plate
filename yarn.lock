@@ -4608,13 +4608,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/escape-html@npm:^1.0.0":
-  version: 1.0.2
-  resolution: "@types/escape-html@npm:1.0.2"
-  checksum: 9724c3b6df12a9bd8dbef47935cca089de42c55ec33f1bbd5bf58ad2857e62b9b906fe28009c244171dd79bc1bfec74c63272eb13d2392e01f4fafa401ea8dc2
-  languageName: node
-  linkType: hard
-
 "@types/eslint@npm:^7.29.0":
   version: 7.29.0
   resolution: "@types/eslint@npm:7.29.0"
@@ -6001,7 +5994,6 @@ __metadata:
     "@udecode/plate-list": "npm:19.2.0"
     "@udecode/plate-paragraph": "npm:19.2.0"
     remark-parse: "npm:^9.0.0"
-    remark-slate: "npm:^1.8.6"
     unified: "npm:^9.2.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -11353,7 +11345,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"escape-html@npm:^1.0.3, escape-html@npm:~1.0.3":
+"escape-html@npm:~1.0.3":
   version: 1.0.3
   resolution: "escape-html@npm:1.0.3"
   checksum: c2c0e204bdee0452b5481e18e659d8f0ef909b774cd8140724e53df3254e75c04e8ff30298f658ca0310191f46de5bbb94459fc55103eb978eb6ffaaf499bbd1
@@ -21446,16 +21438,6 @@ __metadata:
   dependencies:
     mdast-util-from-markdown: "npm:^0.8.0"
   checksum: b692b41295e6a2f92577245c7a42e22af0c4cf29d6391347ce400b804f03558688bd716dad96f2a91599cea02c21296932774d3a88c9273a26ebf48fa4d79c4d
-  languageName: node
-  linkType: hard
-
-"remark-slate@npm:^1.8.6":
-  version: 1.8.6
-  resolution: "remark-slate@npm:1.8.6"
-  dependencies:
-    "@types/escape-html": "npm:^1.0.0"
-    escape-html: "npm:^1.0.3"
-  checksum: 55154dc99c211ed1ae8a174328029cd1b26dcfa4cb337220094d99c029180fb2fa5299e345ab16626d16db5f0ada4e0efafd391349f17521bd014e3ee2100f22
   languageName: node
   linkType: hard
 
