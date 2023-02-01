@@ -27,6 +27,8 @@ export const onKeyDownList = <
     options: { hotkey, enableResetOnShiftTab },
   }: WithPlatePlugin<ListPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
 
