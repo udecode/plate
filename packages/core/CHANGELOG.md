@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.4.2
+
+### Patch Changes
+
+- [#2185](https://github.com/udecode/plate/pull/2185) by [@zbeyens](https://github.com/zbeyens) – fix: `getEditorString` should not throw an error when a node is not found. Returns an empty string in that case.
+
 ## 19.2.0
 
 ### Minor Changes

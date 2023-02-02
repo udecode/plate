@@ -1,5 +1,11 @@
 # @udecode/plate-toolbar
 
+## 19.4.2
+
+### Patch Changes
+
+- [#2187](https://github.com/udecode/plate/pull/2187) by [@zbeyens](https://github.com/zbeyens) – fix: replace `useEditorState` by `usePlateEditorState` to support nested editors.
+
 ## 19.2.0
 
 ## 19.1.1

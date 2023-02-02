@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 19.4.2
+
 ## 19.3.0
 
 ### Minor Changes
