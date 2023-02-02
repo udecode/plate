@@ -11,11 +11,10 @@ import {
   createTodoListPlugin,
   Plate,
   serializeHtml,
-  useEditorState,
+  usePlateEditorState,
 } from '@udecode/plate';
 import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { basicNodesValue } from './basic-nodes/basicNodesValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { linkPlugin } from './link/linkPlugin';
@@ -44,7 +43,7 @@ const plugins = createMyPlugins(
 );
 
 const Serialized = () => {
-  const editor = useEditorState();
+  const editor = usePlateEditorState();
   const html = serializeHtml(editor, {
     nodes: editor.children,
   });
