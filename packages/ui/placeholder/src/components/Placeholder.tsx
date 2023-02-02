@@ -4,7 +4,7 @@ import {
   createNodesHOC,
   isCollapsed,
   isElementEmpty,
-  useEditorState,
+  usePlateEditorState,
   Value,
 } from '@udecode/plate-core';
 import { useFocused, useSelected } from 'slate-react';
@@ -22,7 +22,7 @@ export const Placeholder = <V extends Value>(props: PlaceholderProps<V>) => {
 
   const focused = useFocused();
   const selected = useSelected();
-  const editor = useEditorState();
+  const editor = usePlateEditorState();
 
   const isEmptyBlock = isElementEmpty(editor, element);
 

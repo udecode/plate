@@ -1,5 +1,5 @@
 import React from 'react';
-import { isCollapsed, useEditorState } from '@udecode/plate-core';
+import { isCollapsed, usePlateEditorState } from '@udecode/plate-core';
 import { useReadOnly, useSelected } from 'slate-react';
 import { Popover, PopoverProps } from './Popover';
 
@@ -15,7 +15,7 @@ export const ElementPopover = ({
   const readOnly = useReadOnly();
   const selected = useSelected();
 
-  const editor = useEditorState();
+  const editor = usePlateEditorState();
 
   return (
     <Popover
