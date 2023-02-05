@@ -5505,6 +5505,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-core@npm:19.2.0":
+  version: 19.2.0
+  resolution: "@udecode/plate-core@npm:19.2.0"
+  dependencies:
+    "@radix-ui/react-slot": "npm:^1.0.1"
+    "@udecode/zustood": "npm:^1.1.1"
+    clsx: "npm:^1.1.1"
+    jotai: "npm:^1.7.2"
+    lodash: "npm:^4.17.21"
+    nanoid: "npm:^3.3.4"
+    react-hotkeys-hook: "npm:^3.4.6"
+    use-deep-compare: "npm:^1.1.0"
+    zustand: "npm:^3.7.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  checksum: 2fbdb0891b0e7073b18c4963e8d3df74e725fd9674e7711654898136299c35438403ecd68d5aef6f667f0ea085c25fb26ab025e921bc108512ad815a7ca554d6
+  languageName: node
+  linkType: hard
+
 "@udecode/plate-core@npm:19.4.2, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
@@ -5639,6 +5662,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "npm:19.4.2"
     "@udecode/plate-serializer-html": "npm:19.4.2"
     "@udecode/plate-serializer-md": "npm:19.4.2"
+    "@udecode/plate-tabbable": "npm:19.4.2"
     "@udecode/plate-table": "npm:19.4.2"
     "@udecode/plate-trailing-block": "npm:19.4.2"
   peerDependencies:
@@ -6019,6 +6043,21 @@ __metadata:
     slate-history: ">=0.86.0"
     slate-react: ">=0.88.0"
     styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-tabbable@npm:19.4.2, @udecode/plate-tabbable@workspace:packages/editor/tabbable":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-tabbable@workspace:packages/editor/tabbable"
+  dependencies:
+    "@udecode/plate-core": "npm:19.2.0"
+    tabbable: "npm:^6.0.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
   languageName: unknown
   linkType: soft
 
@@ -23825,6 +23864,13 @@ __metadata:
     tslib: "npm:^2.3.1"
     uuid: "npm:^8.3.2"
   checksum: f5ba0054e620ac7286ea115a76e66031dbb2ffdd528e22df592cc58dfef386e14319e2ff087617e0a6c1605a6358392d89975299f46614b2e62d6a549780fe8e
+  languageName: node
+  linkType: hard
+
+"tabbable@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "tabbable@npm:6.0.1"
+  checksum: 449b28fd2456c530ac6a2741fdf7d9c9a045b0f783a099335333a855247442066ab8af5de4425b91fe97791976704983cef63b460790762a974ddc811b104867
   languageName: node
   linkType: hard
 

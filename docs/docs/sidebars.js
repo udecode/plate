@@ -92,6 +92,7 @@ module.exports = {
             'plugins/soft-break',
             'plugins/single-line',
             'plugins/forced-layout',
+            'plugins/tabbable',
           ],
           collapsed: false,
         },
