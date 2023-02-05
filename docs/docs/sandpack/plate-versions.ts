@@ -1,4 +1,4 @@
-export const plateVersion = '19.4.2';
+export const plateVersion = '19.4.3';
 export const testUtilsVersion = '13.4.0';
 export const excalidrawVersion = '19.4.2';
 export const juiceVersion = '19.4.2';
