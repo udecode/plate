@@ -1,5 +1,7 @@
 # @udecode/plate-ui-combobox
 
+## 19.4.4
+
 ## 19.4.2
 
 ### Patch Changes

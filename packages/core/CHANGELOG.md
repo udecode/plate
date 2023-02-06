@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 19.4.4
+
+### Patch Changes
+
+- [#2194](https://github.com/udecode/plate/pull/2194) by [@zbeyens](https://github.com/zbeyens) – fix: `useElement` should not throw an error if the element is not found. It can happen when the document is not yet normalized. This patch replaces the `throw` by a `console.warn`.
+
 ## 19.4.2
 
 ### Patch Changes
