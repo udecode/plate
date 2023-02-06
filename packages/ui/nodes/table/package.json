@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-table",
-  "version": "19.4.2",
+  "version": "19.4.4",
   "description": "Table UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,12 +19,12 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.4.2",
-    "@udecode/plate-floating": "19.4.2",
-    "@udecode/plate-styled-components": "19.4.2",
-    "@udecode/plate-table": "19.4.2",
-    "@udecode/plate-ui-button": "19.4.2",
-    "@udecode/plate-ui-toolbar": "19.4.2",
+    "@udecode/plate-core": "19.4.4",
+    "@udecode/plate-floating": "19.4.4",
+    "@udecode/plate-styled-components": "19.4.4",
+    "@udecode/plate-table": "19.4.4",
+    "@udecode/plate-ui-button": "19.4.4",
+    "@udecode/plate-ui-toolbar": "19.4.4",
     "re-resizable": "^6.9.9"
   },
   "peerDependencies": {

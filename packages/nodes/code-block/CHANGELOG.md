@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 19.4.4
+
 ## 19.4.3
 
 ### Patch Changes
