@@ -27,14 +27,14 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
   const { root, active } = getToolbarButtonStyles(props);
 
   const button = (
-    <span
+    <button
       data-testid="ToolbarButton"
       css={root.css}
       className={clsx(root.className, active?.className, className)}
       {...buttonProps}
     >
       {icon}
-    </span>
+    </button>
   );
 
   return tooltip ? <Tippy {...tooltipProps}>{button}</Tippy> : button;
