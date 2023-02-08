@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  getPreventDefaultHandler,
+  focusEditor,
   isMarkActive,
   toggleMark,
   useEventPlateId,
@@ -24,11 +24,13 @@ export const MarkToolbarButton = <V extends Value>({
   return (
     <ToolbarButton
       active={!!editor?.selection && isMarkActive(editor, type!)}
-      onMouseDown={
-        editor
-          ? getPreventDefaultHandler(toggleMark, editor, { key: type, clear })
-          : undefined
-      }
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        toggleMark(editor, { key: type!, clear });
+        focusEditor(editor);
+      }}
       {...props}
     />
   );
