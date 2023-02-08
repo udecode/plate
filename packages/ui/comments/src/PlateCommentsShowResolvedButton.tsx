@@ -1,7 +1,11 @@
 import React, { useCallback } from 'react';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
-type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps;
+type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps & {
+  fetchContacts: () => Promise<void>;
+  renderContainer: (props: any) => JSX.Element;
+  retrieveUser: () => Promise<void>;
+};
 
 export const PlateCommentsShowResolvedButton = (
   props: PlateCommentsShowResolvedButtonProps

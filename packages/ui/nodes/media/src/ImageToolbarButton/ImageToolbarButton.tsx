@@ -1,5 +1,9 @@
 import React from 'react';
-import { useEventPlateId, usePlateEditorRef } from '@udecode/plate-core';
+import {
+  focusEditor,
+  useEventPlateId,
+  usePlateEditorRef,
+} from '@udecode/plate-core';
 import { insertImage } from '@udecode/plate-media';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -19,10 +23,10 @@ export const ImageToolbarButton = ({
 
   return (
     <ToolbarButton
-      onMouseDown={async (event) => {
-        if (!editor) return;
-
-        event.preventDefault();
+      aria-label="Insert image"
+      onClick={async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
         let url;
         if (getImageUrl) {
@@ -33,6 +37,7 @@ export const ImageToolbarButton = ({
         if (!url) return;
 
         insertImage(editor, url);
+        focusEditor(editor);
       }}
       {...props}
     />

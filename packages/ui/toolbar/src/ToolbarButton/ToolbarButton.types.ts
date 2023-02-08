@@ -6,7 +6,7 @@ import { CSSProp } from 'styled-components';
 
 export interface ToolbarButtonProps
   extends StyledProps<{ active?: CSSProp }>,
-    Omit<HTMLProps<HTMLButtonElement>, 'id' | 'as'> {
+    Omit<HTMLProps<HTMLButtonElement>, 'id' | 'as' | 'type'> {
   id?: PlateId;
 
   /**
