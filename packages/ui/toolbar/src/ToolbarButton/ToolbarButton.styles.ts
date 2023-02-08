@@ -9,8 +9,8 @@ export const getToolbarButtonStyles = (props: ToolbarButtonProps) =>
     {
       root: [
         tw`flex justify-center items-center select-none cursor-pointer align-middle`,
-        tw`width[32px] height[24px]`,
-        tw`bg-transparent border-none outline-none`,
+        tw`width[32px] height[40px]`,
+        tw`bg-white border-none outline-none`,
         css`
           > svg {
             ${tw`block w-5 h-5`}
