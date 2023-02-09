@@ -1,16 +1,21 @@
 import {
+  collapseSelection,
+  getPointBefore,
   isExpanded,
   isInline,
   isText,
+  moveSelection,
+  nanoid,
   PlateEditor,
   setNodes,
+  SetNodesOptions,
   unsetNodes,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { addSuggestionMark } from './transforms/addSuggestionMark';
 import { getSuggestionId } from './utils/index';
-import { MARK_SUGGESTION } from './constants';
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import {
   SuggestionEditorProps,
   SuggestionPlugin,
@@ -47,30 +52,49 @@ export const withSuggestion = <
     insertText(text);
   };
 
+  const setSuggestionNodes = (options?: SetNodesOptions) => {
+    setNodes<TSuggestionText>(
+      editor,
+      {
+        [MARK_SUGGESTION]: true,
+        [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? nanoid(),
+      },
+      {
+        match: (n) => isText(n) || isInline(editor, n),
+        split: true,
+        ...options,
+      }
+    );
+  };
+
+  editor.deleteFragment = (direction) => {
+    const selection = editor.selection!;
+
+    if (isExpanded(selection)) {
+      setSuggestionNodes();
+      collapseSelection(editor);
+      return;
+    }
+
+    deleteFragment(direction);
+  };
+
   editor.deleteBackward = (unit) => {
-    console.log('ab');
     if (editor.isSuggesting) {
-      console.log('b');
       const selection = editor.selection!;
 
-      if (isExpanded(selection)) {
-        setNodes<TSuggestionText>(
-          editor,
-          { [MARK_SUGGESTION]: true },
-          {
-            match: (n) => isText(n) || isInline(editor, n),
-          }
-        );
+      const pointBefore = getPointBefore(editor, selection, { unit });
+      if (pointBefore) {
+        setSuggestionNodes({
+          at: {
+            anchor: pointBefore,
+            focus: selection.focus,
+          },
+        });
+        moveSelection(editor, { reverse: true, unit });
+
         return;
-        // addSuggestionMark();
       }
-
-      // const pointBefore = getPointBefore(editor, selection, { unit });
-      // const anchorPoint = selection.anchor;
-      //
-      // addSuggestionMark(editor);
-
-      return;
     }
 
     console.log('..');
