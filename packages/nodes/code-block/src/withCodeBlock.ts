@@ -2,7 +2,7 @@ import { PlateEditor, Value } from '@udecode/plate-core';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
-import { insertCodeLine } from './transforms';
+import { indentCodeLine } from './transforms';
 
 export const withCodeBlock = <
   V extends Value = Value,
@@ -23,7 +23,14 @@ export const withCodeBlock = <
       codeBlock,
       codeLine,
     });
-    insertCodeLine(editor, indentDepth);
+
+    insertBreak();
+
+    indentCodeLine(editor, {
+      codeBlock,
+      codeLine,
+      indentDepth,
+    });
 
     return true;
   };

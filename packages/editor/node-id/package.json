@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-node-id",
-  "version": "19.1.1",
+  "version": "19.4.4",
   "description": "Node ID plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.1.1"
+    "@udecode/plate-core": "19.4.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

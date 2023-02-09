@@ -8,14 +8,15 @@ import {
   TNodeEntry,
   Value,
 } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../constants';
+import { ELEMENT_CODE_BLOCK } from '../constants';
+import { getCodeLineType } from '../options';
 
 /**
  * Normalize code block node to force the pre>code>div.codeline structure.
  */
 export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
-  const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);
+  const codeLineType = getCodeLineType(editor);
 
   const { normalizeNode } = editor;
   return ([node, path]: TNodeEntry) => {

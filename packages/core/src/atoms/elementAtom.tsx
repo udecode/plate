@@ -13,19 +13,6 @@ export const { elementStore, useElementStore } = createAtomStore(
   { name: 'element' as const }
 );
 
-export const useElement = <T extends TElement = TElement>(
-  pluginKey = SCOPE_ELEMENT
-) => {
-  const value = useElementStore().get.element(pluginKey);
-
-  if (!value)
-    throw new Error(
-      `The \`useElement(pluginKey)\` hook must be used inside the node component's context`
-    );
-
-  return value as T;
-};
-
 export const ElementProviderChild = ({
   element,
   scope,

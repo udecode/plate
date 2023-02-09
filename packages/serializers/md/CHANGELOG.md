@@ -1,5 +1,25 @@
 # @udecode/plate-md-serializer
 
+## 19.4.4
+
+## 19.4.3
+
+## 19.4.2
+
+## 19.4.1
+
+## 19.4.0
+
+### Minor Changes
+
+- [#2175](https://github.com/udecode/plate/pull/2175) by [@12joan](https://github.com/12joan) –
+  - Plugin can now be customised using `elementRules` and `textRules` options
+  - Various fixes
+
+## 19.3.0
+
+## 19.2.0
+
 ## 19.1.1
 
 ## 19.1.0

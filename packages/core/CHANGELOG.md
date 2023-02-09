@@ -1,5 +1,23 @@
 # @udecode/plate-core
 
+## 19.4.4
+
+### Patch Changes
+
+- [#2194](https://github.com/udecode/plate/pull/2194) by [@zbeyens](https://github.com/zbeyens) – fix: `useElement` should not throw an error if the element is not found. It can happen when the document is not yet normalized. This patch replaces the `throw` by a `console.warn`.
+
+## 19.4.2
+
+### Patch Changes
+
+- [#2185](https://github.com/udecode/plate/pull/2185) by [@zbeyens](https://github.com/zbeyens) – fix: `getEditorString` should not throw an error when a node is not found. Returns an empty string in that case.
+
+## 19.2.0
+
+### Minor Changes
+
+- [#2156](https://github.com/udecode/plate/pull/2156) by [@12joan](https://github.com/12joan) – Trim \n characters from start and end of text nodes when deserializing HTML
+
 ## 19.1.1
 
 ### Patch Changes

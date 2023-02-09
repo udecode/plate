@@ -4,3 +4,5 @@
 
 export * from './getCodeLineEntry';
 export * from './getIndentDepth';
+export * from './isCodeBlockEmpty';
+export * from './isSelectionAtCodeBlockStart';

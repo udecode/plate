@@ -42,6 +42,7 @@ export const sidebarItems = [
   'single-line',
   'soft-break',
   'suggestion',
+  'tabbable',
   'table',
   'typescript',
 ];

@@ -25,6 +25,8 @@ export const onKeyDownCodeBlock = <
 >(
   editor: E
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   const isTab = Hotkeys.isTab(editor, e);
   const isUntab = Hotkeys.isUntab(editor, e);
 

@@ -1,5 +1,17 @@
 # @udecode/plate-mention
 
+## 19.4.4
+
+## 19.4.2
+
+## 19.3.0
+
+### Patch Changes
+
+- [#2166](https://github.com/udecode/plate/pull/2166) by [@OliverWales](https://github.com/OliverWales) – Add `query` option to mention plugin
+
+## 19.2.0
+
 ## 19.1.1
 
 ## 19.1.0

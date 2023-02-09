@@ -31,7 +31,7 @@ export const withMention = <
 >(
   editor: E,
   {
-    options: { id, trigger, inputCreation },
+    options: { id, trigger, query, inputCreation },
   }: WithPlatePlugin<MentionPlugin, V, E>
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
@@ -101,6 +101,7 @@ export const withMention = <
     if (
       !editor.selection ||
       text !== trigger ||
+      (query && !query<V, E>(editor)) ||
       isSelectionInMentionInput(editor)
     ) {
       return _insertText(text);

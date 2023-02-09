@@ -12,4 +12,12 @@ export const getEditorString = <V extends Value>(
   editor: TEditor<V>,
   at: Location | null | undefined,
   options?: EditorStringOptions
-) => (at ? Editor.string(editor as any, at, options) : '');
+) => {
+  if (!at) return '';
+
+  try {
+    return Editor.string(editor as any, at, options);
+  } catch (error) {
+    return '';
+  }
+};

@@ -3,8 +3,8 @@ import {
   getSelectionText,
   isSelectionExpanded,
   mergeProps,
-  useEditorState,
   useEventEditorSelectors,
+  usePlateEditorState,
 } from '@udecode/plate-core';
 import {
   flip,
@@ -24,7 +24,7 @@ export const useFloatingToolbar = ({
   open: boolean;
 } => {
   const focusedEditorId = useEventEditorSelectors.focus();
-  const editor = useEditorState();
+  const editor = usePlateEditorState();
   const focused = useFocused();
 
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] = useState(
