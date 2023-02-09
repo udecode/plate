@@ -1,10 +1,11 @@
-# Tab into and out of void nodes
+# Plate tabbable plugin
 
-
+This package programmatically corrects the tab order for tabbable elements inside the editor
 
 ## Documentation
 
-WIP
+Check out
+[Tabbable](https://plate.udecode.io/docs/tabbable).
 
 ## API
 
