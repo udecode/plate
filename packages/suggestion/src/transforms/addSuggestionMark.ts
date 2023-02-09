@@ -3,12 +3,15 @@ import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { SuggestionEditorProps } from '../types';
 
 export const addSuggestionMark = <V extends Value = Value>(
-  editor: PlateEditor<V> & SuggestionEditorProps
+  editor: PlateEditor<V> & SuggestionEditorProps,
+  {
+    isDeletion,
+  }: {
+    isDeletion?: boolean;
+  } = {}
 ) => {
-  console.log(editor.activeSuggestionId);
   if (editor.activeSuggestionId) return;
-  console.log(editor.marks);
-  console.log(editor.mark);
+
   if (!editor.marks?.[MARK_SUGGESTION]) {
     editor.addMark(MARK_SUGGESTION, true);
   }

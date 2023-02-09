@@ -31,7 +31,7 @@ export interface TSuggestion {
 
 export interface TSuggestionText extends TText {
   suggestion?: boolean;
-  suggestions?: Record<string, boolean>;
+  suggestionId?: string;
 }
 
 export interface SuggestionPlugin {

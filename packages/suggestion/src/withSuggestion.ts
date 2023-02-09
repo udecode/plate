@@ -1,5 +1,9 @@
 import {
+  isExpanded,
+  isInline,
+  isText,
   PlateEditor,
+  setNodes,
   unsetNodes,
   Value,
   WithPlatePlugin,
@@ -7,7 +11,11 @@ import {
 import { addSuggestionMark } from './transforms/addSuggestionMark';
 import { getSuggestionId } from './utils/index';
 import { MARK_SUGGESTION } from './constants';
-import { SuggestionEditorProps, SuggestionPlugin } from './types';
+import {
+  SuggestionEditorProps,
+  SuggestionPlugin,
+  TSuggestionText,
+} from './types';
 
 export const withSuggestion = <
   V extends Value = Value,
@@ -21,7 +29,6 @@ export const withSuggestion = <
   const editor = e as EE;
 
   const {
-    apply,
     normalizeNode,
     insertText,
     deleteBackward,
@@ -40,23 +47,35 @@ export const withSuggestion = <
     insertText(text);
   };
 
-  // editor.deleteBackward = (unit) => {
-  //   if (editor.isSuggesting) {
-  //     const a = getPointBefore(editor, editor.selection, {});
-  //
-  //     addSuggestionMark(editor);
-  //
-  //     return;
-  //   }
-  //
-  //   deleteBackward(unit);
-  // };
+  editor.deleteBackward = (unit) => {
+    console.log('ab');
+    if (editor.isSuggesting) {
+      console.log('b');
+      const selection = editor.selection!;
 
-  editor.apply = (op) => {
-    if (op.type === 'insert_text') {
+      if (isExpanded(selection)) {
+        setNodes<TSuggestionText>(
+          editor,
+          { [MARK_SUGGESTION]: true },
+          {
+            match: (n) => isText(n) || isInline(editor, n),
+          }
+        );
+        return;
+        // addSuggestionMark();
+      }
+
+      // const pointBefore = getPointBefore(editor, selection, { unit });
+      // const anchorPoint = selection.anchor;
+      //
+      // addSuggestionMark(editor);
+
+      return;
     }
 
-    apply(op);
+    console.log('..');
+
+    deleteBackward(unit);
   };
 
   editor.normalizeNode = (entry) => {
