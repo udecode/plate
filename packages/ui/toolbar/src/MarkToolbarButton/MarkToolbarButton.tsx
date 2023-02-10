@@ -23,13 +23,16 @@ export const MarkToolbarButton = <V extends Value>({
 
   return (
     <ToolbarButton
+      aria-label="Toggle mark"
       active={!!editor?.selection && isMarkActive(editor, type!)}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
 
         toggleMark(editor, { key: type!, clear });
-        focusEditor(editor);
+        setTimeout(() => {
+          focusEditor(editor, editor.selection ?? editor.prevSelection!);
+        }, 0);
       }}
       {...props}
     />

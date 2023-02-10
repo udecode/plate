@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  focusEditor,
   getPluginType,
   someNode,
   useEventPlateId,
@@ -34,11 +33,7 @@ export const LinkToolbarButton = ({
         e.preventDefault();
         e.stopPropagation();
 
-        focusEditor(editor, editor.selection ?? editor.prevSelection!);
-
-        setTimeout(() => {
-          triggerFloatingLink(editor, { focused: true });
-        }, 0);
+        triggerFloatingLink(editor, { focused: true });
       }}
       {...props}
     />

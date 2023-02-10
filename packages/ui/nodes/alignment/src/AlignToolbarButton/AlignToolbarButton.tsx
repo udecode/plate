@@ -2,6 +2,7 @@ import React from 'react';
 import { Alignment, KEY_ALIGN, setAlign } from '@udecode/plate-alignment';
 import {
   focusEditor,
+  isCollapsed,
   someNode,
   useEventPlateId,
   usePlateEditorState,
@@ -22,7 +23,8 @@ export const AlignToolbarButton = ({
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const isLink =
-    !!editor?.selection && someNode(editor, { match: { type: pluginKey } });
+    isCollapsed(editor?.selection) &&
+    someNode(editor!, { match: { [pluginKey]: value } });
 
   return (
     <ToolbarButton

@@ -16,21 +16,22 @@ export const BlockToolbarButton = ({
   id,
   type,
   inactiveType,
-  active,
+  active: _active,
   ...props
 }: BlockToolbarButtonProps) => {
   const editor = usePlateEditorState(useEventPlateId(id));
-  const isLink = !!editor?.selection && someNode(editor, { match: { type } });
+  const active =
+    _active ?? (!!editor?.selection && someNode(editor, { match: { type } }));
 
   return (
     <ToolbarButton
       aria-label="Toggle block type"
-      active={isLink}
+      active={active}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        toggleNodeType(editor, { inactiveType });
+        toggleNodeType(editor, { activeType: type, inactiveType });
         focusEditor(editor);
       }}
       {...props}

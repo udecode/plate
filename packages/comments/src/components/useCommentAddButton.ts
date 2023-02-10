@@ -1,10 +1,5 @@
 import { MouseEventHandler, useCallback } from 'react';
-import {
-  focusEditor,
-  HTMLPropsAs,
-  useEventPlateId,
-  usePlateEditorState,
-} from '@udecode/plate-core';
+import { HTMLPropsAs } from '@udecode/plate-core';
 import { useAddCommentMark, useCommentsActions } from '../stores/index';
 
 export const useCommentAddButton = (
@@ -21,9 +16,8 @@ export const useCommentAddButton = (
 
       addCommentMark();
       setFocusTextarea(true);
-      focusEditor(editor);
     },
-    [addCommentMark, editor, setFocusTextarea]
+    [addCommentMark, setFocusTextarea]
   );
 
   return { onClick, ...props };
