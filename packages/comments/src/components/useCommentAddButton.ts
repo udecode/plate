@@ -7,7 +7,6 @@ export const useCommentAddButton = (
 ): HTMLPropsAs<'span'> => {
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();
-  const editor = usePlateEditorState(useEventPlateId());
 
   const onClick = useCallback<MouseEventHandler<HTMLSpanElement>>(
     (e) => {

@@ -11,6 +11,8 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
     icon,
     tooltip,
     className,
+    actionHandler = 'onClick',
+    onClick,
     ...buttonProps
   } = props;
 
@@ -25,6 +27,9 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
   };
 
   const { root, active } = getToolbarButtonStyles(props);
+
+  // this can replace onClick by onMouseDown
+  buttonProps[actionHandler] = onClick;
 
   const button = (
     <button

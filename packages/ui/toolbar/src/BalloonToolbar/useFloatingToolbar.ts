@@ -50,6 +50,7 @@ export const useFloatingToolbar = ({
 
   useEffect(() => {
     if (!selectionExpanded || !selectionText || editor.id !== focusedEditorId) {
+      console.log(focusedEditorId);
       setOpen(false);
     } else if (
       selectionText &&

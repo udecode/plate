@@ -23,4 +23,10 @@ export interface ToolbarButtonProps
    * Tooltip props. If not provided, tooltip is disabled.
    */
   tooltip?: TippyProps;
+
+  /**
+   * Handler to use to actionate the button.
+   * @default onClick
+   */
+  actionHandler?: 'onClick' | 'onMouseDown';
 }
