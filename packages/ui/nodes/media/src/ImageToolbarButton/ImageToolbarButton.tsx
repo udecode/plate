@@ -9,7 +9,7 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface ImageToolbarButtonProps extends ToolbarButtonProps {
   /**
-   * Default onMouseDown is getting the image url by calling this promise before inserting the image.
+   * Default onClick is getting the image url by calling this promise before inserting the image.
    */
   getImageUrl?: () => Promise<string>;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  getPreventDefaultHandler,
+  focusEditor,
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-core';
@@ -21,14 +21,16 @@ export const ListToolbarButton = ({
 
   return (
     <BlockToolbarButton
+      aria-label="List"
       active={!!res && res.list[0].type === type}
       type={type}
-      onMouseDown={
-        editor &&
-        getPreventDefaultHandler(toggleList, editor, {
-          type,
-        })
-      }
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        toggleList(editor, { type });
+        focusEditor(editor);
+      }}
       {...props}
     />
   );

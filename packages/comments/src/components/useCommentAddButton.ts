@@ -1,5 +1,10 @@
 import { MouseEventHandler, useCallback } from 'react';
-import { HTMLPropsAs } from '@udecode/plate-core';
+import {
+  focusEditor,
+  HTMLPropsAs,
+  useEventPlateId,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { useAddCommentMark, useCommentsActions } from '../stores/index';
 
 export const useCommentAddButton = (
@@ -7,16 +12,19 @@ export const useCommentAddButton = (
 ): HTMLPropsAs<'span'> => {
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();
+  const editor = usePlateEditorState(useEventPlateId());
 
-  const onMouseDown = useCallback<MouseEventHandler<HTMLSpanElement>>(
-    (event) => {
-      event.preventDefault();
+  const onClick = useCallback<MouseEventHandler<HTMLSpanElement>>(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
       addCommentMark();
       setFocusTextarea(true);
+      focusEditor(editor);
     },
-    [addCommentMark, setFocusTextarea]
+    [addCommentMark, editor, setFocusTextarea]
   );
 
-  return { onMouseDown, ...props };
+  return { onClick, ...props };
 };

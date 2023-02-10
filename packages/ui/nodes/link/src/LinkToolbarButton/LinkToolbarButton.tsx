@@ -11,7 +11,7 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   /**
-   * Default onMouseDown is getting the link url by calling this promise before inserting the image.
+   * Default onClick is getting the link url by calling this promise before inserting the image.
    */
   getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
@@ -28,12 +28,11 @@ export const LinkToolbarButton = ({
 
   return (
     <ToolbarButton
+      aria-label="Insert link"
       active={isLink}
-      onMouseDown={async (event) => {
-        if (!editor) return;
-
-        event.preventDefault();
-        event.stopPropagation();
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
         focusEditor(editor, editor.selection ?? editor.prevSelection!);
 

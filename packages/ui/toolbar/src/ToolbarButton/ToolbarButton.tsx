@@ -1,5 +1,5 @@
 import React from 'react';
-import Tippy, { TippyProps } from '@tippyjs/react'; // optional
+import Tippy, { TippyProps } from '@tippyjs/react';
 import clsx from 'clsx';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';
 import { ToolbarButtonProps } from './ToolbarButton.types';
@@ -16,8 +16,8 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const tooltipProps: TippyProps = {
     content: '',
-    arrow: true,
-    offset: [0, 17],
+    offset: [0, 0],
+    arrow: false,
     delay: 0,
     duration: [200, 0],
     hideOnClick: false,
@@ -28,6 +28,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const button = (
     <button
+      type="button"
       data-testid="ToolbarButton"
       css={root.css}
       className={clsx(root.className, active?.className, className)}
