@@ -19,13 +19,13 @@ export const TableToolbarButton = <V extends Value>({
 }: TableToolbarButtonProps<V>) => {
   const editor = usePlateEditorState<V>(useEventPlateId(id));
   const type = getPluginType(editor, ELEMENT_TABLE);
-  const isLink = !!editor?.selection && someNode(editor, { match: { type } });
+  const active = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
     <ToolbarButton
       tooltip={{ content: 'Table' }}
       aria-label="Table"
-      active={isLink}
+      active={active}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
