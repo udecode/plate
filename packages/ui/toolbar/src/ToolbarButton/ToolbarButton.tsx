@@ -20,7 +20,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
     content: '',
     offset: [0, 0],
     arrow: false,
-    delay: 0,
+    delay: 500,
     duration: [200, 0],
     hideOnClick: false,
     ...tooltip,
