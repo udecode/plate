@@ -209,7 +209,7 @@ export const createPlateUI = <T extends string = string>(
     [MARK_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'mark',
       styles: {
-        root: tw`backgroundColor[#FEF3B7]`,
+        root: tw`bg-[#FEF3B7]`,
       },
     }),
     [MARK_ITALIC]: withProps(StyledLeaf, { as: 'em' }),
@@ -236,7 +236,7 @@ export const createPlateUI = <T extends string = string>(
     [MARK_SEARCH_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'span',
       styles: {
-        root: tw`backgroundColor[#fff59d]`,
+        root: tw`bg-[#fff59d]`,
       },
     }),
     [MARK_STRIKETHROUGH]: withProps(StyledLeaf, { as: 's' }),

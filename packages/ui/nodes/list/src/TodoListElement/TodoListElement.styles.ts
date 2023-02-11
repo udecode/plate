@@ -15,7 +15,7 @@ export const getTodoListElementStyles = <V extends Value>(
       checkbox: tw`w-4 h-4 m-0`,
       text: [
         tw`flex-1 focus:outline-none`,
-        props.checked && tw`line-through opacity[0.666]`,
+        props.checked && tw`line-through opacity-[0.666]`,
       ],
     }
   );

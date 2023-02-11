@@ -106,8 +106,8 @@ export const getImageElementStyles = (props: ImageElementStyleProps) => {
 
       img: [
         tw`block max-w-full px-0 cursor-pointer w-full`,
-        tw`borderRadius[3px] object-cover`,
-        focused && selected && tw`boxShadow[0 0 0 1px rgb(59,130,249)]`,
+        tw`rounded-[3px] object-cover`,
+        focused && selected && tw`shadow-[0 0 0 1px rgb(59,130,249)]`,
       ],
 
       ...getCaptionCss({ caption, align }),

@@ -9,6 +9,6 @@ export const getExcalidrawElementStyles = <V extends Value>(
   createStyles(
     { prefixClassNames: 'ExcalidrawElement', ...props },
     {
-      excalidrawWrapper: tw`height[600px]`,
+      excalidrawWrapper: tw`h-[600px]`,
     }
   );

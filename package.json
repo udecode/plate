@@ -160,9 +160,9 @@
     "slate-react": "0.88.2",
     "slate-test-utils": "1.3.2",
     "styled-components": "5.3.3",
-    "tailwindcss": "^3.0.24",
+    "tailwindcss": "^3.2.6",
     "ts-jest": "^26.5.6",
-    "twin.macro": "2.8.2",
+    "twin.macro": "3.1.0",
     "typedoc": "^0.21.0-beta.2",
     "typescript": "4.6.4"
   },
@@ -173,7 +173,6 @@
   },
   "babelMacros": {
     "twin": {
-      "config": "./docs/config/tailwind.config.js",
       "preset": "styled-components"
     }
   },
