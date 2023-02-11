@@ -14,7 +14,7 @@ it('should render', () => {
   );
 
   const element = getByTestId('ToolbarButton');
-  fireEvent.mouseDown(element);
+  fireEvent.click(element);
 
   expect(editor.children).toEqual(output.children);
 });

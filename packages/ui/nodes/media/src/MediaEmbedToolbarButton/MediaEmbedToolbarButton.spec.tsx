@@ -1,7 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { createMediaEmbedPlugin } from '@udecode/plate-media';
 import { Plate } from '../../../../../core/src/components/plate/Plate';
 import { MediaEmbedToolbarButton } from './MediaEmbedToolbarButton';
@@ -22,16 +21,12 @@ describe('MediaEmbedToolbarButton', () => {
           initialValue={input1.children}
           plugins={[createMediaEmbedPlugin()]}
         >
-          <MediaEmbedToolbarButton
-            type={ELEMENT_H1}
-            getEmbedUrl={getEmbedUrlMock}
-            icon={null}
-          />
+          <MediaEmbedToolbarButton getEmbedUrl={getEmbedUrlMock} icon={null} />
         </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
-      fireEvent.mouseDown(element);
+      fireEvent.click(element);
 
       expect(getEmbedUrlMock).toBeCalledTimes(1);
     });
@@ -47,12 +42,12 @@ describe('MediaEmbedToolbarButton', () => {
           initialValue={input2.children}
           plugins={[createMediaEmbedPlugin()]}
         >
-          <MediaEmbedToolbarButton type={ELEMENT_H1} icon={null} />
+          <MediaEmbedToolbarButton icon={null} />
         </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
-      fireEvent.mouseDown(element);
+      fireEvent.click(element);
 
       expect(input2.children).toEqual(output2.children);
     });
