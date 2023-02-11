@@ -22,14 +22,15 @@ export const AlignToolbarButton = ({
 }: AlignToolbarButtonProps) => {
   const editor = usePlateEditorState(useEventPlateId(id));
 
-  const isLink =
+  const active =
     isCollapsed(editor?.selection) &&
     someNode(editor!, { match: { [pluginKey]: value } });
 
   return (
     <ToolbarButton
+      tooltip={{ content: 'Align' }}
       aria-label="Align"
-      active={isLink}
+      active={active}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
