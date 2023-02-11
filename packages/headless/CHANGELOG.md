@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 19.4.5
+
 ## 19.4.4
 
 ## 19.4.3
