@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alignment, KEY_ALIGN, setAlign } from '@udecode/plate-alignment';
 import {
-  getPreventDefaultHandler,
+  focusEditor,
   isCollapsed,
   someNode,
   useEventPlateId,
@@ -22,20 +22,26 @@ export const AlignToolbarButton = ({
 }: AlignToolbarButtonProps) => {
   const editor = usePlateEditorState(useEventPlateId(id));
 
+  const active =
+    isCollapsed(editor?.selection) &&
+    someNode(editor!, { match: { [pluginKey]: value } });
+
   return (
     <ToolbarButton
-      active={
-        isCollapsed(editor?.selection) &&
-        someNode(editor!, { match: { [pluginKey]: value } })
-      }
-      onMouseDown={
-        editor
-          ? getPreventDefaultHandler(setAlign, editor, {
-              value,
-              key: pluginKey,
-            })
-          : undefined
-      }
+      tooltip={{ content: 'Align' }}
+      aria-label="Align"
+      active={active}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        setAlign(editor, {
+          value,
+          key: pluginKey,
+        });
+
+        focusEditor(editor);
+      }}
       {...props}
     />
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  focusEditor,
   getPluginType,
   someNode,
   useEventPlateId,
@@ -11,7 +10,7 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   /**
-   * Default onMouseDown is getting the link url by calling this promise before inserting the image.
+   * Default onClick is getting the link url by calling this promise before inserting the image.
    */
   getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
@@ -28,18 +27,13 @@ export const LinkToolbarButton = ({
 
   return (
     <ToolbarButton
+      aria-label="Insert link"
       active={isLink}
-      onMouseDown={async (event) => {
-        if (!editor) return;
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-        event.preventDefault();
-        event.stopPropagation();
-
-        focusEditor(editor, editor.selection ?? editor.prevSelection!);
-
-        setTimeout(() => {
-          triggerFloatingLink(editor, { focused: true });
-        }, 0);
+        triggerFloatingLink(editor, { focused: true });
       }}
       {...props}
     />

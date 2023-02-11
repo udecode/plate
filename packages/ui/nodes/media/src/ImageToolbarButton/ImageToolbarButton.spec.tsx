@@ -1,7 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-media';
 import { Plate } from '../../../../../core/src/components/plate/Plate';
 import { ImageToolbarButton } from './ImageToolbarButton';
@@ -47,16 +46,12 @@ describe('ImageToolbarButton', () => {
 
       const { getByTestId } = render(
         <Plate initialValue={input1.children} plugins={[createImagePlugin()]}>
-          <ImageToolbarButton
-            type={ELEMENT_H1}
-            getImageUrl={getImageUrlMock}
-            icon={null}
-          />
+          <ImageToolbarButton getImageUrl={getImageUrlMock} icon={null} />
         </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
-      fireEvent.mouseDown(element);
+      fireEvent.click(element);
 
       expect(getImageUrlMock).toBeCalledTimes(1);
     });
@@ -69,12 +64,12 @@ describe('ImageToolbarButton', () => {
 
       const { getByTestId } = render(
         <Plate initialValue={input2.children} plugins={[createImagePlugin()]}>
-          <ImageToolbarButton type={ELEMENT_H1} icon={null} />
+          <ImageToolbarButton icon={null} />
         </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
-      fireEvent.mouseDown(element);
+      fireEvent.click(element);
 
       expect(input2.children).toEqual(output2.children);
     });

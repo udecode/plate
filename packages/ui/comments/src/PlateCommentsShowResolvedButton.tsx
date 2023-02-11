@@ -1,7 +1,16 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import {
+  focusEditor,
+  useEventPlateId,
+  usePlateEditorRef,
+} from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
-type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps;
+type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps & {
+  fetchContacts: () => Promise<void>;
+  renderContainer: (props: any) => JSX.Element;
+  retrieveUser: () => Promise<void>;
+};
 
 export const PlateCommentsShowResolvedButton = (
   props: PlateCommentsShowResolvedButtonProps
@@ -14,32 +23,27 @@ export const PlateCommentsShowResolvedButton = (
     ...otherProps
   } = props;
 
+  const editor = usePlateEditorRef(useEventPlateId(id));
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
   const isActive = Boolean(anchorEl);
 
-  const onMouseDown = useCallback((event) => {
-    event.preventDefault();
-    setAnchorEl(event.currentTarget);
-  }, []);
-
   return (
     <div>
       <ToolbarButton
+        aria-label="Show resolved comments"
         active={isActive}
-        onMouseDown={onMouseDown}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          setAnchorEl(e.currentTarget);
+
+          focusEditor(editor);
+        }}
         {...otherProps}
       />
-      {/* <Popover */}
-      {/*  id={isActive ? 'simple-popover' : undefined} */}
-      {/*  open={isActive} */}
-      {/*  anchorEl={anchorEl} */}
-      {/*  onClose={handleClose} */}
-      {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} */}
-      {/* > */}
-      {/*  <PlateResolvedComments /> */}
-      {/* </Popover> */}
     </div>
   );
 };

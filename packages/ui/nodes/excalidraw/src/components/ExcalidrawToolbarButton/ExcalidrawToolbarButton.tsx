@@ -24,17 +24,12 @@ export const ExcalidrawToolbarButton = ({
   return (
     <ToolbarButton
       active={isExcalidraw}
-      onMouseDown={async (event: any) => {
-        if (!editor) return;
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-        event.preventDefault();
-        event.stopPropagation();
-
-        focusEditor(editor, editor.selection ?? editor.prevSelection!);
-
-        setTimeout(() => {
-          insertExcalidraw(editor);
-        }, 0);
+        insertExcalidraw(editor);
+        focusEditor(editor);
       }}
       {...props}
     />
