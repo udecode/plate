@@ -8,9 +8,10 @@ export const useCommentAddButton = (
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();
 
-  const onMouseDown = useCallback<MouseEventHandler<HTMLSpanElement>>(
-    (event) => {
-      event.preventDefault();
+  const onClick = useCallback<MouseEventHandler<HTMLSpanElement>>(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
       addCommentMark();
       setFocusTextarea(true);
@@ -18,5 +19,5 @@ export const useCommentAddButton = (
     [addCommentMark, setFocusTextarea]
   );
 
-  return { onMouseDown, ...props };
+  return { onClick, ...props };
 };

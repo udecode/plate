@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  getPreventDefaultHandler,
+  focusEditor,
   someNode,
   toggleNodeType,
   useEventPlateId,
@@ -16,23 +16,24 @@ export const BlockToolbarButton = ({
   id,
   type,
   inactiveType,
-  active,
+  active: _active,
   ...props
 }: BlockToolbarButtonProps) => {
   const editor = usePlateEditorState(useEventPlateId(id));
+  const active =
+    _active ?? (!!editor?.selection && someNode(editor, { match: { type } }));
 
   return (
     <ToolbarButton
-      active={
-        active ?? (!!editor?.selection && someNode(editor, { match: { type } }))
-      }
-      onMouseDown={
-        editor &&
-        getPreventDefaultHandler(toggleNodeType, editor, {
-          activeType: type,
-          inactiveType,
-        })
-      }
+      aria-label="Toggle block type"
+      active={active}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        toggleNodeType(editor, { activeType: type, inactiveType });
+        focusEditor(editor);
+      }}
       {...props}
     />
   );

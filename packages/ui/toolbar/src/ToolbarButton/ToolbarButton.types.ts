@@ -1,12 +1,12 @@
 import { HTMLProps } from 'react';
 import { TippyProps } from '@tippyjs/react';
-import { AnyObject, PlateId } from '@udecode/plate-core';
+import { PlateId } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface ToolbarButtonProps
   extends StyledProps<{ active?: CSSProp }>,
-    AnyObject {
+    Omit<HTMLProps<HTMLButtonElement>, 'id' | 'as' | 'type'> {
   id?: PlateId;
 
   /**
@@ -24,5 +24,9 @@ export interface ToolbarButtonProps
    */
   tooltip?: TippyProps;
 
-  onMouseDown?: HTMLProps<HTMLSpanElement>['onMouseDown'];
+  /**
+   * Handler to use to actionate the button.
+   * @default onClick
+   */
+  actionHandler?: 'onClick' | 'onMouseDown';
 }

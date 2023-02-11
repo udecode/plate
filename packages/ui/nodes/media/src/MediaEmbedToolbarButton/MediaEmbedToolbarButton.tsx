@@ -1,11 +1,15 @@
 import React from 'react';
-import { useEventPlateId, usePlateEditorRef } from '@udecode/plate-core';
+import {
+  focusEditor,
+  useEventPlateId,
+  usePlateEditorRef,
+} from '@udecode/plate-core';
 import { insertMediaEmbed } from '@udecode/plate-media';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface MediaEmbedToolbarButtonProps extends ToolbarButtonProps {
   /**
-   * Default onMouseDown is getting the embed url by calling this promise before inserting the embed.
+   * Default onClick is getting the embed url by calling this promise before inserting the embed.
    */
   getEmbedUrl?: () => Promise<string>;
 }
@@ -19,10 +23,10 @@ export const MediaEmbedToolbarButton = ({
 
   return (
     <ToolbarButton
-      onMouseDown={async (event) => {
-        if (!editor) return;
-
-        event.preventDefault();
+      aria-label="Insert embed"
+      onClick={async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
         let url;
         if (getEmbedUrl) {
@@ -33,6 +37,7 @@ export const MediaEmbedToolbarButton = ({
         if (!url) return;
 
         insertMediaEmbed(editor, { url });
+        focusEditor(editor);
       }}
       {...props}
     />
