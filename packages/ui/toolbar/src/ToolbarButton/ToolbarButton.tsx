@@ -20,7 +20,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
     content: '',
     offset: [0, 0],
     arrow: false,
-    delay: 500,
+    delay: 0,
     duration: [200, 0],
     hideOnClick: false,
     ...tooltip,
@@ -33,8 +33,9 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const button = (
     <button
-      type="button"
       data-testid="ToolbarButton"
+      type="button"
+      aria-label={tooltipProps.content as string}
       css={root.css}
       className={clsx(root.className, active?.className, className)}
       {...buttonProps}

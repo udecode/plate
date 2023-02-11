@@ -25,31 +25,38 @@ export const BasicMarkToolbarButtons = () => {
   return (
     <>
       <MarkToolbarButton
+        tooltip={{ content: 'Bold' }}
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Italic' }}
         type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Underline' }}
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Strikethrough' }}
         type={getPluginType(editor, MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Code' }}
         type={getPluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Superscript' }}
         type={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
       <MarkToolbarButton
+        tooltip={{ content: 'Subscript' }}
         type={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}

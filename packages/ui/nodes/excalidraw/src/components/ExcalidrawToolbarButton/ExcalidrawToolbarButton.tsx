@@ -23,6 +23,8 @@ export const ExcalidrawToolbarButton = ({
 
   return (
     <ToolbarButton
+      tooltip={{ content: 'Exacalidraw' }}
+      aria-label="Insert excalidraw"
       active={isExcalidraw}
       onClick={(e) => {
         e.preventDefault();

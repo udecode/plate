@@ -23,6 +23,7 @@ export const MediaEmbedToolbarButton = ({
 
   return (
     <ToolbarButton
+      tooltip={{ content: 'Embed' }}
       aria-label="Insert embed"
       onClick={async (e) => {
         e.preventDefault();
