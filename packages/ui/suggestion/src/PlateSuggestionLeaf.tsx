@@ -6,13 +6,13 @@ import {
   TSuggestionText,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
+import tw from 'twin.macro';
 
 export const PlateSuggestionLeaf = <V extends Value = Value>(
   props: StyledLeafProps<V, TSuggestionText>
 ) => {
-  const { children, nodeProps, leaf } = props;
+  const { children, leaf } = props;
 
-  console.log('www');
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
 
   const isActive = activeSuggestionId === getSuggestionId(leaf);
@@ -20,13 +20,12 @@ export const PlateSuggestionLeaf = <V extends Value = Value>(
   return (
     <StyledLeaf
       {...props}
-      nodeProps={{
-        style: {
-          color: '#398a55',
-          borderTop: isActive ? '2px solid #147333' : undefined,
-          borderBottom: isActive ? '2px solid #147333' : undefined,
-        },
-        ...nodeProps,
+      styles={{
+        root: [
+          tw`text-[#398a55]`,
+          isActive && tw`border-x-0 border-y-2 border-[#147333] border-solid`,
+          leaf.suggestionDeletion && tw`line-through`,
+        ],
       }}
     >
       {children}

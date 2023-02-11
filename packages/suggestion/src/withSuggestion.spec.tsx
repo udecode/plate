@@ -119,6 +119,76 @@ describe('withSuggestion', () => {
     });
   });
 
+  describe('deleteBackward', () => {
+    describe('when editor.isSuggesting is not defined', () => {
+      it('should not add marks', () => {
+        const input = ((
+          <editor>
+            <hp>
+              test
+              <cursor />
+            </hp>
+          </editor>
+        ) as any) as PlateEditor;
+
+        const output = ((
+          <editor>
+            <hp>
+              tes
+              <cursor />
+            </hp>
+          </editor>
+        ) as any) as PlateEditor;
+
+        const editor = createPlateEditor({
+          editor: input,
+          plugins: [createSuggestionPlugin()],
+        });
+        editor.isSuggesting = false;
+
+        editor.deleteBackward('character');
+
+        expect(editor.children).toEqual(output.children);
+      });
+    });
+
+    describe('when cursor is in suggestion mark', () => {
+      it('should not add a new suggestion id', () => {
+        const input = ((
+          <editor>
+            <hp>
+              <htext suggestion suggestionId="1">
+                test
+                <cursor />
+              </htext>
+            </hp>
+          </editor>
+        ) as any) as PlateEditor;
+
+        const output = ((
+          <editor>
+            <hp>
+              <htext suggestion suggestionId="1">
+                testtest
+                <cursor />
+              </htext>
+            </hp>
+          </editor>
+        ) as any) as PlateEditor;
+
+        const editor = createPlateEditor({
+          editor: input,
+          plugins: [createSuggestionPlugin()],
+        });
+        editor.isSuggesting = true;
+
+        editor.insertText('test');
+
+        expect(editor.children).toEqual(output.children);
+      });
+    });
+  });
+
   describe('normalizeNode', () => {
     describe('when there is a suggestion mark without id', () => {
       it('should remove mark', () => {

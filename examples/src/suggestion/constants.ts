@@ -41,9 +41,9 @@ export const suggestionValue: MyValue = [
   {
     type: 'p',
     children: [
-      { text: 'A line of text in a ' },
+      { text: 'Hello' },
       {
-        text: 'paragraph',
+        text: ' World',
         suggestion: true,
         suggestionId: 1,
       },
@@ -63,6 +63,7 @@ export const suggestionValue: MyValue = [
         text: 'paragraph',
         suggestion: true,
         suggestionId: 3,
+        suggestionDeletion: true,
       },
       {
         text:
