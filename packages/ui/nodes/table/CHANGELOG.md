@@ -1,5 +1,11 @@
 # @udecode/plate-table-ui
 
+## 19.5.0
+
+### Minor Changes
+
+- [#2202](https://github.com/udecode/plate/pull/2202) by [@zbeyens](https://github.com/zbeyens) – Replace onMouseDown by onClick. Add aria-label.
+
 ## 19.4.4
 
 ## 19.4.2

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-dnd",
-  "version": "19.4.4",
+  "version": "19.5.0",
   "description": "Drag & drop feature for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -21,8 +21,8 @@
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.2",
     "@tippyjs/react": "^4.2.6",
-    "@udecode/plate-core": "19.4.4",
-    "@udecode/plate-styled-components": "19.4.4",
+    "@udecode/plate-core": "19.5.0",
+    "@udecode/plate-styled-components": "19.5.0",
     "raf": "^3.4.1"
   },
   "peerDependencies": {

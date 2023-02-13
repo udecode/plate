@@ -1,5 +1,15 @@
 # @udecode/plate-core
 
+## 19.5.0
+
+### Patch Changes
+
+- [#2211](https://github.com/udecode/plate/pull/2211) by [@zbeyens](https://github.com/zbeyens) –
+  - support `slate/slate-react@0.90.0`
+  - add `isElement(n)` to `isBlock` as it has been removed by slate
+  - Fixes #2203
+  - Fixes #2197
+
 ## 19.4.4
 
 ### Patch Changes
