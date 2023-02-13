@@ -42,10 +42,10 @@ export const commonDeps = {
   react: '17.0.2',
   'react-dom': '17.0.2',
   'react-scripts': '4.0.3',
-  slate: '0.87.0',
+  slate: '0.90.0',
   'slate-history': '0.86.0',
   'slate-hyperscript': '0.77.0',
-  'slate-react': '0.88.0',
+  'slate-react': '0.90.0',
   'styled-components': '5.3.1',
 };
 
