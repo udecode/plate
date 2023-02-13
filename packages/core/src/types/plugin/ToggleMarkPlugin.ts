@@ -1,8 +1,6 @@
-import { Value } from '../../slate/editor/TEditor';
 import { HotkeyPlugin } from './HotkeyPlugin';
 
-export interface ToggleMarkPlugin<V extends Value = Value>
-  extends HotkeyPlugin {
+export interface ToggleMarkPlugin extends HotkeyPlugin {
   /**
    * Node properties to delete.
    */
