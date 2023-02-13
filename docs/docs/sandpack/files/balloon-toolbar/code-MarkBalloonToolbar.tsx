@@ -41,16 +41,19 @@ export const MarkBalloonToolbar = ({ children }: { children?: ReactNode }) => {
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={boldTooltip}
+        actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
         tooltip={italicTooltip}
+        actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={underlineTooltip}
+        actionHandler="onMouseDown"
       />
       {children}
     </BalloonToolbar>
