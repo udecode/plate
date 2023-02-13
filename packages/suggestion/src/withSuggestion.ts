@@ -13,6 +13,7 @@ import {
   TNodeProps,
   unsetNodes,
   Value,
+  withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { MoveUnit } from 'slate/dist/interfaces/types';
@@ -31,28 +32,53 @@ export const setSuggestionNodes = <V extends Value = Value>(
     suggestionDeletion?: boolean;
   }
 ) => {
-  const props: TNodeProps<TSuggestionText> = {
-    [MARK_SUGGESTION]: true,
-    [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? nanoid(),
-  };
-  if (options?.suggestionDeletion) {
-    props.suggestionDeletion = true;
-  }
-
+  // get all inline nodes to be set
   const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => isText(n) || isInline(editor, n),
+    match: (n) => ,
+
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
 
   withoutNormalizing(editor, () => {
-    nodeEntries.forEach(([node, path]) => {
-      setNodes<TSuggestionText>(editor, props, {
-        match: (n) =>
-          (isText(n) || isInline(editor, n)) && !!n[MARK_SUGGESTION],
-        split: true,
-        ...options,
-      });
+    nodeEntries.forEach(([_node, path]) => {
+      const node = _node as TSuggestionText;
+
+      const props: TNodeProps<TSuggestionText> = {
+        [MARK_SUGGESTION]: true,
+        [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? nanoid(),
+      };
+      if (options?.suggestionDeletion) {
+        props.suggestionDeletion = true;
+      }
+      if (!node[KEY_SUGGESTION_ID]) {
+        node[KEY_SUGGESTION_ID] = editor.activeSuggestionId ?? nanoid();
+      }
+
+      if (node[MARK_SUGGESTION]) {
+        if (node[KEY_SUGGESTION_ID] === props[KEY_SUGGESTION_ID]) {
+          return;
+        }
+      }
+
+      setNodes<TSuggestionText>(
+        editor,
+        { ...props },
+        {
+          at: path,
+          match: (n) => {
+            if (!isText(n) && !isInline(editor, n)) return false;
+            
+            if (n[MARK_SUGGESTION]) {
+              
+            }
+            
+            return true;
+          },
+          split: true,
+          ...options,
+        }
+      );
     });
   });
 };
