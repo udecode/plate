@@ -1,5 +1,6 @@
 import {
   collapseSelection,
+  getNodeEntries,
   getPointBefore,
   isExpanded,
   isInline,
@@ -38,10 +39,21 @@ export const setSuggestionNodes = <V extends Value = Value>(
     props.suggestionDeletion = true;
   }
 
-  setNodes<TSuggestionText>(editor, props, {
+  const _nodeEntries = getNodeEntries(editor, {
     match: (n) => isText(n) || isInline(editor, n),
-    split: true,
     ...options,
+  });
+  const nodeEntries = [..._nodeEntries];
+
+  withoutNormalizing(editor, () => {
+    nodeEntries.forEach(([node, path]) => {
+      setNodes<TSuggestionText>(editor, props, {
+        match: (n) =>
+          (isText(n) || isInline(editor, n)) && !!n[MARK_SUGGESTION],
+        split: true,
+        ...options,
+      });
+    });
   });
 };
 

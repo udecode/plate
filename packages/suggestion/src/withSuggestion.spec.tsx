@@ -152,39 +152,141 @@ describe('withSuggestion', () => {
       });
     });
 
-    describe('when cursor is in suggestion mark', () => {
-      it('should not add a new suggestion id', () => {
-        const input = ((
-          <editor>
-            <hp>
-              <htext suggestion suggestionId="1">
+    describe('when editor.isSuggesting is true', () => {
+      describe('when there is no point before', () => {
+        it('should not add a new suggestion id', () => {
+          const input = ((
+            <editor>
+              <hp>
+                <htext suggestion suggestionId="1">
+                  <cursor />
+                  test
+                </htext>
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
+
+          const output = ((
+            <editor>
+              <hp>
+                <htext suggestion suggestionId="1">
+                  <cursor />
+                  test
+                </htext>
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
+
+          const editor = createPlateEditor({
+            editor: input,
+            plugins: [createSuggestionPlugin()],
+          });
+          editor.isSuggesting = true;
+
+          editor.deleteBackward('character');
+
+          expect(editor.children).toEqual(output.children);
+        });
+      });
+
+      describe('when point before is not marked', () => {
+        it('should add a new suggestion id', () => {
+          const input = ((
+            <editor>
+              <hp>
                 test
                 <cursor />
-              </htext>
-            </hp>
-          </editor>
-        ) as any) as PlateEditor;
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
 
-        const output = ((
-          <editor>
-            <hp>
-              <htext suggestion suggestionId="1">
-                testtest
-                <cursor />
-              </htext>
-            </hp>
-          </editor>
-        ) as any) as PlateEditor;
+          const editor = createPlateEditor({
+            editor: input,
+            plugins: [createSuggestionPlugin()],
+          });
+          editor.isSuggesting = true;
 
-        const editor = createPlateEditor({
-          editor: input,
-          plugins: [createSuggestionPlugin()],
+          editor.deleteBackward('character');
+
+          expect(editor.children[0].children[1][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[1].suggestionDeletion
+          ).toBeTruthy();
+          expect(
+            editor.children[0].children[1][KEY_SUGGESTION_ID]
+          ).toBeTruthy();
+          expect(editor.children[0].children[0].text).toBe('tes');
         });
-        editor.isSuggesting = true;
+      });
 
-        editor.insertText('test');
+      describe('when point before is marked', () => {
+        it('should add a new suggestion id', () => {
+          const input = ((
+            <editor>
+              <hp>
+                test
+                <cursor />
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
 
-        expect(editor.children).toEqual(output.children);
+          const editor = createPlateEditor({
+            editor: input,
+            plugins: [createSuggestionPlugin()],
+          });
+          editor.isSuggesting = true;
+
+          editor.deleteBackward('character');
+
+          expect(editor.children[0].children[1][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[1].suggestionDeletion
+          ).toBeTruthy();
+          expect(
+            editor.children[0].children[1][KEY_SUGGESTION_ID]
+          ).toBeTruthy();
+          expect(editor.children[0].children[0].text).toBe('tes');
+        });
+      });
+
+      describe('when delete line', () => {
+        it('should add a new suggestion id', () => {
+          const input = ((
+            <editor>
+              <hp>
+                test
+                <cursor />
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
+
+          const output = ((
+            <editor>
+              <hp>
+                tes
+                <htext suggestion suggestionId="1" suggestionDeletion>
+                  t
+                </htext>
+              </hp>
+            </editor>
+          ) as any) as PlateEditor;
+
+          const editor = createPlateEditor({
+            editor: input,
+            plugins: [createSuggestionPlugin()],
+          });
+          editor.isSuggesting = true;
+
+          editor.deleteBackward('line');
+
+          expect(editor.children[0].children[0][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[0].suggestionDeletion
+          ).toBeTruthy();
+          expect(
+            editor.children[0].children[0][KEY_SUGGESTION_ID]
+          ).toBeTruthy();
+        });
       });
     });
   });
