@@ -9,7 +9,7 @@ export const AlignToolbarButtons = () => {
   return (
     <>
       <AlignToolbarButton
-        tooltip={{ content: 'Align left' }}
+        tooltip={{ content: 'Align Left' }}
         value="left"
         icon={<FormatAlignLeft />}
       />
