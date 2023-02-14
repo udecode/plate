@@ -62,10 +62,7 @@ export const BasicElementToolbarButtons = () => {
         type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
       />
-      <CodeBlockToolbarButton
-        tooltip={{ content: 'Code Block' }}
-        icon={<CodeBlock />}
-      />
+      <CodeBlockToolbarButton icon={<CodeBlock />} />
     </>
   );
 };
