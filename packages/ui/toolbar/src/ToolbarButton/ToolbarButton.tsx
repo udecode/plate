@@ -18,9 +18,9 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const tooltipProps: TippyProps = {
     content: '',
-    offset: [0, 0],
+    offset: [0, 5],
     arrow: false,
-    delay: 0,
+    delay: 500,
     duration: [200, 0],
     hideOnClick: false,
     ...tooltip,

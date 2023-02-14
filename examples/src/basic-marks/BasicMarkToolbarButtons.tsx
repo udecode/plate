@@ -25,38 +25,38 @@ export const BasicMarkToolbarButtons = () => {
   return (
     <>
       <MarkToolbarButton
-        tooltip={{ content: 'Bold' }}
+        tooltip={{ content: 'Bold (⌘+B)' }}
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Italic' }}
+        tooltip={{ content: 'Italic (⌘+I)' }}
         type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Underline' }}
+        tooltip={{ content: 'Underline (⌘+U)' }}
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Strikethrough' }}
+        tooltip={{ content: 'Strikethrough (⌘+⇧+M)' }}
         type={getPluginType(editor, MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Code' }}
+        tooltip={{ content: 'Code (⌘+E)' }}
         type={getPluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Superscript' }}
+        tooltip={{ content: 'Superscript (⌘+,)' }}
         type={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
       <MarkToolbarButton
-        tooltip={{ content: 'Subscript' }}
+        tooltip={{ content: 'Subscript (⌘+.)' }}
         type={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}

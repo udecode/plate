@@ -58,7 +58,7 @@ export const BasicElementToolbarButtons = () => {
         icon={<Looks6 />}
       />
       <BlockToolbarButton
-        tooltip={{ content: 'Block Quote' }}
+        tooltip={{ content: 'Block Quote (⌘+⇧+.)' }}
         type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
       />
