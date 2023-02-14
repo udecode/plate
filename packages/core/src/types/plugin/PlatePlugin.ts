@@ -13,6 +13,7 @@ import { OnChange } from './OnChange';
 import { PlatePluginComponent } from './PlatePluginComponent';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
 import { PlatePluginKey, PluginKey } from './PlatePluginKey';
+import { PlatePluginNormalizeNode } from './PlatePluginNormalizeNode';
 import { PlatePluginProps } from './PlatePluginProps';
 import { RenderAfterEditable } from './RenderAfterEditable';
 import { SerializeHtml } from './SerializeHtml';
@@ -32,6 +33,8 @@ export type PlatePlugin<
      * The fragment will be inserted to the editor if not empty.
      */
     insertData?: PlatePluginInsertData<V>;
+
+    normalizeNode?: PlatePluginNormalizeNode<P, V, E>;
   }>;
 
   /**

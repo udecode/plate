@@ -1,5 +1,8 @@
+import { moveNodes } from '../slate';
 import { Value } from '../slate/editor/TEditor';
+import { PluginOptions, WithPlatePlugin } from '../types';
 import { PlateEditor } from '../types/plate/PlateEditor';
+import { withNormalizeNode } from '../types/plugin/PlatePluginNormalizeNode';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 import { getInjectedPlugins } from '../utils/plate/getInjectedPlugins';
 import { pipeInsertDataQuery } from '../utils/plate/pipeInsertDataQuery';
@@ -8,12 +11,17 @@ import { pipeTransformData } from '../utils/plate/pipeTransformData';
 import { pipeTransformFragment } from '../utils/plate/pipeTransformFragment';
 
 export const withInsertData = <
+  P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
-  editor: E
+  editor: E,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  plugin: WithPlatePlugin<P, V, E>
 ) => {
   const { insertData } = editor;
+
+  editor = withNormalizeNode(editor, plugin) as any;
 
   editor.insertData = (dataTransfer) => {
     const inserted = [...editor.plugins].reverse().some((plugin) => {
@@ -72,7 +80,25 @@ export const withInsertData = <
 
 export const KEY_INSERT_DATA = 'insertData';
 
+let it = 0;
+
 export const createInsertDataPlugin = createPluginFactory({
   key: KEY_INSERT_DATA,
   withOverrides: withInsertData,
+  editor: {
+    normalizeNode: (editor) => ({
+      maxIterations: 2,
+      apply: (entry) => {
+        try {
+          moveNodes(editor, {
+            at: [it],
+            to: [it + 1],
+          });
+          it++;
+          if (it > 5) it = 0;
+        } catch (err) {}
+        return true;
+      },
+    }),
+  },
 });
