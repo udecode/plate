@@ -1,5 +1,17 @@
 # @udecode/plate-toolbar
 
+## 19.6.0
+
+### Minor Changes
+
+- [#2212](https://github.com/udecode/plate/pull/2212) by [@TomMorane](https://github.com/TomMorane) –
+  - default aria-label = tooltip content
+
+### Patch Changes
+
+- [#2212](https://github.com/udecode/plate/pull/2212) by [@TomMorane](https://github.com/TomMorane) –
+  - Fixes #1603
+
 ## 19.5.0
 
 ### Minor Changes
