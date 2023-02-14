@@ -21,7 +21,6 @@ export const ListToolbarButton = ({
 
   return (
     <BlockToolbarButton
-      tooltip={{ content: 'Toggle list' }}
       active={!!res && res.list[0].type === type}
       type={type}
       onClick={(e) => {
