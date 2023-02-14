@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { TElement } from '../element/TElement';
+import { isElement } from '../element';
 import { TEditor, Value } from './TEditor';
 
 /**
@@ -8,6 +8,6 @@ import { TEditor, Value } from './TEditor';
 export const isVoid = <V extends Value>(
   editor: TEditor<V>,
   value: any
-): value is TElement => {
-  return Editor.isVoid(editor as any, value);
+): boolean => {
+  return isElement(value) && Editor.isVoid(editor as any, value);
 };

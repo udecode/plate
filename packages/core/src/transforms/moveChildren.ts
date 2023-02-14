@@ -1,4 +1,5 @@
 import { Path } from 'slate';
+import { TElement } from '../slate';
 import { isBlock } from '../slate/editor/isBlock';
 import { TEditor, Value } from '../slate/editor/TEditor';
 import { getNode } from '../slate/node/getNode';
@@ -40,9 +41,14 @@ export const moveChildren = <V extends Value>(
   const parentPath = Path.isPath(at) ? at : at[1];
   const parentNode = Path.isPath(at) ? getNode(editor, parentPath) : at[0];
 
+  if (!parentNode) return moved;
   if (!isBlock(editor, parentNode)) return moved;
 
-  for (let i = parentNode.children.length - 1; i >= fromStartIndex; i--) {
+  for (
+    let i = (parentNode.children as TElement[]).length - 1;
+    i >= fromStartIndex;
+    i--
+  ) {
     const childPath = [...parentPath, i];
     const childNode = getNode(editor, childPath);
 

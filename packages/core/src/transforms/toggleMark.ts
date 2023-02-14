@@ -5,8 +5,7 @@ import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
 import { ToggleMarkPlugin } from '../types/plugin/ToggleMarkPlugin';
 import { removeMark } from './removeMark';
 
-export interface ToggleMarkOptions<V extends Value = Value>
-  extends Pick<ToggleMarkPlugin<V>, 'clear'> {
+export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
   key: string;
 }
 
@@ -18,7 +17,7 @@ export interface ToggleMarkOptions<V extends Value = Value>
  */
 export const toggleMark = <V extends Value = Value>(
   editor: TEditor<V>,
-  { key, clear }: ToggleMarkOptions<V>
+  { key, clear }: ToggleMarkOptions
 ) => {
   if (!editor.selection) return;
 

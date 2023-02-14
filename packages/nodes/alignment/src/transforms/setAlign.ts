@@ -26,8 +26,13 @@ export const setAlign = <V extends Value>(
     key
   );
 
-  const match: TNodeMatch<ENode<Value>> = (n) =>
-    isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
+  const match: TNodeMatch<ENode<Value>> = (n) => {
+    return (
+      isBlock(editor, n) &&
+      !!validTypes &&
+      validTypes.includes(n.type as string)
+    );
+  };
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {
