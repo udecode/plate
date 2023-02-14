@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { TElement } from '../element/TElement';
+import { isElement } from '../element';
 import { TEditor, Value } from './TEditor';
 
 /**
@@ -8,4 +8,4 @@ import { TEditor, Value } from './TEditor';
 export const isBlock = <V extends Value>(
   editor: TEditor<V>,
   value: any
-): value is TElement => Editor.isBlock(editor as any, value);
+): boolean => isElement(value) && Editor.isBlock(editor as any, value);

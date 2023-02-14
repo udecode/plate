@@ -1,5 +1,11 @@
 # @udecode/plate-tabbable
 
+## 19.5.0
+
+### Patch Changes
+
+- [#2202](https://github.com/udecode/plate/pull/2202) by [@zbeyens](https://github.com/zbeyens) – Patch
+
 ## 19.4.5
 
 ### Patch Changes

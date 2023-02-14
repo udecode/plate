@@ -11,7 +11,6 @@ import {
   BlockToolbarButton,
   CodeBlockToolbarButton,
   ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -56,10 +55,7 @@ export const BasicElementToolbarButtons = () => {
         type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
       />
-      <CodeBlockToolbarButton
-        type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
-        icon={<CodeBlock />}
-      />
+      <CodeBlockToolbarButton icon={<CodeBlock />} />
     </>
   );
 };

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-tabbable",
-  "version": "19.4.5",
+  "version": "19.5.0",
   "description": "Tab into and out of void nodes and other elements",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.4.4",
+    "@udecode/plate-core": "19.5.0",
     "tabbable": "^6.0.1"
   },
   "peerDependencies": {

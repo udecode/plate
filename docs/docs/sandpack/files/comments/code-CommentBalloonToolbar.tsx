@@ -15,7 +15,11 @@ export const CommentBalloonToolbar = () => {
 
   return (
     <MarkBalloonToolbar>
-      <PlateCommentToolbarButton icon={<Chat />} tooltip={commentTooltip} />
+      <PlateCommentToolbarButton
+        icon={<Chat />}
+        tooltip={commentTooltip}
+        actionHandler="onMouseDown"
+      />
     </MarkBalloonToolbar>
   );
 };
