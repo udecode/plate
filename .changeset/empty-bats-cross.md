@@ -3,4 +3,4 @@
 "@udecode/plate-ui-toolbar": patch
 ---
 
-Fix
+- default aria-label = tooltip content
