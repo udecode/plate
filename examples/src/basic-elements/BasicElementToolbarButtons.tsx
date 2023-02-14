@@ -63,7 +63,7 @@ export const BasicElementToolbarButtons = () => {
         icon={<FormatQuote />}
       />
       <CodeBlockToolbarButton
-        tooltip={{ content: 'Heading block' }}
+        tooltip={{ content: 'Code Block' }}
         icon={<CodeBlock />}
       />
     </>
