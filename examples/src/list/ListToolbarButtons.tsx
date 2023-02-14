@@ -9,18 +9,22 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
+const tooltip = (content: string) => ({
+  content,
+});
+
 export const ListToolbarButtons = () => {
   const editor = useMyPlateEditorRef();
 
   return (
     <>
       <ListToolbarButton
-        tooltip={{ content: 'Bullet List' }}
+        tooltip={tooltip('Bullet List')}
         type={getPluginType(editor, ELEMENT_UL)}
         icon={<FormatListBulleted />}
       />
       <ListToolbarButton
-        tooltip={{ content: 'Ordered List' }}
+        tooltip={tooltip('Ordered List')}
         type={getPluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
       />

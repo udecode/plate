@@ -5,13 +5,17 @@ import { indent, outdent, ToolbarButton } from '@udecode/plate';
 import { focusEditor } from '@udecode/plate-core';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
+const tooltip = (content: string) => ({
+  content,
+});
+
 export const IndentToolbarButtons = () => {
   const editor = useMyPlateEditorRef();
 
   return (
     <>
       <ToolbarButton
-        tooltip={{ content: 'Outdent' }}
+        tooltip={tooltip('Outdent')}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -22,7 +26,7 @@ export const IndentToolbarButtons = () => {
         icon={<FormatIndentDecrease />}
       />
       <ToolbarButton
-        tooltip={{ content: 'Indent' }}
+        tooltip={tooltip('Indent')}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
