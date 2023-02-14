@@ -11,8 +11,7 @@ export const IndentToolbarButtons = () => {
   return (
     <>
       <ToolbarButton
-        tooltip={{ content: 'Outdent' }}
-        aria-label="Indent"
+        tooltip={{ content: 'Indent' }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -23,8 +22,7 @@ export const IndentToolbarButtons = () => {
         icon={<FormatIndentDecrease />}
       />
       <ToolbarButton
-        tooltip={{ content: 'Indent' }}
-        aria-label="Outdent"
+        tooltip={{ content: 'Outdent' }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
