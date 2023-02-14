@@ -1,6 +1,6 @@
 ---
 
-"@udecode/plate-ui-toolbar": patch
+"@udecode/plate-ui-toolbar": minor
 ---
 
 - default aria-label = tooltip content
