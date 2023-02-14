@@ -23,8 +23,6 @@ export const TableToolbarButton = <V extends Value>({
 
   return (
     <ToolbarButton
-      tooltip={{ content: 'Table' }}
-      aria-label="Table"
       active={active}
       onClick={(e) => {
         e.preventDefault();

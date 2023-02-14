@@ -16,7 +16,9 @@ export const getToolbarButtonStyles = (props: ToolbarButtonProps) =>
             ${tw`block w-5 h-5`}
           }
         `,
+        props.active && props.styles?.active,
       ],
+
       ...(props.active && { active: {} }),
     }
   );

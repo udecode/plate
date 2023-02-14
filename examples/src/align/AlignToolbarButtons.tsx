@@ -8,10 +8,26 @@ import { AlignToolbarButton } from '@udecode/plate';
 export const AlignToolbarButtons = () => {
   return (
     <>
-      <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
-      <AlignToolbarButton value="center" icon={<FormatAlignCenter />} />
-      <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
-      <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
+      <AlignToolbarButton
+        tooltip={{ content: 'Align Left' }}
+        value="left"
+        icon={<FormatAlignLeft />}
+      />
+      <AlignToolbarButton
+        tooltip={{ content: 'Align Center' }}
+        value="center"
+        icon={<FormatAlignCenter />}
+      />
+      <AlignToolbarButton
+        tooltip={{ content: 'Align Right' }}
+        value="right"
+        icon={<FormatAlignRight />}
+      />
+      <AlignToolbarButton
+        tooltip={{ content: 'Align Justify' }}
+        value="justify"
+        icon={<FormatAlignJustify />}
+      />
     </>
   );
 };

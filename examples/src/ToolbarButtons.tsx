@@ -28,8 +28,10 @@ import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
 
 export const ToolbarButtons = () => {
-  const colorTooltip: TippyProps = { content: 'Text color' };
-  const bgTooltip: TippyProps = { content: 'Text color' };
+  const colorTooltip: TippyProps = { content: 'Text Color' };
+  const bgTooltip: TippyProps = { content: 'Background Color' };
+  const emojiTooltip: TippyProps = { content: 'Emoji' };
+  const lineHeightTooltip: TippyProps = { content: 'Line Height' };
 
   return (
     <>
@@ -49,8 +51,15 @@ export const ToolbarButtons = () => {
         selectedIcon={<Check />}
         tooltip={bgTooltip}
       />
-      <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
-      <LineHeightToolbarDropdown icon={<LineWeight />} />
+      <EmojiToolbarDropdown
+        tooltip={emojiTooltip}
+        pluginKey={KEY_EMOJI}
+        icon={<EmojiEmotions />}
+      />
+      <LineHeightToolbarDropdown
+        tooltip={lineHeightTooltip}
+        icon={<LineWeight />}
+      />
       <AlignToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
       <ImageToolbarButton icon={<Image />} />

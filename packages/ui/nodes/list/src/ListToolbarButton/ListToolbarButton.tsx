@@ -21,7 +21,6 @@ export const ListToolbarButton = ({
 
   return (
     <BlockToolbarButton
-      aria-label="Toggle list"
       active={!!res && res.list[0].type === type}
       type={type}
       onClick={(e) => {

@@ -28,7 +28,7 @@ export const CodeBlockToolbarButton = <V extends Value>({
 
   return (
     <BlockToolbarButton
-      aria-label="Insert code block"
+      tooltip={{ content: 'Code Block' }}
       type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
       onClick={(e) => {
         e.preventDefault();

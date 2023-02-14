@@ -27,7 +27,7 @@ export const LinkToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Insert link"
+      tooltip={{ content: 'Link' }}
       active={isLink}
       onClick={(e) => {
         e.preventDefault();

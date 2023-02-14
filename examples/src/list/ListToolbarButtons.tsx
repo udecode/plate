@@ -15,10 +15,12 @@ export const ListToolbarButtons = () => {
   return (
     <>
       <ListToolbarButton
+        tooltip={{ content: 'Bullet List' }}
         type={getPluginType(editor, ELEMENT_UL)}
         icon={<FormatListBulleted />}
       />
       <ListToolbarButton
+        tooltip={{ content: 'Ordered List' }}
         type={getPluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
       />

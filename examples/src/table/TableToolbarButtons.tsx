@@ -17,11 +17,35 @@ import {
 
 export const TableToolbarButtons = () => (
   <>
-    <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
-    <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-    <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
-    <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-    <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
-    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
+    <TableToolbarButton
+      tooltip={{ content: 'Table' }}
+      icon={<BorderAll />}
+      transform={insertTable}
+    />
+    <TableToolbarButton
+      tooltip={{ content: 'Remove Table' }}
+      icon={<BorderClear />}
+      transform={deleteTable}
+    />
+    <TableToolbarButton
+      tooltip={{ content: 'Table Row' }}
+      icon={<BorderBottom />}
+      transform={insertTableRow}
+    />
+    <TableToolbarButton
+      tooltip={{ content: 'Remove Table Row' }}
+      icon={<BorderTop />}
+      transform={deleteRow}
+    />
+    <TableToolbarButton
+      tooltip={{ content: 'Table Column' }}
+      icon={<BorderLeft />}
+      transform={insertTableColumn}
+    />
+    <TableToolbarButton
+      tooltip={{ content: 'Remove Table Column' }}
+      icon={<BorderRight />}
+      transform={deleteColumn}
+    />
   </>
 );
