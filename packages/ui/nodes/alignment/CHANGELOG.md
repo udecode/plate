@@ -1,5 +1,11 @@
 # @udecode/plate-alignment-ui
 
+## 19.6.0
+
+### Minor Changes
+
+- [#2212](https://github.com/udecode/plate/pull/2212) by [@TomMorane](https://github.com/TomMorane) – Toolbar buttons: add default tooltip content
+
 ## 19.5.0
 
 ### Minor Changes
