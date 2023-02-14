@@ -1,12 +1,13 @@
 ---
-"@udecode/plate-ui-alignment": patch
-"@udecode/plate-ui-code-block": patch
-"@udecode/plate-ui-excalidraw": patch
-"@udecode/plate-ui-link": patch
-"@udecode/plate-ui-list": patch
-"@udecode/plate-ui-media": patch
-"@udecode/plate-ui-table": patch
+"@udecode/plate-ui-alignment": minor
+"@udecode/plate-ui-code-block": minor
+"@udecode/plate-ui-excalidraw": minor
+"@udecode/plate-ui-link": minor
+"@udecode/plate-ui-list": minor
+"@udecode/plate-ui-media": minor
+"@udecode/plate-ui-table": minor
 
 ---
 
-Toolbar buttons tooltip
+Toolbar buttons: add default tooltip content
+
