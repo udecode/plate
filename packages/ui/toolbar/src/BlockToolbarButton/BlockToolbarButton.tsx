@@ -25,7 +25,6 @@ export const BlockToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Toggle block type"
       active={active}
       onClick={(e) => {
         e.preventDefault();
