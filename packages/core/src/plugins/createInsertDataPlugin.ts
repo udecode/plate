@@ -1,4 +1,3 @@
-import { moveNodes } from '../slate';
 import { Value } from '../slate/editor/TEditor';
 import { PluginOptions, WithPlatePlugin } from '../types';
 import { PlateEditor } from '../types/plate/PlateEditor';
@@ -24,11 +23,11 @@ export const withInsertData = <
   editor = withNormalizeNode(editor, plugin) as any;
 
   editor.insertData = (dataTransfer) => {
-    const inserted = [...editor.plugins].reverse().some((plugin) => {
-      const insertDataOptions = plugin.editor.insertData;
+    const inserted = [...editor.plugins].reverse().some((p) => {
+      const insertDataOptions = p.editor.insertData;
       if (!insertDataOptions) return false;
 
-      const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
+      const injectedPlugins = getInjectedPlugins<{}, V>(editor, p);
       const { format, getFragment } = insertDataOptions;
       if (!format) return false;
 
@@ -80,8 +79,6 @@ export const withInsertData = <
 
 export const KEY_INSERT_DATA = 'insertData';
 
-let it = 0;
-
 export const createInsertDataPlugin = createPluginFactory({
   key: KEY_INSERT_DATA,
   withOverrides: withInsertData,
@@ -89,14 +86,7 @@ export const createInsertDataPlugin = createPluginFactory({
     normalizeNode: (editor) => ({
       maxIterations: 2,
       apply: (entry) => {
-        try {
-          moveNodes(editor, {
-            at: [it],
-            to: [it + 1],
-          });
-          it++;
-          if (it > 5) it = 0;
-        } catch (err) {}
+        editor.insertText('.');
         return true;
       },
     }),

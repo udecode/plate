@@ -1,6 +1,6 @@
-import { Path } from 'slate';
-import { ENode, TNodeEntry } from '../../slate';
+import { ENode, setNodes, TNode, TNodeEntry } from '../../slate';
 import { Value } from '../../slate/editor/TEditor';
+import { nanoid } from '../../utils';
 import { Nullable } from '../misc';
 import { PlateEditor } from '../plate';
 import { HandlerReturnType } from './DOMHandlers';
@@ -15,16 +15,22 @@ export type PlatePluginNormalizeNode<
   plugin: WithPlatePlugin<P, V, E>
 ) => Nullable<{
   /**
-   * Maximum number of iterations to `apply` the normalization on the same node.
-   * Once exceeded, `apply` is not called once.
-   * The counter resets on
+   * Maximum number of iterations per node per editor change. Requires the node to have an id.
+   * @see createNodeIdPlugin
    */
-  maxIterations?: number | (() => number);
+  maxIterationsPerNodeChange?:
+    | number
+    | ((entry: TNodeEntry<ENode<V>>) => number);
 
   /**
-   * If true, the iteration counter is reset on each `apply`.
+   * Maximum number of iterations per editor change.
    */
-  resetIterations?: () => boolean;
+  maxIterationsPerChange?: number | ((entry: TNodeEntry<ENode<V>>) => number);
+
+  /**
+   * Maximum number of iterations per editor lifetime.
+   */
+  maxIterations?: boolean;
 
   /**
    * Conditions to `apply` the normalization.
@@ -50,14 +56,16 @@ export const withNormalizeNode = <
 ) => {
   const { normalizeNode, apply, onChange } = editor;
 
-  const iterationCountByPathKeyByPlugin = new WeakMap<
+  const iterationCountByNodeIdByPlugin = new WeakMap<
     WithPlatePlugin<{}, V>,
     Record<string, number>
   >();
 
+  editor.normalizingPluginKeys = {};
+
   editor.onChange = () => {
     editor.plugins.forEach((p) => {
-      iterationCountByPathKeyByPlugin.set(p, {});
+      iterationCountByNodeIdByPlugin.set(p, {});
     });
     console.log('reset');
 
@@ -65,32 +73,48 @@ export const withNormalizeNode = <
   };
 
   editor.normalizeNode = (entry) => {
-    const normalized = [...editor.plugins].reverse().some((plugin) => {
-      const pluginNormalizeNode = plugin.editor?.normalizeNode?.(
-        editor,
-        plugin
-      );
+    const normalized = [...editor.plugins].reverse().some((p) => {
+      const pluginNormalizeNode = p.editor?.normalizeNode?.(editor, p);
       if (!pluginNormalizeNode) return false;
 
       const {
         query,
-        apply,
+        apply: applyNormalizeNode,
         maxIterations,
-        resetIterations,
       } = pluginNormalizeNode;
-      if (!apply) return false;
+      if (!applyNormalizeNode) return false;
+
+      // plugin.normalizingCount = 0;
+
+      // const normalizingPluginOperations = editor.operations.filter((op) => {
+      //   return !!op.normalizingPluginKeys[p.key];
+      // });
 
       const [node, path] = entry;
 
-      const key = path.join(',');
+      const id = node.id ?? nanoid();
 
-      const iterationCountByPathKey =
-        iterationCountByPathKeyByPlugin.get(plugin) ?? {};
+      if (!node.id) {
+        setNodes<TNode>(
+          editor,
+          {
+            id,
+          },
+          { at: path }
+        );
+      }
 
-      const iterationCount = iterationCountByPathKey[key] ?? 0;
+      if (node.id) {
+        const iterationCountByNodeId =
+          iterationCountByNodeIdByPlugin.get(plugin) ?? {};
 
-      if (maxIterations && iterationCount >= maxIterations) {
-        console.log('..');
+        const iterationCount = iterationCountByNodeId[node.id] ?? 0;
+      }
+
+      if (maxIterations && normalizingPluginOperations.length > maxIterations) {
+        console.warn(
+          `Plugin ${plugin.key} could not completely normalize the node after ${maxIterations} iterations! This is usually due to incorrect normalization logic that leaves a node in an invalid state.`
+        );
         return false;
       }
 
@@ -98,46 +122,53 @@ export const withNormalizeNode = <
         return false;
       }
 
-      if (apply(entry as any)) {
-        iterationCountByPathKeyByPlugin.set(plugin, {
-          ...iterationCountByPathKey,
-          [key]: iterationCount + 1,
-        });
-        console.log(key, iterationCount + 1);
-        return true;
+      editor.normalizingPluginKeys[p.key] = true;
+
+      const stop = (value: boolean) => {
+        delete editor.normalizingPluginKeys[p.key];
+        return value;
+      };
+
+      if (applyNormalizeNode(entry as any)) {
+        plugin.normalizingCount = (plugin.normalizingCount ?? 0) + 1;
+        // iterationCountByNodeIdByPlugin.set(plugin, {
+        //   ...iterationCountByNodeId,
+        //   [key]: iterationCount + 1,
+        // });
+        // console.log(key, iterationCount + 1);
+        return stop(true);
       }
 
-      return false;
+      return stop(false);
     });
 
     if (normalized) return;
 
-    try {
-      normalizeNode(entry);
-    } catch (err) {
-      console.warn(err);
-    }
+    normalizeNode(entry);
   };
 
   editor.apply = (op) => {
-    editor.plugins.forEach((p) => {
-      const iterationCountByPathKey =
-        iterationCountByPathKeyByPlugin.get(p) ?? {};
+    op.type === '';
+    // op.normalizingPluginKeys = { ...editor.normalizingPluginKeys };
 
-      Object.keys(iterationCountByPathKey).forEach((key) => {
-        const path = key.split(',').map(Number);
-        const newPath = Path.transform(path, op);
-        if (!newPath) return;
-
-        const newKey = newPath.join(',');
-
-        console.log(op, path, newPath);
-
-        const iterationCount = iterationCountByPathKey[key] ?? 0;
-        iterationCountByPathKey[newKey] = iterationCount;
-        console.log(iterationCountByPathKey);
-      });
-    });
+    // editor.plugins.forEach((p) => {
+    //   const iterationCountByNodeId =
+    //     iterationCountByNodeIdByPlugin.get(p) ?? {};
+    //
+    //   Object.keys(iterationCountByNodeId).forEach((key) => {
+    //     const path = key.split(',').map(Number);
+    //     const newPath = Path.transform(path, op);
+    //     if (!newPath) return;
+    //
+    //     const newKey = newPath.join(',');
+    //
+    //     console.log(op, path, newPath);
+    //
+    //     const iterationCount = iterationCountByNodeId[key] ?? 0;
+    //     iterationCountByNodeId[newKey] = iterationCount;
+    //     console.log(iterationCountByNodeId);
+    //   });
+    // });
 
     apply(op);
   };
