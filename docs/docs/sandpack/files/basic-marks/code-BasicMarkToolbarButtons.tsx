@@ -19,37 +19,48 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
+const tooltip = (content: string) => ({
+  content,
+});
+
 export const BasicMarkToolbarButtons = () => {
   const editor = useMyPlateEditorRef();
 
   return (
     <>
       <MarkToolbarButton
+        tooltip={tooltip('Bold (⌘+B)')}
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Italic (⌘+I)')}
         type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Underline (⌘+U)')}
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Strikethrough (⌘+⇧+M)')}
         type={getPluginType(editor, MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Code (⌘+E)')}
         type={getPluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Superscript (⌘+,)')}
         type={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
       <MarkToolbarButton
+        tooltip={tooltip('Subscript (⌘+.)')}
         type={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}

@@ -28,8 +28,6 @@ export const AlignToolbarButton = ({
 
   return (
     <ToolbarButton
-      tooltip={{ content: 'Align' }}
-      aria-label="Align"
       active={active}
       onClick={(e) => {
         e.preventDefault();

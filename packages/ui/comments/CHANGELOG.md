@@ -1,5 +1,7 @@
 # @udecode/plate-ui-comments
 
+## 19.6.0
+
 ## 19.5.0
 
 ### Minor Changes

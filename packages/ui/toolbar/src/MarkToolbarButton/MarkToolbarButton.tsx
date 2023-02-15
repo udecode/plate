@@ -23,7 +23,6 @@ export const MarkToolbarButton = <V extends Value>({
 
   return (
     <ToolbarButton
-      aria-label="Toggle mark"
       active={!!editor?.selection && isMarkActive(editor, type!)}
       onClick={(e) => {
         e.preventDefault();

@@ -23,6 +23,7 @@ export const ExcalidrawToolbarButton = ({
 
   return (
     <ToolbarButton
+      tooltip={{ content: 'Excalidraw' }}
       active={isExcalidraw}
       onClick={(e) => {
         e.preventDefault();

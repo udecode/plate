@@ -1,10 +1,5 @@
 import React from 'react';
-import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
-import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
-import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
-import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import {
-  AlignToolbarButton,
   createAlignPlugin,
   ELEMENT_H1,
   ELEMENT_H2,
@@ -16,21 +11,13 @@ import {
   Plate,
   PlateProvider,
 } from '@udecode/plate';
+import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { alignValue } from './align/alignValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
-
-const AlignToolbarButtons = () => (
-  <>
-    <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
-    <AlignToolbarButton value="center" icon={<FormatAlignCenter />} />
-    <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
-    <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
-  </>
-);
 
 const plugins = createMyPlugins(
   [

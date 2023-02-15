@@ -23,7 +23,7 @@ export const ImageToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Insert image"
+      tooltip={{ content: 'Image' }}
       onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();

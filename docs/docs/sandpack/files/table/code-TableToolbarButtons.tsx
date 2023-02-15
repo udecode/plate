@@ -15,14 +15,42 @@ import {
   TableToolbarButton,
 } from '@udecode/plate';
 
+const tooltip = (content: string) => ({
+  content,
+});
+
 export const TableToolbarButtons = () => (
   <>
-    <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
-    <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-    <TableToolbarButton icon={<BorderBottom />} transform={insertTableRow} />
-    <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-    <TableToolbarButton icon={<BorderLeft />} transform={insertTableColumn} />
-    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
+    <TableToolbarButton
+      tooltip={tooltip('Table')}
+      icon={<BorderAll />}
+      transform={insertTable}
+    />
+    <TableToolbarButton
+      tooltip={tooltip('Remove Table')}
+      icon={<BorderClear />}
+      transform={deleteTable}
+    />
+    <TableToolbarButton
+      tooltip={tooltip('Table Row')}
+      icon={<BorderBottom />}
+      transform={insertTableRow}
+    />
+    <TableToolbarButton
+      tooltip={tooltip('Remove Table Row')}
+      icon={<BorderTop />}
+      transform={deleteRow}
+    />
+    <TableToolbarButton
+      tooltip={tooltip('Table Column')}
+      icon={<BorderLeft />}
+      transform={insertTableColumn}
+    />
+    <TableToolbarButton
+      tooltip={tooltip('Remove Table Column')}
+      icon={<BorderRight />}
+      transform={deleteColumn}
+    />
   </>
 );
 `;
