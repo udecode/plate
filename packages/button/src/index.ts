@@ -3,3 +3,4 @@
  */
 
 export * from './Button';
+export * from './RemoveNodeButton';

@@ -3,4 +3,4 @@
  */
 
 export * from './PlateButton';
-export * from './RemoveNodeButton';
+export * from './PlateRemoveNodeButton';
