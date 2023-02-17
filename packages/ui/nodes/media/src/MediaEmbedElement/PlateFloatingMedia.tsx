@@ -2,7 +2,10 @@ import React from 'react';
 import { useElement } from '@udecode/plate-core';
 import { LinkIcon } from '@udecode/plate-link';
 import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
-import { plateButtonCss, RemoveNodeButton } from '@udecode/plate-ui-button';
+import {
+  plateButtonCss,
+  PlateRemoveNodeButton,
+} from '@udecode/plate-ui-button';
 import {
   floatingButtonCss,
   FloatingIconWrapper,
@@ -27,7 +30,7 @@ export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
 
           <FloatingVerticalDivider />
 
-          <RemoveNodeButton element={element} css={floatingButtonCss} />
+          <PlateRemoveNodeButton element={element} css={floatingButtonCss} />
         </div>
       ) : (
         <div tw="flex flex-col w-[330px]">
