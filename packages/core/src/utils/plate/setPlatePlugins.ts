@@ -17,10 +17,6 @@ import {
   KEY_INLINE_VOID,
 } from '../../plugins/createInlineVoidPlugin';
 import {
-  createInsertDataPlugin,
-  KEY_INSERT_DATA,
-} from '../../plugins/createInsertDataPlugin';
-import {
   createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
 } from '../../plugins/createNodeFactoryPlugin';
@@ -30,9 +26,15 @@ import {
   KEY_DESERIALIZE_HTML,
 } from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
 import {
+  createNormalizePlugin,
   createPrevSelectionPlugin,
+  KEY_NORMALIZE,
   KEY_PREV_SELECTION,
 } from '../../plugins/index';
+import {
+  createInsertDataPlugin,
+  KEY_INSERT_DATA,
+} from '../../plugins/insert-data/createInsertDataPlugin';
 import { Value } from '../../slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
@@ -53,6 +55,8 @@ export const setPlatePlugins = <
   }: Pick<PlateProps<V, E>, 'plugins' | 'disableCorePlugins'>
 ) => {
   let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
+
+  const lastPlugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
@@ -113,9 +117,16 @@ export const setPlatePlugins = <
           createEditorProtocolPlugin()
       );
     }
+
+    if (typeof dcp !== 'object' || !dcp?.normalize) {
+      lastPlugins.push(
+        (editor?.pluginsByKey?.[KEY_NORMALIZE] as any) ??
+          createNormalizePlugin()
+      );
+    }
   }
 
-  plugins = [...plugins, ..._plugins] as any;
+  plugins = [...plugins, ..._plugins, ...lastPlugins] as any;
 
   editor.plugins = [];
   editor.pluginsByKey = {};

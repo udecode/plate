@@ -8,7 +8,7 @@ import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';
 import { KEY_INLINE_VOID } from './createInlineVoidPlugin';
-import { KEY_INSERT_DATA } from './createInsertDataPlugin';
+import { KEY_INSERT_DATA } from './insert-data/createInsertDataPlugin';
 import { KEY_NODE_FACTORY } from './createNodeFactoryPlugin';
 import { KEY_PREV_SELECTION } from './createPrevSelectionPlugin';
 import { withPlate } from './withPlate';

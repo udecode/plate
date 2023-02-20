@@ -28,4 +28,6 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
     childrenFactory: () => V;
 
     currentKeyboardEvent: KeyboardEvent | null;
+
+    stagingEditor: PlateEditor<V>;
   };

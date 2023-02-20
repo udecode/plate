@@ -14,6 +14,7 @@ export * from './PlatePlugin';
 export * from './PlatePluginComponent';
 export * from './PlatePluginInsertData';
 export * from './PlatePluginKey';
+export * from './PlatePluginNormalizeNode';
 export * from './PlatePluginProps';
 export * from './RenderAfterEditable';
 export * from './SerializeHtml';

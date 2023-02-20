@@ -30,6 +30,7 @@ export type UsePlateEffectsProps<
           insertData?: boolean;
           history?: boolean;
           nodeFactory?: boolean;
+          normalize?: boolean;
           react?: boolean;
           selection?: boolean;
         }
