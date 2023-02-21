@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import {
   comboboxActions,
+  ComboboxControls,
   Data,
   NoData,
   useActiveComboboxStore,
@@ -25,7 +26,8 @@ import { ComboboxContentProps } from './PlateCombobox';
 
 export type ComboboxContentRootProps<
   TData extends Data = NoData
-> = HTMLPropsAs<'ul'> & ComboboxContentProps<TData>;
+> = HTMLPropsAs<'ul'> &
+  ComboboxContentProps<TData> & { combobox: ComboboxControls };
 
 export const useComboboxContentRootProps = <TData extends Data = NoData>(
   props: ComboboxContentRootProps<TData>

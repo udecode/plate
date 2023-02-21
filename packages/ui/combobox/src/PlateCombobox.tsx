@@ -41,6 +41,7 @@ const PlateComboboxContent = <TData extends Data = NoData>(
   const { root, item: styleItem, highlightedItem } = getComboboxStyles(
     props as any
   );
+
   const activeComboboxStore = useActiveComboboxStore()!;
   const combobox = useComboboxControls();
 
@@ -57,6 +58,7 @@ const PlateComboboxContent = <TData extends Data = NoData>(
 
         {filteredItems.map((item, index) => (
           <PlateComboboxContentItem
+            item={item}
             highlightedItem={highlightedItem}
             index={index}
             styleItem={styleItem}
