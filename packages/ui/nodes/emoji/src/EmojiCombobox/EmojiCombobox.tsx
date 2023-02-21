@@ -7,7 +7,7 @@ import {
   getEmojiOnSelectItem,
   KEY_EMOJI,
 } from '@udecode/plate-emoji';
-import { Combobox, ComboboxProps } from '@udecode/plate-ui-combobox';
+import { ComboboxProps, PlateCombobox } from '@udecode/plate-ui-combobox';
 import { EmojiComboboxItem } from './EmojiComboboxItem';
 
 export interface TEmojiCombobox<TData extends Data = NoData>
@@ -36,7 +36,7 @@ export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
   const { trigger, onSelectItem } = useEmojiCombobox(pluginKey);
 
   return (
-    <Combobox
+    <PlateCombobox
       id={id}
       trigger={trigger}
       controlled
