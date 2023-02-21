@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import {
-  Combobox,
   comboboxActions,
   ComboboxItemProps,
   isDefined,
+  PlateCombobox,
   useComboboxSelectors,
 } from '@udecode/plate';
 
@@ -72,7 +72,7 @@ const SlashCommandComboboxItem = ({ item }: ComboboxItemProps<{}>) => {
 };
 
 const SlashCommandCombobox = () => (
-  <Combobox
+  <PlateCombobox
     id={COMBOBOX_KEY_SLASH_COMMAND}
     component={SlashCommandComboboxEffect}
     trigger={COMBOBOX_TRIGGER_SLASH_COMMAND}
