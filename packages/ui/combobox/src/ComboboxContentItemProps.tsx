@@ -20,15 +20,15 @@ export type ComboboxContentItemProps<
 > = HTMLPropsAs<'div'> &
   ComboboxContentProps<TData> & {
     index: number;
-    text: string;
     item: TComboboxItem<TData>;
     combobox: ComboboxControls;
   };
 export const useComboboxContentItemProps = <TData extends Data = NoData>(
   props: ComboboxContentItemProps<TData>
 ): HTMLPropsAs<'div'> => {
-  const { index, text, item, onRenderItem, combobox } = props;
+  const { index, item, onRenderItem, combobox } = props;
   const editor = usePlateEditorRef();
+  const text = useComboboxSelectors.text() ?? '';
 
   const Item = onRenderItem
     ? onRenderItem({ search: text, item: item as TComboboxItem<TData> })
