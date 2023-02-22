@@ -1,19 +1,17 @@
 import {
-  ComboboxControls,
-  comboboxSelectors,
-  Data,
-  getComboboxStoreById,
-  NoData,
-  TComboboxItem,
-  useComboboxSelectors,
-} from '@udecode/plate-combobox';
-import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
   usePlateEditorRef,
 } from '@udecode/plate-core';
-import { ComboboxContentProps } from './PlateCombobox';
+import {
+  comboboxSelectors,
+  getComboboxStoreById,
+  useComboboxSelectors,
+} from '../combobox.store';
+import { ComboboxControls } from '../hooks';
+import { Data, NoData, TComboboxItem } from '../types';
+import { ComboboxContentProps } from './ComboboxContent';
 
 export type ComboboxContentItemProps<
   TData extends Data = NoData
@@ -23,6 +21,7 @@ export type ComboboxContentItemProps<
     item: TComboboxItem<TData>;
     combobox: ComboboxControls;
   };
+
 export const useComboboxContentItemProps = <TData extends Data = NoData>(
   props: ComboboxContentItemProps<TData>
 ): HTMLPropsAs<'div'> => {

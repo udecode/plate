@@ -3,13 +3,6 @@
  */
 
 export * from './Combobox.styles';
-export * from './PlateCombobox';
 export * from './Combobox.types';
-export { PlateComboboxContentItem } from './PlateComboboxContentItem';
-export { useComboboxContentRootProps } from './ComboboxContentRoot';
-export { ComboboxContentRoot } from './ComboboxContentRoot';
-export { ComboboxContentRootProps } from './ComboboxContentRoot';
-export { useComboboxContentItemState } from './ComboboxContentItemProps';
-export { ComboboxContentItem } from './ComboboxContentItemProps';
-export { useComboboxContentItemProps } from './ComboboxContentItemProps';
-export { ComboboxContentItemProps } from './ComboboxContentItemProps';
+export * from './PlateCombobox';
+export * from './PlateComboboxContentItem';

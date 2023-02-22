@@ -1,14 +1,5 @@
 import { useCallback, useEffect } from 'react';
 import {
-  comboboxActions,
-  ComboboxControls,
-  Data,
-  NoData,
-  useActiveComboboxStore,
-  useComboboxControls,
-  useComboboxSelectors,
-} from '@udecode/plate-combobox';
-import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
@@ -22,7 +13,14 @@ import {
   shift,
   useVirtualFloating,
 } from '@udecode/plate-floating';
-import { ComboboxContentProps } from './PlateCombobox';
+import {
+  comboboxActions,
+  useActiveComboboxStore,
+  useComboboxSelectors,
+} from '../combobox.store';
+import { ComboboxControls, useComboboxControls } from '../hooks';
+import { Data, NoData } from '../types';
+import { ComboboxContentProps } from './ComboboxContent';
 
 export type ComboboxContentRootProps<
   TData extends Data = NoData

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Style } from '@udecode/plate-styled-components';
 import {
-  ComboboxContentItem,
+  ComboboxContent,
   ComboboxContentItemProps,
   useComboboxContentItemState,
-} from './ComboboxContentItemProps';
+} from '@udecode/plate-combobox';
+import { Style } from '@udecode/plate-styled-components';
 
 export const PlateComboboxContentItem = (
   props: {
@@ -17,7 +17,7 @@ export const PlateComboboxContentItem = (
   const { highlighted } = useComboboxContentItemState({ index });
 
   return (
-    <ComboboxContentItem
+    <ComboboxContent.Item
       css={!highlighted ? styleItem?.css : highlightedItem?.css}
       className={
         !highlighted ? styleItem?.className : highlightedItem?.className

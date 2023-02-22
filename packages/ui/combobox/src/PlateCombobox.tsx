@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import {
   comboboxActions,
+  ComboboxContent,
+  ComboboxContentProps,
   Data,
   NoData,
   useActiveComboboxStore,
@@ -13,27 +15,9 @@ import {
 } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { getComboboxStyles } from './Combobox.styles';
-import { ComboboxProps } from './Combobox.types';
-import { ComboboxContentItem } from './ComboboxContentItemProps';
-import { ComboboxContentRoot } from './ComboboxContentRoot';
+import { PlateComboboxProps } from './Combobox.types';
 import { PlateComboboxContentItem } from './PlateComboboxContentItem';
 
-export type ComboboxContentProps<TData extends Data = NoData> = Omit<
-  ComboboxProps<TData>,
-  | 'id'
-  | 'trigger'
-  | 'searchPattern'
-  | 'onSelectItem'
-  | 'controlled'
-  | 'maxSuggestions'
-  | 'filter'
-  | 'sort'
->;
-
-export const ComboboxContent = {
-  Root: ComboboxContentRoot,
-  Item: ComboboxContentItem,
-};
 const PlateComboboxContent = <TData extends Data = NoData>(
   props: ComboboxContentProps<TData>
 ) => {
@@ -86,7 +70,7 @@ export const PlateCombobox = <TData extends Data = NoData>({
   floatingOptions,
   disabled: _disabled,
   ...props
-}: ComboboxProps<TData>) => {
+}: PlateComboboxProps<TData>) => {
   const storeItems = useComboboxSelectors.items();
   const disabled = _disabled ?? (!storeItems.length && !props.items?.length);
 
