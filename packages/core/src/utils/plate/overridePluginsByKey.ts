@@ -46,18 +46,21 @@ export const overridePluginsByKey = <
     );
   }
 
-  const { then } = plugin;
+  const { then, _thenReplaced } = plugin;
 
   if (then) {
-    // override plugin.then
-    plugin.then = (editor, p) => {
-      const pluginThen = { key: plugin.key, ...then(editor, p) };
+    if(!_thenReplaced) {
+      // override plugin.then
+      plugin.then = (editor, p) => {
+        const pluginThen = { key: plugin.key, ...then(editor, p) };
 
-      return defaultsDeep(
-        overridePluginsByKey(pluginThen as any, overrideByKey),
-        pluginThen
-      );
-    };
+        return defaultsDeep(
+          overridePluginsByKey(pluginThen as any, overrideByKey),
+          pluginThen
+        );
+      };
+      plugin._thenReplaced = true;
+    }
   } else if (overrideByKey[plugin.key]?.then) {
     // TODO: recursvie
     plugin.then = overrideByKey[plugin.key].then as any;

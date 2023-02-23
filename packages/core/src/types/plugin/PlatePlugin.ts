@@ -182,10 +182,16 @@ export type PlatePlugin<
      * Can be used to derive plugin fields from `editor` and `plugin`.
      * The returned value will be deeply merged to the plugin.
      */
-    then?: (
-      editor: E,
-      plugin: WithPlatePlugin<P, V, E>
-    ) => Partial<PlatePlugin<P, V, E>> | void;
+    then?: ((
+          editor: E,
+          plugin: WithPlatePlugin<P, V, E>
+        ) => Partial<PlatePlugin<P, V, E>>)
+      | void;
+
+    /**
+     * For internal use. Tracks if then has been replaced for recursive calls.
+     */
+    _thenReplaced?: boolean;
 
     /**
      * Hook called when the editor is initialized.
