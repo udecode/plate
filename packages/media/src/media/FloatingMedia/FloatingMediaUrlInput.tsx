@@ -41,7 +41,7 @@ export const useFloatingMediaUrlInput = ({
       }
     },
     {
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
     },
     []
   );
@@ -55,7 +55,7 @@ export const useFloatingMediaUrlInput = ({
       }
     },
     {
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
     },
     []

@@ -23,9 +23,9 @@ export interface LinkPlugin {
 
   /**
    * Hotkeys to trigger floating link.
-   * @default 'command+k, ctrl+k'
+   * @default 'meta+k, ctrl+k'
    */
-  triggerFloatingLinkHotkeys?: string;
+  triggerFloatingLinkHotkeys?: string | string[];
 
   /**
    * Callback to validate an url.
@@ -64,7 +64,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       skipInvalid: true,
       afterMatch: true,
     },
-    triggerFloatingLinkHotkeys: 'command+k, ctrl+k',
+    triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
   then: (editor, { type }) => ({
     deserializeHtml: {

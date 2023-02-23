@@ -34,7 +34,7 @@ export const useFloatingLinkEscape = () => {
     },
     {
       enabled: open,
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
     },
     []

@@ -43,9 +43,9 @@ interface LinkPlugin {
 
   /**
    * Hotkeys to trigger floating link.
-   * @default 'command+k, ctrl+k'
+   * @default 'meta+k, ctrl+k'
    */
-  triggerFloatingLinkHotkeys?: string;
+  triggerFloatingLinkHotkeys?: string | string[];
 
   /**
    * Callback to validate an url.
