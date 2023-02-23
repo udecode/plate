@@ -41,5 +41,5 @@ export interface TCommentText extends TText {
 }
 
 export interface CommentsPlugin {
-  hotkey?: string;
+  hotkey?: string | string[];
 }
