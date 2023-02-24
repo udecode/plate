@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-core';
 import { UseDropNodeOptions } from '../hooks/useDropNode';
 import { DragItemNode } from '../types';
-import { getHoverDirection, getNewDirection } from '../utils/index';
+import { getHoverDirection, getNewDirection } from '../utils';
 
 /**
  * Callback called when dragging a node and hovering nodes.

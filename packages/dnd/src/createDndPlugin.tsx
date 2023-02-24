@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPluginFactory } from '@udecode/plate-core';
-import { DndScroller, ScrollerProps } from './components/index';
+import { DndScroller, ScrollerProps } from './components/Scroller';
 import { dndStore } from './dndStore';
 
 export interface DndPlugin {

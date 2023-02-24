@@ -6,8 +6,8 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { useReadOnly } from 'slate-react';
-import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
+import { PlateDraggable } from './PlateDraggable';
 
 export interface WithDraggableOptions<V extends Value = Value>
   extends Pick<
@@ -46,7 +46,7 @@ export const withDraggable = <V extends Value>(
     }
 
     return (
-      <Draggable
+      <PlateDraggable
         editor={editor}
         attributes={attributes}
         element={element}
@@ -55,7 +55,7 @@ export const withDraggable = <V extends Value>(
         onRenderDragHandle={onRenderDragHandle}
       >
         <Component {...props} />
-      </Draggable>
+      </PlateDraggable>
     );
   });
 };

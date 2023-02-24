@@ -30,6 +30,7 @@
     "@udecode/plate-combobox": "19.5.0",
     "@udecode/plate-comments": "19.5.0",
     "@udecode/plate-core": "19.5.0",
+    "@udecode/plate-dnd": "19.5.0",
     "@udecode/plate-emoji": "19.5.0",
     "@udecode/plate-find-replace": "19.5.0",
     "@udecode/plate-floating": "19.5.0",

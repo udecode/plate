@@ -7,9 +7,9 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { UseDropNodeOptions } from '../hooks/index';
+import { UseDropNodeOptions } from '../hooks';
 import { DragItemNode } from '../types';
-import { getHoverDirection } from '../utils/index';
+import { getHoverDirection } from '../utils';
 
 /**
  * Callback called on drag an drop a node with id.

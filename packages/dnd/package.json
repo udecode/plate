@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-ui-dnd",
+  "name": "@udecode/plate-dnd",
   "version": "19.5.0",
-  "description": "Drag & drop feature for Plate",
+  "description": "Drag &amp; drop feature for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/ui/dnd"
+    "directory": "packages/dnd"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,10 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@tippyjs/react": "^4.2.6",
     "@udecode/plate-core": "19.5.0",
-    "@udecode/plate-dnd": "19.5.0",
-    "@udecode/plate-styled-components": "19.5.0"
+    "raf": "^3.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -31,14 +29,11 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.87.0",
     "slate-history": ">=0.86.0",
-    "slate-react": ">=0.88.0",
-    "styled-components": ">=5.0.0"
+    "slate-react": ">=0.88.0"
   },
   "keywords": [
-    "dnd",
     "plate",
     "plugin",
-    "react-dnd",
     "slate"
   ],
   "publishConfig": {
