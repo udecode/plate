@@ -1,9 +1,9 @@
 import React from 'react';
 import { EElement, TEditor, TElement, Value } from '@udecode/plate-core';
+import { DropLineDirection } from '@udecode/plate-dnd';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
-import { DropLineDirection } from '../types';
 
 export interface DraggableStyleProps<V extends Value>
   extends DraggableProps<V> {

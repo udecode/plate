@@ -13,6 +13,7 @@ export * from '@udecode/plate-code-block';
 export * from '@udecode/plate-combobox';
 export * from '@udecode/plate-comments';
 export * from '@udecode/plate-core';
+export * from '@udecode/plate-dnd';
 export * from '@udecode/plate-emoji';
 export * from '@udecode/plate-find-replace';
 export * from '@udecode/plate-floating';

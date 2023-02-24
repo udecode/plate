@@ -3,8 +3,7 @@
  */
 
 export * from './Draggable.styles';
-export * from './Draggable';
+export * from './PlateDraggable';
 export * from './Draggable.types';
 export * from './grabberTooltipProps';
 export * from './withDraggable';
-export * from './Scroller/index';

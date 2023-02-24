@@ -12,6 +12,7 @@ export * from './withInsertFragmentTable';
 export * from './withInsertTextTable';
 export * from './withNormalizeTable';
 export * from './withSelectionTable';
+export * from './withSetFragmentDataTable';
 export * from './withTable';
 export * from './queries/index';
 export * from './transforms/index';
