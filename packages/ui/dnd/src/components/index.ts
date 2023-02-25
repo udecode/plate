@@ -6,4 +6,4 @@ export * from './Draggable.styles';
 export * from './Draggable.types';
 export * from './PlateDraggable';
 export * from './grabberTooltipProps';
-export * from './withDraggable';
+export * from './withPlateDraggable';

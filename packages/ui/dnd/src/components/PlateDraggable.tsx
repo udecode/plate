@@ -24,6 +24,7 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
       direction: dropLine,
       isDragging,
     });
+
     return (
       <DraggableRoot
         css={styles.root.css}

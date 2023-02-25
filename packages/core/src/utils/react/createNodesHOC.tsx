@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { castArray } from 'lodash';
+import merge from 'lodash/merge';
 import { AnyObject } from '../../types/misc/AnyObject';
 import { createNodeHOC } from './createNodeHOC';
 
@@ -30,7 +31,7 @@ const createHOC = <T,>(withHOC: any) => {
       const _keys: string[] = key ? [key] : keys ?? Object.keys(_components);
 
       _keys.forEach((_key) => {
-        optionsByKey[_key] = { ...optionsByKey[_key], ...opt };
+        optionsByKey[_key] = merge(optionsByKey[_key], opt);
       });
     });
 

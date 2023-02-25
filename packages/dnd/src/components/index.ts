@@ -9,5 +9,7 @@ export * from './DraggableBlockToolbar';
 export * from './DraggableDropline';
 export * from './DraggableGutterLeftProps';
 export * from './DraggableRoot';
+export * from './useDraggableState';
+export * from './useWithDraggable';
+export * from './withDraggable';
 export * from './Scroller/index';
-export { useDraggableState } from './useDraggableState';

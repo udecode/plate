@@ -1,8 +1,7 @@
 import React from 'react';
-import { EElement, TEditor, TElement, Value } from '@udecode/plate-core';
+import { EElement, TElement, Value } from '@udecode/plate-core';
 import { DropLineDirection } from '@udecode/plate-dnd';
 import { StyledElementProps } from '@udecode/plate-styled-components';
-import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
 
 export interface DraggableStyleProps extends PlateDraggableProps {
@@ -71,21 +70,4 @@ export interface PlateDraggableProps
    * An override to render the drag handle.
    */
   onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
-
-  /**
-   * Document level where dnd is enabled. 0 = root blocks, 1 = first level of children, etc.
-   * Set to null to allow all levels.
-   * @default 0
-   */
-  level?: number | null;
-
-  /**
-   * Filter out elements that can't be dragged.
-   */
-  filter?: (editor: TEditor, path: Path) => boolean;
-
-  /**
-   * Enables dnd in read-only.
-   */
-  allowReadOnly?: boolean;
 }
