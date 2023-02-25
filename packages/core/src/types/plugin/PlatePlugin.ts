@@ -190,7 +190,7 @@ export type PlatePlugin<
     /**
      * For internal use. Tracks if then has been replaced for recursive calls.
      */
-    _thenReplaced?: boolean;
+    _thenReplaced?: number;
 
     /**
      * Hook called when the editor is initialized.

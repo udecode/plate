@@ -46,20 +46,25 @@ export const overridePluginsByKey = <
     );
   }
 
-  const { then, _thenReplaced } = plugin;
+  const { then } = plugin;
 
   if (then) {
-    if(!_thenReplaced) {
+    if(typeof plugin._thenReplaced === 'undefined') {
+      plugin._thenReplaced = 0;
+    }
+    // Limit the number of times that `then` can be replaced.
+    // otherwise we will accidentally create a stack overflow.
+    // There is probably a better solution for this.
+    if((plugin._thenReplaced as number) < 3) {
       // override plugin.then
       plugin.then = (editor, p) => {
         const pluginThen = { key: plugin.key, ...then(editor, p) };
-
         return defaultsDeep(
           overridePluginsByKey(pluginThen as any, overrideByKey),
           pluginThen
         );
       };
-      plugin._thenReplaced = true;
+      (plugin._thenReplaced as number)++;
     }
   } else if (overrideByKey[plugin.key]?.then) {
     // TODO: recursvie
