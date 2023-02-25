@@ -5639,7 +5639,6 @@ __metadata:
     "@udecode/plate-combobox": "npm:19.5.0"
     "@udecode/plate-comments": "npm:19.5.0"
     "@udecode/plate-core": "npm:19.5.0"
-    "@udecode/plate-dnd": "npm:19.5.0"
     "@udecode/plate-emoji": "npm:19.5.0"
     "@udecode/plate-find-replace": "npm:19.5.0"
     "@udecode/plate-floating": "npm:19.5.0"

@@ -3,19 +3,18 @@ import {
   createNodesWithHOC,
   findNodePath,
   PlateRenderElementProps,
-  Value,
 } from '@udecode/plate-core';
 import { useReadOnly } from 'slate-react';
-import { DraggableProps } from './Draggable.types';
+import { PlateDraggableProps } from './Draggable.types';
 import { PlateDraggable } from './PlateDraggable';
 
-export interface WithDraggableOptions<V extends Value = Value>
+export interface WithDraggableOptions
   extends Pick<
-    DraggableProps<V>,
+    PlateDraggableProps,
     'onRenderDragHandle' | 'styles' | 'level' | 'filter' | 'allowReadOnly'
   > {}
 
-export const withDraggable = <V extends Value>(
+export const withDraggable = (
   Component: any,
   {
     styles,
@@ -23,9 +22,9 @@ export const withDraggable = <V extends Value>(
     filter,
     allowReadOnly = false,
     onRenderDragHandle,
-  }: WithDraggableOptions<V> = {}
+  }: WithDraggableOptions = {}
 ) => {
-  return forwardRef((props: PlateRenderElementProps<V>, ref) => {
+  return forwardRef<HTMLDivElement, PlateRenderElementProps>((props, ref) => {
     const { attributes, element, editor } = props;
     const readOnly = useReadOnly();
     const path = useMemo(() => findNodePath(editor, element), [
@@ -50,7 +49,7 @@ export const withDraggable = <V extends Value>(
         editor={editor}
         attributes={attributes}
         element={element}
-        componentRef={ref}
+        ref={ref}
         styles={styles}
         onRenderDragHandle={onRenderDragHandle}
       >

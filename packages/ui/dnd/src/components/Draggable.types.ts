@@ -5,8 +5,7 @@ import { StyledElementProps } from '@udecode/plate-styled-components';
 import { Path } from 'slate';
 import { CSSProp } from 'styled-components';
 
-export interface DraggableStyleProps<V extends Value>
-  extends DraggableProps<V> {
+export interface DraggableStyleProps extends PlateDraggableProps {
   direction: DropLineDirection;
   isDragging: boolean;
 
@@ -66,10 +65,8 @@ export interface DragHandleProps
   styles?: CSSProp;
 }
 
-export interface DraggableProps<V extends Value>
-  extends StyledElementProps<V, EElement<V>, DraggableStyles> {
-  componentRef?: any;
-
+export interface PlateDraggableProps
+  extends StyledElementProps<Value, EElement<Value>, DraggableStyles> {
   /**
    * An override to render the drag handle.
    */
@@ -85,7 +82,7 @@ export interface DraggableProps<V extends Value>
   /**
    * Filter out elements that can't be dragged.
    */
-  filter?: (editor: TEditor<V>, path: Path) => boolean;
+  filter?: (editor: TEditor, path: Path) => boolean;
 
   /**
    * Enables dnd in read-only.
