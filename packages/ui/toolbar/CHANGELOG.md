@@ -1,5 +1,11 @@
 # @udecode/plate-toolbar
 
+## 19.7.0
+
+### Patch Changes
+
+- [#2231](https://github.com/udecode/plate/pull/2231) by [@12joan](https://github.com/12joan) – Fix mark toolbar button not applying mark properly
+
 ## 19.6.0
 
 ### Minor Changes

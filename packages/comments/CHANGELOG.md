@@ -1,5 +1,11 @@
 # @udecode/plate-comments
 
+## 19.7.0
+
+### Patch Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – fix: hotkey
+
 ## 19.5.0
 
 ### Minor Changes
