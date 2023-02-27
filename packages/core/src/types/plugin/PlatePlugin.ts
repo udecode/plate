@@ -188,6 +188,11 @@ export type PlatePlugin<
     ) => Partial<PlatePlugin<P, V, E>> | void;
 
     /**
+     * For internal use. Tracks if then has been replaced for recursive calls.
+     */
+    _thenReplaced?: number;
+
+    /**
      * Hook called when the editor is initialized.
      */
     useHooks?: (editor: E, plugin: WithPlatePlugin<P, V, E>) => void;
