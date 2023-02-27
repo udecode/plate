@@ -1,17 +1,20 @@
 export interface SanitizeUrlOptions {
   allowedSchemes?: string[];
+  permitInvalid?: boolean;
 }
 
 export const sanitizeUrl = (
-  url: string,
-  { allowedSchemes }: SanitizeUrlOptions
+  url: string | undefined,
+  { allowedSchemes, permitInvalid = false }: SanitizeUrlOptions
 ): string | null => {
+  if (!url) return null;
+
   let parsedUrl: URL | null = null;
 
   try {
     parsedUrl = new URL(url);
   } catch (error) {
-    return null;
+    return permitInvalid ? url : null;
   }
 
   if (
@@ -21,5 +24,5 @@ export const sanitizeUrl = (
     return null;
   }
 
-  return url;
+  return parsedUrl.href;
 };

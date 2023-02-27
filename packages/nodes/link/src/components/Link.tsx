@@ -12,16 +12,10 @@ export type LinkRootProps = PlateRenderElementProps<Value, TLinkElement> &
   HTMLPropsAs<'a'>;
 
 export const useLink = (props: LinkRootProps): HTMLPropsAs<'a'> => {
-  const _props = useElementProps<TLinkElement, 'a'>({
-    ...props,
-    elementToAttributes: (element) => ({
-      href: element.url,
-      target: element.target,
-    }),
-  });
+  const elementProps = useElementProps(props);
 
   return {
-    ..._props,
+    ...elementProps,
     // quick fix: hovering <a> with href loses the editor focus
     onMouseOver: (e) => {
       e.stopPropagation();

@@ -4,8 +4,10 @@ import {
   createComponentAs,
   createElementAs,
   findNode,
+  getPluginOptions,
   getPluginType,
   HTMLPropsAs,
+  sanitizeUrl,
   useEditorRef,
   usePlateSelection,
 } from '@udecode/plate-core';
@@ -17,6 +19,8 @@ export const useOpenLinkButton = (
 ): HTMLPropsAs<'a'> => {
   const editor = useEditorRef();
   const selection = usePlateSelection();
+
+  const { allowedSchemes } = getPluginOptions(editor, ELEMENT_LINK);
 
   const entry = useMemo(
     () =>
@@ -31,12 +35,13 @@ export const useOpenLinkButton = (
     return {};
   }
 
-  const [link] = entry;
+  const [{ url }] = entry;
+  const href = sanitizeUrl(url, { allowedSchemes }) || undefined;
 
   return {
     'aria-label': 'Open link in a new tab',
     target: '_blank',
-    href: link.url,
+    href,
     onMouseOver: (e) => {
       e.stopPropagation();
     },

@@ -4,22 +4,20 @@ import {
   getEditorString,
   getNodeLeaf,
   getNodeProps,
-  getPluginOptions,
   getPluginType,
   InsertNodesOptions,
   isDefined,
   isExpanded,
   PlateEditor,
   removeNodes,
-  sanitizeUrl,
   setNodes,
   UnwrapNodesOptions,
   Value,
   WrapNodesOptions,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
-import { CreateLinkNodeOptions } from '../utils/index';
+import { CreateLinkNodeOptions, validateUrl } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
@@ -35,8 +33,7 @@ export type UpsertLinkOptions<
   insertNodesOptions?: InsertNodesOptions<V>;
   unwrapNodesOptions?: UnwrapNodesOptions<V>;
   wrapNodesOptions?: WrapNodesOptions<V>;
-  allowedSchemes?: string[];
-  isUrl?: (url: string) => boolean;
+  skipValidation?: boolean;
 };
 
 /**
@@ -55,9 +52,7 @@ export const upsertLink = <V extends Value>(
     target,
     insertTextInLink,
     insertNodesOptions,
-    allowedSchemes = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK)
-      .allowedSchemes,
-    isUrl = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK).isUrl,
+    skipValidation = false,
   }: UpsertLinkOptions<V>
 ) => {
   const at = editor.selection;
@@ -76,26 +71,25 @@ export const upsertLink = <V extends Value>(
     return true;
   }
 
-  const sanitizedUrl = sanitizeUrl(url, { allowedSchemes });
-  if (!sanitizedUrl || !isUrl?.(sanitizedUrl)) return;
+  if (!skipValidation && !validateUrl(editor, url)) return;
 
   if (isDefined(text) && !text.length) {
-    text = sanitizedUrl;
+    text = url;
   }
 
   // edit the link url and/or target
   if (linkAbove) {
-    if (sanitizedUrl !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
+    if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
       setNodes<TLinkElement>(
         editor,
-        { url: sanitizedUrl, target },
+        { url, target },
         {
           at: linkAbove[1],
         }
       );
     }
 
-    upsertLinkText(editor, { url: sanitizedUrl, text, target });
+    upsertLinkText(editor, { url, text, target });
 
     return true;
   }
@@ -131,11 +125,11 @@ export const upsertLink = <V extends Value>(
     }
 
     wrapLink(editor, {
-      url: sanitizedUrl,
+      url,
       target,
     });
 
-    upsertLinkText(editor, { url: sanitizedUrl, target, text });
+    upsertLinkText(editor, { url, target, text });
 
     return true;
   }
@@ -156,14 +150,14 @@ export const upsertLink = <V extends Value>(
 
   // if text is empty, text is url
   if (!text?.length) {
-    text = sanitizedUrl;
+    text = url;
   }
 
   insertLink(
     editor,
     {
       ...props,
-      url: sanitizedUrl,
+      url,
       target,
       children: [
         {

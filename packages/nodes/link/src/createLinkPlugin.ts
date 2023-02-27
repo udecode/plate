@@ -1,9 +1,11 @@
 import {
   createPluginFactory,
-  isUrl as isUrlProtocol,
+  isUrl,
   RangeBeforeOptions,
   sanitizeUrl,
 } from '@udecode/plate-core';
+import { validateUrl } from './utils/index';
+import { TLinkElement } from './types';
 import { withLink } from './withLink';
 
 export const ELEMENT_LINK = 'a';
@@ -60,13 +62,10 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
-  props: ({ element }) => ({
-    nodeProps: { href: element?.url, target: element?.target },
-  }),
   withOverrides: withLink,
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
-    isUrl: isUrlProtocol,
+    isUrl,
     rangeBeforeOptions: {
       matchString: ' ',
       skipInvalid: true,
@@ -74,7 +73,13 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
-  then: (editor, { type, options: { allowedSchemes, isUrl } }) => ({
+  then: (editor, { type, options: { allowedSchemes } }) => ({
+    props: ({ element }: { element: TLinkElement }) => ({
+      nodeProps: {
+        href: sanitizeUrl(element.url, { allowedSchemes }) || undefined,
+        target: element.target,
+      },
+    }),
     deserializeHtml: {
       rules: [
         {
@@ -82,13 +87,12 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
         },
       ],
       getNode: (el) => {
-        const href = el.getAttribute('href');
-        const sanitizedUrl = href && sanitizeUrl(href, { allowedSchemes });
+        const url = el.getAttribute('href');
 
-        if (sanitizedUrl && (!isUrl || isUrl(sanitizedUrl))) {
+        if (url && validateUrl(editor, url)) {
           return {
             type,
-            url: sanitizedUrl,
+            url,
             target: el.getAttribute('target') || '_blank',
           };
         }

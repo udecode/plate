@@ -415,7 +415,7 @@ describe('upsertLink', () => {
     });
   });
 
-  describe('when isUrl returns false', () => {
+  describe('when skipValidation is false and url is invalid', () => {
     const input = (
       <editor>
         <hp>
@@ -434,15 +434,15 @@ describe('upsertLink', () => {
     it('should do nothing', () => {
       const editor = createEditor(input);
       upsertLink(editor, {
-        url: 'https://example.com/',
-        isUrl: (_url) => false,
+        url: 'invalid',
+        skipValidation: false,
       });
 
       expect(input.children).toEqual(output.children);
     });
   });
 
-  describe('when isUrl returns true', () => {
+  describe('when skipValidation is true and url is invalid', () => {
     const input = (
       <editor>
         <hp>
@@ -455,7 +455,7 @@ describe('upsertLink', () => {
     const output = (
       <editor>
         <hp>
-          insert link<ha url="https://example.com/">https://example.com/</ha>.
+          insert link<ha url="invalid">invalid</ha>.
         </hp>
       </editor>
     ) as any;
@@ -463,8 +463,8 @@ describe('upsertLink', () => {
     it('should insert', () => {
       const editor = createEditor(input);
       upsertLink(editor, {
-        url: 'https://example.com/',
-        isUrl: (_url) => true,
+        url: 'invalid',
+        skipValidation: true,
       });
 
       expect(input.children).toEqual(output.children);
