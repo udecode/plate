@@ -1,5 +1,7 @@
 # @udecode/plate-horizontal-rule
 
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

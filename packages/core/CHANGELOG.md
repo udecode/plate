@@ -1,5 +1,15 @@
 # @udecode/plate-core
 
+## 19.7.0
+
+### Minor Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – vendor: upgrade react-hotkeys-hook to v4
+
+### Patch Changes
+
+- [#2233](https://github.com/udecode/plate/pull/2233) by [@fimion](https://github.com/fimion) – Fixes #2230: infinite recursion when using plugin field `then`
+
 ## 19.5.0
 
 ### Patch Changes

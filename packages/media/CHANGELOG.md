@@ -1,5 +1,13 @@
 # @udecode/plate-media
 
+## 19.7.0
+
+### Patch Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – fix: hotkey
+
+- [#2220](https://github.com/udecode/plate/pull/2220) by [@TomMorane](https://github.com/TomMorane) – fix: Cannot read properties of null (reading 'toString') when image width is null
+
 ## 19.5.0
 
 ## 19.4.4

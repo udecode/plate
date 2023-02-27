@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-horizontal-rule",
-  "version": "19.5.0",
+  "version": "19.7.0",
   "description": "Template plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,9 +19,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.5.0",
-    "@udecode/plate-horizontal-rule": "19.5.0",
-    "@udecode/plate-styled-components": "19.5.0"
+    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-horizontal-rule": "19.7.0",
+    "@udecode/plate-styled-components": "19.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
