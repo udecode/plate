@@ -66,18 +66,26 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
-  then: (editor, { type }) => ({
+  then: (editor, { type, options }) => ({
     deserializeHtml: {
       rules: [
         {
           validNodeName: 'A',
         },
       ],
-      getNode: (el) => ({
-        type,
-        url: el.getAttribute('href'),
-        target: el.getAttribute('target') || '_blank',
-      }),
+      getNode: (el) => {
+        const href = el.getAttribute('href');
+
+        if (href && (!options.isUrl || options.isUrl(href))) {
+          return {
+            type,
+            url: href,
+            target: el.getAttribute('target') || '_blank',
+          };
+        }
+
+        return undefined;
+      },
     },
   }),
 });
