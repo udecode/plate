@@ -2,6 +2,7 @@ import {
   createPluginFactory,
   isUrl as isUrlProtocol,
   RangeBeforeOptions,
+  sanitizeUrl,
 } from '@udecode/plate-core';
 import { withLink } from './withLink';
 
@@ -26,6 +27,12 @@ export interface LinkPlugin {
    * @default 'meta+k, ctrl+k'
    */
   triggerFloatingLinkHotkeys?: string | string[];
+
+  /**
+   * List of allowed URL schemes.
+   * @default ['http', 'https', 'mailto', 'tel']
+   */
+  allowedSchemes?: string[];
 
   /**
    * Callback to validate an url.
@@ -58,6 +65,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   }),
   withOverrides: withLink,
   options: {
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     isUrl: isUrlProtocol,
     rangeBeforeOptions: {
       matchString: ' ',
@@ -66,7 +74,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
-  then: (editor, { type, options }) => ({
+  then: (editor, { type, options: { allowedSchemes, isUrl } }) => ({
     deserializeHtml: {
       rules: [
         {
@@ -75,11 +83,12 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       ],
       getNode: (el) => {
         const href = el.getAttribute('href');
+        const sanitizedUrl = href && sanitizeUrl(href, { allowedSchemes });
 
-        if (href && (!options.isUrl || options.isUrl(href))) {
+        if (sanitizedUrl && (!isUrl || isUrl(sanitizedUrl))) {
           return {
             type,
-            url: href,
+            url: sanitizedUrl,
             target: el.getAttribute('target') || '_blank',
           };
         }

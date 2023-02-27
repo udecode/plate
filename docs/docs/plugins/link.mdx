@@ -48,6 +48,12 @@ interface LinkPlugin {
   triggerFloatingLinkHotkeys?: string | string[];
 
   /**
+   * List of allowed URL schemes.
+   * @default ['http', 'https', 'mailto', 'tel']
+   */
+  allowedSchemes?: string[];
+
+  /**
    * Callback to validate an url.
    * @default isUrl
    */

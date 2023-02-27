@@ -415,7 +415,34 @@ describe('upsertLink', () => {
     });
   });
 
-  describe('when isUrl always true', () => {
+  describe('when isUrl returns false', () => {
+    const input = (
+      <editor>
+        <hp>
+          insert link
+          <cursor />.
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>insert link.</hp>
+      </editor>
+    ) as any;
+
+    it('should do nothing', () => {
+      const editor = createEditor(input);
+      upsertLink(editor, {
+        url: 'https://example.com/',
+        isUrl: (_url) => false,
+      });
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when isUrl returns true', () => {
     const input = (
       <editor>
         <hp>
@@ -428,14 +455,17 @@ describe('upsertLink', () => {
     const output = (
       <editor>
         <hp>
-          insert link<ha url="test">test</ha>.
+          insert link<ha url="https://example.com/">https://example.com/</ha>.
         </hp>
       </editor>
     ) as any;
 
     it('should insert', () => {
       const editor = createEditor(input);
-      upsertLink(editor, { url: 'test', isUrl: (_url) => true });
+      upsertLink(editor, {
+        url: 'https://example.com/',
+        isUrl: (_url) => true,
+      });
 
       expect(input.children).toEqual(output.children);
     });

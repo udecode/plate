@@ -11,6 +11,7 @@ import {
   isExpanded,
   PlateEditor,
   removeNodes,
+  sanitizeUrl,
   setNodes,
   UnwrapNodesOptions,
   Value,
@@ -34,6 +35,7 @@ export type UpsertLinkOptions<
   insertNodesOptions?: InsertNodesOptions<V>;
   unwrapNodesOptions?: UnwrapNodesOptions<V>;
   wrapNodesOptions?: WrapNodesOptions<V>;
+  allowedSchemes?: string[];
   isUrl?: (url: string) => boolean;
 };
 
@@ -53,6 +55,8 @@ export const upsertLink = <V extends Value>(
     target,
     insertTextInLink,
     insertNodesOptions,
+    allowedSchemes = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK)
+      .allowedSchemes,
     isUrl = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK).isUrl,
   }: UpsertLinkOptions<V>
 ) => {
@@ -72,25 +76,26 @@ export const upsertLink = <V extends Value>(
     return true;
   }
 
-  if (!isUrl?.(url)) return;
+  const sanitizedUrl = sanitizeUrl(url, { allowedSchemes });
+  if (!sanitizedUrl || !isUrl?.(sanitizedUrl)) return;
 
   if (isDefined(text) && !text.length) {
-    text = url;
+    text = sanitizedUrl;
   }
 
   // edit the link url and/or target
   if (linkAbove) {
-    if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
+    if (sanitizedUrl !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
       setNodes<TLinkElement>(
         editor,
-        { url, target },
+        { url: sanitizedUrl, target },
         {
           at: linkAbove[1],
         }
       );
     }
 
-    upsertLinkText(editor, { url, text, target });
+    upsertLinkText(editor, { url: sanitizedUrl, text, target });
 
     return true;
   }
@@ -126,11 +131,11 @@ export const upsertLink = <V extends Value>(
     }
 
     wrapLink(editor, {
-      url,
+      url: sanitizedUrl,
       target,
     });
 
-    upsertLinkText(editor, { url, target, text });
+    upsertLinkText(editor, { url: sanitizedUrl, target, text });
 
     return true;
   }
@@ -151,14 +156,14 @@ export const upsertLink = <V extends Value>(
 
   // if text is empty, text is url
   if (!text?.length) {
-    text = url;
+    text = sanitizedUrl;
   }
 
   insertLink(
     editor,
     {
       ...props,
-      url,
+      url: sanitizedUrl,
       target,
       children: [
         {

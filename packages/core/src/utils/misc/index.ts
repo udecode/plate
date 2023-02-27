@@ -15,5 +15,6 @@ export * from './jotai';
 export * from './mergeProps';
 export * from './nanoid';
 export * from './react-hotkeys-hook';
+export * from './sanitizeUrl';
 export * from './type-utils';
 export * from './zustood';
