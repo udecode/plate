@@ -1,8 +1,10 @@
 import {
   createPluginFactory,
-  isUrl as isUrlProtocol,
+  isUrl,
   RangeBeforeOptions,
 } from '@udecode/plate-core';
+import { getLinkAttributes, validateUrl } from './utils/index';
+import { TLinkElement } from './types';
 import { withLink } from './withLink';
 
 export const ELEMENT_LINK = 'a';
@@ -26,6 +28,12 @@ export interface LinkPlugin {
    * @default 'meta+k, ctrl+k'
    */
   triggerFloatingLinkHotkeys?: string | string[];
+
+  /**
+   * List of allowed URL schemes.
+   * @default ['http', 'https', 'mailto', 'tel']
+   */
+  allowedSchemes?: string[];
 
   /**
    * Callback to validate an url.
@@ -53,12 +61,10 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
-  props: ({ element }) => ({
-    nodeProps: { href: element?.url, target: element?.target },
-  }),
   withOverrides: withLink,
   options: {
-    isUrl: isUrlProtocol,
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    isUrl,
     rangeBeforeOptions: {
       matchString: ' ',
       skipInvalid: true,
@@ -67,17 +73,28 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
   then: (editor, { type }) => ({
+    props: ({ element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
     deserializeHtml: {
       rules: [
         {
           validNodeName: 'A',
         },
       ],
-      getNode: (el) => ({
-        type,
-        url: el.getAttribute('href'),
-        target: el.getAttribute('target') || '_blank',
-      }),
+      getNode: (el) => {
+        const url = el.getAttribute('href');
+
+        if (url && validateUrl(editor, url)) {
+          return {
+            type,
+            url,
+            target: el.getAttribute('target') || '_blank',
+          };
+        }
+
+        return undefined;
+      },
     },
   }),
 });
