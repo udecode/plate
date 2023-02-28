@@ -2,9 +2,8 @@ import {
   createPluginFactory,
   isUrl,
   RangeBeforeOptions,
-  sanitizeUrl,
 } from '@udecode/plate-core';
-import { validateUrl } from './utils/index';
+import { getLinkAttributes, validateUrl } from './utils/index';
 import { TLinkElement } from './types';
 import { withLink } from './withLink';
 
@@ -73,12 +72,9 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
-  then: (editor, { type, options: { allowedSchemes } }) => ({
-    props: ({ element }: { element: TLinkElement }) => ({
-      nodeProps: {
-        href: sanitizeUrl(element.url, { allowedSchemes }) || undefined,
-        target: element.target,
-      },
+  then: (editor, { type }) => ({
+    props: ({ element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
     }),
     deserializeHtml: {
       rules: [

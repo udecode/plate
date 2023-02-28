@@ -7,15 +7,21 @@ import {
   Value,
 } from '@udecode/plate-core';
 import { TLinkElement } from '../types';
+import { getLinkAttributes } from '../utils/index';
 
 export type LinkRootProps = PlateRenderElementProps<Value, TLinkElement> &
   HTMLPropsAs<'a'>;
 
 export const useLink = (props: LinkRootProps): HTMLPropsAs<'a'> => {
-  const elementProps = useElementProps(props);
+  const { editor } = props;
+
+  const _props = useElementProps<TLinkElement, 'a'>({
+    ...props,
+    elementToAttributes: (element) => getLinkAttributes(editor, element),
+  });
 
   return {
-    ...elementProps,
+    ..._props,
     // quick fix: hovering <a> with href loses the editor focus
     onMouseOver: (e) => {
       e.stopPropagation();
