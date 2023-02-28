@@ -20,14 +20,7 @@ Plate
 
 ### Hiring
 
-Plate consulting:
-- [@zbeyens](https://superpeer.com/zbeyens) – author
-
-Looking to hire:
-- [@dylans](https://github.com/dylans) – co-owner
-
-
-DM [@zbeyens](https://github.com/zbeyens) to get added to the list if your offer includes Plate contribution.
+Udecode offers Plate consultancy services. If you're a company in need of a gig, please DM @zbeyens.
 
 ## Introduction
 
