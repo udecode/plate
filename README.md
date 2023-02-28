@@ -20,7 +20,7 @@ Plate
 
 ### Hiring
 
-Udecode offers Plate consultancy services. If you're a company in need of a gig, please DM @zbeyens.
+Udecode offers Plate consultancy services. If you're a company in need of a gig, please contact [@zbeyens](https://github.com/zbeyens).
 
 ## Introduction
 
