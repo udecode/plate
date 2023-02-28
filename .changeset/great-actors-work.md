@@ -1,11 +1,8 @@
 ---
-'@udecode/plate-link': major
+'@udecode/plate-link': minor
 ---
 
-`@udecode/plate-link`:
-
-- Add `allowedSchemes` plugin option
-- Breaking change to the interface of `upsertLink`:
+- `upsertLink`:
   - Removed `isUrl`
   - Added `skipValidation`
 - Check that URL scheme is valid when:
