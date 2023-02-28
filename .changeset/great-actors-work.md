@@ -1,11 +1,6 @@
 ---
-'@udecode/plate-core': minor
 '@udecode/plate-link': major
 ---
-
-`@udecode/plate-core`:
-
-- Add `sanitizeUrl` util to check if URL has an allowed scheme
 
 `@udecode/plate-link`:
 
