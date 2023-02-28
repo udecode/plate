@@ -1,5 +1,4 @@
 ---
-'@udecode/plate-core': patch
 '@udecode/plate-ui-code-block': patch
 ---
 
