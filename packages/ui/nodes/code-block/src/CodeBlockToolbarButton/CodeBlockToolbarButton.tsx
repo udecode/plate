@@ -7,7 +7,6 @@ import {
 import {
   focusEditor,
   getPluginType,
-  getPreventDefaultHandler,
   useEventPlateId,
   usePlateEditorState,
   Value,
@@ -34,10 +33,11 @@ export const CodeBlockToolbarButton = <V extends Value>({
         e.preventDefault();
         e.stopPropagation();
 
-        getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
+        insertEmptyCodeBlock(editor, {
           insertNodesOptions: { select: true },
           ...options,
         });
+
         focusEditor(editor);
       }}
       {...props}
