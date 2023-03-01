@@ -1,7 +1,7 @@
 import { buildTestHarness } from 'slate-test-utils';
 import { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarness';
 import { PlateTest } from '../../components/plate/PlateTest';
-import { TEditor, Value } from '../../slate/editor/TEditor';
+import { TEditor, Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import {
   createPlateEditor,
   CreatePlateEditorOptions,

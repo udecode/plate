@@ -2,7 +2,7 @@ import defaultsDeep from 'lodash/defaultsDeep';
 import keyBy from 'lodash/keyBy';
 import merge from 'lodash/merge';
 import values from 'lodash/values';
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { WithPlatePlugin } from '../../types/plugin/PlatePlugin';
 

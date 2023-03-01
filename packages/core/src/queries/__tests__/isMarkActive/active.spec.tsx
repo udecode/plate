@@ -2,7 +2,7 @@
 
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
-import { isMarkActive } from '../../isMarkActive';
+import { isMarkActive } from '../../../../../slate-utils/src/queries/isMarkActive';
 
 jsx;
 

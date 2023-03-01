@@ -1,8 +1,8 @@
 import { SyntheticEvent } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/types/TEditableProps';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../../types/plugin/DOMHandlers';
+import { TEditableProps } from '../../types/TEditableProps';
 
 /**
  * Check if an event is overrided by a handler.

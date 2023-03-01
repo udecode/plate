@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash';
 import isEqual from 'lodash/isEqual';
-import { Value } from '../../slate/index';
+import { Value } from '../../../../slate-utils/src/slate/index';
 import { PlateEditor } from '../../types/index';
 
 /**

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { createPlateEditor } from '../../utils/plate/createPlateEditor';
 import { Plate, PlateProps } from './Plate';
 

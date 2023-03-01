@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { PlateChangeKey } from '../../../types/index';
-import { nanoid } from '../../../utils/misc/nanoid';
+import { nanoid } from '../../../types/misc/nanoid';
 import { PlateId, usePlateActions } from '../createPlateStore';
 
 export const useUpdatePlateKey = (key: PlateChangeKey, id?: PlateId) => {

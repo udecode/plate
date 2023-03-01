@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { SlateProps } from '../../slate/types/SlateProps';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import {
   PlateId,
   usePlateActions,
   usePlateSelectors,
 } from '../../stores/index';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { SlateProps } from '../../types/SlateProps';
 import { pipeOnChange } from '../../utils/plate/pipeOnChange';
 
 /**

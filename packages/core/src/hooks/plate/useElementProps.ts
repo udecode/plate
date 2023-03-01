@@ -1,6 +1,6 @@
-import { TElement } from '../../slate/index';
+import { TElement } from '../../../../slate-utils/src/slate/index';
 import { As, HTMLPropsAs, PlateRenderElementProps } from '../../types/index';
-import { useComposedRef } from '../react/index';
+import { useComposedRef } from '../react';
 
 export type UseElementPropsOptions<
   T extends TElement = TElement,

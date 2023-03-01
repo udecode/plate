@@ -1,5 +1,5 @@
-import { Value } from '../../slate/editor/TEditor';
-import { NoInfer } from '../../types/misc/NoInfer';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { NoInfer } from '../../../../slate-utils/src/types/misc/NoInfer';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import {
   PlatePlugin,

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { getNode } from '../../../slate/node/getNode';
+import { getNode } from '../../../../../slate-utils/src/slate/node/getNode';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 
 jsx;

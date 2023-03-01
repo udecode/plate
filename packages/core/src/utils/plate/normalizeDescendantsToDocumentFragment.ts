@@ -1,7 +1,7 @@
-import { TEditor, Value } from '../../slate/editor/TEditor';
-import { isElement } from '../../slate/element/isElement';
-import { EDescendant, TDescendant } from '../../slate/node/TDescendant';
-import { isText } from '../../slate/text/isText';
+import { TEditor, Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { isElement } from '../../../../slate-utils/src/slate/element/isElement';
+import { EDescendant, TDescendant } from '../../../../slate-utils/src/slate/node/TDescendant';
+import { isText } from '../../../../slate-utils/src/slate/text/isText';
 import { ELEMENT_DEFAULT } from '../../types/index';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { getPluginType } from './getPluginType';

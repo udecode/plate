@@ -1,5 +1,5 @@
 import { ReactEditor } from 'slate-react';
-import { Value } from '../editor/index';
+import { Value } from '../../../../slate-utils/src/slate/editor';
 import { TReactEditor } from './TReactEditor';
 
 /**

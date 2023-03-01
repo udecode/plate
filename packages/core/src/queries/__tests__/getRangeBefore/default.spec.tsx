@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
+import { getRangeBefore } from '../../../../../slate-utils/src/queries/getRangeBefore';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { getRangeBefore } from '../../getRangeBefore';
 
 jsx;
 

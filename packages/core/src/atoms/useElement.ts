@@ -1,4 +1,4 @@
-import { TElement } from '../slate/index';
+import { TElement } from '../../../slate-utils/src/slate/index';
 import { SCOPE_ELEMENT, useElementStore } from './elementAtom';
 
 /**

@@ -1,6 +1,6 @@
-import { isSelectionAtBlockStart } from '../queries/index';
-import { Value } from '../slate/index';
-import { removeSelectionMark } from '../transforms/index';
+import { isSelectionAtBlockStart } from '../../../slate-utils/src/queries';
+import { Value } from '../../../slate-utils/src/slate/index';
+import { removeSelectionMark } from '../../../slate-utils/src/transforms';
 import { PlateEditor } from '../types/index';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 

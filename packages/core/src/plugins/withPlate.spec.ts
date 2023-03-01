@@ -1,8 +1,8 @@
 import { createHeadingPlugin } from '../../../nodes/heading/src/createHeadingPlugin';
 import { createParagraphPlugin } from '../../../nodes/paragraph/src/createParagraphPlugin';
+import { createTEditor } from '../../../slate-utils/src/utils/createTEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { getPlugin } from '../utils/plate/getPlugin';
-import { createTEditor } from '../utils/slate/createTEditor';
 import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';

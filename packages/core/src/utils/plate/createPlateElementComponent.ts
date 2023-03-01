@@ -1,6 +1,6 @@
 import { ElementType } from 'react';
 import { useElementProps, UseElementPropsOptions } from '../../hooks/index';
-import { TElement, Value } from '../../slate/index';
+import { TElement, Value } from '../../../../slate-utils/src/slate/index';
 import { As, HTMLPropsAs, PlateRenderElementProps } from '../../types/index';
 import { createComponentAs, createElementAs } from '../react/index';
 

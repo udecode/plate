@@ -1,4 +1,4 @@
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
 import { RenderFunction } from '../react/RenderFunction';
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { TEditableProps, Value } from '../../slate/index';
+import { TEditableProps, Value } from '../../../../slate-utils/src/slate/index';
 import { usePlateEditorRef, usePlateStates } from '../../stores/index';
 import {
   Nullable,

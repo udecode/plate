@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '../../../slate/editor/TEditor';
+import { getPointFromLocation } from '../../../../../slate-utils/src/queries/getPointFromLocation';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { getPointFromLocation } from '../../getPointFromLocation';
 
 jsx;
 

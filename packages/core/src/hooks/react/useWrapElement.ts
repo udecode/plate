@@ -1,5 +1,5 @@
 import { DependencyList, useCallback } from 'react';
-import { WrapElement } from '../../types/index';
+import { WrapElement } from '@udecode/plate-core/dist/core/src';
 
 /**
  * Returns props with an additional `wrapElement` prop.

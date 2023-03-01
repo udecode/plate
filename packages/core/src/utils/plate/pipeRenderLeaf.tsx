@@ -1,10 +1,10 @@
 import React from 'react';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { DefaultLeaf } from '../../components/plate/DefaultLeaf';
-import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/types/TEditableProps';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateRenderLeafProps } from '../../types/plate/PlateRenderLeafProps';
 import { RenderLeaf } from '../../types/plate/RenderLeaf';
+import { TEditableProps } from '../../types/TEditableProps';
 import { pipeInjectProps } from './pipeInjectProps';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 

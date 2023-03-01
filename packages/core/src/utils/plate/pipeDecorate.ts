@@ -1,7 +1,7 @@
 import { Range } from 'slate';
-import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/types/TEditableProps';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
+import { TEditableProps } from '../../types/TEditableProps';
 
 /**
  * @see {@link Decorate}.

@@ -1,9 +1,9 @@
 import clsx from 'clsx';
-import { Value } from '../../slate/editor/TEditor';
-import { AnyObject } from '../../types/misc/AnyObject';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
+import { getSlateClass } from '../../../../slate-utils/src/types/misc/getSlateClass';
 import { PlateRenderNodeProps } from '../../types/plate/PlateRenderNodeProps';
 import { WithPlatePlugin } from '../../types/plugin/PlatePlugin';
-import { getSlateClass } from '../misc/getSlateClass';
 
 /**
  * Override node props with plugin props.

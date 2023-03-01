@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { isDescendant } from '../../../slate/node/TDescendant';
-import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
+import { isDescendant } from '../../../../../slate-utils/src/slate/node/TDescendant';
+import { mergeDeepToNodes } from '../../../../../slate-utils/src/utils/mergeDeepToNodes';
 
 jsx;
 

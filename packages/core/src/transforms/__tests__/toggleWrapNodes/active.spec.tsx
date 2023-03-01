@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block/src/constants';
 import { jsx } from '@udecode/plate-test-utils';
-import { toggleWrapNodes } from '../../index';
+import { toggleWrapNodes } from '../../../../../slate-utils/src/transforms';
 
 jsx;
 

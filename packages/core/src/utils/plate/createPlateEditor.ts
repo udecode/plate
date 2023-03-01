@@ -1,11 +1,14 @@
+import { normalizeEditor } from '../../../../slate-utils/src/slate/editor/normalizeEditor';
+import {
+  TEditor,
+  Value,
+} from '../../../../slate-utils/src/slate/editor/TEditor';
+import { createTEditor } from '../../../../slate-utils/src/utils/createTEditor';
 import { withPlate, WithPlateOptions } from '../../plugins/withPlate';
-import { normalizeEditor } from '../../slate/editor/normalizeEditor';
-import { TEditor, Value } from '../../slate/editor/TEditor';
 import { OverrideByKey } from '../../types/plate/OverrideByKey';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../../types/plugin/PlatePlugin';
 import { PlatePluginComponent } from '../../types/plugin/PlatePluginComponent';
-import { createTEditor } from '../slate/createTEditor';
 import { createPlugins } from './createPlugins';
 
 export interface CreatePlateEditorOptions<

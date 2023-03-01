@@ -1,6 +1,6 @@
 import defaultsDeep from 'lodash/defaultsDeep';
-import { Value } from '../../slate/editor/TEditor';
-import { NoInfer } from '../../types/misc/NoInfer';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { NoInfer } from '../../../../slate-utils/src/types/misc/NoInfer';
 import { OverrideByKey } from '../../types/plate/OverrideByKey';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../../types/plugin/PlatePlugin';
@@ -49,13 +49,13 @@ export const overridePluginsByKey = <
   const { then } = plugin;
 
   if (then) {
-    if(typeof plugin._thenReplaced === 'undefined') {
+    if (typeof plugin._thenReplaced === 'undefined') {
       plugin._thenReplaced = 0;
     }
     // Limit the number of times that `then` can be replaced.
     // otherwise we will accidentally create a stack overflow.
     // There is probably a better solution for this.
-    if((plugin._thenReplaced as number) < 3) {
+    if ((plugin._thenReplaced as number) < 3) {
       // override plugin.then
       plugin.then = (editor, p) => {
         const pluginThen = { key: plugin.key, ...then(editor, p) };

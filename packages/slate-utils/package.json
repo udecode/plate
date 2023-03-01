@@ -1,0 +1,34 @@
+{
+  "name": "@udecode/slate-utils",
+  "version": "19.7.0",
+  "description": "Slate utils",
+  "license": "MIT",
+  "homepage": "https://plate.udecode.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "slate": ">=0.87.0",
+    "slate-history": ">=0.86.0"
+  },
+  "keywords": [
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

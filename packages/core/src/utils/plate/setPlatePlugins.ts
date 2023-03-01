@@ -33,7 +33,7 @@ import {
   createPrevSelectionPlugin,
   KEY_PREV_SELECTION,
 } from '../../plugins/index';
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';

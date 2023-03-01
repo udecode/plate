@@ -1,10 +1,10 @@
 import { Location } from 'slate';
-import { getEndPoint } from '../slate/editor/getEndPoint';
-import { getStartPoint } from '../slate/editor/getStartPoint';
-import { Value } from '../slate/editor/TEditor';
+import { getEndPoint } from '../../../slate-utils/src/slate/editor/getEndPoint';
+import { getStartPoint } from '../../../slate-utils/src/slate/editor/getStartPoint';
+import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
+import { select } from '../../../slate-utils/src/slate/transforms/select';
 import { focusEditor } from '../slate/react-editor/focusEditor';
 import { TReactEditor } from '../slate/react-editor/TReactEditor';
-import { select } from '../slate/transforms/select';
 
 export interface SelectEditorOptions {
   /**

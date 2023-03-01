@@ -1,7 +1,6 @@
+import { getPluginType, PlateEditor } from '@udecode/plate-core/dist/core/src';
 import castArray from 'lodash/castArray';
-import { Value } from '../slate/editor/TEditor';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { getPluginType } from '../utils/plate/getPluginType';
+import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
 
 /**
  * Does the node match the type provided.

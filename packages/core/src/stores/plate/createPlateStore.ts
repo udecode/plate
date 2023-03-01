@@ -5,7 +5,7 @@ import {
   SetRecord,
   UseRecord,
 } from '../../atoms/index';
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
 import { isDefined, Scope, useAtom } from '../../utils/index';

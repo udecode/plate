@@ -6,7 +6,7 @@ import {
   ReactNode,
   RefAttributes,
 } from 'react';
-import { AnyObject } from '../misc/index';
+import { AnyObject } from '../../../../slate-utils/src/types/misc/index';
 
 // /**
 //  * Workaround for variance issues.

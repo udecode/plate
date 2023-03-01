@@ -1,7 +1,7 @@
 import { ReactEditor } from 'slate-react';
 import { DOMNode } from 'slate-react/dist/utils/dom';
-import { Value } from '../editor/TEditor';
-import { TNode } from '../node/TNode';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { TNode } from '../../../../slate-utils/src/slate/node/TNode';
 import { TReactEditor } from './TReactEditor';
 
 /**

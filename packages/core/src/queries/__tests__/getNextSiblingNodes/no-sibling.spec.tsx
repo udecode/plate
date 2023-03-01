@@ -3,11 +3,11 @@
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import { TDescendant } from '../../../slate/node/TDescendant';
+import { getBlockAbove } from '../../../../../slate-utils/src/queries/getBlockAbove';
+import { getNextSiblingNodes } from '../../../../../slate-utils/src/queries/getNextSiblingNodes';
+import { TDescendant } from '../../../../../slate-utils/src/slate/node/TDescendant';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
-import { getBlockAbove } from '../../getBlockAbove';
-import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
 jsx;
 

@@ -1,8 +1,15 @@
 import { KeyboardEvent } from 'react';
 import { Path } from 'slate';
-import { TEditor, Value } from '../../slate/editor/TEditor';
-import { THistoryEditor } from '../../slate/history-editor/THistoryEditor';
-import { EElement, TElement, TRange } from '../../slate/index';
+import {
+  TEditor,
+  Value,
+} from '../../../../slate-utils/src/slate/editor/TEditor';
+import { THistoryEditor } from '../../../../slate-utils/src/slate/history-editor/THistoryEditor';
+import {
+  EElement,
+  TElement,
+  TRange,
+} from '../../../../slate-utils/src/slate/index';
 import { TReactEditor } from '../../slate/react-editor/TReactEditor';
 import { WithPlatePlugin } from '../plugin/PlatePlugin';
 import { PluginKey } from '../plugin/PlatePluginKey';

@@ -1,9 +1,9 @@
+import { ToggleMarkPlugin } from '@udecode/plate-core/dist/core/src';
 import castArray from 'lodash/castArray';
-import { isMarkActive } from '../queries/isMarkActive';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
-import { ToggleMarkPlugin } from '../types/plugin/ToggleMarkPlugin';
-import { removeMark } from './removeMark';
+import { isMarkActive } from '../../../slate-utils/src/queries/isMarkActive';
+import { TEditor, Value } from '../../../slate-utils/src/slate/editor/TEditor';
+import { withoutNormalizing } from '../../../slate-utils/src/slate/editor/withoutNormalizing';
+import { removeMark } from '../../../slate-utils/src/transforms/removeMark';
 
 export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
   key: string;

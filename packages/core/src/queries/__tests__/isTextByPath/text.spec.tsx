@@ -1,8 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '../../../slate/editor/TEditor';
+import { isTextByPath } from '../../../../../slate-utils/src/queries/isTextByPath';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { isTextByPath } from '../../isTextByPath';
 
 jsx;
 

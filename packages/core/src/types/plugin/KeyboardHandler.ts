@@ -1,5 +1,5 @@
 import { KeyboardEvent } from 'react';
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../plate/PlateEditor';
 import { DOMHandler, DOMHandlerReturnType } from './DOMHandlers';
 import { PluginOptions } from './PlatePlugin';

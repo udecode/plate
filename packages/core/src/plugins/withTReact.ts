@@ -1,5 +1,5 @@
 import { withReact } from 'slate-react';
-import { TEditor, Value } from '../slate/editor/TEditor';
+import { TEditor, Value } from '../../../slate-utils/src/slate/editor/TEditor';
 import { TReactEditor } from '../slate/react-editor/TReactEditor';
 
 export const withTReact = <

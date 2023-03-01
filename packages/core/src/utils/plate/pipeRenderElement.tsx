@@ -1,9 +1,9 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
-import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/types/TEditableProps';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { RenderElement } from '../../types/plate/RenderElement';
+import { TEditableProps } from '../../types/TEditableProps';
 import { pipeInjectProps } from './pipeInjectProps';
 import { pluginRenderElement } from './pluginRenderElement';
 

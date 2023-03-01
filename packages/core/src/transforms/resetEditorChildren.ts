@@ -1,9 +1,9 @@
-import { EElement, Value } from '../slate/index';
-import { PlateEditor } from '../types/index';
+import { EElement, Value } from '../../../slate-utils/src/slate';
 import {
   replaceNodeChildren,
   ReplaceNodeChildrenOptions,
-} from './replaceNodeChildren';
+} from '../../../slate-utils/src/transforms/replaceNodeChildren';
+import { PlateEditor } from '../types';
 
 /**
  * Replace editor children by default block.

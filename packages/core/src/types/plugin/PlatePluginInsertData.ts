@@ -1,5 +1,5 @@
-import { Value } from '../../slate/editor/TEditor';
-import { EElementOrText } from '../../slate/element/TElement';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { EElementOrText } from '../../../../slate-utils/src/slate/element/TElement';
 import { HandlerReturnType } from './DOMHandlers';
 
 export type PlatePluginInsertDataOptions = {

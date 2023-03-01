@@ -1,4 +1,4 @@
-import { Value } from '../../slate/editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PluginOptions } from '../../types/plugin/PlatePlugin';
 import { PlatePluginInsertDataOptions } from '../../types/plugin/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';

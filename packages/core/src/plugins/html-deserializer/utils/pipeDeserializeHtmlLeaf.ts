@@ -1,5 +1,5 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { AnyObject } from '../../../types/misc/AnyObject';
+import { Value } from '../../../../../slate-utils/src/slate/editor/TEditor';
+import { AnyObject } from '../../../../../slate-utils/src/types/misc/AnyObject';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 

@@ -1,6 +1,6 @@
-import { Value } from '../../slate/editor/TEditor';
-import { EText, TText } from '../../slate/text/TText';
-import { TRenderLeafProps } from '../../slate/types/TRenderLeafProps';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { EText, TText } from '../../../../slate-utils/src/slate/text/TText';
+import { TRenderLeafProps } from '../../../../slate-utils/src/slate/types/TRenderLeafProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
 /**

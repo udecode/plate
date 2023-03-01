@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode, Ref } from 'react';
 import { Editable } from 'slate-react';
 import { useEditableProps, useEditorRef } from '../../hooks/index';
-import { TEditableProps, Value } from '../../slate/index';
+import { TEditableProps, Value } from '../../../../slate-utils/src/slate/index';
 import { PlateId } from '../../stores/index';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';

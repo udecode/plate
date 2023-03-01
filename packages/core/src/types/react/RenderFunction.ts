@@ -1,7 +1,7 @@
 /**
  * Render function interface for providing overrideable render callbacks.
  */
-import { AnyObject } from '../misc/AnyObject';
+import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
 
 export interface RenderFunction<P = AnyObject> {
   (

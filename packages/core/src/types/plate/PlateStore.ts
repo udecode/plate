@@ -1,7 +1,7 @@
-import { Value } from '../../slate/editor/TEditor';
-import { TEditableProps } from '../../slate/index';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { TEditableProps } from '../../../../slate-utils/src/slate/index';
+import { Nullable } from '../../../../slate-utils/src/types/misc/Nullable';
 import { PlateId } from '../../stores/index';
-import { Nullable } from '../misc/Nullable';
 import {
   PlatePlugin,
   PluginOptions,

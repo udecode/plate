@@ -2,9 +2,8 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import { Value } from '../../../slate/editor/TEditor';
+import { isWordAfterTrigger } from '../../../../../slate-utils/src/queries';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { isWordAfterTrigger } from '../../index';
 
 jsx;
 

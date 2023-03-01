@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from 'react';
-import { normalizeEditor, Value } from '../../slate/index';
+import { normalizeEditor, Value } from '../../../../slate-utils/src/slate/index';
 import {
   GLOBAL_PLATE_SCOPE,
   PLATE_SCOPE,

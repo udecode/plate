@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '../../../slate/editor/TEditor';
+import { getBlockAbove } from '../../../../../slate-utils/src/queries';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { getBlockAbove } from '../../index';
 
 jsx;
 

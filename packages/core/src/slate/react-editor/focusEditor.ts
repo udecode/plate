@@ -1,8 +1,8 @@
 import { Location } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { withoutNormalizing } from '../editor/index';
-import { Value } from '../editor/TEditor';
-import { deselect, select } from '../transforms/index';
+import { withoutNormalizing } from '../../../../slate-utils/src/slate/editor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { deselect, select } from '../../../../slate-utils/src/slate/transforms';
 import { TReactEditor } from './TReactEditor';
 
 /**

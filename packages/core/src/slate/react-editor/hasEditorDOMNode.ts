@@ -1,6 +1,6 @@
 import { ReactEditor } from 'slate-react';
 import { DOMNode } from 'slate-react/dist/utils/dom';
-import { Value } from '../editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { TReactEditor } from './TReactEditor';
 
 /**

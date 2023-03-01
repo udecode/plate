@@ -1,10 +1,10 @@
-import { someNode } from '../queries/someNode';
-import { GetNodeEntriesOptions } from '../slate/editor/getNodeEntries';
-import { Value } from '../slate/editor/TEditor';
+import { someNode } from '../../../slate-utils/src/queries/someNode';
+import { GetNodeEntriesOptions } from '../../../slate-utils/src/slate/editor/getNodeEntries';
+import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
+import { setElements } from '../../../slate-utils/src/transforms/setElements';
 import { ELEMENT_DEFAULT } from '../types/plate/node.types';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { getPluginType } from '../utils/plate/getPluginType';
-import { setElements } from './setElements';
 
 export interface ToggleNodeTypeOptions {
   /**

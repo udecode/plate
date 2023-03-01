@@ -1,6 +1,6 @@
 import { Point } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { Value } from '../editor/TEditor';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { TReactEditor } from './TReactEditor';
 
 /**

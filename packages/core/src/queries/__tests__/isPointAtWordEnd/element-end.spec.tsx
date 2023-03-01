@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
+import { isPointAtWordEnd } from '../../../../../slate-utils/src/queries';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { isPointAtWordEnd } from '../../index';
 
 jsx;
 

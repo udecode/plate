@@ -1,8 +1,8 @@
 import { FC, ReactNode } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { AnyObject } from '../misc/AnyObject';
-import { Nullable } from '../misc/Nullable';
-import { WithRequired } from '../misc/types';
+import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
+import { Nullable } from '../../../../slate-utils/src/types/misc/Nullable';
+import { WithRequired } from '../../../../slate-utils/src/types/misc/types';
 import { PlateEditor } from '../plate/PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';

@@ -2,9 +2,9 @@
 
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { isBlockTextEmptyAfterSelection } from '../../../../../slate-utils/src/queries/isBlockTextEmptyAfterSelection';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
-import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
 
 jsx;
 

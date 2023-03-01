@@ -1,5 +1,5 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { EDescendant } from '../../../slate/node/TDescendant';
+import { Value } from '../../../../../slate-utils/src/slate/editor/TEditor';
+import { EDescendant } from '../../../../../slate-utils/src/slate/node/TDescendant';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
 import { deserializeHtmlNode } from './deserializeHtmlNode';

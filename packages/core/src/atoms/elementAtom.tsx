@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Scope } from 'jotai/core/atom';
-import { TElement } from '../slate/index';
+import { TElement } from '../../../slate-utils/src/slate/index';
 import { JotaiProvider, JotaiProviderProps } from '../utils/index';
 import { createAtomStore } from './createAtomStore';
 

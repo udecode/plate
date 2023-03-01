@@ -1,4 +1,4 @@
-import { AnyObject } from '../misc/AnyObject';
+import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
 
 export type DeserializeHtml = {
   /**
