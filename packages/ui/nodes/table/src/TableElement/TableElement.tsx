@@ -30,6 +30,11 @@ export const TableElement = <V extends Value>({
     colSizes = transformColSizes(colSizes);
   }
 
+  // if the last colSize is bigger than 0, we add a new colSize of 100% to the end
+  if (colSizes[colSizes.length - 1] === 0) {
+    colSizes.push('100%' as any);
+  }
+
   useSelectedCells();
 
   return (
@@ -41,9 +46,11 @@ export const TableElement = <V extends Value>({
       {...nodeProps}
     >
       <colgroup contentEditable={false}>
-        {colSizes.map((width, index) => (
-          <col key={index} style={width ? { width } : undefined} />
-        ))}
+        {colSizes.map((width, index) => {
+          const isLast = index === colSizes.length - 1;
+
+          return <col key={index} style={width ? { width } : undefined} />;
+        })}
       </colgroup>
 
       <TablePopover {...popoverProps}>

@@ -11,7 +11,7 @@ export const getTableElementStyles = <V extends Value>(
     { prefixClassNames: 'TableElement', ...props },
     {
       root: [
-        tw`table table-fixed h-px w-full my-4 mx-0 border-collapse border border-solid border-gray-300`,
+        tw`table table-fixed h-px my-4 mx-0 border-collapse border border-solid border-gray-300`,
         props.isSelectingCell &&
           css`
             *::selection {

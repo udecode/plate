@@ -30,7 +30,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
 
   const colSizes = tableNode.colSizes
     ? [...tableNode.colSizes]
-    : Array(colCount);
+    : Array(colCount).fill(0);
 
   if (resizingCol) {
     colSizes[resizingCol.index ?? 0] = resizingCol.width;
