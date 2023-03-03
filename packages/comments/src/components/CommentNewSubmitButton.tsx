@@ -33,18 +33,19 @@ export const useCommentNewSubmitButton = ({
     disabled: !editingCommentText?.trim().length,
     children: submitButtonText,
     onClick: () => {
-      const newComment = isReplyComment
-        ? {
-            id: nanoid(),
-            parentId: comment.id,
-            value: newValue,
-          }
-        : {
-            id: activeCommentId,
-            value: newValue,
-          };
+      const newComment = addComment(
+        isReplyComment
+          ? {
+              id: nanoid(),
+              parentId: comment.id,
+              value: newValue,
+            }
+          : {
+              id: activeCommentId,
+              value: newValue,
+            }
+      );
 
-      addComment(newComment);
       onCommentAdd?.(newComment);
 
       resetNewCommentValue();
