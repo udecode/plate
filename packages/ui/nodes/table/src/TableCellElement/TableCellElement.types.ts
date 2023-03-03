@@ -20,7 +20,12 @@ export interface TableCellElementStyles {
 
 export interface TableCellElementProps<V extends Value>
   extends StyledElementProps<V, TElement, TableCellElementStyles> {
-  resizableProps?: ResizableProps;
+  resizableProps?: ResizableProps & {
+    /**
+     * Resize by step instead of by pixel.
+     */
+    step?: number;
+  };
   hideBorder?: boolean;
 
   /**

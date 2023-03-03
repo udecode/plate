@@ -1,5 +1,5 @@
-import React from 'react';
-import { Value } from '@udecode/plate-core';
+import React, { CSSProperties } from 'react';
+import { collapseSelection, Value } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useSelectedCells } from '../hooks/useSelectedCells';
 import { useTableColSizes } from '../hooks/useTableColSizes';
@@ -13,7 +13,14 @@ export const TableElement = <V extends Value>({
   popoverProps,
   ...props
 }: TableElementProps<V>) => {
-  const { attributes, children, nodeProps, element } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    editor,
+    element,
+    minColWidth = 48,
+  } = props;
 
   const rootProps = getRootProps(props);
 
@@ -31,25 +38,37 @@ export const TableElement = <V extends Value>({
   }
 
   // if the last colSize is bigger than 0, we add a new colSize of 100% to the end
-  if (colSizes[colSizes.length - 1] === 0) {
+  if (!colSizes.some((size) => size === 0)) {
     colSizes.push('100%' as any);
   }
 
   useSelectedCells();
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <table
       {...attributes}
       css={root.css}
       className={root.className}
+      onMouseDown={() => {
+        // until cell dnd is supported, we collapse the selection on mouse down
+        if (selectedCells) {
+          collapseSelection(editor);
+        }
+      }}
       {...rootProps}
       {...nodeProps}
     >
-      <colgroup contentEditable={false}>
+      <colgroup contentEditable={false} style={{ width: '100%' }}>
         {colSizes.map((width, index) => {
-          const isLast = index === colSizes.length - 1;
+          const style: CSSProperties = {
+            minWidth: minColWidth,
+          };
+          if (width) {
+            style.width = width;
+          }
 
-          return <col key={index} style={width ? { width } : undefined} />;
+          return <col key={index} style={style} />;
         })}
       </colgroup>
 

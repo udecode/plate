@@ -6,7 +6,7 @@ jsx;
 
 export const createTable = (): any => (
   <fragment>
-    <htable>
+    <htable colSizes={[150, 150, 150, 150]}>
       <htr>
         <htd>
           <hp>
@@ -67,7 +67,7 @@ export const createTable = (): any => (
 const attributes = { colspan: '2' };
 export const createSpanningTable = (): any => (
   <fragment>
-    <htable>
+    <htable colSizes={[300, 300]}>
       <htr>
         <hth attributes={attributes}>
           <hp>
