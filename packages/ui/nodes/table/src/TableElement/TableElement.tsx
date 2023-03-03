@@ -37,7 +37,7 @@ export const TableElement = <V extends Value>({
     colSizes = transformColSizes(colSizes);
   }
 
-  // if the last colSize is bigger than 0, we add a new colSize of 100% to the end
+  // add a last col to fill the remaining space
   if (!colSizes.some((size) => size === 0)) {
     colSizes.push('100%' as any);
   }
