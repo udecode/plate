@@ -114,7 +114,6 @@ export const TableCellElement = <V extends Value>(
           enable={{ right: ignoreReadOnly || !readOnly }}
           minWidth={48}
           handleStyles={handleResize}
-          snapGap={10}
           onResize={onResize}
           onResizeStop={onResizeStop}
           {...resizableProps}
