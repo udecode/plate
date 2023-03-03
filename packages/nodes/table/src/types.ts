@@ -12,7 +12,7 @@ export interface TablePlugin<V extends Value = Value> {
    * Set it to true if you want to resize the table width when there is only one column.
    * Keep it false if you have a full-width table.
    */
-  disableUnsetSingleColSize?: boolean;
+  enableUnsetSingleColSize?: boolean;
 
   /**
    * @default empty paragraph
@@ -38,6 +38,12 @@ export interface TablePlugin<V extends Value = Value> {
       fromRow: Path;
     }
   ) => void;
+
+  /**
+   * If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns.
+   * Merged cells not supported.
+   */
+  initialTableWidth?: number;
 }
 
 export interface TTableElement extends TElement {

@@ -44,7 +44,8 @@ export const TableCellElement = <V extends Value>(
           right: {
             top: -12,
             height: 'calc(100% + 12px)',
-            zIndex: 20,
+            zIndex: 40,
+            userSelect: 'none',
           },
         }
       : undefined;
@@ -56,7 +57,6 @@ export const TableCellElement = <V extends Value>(
     content,
     resizableWrapper,
     resizable,
-    selectedCell,
     handle,
   } = getTableCellElementStyles({
     ...props,
@@ -66,9 +66,11 @@ export const TableCellElement = <V extends Value>(
   });
 
   const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
+    const step = resizableProps?.step;
+
     setResizingCol({
       index: colIndex,
-      width: ref.offsetWidth,
+      width: step ? Math.round(ref.offsetWidth / step) * step : ref.offsetWidth,
     });
   };
 
@@ -110,6 +112,7 @@ export const TableCellElement = <V extends Value>(
           className={resizable?.className}
           size={{ width: '100%', height: '100%' }}
           enable={{ right: ignoreReadOnly || !readOnly }}
+          minWidth={48}
           handleStyles={handleResize}
           onResize={onResize}
           onResizeStop={onResizeStop}
@@ -118,12 +121,6 @@ export const TableCellElement = <V extends Value>(
 
         <div css={handle?.css} className={handle?.className} />
       </div>
-
-      <div
-        css={selectedCell?.css}
-        className={selectedCell?.className}
-        contentEditable={false}
-      />
     </td>
   );
 };

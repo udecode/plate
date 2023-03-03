@@ -15,6 +15,12 @@ export interface TableElementStyles {
 
 export interface TableElementProps<V extends Value>
   extends StyledElementProps<V, TTableElement, TableElementStyles> {
+  /**
+   * Minimum column width.
+   * @default 48
+   */
+  minColWidth?: number;
+
   popoverProps?: PopoverProps;
 
   /**

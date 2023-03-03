@@ -1,11 +1,13 @@
 import {
   getBlockAbove,
   getParentNode,
+  getPluginOptions,
   getPluginType,
   getTEditor,
   isElement,
   isText,
   PlateEditor,
+  setNodes,
   TElement,
   unwrapNodes,
   Value,
@@ -13,6 +15,7 @@ import {
 } from '@udecode/plate-core';
 import { getCellTypes } from './utils/index';
 import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
+import { TablePlugin, TTableElement } from './types';
 
 /**
  * Normalize table:
@@ -28,6 +31,11 @@ export const withNormalizeTable = <
 
   const myEditor = getTEditor<V>(editor);
 
+  const { initialTableWidth } = getPluginOptions<TablePlugin>(
+    editor as any,
+    ELEMENT_TABLE
+  );
+
   myEditor.normalizeNode = ([node, path]) => {
     if (isElement(node)) {
       if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
@@ -41,6 +49,31 @@ export const withNormalizeTable = <
             at: path,
           });
           return;
+        }
+
+        if (initialTableWidth) {
+          const tableNode = node as TTableElement;
+          const colCount = (tableNode.children[0]?.children as
+            | TElement[]
+            | undefined)?.length;
+          if (colCount) {
+            const colSizes: number[] = [];
+
+            if (!tableNode.colSizes) {
+              for (let i = 0; i < colCount; i++) {
+                colSizes.push(initialTableWidth / colCount);
+              }
+            } else if (tableNode.colSizes.some((size) => !size)) {
+              tableNode.colSizes.forEach((colSize) => {
+                colSizes.push(colSize || initialTableWidth / colCount);
+              });
+            }
+
+            if (colSizes.length) {
+              setNodes<TTableElement>(editor, { colSizes }, { at: path });
+              return;
+            }
+          }
         }
       }
 
