@@ -90,7 +90,6 @@ export const TableCellElement = <V extends Value>(
       {...attributes}
       css={root.css}
       className={root.className}
-      draggable={false}
       {...rootProps}
       {...nodeProps}
     >
