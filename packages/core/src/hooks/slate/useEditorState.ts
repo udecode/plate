@@ -1,5 +1,5 @@
+import { Value } from '@udecode/slate-utils';
 import { useSlate } from 'slate-react';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 
 /**

@@ -1,8 +1,9 @@
 import { ElementType } from 'react';
-import { useElementProps, UseElementPropsOptions } from '../../hooks/index';
+import { createElementAs } from '@udecode/slate-react-utils/src/utils';
+import { createComponentAs } from '../../../../plate-utils/src/utils/react/index';
 import { TElement, Value } from '../../../../slate-utils/src/slate/index';
+import { useElementProps, UseElementPropsOptions } from '../../hooks/index';
 import { As, HTMLPropsAs, PlateRenderElementProps } from '../../types/index';
-import { createComponentAs, createElementAs } from '../react/index';
 
 export type CreatePlateElementComponentOptions<
   T extends TElement = TElement,

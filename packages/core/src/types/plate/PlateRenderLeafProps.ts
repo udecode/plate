@@ -1,4 +1,4 @@
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { Value } from '@udecode/slate-utils/src';
 import { EText, TText } from '../../../../slate-utils/src/slate/text/TText';
 import { TRenderLeafProps } from '../../../../slate-utils/src/slate/types/TRenderLeafProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';

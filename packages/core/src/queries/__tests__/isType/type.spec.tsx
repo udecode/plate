@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
+import { isType } from '../../../../../plate-utils/src/queries/isType';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { isType } from '../../isType';
 
 jsx;
 

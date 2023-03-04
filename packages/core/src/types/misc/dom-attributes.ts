@@ -1,4 +1,4 @@
-import { DOMHandlers } from '@udecode/plate-core/dist/core/src';
+import { DOMHandlers } from '../plugin';
 
 export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Clipboard Events

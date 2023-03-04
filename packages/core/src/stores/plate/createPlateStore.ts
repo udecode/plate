@@ -1,3 +1,4 @@
+import { isDefined, Value } from '@udecode/slate-utils';
 import { atom } from 'jotai';
 import {
   createAtomStore,
@@ -5,10 +6,9 @@ import {
   SetRecord,
   UseRecord,
 } from '../../atoms/index';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { PlateStoreState } from '../../types/plate/PlateStore';
-import { isDefined, Scope, useAtom } from '../../utils/index';
+import { Scope, useAtom } from '../../utils/index';
 
 /**
  * A unique id used as a provider scope.

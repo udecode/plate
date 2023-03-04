@@ -5,4 +5,3 @@
 export * from './jotai/index';
 export * from './misc/index';
 export * from './plate/index';
-export * from './react/index';

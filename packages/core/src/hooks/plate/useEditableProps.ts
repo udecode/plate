@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
+import { isDefined } from '@udecode/slate-utils/src/types';
 import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 import { PlateId, usePlateSelectors } from '../../stores/index';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { DOM_HANDLERS } from '../../types/misc/dom-attributes';
 import { TEditableProps } from '../../types/TEditableProps';
-import { isDefined } from '../../utils/index';
 import { pipeDecorate } from '../../utils/plate/pipeDecorate';
 import { pipeHandler } from '../../utils/plate/pipeHandler';
 import { pipeRenderElement } from '../../utils/plate/pipeRenderElement';

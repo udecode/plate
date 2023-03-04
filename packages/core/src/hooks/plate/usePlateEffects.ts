@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import { TEditableProps, Value } from '../../../../slate-utils/src/slate/index';
+import { isUndefined, Nullable, Value } from '@udecode/slate-utils';
 import { usePlateEditorRef, usePlateStates } from '../../stores/index';
 import {
-  Nullable,
   PlateEditor,
   PlatePlugin,
   PlateStoreState,
   PluginOptions,
+  TEditableProps,
 } from '../../types/index';
-import { isUndefined, setPlatePlugins } from '../../utils/index';
+import { setPlatePlugins } from '../../utils/index';
 
 export type UsePlateEffectsProps<
   V extends Value = Value,

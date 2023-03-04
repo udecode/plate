@@ -1,7 +1,9 @@
-import { someNode } from '../../../slate-utils/src/queries/someNode';
-import { GetNodeEntriesOptions } from '../../../slate-utils/src/slate/editor/getNodeEntries';
-import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
-import { setElements } from '../../../slate-utils/src/transforms/setElements';
+import {
+  GetNodeEntriesOptions,
+  setElements,
+  someNode,
+  Value,
+} from '@udecode/slate-utils';
 import { ELEMENT_DEFAULT } from '../types/plate/node.types';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { getPluginType } from '../utils/plate/getPluginType';

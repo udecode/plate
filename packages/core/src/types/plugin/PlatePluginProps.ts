@@ -1,5 +1,4 @@
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
-import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
+import { AnyObject, Value } from '@udecode/slate-utils/src';
 import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
 import { PlateRenderLeafProps } from '../plate/PlateRenderLeafProps';
 

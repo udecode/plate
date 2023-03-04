@@ -1,4 +1,4 @@
-import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
+import { AnyObject } from '@udecode/slate-utils/src';
 
 export type DeserializeHtml = {
   /**

@@ -1,5 +1,6 @@
 import React, { FC, useMemo } from 'react';
-import { normalizeEditor, Value } from '../../../../slate-utils/src/slate/index';
+import { normalizeEditor, Value } from '@udecode/slate-utils';
+import { withHOC } from '../../../../slate-react-utils/src/utils/react/withHOC';
 import {
   GLOBAL_PLATE_SCOPE,
   PLATE_SCOPE,
@@ -9,7 +10,6 @@ import {
 import { PlateEditor, PlateStoreState } from '../../types/index';
 import { createPlateEditor, normalizeInitialValue } from '../../utils/index';
 import { JotaiProvider } from '../../utils/misc/jotai';
-import { withHOC } from '../../utils/react/withHOC';
 import {
   PlateProviderEffects,
   PlateProviderEffectsProps,

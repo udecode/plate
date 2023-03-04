@@ -3,5 +3,4 @@
  */
 
 export * from './plate/index';
-export * from './react/index';
 export * from './slate/index';

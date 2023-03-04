@@ -1,5 +1,4 @@
 import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
-import { TEditableProps } from '../../../../slate-utils/src/slate/index';
 import { Nullable } from '../../../../slate-utils/src/types/misc/Nullable';
 import { PlateId } from '../../stores/index';
 import {
@@ -7,6 +6,7 @@ import {
   PluginOptions,
   WithPlatePlugin,
 } from '../plugin/PlatePlugin';
+import { TEditableProps } from '../TEditableProps';
 import { PlateEditor } from './PlateEditor';
 
 export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';

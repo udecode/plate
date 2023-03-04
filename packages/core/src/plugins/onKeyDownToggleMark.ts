@@ -1,5 +1,5 @@
+import { Value } from '@udecode/slate-utils';
 import isHotkey from 'is-hotkey';
-import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
 import { toggleMark } from '../transforms/toggleMark';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { KeyboardHandlerReturnType } from '../types/plugin/KeyboardHandler';

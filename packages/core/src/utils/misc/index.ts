@@ -4,5 +4,4 @@
 
 export * from './hotkeys';
 export * from './jotai';
-export * from './react-hotkeys-hook';
 export * from './zustood';

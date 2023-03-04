@@ -1,6 +1,8 @@
-import { isSelectionAtBlockStart } from '../../../slate-utils/src/queries';
-import { Value } from '../../../slate-utils/src/slate/index';
-import { removeSelectionMark } from '../../../slate-utils/src/transforms';
+import {
+  isSelectionAtBlockStart,
+  removeSelectionMark,
+  Value,
+} from '@udecode/slate-utils';
 import { PlateEditor } from '../types/index';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 

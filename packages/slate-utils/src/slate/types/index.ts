@@ -6,3 +6,4 @@ export * from './NodeMatchOption';
 export * from './TOperation';
 export * from './TRenderLeafProps';
 export * from './interfaces';
+export * from './sanitizeUrl';

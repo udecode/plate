@@ -1,8 +1,8 @@
 import React from 'react';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
-import { TEditableProps } from '../../../../slate-utils/src/slate/index';
+import { Value } from '@udecode/slate-utils';
 import { PLATE_SCOPE, usePlateSelectors } from '../../stores/index';
 import { PlateEditor } from '../../types/plate/PlateEditor';
+import { TEditableProps } from '../../types/TEditableProps';
 import { PlateEditable, PlateEditableExtendedProps } from './PlateEditable';
 import { PlateProvider, PlateProviderProps } from './PlateProvider';
 import { PlateSlate } from './PlateSlate';

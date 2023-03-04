@@ -1,6 +1,6 @@
+import { Value } from '@udecode/slate-utils';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
-import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
 import { toggleNodeType } from '../transforms/toggleNodeType';
 import { ELEMENT_DEFAULT } from '../types/plate/node.types';
 import { PlateEditor } from '../types/plate/PlateEditor';

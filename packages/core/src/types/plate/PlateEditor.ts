@@ -1,16 +1,14 @@
 import { KeyboardEvent } from 'react';
-import { Path } from 'slate';
-import {
-  TEditor,
-  Value,
-} from '../../../../slate-utils/src/slate/editor/TEditor';
-import { THistoryEditor } from '../../../../slate-utils/src/slate/history-editor/THistoryEditor';
 import {
   EElement,
+  TEditor,
   TElement,
+  THistoryEditor,
   TRange,
-} from '../../../../slate-utils/src/slate/index';
-import { TReactEditor } from '../../slate/react-editor/TReactEditor';
+  Value,
+} from '@udecode/slate-utils';
+import { Path } from 'slate';
+import { TReactEditor } from '../../../../slate-react-utils/src/slate/react-editor/TReactEditor';
 import { WithPlatePlugin } from '../plugin/PlatePlugin';
 import { PluginKey } from '../plugin/PlatePluginKey';
 
