@@ -47,7 +47,7 @@ import { TodoListElement } from '@udecode/plate-ui-list';
 import { ImageElement, MediaEmbedElement } from '@udecode/plate-ui-media';
 import { MentionElement, MentionInputElement } from '@udecode/plate-ui-mention';
 import {
-  TableCellElement,
+  PlateTableCellElement,
   TableElement,
   TableRowElement,
 } from '@udecode/plate-ui-table';
@@ -168,8 +168,8 @@ export const createPlateUI = <T extends string = string>(
       prefixClassNames: 'p',
     }),
     [ELEMENT_TABLE]: TableElement,
-    [ELEMENT_TD]: TableCellElement,
-    [ELEMENT_TH]: withProps(TableCellElement, {
+    [ELEMENT_TD]: PlateTableCellElement,
+    [ELEMENT_TH]: withProps(PlateTableCellElement, {
       as: 'th',
       styles: {
         root: [

@@ -3,5 +3,16 @@
  */
 
 export * from './TableCellElement.styles';
-export * from './TableCellElement';
-export * from './TableCellElement.types';
+export * from './PlateTableCellElement';
+export { TableCellElementRoot } from './TableCellElementRoot';
+export { useTableCellElementRootProps } from './TableCellElementRoot';
+export { TableCellElementRootProps } from './TableCellElementRoot';
+export { useTableCellElementState } from './useTableCellElementState';
+export { TableCellElementState } from './useTableCellElementState';
+export { TableCellElementResizableWrapper } from './TableCellElementResizableWrapper';
+export { useTableCellElementResizableWrapperProps } from './TableCellElementResizableWrapper';
+export { TableCellElementResizableWrapperProps } from './TableCellElementResizableWrapper';
+export { TableCellElementResizable } from './TableCellElementResizable';
+export { useTableCellElementResizableProps } from './TableCellElementResizable';
+export { TableCellElementResizableProps } from './TableCellElementResizable';
+export { TableCellElement } from './TableCellElement';

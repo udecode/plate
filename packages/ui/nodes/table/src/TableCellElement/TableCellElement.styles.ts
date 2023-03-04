@@ -1,11 +1,16 @@
-import { Value } from '@udecode/plate-core';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { TableCellElementStyleProps } from './TableCellElement.types';
+import { PlateTableCellElementProps } from './PlateTableCellElement';
 
-export const getTableCellElementStyles = <V extends Value>(
-  props: TableCellElementStyleProps<V>
+export interface TableCellElementStyleProps extends PlateTableCellElementProps {
+  hovered: boolean;
+  selected?: boolean;
+  readOnly: boolean;
+}
+
+export const getTableCellElementStyles = (
+  props: TableCellElementStyleProps
 ) => {
   const { hovered, selected, hideBorder, readOnly } = props;
 
