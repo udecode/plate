@@ -4,15 +4,15 @@ import {
   createElementAs,
   HTMLPropsAs,
   PlateRenderElementProps,
+  TElement,
   useElementProps,
   Value,
 } from '@udecode/plate-core';
-import { TTableElement } from '@udecode/plate-table';
 import { useTableStore } from '../table.atoms';
 
 export type TableCellElementRootProps = PlateRenderElementProps<
   Value,
-  TTableElement
+  TElement
 > &
   HTMLPropsAs<'td'>;
 
@@ -26,8 +26,6 @@ export const useTableCellElementRootProps = (
   useEffect(() => {
     setHoveredColIndex(null);
   }, [element, setHoveredColIndex]);
-
-  // const rootProps = getRootProps(props);
 
   return useElementProps(props);
 };

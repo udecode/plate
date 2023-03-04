@@ -8,4 +8,3 @@ export * from './TableElement/index';
 export * from './TablePopover/index';
 export * from './TableRowElement/index';
 export * from './TableToolbarButton/index';
-export * from './hooks/index';
