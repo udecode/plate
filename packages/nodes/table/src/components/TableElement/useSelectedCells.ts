@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useEditorRef } from '@udecode/plate-core';
-import { getTableGridAbove } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
-import { useTableStore } from '../table.atoms';
+import { getTableGridAbove } from '../../queries';
+import { useTableStore } from '../../stores/tableStore';
 
 /**
  * Many grid cells above and diff -> set
