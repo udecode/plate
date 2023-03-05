@@ -8,6 +8,7 @@ const GrabberTooltipContent = () => (
     </div>
   </div>
 );
+
 export const grabberTooltipProps: TippyProps = {
   content: <GrabberTooltipContent />,
   placement: 'bottom',

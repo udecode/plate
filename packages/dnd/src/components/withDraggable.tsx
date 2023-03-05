@@ -4,7 +4,10 @@ import {
   PlateRenderElementProps,
   RenderFunction,
 } from '@udecode/plate-core';
-import { useWithDraggable, WithDraggableOptions } from './useWithDraggable';
+import {
+  useWithDraggableState,
+  WithDraggableOptions,
+} from './useWithDraggableState';
 
 export const withDraggable = <T extends AnyObject = AnyObject>(
   Draggable: RenderFunction<any>,
@@ -12,7 +15,7 @@ export const withDraggable = <T extends AnyObject = AnyObject>(
   options?: WithDraggableOptions<T>
 ) =>
   forwardRef<HTMLDivElement, PlateRenderElementProps>((props, ref) => {
-    const { disabled, draggableProps } = useWithDraggable({
+    const { disabled, draggableProps } = useWithDraggableState({
       ...options,
       ...props,
     });

@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { EElement, Value } from '@udecode/plate-core';
 import {
   DraggableBlock,
   DraggableBlockToolbar,
@@ -9,8 +10,17 @@ import {
   DragHandle as DefaultDragHandle,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { getDraggableStyles } from './Draggable.styles';
-import { PlateDraggableProps } from './Draggable.types';
+import { StyledElementProps } from '@udecode/plate-styled-components';
+import { getDraggableStyles } from './PlateDraggable.styles';
+import { DraggableStyles, DragHandleProps } from './PlateDraggable.types';
+
+export interface PlateDraggableProps
+  extends StyledElementProps<Value, EElement<Value>, DraggableStyles> {
+  /**
+   * An override to render the drag handle.
+   */
+  onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
+}
 
 export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
   (props, ref) => {
@@ -19,6 +29,7 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
     const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
 
     const { dropLine, isDragging, rootRef, dragRef } = useDraggableState(props);
+
     const styles = getDraggableStyles({
       ...props,
       direction: dropLine,

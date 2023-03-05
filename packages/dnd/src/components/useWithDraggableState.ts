@@ -27,7 +27,7 @@ export interface WithDraggableOptions<T = any> {
   draggableProps?: T;
 }
 
-export const useWithDraggable = <T = any>({
+export const useWithDraggableState = <T = any>({
   editor,
   level = 0,
   filter,

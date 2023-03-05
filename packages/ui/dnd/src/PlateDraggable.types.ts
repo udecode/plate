@@ -1,15 +1,6 @@
 import React from 'react';
-import { EElement, TElement, Value } from '@udecode/plate-core';
-import { DropLineDirection } from '@udecode/plate-dnd';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { TElement } from '@udecode/plate-core';
 import { CSSProp } from 'styled-components';
-
-export interface DraggableStyleProps extends PlateDraggableProps {
-  direction: DropLineDirection;
-  isDragging: boolean;
-
-  selected?: boolean;
-}
 
 export interface DraggableStyles {
   /**
@@ -62,12 +53,4 @@ export interface DragHandleProps
   > {
   element: TElement;
   styles?: CSSProp;
-}
-
-export interface PlateDraggableProps
-  extends StyledElementProps<Value, EElement<Value>, DraggableStyles> {
-  /**
-   * An override to render the drag handle.
-   */
-  onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
 }
