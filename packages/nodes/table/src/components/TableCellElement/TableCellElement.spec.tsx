@@ -2,10 +2,11 @@ import React from 'react';
 import * as core from '@udecode/plate-core';
 import { withProps } from '@udecode/plate-core';
 import { createTablePlugin, ELEMENT_TD } from '@udecode/plate-table';
-import { createPlateUI, TableCellElement } from '@udecode/plate-ui';
+import { createPlateUI } from '@udecode/plate-ui';
 import * as resizeable from 're-resizable';
 import { createPlateTestEditor } from '../../../../../core/src/utils/__tests__/createPlateTestEditor';
 import { tableInput } from './TableCellElement.fixtures';
+import { TableCellElementResizable } from './TableCellElementResizable';
 
 jest.mock('re-resizable');
 
@@ -19,7 +20,7 @@ describe('TableCellElement', () => {
         {
           plugins: [createTablePlugin()],
           components: createPlateUI(),
-        },
+        } as any,
         {
           componentProps: { editableProps: { readOnly: true } },
         }
@@ -40,11 +41,11 @@ describe('TableCellElement', () => {
         {
           plugins: [createTablePlugin()],
           components: createPlateUI({
-            [ELEMENT_TD]: withProps(TableCellElement, {
+            [ELEMENT_TD]: withProps(TableCellElementResizable, {
               ignoreReadOnly: true,
             }),
           }),
-        },
+        } as any,
         {
           componentProps: { editableProps: { readOnly: true } },
         }
