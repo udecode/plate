@@ -2,14 +2,20 @@ import React from 'react';
 import {
   focusEditor,
   getPluginType,
+  PlateEditor,
   someNode,
   useEventPlateId,
   usePlateEditorState,
   Value,
 } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { ToolbarButton } from '@udecode/plate-ui-toolbar';
-import { TableToolbarButtonProps } from './TableToolbarButton.types';
+import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
+
+export interface TableToolbarButtonProps<V extends Value>
+  extends ToolbarButtonProps {
+  header?: boolean;
+  transform: (editor: PlateEditor<V>, options: { header?: boolean }) => void;
+}
 
 export const TableToolbarButton = <V extends Value>({
   id,

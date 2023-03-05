@@ -1,9 +1,11 @@
 import React from 'react';
+import {
+  TableCellElement,
+  TableCellElementRootProps,
+  useTableCellElementState,
+} from '@udecode/plate-table';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { TableCellElement } from './TableCellElement';
-import { TableCellElementRootProps } from './TableCellElementRoot';
-import { useTableCellElementState } from './useTableCellElementState';
 
 export interface PlateTableCellElementProps extends TableCellElementRootProps {
   hideBorder?: boolean;

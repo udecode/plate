@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-core';
-import { useTableStore } from '../table.atoms';
+import { useTableStore } from '../../stores/tableStore';
 import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableWrapperProps = HTMLPropsAs<'div'> &

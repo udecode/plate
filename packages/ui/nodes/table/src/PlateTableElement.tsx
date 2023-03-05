@@ -1,10 +1,12 @@
 import React from 'react';
+import {
+  TableElement,
+  TableElementRootProps,
+  useTableElementState,
+} from '@udecode/plate-table';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { PlateTablePopover } from '../TablePopover/PlateTablePopover';
-import { TableElement } from './TableElement';
-import { TableElementRootProps } from './TableElementRoot';
-import { useTableElementState } from './useTableElementState';
+import { PlateTablePopover } from './PlateTablePopover';
 
 export const PlateTableElement = (props: TableElementRootProps) => {
   const { as, children, ...rootProps } = props;

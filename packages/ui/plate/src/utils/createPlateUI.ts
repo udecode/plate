@@ -48,6 +48,7 @@ import { ImageElement, MediaEmbedElement } from '@udecode/plate-ui-media';
 import { MentionElement, MentionInputElement } from '@udecode/plate-ui-mention';
 import {
   PlateTableCellElement,
+  PlateTableCellHeaderElement,
   PlateTableElement,
   PlateTableRowElement,
 } from '@udecode/plate-ui-table';
@@ -169,23 +170,7 @@ export const createPlateUI = <T extends string = string>(
     }),
     [ELEMENT_TABLE]: PlateTableElement,
     [ELEMENT_TD]: PlateTableCellElement,
-    [ELEMENT_TH]: withProps(PlateTableCellElement, {
-      as: 'th',
-      styles: {
-        root: [
-          tw`text-left`,
-          css`
-            ::before {
-              background-color: rgb(244, 245, 247);
-            }
-
-            > * {
-              margin: 0;
-            }
-          `,
-        ],
-      },
-    }),
+    [ELEMENT_TH]: PlateTableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
     [ELEMENT_TR]: PlateTableRowElement,
     [MARK_BOLD]: withProps(StyledLeaf, { as: 'strong' }),

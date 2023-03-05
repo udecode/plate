@@ -1,5 +1,5 @@
 import { useElement } from '@udecode/plate-core';
-import { useTableStore } from '../table.atoms';
+import { useTableStore } from '../../stores/tableStore';
 import { useTableColSizes } from './useTableColSizes';
 
 export interface TableElementState {

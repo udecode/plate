@@ -1,8 +1,8 @@
 import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-core';
-import { getTableColumnIndex } from '@udecode/plate-table';
 import { useReadOnly } from 'slate-react';
-import { useIsCellSelected } from '../hooks';
-import { useTableStore } from '../table.atoms';
+import { getTableColumnIndex } from '../../queries';
+import { useTableStore } from '../../stores/tableStore';
+import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
   colIndex: number;

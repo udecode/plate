@@ -5,9 +5,9 @@ import {
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-core';
-import { setTableColSize } from '@udecode/plate-table';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
-import { useTableStore } from '../table.atoms';
+import { useTableStore } from '../../stores/tableStore';
+import { setTableColSize } from '../../transforms';
 import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableProps = HTMLPropsAs<'div'> &

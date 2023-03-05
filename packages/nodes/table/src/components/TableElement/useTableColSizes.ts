@@ -5,13 +5,10 @@ import {
   unsetNodes,
   useEditorRef,
 } from '@udecode/plate-core';
-import {
-  ELEMENT_TABLE,
-  getTableColumnCount,
-  TablePlugin,
-  TTableElement,
-} from '@udecode/plate-table';
-import { useTableStore } from '../table.atoms';
+import { ELEMENT_TABLE } from '../../createTablePlugin';
+import { getTableColumnCount } from '../../queries';
+import { useTableStore } from '../../stores/tableStore';
+import { TablePlugin, TTableElement } from '../../types';
 
 /**
  * Returns node.colSizes if it exists, otherwise returns a 0-filled array.

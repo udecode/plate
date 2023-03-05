@@ -8,8 +8,8 @@ import {
   usePlateEditorRef,
   Value,
 } from '@udecode/plate-core';
-import { TTableElement } from '@udecode/plate-table';
-import { useTableStore } from '../table.atoms';
+import { useTableStore } from '../../stores/tableStore';
+import { TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
 
 export type TableElementRootProps = PlateRenderElementProps<

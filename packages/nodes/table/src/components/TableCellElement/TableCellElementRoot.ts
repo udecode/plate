@@ -8,7 +8,7 @@ import {
   useElementProps,
   Value,
 } from '@udecode/plate-core';
-import { useTableStore } from '../table.atoms';
+import { useTableStore } from '../../stores/tableStore';
 
 export type TableCellElementRootProps = PlateRenderElementProps<
   Value,

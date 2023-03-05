@@ -1,5 +1,5 @@
 import { createAtomStore, TElement } from '@udecode/plate-core';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TABLE } from '../createTablePlugin';
 
 export const { tableStore, useTableStore } = createAtomStore(
   {
