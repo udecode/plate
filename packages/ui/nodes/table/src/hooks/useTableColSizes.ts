@@ -21,7 +21,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
   const editor = useEditorRef();
   const resizingCol = useTableStore().get.resizingCol();
 
-  const { disableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
+  const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
     editor,
     ELEMENT_TABLE
   );
@@ -30,7 +30,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
 
   const colSizes = tableNode.colSizes
     ? [...tableNode.colSizes]
-    : Array(colCount);
+    : Array(colCount).fill(0);
 
   if (resizingCol) {
     colSizes[resizingCol.index ?? 0] = resizingCol.width;
@@ -38,7 +38,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
 
   useEffect(() => {
     if (
-      !disableUnsetSingleColSize &&
+      enableUnsetSingleColSize &&
       colCount < 2 &&
       tableNode.colSizes?.length
     ) {
@@ -46,7 +46,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
         at: findNodePath(editor, tableNode),
       });
     }
-  }, [colCount, disableUnsetSingleColSize, editor, tableNode]);
+  }, [colCount, enableUnsetSingleColSize, editor, tableNode]);
 
   return colSizes;
 };

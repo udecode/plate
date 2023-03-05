@@ -169,15 +169,15 @@ export const createPlateUI = <T extends string = string>(
     }),
     [ELEMENT_TABLE]: TableElement,
     [ELEMENT_TD]: TableCellElement,
-    [ELEMENT_TH]: withProps(StyledElement, {
+    [ELEMENT_TH]: withProps(TableCellElement, {
       as: 'th',
       styles: {
         root: [
-          tw`p-2 text-left`,
+          tw`text-left`,
           css`
-            background-color: rgb(244, 245, 247);
-            border: 1px solid rgb(193, 199, 208);
-            min-width: 48px;
+            ::before {
+              background-color: rgb(244, 245, 247);
+            }
 
             > * {
               margin: 0;

@@ -4,7 +4,6 @@ import {
   getEditorString,
   getNodeLeaf,
   getNodeProps,
-  getPluginOptions,
   getPluginType,
   InsertNodesOptions,
   isDefined,
@@ -16,9 +15,9 @@ import {
   Value,
   WrapNodesOptions,
 } from '@udecode/plate-core';
-import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
-import { CreateLinkNodeOptions } from '../utils/index';
+import { CreateLinkNodeOptions, validateUrl } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
@@ -34,7 +33,7 @@ export type UpsertLinkOptions<
   insertNodesOptions?: InsertNodesOptions<V>;
   unwrapNodesOptions?: UnwrapNodesOptions<V>;
   wrapNodesOptions?: WrapNodesOptions<V>;
-  isUrl?: (url: string) => boolean;
+  skipValidation?: boolean;
 };
 
 /**
@@ -53,7 +52,7 @@ export const upsertLink = <V extends Value>(
     target,
     insertTextInLink,
     insertNodesOptions,
-    isUrl = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK).isUrl,
+    skipValidation = false,
   }: UpsertLinkOptions<V>
 ) => {
   const at = editor.selection;
@@ -72,7 +71,7 @@ export const upsertLink = <V extends Value>(
     return true;
   }
 
-  if (!isUrl?.(url)) return;
+  if (!skipValidation && !validateUrl(editor, url)) return;
 
   if (isDefined(text) && !text.length) {
     text = url;

@@ -13,41 +13,28 @@ export const getTableCellElementStyles = <V extends Value>(
     { prefixClassNames: 'TableCellElement', ...props },
     {
       root: [
-        tw`relative p-0 overflow-visible bg-white`,
+        tw`relative p-0 overflow-visible bg-white border-none`,
         hideBorder
-          ? tw`border-none`
-          : tw`border-t border-l border-b-0 border-r-0 border-gray-300`,
-        selected && tw`border border-blue-500`,
+          ? tw`before:border-none`
+          : tw`before:content-[''] before:box-border before:absolute before:-top-px before:-left-px before:border before:border-solid before:select-none before:border-gray-300`,
+        selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
         css`
-          min-width: 48px;
+          ::before {
+            width: calc(100% + 1px);
+            height: calc(100% + 1px);
+          }
         `,
       ],
-      content: tw`relative px-3 py-2 z-10 h-full box-border`,
-      resizableWrapper: [
-        tw`absolute w-full h-full top-0`,
-        selected && tw`hidden`,
-      ],
-      selectedCell: [
-        !selected && tw`hidden`,
-        tw`absolute top-0 left-0 w-full h-full pointer-events-none`,
-        selected &&
-          css`
-            z-index: 12;
-            background-color: rgb(179, 212, 255);
-            opacity: 0.3;
-          `,
-      ],
+      content: [tw`relative px-3 py-2 z-20 h-full box-border`],
+      resizableWrapper: [tw`absolute w-full h-full top-0 select-none`],
       handle: [
-        tw`absolute`,
+        tw`absolute z-30 w-1`,
         !readOnly && hovered && tw`bg-blue-500`,
         css`
           top: -12px;
-          right: -2px;
+          right: -1.5px;
 
-          width: 4px;
           height: calc(100% + 12px);
-
-          z-index: 10;
         `,
       ],
     }

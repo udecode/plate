@@ -10,6 +10,6 @@ export const createCommentsPlugin = createPluginFactory<CommentsPlugin>({
   withOverrides: withComments,
   useHooks: useHooksComments,
   options: {
-    hotkey: 'command+shift+m',
+    hotkey: ['meta+shift+m', 'ctrl+shift+m'],
   },
 });

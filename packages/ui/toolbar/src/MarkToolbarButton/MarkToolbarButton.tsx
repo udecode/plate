@@ -29,9 +29,7 @@ export const MarkToolbarButton = <V extends Value>({
         e.stopPropagation();
 
         toggleMark(editor, { key: type!, clear });
-        setTimeout(() => {
-          focusEditor(editor, editor.selection ?? editor.prevSelection!);
-        }, 0);
+        focusEditor(editor);
       }}
       {...props}
     />

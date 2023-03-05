@@ -1,5 +1,7 @@
 # @udecode/plate-ui-button
 
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

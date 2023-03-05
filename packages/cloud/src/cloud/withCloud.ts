@@ -14,7 +14,7 @@ export const withCloud = <
   e: E,
   plugin: WithPlatePlugin<CloudPlugin, V, E>
 ) => {
-  const editor = e as EE;
+  const editor = (e as unknown) as EE;
 
   const {
     apiKey,

@@ -75,10 +75,10 @@ export const insertTableColumn = <V extends Value>(
   }
   const currentRowIndex = cellPath[cellPath.length - 2];
 
-  const { newCellChildren } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { newCellChildren, initialTableWidth } = getPluginOptions<
+    TablePlugin,
+    V
+  >(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -112,12 +112,23 @@ export const insertTableColumn = <V extends Value>(
     const { colSizes } = tableNode;
 
     if (colSizes) {
+      let nextColSize = 0;
+
+      if (initialTableWidth) {
+        nextColSize = colSizes[nextColIndex];
+
+        if (!nextColSize) {
+          nextColSize =
+            colSizes[nextColIndex - 1] || initialTableWidth / colSizes.length;
+        }
+      }
+
       setNodes<TTableElement>(
         editor,
         {
           colSizes: [
             ...colSizes.slice(0, nextColIndex),
-            0,
+            nextColSize,
             ...colSizes.slice(nextColIndex),
           ],
         },

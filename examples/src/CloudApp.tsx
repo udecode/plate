@@ -41,6 +41,8 @@ const plugins = createMyPlugins(
       options: {
         maxInitialWidth: 320,
         maxInitialHeight: 320,
+        minResizeWidth: 100,
+        maxResizeWidth: 720,
       },
     }),
   ],
