@@ -56,6 +56,264 @@ describe('withNormalizeTable', () => {
     });
   });
 
+  describe('initialTableWidth is defined and colSizes is not defined', () => {
+    it('should set colSizes', () => {
+      const input = ((
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = ((
+        <editor>
+          <htable colSizes={[30, 30, 30]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createTablePlugin({
+            options: {
+              initialTableWidth: 90,
+            },
+          }),
+        ],
+      });
+
+      normalizeEditor(editor, {
+        force: true,
+      });
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('initialTableWidth is defined and colSizes is partially defined', () => {
+    it('should set colSizes', () => {
+      const input = ((
+        <editor>
+          <htable colSizes={[0, 40, 0]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = ((
+        <editor>
+          <htable colSizes={[30, 40, 30]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createTablePlugin({
+            options: {
+              initialTableWidth: 90,
+            },
+          }),
+        ],
+      });
+
+      normalizeEditor(editor, {
+        force: true,
+      });
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('initialTableWidth is defined and colSizes is fully defined', () => {
+    it('should do nothing', () => {
+      const input = ((
+        <editor>
+          <htable colSizes={[40, 40, 40]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const output = ((
+        <editor>
+          <htable colSizes={[40, 40, 40]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createTablePlugin({
+            options: {
+              initialTableWidth: 90,
+            },
+          }),
+        ],
+      });
+
+      normalizeEditor(editor, {
+        force: true,
+      });
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
   // https://github.com/udecode/editor-protocol/issues/76
   describe('table in a table', () => {
     it('should unwrap the nested table, tr, td', async () => {

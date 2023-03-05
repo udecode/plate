@@ -11,6 +11,7 @@ module.exports = {
   '@udecode/plate-combobox': 'editor/combobox',
   '@udecode/plate-comments': 'comments',
   '@udecode/plate-core': 'core',
+  '@udecode/plate-dnd': 'dnd',
   '@udecode/plate-emoji': 'nodes/emoji',
   '@udecode/plate-serializer-csv': 'serializers/csv',
   '@udecode/plate-serializer-docx': 'serializers/docx',

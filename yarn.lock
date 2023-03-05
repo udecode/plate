@@ -5534,6 +5534,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-dnd@npm:19.7.0, @udecode/plate-dnd@workspace:packages/dnd":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-dnd@workspace:packages/dnd"
+  dependencies:
+    "@udecode/plate-core": "npm:19.7.0"
+    raf: "npm:^3.4.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dnd: ">=14.0.0"
+    react-dnd-html5-backend: ">=14.0.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-emoji@npm:19.7.0, @udecode/plate-emoji@workspace:packages/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
@@ -6227,11 +6244,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-dnd@workspace:packages/ui/dnd"
   dependencies:
-    "@react-hook/merged-ref": "npm:^1.3.2"
     "@tippyjs/react": "npm:^4.2.6"
     "@udecode/plate-core": "npm:19.7.0"
+    "@udecode/plate-dnd": "npm:19.7.0"
     "@udecode/plate-styled-components": "npm:19.7.0"
-    raf: "npm:^3.4.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
@@ -6566,21 +6582,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-utils@workspace:packages/plate-utils":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
-  dependencies:
-    "@udecode/plate-core": "npm:19.7.0"
-    "@udecode/slate-react-utils": "npm:^19.7.0"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.87.0"
-    slate-history: ">=0.86.0"
-    slate-react: ">=0.88.0"
-  languageName: unknown
-  linkType: soft
-
 "@udecode/plate@workspace:^, @udecode/plate@workspace:packages/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
@@ -6595,33 +6596,6 @@ __metadata:
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.88.0"
     styled-components: ">=5.0.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/slate-react-utils@npm:^19.7.0, @udecode/slate-react-utils@workspace:packages/slate-react-utils":
-  version: 0.0.0-use.local
-  resolution: "@udecode/slate-react-utils@workspace:packages/slate-react-utils"
-  dependencies:
-    "@udecode/slate-utils": "npm:19.7.0"
-    lodash: "npm:^4.17.21"
-    react-hotkeys-hook: "npm:^4.3.7"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.87.0"
-    slate-history: ">=0.86.0"
-    slate-react: ">=0.88.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/slate-utils@npm:19.7.0, @udecode/slate-utils@workspace:packages/slate-utils":
-  version: 0.0.0-use.local
-  resolution: "@udecode/slate-utils@workspace:packages/slate-utils"
-  dependencies:
-    lodash: "npm:^4.17.21"
-  peerDependencies:
-    slate: ">=0.87.0"
-    slate-history: ">=0.86.0"
   languageName: unknown
   linkType: soft
 
@@ -8710,9 +8684,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30000981, caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001125, caniuse-lite@npm:^1.0.30001332, caniuse-lite@npm:^1.0.30001335, caniuse-lite@npm:^1.0.30001359":
-  version: 1.0.30001361
-  resolution: "caniuse-lite@npm:1.0.30001361"
-  checksum: 3f605f1380c0ec13fc40016e71df6051b43e26a20a2ddfbf52a29351a3d741a46535765589ead661f1f574906725ba250eb8f1108db8a03ee5a8f7d47ee44aea
+  version: 1.0.30001460
+  resolution: "caniuse-lite@npm:1.0.30001460"
+  checksum: a7df43762033c3840790f86e6b48f9ccb88f24fc87c102ffc68e536b6269a6609b9c9f335b0cec7b040c5edf10d6f9025b8a27d832b9b2d8dc9edd2a3ad89104
   languageName: node
   linkType: hard
 
