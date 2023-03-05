@@ -3,8 +3,8 @@
  */
 
 export * from './PlateTableCellElement';
+export * from './PlateTableCellHeaderElement';
 export * from './PlateTableElement';
 export * from './PlateTablePopover';
 export * from './PlateTableRowElement';
 export * from './TableToolbarButton';
-export { PlateTableCellHeaderElement } from './PlateTableCellHeaderElement';
