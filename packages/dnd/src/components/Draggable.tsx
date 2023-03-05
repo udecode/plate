@@ -1,5 +1,6 @@
-import { DraggableBlock, DraggableBlockToolbarWrapper } from './DraggableBlock';
+import { DraggableBlock } from './DraggableBlock';
 import { DraggableBlockToolbar } from './DraggableBlockToolbar';
+import { DraggableBlockToolbarWrapper } from './DraggableBlockToolbarWrapper';
 import { DraggableDropline } from './DraggableDropline';
 import { DraggableGutterLeft } from './DraggableGutterLeftProps';
 import { DraggableRoot } from './DraggableRoot';

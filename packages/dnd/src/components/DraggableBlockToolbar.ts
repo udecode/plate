@@ -12,6 +12,7 @@ export type DraggableBlockToolbarProps = {
   element: TElement;
   dragRef: ConnectDragSource;
 } & HTMLPropsAs<'div'>;
+
 export const useDraggableBlockToolbarProps = ({
   element,
   dragRef,
@@ -26,9 +27,11 @@ export const useDraggableBlockToolbarProps = ({
     ref: useComposedRef<HTMLDivElement>(props.ref, multiDragRef),
   };
 };
+
 export const DraggableBlockToolbar = createComponentAs<DraggableBlockToolbarProps>(
   (props) => {
     const htmlProps = useDraggableBlockToolbarProps(props);
+
     return createElementAs('div', htmlProps);
   }
 );

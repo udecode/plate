@@ -13,3 +13,4 @@ export * from './useDraggableState';
 export * from './useWithDraggable';
 export * from './withDraggable';
 export * from './Scroller/index';
+export { DraggableBlockToolbarWrapper } from './DraggableBlockToolbarWrapper';

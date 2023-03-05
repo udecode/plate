@@ -6,8 +6,8 @@ import { Plate, Value } from '@udecode/plate-core';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-} from '../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUI } from '../../../plate/src/utils/createPlateUI';
+} from '../../../nodes/paragraph/src/createParagraphPlugin';
+import { createPlateUI } from '../../plate/src/utils/createPlateUI';
 import { withPlateDraggable } from './withPlateDraggable';
 
 const components = createPlateUI();

@@ -1,21 +1,15 @@
 import React from 'react';
-import { ConnectDragSource } from 'react-dnd';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
   useComposedRef,
 } from '@udecode/plate-core';
-import { DropLineDirection } from '../types';
+import { DraggableState } from './useDraggableState';
 
 export type DraggableRootProps = {} & HTMLPropsAs<'div'> &
   Pick<DraggableState, 'rootRef'>;
-export type DraggableState = {
-  dropLine: DropLineDirection;
-  isDragging: boolean;
-  rootRef: React.RefObject<HTMLDivElement>;
-  dragRef: ConnectDragSource;
-};
+
 export const useDraggableRootProps = ({
   rootRef,
   ...props
@@ -25,7 +19,9 @@ export const useDraggableRootProps = ({
     ref: useComposedRef<HTMLDivElement>(props.ref, rootRef),
   };
 };
+
 export const DraggableRoot = createComponentAs<DraggableRootProps>((props) => {
   const htmlProps = useDraggableRootProps(props);
+
   return createElementAs('div', htmlProps);
 });
