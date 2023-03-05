@@ -31,6 +31,7 @@ export const cloudDeps = {
 };
 
 export const dndDeps = {
+  '@udecode/plate-dnd': dndVersion,
   '@udecode/plate-ui-dnd': dndVersion,
   'react-dnd': '15.1.2',
   'react-dnd-html5-backend': '15.1.3',

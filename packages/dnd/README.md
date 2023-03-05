@@ -1,10 +1,12 @@
-# Drag &amp; drop feature for Plate
+# Plate drag & drop feature
 
-
+This package implements the drag & drop feature. It allows you to drag &
+drop blocks using a grabber.
 
 ## Documentation
 
-WIP
+Check out
+[Drag & Drop](https://plate.udecode.io/docs/components/dnd).
 
 ## API
 
