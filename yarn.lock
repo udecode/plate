@@ -6582,6 +6582,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-utils@workspace:packages/plate-utils":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
+  dependencies:
+    "@udecode/plate-core": "npm:19.7.0"
+    "@udecode/slate-react-utils": "npm:^19.7.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate@workspace:^, @udecode/plate@workspace:packages/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
@@ -6596,6 +6611,33 @@ __metadata:
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.88.0"
     styled-components: ">=5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/slate-react-utils@npm:^19.7.0, @udecode/slate-react-utils@workspace:packages/slate-react-utils":
+  version: 0.0.0-use.local
+  resolution: "@udecode/slate-react-utils@workspace:packages/slate-react-utils"
+  dependencies:
+    "@udecode/slate-utils": "npm:19.7.0"
+    lodash: "npm:^4.17.21"
+    react-hotkeys-hook: "npm:^4.3.7"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/slate-utils@npm:19.7.0, @udecode/slate-utils@workspace:packages/slate-utils":
+  version: 0.0.0-use.local
+  resolution: "@udecode/slate-utils@workspace:packages/slate-utils"
+  dependencies:
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
   languageName: unknown
   linkType: soft
 

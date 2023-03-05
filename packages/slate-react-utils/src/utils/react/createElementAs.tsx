@@ -1,5 +1,5 @@
 import React, { ElementType, ReactElement } from 'react';
-import { AsProps, HTMLProps, RenderProp } from '../../../../core/src/types';
+import { AsProps, HTMLProps, RenderProp } from '../../types';
 
 const isRenderProp = (children: any): children is RenderProp =>
   typeof children === 'function';

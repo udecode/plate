@@ -55,9 +55,9 @@ const plugins = [
   // modules by default.
   commonjs({
     include: /node_modules/,
-    // namedExports: {
-    //   'react-is': ['typeOf', 'isElement', 'isForwardRef', 'isValidElementType'],
-    // },
+    namedExports: {
+      'react-is': ['typeOf', 'isElement', 'isForwardRef', 'isValidElementType'],
+    },
   }),
 
   // Convert JSON imports to ES6 modules.
@@ -95,15 +95,15 @@ const plugins = [
         },
         'lodash',
       ],
-      // [
-      //   'import',
-      //   {
-      //     libraryName: 'react-use',
-      //     libraryDirectory: 'lib',
-      //     camel2DashComponentName: false,
-      //   },
-      //   'react-use',
-      // ],
+      [
+        'import',
+        {
+          libraryName: 'react-use',
+          libraryDirectory: 'lib',
+          camel2DashComponentName: false,
+        },
+        'react-use',
+      ],
     ],
     env: {
       test: {
@@ -132,7 +132,7 @@ export default [
     external: [
       ...Object.keys(PKG_JSON.dependencies || {}),
       ...Object.keys(PKG_JSON.peerDependencies || {}),
-      // 'react-textarea-autosize',
+      'react-textarea-autosize',
     ],
     // external(id) {
     //      return Object.keys(PKG_JSON.dependencies || {})
