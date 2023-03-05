@@ -6,9 +6,9 @@ import { Plate, Value } from '@udecode/plate-core';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-} from '../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUI } from '../../../plate/src/utils/createPlateUI';
-import { withDraggable } from './withDraggable';
+} from '../../../nodes/paragraph/src/createParagraphPlugin';
+import { createPlateUI } from '../../plate/src/utils/createPlateUI';
+import { withPlateDraggable } from './withPlateDraggable';
 
 const components = createPlateUI();
 const initialValue: Value = [
@@ -51,7 +51,7 @@ it('should not be draggable if readOnly', () => {
       <Plate
         plugins={[
           createParagraphPlugin({
-            component: withDraggable(components[ELEMENT_PARAGRAPH]),
+            component: withPlateDraggable(components[ELEMENT_PARAGRAPH]),
           }),
         ]}
         initialValue={initialValue}

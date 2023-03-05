@@ -1,6 +1,7 @@
 import {
   cloudUiVersion,
   cloudVersion,
+  dndUiVersion,
   dndVersion,
   excalidrawVersion,
   juiceVersion,
@@ -31,7 +32,8 @@ export const cloudDeps = {
 };
 
 export const dndDeps = {
-  '@udecode/plate-ui-dnd': dndVersion,
+  '@udecode/plate-dnd': dndVersion,
+  '@udecode/plate-ui-dnd': dndUiVersion,
   'react-dnd': '15.1.2',
   'react-dnd-html5-backend': '15.1.3',
 };

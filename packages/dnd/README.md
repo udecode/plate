@@ -1,6 +1,7 @@
-# Plate drag & drop UI
+# Plate drag & drop feature
 
-This package implements the drag & drop UI.
+This package implements the drag & drop feature. It allows you to drag &
+drop blocks using a grabber.
 
 ## Documentation
 

@@ -5534,6 +5534,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-dnd@npm:19.7.0, @udecode/plate-dnd@workspace:packages/dnd":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-dnd@workspace:packages/dnd"
+  dependencies:
+    "@udecode/plate-core": "npm:19.7.0"
+    raf: "npm:^3.4.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dnd: ">=14.0.0"
+    react-dnd-html5-backend: ">=14.0.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-emoji@npm:19.7.0, @udecode/plate-emoji@workspace:packages/nodes/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
@@ -6227,11 +6244,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-dnd@workspace:packages/ui/dnd"
   dependencies:
-    "@react-hook/merged-ref": "npm:^1.3.2"
     "@tippyjs/react": "npm:^4.2.6"
     "@udecode/plate-core": "npm:19.7.0"
+    "@udecode/plate-dnd": "npm:19.7.0"
     "@udecode/plate-styled-components": "npm:19.7.0"
-    raf: "npm:^3.4.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
