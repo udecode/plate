@@ -1,10 +1,13 @@
+import {
+  ENodeEntry,
+  getNode,
+  isBlock,
+  moveNodes,
+  TEditor,
+  TElement,
+  Value,
+} from '@udecode/slate';
 import { Path } from 'slate';
-import { TElement } from '../slate';
-import { isBlock } from '../slate/editor/isBlock';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { getNode } from '../slate/node/getNode';
-import { ENodeEntry } from '../slate/node/TNodeEntry';
-import { moveNodes } from '../slate/transforms/moveNodes';
 
 export interface MoveChildrenOptions<V extends Value = Value> {
   /**

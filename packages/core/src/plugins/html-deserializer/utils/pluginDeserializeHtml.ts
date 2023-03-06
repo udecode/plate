@@ -1,7 +1,5 @@
+import { Value } from '@udecode/slate';
 import castArray from 'lodash/castArray';
-import { Value } from '../../../../../slate-utils/src/slate/editor/TEditor';
-import { AnyObject } from '../../../../../slate-utils/src/types/misc/AnyObject';
-import { Nullable } from '../../../../../slate-utils/src/types/misc/Nullable';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
 import { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';

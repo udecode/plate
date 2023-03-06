@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { SlateProps } from '@udecode/slate-react-utils/src';
 import { Value } from '@udecode/slate-utils/src';
+import { SlateProps } from 'packages/slate-react-utils/src';
 import {
   PlateId,
   usePlateActions,

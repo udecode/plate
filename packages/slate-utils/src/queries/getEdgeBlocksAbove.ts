@@ -1,8 +1,11 @@
-import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
-import { getEdgePoints } from '../slate/editor/getEdgePoints';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EAncestor } from '../slate/node/TAncestor';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
+import {
+  EAncestor,
+  GetAboveNodeOptions,
+  getEdgePoints,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/slate';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

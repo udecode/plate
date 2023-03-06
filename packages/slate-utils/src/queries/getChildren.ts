@@ -1,8 +1,5 @@
+import { ChildOf, isAncestor, TNode, TNodeEntry } from '@udecode/slate';
 import { Path } from 'slate';
-import { isAncestor } from '../slate/node/isAncestor';
-import { ChildOf } from '../slate/node/TDescendant';
-import { TNode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
 
 /**
  * Get children node entries of a node entry.

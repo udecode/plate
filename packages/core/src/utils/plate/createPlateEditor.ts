@@ -1,9 +1,6 @@
-import { normalizeEditor } from '../../../../slate-utils/src/slate/editor/normalizeEditor';
-import {
-  TEditor,
-  Value,
-} from '../../../../slate-utils/src/slate/editor/TEditor';
-import { createTEditor } from '../../../../slate-utils/src/utils/createTEditor';
+import { TEditor, Value } from '@udecode/slate';
+import { createTEditor } from '../../../../slate/src/createTEditor';
+import { normalizeEditor } from '../../../../slate/src/interfaces/editor/normalizeEditor';
 import { withPlate, WithPlateOptions } from '../../plugins/withPlate';
 import { OverrideByKey } from '../../types/plate/OverrideByKey';
 import { PlateEditor } from '../../types/plate/PlateEditor';

@@ -1,10 +1,13 @@
-import { getLastNode } from '../slate/editor/getLastNode';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EElementOrText } from '../slate/element/TElement';
-import { isAncestor } from '../slate/node/isAncestor';
-import { ChildOf } from '../slate/node/TDescendant';
-import { TNode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
+import {
+  ChildOf,
+  EElementOrText,
+  getLastNode,
+  isAncestor,
+  TEditor,
+  TNode,
+  TNodeEntry,
+  Value,
+} from '@udecode/slate';
 
 const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   node: R,

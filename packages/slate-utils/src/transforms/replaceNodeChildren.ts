@@ -1,4 +1,3 @@
-import { Path } from 'slate';
 import {
   EElementOrText,
   insertNodes,
@@ -7,7 +6,8 @@ import {
   TEditor,
   Value,
   withoutNormalizing,
-} from '../slate';
+} from '@udecode/slate';
+import { Path } from 'slate';
 import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<

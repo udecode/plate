@@ -19,6 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@udecode/slate": "19.7.0",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {

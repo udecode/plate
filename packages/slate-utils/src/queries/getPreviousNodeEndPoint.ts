@@ -1,5 +1,5 @@
+import { getEndPoint, getPreviousNode, TEditor, Value } from '@udecode/slate';
 import { Path } from 'slate';
-import { getEndPoint, getPreviousNode, TEditor, Value } from '../slate';
 
 /**
  * Get the end point of the previous node.

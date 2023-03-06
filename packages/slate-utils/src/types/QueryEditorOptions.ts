@@ -1,5 +1,5 @@
+import { TEditor, Value } from '@udecode/slate';
 import { Location } from 'slate';
-import { TEditor, Value } from '../slate/editor/TEditor';
 import { QueryNodeOptions } from './QueryNodeOptions';
 
 /**

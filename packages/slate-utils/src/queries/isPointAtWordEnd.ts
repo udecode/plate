@@ -1,8 +1,11 @@
+import {
+  getEditorString,
+  getPointAfter,
+  getRange,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 import { Point } from 'slate';
-import { getEditorString } from '../slate/editor/getEditorString';
-import { getPointAfter } from '../slate/editor/getPointAfter';
-import { getRange } from '../slate/editor/getRange';
-import { TEditor, Value } from '../slate/editor/TEditor';
 
 // Starts with whitespace char or nothing
 const AFTER_MATCH_REGEX = /^(\s|$)/;

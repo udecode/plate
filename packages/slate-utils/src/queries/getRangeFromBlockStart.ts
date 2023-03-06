@@ -1,6 +1,9 @@
-import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
-import { getStartPoint } from '../slate/editor/getStartPoint';
-import { TEditor, Value } from '../slate/editor/TEditor';
+import {
+  GetAboveNodeOptions,
+  getStartPoint,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getPointFromLocation } from './getPointFromLocation';
 

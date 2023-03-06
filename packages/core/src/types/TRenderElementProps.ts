@@ -1,9 +1,6 @@
+import { EElement, TElement } from '@udecode/slate';
 import { RenderElementProps } from 'slate-react';
-import { Value } from '../../../slate-utils/src/slate/editor/TEditor';
-import {
-  EElement,
-  TElement,
-} from '../../../slate-utils/src/slate/element/TElement';
+import { Value } from '../../../slate/src/interfaces/editor/TEditor';
 
 export type TRenderElementProps<
   V extends Value = Value,

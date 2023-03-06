@@ -1,4 +1,4 @@
-import { TElement } from '../slate/element/TElement';
+import { TElement } from '@udecode/slate';
 
 export const createNode = (type = 'p', text = ''): TElement => ({
   type,

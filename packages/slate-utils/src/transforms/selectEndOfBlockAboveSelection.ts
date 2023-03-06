@@ -1,8 +1,6 @@
+import { getEndPoint, select, TEditor, Value } from '@udecode/slate';
 import { Path } from 'slate';
 import { getBlockAbove } from '../queries';
-import { getEndPoint } from '../slate/editor/getEndPoint';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { select } from '../slate/transforms/select';
 
 /**
  * Select the end point of the block above the selection.

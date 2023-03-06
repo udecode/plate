@@ -1,4 +1,4 @@
-import { TEditor, Value } from '../slate/editor/TEditor';
+import { TEditor, Value } from '@udecode/slate';
 import { isDefined } from '../types/misc/type-utils';
 import { getMark } from './getMark';
 

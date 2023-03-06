@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { isCollapsed } from '../../../../../slate-utils/src/slate/range/isCollapsed';
+import { isCollapsed } from '../../../../../slate/src/interfaces/range/isCollapsed';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 
 jsx;

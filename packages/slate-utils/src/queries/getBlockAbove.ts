@@ -1,9 +1,10 @@
 import {
+  EAncestor,
   getAboveNode,
   GetAboveNodeOptions,
-} from '../slate/editor/getAboveNode';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EAncestor } from '../slate/node/TAncestor';
+  TEditor,
+  Value,
+} from '@udecode/slate';
 
 /**
  * Get the block above a location (default: selection).

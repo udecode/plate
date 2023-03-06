@@ -1,5 +1,4 @@
-import { TNode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
+import { TNode, TNodeEntry } from '@udecode/slate';
 
 /**
  * Filter nodes.

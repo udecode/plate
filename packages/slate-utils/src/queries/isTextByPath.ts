@@ -1,7 +1,5 @@
+import { getNode, isText, TEditor, Value } from '@udecode/slate';
 import { Path } from 'slate';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { getNode } from '../slate/node/getNode';
-import { isText } from '../slate/text/isText';
 
 export const isTextByPath = <V extends Value>(
   editor: TEditor<V>,

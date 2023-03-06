@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate-utils/src';
-import { EText, TText } from '../../../../slate-utils/src/slate/text/TText';
-import { TRenderLeafProps } from '../../../../slate-utils/src/slate/types/TRenderLeafProps';
+import { EText, TText } from '../../../../slate/src/interfaces/text/TText';
+import { TRenderLeafProps } from '../../../../slate/src/types/TRenderLeafProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
 /**

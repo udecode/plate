@@ -1,5 +1,4 @@
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { ENode } from '../slate/node/TNode';
+import { ENode, TEditor, Value } from '@udecode/slate';
 import { findNode, FindNodeOptions } from './findNode';
 
 /**

@@ -1,6 +1,6 @@
 import React from 'react';
+import { Value } from '@udecode/slate';
 import { DefaultLeaf } from '../../components/plate/DefaultLeaf';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { RenderLeaf } from '../../types/plate/RenderLeaf';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';

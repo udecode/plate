@@ -1,6 +1,5 @@
+import { getPoint, TEditor, Value } from '@udecode/slate';
 import { Location, Range } from 'slate';
-import { getPoint } from '../slate/editor/getPoint';
-import { TEditor, Value } from '../slate/editor/TEditor';
 import {
   getPointBeforeLocation,
   PointBeforeOptions,

@@ -2,16 +2,20 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
+import {
+  EDescendant,
+  ENodeEntry,
+  getNodeDescendants,
+  getNodeEntry,
+  getPath,
+  isVoid,
+  match,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/slate';
 import { Path, Range, Span } from 'slate';
-import { getNodeEntry } from '../slate/editor/getNodeEntry';
-import { getPath } from '../slate/editor/getPath';
-import { isVoid } from '../slate/editor/isVoid';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { getNodeDescendants } from '../slate/node/getNodeDescendants';
-import { EDescendant } from '../slate/node/TDescendant';
-import { ENodeEntry, TNodeEntry } from '../slate/node/TNodeEntry';
 import { FindNodeOptions } from './findNode';
-import { match } from './match';
 
 /**
  * Get the first descendant node matching the condition.

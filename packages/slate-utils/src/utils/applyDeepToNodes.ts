@@ -1,8 +1,6 @@
+import { isAncestor, NodeOf, TNode, TNodeEntry } from '@udecode/slate';
 import { Path } from 'slate';
 import { queryNode } from '../queries';
-import { isAncestor } from '../slate/node/isAncestor';
-import { NodeOf, TNode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 export interface ApplyDeepToNodesOptions<N extends TNode> {

@@ -1,5 +1,5 @@
+import { getNextNode, getStartPoint, TEditor, Value } from '@udecode/slate';
 import { Path } from 'slate';
-import { getNextNode, getStartPoint, TEditor, Value } from '../slate';
 
 /**
  * Get the start point of the next node.

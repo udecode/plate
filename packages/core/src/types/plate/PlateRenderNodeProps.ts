@@ -1,5 +1,5 @@
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
-import { AnyObject } from '../../../../slate-utils/src/types/misc/AnyObject';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '../../../../slate/src/types/misc/AnyObject';
 import { PlateEditor } from './PlateEditor';
 
 /**

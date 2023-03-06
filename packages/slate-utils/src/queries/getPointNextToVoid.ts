@@ -1,8 +1,11 @@
+import {
+  getPointAfter,
+  getPointBefore,
+  getVoidNode,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 import { Path, Point } from 'slate';
-import { getPointAfter } from '../slate/editor/getPointAfter';
-import { getPointBefore } from '../slate/editor/getPointBefore';
-import { getVoidNode } from '../slate/editor/getVoidNode';
-import { TEditor, Value } from '../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

@@ -1,6 +1,5 @@
+import { GetAboveNodeOptions, TEditor, Value } from '@udecode/slate';
 import { Path, Range } from 'slate';
-import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
-import { TEditor, Value } from '../slate/editor/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

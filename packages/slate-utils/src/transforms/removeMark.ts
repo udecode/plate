@@ -1,10 +1,13 @@
+import {
+  getMarks,
+  isText,
+  SetNodesOptions,
+  TEditor,
+  unsetNodes,
+  Value,
+} from '@udecode/slate';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
-import { getMarks } from '../slate/editor/getMarks';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { isText } from '../slate/text/isText';
-import { SetNodesOptions } from '../slate/transforms/setNodes';
-import { unsetNodes } from '../slate/transforms/unsetNodes';
 
 export interface RemoveMarkOptions<V extends Value = Value>
   extends Omit<SetNodesOptions<V>, 'match' | 'split'> {

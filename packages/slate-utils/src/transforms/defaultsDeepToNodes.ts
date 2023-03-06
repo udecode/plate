@@ -1,5 +1,5 @@
+import { TNode } from '@udecode/slate';
 import defaults from 'lodash/defaults';
-import { TNode } from '../slate/node/TNode';
 import {
   applyDeepToNodes,
   ApplyDeepToNodesOptions,

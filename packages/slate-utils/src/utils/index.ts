@@ -5,5 +5,4 @@
 export * from './applyDeepToNodes';
 export * from './createDocumentNode';
 export * from './createNode';
-export * from './createTEditor';
 export * from './mergeDeepToNodes';

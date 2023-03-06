@@ -1,8 +1,8 @@
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { Value } from '@udecode/slate';
 import {
   EElement,
   TElement,
-} from '../../../../slate-utils/src/slate/element/TElement';
+} from '../../../../slate/src/interfaces/element/TElement';
 import { TRenderElementProps } from '../TRenderElementProps';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 

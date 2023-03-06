@@ -1,5 +1,5 @@
+import { Value } from '@udecode/slate';
 import { Range } from 'slate';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { TEditableProps } from '../../types/TEditableProps';
 

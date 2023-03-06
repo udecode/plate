@@ -1,7 +1,5 @@
+import { EMarks, TEditor, Value, withoutNormalizing } from '@udecode/slate';
 import castArray from 'lodash/castArray';
-import { EMarks } from '../slate';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
 import { removeMark } from './removeMark';
 
 /**

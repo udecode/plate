@@ -1,6 +1,9 @@
-import { getQueryOptions } from '../queries/match';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { InsertNodesOptions } from '../slate/transforms/insertNodes';
+import {
+  getQueryOptions,
+  InsertNodesOptions,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 import { insertElements } from './insertElements';
 
 export const insertEmptyElement = <V extends Value>(

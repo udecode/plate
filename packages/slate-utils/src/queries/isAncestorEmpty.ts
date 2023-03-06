@@ -1,7 +1,10 @@
-import { isInline } from '../slate/editor/isInline';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { getNodeString } from '../slate/node/getNodeString';
-import { TAncestor } from '../slate/node/TAncestor';
+import {
+  getNodeString,
+  isInline,
+  TAncestor,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 
 /**
  * Is an ancestor empty (empty text and no inline children).

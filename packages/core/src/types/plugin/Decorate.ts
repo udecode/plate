@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate-utils/src';
 import { Range } from 'slate';
-import { ENodeEntry } from '../../../../slate-utils/src/slate/node/TNodeEntry';
+import { ENodeEntry } from '../../../../slate/src/interfaces/node/TNodeEntry';
 import { PlateEditor } from '../plate/PlateEditor';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 

@@ -1,4 +1,4 @@
-import { TDescendant } from '../../../../slate-utils/src/slate/node/TDescendant';
+import { TDescendant } from '../../../../slate/src/interfaces/node/TDescendant';
 
 export type DeserializeHtmlChildren<N extends TDescendant> =
   | ChildNode

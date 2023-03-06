@@ -1,6 +1,5 @@
+import { TNode, TNodeEntry } from '@udecode/slate';
 import castArray from 'lodash/castArray';
-import { TNode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 /**

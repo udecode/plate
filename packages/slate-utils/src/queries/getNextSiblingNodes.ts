@@ -1,7 +1,5 @@
+import { EAncestorEntry, EElementOrText, Value } from '@udecode/slate';
 import { Path } from 'slate';
-import { Value } from '../slate/editor/TEditor';
-import { EElementOrText } from '../slate/element/TElement';
-import { EAncestorEntry } from '../slate/node/TNodeEntry';
 
 /**
  * Get the next sibling nodes after a path.

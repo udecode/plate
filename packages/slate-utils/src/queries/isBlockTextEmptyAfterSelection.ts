@@ -1,7 +1,10 @@
-import { getParentNode } from '../slate/editor/getParentNode';
-import { isEndPoint } from '../slate/editor/isEndPoint';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { isText } from '../slate/text/isText';
+import {
+  getParentNode,
+  isEndPoint,
+  isText,
+  TEditor,
+  Value,
+} from '@udecode/slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
 

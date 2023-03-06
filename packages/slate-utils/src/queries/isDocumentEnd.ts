@@ -1,5 +1,5 @@
+import { getEndPoint, isEndPoint, TEditor, Value } from '@udecode/slate';
 import { Path } from 'slate';
-import { getEndPoint, isEndPoint, TEditor, Value } from '../slate';
 
 export const isDocumentEnd = <V extends Value = Value>(editor: TEditor<V>) => {
   if (editor.selection) {

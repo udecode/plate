@@ -1,9 +1,11 @@
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EElement, TElement } from '../slate/element/TElement';
 import {
+  EElement,
   insertNodes,
   InsertNodesOptions,
-} from '../slate/transforms/insertNodes';
+  TEditor,
+  TElement,
+  Value,
+} from '@udecode/slate';
 
 export const insertElements = <V extends Value>(
   editor: TEditor<V>,

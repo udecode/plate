@@ -1,6 +1,4 @@
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EDescendant } from '../slate/node/TDescendant';
-import { TOperation } from '../slate/types/TOperation';
+import { EDescendant, TEditor, TOperation, Value } from '@udecode/slate';
 
 /**
  * Get typed editor operations.

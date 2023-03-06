@@ -2,10 +2,10 @@
 
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { TDescendant } from '@udecode/slate';
 import { Range } from 'slate';
 import { getBlockAbove } from '../../../../../slate-utils/src/queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../../../slate-utils/src/queries/getNextSiblingNodes';
-import { TDescendant } from '../../../../../slate-utils/src/slate/node/TDescendant';
 import { PlateEditor } from '../../../types/plate/PlateEditor';
 import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
 

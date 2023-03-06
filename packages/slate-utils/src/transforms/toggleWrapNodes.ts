@@ -1,8 +1,11 @@
+import {
+  TEditor,
+  TElement,
+  unwrapNodes,
+  Value,
+  wrapNodes,
+} from '@udecode/slate';
 import { someNode } from '../queries/someNode';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { TElement } from '../slate/element/TElement';
-import { unwrapNodes } from '../slate/transforms/unwrapNodes';
-import { wrapNodes } from '../slate/transforms/wrapNodes';
 
 /**
  * Unwrap if the node type is in selection.

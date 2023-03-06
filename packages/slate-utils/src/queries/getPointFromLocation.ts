@@ -1,5 +1,5 @@
+import { TEditor, Value } from '@udecode/slate';
 import { Location, Path, Point, Range } from 'slate';
-import { TEditor, Value } from '../slate/editor/TEditor';
 
 /**
  * Get the point from a location (default: selection).

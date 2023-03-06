@@ -1,9 +1,12 @@
-import { getNodeEntries } from '../slate/editor/getNodeEntries';
-import { getPreviousNode } from '../slate/editor/getPreviousNode';
-import { isBlock } from '../slate/editor/isBlock';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { EElement } from '../slate/element/TElement';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
+import {
+  EElement,
+  getNodeEntries,
+  getPreviousNode,
+  isBlock,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/slate';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
 import { queryNode } from './queryNode';

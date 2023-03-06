@@ -1,11 +1,12 @@
 import {
+  ENode,
   getNodeEntries,
   GetNodeEntriesOptions,
-} from '../slate/editor/getNodeEntries';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { ENode } from '../slate/node/TNode';
-import { TNodeEntry } from '../slate/node/TNodeEntry';
-import { getQueryOptions } from './match';
+  getQueryOptions,
+  TEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/slate';
 
 export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
 

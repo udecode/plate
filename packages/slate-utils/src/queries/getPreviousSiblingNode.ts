@@ -1,6 +1,6 @@
+import { getNode, TEditor, Value } from '@udecode/slate';
 import { last } from 'lodash';
 import { Path } from 'slate';
-import { getNode, TEditor, Value } from '../slate';
 
 export const getPreviousSiblingNode = <V extends Value = Value>(
   editor: TEditor<V>,

@@ -1,4 +1,4 @@
-import { createTEditor } from '../../../../slate-utils/src/utils/createTEditor';
+import { createTEditor } from '../../../../slate/src/createTEditor';
 import { mergeDeepPlugins } from './mergeDeepPlugins';
 import { mockPlugin } from './mockPlugin';
 

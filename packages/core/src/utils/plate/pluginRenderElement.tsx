@@ -1,7 +1,7 @@
 import React from 'react';
+import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
 import { ElementProvider } from '../../atoms/index';
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { RenderElement } from '../../types/plate/RenderElement';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';

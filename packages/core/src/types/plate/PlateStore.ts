@@ -1,4 +1,4 @@
-import { Value } from '../../../../slate-utils/src/slate/editor/TEditor';
+import { Value } from '@udecode/slate';
 import { Nullable } from '../../../../slate-utils/src/types/misc/Nullable';
 import { PlateId } from '../../stores/index';
 import {
