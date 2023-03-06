@@ -1,5 +1,5 @@
 import React, { ReactElement, ReactNode, Ref } from 'react';
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import { Editable } from 'slate-react';
 import { useEditableProps, useEditorRef } from '../../hooks/index';
 import { PlateId } from '../../stores/index';

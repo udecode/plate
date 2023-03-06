@@ -19,8 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@radix-ui/react-slot": "^1.0.1",
     "@udecode/plate-core": "19.7.0",
-    "@udecode/slate-react-utils": "^19.7.0"
+    "@udecode/slate": "19.7.0",
+    "@udecode/slate-react": "19.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

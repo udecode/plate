@@ -1,11 +1,5 @@
-import { focusEditor } from '@udecode/slate-react-utils/src/slate/react-editor/focusEditor';
-import { TReactEditor } from '@udecode/slate-react-utils/src/slate/react-editor/TReactEditor';
-import {
-  getEndPoint,
-  getStartPoint,
-  select,
-  Value,
-} from '@udecode/slate-utils';
+import { getEndPoint, getStartPoint, select, Value } from '@udecode/slate';
+import { focusEditor, TReactEditor } from '@udecode/slate-react';
 import { Location } from 'slate';
 
 export interface SelectEditorOptions {

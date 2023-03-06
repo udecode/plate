@@ -1,4 +1,4 @@
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import { PlateEditor } from '../types/plate/PlateEditor';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 

@@ -1,5 +1,4 @@
 import { FC, ReactNode } from 'react';
-import { PluginKey } from '@udecode/slate-react-utils/src/types';
 import {
   AnyObject,
   Nullable,
@@ -11,6 +10,7 @@ import {
   PlatePluginInsertData,
   PlatePluginKey,
 } from 'src/types/plugin/index';
+import { PluginKey } from '../../../../plate-utils/src/types';
 import { PlateEditor } from '../plate/PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';

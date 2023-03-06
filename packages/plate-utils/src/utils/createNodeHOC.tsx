@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Value } from '@udecode/slate-utils';
-import { PlateRenderElementProps } from '../../../core/src/types/plate/PlateRenderElementProps';
+import { PlateRenderElementProps } from '@udecode/plate-core';
+import { Value } from '@udecode/slate';
 
 export const createNodeHOC = <V extends Value, T>(
   HOC: FunctionComponent<T>

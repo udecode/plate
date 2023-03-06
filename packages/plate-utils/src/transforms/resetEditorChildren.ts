@@ -1,10 +1,9 @@
 import {
-  EElement,
+  PlateEditor,
   replaceNodeChildren,
   ReplaceNodeChildrenOptions,
-  Value,
-} from '@udecode/slate-utils';
-import { PlateEditor } from '../../../core/src/types';
+} from '@udecode/plate-core';
+import { EElement, Value } from '@udecode/slate';
 
 /**
  * Replace editor children by default block.

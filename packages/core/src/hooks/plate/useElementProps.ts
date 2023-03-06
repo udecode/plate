@@ -1,5 +1,5 @@
-import { useComposedRef } from '@udecode/slate-react-utils/src/hooks';
 import { TElement } from '@udecode/slate-utils/src';
+import { useComposedRef } from '../../../../plate-utils/src/hooks';
 import { As, HTMLPropsAs, PlateRenderElementProps } from '../../types/index';
 
 export type UseElementPropsOptions<

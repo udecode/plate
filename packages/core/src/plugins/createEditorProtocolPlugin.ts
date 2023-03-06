@@ -2,7 +2,7 @@ import {
   isSelectionAtBlockStart,
   removeSelectionMark,
   Value,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 import { PlateEditor } from '../types/index';
 import { createPluginFactory } from '../utils/plate/createPluginFactory';
 

@@ -1,6 +1,6 @@
 import React, { forwardRef, ReactElement } from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { AsProps, Children, Component, Props } from '../../../core/src/types';
+import { AsProps, Children, Component, Props } from '../types/index';
 
 /**
  * Creates a type-safe component with the `as` prop and `React.forwardRef`.

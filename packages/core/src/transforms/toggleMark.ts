@@ -1,12 +1,12 @@
-import { ToggleMarkPlugin } from '@udecode/slate-react-utils/src/types';
 import {
   isMarkActive,
   removeMark,
   TEditor,
   Value,
   withoutNormalizing,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 import castArray from 'lodash/castArray';
+import { ToggleMarkPlugin } from '../../../plate-utils/src/types';
 
 export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
   key: string;

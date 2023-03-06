@@ -6,9 +6,9 @@ import {
   THistoryEditor,
   TRange,
   Value,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 import { Path } from 'slate';
-import { TReactEditor } from '../../../../slate-react-utils/src/slate/react-editor/TReactEditor';
+import { TReactEditor } from '../../../../slate-react/src/types/TReactEditor';
 import { WithPlatePlugin } from '../plugin/PlatePlugin';
 import { PluginKey } from '../plugin/PlatePluginKey';
 

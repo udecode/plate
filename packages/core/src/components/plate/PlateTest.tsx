@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import { createPlateEditor } from '../../utils/plate/createPlateEditor';
 import { Plate, PlateProps } from './Plate';
 

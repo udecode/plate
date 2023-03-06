@@ -1,4 +1,4 @@
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import { ENodeEntry, RenderLeafFn } from '@udecode/slate-utils/src';
 import { Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';

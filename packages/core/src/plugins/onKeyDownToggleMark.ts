@@ -1,4 +1,4 @@
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import isHotkey from 'is-hotkey';
 import { toggleMark } from '../transforms/toggleMark';
 import { PlateEditor } from '../types/plate/PlateEditor';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/slate-utils';
+import { Value } from '@udecode/slate';
 import { PLATE_SCOPE, usePlateSelectors } from '../../stores/index';
 import { PlateEditor } from '../../types/plate/PlateEditor';
 import { TEditableProps } from '../../types/TEditableProps';

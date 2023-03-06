@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { isUndefined, Nullable, Value } from '@udecode/slate-utils';
+import { isUndefined, Nullable, Value } from '@udecode/slate';
 import { usePlateEditorRef, usePlateStates } from '../../stores/index';
 import {
   PlateEditor,
