@@ -8,4 +8,3 @@ export * from './QueryNodeOptions';
 export * from './TOperation';
 export * from './TRenderLeafProps';
 export * from './interfaces';
-export * from './misc/index';

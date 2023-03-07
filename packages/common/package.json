@@ -23,7 +23,8 @@
     "@udecode/plate-utils": "19.7.0",
     "@udecode/slate": "19.7.0",
     "@udecode/slate-react": "19.7.0",
-    "@udecode/slate-utils": "19.7.0"
+    "@udecode/slate-utils": "19.7.0",
+    "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

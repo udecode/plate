@@ -4,4 +4,3 @@
 
 export * from './match';
 export * from './queryNode';
-export * from '../../../utils/src/type-utils';

@@ -9,6 +9,5 @@ export * from './createNodeHOC';
 export * from './createNodesHOC';
 export * from './createPlateElementComponent';
 export * from './defaultsDeepToNodes';
-export * from '../../../utils/src/sanitizeUrl';
 export * from './withProps';
 export * from './withProviders';
