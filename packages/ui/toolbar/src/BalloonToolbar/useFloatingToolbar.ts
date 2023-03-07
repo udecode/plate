@@ -21,7 +21,7 @@ export const useFloatingToolbar = ({
   ignoreReadOnly = false,
 }: {
   floatingOptions?: UseVirtualFloatingOptions;
-  ignoreReadOnly: boolean;
+  ignoreReadOnly?: boolean;
 } = {}): UseVirtualFloatingReturn & {
   open: boolean;
 } => {
