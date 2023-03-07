@@ -13,6 +13,7 @@ module.exports = {
   '@udecode/plate-code-block': 'nodes/code-block',
   '@udecode/plate-combobox': 'editor/combobox',
   '@udecode/plate-comments': 'comments',
+  '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
   '@udecode/plate-dnd': 'dnd',
   '@udecode/plate-emoji': 'nodes/emoji',
@@ -45,5 +46,6 @@ module.exports = {
   '@udecode/plate-table': 'nodes/table',
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'editor/trailing-block',
-  '@udecode/plate-utils': 'utils',
+  '@udecode/plate-utils': 'plate-utils',
+  '@udecode/utils': 'utils',
 };

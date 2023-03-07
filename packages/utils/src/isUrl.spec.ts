@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-commented-out-tests */
-import { isUrl } from '../../../../../utils/src/isUrl';
+import { isUrl } from './isUrl';
 
 describe('is-url', () => {
   describe('valid', () => {

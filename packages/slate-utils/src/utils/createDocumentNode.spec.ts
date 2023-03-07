@@ -1,6 +1,6 @@
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { Value } from '@udecode/slate';
-import { createDocumentNode } from '../../index';
+import { createDocumentNode } from '@udecode/slate-utils';
 
 const output: Value = [
   {
