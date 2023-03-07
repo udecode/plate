@@ -127,8 +127,8 @@ module.exports = {
     //           href: `${githubUrl}/stargazers`,
     //         },
     //         {
-    //           label: 'Slack',
-    //           href: 'https://slate-js.slack.com/messages/plate',
+    //           label: 'Discord',
+    //           href: 'https://discord.gg/mAZRuBzGM3',
     //         },
     //       ],
     //     },

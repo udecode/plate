@@ -259,10 +259,10 @@ is few of those ways:
 
 Before you submit a new PR, please run `yarn g:prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the #plate channel](https://slate-js.slack.com/messages/plate).
+[join Plate's Discord and ask in the #contributing channel](https://discord.gg/mAZRuBzGM3).
 
 You miss time/knowledge but still want to contribute? Just open a PR or
-a gist on Slack and we'll try to help.
+a gist on Discord and we'll try to help.
 
 ### Reviewing PRs
 

@@ -4,12 +4,12 @@ Plate
 
 <p>
 <div align="center">
-  <a href="https://www.npmjs.com/package/@udecode/plate-core"><img src="https://img.shields.io/npm/dt/@udecode/plate-core.svg" alt="Total Downloads"></a>
+  <a href="https://www.npmjs.com/package/@udecode/plate-core"><img src="https://img.shields.io/npm/dm/@udecode/plate-core.svg" alt="Total Downloads"></a>
   <a target="_blank" href="https://github.com/udecode/plate/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/plate" /></a>
   <a target="_blank" href="https://plate.udecode.io/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>
   <a target="_blank" href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
-  <a target="_blank" href="https://slate-js.slack.com/messages/plate"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
+  <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
 </div>
 <div align="center">
 <a href="https://vercel.com/?utm_source=udecode&utm_campaign=oss"><img height="32" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
@@ -30,13 +30,13 @@ This repository comes with a lot of plugins, including elements, marks, serializ
 
 Plate uses jotai for state management and is designed to support decoupled design systems. It comes with a default design system, but you can also plug in your own.
 
-With more than 50 packages, `@udecode/plate` enforces separation of concerns for improved build optimization and versioning. It is also extensible, with all plugins accepting options and their functions being exported. Finally, it is tree-shakeable and comes with heavy TypeScript support.
+With more than 70 packages, `@udecode/plate` enforces separation of concerns for improved build optimization and versioning. It is also extensible, with all plugins accepting options and their functions being exported. Finally, it is tree-shakeable and comes with heavy TypeScript support.
 
 ## Motivation
 
 Are you tired of struggling to build your own custom editor from scratch? Do you wish there was an easier way to take advantage of the powerful features of Slate without needing to be an expert in its low-level details? Look no further than Plate!
 
-With Plate, building your own editor is as simple as using a single <Plate> component. But don't let its simplicity fool you - Plate is packed with powerful features to help you create the perfect editor for your needs. It uses Jotai for state management, and offers a default design system or the ability to plug in your own. Plus, with over 50 packages for individual features, you can easily customize and optimize your editor.
+With Plate, building your own editor is as simple as using a single <Plate> component. But don't let its simplicity fool you - Plate is packed with powerful features to help you create the perfect editor for your needs. It uses Jotai for state management, and offers a default design system or the ability to plug in your own. Plus, with over 70 packages for individual features, you can easily customize and optimize your editor.
 
 But that's not all - Plate also supports extensibility and comes with TypeScript support for even stronger type checking.
 
@@ -83,7 +83,7 @@ If you are interested in contributing to the development of Plate, please refer 
 🌟 Stars and 📥 Pull requests are welcome! Don't hesitate to **share
 your plugins** here. Read our [contributing guide](CONTRIBUTING.md) to
 get started, or find us on
-[Slack](https://slate-js.slack.com/messages/plate), we will take
+[Discord](https://discord.gg/mAZRuBzGM3), we will take
 the time to guide you.
 
 Thanks goes to these wonderful people
