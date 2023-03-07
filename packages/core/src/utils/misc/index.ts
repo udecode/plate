@@ -3,5 +3,5 @@
  */
 
 export * from './getSlateClass';
-export * from './hotkeys';
-export * from './withHOC';
+export * from '../hotkeys';
+export * from '../withHOC';
