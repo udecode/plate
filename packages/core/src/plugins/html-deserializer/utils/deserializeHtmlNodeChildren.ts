@@ -1,5 +1,5 @@
 import { EDescendant, Value } from '@udecode/slate';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtmlChildren } from '../types';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 

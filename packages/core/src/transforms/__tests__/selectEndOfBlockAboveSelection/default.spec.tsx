@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { selectEndOfBlockAboveSelection } from '../../../../../slate-utils/src/transforms';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { PlateEditor } from '../../../types/PlateEditor';
 
 jsx;
 

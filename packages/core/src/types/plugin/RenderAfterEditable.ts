@@ -1,5 +1,5 @@
-import { Value } from '@udecode/slate-utils/src';
-import { TEditableProps } from '../TEditableProps';
+import { Value } from '@udecode/slate';
+import { TEditableProps } from '../slate-react/TEditableProps';
 
 export type RenderAfterEditable<V extends Value = Value> = (
   editableProps: TEditableProps<V>

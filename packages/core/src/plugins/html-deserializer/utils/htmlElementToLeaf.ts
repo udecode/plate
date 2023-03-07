@@ -1,9 +1,13 @@
-import { EDescendant, TDescendant, Value } from '@udecode/slate';
+import {
+  EDescendant,
+  isElement,
+  isText,
+  TDescendant,
+  Value,
+} from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
-import { isElement } from '../../../../../slate/src/interfaces/element/isElement';
-import { isText } from '../../../../../slate/src/interfaces/text/isText';
-import { mergeDeepToNodes } from '../../../../../slate-utils/src/utils/mergeDeepToNodes';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { PlateEditor } from '../../../types';
+import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 

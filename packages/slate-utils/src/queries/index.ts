@@ -3,7 +3,6 @@
  */
 
 export * from './findDescendant';
-export * from './findNode';
 export * from './getBlockAbove';
 export * from './getChildren';
 export * from './getEdgeBlocksAbove';
@@ -39,5 +38,3 @@ export * from './isSelectionExpanded';
 export * from './isTextByPath';
 export * from './isWordAfterTrigger';
 export * from './queryEditor';
-export * from './queryNode';
-export * from './someNode';

@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
 import { createMediaEmbedPlugin } from '@udecode/plate-media';
-import { Plate } from '../../../../../core/src/components/plate/Plate';
+import { Plate } from '../../../../../core/src/components/Plate';
 import { MediaEmbedToolbarButton } from './MediaEmbedToolbarButton';
 import { input1, input2, output2 } from './MediaEmbedToolbarButton.fixtures';
 

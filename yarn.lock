@@ -5512,12 +5512,30 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-common@workspace:packages/common":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-common@workspace:packages/common"
+  dependencies:
+    "@udecode/plate-core": "npm:19.7.0"
+    "@udecode/plate-utils": "npm:19.7.0"
+    "@udecode/slate": "npm:19.7.0"
+    "@udecode/slate-react": "npm:19.7.0"
+    "@udecode/slate-utils": "npm:19.7.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.87.0"
+    slate-history: ">=0.86.0"
+    slate-react: ">=0.88.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-core@npm:19.7.0, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
   dependencies:
-    "@radix-ui/react-slot": "npm:^1.0.1"
     "@udecode/slate": "npm:19.7.0"
+    "@udecode/slate-react": "npm:19.7.0"
     "@udecode/zustood": "npm:^1.1.1"
     clsx: "npm:^1.1.1"
     jotai: "npm:^1.7.2"
@@ -6583,13 +6601,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-utils@workspace:packages/plate-utils":
+"@udecode/plate-utils@npm:19.7.0, @udecode/plate-utils@workspace:packages/utils":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
+  resolution: "@udecode/plate-utils@workspace:packages/utils"
   dependencies:
+    "@radix-ui/react-slot": "npm:^1.0.1"
     "@udecode/plate-core": "npm:19.7.0"
     "@udecode/slate": "npm:19.7.0"
     "@udecode/slate-react": "npm:19.7.0"
+    "@udecode/slate-utils": "npm:19.7.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -6630,7 +6650,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/slate-utils@workspace:packages/slate-utils":
+"@udecode/slate-utils@npm:19.7.0, @udecode/slate-utils@workspace:packages/slate-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/slate-utils@workspace:packages/slate-utils"
   dependencies:

@@ -1,9 +1,7 @@
-import { TEditor, Value } from '@udecode/slate';
+import { QueryEditorOptions, someNode, TEditor, Value } from '@udecode/slate';
 import castArray from 'lodash/castArray';
-import { QueryEditorOptions } from '../types/QueryEditorOptions';
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
-import { someNode } from './someNode';
 
 /**
  * Query the editor state.

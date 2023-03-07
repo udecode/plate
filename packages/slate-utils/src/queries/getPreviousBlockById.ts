@@ -1,15 +1,15 @@
 import {
   EElement,
+  findNode,
   getNodeEntries,
   getPreviousNode,
   isBlock,
+  queryNode,
+  QueryNodeOptions,
   TEditor,
   TNodeEntry,
   Value,
 } from '@udecode/slate';
-import { QueryNodeOptions } from '../types/QueryNodeOptions';
-import { findNode } from './findNode';
-import { queryNode } from './queryNode';
 
 /**
  * Find the block before a block by id.

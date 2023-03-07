@@ -1,10 +1,52 @@
 import {
-  isSelectionAtBlockStart,
-  removeSelectionMark,
+  EAncestor,
+  getAboveNode,
+  GetAboveNodeOptions,
+  getMarks,
+  isExpanded,
+  isStartPoint,
+  removeEditorMark,
+  TEditor,
   Value,
 } from '@udecode/slate';
 import { PlateEditor } from '../types/index';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { createPluginFactory } from '../utils/createPluginFactory';
+
+const getBlockAbove = <N extends EAncestor<V>, V extends Value = Value>(
+  editor: TEditor<V>,
+  options: GetAboveNodeOptions<V> = {}
+) =>
+  getAboveNode<N, V>(editor, {
+    ...options,
+    block: true,
+  });
+
+const isSelectionAtBlockStart = <V extends Value>(
+  editor: TEditor<V>,
+  options?: GetAboveNodeOptions<V>
+) => {
+  const { selection } = editor;
+  if (!selection) return false;
+
+  const path = getBlockAbove(editor, options)?.[1];
+  if (!path) return false;
+
+  return (
+    isStartPoint(editor, selection.focus, path) ||
+    (isExpanded(editor.selection) &&
+      isStartPoint(editor, selection.anchor, path))
+  );
+};
+
+const removeSelectionMark = <V extends Value = Value>(editor: TEditor<V>) => {
+  const marks = getMarks(editor);
+  if (!marks) return;
+
+  // remove all marks
+  Object.keys(marks).forEach((key) => {
+    removeEditorMark(editor, key);
+  });
+};
 
 export const KEY_EDITOR_PROTOCOL = 'editorProtocol';
 

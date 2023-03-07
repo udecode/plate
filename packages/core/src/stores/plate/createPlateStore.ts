@@ -6,9 +6,9 @@ import {
   SetRecord,
   UseRecord,
 } from '../../atoms/index';
-import { PlateEditor } from '../../types/plate/PlateEditor';
-import { PlateStoreState } from '../../types/plate/PlateStore';
-import { Scope, useAtom } from '../../utils/index';
+import { Scope, useAtom } from '../../libs/index';
+import { PlateEditor } from '../../types/PlateEditor';
+import { PlateStoreState } from '../../types/PlateStore';
 
 /**
  * A unique id used as a provider scope.

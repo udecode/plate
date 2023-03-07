@@ -6,7 +6,7 @@ import {
   Value,
 } from '@udecode/slate';
 import { Point } from 'slate';
-import { escapeRegExp } from '../types/misc/escapeRegexp';
+import { escapeRegExp } from '../utils/misc/escapeRegexp';
 
 /**
  * Is the word at the point after a trigger (punctuation character)

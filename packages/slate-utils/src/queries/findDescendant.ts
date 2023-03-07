@@ -5,6 +5,7 @@
 import {
   EDescendant,
   ENodeEntry,
+  FindNodeOptions,
   getNodeDescendants,
   getNodeEntry,
   getPath,
@@ -15,7 +16,6 @@ import {
   Value,
 } from '@udecode/slate';
 import { Path, Range, Span } from 'slate';
-import { FindNodeOptions } from './findNode';
 
 /**
  * Get the first descendant node matching the condition.

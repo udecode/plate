@@ -14,6 +14,7 @@ export * from './moveNodes';
 export * from './moveSelection';
 export * from './removeNodes';
 export * from './select';
+export * from './setElements';
 export * from './setNodes';
 export * from './setPoint';
 export * from './setSelection';

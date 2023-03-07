@@ -1,4 +1,4 @@
-import { AnyObject } from '@udecode/slate-utils/src';
+import { AnyObject } from '@udecode/slate';
 
 export type DeserializeHtml = {
   /**

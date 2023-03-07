@@ -1,6 +1,6 @@
-import { AnyObject, Value } from '@udecode/slate-utils/src';
-import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
-import { PlateRenderLeafProps } from '../plate/PlateRenderLeafProps';
+import { AnyObject, Value } from '@udecode/slate';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /**
  * Props object or function returning props object.

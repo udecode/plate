@@ -1,23 +1,16 @@
 import { FC, ReactNode } from 'react';
-import {
-  AnyObject,
-  Nullable,
-  Value,
-  WithRequired,
-} from '@udecode/slate-utils/src';
-import {
-  PlatePluginComponent,
-  PlatePluginInsertData,
-  PlatePluginKey,
-} from 'src/types/plugin/index';
-import { PluginKey } from '../../../../plate-utils/src/types';
-import { PlateEditor } from '../plate/PlateEditor';
+import { AnyObject, Value, WithRequired } from '@udecode/slate';
+import { Nullable } from '../misc';
+import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
 import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
 import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
+import { PlatePluginComponent } from './PlatePluginComponent';
+import { PlatePluginInsertData } from './PlatePluginInsertData';
+import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
 import { RenderAfterEditable } from './RenderAfterEditable';
 import { SerializeHtml } from './SerializeHtml';

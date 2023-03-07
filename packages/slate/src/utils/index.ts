@@ -3,3 +3,5 @@
  */
 
 export * from './match';
+export * from './queryNode';
+export * from './type-utils';

@@ -1,6 +1,6 @@
 import { TEditor, THistoryEditor, Value } from '@udecode/slate';
 import { withHistory } from 'slate-history';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const withTHistory = <
   V extends Value = Value,

@@ -1,11 +1,11 @@
 import {
+  someNode,
   TEditor,
   TElement,
   unwrapNodes,
   Value,
   wrapNodes,
 } from '@udecode/slate';
-import { someNode } from '../queries/someNode';
 
 /**
  * Unwrap if the node type is in selection.

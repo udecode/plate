@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
+import { TElement } from '@udecode/slate';
 import { Scope } from 'jotai/core/atom';
-import { TElement } from '../../../slate-utils/src/slate/index';
-import { JotaiProvider, JotaiProviderProps } from '../utils/index';
+import { JotaiProvider, JotaiProviderProps } from '../libs';
 import { createAtomStore } from './createAtomStore';
 
 export const SCOPE_ELEMENT = 'element';

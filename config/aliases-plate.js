@@ -1,4 +1,7 @@
 module.exports = {
+  '@udecode/slate': 'slate',
+  '@udecode/slate-react': 'slate-react',
+  '@udecode/slate-utils': 'slate-utils',
   '@udecode/plate-alignment': 'nodes/alignment',
   '@udecode/plate-autoformat': 'editor/autoformat',
   '@udecode/plate-basic-elements': 'nodes/basic-elements',
@@ -42,4 +45,5 @@ module.exports = {
   '@udecode/plate-table': 'nodes/table',
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'editor/trailing-block',
+  '@udecode/plate-utils': 'utils',
 };

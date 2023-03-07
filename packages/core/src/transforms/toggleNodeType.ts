@@ -4,9 +4,9 @@ import {
   someNode,
   Value,
 } from '@udecode/slate';
-import { ELEMENT_DEFAULT } from '../types/plate/node.types';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { getPluginType } from '../utils/plate/getPluginType';
+import { ELEMENT_DEFAULT } from '../constants/node.types';
+import { PlateEditor } from '../types/PlateEditor';
+import { getPluginType } from '../utils/getPluginType';
 
 export interface ToggleNodeTypeOptions {
   /**

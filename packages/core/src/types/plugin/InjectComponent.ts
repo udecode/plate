@@ -1,6 +1,6 @@
-import { Value } from '@udecode/slate-utils/src';
-import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
-import { RenderFunction } from '../react/RenderFunction';
+import { Value } from '@udecode/slate';
+import { RenderFunction } from '../misc/RenderFunction';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
 
 export interface InjectComponentProps<V extends Value = Value>
   extends PlateRenderElementProps<V> {

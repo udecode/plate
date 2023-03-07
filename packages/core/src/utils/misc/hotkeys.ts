@@ -1,8 +1,7 @@
 import { KeyboardEvent } from 'react';
-import { TReactEditor } from '@udecode/slate-react-utils/src/slate/';
-import { isComposing } from '@udecode/slate-react-utils/src/slate/react-editor/isComposing';
-import { IS_APPLE } from '@udecode/slate-utils/src/types/';
+import { isComposing, TReactEditor } from '@udecode/slate-react';
 import { isKeyHotkey } from 'is-hotkey';
+import { IS_APPLE } from 'slate-react/dist/utils/environment';
 
 /**
  * Hotkey mappings for each platform.

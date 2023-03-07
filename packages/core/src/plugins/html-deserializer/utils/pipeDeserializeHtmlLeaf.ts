@@ -1,6 +1,5 @@
-import { Value } from '@udecode/slate';
-import { AnyObject } from '../../../../../slate/src/types/misc/AnyObject';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { AnyObject, Value } from '@udecode/slate';
+import { PlateEditor } from '../../../types/PlateEditor';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlLeaf = <V extends Value>(
