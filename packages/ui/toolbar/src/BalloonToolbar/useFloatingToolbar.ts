@@ -18,8 +18,10 @@ import { useFocused } from 'slate-react';
 
 export const useFloatingToolbar = ({
   floatingOptions,
+  ignoreReadOnly = false,
 }: {
   floatingOptions?: UseVirtualFloatingOptions;
+  ignoreReadOnly: boolean;
 } = {}): UseVirtualFloatingReturn & {
   open: boolean;
 } => {
@@ -39,17 +41,21 @@ export const useFloatingToolbar = ({
   // On refocus, the editor keeps the previous selection,
   // so we need to wait it's collapsed at the new position before displaying the floating toolbar.
   useEffect(() => {
-    if (!focused) {
+    if (!focused || ignoreReadOnly) {
       setWaitForCollapsedSelection(true);
     }
 
     if (!selectionExpanded) {
       setWaitForCollapsedSelection(false);
     }
-  }, [focused, selectionExpanded]);
+  }, [focused, ignoreReadOnly, selectionExpanded]);
 
   useEffect(() => {
-    if (!selectionExpanded || !selectionText || editor.id !== focusedEditorId) {
+    if (
+      !selectionExpanded ||
+      !selectionText ||
+      !(editor.id === focusedEditorId || ignoreReadOnly)
+    ) {
       setOpen(false);
     } else if (
       selectionText &&
@@ -62,6 +68,7 @@ export const useFloatingToolbar = ({
     editor.id,
     editor.selection,
     focusedEditorId,
+    ignoreReadOnly,
     selectionExpanded,
     selectionText,
     waitForCollapsedSelection,
