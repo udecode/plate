@@ -51,9 +51,9 @@ import {
   PlateFloatingComments,
   PlateProvider,
 } from '@udecode/plate';
+import { createDndPlugin } from '@udecode/plate-dnd';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
-import { createDndPlugin } from '@udecode/plate-ui-dnd';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
