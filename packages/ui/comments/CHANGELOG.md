@@ -1,5 +1,7 @@
 # @udecode/plate-ui-comments
 
+## 20.0.0
+
 ## 19.7.0
 
 ## 19.6.0

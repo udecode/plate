@@ -1,5 +1,7 @@
 # @udecode/plate-normalizers
 
+## 20.0.0
+
 ## 19.7.0
 
 ## 19.5.0

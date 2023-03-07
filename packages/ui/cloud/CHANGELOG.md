@@ -1,5 +1,26 @@
 # @udecode/plate-ui-cloud
 
+## 20.0.0
+
+### Minor Changes
+
+- [#2254](https://github.com/udecode/plate/pull/2254) by [@thesunny](https://github.com/thesunny) – Add options to set `minResizeWidth` and `maxResizeWidth` to `CloudImagePlugin`.
+
+  ```typescript
+      createCloudImagePlugin({
+        options: {
+          maxInitialWidth: 320,
+          maxInitialHeight: 320,
+          minResizeWidth: 100,
+          maxResizeWidth: 720,
+        },
+      }),
+  ```
+
+### Patch Changes
+
+- [#2261](https://github.com/udecode/plate/pull/2261) by [@thesunny](https://github.com/thesunny) – Disable server side resizing of GIF files
+
 ## 19.7.0
 
 ## 19.5.0
