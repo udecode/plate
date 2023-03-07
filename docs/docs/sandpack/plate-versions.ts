@@ -6,3 +6,4 @@ export const selectionVersion = '20.0.0';
 export const cloudVersion = '20.0.0';
 export const cloudUiVersion = '20.0.0';
 export const dndVersion = '20.0.0';
+export const dndUiVersion = '20.0.0';
