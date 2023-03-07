@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-placeholder",
-  "version": "19.7.0",
+  "version": "20.0.0",
   "description": "Placeholder UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,8 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "19.7.0",
-    "@udecode/plate-styled-components": "19.7.0"
+    "@udecode/plate-common": "20.0.0",
+    "@udecode/plate-styled-components": "20.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

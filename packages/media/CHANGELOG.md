@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 20.0.0
+
 ## 19.7.0
 
 ### Patch Changes
