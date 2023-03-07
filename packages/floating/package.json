@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.6.6",
-    "@udecode/plate-core": "19.7.0"
+    "@udecode/plate-common": "19.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

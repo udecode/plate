@@ -9,7 +9,7 @@ import {
   getPluginOptions,
   setNodes,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   getRootProps,
   StyledElementProps,

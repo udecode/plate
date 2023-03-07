@@ -5,7 +5,7 @@ import {
   mergeProps,
   useEventEditorSelectors,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   flip,
   getSelectionBoundingClientRect,

@@ -9,7 +9,7 @@ import {
   TElement,
   Value,
   wrapNodes,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options';
 

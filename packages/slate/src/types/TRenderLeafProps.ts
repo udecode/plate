@@ -1,7 +1,7 @@
 import { RenderLeafProps } from 'slate-react';
+import { Modify } from '../../../utils/src/types/types';
 import { Value } from '../interfaces/editor/TEditor';
 import { EText, TText } from '../interfaces/text/TText';
-import { Modify } from './misc/types';
 
 export type TRenderLeafProps<
   V extends Value = Value,

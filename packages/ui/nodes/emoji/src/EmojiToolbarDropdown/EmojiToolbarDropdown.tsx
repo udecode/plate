@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useEventPlateId, usePlateEditorState } from '@udecode/plate-core';
+import { useEventPlateId, usePlateEditorState } from '@udecode/plate-common';
 import {
   EmojiFloatingIndexSearch,
   EmojiFloatingLibrary,

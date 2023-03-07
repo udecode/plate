@@ -1,4 +1,4 @@
-import { UnknownObject } from '../../types/misc/AnyObject';
+import { UnknownObject } from '../../../../utils/src/types/AnyObject';
 import { TEditor, Value } from '../editor/TEditor';
 import { TDescendant } from '../node/TDescendant';
 import { TNode } from '../node/TNode';

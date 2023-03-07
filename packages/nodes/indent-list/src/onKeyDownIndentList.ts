@@ -6,7 +6,7 @@ import {
   TElement,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { outdentList } from './transforms/index';
 import {

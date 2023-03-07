@@ -1,5 +1,5 @@
-import { createPlateEditor } from '@udecode/plate-core';
-import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { createLinkPlugin } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 import { getLinkAttributes } from './getLinkAttributes';
 

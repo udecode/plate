@@ -3,7 +3,7 @@ import {
   focusEditor,
   useEventPlateId,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 import {
   BlockToolbarButton,

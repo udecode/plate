@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUpload } from '@udecode/plate-cloud';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { StatusBar } from '../StatusBar';

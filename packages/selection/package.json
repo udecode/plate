@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-common": "19.7.0",
     "@viselect/vanilla": "^3.1.0",
     "copy-to-clipboard": "^3.3.2"
   },

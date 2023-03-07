@@ -1,4 +1,4 @@
-import { createAtomStore, SCOPE_ELEMENT } from '@udecode/plate-core';
+import { createAtomStore, SCOPE_ELEMENT } from '@udecode/plate-common';
 import { EmbedUrlData } from './parseMediaUrl';
 
 export const { mediaStore, useMediaStore } = createAtomStore(

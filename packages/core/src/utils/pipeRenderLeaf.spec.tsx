@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { createPlateUIEditor } from 'packages/ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from '@udecode/plate';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 
 const attributes = {

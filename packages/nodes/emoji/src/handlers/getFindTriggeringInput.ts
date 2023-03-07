@@ -4,7 +4,7 @@ import {
   getRange,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { BasePoint, BaseRange } from 'slate';
 import { IEmojiTriggeringController } from '../utils';
 

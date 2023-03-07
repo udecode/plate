@@ -7,7 +7,7 @@ import {
   useElementProps,
   usePlateEditorRef,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useTableStore } from '../../stores/tableStore';
 import { TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';

@@ -5,7 +5,7 @@ import {
   PlateEditor,
   someNode,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   floatingLinkActions,
   floatingLinkSelectors,

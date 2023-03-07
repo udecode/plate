@@ -1,5 +1,5 @@
 import React from 'react';
-import * as core from '@udecode/plate-core';
+import * as core from '@udecode/plate-common';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createPlateUI } from '@udecode/plate-ui';
 import * as resizeable from 're-resizable';

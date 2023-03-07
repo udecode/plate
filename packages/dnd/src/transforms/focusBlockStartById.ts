@@ -5,7 +5,7 @@ import {
   select,
   TReactEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 /**
  * Select the start of a block by id and focus the editor.

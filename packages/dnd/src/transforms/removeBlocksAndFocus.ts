@@ -5,7 +5,7 @@ import {
   TReactEditor,
   unhangRange,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { getNodesRange } from '../queries/getNodesRange';
 

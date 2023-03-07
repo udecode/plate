@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-commented-out-tests */
-import { isUrl } from '../../../../../slate-utils/src/utils/misc/isUrl';
+import { isUrl } from '../../../../../utils/src/isUrl';
 
 describe('is-url', () => {
   describe('valid', () => {

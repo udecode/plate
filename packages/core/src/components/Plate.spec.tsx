@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { isEqual, memoize } from 'lodash';
 import { isBlock } from '../../../slate/src/interfaces/editor/isBlock';
-import { setNodes } from '../../../slate/src/transforms/setNodes';
+import { setNodes } from '../../../slate/src/interfaces/transforms/setNodes';
 import { PlatePlugin } from '../types';
 import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate } from './Plate';

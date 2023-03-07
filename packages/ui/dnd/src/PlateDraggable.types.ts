@@ -1,5 +1,5 @@
 import React from 'react';
-import { TElement } from '@udecode/plate-core';
+import { TElement } from '@udecode/plate-common';
 import { CSSProp } from 'styled-components';
 
 export interface DraggableStyles {

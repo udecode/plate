@@ -8,7 +8,7 @@ import {
   Value,
   withoutNormalizing,
   wrapNodes,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { getListTypes } from '../queries';
 

@@ -6,7 +6,7 @@ import {
   someNode,
   useEventPlateId,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,

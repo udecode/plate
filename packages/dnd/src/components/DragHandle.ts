@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
   TElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export type PlateDragHandleProps = {
   element: TElement;

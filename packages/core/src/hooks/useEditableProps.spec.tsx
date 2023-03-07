@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { Plate } from '../components';
 import { PlatePlugin } from '../types';
 import { useEditableProps } from './useEditableProps';
 

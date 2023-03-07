@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import * as core from '@udecode/plate-core';
+import * as core from '@udecode/plate-common';
 import { createImagePlugin } from '@udecode/plate-media';
 import { Plate } from '../../../../../core/src/components/Plate';
 import { ImageToolbarButton } from './ImageToolbarButton';

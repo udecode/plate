@@ -1,4 +1,4 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-core';
+import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 import markdown from 'remark-parse';
 import unified from 'unified';
 import { remarkPlugin, RemarkPluginOptions } from '../../remark-slate';

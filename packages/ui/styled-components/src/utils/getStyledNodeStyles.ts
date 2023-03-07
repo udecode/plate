@@ -1,4 +1,4 @@
-import { AnyObject } from '@udecode/plate-core';
+import { AnyObject } from '@udecode/plate-common';
 import { StyledProps } from '../types/StyledProps';
 import { createStyles } from './createStyles';
 

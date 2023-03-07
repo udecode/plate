@@ -1,4 +1,4 @@
-import { PlateEditor, TNode, TPath, Value } from '@udecode/plate-core';
+import { PlateEditor, TNode, TPath, Value } from '@udecode/plate-common';
 
 export type TabDestinationPath = {
   type: 'path';

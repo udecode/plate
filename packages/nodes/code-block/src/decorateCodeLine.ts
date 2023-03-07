@@ -6,7 +6,7 @@ import {
   getPlugin,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 // noinspection ES6UnusedImports
 import Prism, { languages, Token, tokenize } from 'prismjs';

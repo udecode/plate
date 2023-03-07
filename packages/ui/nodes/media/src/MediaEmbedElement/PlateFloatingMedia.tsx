@@ -1,5 +1,5 @@
 import React from 'react';
-import { useElement } from '@udecode/plate-core';
+import { useElement } from '@udecode/plate-common';
 import { LinkIcon } from '@udecode/plate-link';
 import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
 import { plateButtonCss, RemoveNodeButton } from '@udecode/plate-ui-button';

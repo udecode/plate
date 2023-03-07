@@ -4,7 +4,7 @@ import {
   PlateRenderElementProps,
   TElement,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { StyledProps } from '../types/StyledProps';
 
 export type StyledElementProps<

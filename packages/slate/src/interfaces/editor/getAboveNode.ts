@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { EditorAboveOptions } from 'slate/dist/interfaces/editor';
-import { Modify } from '../../types/misc/types';
+import { Modify } from '../../../../utils/src/types/types';
 import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { EAncestor, TAncestor } from '../node/TAncestor';
 import { TNodeEntry } from '../node/TNodeEntry';

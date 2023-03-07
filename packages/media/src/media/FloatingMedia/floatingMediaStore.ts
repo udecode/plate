@@ -1,4 +1,4 @@
-import { createStore } from '@udecode/plate-core';
+import { createStore } from '@udecode/plate-common';
 
 export const floatingMediaStore = createStore('floatingMedia')({
   url: '',

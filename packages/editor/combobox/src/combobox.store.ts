@@ -1,4 +1,4 @@
-import { createStore, StateActions, StoreApi } from '@udecode/plate-core';
+import { createStore, StateActions, StoreApi } from '@udecode/plate-common';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { Range } from 'slate';
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';

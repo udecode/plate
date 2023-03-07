@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate';
-import { HandlerReturnType } from '@udecode/plate-core';
+import { HandlerReturnType } from '@udecode/plate-common';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

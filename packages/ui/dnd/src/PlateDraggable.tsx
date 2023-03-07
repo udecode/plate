@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { EElement, Value } from '@udecode/plate-core';
+import { EElement, Value } from '@udecode/plate-common';
 import {
   DraggableBlock,
   DraggableBlockToolbar,

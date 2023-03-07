@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import * as core from '@udecode/plate-core';
-import { Plate } from '@udecode/plate-core';
+import * as core from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { BlockToolbarButton } from '../../BlockToolbarButton/BlockToolbarButton';
 import { input, output } from './onMouseDown.fixture';

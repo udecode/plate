@@ -8,7 +8,7 @@ import {
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { TMediaElement } from '../types';
 import {
   floatingMediaActions,

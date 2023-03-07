@@ -12,7 +12,7 @@ import {
   unwrapNodes,
   Value,
   wrapNodeChildren,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { getCellTypes } from './utils/index';
 import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
 import { TablePlugin, TTableElement } from './types';

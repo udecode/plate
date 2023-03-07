@@ -1,7 +1,6 @@
-import { ELEMENT_H1 } from 'packages/nodes/heading/src/constants';
-import { createHeadingPlugin } from 'packages/nodes/heading/src/createHeadingPlugin';
-import { createNodeIdPlugin } from 'packages/editor/node-id/src/createNodeIdPlugin';
-import { createParagraphPlugin } from 'packages/nodes/paragraph/src/createParagraphPlugin';
+import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '../../../slate/src/createTEditor';
 import { withPlate } from '../plugins/withPlate';
 import { createPlugins } from './createPlugins';

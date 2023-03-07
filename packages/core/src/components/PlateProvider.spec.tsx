@@ -1,10 +1,6 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import {
-  PLATE_SCOPE,
-  usePlateEditorRef,
-  usePlateSelectors,
-} from '../stores';
+import { PLATE_SCOPE, usePlateEditorRef, usePlateSelectors } from '../stores';
 import { createPlateEditor } from '../utils';
 import { PlateProvider } from './PlateProvider';
 

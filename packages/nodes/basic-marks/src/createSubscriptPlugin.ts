@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   onKeyDownToggleMark,
   ToggleMarkPlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export const MARK_SUBSCRIPT = 'subscript';
 const MARK_SUPERSCRIPT = 'superscript';

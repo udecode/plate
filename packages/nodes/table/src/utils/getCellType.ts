@@ -1,4 +1,4 @@
-import { getPluginTypes, PlateEditor, Value } from '@udecode/plate-core';
+import { getPluginTypes, PlateEditor, Value } from '@udecode/plate-common';
 import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 
 /**

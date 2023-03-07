@@ -7,7 +7,7 @@ import {
   queryNode,
   TElement,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
   BlockSelectionPlugin,

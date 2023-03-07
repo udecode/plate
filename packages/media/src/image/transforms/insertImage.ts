@@ -3,7 +3,7 @@ import {
   insertNodes,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_IMAGE } from '../createImagePlugin';
 import { TImageElement } from '../types';
 

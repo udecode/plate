@@ -4,7 +4,7 @@ import {
   createElementAs,
   HTMLPropsAs,
   useComposedRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export type DraggableBlockProps = {} & HTMLPropsAs<'div'>;
 

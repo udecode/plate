@@ -8,7 +8,7 @@ import {
   PlateEditor,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';

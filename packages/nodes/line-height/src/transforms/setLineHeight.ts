@@ -7,7 +7,7 @@ import {
   TNodeMatch,
   unsetNodes,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
 
 export const setLineHeight = <V extends Value>(

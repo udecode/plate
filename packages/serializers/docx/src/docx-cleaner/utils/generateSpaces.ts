@@ -1,4 +1,4 @@
-import { SPACE, TAB } from '@udecode/plate-core';
+import { SPACE, TAB } from '@udecode/plate-common';
 
 export const generateSpaces = (count: number): string =>
   Array.from({ length: count }, () => SPACE).join('');

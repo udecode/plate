@@ -1,4 +1,4 @@
-import { PlateEditor, Value, withoutNormalizing } from '@udecode/plate-core';
+import { PlateEditor, Value, withoutNormalizing } from '@udecode/plate-common';
 import { MARK_COMMENT } from '../constants';
 import { findCommentNode } from '../queries/index';
 import { getCommentKeys } from '../utils/index';

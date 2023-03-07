@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getNodeString, useElement } from '@udecode/plate-core';
+import { getNodeString, useElement } from '@udecode/plate-common';
 import { TCaptionElement } from '../types/TCaptionElement';
 
 export const useCaptionString = () => {

@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-common": "19.7.0",
     "@udecode/plate-heading": "19.7.0",
     "@udecode/plate-indent": "19.7.0",
     "@udecode/plate-indent-list": "19.7.0",

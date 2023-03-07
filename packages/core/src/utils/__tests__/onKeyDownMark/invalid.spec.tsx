@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-basic-marks/src/createBoldPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { onKeyDownToggleMark } from '../../../../../utils/src/plate/onKeyDownToggleMark';
+import { onKeyDownToggleMark } from '../../../../../plate-utils/src/plate/onKeyDownToggleMark';
 import { ToggleMarkPlugin } from '../../../types/plugin/ToggleMarkPlugin';
 import { getPlugin } from '../../getPlugin';
 

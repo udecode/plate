@@ -6,7 +6,7 @@ import {
   mergeNodes,
   PlateEditor,
   splitNodes,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import {
   ELEMENT_LI,

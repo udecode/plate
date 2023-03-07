@@ -5,7 +5,12 @@ import {
   comboboxSelectors,
   ComboboxState,
 } from '@udecode/plate-combobox';
-import { moveSelection, PlateEditor, select, Value } from '@udecode/plate-core';
+import {
+  moveSelection,
+  PlateEditor,
+  select,
+  Value,
+} from '@udecode/plate-common';
 import {
   createDataTransfer,
   DataTransferDataMap,

@@ -1,5 +1,5 @@
 import { TEditor, TElement, TNodeProps, Value } from '../interfaces';
-import { setNodes, SetNodesOptions } from './setNodes';
+import { setNodes, SetNodesOptions } from '../interfaces/transforms/setNodes';
 
 export const setElements = <V extends Value>(
   editor: TEditor<V>,

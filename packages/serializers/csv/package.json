@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-common": "19.7.0",
     "@udecode/plate-table": "19.7.0",
     "papaparse": "^5.3.2"
   },

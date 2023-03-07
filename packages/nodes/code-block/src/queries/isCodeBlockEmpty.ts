@@ -3,7 +3,7 @@ import {
   getNodeString,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /**

@@ -1,4 +1,4 @@
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
 import {
   ELEMENT_LI,
   ELEMENT_LIC,

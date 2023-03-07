@@ -8,7 +8,7 @@ import {
   setNodes,
   useEditorRef,
   useElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   Resizable as ReResizable,
   ResizableProps as ReResizableProps,

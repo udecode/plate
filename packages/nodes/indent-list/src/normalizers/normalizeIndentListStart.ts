@@ -7,7 +7,7 @@ import {
   TNodeEntry,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   KEY_LIST_RESTART,
   KEY_LIST_START,

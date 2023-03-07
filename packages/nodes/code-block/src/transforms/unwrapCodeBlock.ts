@@ -8,7 +8,7 @@ import {
   unwrapNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Location } from 'slate';
 import { ELEMENT_CODE_BLOCK } from '../constants';
 

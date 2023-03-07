@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React from 'react';
-import { Box } from '@udecode/plate-core';
+import { Box } from '@udecode/plate-common';
 import { ElementPopover } from '@udecode/plate-floating';
 import { Caption, ELEMENT_IMAGE, Image, Media } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';

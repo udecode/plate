@@ -2,7 +2,7 @@ import {
   getBlockAbove,
   getPluginType,
   KeyboardHandler,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { captionGlobalStore } from './captionGlobalStore';
 

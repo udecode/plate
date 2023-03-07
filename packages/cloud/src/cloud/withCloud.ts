@@ -1,5 +1,5 @@
 import { Client, createClient } from '@portive/client';
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-core';
+import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
 import { createUploadStore } from '../upload/createUploadStore';
 import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';

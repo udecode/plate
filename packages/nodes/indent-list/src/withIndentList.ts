@@ -5,7 +5,7 @@ import {
   TElement,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { PathRef } from 'slate';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';

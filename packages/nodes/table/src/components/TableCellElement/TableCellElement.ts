@@ -1,4 +1,4 @@
-import { Box } from '@udecode/plate-core';
+import { Box } from '@udecode/plate-common';
 import { TableCellElementResizable } from './TableCellElementResizable';
 import { TableCellElementResizableWrapper } from './TableCellElementResizableWrapper';
 import { TableCellElementRoot } from './TableCellElementRoot';

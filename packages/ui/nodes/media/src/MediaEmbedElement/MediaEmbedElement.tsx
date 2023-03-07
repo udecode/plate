@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@udecode/plate-core';
+import { Box } from '@udecode/plate-common';
 import { ElementPopover } from '@udecode/plate-floating';
 import {
   Caption,

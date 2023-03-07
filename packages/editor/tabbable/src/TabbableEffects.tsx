@@ -6,7 +6,7 @@ import {
   toDOMNode,
   toSlateNode,
   useEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 import { KEY_TABBABLE } from './constants';

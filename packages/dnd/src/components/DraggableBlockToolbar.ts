@@ -6,7 +6,7 @@ import {
   HTMLPropsAs,
   TElement,
   useComposedRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export type DraggableBlockToolbarProps = {
   element: TElement;

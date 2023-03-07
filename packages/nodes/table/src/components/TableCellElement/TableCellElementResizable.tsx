@@ -4,7 +4,7 @@ import {
   HTMLPropsAs,
   useElement,
   usePlateEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
 import { useTableStore } from '../../stores/tableStore';
 import { setTableColSize } from '../../transforms';

@@ -1,10 +1,9 @@
-import React from 'react';
 import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
   useComposedRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { DraggableState } from './useDraggableState';
 
 export type DraggableRootProps = {} & HTMLPropsAs<'div'> &

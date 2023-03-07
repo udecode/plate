@@ -1,8 +1,8 @@
 import { Editor, Location, Path, Point, Range } from 'slate';
-import { mergeNodes } from '../../transforms/mergeNodes';
-import { removeNodes } from '../../transforms/removeNodes';
-import { select } from '../../transforms/select';
 import { TNodeEntry } from '../node/TNodeEntry';
+import { mergeNodes } from '../transforms/mergeNodes';
+import { removeNodes } from '../transforms/removeNodes';
+import { select } from '../transforms/select';
 import { createPathRef } from './createPathRef';
 import { createPointRef } from './createPointRef';
 import { getAboveNode } from './getAboveNode';

@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { createStyles } from '@udecode/plate-styled-components';
 import tw from 'twin.macro';
 import { ExcalidrawElementProps } from './ExcalidrawElement.types';

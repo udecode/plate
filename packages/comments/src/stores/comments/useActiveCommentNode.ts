@@ -1,4 +1,4 @@
-import { usePlateEditorRef } from '@udecode/plate-core';
+import { usePlateEditorRef } from '@udecode/plate-common';
 import { findCommentNodeById } from '../../queries/index';
 import { useCommentsSelectors } from './CommentsProvider';
 

@@ -9,7 +9,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { TablePlugin, TTableElement } from '../types';

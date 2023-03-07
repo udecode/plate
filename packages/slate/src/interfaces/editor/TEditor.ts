@@ -1,6 +1,6 @@
 import { Editor, Path } from 'slate';
-import { UnknownObject } from '../../types/misc/AnyObject';
-import { Modify } from '../../types/misc/types';
+import { UnknownObject } from '../../../../utils/src/types/AnyObject';
+import { Modify } from '../../../../utils/src/types/types';
 import { TOperation } from '../../types/TOperation';
 import { EElement, EElementOrText, TElement } from '../element/TElement';
 import { TDescendant } from '../node/TDescendant';

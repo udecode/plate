@@ -8,7 +8,7 @@ import {
   someNode,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TTableElement } from '../types';
 import {

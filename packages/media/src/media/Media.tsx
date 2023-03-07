@@ -8,7 +8,7 @@ import {
   useElement,
   useElementProps,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_MEDIA_EMBED } from '../media-embed/index';
 import { Resizable } from '../resizable/Resizable';
 import { useMediaStore } from './mediaStore';

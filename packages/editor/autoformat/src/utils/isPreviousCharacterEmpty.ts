@@ -3,7 +3,7 @@ import {
   getRangeBefore,
   TEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Location } from 'slate';
 
 export const isPreviousCharacterEmpty = <V extends Value>(

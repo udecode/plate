@@ -10,7 +10,7 @@ import {
   useEventPlateId,
   usePlateEditorState,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   BlockToolbarButton,
   ToolbarButtonProps,

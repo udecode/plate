@@ -9,7 +9,7 @@ import {
   unsetNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '../createIndentPlugin';
 
 export interface SetIndentOptions<V extends Value = Value> {

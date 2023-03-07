@@ -2,7 +2,7 @@ import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export type TableElementColGroupProps = HTMLPropsAs<'colgroup'>;
 

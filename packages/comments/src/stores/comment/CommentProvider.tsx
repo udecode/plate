@@ -6,7 +6,7 @@ import {
   JotaiProvider,
   Scope,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { CommentUser, TComment } from '../../types';
 import {
   useCommentById,

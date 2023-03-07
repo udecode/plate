@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { PlateProps } from '../components/Plate';
+import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
 import {
   createDeserializeAstPlugin,
   KEY_DESERIALIZE_AST,
@@ -30,10 +31,6 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
-import {
-  createPrevSelectionPlugin,
-  KEY_PREV_SELECTION,
-} from '../plugins';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';

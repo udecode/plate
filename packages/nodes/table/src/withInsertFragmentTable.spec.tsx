@@ -1,6 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createTablePlugin } from './createTablePlugin';
 import { withInsertFragmentTable } from './withInsertFragmentTable';

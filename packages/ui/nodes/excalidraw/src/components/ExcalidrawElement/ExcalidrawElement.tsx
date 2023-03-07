@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { TExcalidrawProps } from '../../types';
 import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
