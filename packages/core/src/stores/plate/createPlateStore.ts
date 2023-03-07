@@ -1,4 +1,5 @@
-import { isDefined, Value } from '@udecode/slate';
+import { Value } from '@udecode/slate';
+import { isDefined } from '@udecode/utils';
 import { atom } from 'jotai';
 import {
   createAtomStore,

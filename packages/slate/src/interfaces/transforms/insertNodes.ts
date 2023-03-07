@@ -1,5 +1,5 @@
+import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
-import { Modify } from '../../../../utils/src/types/types';
 import { NodeMatchOption } from '../../types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
 import { EElementOrText } from '../element/TElement';

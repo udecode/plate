@@ -19,7 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/slate": "19.7.0"
+    "@udecode/slate": "19.7.0",
+    "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

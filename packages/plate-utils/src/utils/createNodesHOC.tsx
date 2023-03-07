@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { AnyObject } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
 import { castArray } from 'lodash';
 import merge from 'lodash/merge';
 import { createNodeHOC } from './createNodeHOC';

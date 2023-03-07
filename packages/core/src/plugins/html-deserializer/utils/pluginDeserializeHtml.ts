@@ -1,4 +1,5 @@
-import { AnyObject, Value } from '@udecode/slate';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
 import castArray from 'lodash/castArray';
 import { Nullable } from '../../../types';
 import { PlateEditor } from '../../../types/PlateEditor';

@@ -5537,6 +5537,7 @@ __metadata:
   dependencies:
     "@udecode/slate": "npm:19.7.0"
     "@udecode/slate-react": "npm:19.7.0"
+    "@udecode/utils": "npm:19.7.0"
     "@udecode/zustood": "npm:^1.1.1"
     clsx: "npm:^1.1.1"
     jotai: "npm:^1.7.2"
@@ -6579,6 +6580,7 @@ __metadata:
   resolution: "@udecode/slate-react@workspace:packages/slate-react"
   dependencies:
     "@udecode/slate": "npm:19.7.0"
+    "@udecode/utils": "npm:19.7.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -6604,6 +6606,8 @@ __metadata:
 "@udecode/slate@npm:19.7.0, @udecode/slate@workspace:packages/slate":
   version: 0.0.0-use.local
   resolution: "@udecode/slate@workspace:packages/slate"
+  dependencies:
+    "@udecode/utils": "npm:19.7.0"
   peerDependencies:
     slate: ">=0.87.0"
     slate-history: ">=0.86.0"

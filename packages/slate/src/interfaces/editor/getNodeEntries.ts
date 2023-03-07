@@ -1,5 +1,5 @@
+import { Modify } from '@udecode/utils';
 import { Editor, EditorNodesOptions } from 'slate';
-import { Modify } from '../../../../utils/src/types/types';
 import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { ENode, TNode } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';

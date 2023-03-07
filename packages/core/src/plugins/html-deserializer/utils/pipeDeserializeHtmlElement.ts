@@ -1,4 +1,5 @@
-import { AnyObject, Value } from '@udecode/slate';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
 import { DeserializeHtml, PlateEditor } from '../../../types';
 import { Nullable } from '../../../types/misc/Nullable';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';

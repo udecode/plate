@@ -1,5 +1,6 @@
 import { CSSProperties } from 'react';
-import { AnyObject, Value } from '@udecode/slate';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
 import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
 
 export interface TransformOptions<V extends Value = Value>

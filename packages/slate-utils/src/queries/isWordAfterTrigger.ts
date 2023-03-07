@@ -5,8 +5,8 @@ import {
   TEditor,
   Value,
 } from '@udecode/slate';
+import { escapeRegExp } from '@udecode/utils';
 import { Point } from 'slate';
-import { escapeRegExp } from '../../../utils/src/escapeRegexp';
 
 /**
  * Is the word at the point after a trigger (punctuation character)

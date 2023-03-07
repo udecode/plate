@@ -1,14 +1,6 @@
-# Slate utils
+# Udecode Utils
 
-
-
-## Documentation
-
-WIP
-
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
+Utils used by the many packages of the Udecode ecosystem.
 
 ## License
 

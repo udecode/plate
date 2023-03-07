@@ -18,6 +18,9 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "dependencies": {
+    "@udecode/utils": "19.7.0"
+  },
   "peerDependencies": {
     "slate": ">=0.87.0",
     "slate-history": ">=0.86.0"

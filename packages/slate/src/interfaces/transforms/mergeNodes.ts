@@ -1,5 +1,5 @@
+import { Modify } from '@udecode/utils';
 import { Editor, Element, Path, Range, Text, Transforms } from 'slate';
-import { Modify } from '../../../../utils/src/types/types';
 import { NodeMatchOption } from '../../types/NodeMatchOption';
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';

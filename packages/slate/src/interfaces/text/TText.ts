@@ -1,5 +1,4 @@
-import { UnknownObject } from '../../../../utils/src/types/AnyObject';
-import { Simplify, UnionToIntersection } from '../../types';
+import { Simplify, UnionToIntersection, UnknownObject } from '@udecode/utils';
 import { TEditor, Value } from '../editor/TEditor';
 import { TElement } from '../element/TElement';
 import { TNode, TNodeProps } from '../node/TNode';

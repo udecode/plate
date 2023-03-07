@@ -1,4 +1,4 @@
-import { createTEditor } from '../types';
+import { createTEditor } from '@udecode/slate';
 import { wrapNodeChildren } from './wrapNodeChildren';
 
 describe('wrapNodeChildren', () => {

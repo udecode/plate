@@ -1,8 +1,8 @@
+import { AnyObject } from '@udecode/utils';
+
 /**
  * Render function interface for providing overrideable render callbacks.
  */
-import { AnyObject } from '@udecode/slate';
-
 export interface RenderFunction<P = AnyObject> {
   (
     props: P,

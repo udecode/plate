@@ -1,5 +1,5 @@
+import { Modify } from '@udecode/utils';
 import { RenderLeafProps } from 'slate-react';
-import { Modify } from '../../../utils/src/types/types';
 import { Value } from '../interfaces/editor/TEditor';
 import { EText, TText } from '../interfaces/text/TText';
 

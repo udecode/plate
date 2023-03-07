@@ -1,5 +1,5 @@
+import { Modify } from '@udecode/utils';
 import { Node, NodeDescendantsOptions } from 'slate';
-import { Modify } from '../../../../utils/src/types/types';
 import { DescendantOf } from './TDescendant';
 import { TNode } from './TNode';
 import { TDescendantEntry, TNodeEntry } from './TNodeEntry';

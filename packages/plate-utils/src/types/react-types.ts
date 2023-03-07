@@ -6,7 +6,7 @@ import {
   ReactNode,
   RefAttributes,
 } from 'react';
-import { AnyObject } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
 
 // /**
 //  * Workaround for variance issues.
