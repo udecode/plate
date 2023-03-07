@@ -8,7 +8,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';

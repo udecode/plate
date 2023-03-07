@@ -1,10 +1,12 @@
 import React from 'react';
-import * as core from '@udecode/plate-core';
+import { usePlateEditorRef } from '@udecode/plate-common';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createPlateUI } from '@udecode/plate-ui';
 import * as resizeable from 're-resizable';
 import { createPlateTestEditor } from '../../../../../core/src/utils/__tests__/createPlateTestEditor';
 import { tableInput } from './TableCellElement.fixtures';
+
+const core = { usePlateEditorRef };
 
 jest.mock('re-resizable');
 

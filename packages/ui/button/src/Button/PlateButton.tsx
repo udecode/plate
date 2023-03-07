@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@udecode/plate-button';
-import { HTMLPropsAs } from '@udecode/plate-core';
+import { HTMLPropsAs } from '@udecode/plate-common';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 

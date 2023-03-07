@@ -1,5 +1,5 @@
 import { MouseEventHandler, useCallback } from 'react';
-import { HTMLPropsAs } from '@udecode/plate-core';
+import { HTMLPropsAs } from '@udecode/plate-common';
 import { useAddCommentMark, useCommentsActions } from '../stores/index';
 
 export const useCommentAddButton = (

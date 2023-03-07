@@ -1,6 +1,10 @@
 /** @jsx jsx */
 
-import { getNodeEntry, PlateEditor, TElementEntry } from '@udecode/plate-core';
+import {
+  getNodeEntry,
+  PlateEditor,
+  TElementEntry,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';

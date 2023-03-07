@@ -8,7 +8,7 @@ import {
   PlateEditor,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,

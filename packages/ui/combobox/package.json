@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-combobox": "19.7.0",
-    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-common": "19.7.0",
     "@udecode/plate-floating": "19.7.0",
     "@udecode/plate-styled-components": "19.7.0"
   },

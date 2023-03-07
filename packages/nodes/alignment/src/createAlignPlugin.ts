@@ -3,7 +3,7 @@ import {
   ELEMENT_DEFAULT,
   getPluginType,
   mapInjectPropsToPlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export const KEY_ALIGN = 'align';
 

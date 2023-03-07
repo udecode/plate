@@ -5,7 +5,7 @@ import {
   TElement,
   TElementEntry,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 

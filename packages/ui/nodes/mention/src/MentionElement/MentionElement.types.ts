@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { TMentionElement } from '@udecode/plate-mention';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 

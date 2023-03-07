@@ -6,7 +6,7 @@ import {
   getStartPoint,
   TEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
 /**

@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { insertTableColumn, insertTableRow } from './transforms/index';
 import { onKeyDownTable } from './onKeyDownTable';
 import { TablePlugin } from './types';

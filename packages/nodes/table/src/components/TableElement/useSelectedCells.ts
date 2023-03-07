@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEditorRef } from '@udecode/plate-core';
+import { useEditorRef } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 import { getTableGridAbove } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';

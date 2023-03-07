@@ -29,7 +29,7 @@
     "@udecode/plate-code-block": "19.7.0",
     "@udecode/plate-combobox": "19.7.0",
     "@udecode/plate-comments": "19.7.0",
-    "@udecode/plate-core": "19.7.0",
+    "@udecode/plate-common": "19.7.0",
     "@udecode/plate-emoji": "19.7.0",
     "@udecode/plate-find-replace": "19.7.0",
     "@udecode/plate-floating": "19.7.0",

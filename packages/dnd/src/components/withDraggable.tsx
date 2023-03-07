@@ -3,7 +3,7 @@ import {
   AnyObject,
   PlateRenderElementProps,
   RenderFunction,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   useWithDraggableState,
   WithDraggableOptions,

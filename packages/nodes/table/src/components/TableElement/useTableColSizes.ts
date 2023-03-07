@@ -4,7 +4,7 @@ import {
   getPluginOptions,
   unsetNodes,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { getTableColumnCount } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';

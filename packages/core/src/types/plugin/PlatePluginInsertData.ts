@@ -1,5 +1,4 @@
-import { Value } from '../../slate/editor/TEditor';
-import { EElementOrText } from '../../slate/element/TElement';
+import { EElementOrText, Value } from '@udecode/slate';
 import { HandlerReturnType } from './DOMHandlers';
 
 export type PlatePluginInsertDataOptions = {

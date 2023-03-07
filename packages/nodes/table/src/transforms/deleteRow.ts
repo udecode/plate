@@ -5,7 +5,7 @@ import {
   removeNodes,
   someNode,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { TTableElement } from '../types';
 

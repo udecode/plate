@@ -2,7 +2,7 @@ import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useTableStore } from '../../stores/tableStore';
 import { TableCellElementState } from './useTableCellElementState';
 

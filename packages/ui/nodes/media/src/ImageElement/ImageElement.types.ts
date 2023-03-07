@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { ResizableProps, TImageElement } from '@udecode/plate-media';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';

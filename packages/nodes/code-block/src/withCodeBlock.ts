@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-common';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';

@@ -4,7 +4,7 @@ import {
   TNodeEntry,
   unsetNodes,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEY_LIST_START } from '../createIndentListPlugin';
 
 /**

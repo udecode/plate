@@ -72,10 +72,10 @@ export const Footer = () => (
             </li>
             <li tw="mt-4">
               <a
-                href="https://slate-js.slack.com/messages/plate"
+                href="https://discord.gg/mAZRuBzGM3"
                 tw="text-base leading-6 text-gray-500 dark:text-gray-300 hover:text-gray-900"
               >
-                Slack
+                Discord
               </a>
             </li>
           </ul>

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { TElement, TText } from '@udecode/plate-core';
+import { TElement, TText } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { CSSProp, CSSProperties } from 'styled-components';
 

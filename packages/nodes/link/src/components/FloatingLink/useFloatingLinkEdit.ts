@@ -11,7 +11,7 @@ import {
   useEditorRef,
   useHotkeys,
   usePlateSelectors,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,

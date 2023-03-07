@@ -1,4 +1,4 @@
-import { createElementAs, HTMLPropsAs } from '@udecode/plate-core';
+import { createElementAs, HTMLPropsAs } from '@udecode/plate-common';
 import { EmbedUrlData, useMediaStore } from '../../media/index';
 
 export const useMediaEmbedVideo = ({

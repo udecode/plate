@@ -1,10 +1,12 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import * as core from '@udecode/plate-core';
+import { usePlateEditorRef } from '@udecode/plate-common';
 import { createImagePlugin } from '@udecode/plate-media';
-import { Plate } from '../../../../../core/src/components/plate/Plate';
+import { Plate } from '../../../../../core/src/components/Plate';
 import { ImageToolbarButton } from './ImageToolbarButton';
 import { input1, input2, output2 } from './ImageToolbarButton.fixtures';
+
+const core = { usePlateEditorRef };
 
 const plugins = [createImagePlugin()];
 

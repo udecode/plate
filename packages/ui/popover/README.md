@@ -1,1 +1,0 @@
-Deprecated, use instead [@udecode/plate-floating](https://npmjs.com/package/@udecode/plate-floating)

@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { GetInjectPropsOptions } from '../../utils/plate/pluginInjectProps';
-import { AnyObject } from '../misc/AnyObject';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
+import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
 
 export interface TransformOptions<V extends Value = Value>
   extends GetInjectPropsOptions<V> {

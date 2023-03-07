@@ -1,4 +1,4 @@
-import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-core';
+import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 import { getTableColumnIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';

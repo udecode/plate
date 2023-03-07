@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { UnknownObject, useEditorRef } from '@udecode/plate-core';
+import { UnknownObject, useEditorRef } from '@udecode/plate-common';
 import { Range } from 'slate';
 import { CursorOverlayProps } from '../components/index';
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';

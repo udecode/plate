@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { EMOJI_TRIGGER, KEY_EMOJI } from './constants';
 import { EmojiPlugin } from './types';
 import { EmojiTriggeringController } from './utils';

@@ -5,7 +5,7 @@ import {
   isExpanded,
   TReactEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { UseDropNodeOptions } from '../hooks/useDropNode';
 import { DragItemNode } from '../types';
 import { getHoverDirection, getNewDirection } from '../utils';

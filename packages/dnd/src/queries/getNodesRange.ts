@@ -1,4 +1,4 @@
-import { getRange, TEditor, TNodeEntry, Value } from '@udecode/plate-core';
+import { getRange, TEditor, TNodeEntry, Value } from '@udecode/plate-common';
 
 /**
  * Get node entries range.

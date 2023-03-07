@@ -5,7 +5,7 @@ import {
   insertText,
   mockPlugin,
   wrapNodes,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';

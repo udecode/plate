@@ -1,7 +1,7 @@
 import { MARK_BOLD } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
-import { mockPlugin } from '../../../utils/plate/mockPlugin';
+import { createPlateEditor } from '../../../utils/createPlateEditor';
+import { mockPlugin } from '../../../utils/mockPlugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });

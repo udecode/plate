@@ -3,7 +3,7 @@ import {
   PlateEditor,
   sanitizeUrl,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
 
 export const validateUrl = <V extends Value>(

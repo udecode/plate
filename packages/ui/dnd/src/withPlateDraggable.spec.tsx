@@ -2,7 +2,7 @@ import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
-import { Plate, Value } from '@udecode/plate-core';
+import { Plate, Value } from '@udecode/plate-common';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,

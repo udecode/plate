@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor } from '@udecode/plate-common';
 import { ELEMENT_IMAGE } from '@udecode/plate-media/src/index';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';

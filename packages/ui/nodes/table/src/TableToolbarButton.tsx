@@ -7,7 +7,7 @@ import {
   useEventPlateId,
   usePlateEditorState,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, ButtonProps } from '@udecode/plate-button';
-import { usePlateEditorRef } from '@udecode/plate-core';
+import { usePlateEditorRef } from '@udecode/plate-common';
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,

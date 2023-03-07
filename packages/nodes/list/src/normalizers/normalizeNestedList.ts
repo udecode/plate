@@ -7,7 +7,7 @@ import {
   TElement,
   TElementEntry,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { getListTypes } from '../queries';
 

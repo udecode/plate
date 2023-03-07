@@ -1,4 +1,4 @@
-import { AnyObject, EElement, Value } from '@udecode/plate-core';
+import { AnyObject, EElement, Value } from '@udecode/plate-common';
 import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { StyledLeafProps } from '../StyledLeaf/StyledLeaf.types';
 

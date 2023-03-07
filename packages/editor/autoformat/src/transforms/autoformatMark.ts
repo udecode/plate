@@ -6,7 +6,7 @@ import {
   select,
   TEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';
 import { AutoformatMarkRule } from '../types';

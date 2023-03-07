@@ -1,4 +1,4 @@
-import { createPluginFactory, isUrl, Value } from '@udecode/plate-core';
+import { createPluginFactory, isUrl, Value } from '@udecode/plate-common';
 import {
   remarkDefaultElementRules,
   remarkDefaultTextRules,

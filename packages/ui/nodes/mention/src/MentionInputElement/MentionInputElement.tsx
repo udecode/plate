@@ -1,5 +1,5 @@
 import React from 'react';
-import { getHandler, Value } from '@udecode/plate-core';
+import { getHandler, Value } from '@udecode/plate-common';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionInputElementStyles } from './MentionInputElement.styles';

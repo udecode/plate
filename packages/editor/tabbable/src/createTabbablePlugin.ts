@@ -1,4 +1,4 @@
-import { createPluginFactory, isVoid } from '@udecode/plate-core';
+import { createPluginFactory, isVoid } from '@udecode/plate-common';
 import { KEY_TABBABLE } from './constants';
 import { TabbableEffects } from './TabbableEffects';
 import { TabbablePlugin } from './types';

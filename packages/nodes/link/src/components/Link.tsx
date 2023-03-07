@@ -5,7 +5,7 @@ import {
   PlateRenderElementProps,
   useElementProps,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { TLinkElement } from '../types';
 import { getLinkAttributes } from '../utils/index';
 

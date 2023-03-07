@@ -19,7 +19,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@radix-ui/react-slot": "^1.0.1",
+    "@udecode/slate": "19.7.0",
+    "@udecode/slate-react": "19.7.0",
+    "@udecode/utils": "19.7.0",
     "@udecode/zustood": "^1.1.1",
     "clsx": "^1.1.1",
     "jotai": "^1.7.2",

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Data, NoData } from '@udecode/plate-combobox';
-import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-core';
+import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';
 import {
   ELEMENT_MENTION,
   getMentionOnSelectItem,

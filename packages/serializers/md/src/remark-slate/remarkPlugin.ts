@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { remarkTransformNode } from './remarkTransformNode';
 import { MdastNode, RemarkPluginOptions } from './types';
 

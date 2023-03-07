@@ -8,9 +8,9 @@ import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
 import * as isHotkey from 'is-hotkey';
-import { onKeyDownToggleMark } from '../../../plugins/onKeyDownToggleMark';
+import { onKeyDownToggleMark } from '../../../../../plate-utils/src/plate/onKeyDownToggleMark';
 import { ToggleMarkPlugin } from '../../../types/plugin/ToggleMarkPlugin';
-import { getPlugin } from '../../plate/getPlugin';
+import { getPlugin } from '../../getPlugin';
 
 jsx;
 

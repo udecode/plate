@@ -1,4 +1,4 @@
-import { useElement } from '@udecode/plate-core';
+import { useElement } from '@udecode/plate-common';
 import { useTableStore } from '../../stores/tableStore';
 import { useTableColSizes } from './useTableColSizes';
 

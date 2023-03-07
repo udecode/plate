@@ -3,7 +3,7 @@ import {
   onKeyDownToggleMark,
   someHtmlElement,
   ToggleMarkPlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export const MARK_ITALIC = 'italic';
 

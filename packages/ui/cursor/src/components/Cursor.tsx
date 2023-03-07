@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderFunction, UnknownObject } from '@udecode/plate-core';
+import { RenderFunction, UnknownObject } from '@udecode/plate-common';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 import { CursorData, CursorOverlayState, SelectionRect } from '../types';

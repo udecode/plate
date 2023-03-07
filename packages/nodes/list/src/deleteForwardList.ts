@@ -15,7 +15,7 @@ import {
   TElementEntry,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';

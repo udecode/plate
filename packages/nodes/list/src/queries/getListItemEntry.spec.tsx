@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { getListItemEntry } from './getListItemEntry';
 

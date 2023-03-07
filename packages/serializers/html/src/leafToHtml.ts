@@ -6,7 +6,7 @@ import {
   pluginRenderLeaf,
   SlateProps,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { decode } from 'html-entities';
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';

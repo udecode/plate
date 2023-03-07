@@ -1,7 +1,6 @@
+import { ENodeEntry, Value } from '@udecode/slate';
 import { Range } from 'slate';
-import { Value } from '../../slate/editor/TEditor';
-import { ENodeEntry } from '../../slate/node/TNodeEntry';
-import { PlateEditor } from '../plate/PlateEditor';
+import { PlateEditor } from '../PlateEditor';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
 export type DecorateEntry<V extends Value = Value> = (

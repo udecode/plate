@@ -3,7 +3,7 @@
  */
 
 export * from './PlateDraggable.styles';
-export * from './PlateDraggable.types';
 export * from './PlateDraggable';
+export * from './PlateDraggable.types';
 export * from './grabberTooltipProps';
 export * from './withPlateDraggable';

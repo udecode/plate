@@ -1,4 +1,4 @@
-import { createPluginFactory, Value } from '@udecode/plate-core';
+import { createPluginFactory, Value } from '@udecode/plate-common';
 import { PlateCloudEditor } from '../cloud/types';
 import { CloudAttachmentPlugin } from './types';
 import { withCloudAttachment } from './withCloudAttachment';

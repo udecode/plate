@@ -5,7 +5,7 @@ import {
   moveNodes,
   TReactEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { UseDropNodeOptions } from '../hooks';
 import { DragItemNode } from '../types';

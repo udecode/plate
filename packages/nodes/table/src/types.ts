@@ -1,4 +1,9 @@
-import { PlateEditor, TDescendant, TElement, Value } from '@udecode/plate-core';
+import {
+  PlateEditor,
+  TDescendant,
+  TElement,
+  Value,
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 export interface TablePlugin<V extends Value = Value> {

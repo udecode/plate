@@ -1,4 +1,4 @@
-import { parseHtmlElement } from '@udecode/plate-core';
+import { parseHtmlElement } from '@udecode/plate-common';
 import { getDocxListContentHtml } from './getDocxListContentHtml';
 import { getDocxListIndent } from './getDocxListIndent';
 import { isDocxBookmark } from './isDocxBookmark';

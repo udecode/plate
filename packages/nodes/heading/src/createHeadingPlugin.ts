@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   onKeyDownToggleElement,
   PlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { KEYS_HEADING } from './constants';
 import { HeadingPlugin, HeadingsPlugin } from './types';
 

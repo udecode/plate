@@ -1,4 +1,4 @@
-import { isCollapsed, PlateEditor, Value } from '@udecode/plate-core';
+import { isCollapsed, PlateEditor, Value } from '@udecode/plate-common';
 import { Range } from 'slate';
 import { getTextFromTrigger } from './utils/getTextFromTrigger';
 import { comboboxActions, comboboxSelectors } from './combobox.store';

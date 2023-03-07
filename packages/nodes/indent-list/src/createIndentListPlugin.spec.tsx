@@ -2,7 +2,7 @@
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/index';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/index';
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

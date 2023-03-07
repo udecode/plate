@@ -6,7 +6,7 @@ import {
   isElementEmpty,
   usePlateEditorState,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';
 import { PlaceholderProps } from './Placeholder.types';
