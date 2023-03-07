@@ -4,6 +4,7 @@ import {
   TableCellElementRootProps,
   useTableCellElementState,
 } from '@udecode/plate-table';
+import { PlateButton } from '@udecode/plate-ui-button';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
@@ -33,6 +34,10 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       ]}
       {...rootProps}
     >
+      <div css={[tw`absolute top-0 right-0 z-30`]}>
+        <PlateButton>a</PlateButton>
+      </div>
+
       <TableCellElement.Content
         css={[tw`relative px-3 py-2 z-20 h-full box-border`]}
       >
