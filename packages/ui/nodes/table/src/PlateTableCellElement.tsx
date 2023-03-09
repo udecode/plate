@@ -14,7 +14,13 @@ export interface PlateTableCellElementProps extends TableCellElementRootProps {
 export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
   const { as, children, hideBorder, ...rootProps } = props;
 
-  const { colIndex, readOnly, selected, hovered } = useTableCellElementState();
+  const {
+    colIndex,
+    readOnly,
+    selected,
+    hovered,
+    rowSize,
+  } = useTableCellElementState();
 
   return (
     <TableCellElement.Root
@@ -34,7 +40,10 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       {...rootProps}
     >
       <TableCellElement.Content
-        css={[tw`relative px-3 py-2 z-20 h-full box-border`]}
+        css={[tw`relative h-full px-3 py-2 z-20 box-border`]}
+        style={{
+          minHeight: rowSize,
+        }}
       >
         {children}
       </TableCellElement.Content>
@@ -42,7 +51,6 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       <TableCellElement.ResizableWrapper
         css={[tw`absolute w-full h-full top-0 select-none`]}
         className="group"
-        colIndex={colIndex}
       >
         <TableCellElement.Resizable colIndex={colIndex} readOnly={readOnly} />
 

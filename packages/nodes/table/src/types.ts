@@ -54,3 +54,7 @@ export interface TablePlugin<V extends Value = Value> {
 export interface TTableElement extends TElement {
   colSizes?: number[];
 }
+
+export interface TTableRowElement extends TElement {
+  size?: number;
+}
