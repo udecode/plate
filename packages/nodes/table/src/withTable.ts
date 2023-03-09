@@ -1,10 +1,12 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
 import { TablePlugin } from './types';
+import { withAddMarkTable } from './withAddMarkTable';
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
 import { withInsertFragmentTable } from './withInsertFragmentTable';
 import { withInsertTextTable } from './withInsertTextTable';
 import { withNormalizeTable } from './withNormalizeTable';
+import { withRemoveMarkTable } from './withRemoveMarkTable';
 import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
@@ -22,6 +24,8 @@ export const withTable = <
   editor = withInsertTextTable<V, E>(editor, plugin);
   editor = withSelectionTable<V, E>(editor);
   editor = withSetFragmentDataTable<V, E>(editor);
+  editor = withAddMarkTable<V, E>(editor);
+  editor = withRemoveMarkTable<V, E>(editor);
 
   return editor;
 };

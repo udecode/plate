@@ -94,10 +94,6 @@ export const withDeleteTable = <
   };
 
   editor.deleteFragment = (direction) => {
-    isRangeInSameBlock(editor, {
-      match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
-    });
-
     if (
       isRangeInSameBlock(editor, {
         match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
