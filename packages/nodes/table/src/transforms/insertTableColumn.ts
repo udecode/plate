@@ -125,10 +125,12 @@ export const insertTableColumn = <V extends Value>(
           colSizes[nextColIndex - 1] ??
           initialTableWidth / colSizes.length;
 
-        const total = newColSizes.reduce((a, b) => a + b, 0);
+        const oldTotal = colSizes.reduce((a, b) => a + b, 0);
+        const newTotal = newColSizes.reduce((a, b) => a + b, 0);
+        const maxTotal = Math.max(oldTotal, initialTableWidth);
 
-        if (total > initialTableWidth) {
-          const factor = initialTableWidth / total;
+        if (newTotal > maxTotal) {
+          const factor = maxTotal / newTotal;
           newColSizes = newColSizes.map((size) =>
             Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
           );
