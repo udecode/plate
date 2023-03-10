@@ -75,10 +75,11 @@ export const insertTableColumn = <V extends Value>(
   }
   const currentRowIndex = cellPath[cellPath.length - 2];
 
-  const { newCellChildren, initialTableWidth } = getPluginOptions<
-    TablePlugin,
-    V
-  >(editor, ELEMENT_TABLE);
+  const {
+    newCellChildren,
+    initialTableWidth,
+    minColumnWidth,
+  } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -112,25 +113,32 @@ export const insertTableColumn = <V extends Value>(
     const { colSizes } = tableNode;
 
     if (colSizes) {
-      let nextColSize = 0;
+      let newColSizes = [
+        ...colSizes.slice(0, nextColIndex),
+        0,
+        ...colSizes.slice(nextColIndex),
+      ];
 
       if (initialTableWidth) {
-        nextColSize = colSizes[nextColIndex];
+        newColSizes[nextColIndex] =
+          colSizes[nextColIndex] ??
+          colSizes[nextColIndex - 1] ??
+          initialTableWidth / colSizes.length;
 
-        if (!nextColSize) {
-          nextColSize =
-            colSizes[nextColIndex - 1] || initialTableWidth / colSizes.length;
+        const total = newColSizes.reduce((a, b) => a + b, 0);
+
+        if (total > initialTableWidth) {
+          const factor = initialTableWidth / total;
+          newColSizes = newColSizes.map((size) =>
+            Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
+          );
         }
       }
 
       setNodes<TTableElement>(
         editor,
         {
-          colSizes: [
-            ...colSizes.slice(0, nextColIndex),
-            nextColSize,
-            ...colSizes.slice(nextColIndex),
-          ],
+          colSizes: newColSizes,
         },
         {
           at: tablePath,

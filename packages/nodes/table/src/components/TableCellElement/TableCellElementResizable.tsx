@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import {
   Box,
   findNodePath,
+  getPluginOptions,
   HTMLPropsAs,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
+import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { useTableRowStore } from '../../stores/tableRowStore';
 import { useTableStore } from '../../stores/tableStore';
 import { setTableColSize, setTableRowSize } from '../../transforms';
+import { TablePlugin } from '../../types';
 import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
@@ -38,6 +41,10 @@ export const useTableCellElementResizableProps = ({
   ...props
 }: TableCellElementResizableProps): ResizableProps => {
   const editor = usePlateEditorRef();
+  const { minColumnWidth: minWidth } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
   const element = useElement();
   const setHoveredColIndex = useTableStore().set.hoveredColIndex();
   const setResizingCol = useTableStore().set.resizingCol();
@@ -119,7 +126,7 @@ export const useTableCellElementResizableProps = ({
       right: !readOnly,
       bottom: !readOnly,
     },
-    minWidth: 48,
+    minWidth,
     handleStyles: handleResize,
     handleComponent: {
       right: (
