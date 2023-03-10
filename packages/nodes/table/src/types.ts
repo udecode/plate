@@ -49,6 +49,12 @@ export interface TablePlugin<V extends Value = Value> {
    * Merged cells not supported.
    */
   initialTableWidth?: number;
+
+  /**
+   * The minimum width of a column.
+   * @default 48
+   */
+  minColumnWidth?: number;
 }
 
 export interface TTableElement extends TElement {
