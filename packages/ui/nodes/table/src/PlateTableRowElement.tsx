@@ -13,7 +13,10 @@ export const PlateTableRowElement = (props: PlateTableRowElementProps) => {
   const { as, children, hideBorder, ...rootProps } = props;
 
   return (
-    <TableRowElement.Root css={[hideBorder && tw`border-none`]} {...rootProps}>
+    <TableRowElement.Root
+      css={[tw`h-full`, hideBorder && tw`border-none`]}
+      {...rootProps}
+    >
       {children}
     </TableRowElement.Root>
   );

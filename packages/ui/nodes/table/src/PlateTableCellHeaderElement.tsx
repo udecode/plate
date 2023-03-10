@@ -52,7 +52,6 @@ export const PlateTableCellHeaderElement = (
       <TableCellElement.ResizableWrapper
         css={[tw`absolute w-full h-full top-0 select-none`]}
         className="group"
-        colIndex={colIndex}
       >
         <TableCellElement.Resizable colIndex={colIndex} readOnly={readOnly} />
 

@@ -35,6 +35,7 @@ describe('TableCellElement', () => {
       expect(spyResizable).toHaveBeenCalled();
       expect(spyResizable).toHaveBeenCalledTimes(4);
       expect(spyResizable.mock.calls[3][0].enable?.right).not.toEqual(true);
+      expect(spyResizable.mock.calls[3][0].enable?.bottom).not.toEqual(true);
     });
   });
 });
