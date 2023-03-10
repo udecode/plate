@@ -1,5 +1,11 @@
 # @udecode/plate-table-ui
 
+## 20.2.0
+
+### Patch Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) – Get `minColumnWidth` from table plugin options
+
 ## 20.1.0
 
 ### Minor Changes
