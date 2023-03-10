@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 20.2.0
+
+### Minor Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) –
+  - `TablePlugin` new option: `minColumnWidth` - Sets the minimum width a column can be resized to
+  - `insertTableColumn` now shrinks columns if the new total width would exceed `initialTableWidth`
+
 ## 20.1.0
 
 ### Minor Changes
