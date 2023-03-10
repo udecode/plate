@@ -1,5 +1,12 @@
 # @udecode/plate-table-ui
 
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+
 ## 20.0.0
 
 ### Major Changes

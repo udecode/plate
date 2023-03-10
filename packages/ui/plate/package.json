@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "20.0.1",
+  "version": "20.1.0",
   "description": "Plate UI",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-headless": "20.0.0",
+    "@udecode/plate-headless": "20.1.0",
     "@udecode/plate-styled-components": "20.0.0",
     "@udecode/plate-ui-alignment": "20.0.0",
     "@udecode/plate-ui-block-quote": "20.0.0",
@@ -37,7 +37,7 @@
     "@udecode/plate-ui-media": "20.0.0",
     "@udecode/plate-ui-mention": "20.0.0",
     "@udecode/plate-ui-placeholder": "20.0.0",
-    "@udecode/plate-ui-table": "20.0.0",
+    "@udecode/plate-ui-table": "20.1.0",
     "@udecode/plate-ui-toolbar": "20.0.0",
     "use-context-selector": "1.4.1"
   },
