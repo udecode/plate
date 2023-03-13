@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   findNodePath,
@@ -52,7 +52,6 @@ export const useTableCellElementResizableProps = ({
   );
   const element = useElement();
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
-  const path = useMemo(() => findNodePath(editor, element)!, [editor, element]);
   const setHoveredColIndex = useTableStore().set.hoveredColIndex();
   const [isResizingRight, setIsResizingRight] = useState(false);
 
@@ -127,7 +126,7 @@ export const useTableCellElementResizableProps = ({
   const onResizeStop: ResizableProps['onResizeStop'] = (e, direction) => {
     if (direction === 'right') {
       colSizeOverrides.forEach((size, index) => {
-        setTableColSize(editor, { colIndex: index, width: size }, { at: path });
+        setTableColSize(editor, { colIndex: index, width: size }, { at: findNodePath(editor, element)! });
 
         // Prevent flickering
         setTimeout(() => overrideColSize(index, null), 0);
@@ -140,7 +139,7 @@ export const useTableCellElementResizableProps = ({
         setTableRowSize(
           editor,
           { rowIndex: index, height: size },
-          { at: path }
+          { at: findNodePath(editor, element)! }
         );
 
         // Prevent flickering
