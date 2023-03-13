@@ -16,7 +16,7 @@ import { TablePlugin, TTableElement } from '../../types';
  */
 export const useTableColSizes = (tableNode: TTableElement): number[] => {
   const editor = useEditorRef();
-  const resizingCol = useTableStore().get.resizingCol();
+  const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
   const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
     editor,
@@ -25,13 +25,10 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
 
   const colCount = getTableColumnCount(tableNode);
 
-  const colSizes = tableNode.colSizes
+  const colSizes = (tableNode.colSizes
     ? [...tableNode.colSizes]
-    : Array(colCount).fill(0);
-
-  if (resizingCol) {
-    colSizes[resizingCol.index ?? 0] = resizingCol.width;
-  }
+    : Array(colCount).fill(0)
+  ).map((size, index) => colSizeOverrides.get(index) ?? size);
 
   useEffect(() => {
     if (

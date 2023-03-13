@@ -12,7 +12,13 @@ export const PlateTableCellHeaderElement = (
 ) => {
   const { as, children, hideBorder, ...rootProps } = props;
 
-  const { colIndex, readOnly, selected, hovered } = useTableCellElementState();
+  const {
+    colIndex,
+    rowIndex,
+    readOnly,
+    selected,
+    hovered,
+  } = useTableCellElementState();
 
   return (
     <TableCellElement.Root
@@ -53,7 +59,11 @@ export const PlateTableCellHeaderElement = (
         css={[tw`absolute w-full h-full top-0 select-none`]}
         className="group"
       >
-        <TableCellElement.Resizable colIndex={colIndex} readOnly={readOnly} />
+        <TableCellElement.Resizable
+          colIndex={colIndex}
+          rowIndex={rowIndex}
+          readOnly={readOnly}
+        />
 
         <TableCellElement.Handle
           css={[

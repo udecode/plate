@@ -5,21 +5,22 @@ import {
   TEditor,
   Value,
 } from '@udecode/plate-common';
-import { ELEMENT_TR } from '../createTablePlugin';
-import { TTableRowElement } from '../types';
+import { ELEMENT_TABLE } from '../createTablePlugin';
+import { TTableElement, TTableRowElement } from '../types';
 
 export const setTableRowSize = <V extends Value>(
   editor: TEditor<V>,
-  { height }: { height: number },
+  { rowIndex, height }: { rowIndex: number; height: number },
   options: GetAboveNodeOptions<V> = {}
 ) => {
-  const tableRow = findNode<TTableRowElement>(editor, {
-    match: { type: ELEMENT_TR },
+  const table = findNode<TTableElement>(editor, {
+    match: { type: ELEMENT_TABLE },
     ...options,
   });
-  if (!tableRow) return;
+  if (!table) return;
 
-  const [, tableRowPath] = tableRow;
+  const [, tablePath] = table;
+  const tableRowPath = [...tablePath, rowIndex];
 
   setNodes<TTableRowElement>(editor, { size: height }, { at: tableRowPath });
 };
