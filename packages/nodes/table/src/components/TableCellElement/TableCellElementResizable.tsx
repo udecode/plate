@@ -15,7 +15,7 @@ import {
   useTableStore,
 } from '../../stores/tableStore';
 import { setTableColSize, setTableRowSize } from '../../transforms';
-import { TablePlugin } from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { TableCellElementState } from './useTableCellElementState';
 
