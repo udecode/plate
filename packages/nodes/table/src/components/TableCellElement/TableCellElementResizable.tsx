@@ -51,7 +51,7 @@ export const useTableCellElementResizableProps = ({
     ELEMENT_TABLE
   );
   const element = useElement();
-  const tableElement = useElement(ELEMENT_TABLE);
+  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const path = useMemo(() => findNodePath(editor, element)!, [editor, element]);
   const setHoveredColIndex = useTableStore().set.hoveredColIndex();
   const [isResizingRight, setIsResizingRight] = useState(false);
