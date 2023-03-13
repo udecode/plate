@@ -18,6 +18,7 @@ export const PlateTableCellHeaderElement = (
     readOnly,
     selected,
     hovered,
+    rowSize,
   } = useTableCellElementState();
 
   return (
@@ -51,6 +52,9 @@ export const PlateTableCellHeaderElement = (
     >
       <TableCellElement.Content
         css={[tw`relative px-3 py-2 z-20 h-full box-border`]}
+        style={{
+          minHeight: rowSize,
+        }}
       >
         {children}
       </TableCellElement.Content>
