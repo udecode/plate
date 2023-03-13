@@ -15,15 +15,37 @@ export interface PlateTableCellElementProps extends TableCellElementRootProps {
 export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
   const { as, children, hideBorder, ...rootProps } = props;
 
-  const { colIndex, readOnly, selected, hovered } = useTableCellElementState();
+  const {
+    colIndex,
+    readOnly,
+    selected,
+    hovered,
+    rowSize,
+    isLastCell,
+    isLastRow,
+  } = useTableCellElementState();
 
   return (
     <TableCellElement.Root
       css={[
         tw`relative p-0 overflow-visible bg-white border-none`,
-        hideBorder
-          ? tw`before:border-none`
-          : tw`before:content-[''] before:box-border before:absolute before:-top-px before:-left-px before:border before:border-solid before:select-none before:border-gray-300`,
+        hideBorder && tw`before:border-none`,
+        !hideBorder &&
+          tw`before:content-[''] before:box-border before:absolute before:-top-px before:-left-px before:select-none before:border before:border-solid before:border-gray-300`,
+        !hideBorder &&
+          !isLastCell &&
+          css`
+            ::before {
+              border-right: none;
+            }
+          `,
+        !hideBorder &&
+          !isLastRow &&
+          css`
+            ::before {
+              border-bottom: none;
+            }
+          `,
         selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
         css`
           ::before {
@@ -39,7 +61,10 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       </div>
 
       <TableCellElement.Content
-        css={[tw`relative px-3 py-2 z-20 h-full box-border`]}
+        css={[tw`relative h-full px-3 py-2 z-20 box-border`]}
+        style={{
+          minHeight: rowSize,
+        }}
       >
         {children}
       </TableCellElement.Content>
@@ -47,7 +72,6 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       <TableCellElement.ResizableWrapper
         css={[tw`absolute w-full h-full top-0 select-none`]}
         className="group"
-        colIndex={colIndex}
       >
         <TableCellElement.Resizable colIndex={colIndex} readOnly={readOnly} />
 
