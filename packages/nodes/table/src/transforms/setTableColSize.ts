@@ -15,8 +15,8 @@ export const setTableColSize = <V extends Value>(
   options: GetAboveNodeOptions<V> = {}
 ) => {
   const table = findNode<TTableElement>(editor, {
-    ...options,
     match: { type: ELEMENT_TABLE },
+    ...options,
   });
   if (!table) return;
 

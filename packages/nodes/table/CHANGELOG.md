@@ -1,5 +1,23 @@
 # @udecode/plate-table
 
+## 20.2.0
+
+### Minor Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) –
+  - `TablePlugin` new option: `minColumnWidth` - Sets the minimum width a column can be resized to
+  - `insertTableColumn` now shrinks columns if the new total width would exceed `initialTableWidth`
+
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+    - `TableCellElement.ResizableWrapper` no longer takes a `colIndex` prop
+    - `TableCellElement.Resizable` now takes `stepX` and `stepY` as overrides for `step` to set the resize increments for the X and Y axes
+    - `setTableRowSize` - sets the height of the selected row
+
 ## 20.0.0
 
 ### Major Changes

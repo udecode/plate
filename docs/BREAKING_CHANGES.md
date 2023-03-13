@@ -1,3 +1,93 @@
+# 20.0.0
+
+## @udecode/plate-core@20.0.0
+
+### Major Changes
+
+-   [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
+    -   This package has been split into multiple packages for separation of concerns and decoupled versioning:
+        -   `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
+        -   `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
+        -   `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
+        -   `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
+        -   `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
+        -   `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
+        -   `@udecode/plate-common` re-exports the 6 previous packages and is a dependency of all the other packages. It's basically replacing `@udecore/plate-core` as a bundle.
+    -   Removed `getPreventDefaultHandler` since it is no longer needed.
+        **Migration**:
+        -   If using `@udecode/plate` or `@udecode/plate-headless`: none
+        -   Else: find & replace `@udecode/plate-core` by `@udecode/plate-common`
+
+ ## @udecode/plate-link@20.0.0
+
+### Major Changes
+
+-   [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
+    -   Add `allowedSchemes` plugin option
+        -   Any URL schemes other than `http(s)`, `mailto` and `tel` must be added to `allowedSchemes`, otherwise they will not be included in links
+
+ ## @udecode/plate-table@20.0.0
+
+### Major Changes
+
+-   [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) –
+    -   `TablePlugin` option `disableUnsetSingleColSize` has been renamed and inverted into `enableUnsetSingleColSize`. New default is disabled. **Migration**:
+        -   if using `disableUnsetSingleColSize: true`, the option can be removed
+        -   if using `disableUnsetSingleColSize: false`, use `enableUnsetSingleColSize: true`
+    -   `getTableColumnIndex` second parameter type is now: `cellNode: TElement`
+
+## @udecode/plate-ui-dnd@20.0.0
+
+### Major Changes
+
+-   [#2237](https://github.com/udecode/plate/pull/2237) by [@tmorane](https://github.com/tmorane) – Unstyled logic has been moved to `@udecode/plate-dnd`
+
+    ```ts
+    // before
+    import { createDndPlugin } from '@udecode/plate-ui-dnd';
+
+    // after
+    import { createDndPlugin } from '@udecode/plate-dnd';
+    ```
+
+    Only `withPlateDraggable`, `withPlateDraggables` and `PlateDraggable` are left in `@udecode/plate-ui-dnd`.
+    Renamed:
+
+    -   `withDraggables` -> `withPlateDraggables`. In the second parameter, draggable props options have been moved under `draggableProps`:
+
+    ```tsx
+    // before
+    {
+      onRenderDragHandle: () => {}
+      styles,
+    }
+
+    // after
+    {
+      draggableProps: {
+        onRenderDragHandle: () => {}
+        styles,
+      },
+    }
+    ```
+
+## @udecode/plate-ui-table@20.0.0
+
+### Major Changes
+
+-   [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) – Headless components and hooks moved to `@udecode/plate-table`, so the following components have been renamed:
+    -   `TableElement` -> `PlateTableElement`
+        -   removed table border to set it at the cell level
+        -   `margin-left: 1px` to support cell borders
+        -   if all columns have a fixed size, the table will have a dynamic width instead of always 100%
+    -   `TableRowElement` -> `PlateTableRowElement`
+    -   `TableCellElement` -> `PlateTableCellElement`
+        -   removed td border in favor of td::before. The latter is responsible of having the border and the selected background color.
+        -   z-index: td is 0, td::before is 10, td::before in selected state is 20, handle is 30, handle resize is 40.
+        -   removed `selectedCell` div in favor of `::before`
+    -   `TablePopover` -> `PlateTablePopover`
+        Styled props have been removed.
+
 # 19.0.0
 
 ## @udecode/plate-core@19.0.0

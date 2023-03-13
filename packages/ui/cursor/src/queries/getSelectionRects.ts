@@ -35,7 +35,9 @@ export const getSelectionRects = <V extends Value>(
 
   for (const [textNode, textPath] of textEntries) {
     const domNode = toDOMNode(editor, textNode);
-    if (!domNode) {
+
+    // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
+    if (!domNode || !domNode.parentElement) {
       return [];
     }
 
@@ -45,6 +47,7 @@ export const getSelectionRects = <V extends Value>(
     let clientRects: DOMRectList | null = null;
     if (isStartNode || isEndNode) {
       const nodeRange = document.createRange();
+
       nodeRange.selectNode(domNode);
 
       if (isStartNode) {

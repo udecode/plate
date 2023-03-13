@@ -1,7 +1,10 @@
 import React from 'react';
+import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';
 import {
+  ELEMENT_TABLE,
   TableElement,
   TableElementRootProps,
+  TablePlugin,
   useTableElementState,
 } from '@udecode/plate-table';
 import { css } from 'styled-components';
@@ -11,6 +14,11 @@ import { PlateTablePopover } from './PlateTablePopover';
 export const PlateTableElement = (props: TableElementRootProps) => {
   const { as, children, ...rootProps } = props;
 
+  const editor = usePlateEditorRef();
+  const { minColumnWidth: minWidth } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
   const { colSizes, isSelectingCell } = useTableElementState();
 
   return (
@@ -31,7 +39,7 @@ export const PlateTableElement = (props: TableElementRootProps) => {
           <TableElement.Col
             key={index}
             style={{
-              minWidth: 48,
+              minWidth,
               width: width || undefined,
             }}
           />
