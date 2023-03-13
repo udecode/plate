@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { flip, offset, shift } from '@floating-ui/react-dom-interactions';
+import { Popover } from '@udecode/plate-floating';
 import {
+  ArrowDropDownCircleIcon,
   TableCellElement,
   TableCellElementRootProps,
   useTableCellElementState,
 } from '@udecode/plate-table';
 import { PlateButton } from '@udecode/plate-ui-button';
+import { floatingRootCss } from '@udecode/plate-ui-toolbar';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
@@ -24,6 +28,8 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
     isLastCell,
     isLastRow,
   } = useTableCellElementState();
+
+  const [openDropdown, setOpenDropdown] = useState(false);
 
   return (
     <TableCellElement.Root
@@ -56,8 +62,42 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       ]}
       {...rootProps}
     >
-      <div css={[tw`absolute top-0 right-0 z-30`]}>
-        <PlateButton>a</PlateButton>
+      <div css={[tw`absolute top-0 right-2 z-30`]} contentEditable={false}>
+        <Popover
+          floatingOptions={{
+            open: openDropdown,
+            placement: 'top-end',
+            middleware: [
+              offset(0),
+              flip({
+                padding: 0,
+              }),
+              shift(),
+            ],
+          }}
+          content={
+            <div css={tw`min-w-[140px]`}>
+              <PlateButton>Bottom Border</PlateButton>
+              <PlateButton>Top Border</PlateButton>
+              <PlateButton>Left Border</PlateButton>
+              <PlateButton>Right Border</PlateButton>
+            </div>
+          }
+          css={floatingRootCss}
+        >
+          <div>
+            <PlateButton
+              tw="h-[13px] w-[13px] p-0"
+              onClick={() => setOpenDropdown(!openDropdown)}
+            >
+              <ArrowDropDownCircleIcon
+                tw="block my-0 mx-auto absolute text-gray-300"
+                height={16}
+                width={16}
+              />
+            </PlateButton>
+          </div>
+        </Popover>
       </div>
 
       <TableCellElement.Content

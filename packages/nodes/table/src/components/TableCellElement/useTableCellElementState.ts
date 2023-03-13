@@ -1,12 +1,10 @@
 import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { ELEMENT_TR } from '../../createTablePlugin';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { getTableColumnIndex } from '../../queries';
 import { useTableRowStore } from '../../stores/tableRowStore';
 import { useTableStore } from '../../stores/tableStore';
-import { TTableRowElement } from '../../types';
-import { TTableElement } from '../../types';
+import { TTableElement, TTableRowElement } from '../../types';
 import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
@@ -36,7 +34,6 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverride = useTableRowStore().get.overrideSize();
   const rowSize = rowSizeOverride ?? rowElement?.size ?? undefined;
-
 
   const readOnly = useReadOnly();
 
