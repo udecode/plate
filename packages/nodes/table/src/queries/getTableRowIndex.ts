@@ -4,6 +4,7 @@ import {
   TReactEditor,
   Value,
 } from '@udecode/plate-common';
+import { Path } from 'slate';
 
 /**
  * Get table row index of a cell node.
@@ -14,5 +15,6 @@ export const getTableRowIndex = <V extends Value>(
 ) => {
   const path = findNodePath(editor, cellNode);
   if (!path) return 0;
-  return path[path.length - 2];
+  const rowPath = Path.parent(path);
+  return rowPath[rowPath.length - 1];
 };

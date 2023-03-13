@@ -126,7 +126,11 @@ export const useTableCellElementResizableProps = ({
   const onResizeStop: ResizableProps['onResizeStop'] = (e, direction) => {
     if (direction === 'right') {
       colSizeOverrides.forEach((size, index) => {
-        setTableColSize(editor, { colIndex: index, width: size }, { at: findNodePath(editor, element)! });
+        setTableColSize(
+          editor,
+          { colIndex: index, width: size },
+          { at: findNodePath(editor, element)! }
+        );
 
         // Prevent flickering
         setTimeout(() => overrideColSize(index, null), 0);
