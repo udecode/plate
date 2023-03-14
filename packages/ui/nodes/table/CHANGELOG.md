@@ -1,5 +1,11 @@
 # @udecode/plate-table-ui
 
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Pass rowIndex to TableCellElementResizable
+
 ## 20.2.0
 
 ### Patch Changes
