@@ -4463,6 +4463,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@remix-run/router@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@remix-run/router@npm:1.4.0"
+  checksum: efc8a5a414cd2251e5c00f094d3354fe5a8a6a38dcfc20d5d65196144d2c22463278775cdbf9f1922bf318f3a2f1e9ac615c0cd49c3dca4b08222cb7cc6cca31
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-node-resolve@npm:^7.1.1":
   version: 7.1.3
   resolution: "@rollup/plugin-node-resolve@npm:7.1.3"
@@ -11527,8 +11534,7 @@ __metadata:
     "@types/react": "npm:^18.0.27"
     "@types/react-dom": "npm:^18.0.10"
     "@vitejs/plugin-react": "npm:^3.1.0"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
+    examples: "link:../../src"
     typescript: "npm:^4.9.3"
     vite: "npm:^4.1.0"
   languageName: unknown
@@ -12648,6 +12654,12 @@ __metadata:
     react-pro-sidebar: "npm:^0.7.1"
     sass: "npm:^1.54.0"
   languageName: unknown
+  linkType: soft
+
+"examples@link:../../src::locator=e2e-examples%40workspace%3Aexamples%2Fapps%2Fe2e-examples":
+  version: 0.0.0-use.local
+  resolution: "examples@link:../../src::locator=e2e-examples%40workspace%3Aexamples%2Fapps%2Fe2e-examples"
+  languageName: node
   linkType: soft
 
 "examples@link:../../src::locator=examples-cra%40workspace%3Aexamples%2Fapps%2Fcra":
@@ -21444,6 +21456,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-router-dom@npm:6.9.0":
+  version: 6.9.0
+  resolution: "react-router-dom@npm:6.9.0"
+  dependencies:
+    "@remix-run/router": "npm:1.4.0"
+    react-router: "npm:6.9.0"
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: af11b8fb3fd8bd53018fd165eff60190c424fb4bc99d3e1f904dfecde445be12b1457f96504067a0106a95d1526be8726e5f9e745bc2a0f143af4bedc45e4b23
+  languageName: node
+  linkType: hard
+
+"react-router@npm:6.9.0":
+  version: 6.9.0
+  resolution: "react-router@npm:6.9.0"
+  dependencies:
+    "@remix-run/router": "npm:1.4.0"
+  peerDependencies:
+    react: ">=16.8"
+  checksum: 9fce0afd7ec156a983bd433ecfbcb6f3ce6f1b2863a216245c6dffeff3c27daceecfdb903bcf3f3e53ff03a235dda373b40a7f18cd260de909da324c97c5eecd
+  languageName: node
+  linkType: hard
+
 "react-scripts@npm:4.0.3":
   version: 4.0.3
   resolution: "react-scripts@npm:4.0.3"
@@ -22726,6 +22762,7 @@ __metadata:
     react-dnd-test-backend: "npm:^15.1.2"
     react-dom: "npm:17.0.2"
     react-is: "npm:17.0.2"
+    react-router-dom: "npm:6.9.0"
     react-test-renderer: "npm:17.0.2"
     rimraf: "npm:^3.0.2"
     rollup: "npm:^2.72.1"

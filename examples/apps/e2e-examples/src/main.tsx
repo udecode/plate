@@ -1,12 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { App } from './App'
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from 'react-router-dom';
+import { TableApp } from './TableApp'
+
+const router = createBrowserRouter([
+  {
+    path: '/table/:variant',
+    element: <TableApp />,
+  },
+]);
 
 const rootElement = document.getElementById('root');
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </React.StrictMode>,
   rootElement
 );
