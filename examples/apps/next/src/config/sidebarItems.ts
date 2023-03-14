@@ -41,6 +41,7 @@ export const sidebarItems = [
   'serializing-md',
   'single-line',
   'soft-break',
+  'suggestion',
   'tabbable',
   'table',
   'typescript',

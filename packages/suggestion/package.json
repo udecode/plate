@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-styled-components",
+  "name": "@udecode/plate-suggestion",
   "version": "20.0.0",
-  "description": "Standard UI for Plate",
+  "description": "Plate plugin for suggestions",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/ui/styled-components"
+    "directory": "packages/suggestion"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,21 +19,14 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "20.0.0",
-    "clsx": "^1.1.1"
+    "@udecode/plate-common": "20.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "react-is": ">=16.8.0",
     "slate": ">=0.87.0",
     "slate-history": ">=0.86.0",
-    "slate-react": ">=0.88.0",
-    "styled-components": ">=5.0.0"
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.2.7",
-    "twin.macro": "^3.1.0"
+    "slate-react": ">=0.88.0"
   },
   "keywords": [
     "plate",

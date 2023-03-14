@@ -5,6 +5,7 @@
 export * from '@udecode/plate-styled-components';
 export * from '@udecode/plate-ui-alignment';
 export * from '@udecode/plate-ui-block-quote';
+export * from '@udecode/plate-ui-button';
 export * from '@udecode/plate-ui-code-block';
 export * from '@udecode/plate-ui-combobox';
 export * from '@udecode/plate-ui-comments';
@@ -19,8 +20,8 @@ export * from '@udecode/plate-ui-list';
 export * from '@udecode/plate-ui-media';
 export * from '@udecode/plate-ui-mention';
 export * from '@udecode/plate-ui-placeholder';
+export * from '@udecode/plate-ui-suggestion';
 export * from '@udecode/plate-ui-table';
 export * from '@udecode/plate-ui-toolbar';
-export * from '@udecode/plate-ui-button';
 export * from './types';
 export * from './utils';
