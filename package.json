@@ -76,6 +76,7 @@
     "@changesets/get-github-info": "^0.5.0",
     "@changesets/parse": "^0.3.13",
     "@changesets/types": "^5.0.0",
+    "@playwright/test": "1.31.2",
     "@react-hook/merged-ref": "^1.3.2",
     "@styled-icons/boxicons-regular": "^10.38.0",
     "@styled-icons/foundation": "^10.34.0",
