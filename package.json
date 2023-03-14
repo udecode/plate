@@ -35,6 +35,7 @@
     "g:test:wa": "yarn g:test --watchAll",
     "g:typecheck": "yarn workspaces foreach -ptv --no-private run p:typecheck",
     "g:typecheck-changed": "yarn workspaces foreach -ptv --no-private --from '@udecode/plate*' --since=origin/main --recursive run p:typecheck",
+    "install:playwright": "yarn playwright install --with-deps",
     "nuke:node_modules": "rimraf '**/node_modules'",
     "p:brl": "cd $INIT_CWD && barrelsby -d src -D -l all -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:brl:below": "cd $INIT_CWD && barrelsby -d src -D -l below -q -e '.*(fixture|template|spec|__tests__).*'",
