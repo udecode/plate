@@ -11,8 +11,6 @@ export * from './createInsertDataPlugin';
 export * from './createNodeFactoryPlugin';
 export * from './createPrevSelectionPlugin';
 export * from './createReactPlugin';
-export * from './onKeyDownToggleElement';
-export * from './onKeyDownToggleMark';
 export * from './withPlate';
 export * from './withTReact';
 export * from './html-deserializer/index';

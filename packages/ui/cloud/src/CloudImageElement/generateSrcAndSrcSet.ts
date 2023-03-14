@@ -12,6 +12,7 @@ function generateSrc({
    */
   if (url.startsWith('blob:')) return url;
   if (size[0] >= maxSize[0] || size[1] >= maxSize[1]) return url;
+  if (url.endsWith('.gif')) return url;
   return `${url}?size=${size[0]}x${size[1]}`;
 }
 

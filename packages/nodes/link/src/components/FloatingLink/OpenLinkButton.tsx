@@ -8,9 +8,10 @@ import {
   HTMLPropsAs,
   useEditorRef,
   usePlateSelection,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { TLinkElement } from '../../types';
+import { getLinkAttributes } from '../../utils/index';
 
 export const useOpenLinkButton = (
   props: HTMLPropsAs<'a'>
@@ -31,12 +32,13 @@ export const useOpenLinkButton = (
     return {};
   }
 
-  const [link] = entry;
+  const [element] = entry;
+  const linkAttributes = getLinkAttributes(editor, element);
 
   return {
-    'aria-label': 'Open link in a new tab',
+    ...linkAttributes,
     target: '_blank',
-    href: link.url,
+    'aria-label': 'Open link in a new tab',
     onMouseOver: (e) => {
       e.stopPropagation();
     },

@@ -8,7 +8,7 @@ import {
   removeNodes,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { selectInsertedBlocks } from './utils/index';

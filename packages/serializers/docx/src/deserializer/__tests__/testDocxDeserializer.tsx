@@ -4,7 +4,7 @@ import {
   createPlateEditor,
   OverrideByKey,
   PlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createImagePlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';

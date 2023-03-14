@@ -1,4 +1,4 @@
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-common';
 import { Range } from 'slate';
 import {
   createFindReplacePlugin,

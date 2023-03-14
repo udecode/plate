@@ -5,11 +5,13 @@ import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import { TippyProps } from '@tippyjs/react';
 import {
   BalloonToolbar,
+  BalloonToolbarProps,
   getPluginType,
   MARK_BOLD,
   MARK_ITALIC,
   MARK_UNDERLINE,
   MarkToolbarButton,
+  WithPartial,
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
@@ -22,7 +24,12 @@ export const markTooltip: TippyProps = {
   placement: 'top',
 };
 
-export const MarkBalloonToolbar = ({ children }: { children?: ReactNode }) => {
+export const MarkBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'children'>) => {
+  const {
+    children,
+    ...balloonToolbarProps
+  } = props;
+
   const editor = useMyPlateEditorRef();
 
   const arrow = false;
@@ -36,21 +43,24 @@ export const MarkBalloonToolbar = ({ children }: { children?: ReactNode }) => {
   };
 
   return (
-    <BalloonToolbar theme={theme} arrow={arrow}>
+    <BalloonToolbar theme={theme} arrow={arrow} {...balloonToolbarProps}>
       <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={boldTooltip}
+        actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
         tooltip={italicTooltip}
+        actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={underlineTooltip}
+        actionHandler="onMouseDown"
       />
       {children}
     </BalloonToolbar>

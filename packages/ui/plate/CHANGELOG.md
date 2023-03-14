@@ -1,5 +1,23 @@
 # @udecode/plate-ui
 
+## 20.3.0
+
+## 20.2.0
+
+## 20.1.0
+
+## 20.0.1
+
+## 20.0.0
+
+### Minor Changes
+
+- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) – `ELEMENT_TH` now extends `TableCellElement` instead of `StyledElement`.
+
+## 19.7.0
+
+## 19.6.0
+
 ## 19.5.0
 
 ## 19.4.5

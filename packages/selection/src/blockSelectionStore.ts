@@ -1,4 +1,4 @@
-import { createStore } from '@udecode/plate-core';
+import { createStore } from '@udecode/plate-common';
 import { ChangedElements } from './components/SelectionArea';
 import { extractSelectableIds } from './utils/extractSelectableIds';
 

@@ -6,7 +6,7 @@ import {
   someNode,
   useEventPlateId,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export interface AlignToolbarButtonProps extends ToolbarButtonProps {
@@ -28,8 +28,6 @@ export const AlignToolbarButton = ({
 
   return (
     <ToolbarButton
-      tooltip={{ content: 'Align' }}
-      aria-label="Align"
       active={active}
       onClick={(e) => {
         e.preventDefault();

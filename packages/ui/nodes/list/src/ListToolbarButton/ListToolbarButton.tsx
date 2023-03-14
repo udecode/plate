@@ -3,7 +3,7 @@ import {
   focusEditor,
   useEventPlateId,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 import {
   BlockToolbarButton,
@@ -21,7 +21,6 @@ export const ListToolbarButton = ({
 
   return (
     <BlockToolbarButton
-      aria-label="Toggle list"
       active={!!res && res.list[0].type === type}
       type={type}
       onClick={(e) => {

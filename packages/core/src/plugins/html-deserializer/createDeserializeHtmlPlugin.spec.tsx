@@ -6,7 +6,7 @@ import { createBoldPlugin } from '../../../../nodes/basic-marks/src/createBoldPl
 import { createHeadingPlugin } from '../../../../nodes/heading/src/createHeadingPlugin';
 import { createLinkPlugin } from '../../../../nodes/link/src/createLinkPlugin';
 import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
-import { PlateEditor } from '../../types/plate/PlateEditor';
+import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 
 jsx;

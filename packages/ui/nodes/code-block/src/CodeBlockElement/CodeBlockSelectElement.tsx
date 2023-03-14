@@ -5,7 +5,7 @@ import {
   CodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { getPluginOptions, useEditorRef } from '@udecode/plate-core';
+import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 import { CSSProp } from 'styled-components';
 

@@ -7,7 +7,7 @@ import {
   TElement,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
 export const withNormalizeTypes = <

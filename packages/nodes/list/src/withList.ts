@@ -1,4 +1,4 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-core';
+import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
 import { deleteFragmentList } from './deleteFragmentList';

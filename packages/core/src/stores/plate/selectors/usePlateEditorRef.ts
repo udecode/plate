@@ -1,5 +1,5 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
+import { Value } from '@udecode/slate';
+import { PlateEditor } from '../../../types/PlateEditor';
 import { PlateId, usePlateSelectors } from '../createPlateStore';
 
 /**

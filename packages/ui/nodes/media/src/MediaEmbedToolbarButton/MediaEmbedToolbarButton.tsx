@@ -3,7 +3,7 @@ import {
   focusEditor,
   useEventPlateId,
   usePlateEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { insertMediaEmbed } from '@udecode/plate-media';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -23,7 +23,7 @@ export const MediaEmbedToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Insert embed"
+      tooltip={{ content: 'Embed' }}
       onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();

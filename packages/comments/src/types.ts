@@ -1,4 +1,4 @@
-import { TText, Value } from '@udecode/plate-core';
+import { TText, Value } from '@udecode/plate-common';
 
 export interface CommentUser {
   id: string;
@@ -41,5 +41,5 @@ export interface TCommentText extends TText {
 }
 
 export interface CommentsPlugin {
-  hotkey?: string;
+  hotkey?: string | string[];
 }

@@ -5,13 +5,33 @@ import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { AlignToolbarButton } from '@udecode/plate';
 
+const tooltip = (content: string) => ({
+  content,
+});
+
 export const AlignToolbarButtons = () => {
   return (
     <>
-      <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
-      <AlignToolbarButton value="center" icon={<FormatAlignCenter />} />
-      <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
-      <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Left')}
+        value="left"
+        icon={<FormatAlignLeft />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Center')}
+        value="center"
+        icon={<FormatAlignCenter />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Right')}
+        value="right"
+        icon={<FormatAlignRight />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Justify')}
+        value="justify"
+        icon={<FormatAlignJustify />}
+      />
     </>
   );
 };

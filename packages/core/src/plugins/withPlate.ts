@@ -1,7 +1,7 @@
-import { PlateProps } from '../components/plate/Plate';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { setPlatePlugins } from '../utils/plate/setPlatePlugins';
+import { TEditor, Value } from '@udecode/slate';
+import { PlateProps } from '../components/Plate';
+import { PlateEditor } from '../types/PlateEditor';
+import { setPlatePlugins } from '../utils/setPlatePlugins';
 
 export interface WithPlateOptions<
   V extends Value = Value,

@@ -1,5 +1,15 @@
 # @udecode/plate-ui-cursor
 
+## 20.0.1
+
+### Patch Changes
+
+- [#2265](https://github.com/udecode/plate/pull/2265) by [@zbeyens](https://github.com/zbeyens) – fix: Failed to execute 'selectNode' on 'Range': the given Node has no parent
+
+## 20.0.0
+
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

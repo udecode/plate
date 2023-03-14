@@ -1,5 +1,17 @@
 # @udecode/plate-comments
 
+## 20.0.0
+
+### Patch Changes
+
+- [#2252](https://github.com/udecode/plate/pull/2252) by [@12joan](https://github.com/12joan) – Include `createdAt` and `userId` (if present) in comment passed to `onCommentAdd`
+
+## 19.7.0
+
+### Patch Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – fix: hotkey
+
 ## 19.5.0
 
 ### Minor Changes

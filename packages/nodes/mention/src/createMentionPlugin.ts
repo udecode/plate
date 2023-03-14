@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { mentionOnKeyDownHandler } from './handlers/mentionOnKeyDownHandler';
 import { isSelectionInMentionInput } from './queries';
 import { MentionPlugin } from './types';

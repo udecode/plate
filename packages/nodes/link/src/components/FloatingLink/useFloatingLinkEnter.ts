@@ -1,4 +1,4 @@
-import { useEditorRef, useHotkeys } from '@udecode/plate-core';
+import { useEditorRef, useHotkeys } from '@udecode/plate-common';
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
 import { useFloatingLinkSelectors } from './floatingLinkStore';
 
@@ -18,7 +18,7 @@ export const useFloatingLinkEnter = () => {
     },
     {
       enabled: open,
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
     },
     []
   );

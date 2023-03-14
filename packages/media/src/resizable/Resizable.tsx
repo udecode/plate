@@ -8,7 +8,7 @@ import {
   setNodes,
   useEditorRef,
   useElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   Resizable as ReResizable,
   ResizableProps as ReResizableProps,
@@ -39,7 +39,7 @@ export const useResizable = ({
   const _readOnly = useReadOnly();
   readOnly = isDefined(readOnly) ? readOnly : _readOnly;
 
-  const { width: nodeWidth = '100%' } = element ?? {};
+  const nodeWidth = element?.width ?? '100%';
 
   const [width, setWidth] = useResizableStore().use.width();
 

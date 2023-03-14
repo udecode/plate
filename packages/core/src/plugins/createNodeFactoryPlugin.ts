@@ -1,6 +1,6 @@
-import { ELEMENT_DEFAULT } from '../types/index';
+import { ELEMENT_DEFAULT } from '../constants';
+import { createPluginFactory } from '../utils/createPluginFactory';
 import { getPluginType } from '../utils/index';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
 
 export const KEY_NODE_FACTORY = 'nodeFactory';
 

@@ -4,16 +4,16 @@ import {
   TElement,
   TReactEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 /**
  * Get table column index of a cell node.
  */
 export const getTableColumnIndex = <V extends Value>(
   editor: TReactEditor<V>,
-  { node }: { node: TElement }
+  cellNode: TElement
 ) => {
-  const path = findNodePath(editor, node);
+  const path = findNodePath(editor, cellNode);
   if (!path) return 0;
 
   const [trNode] = getParentNode(editor, path) ?? [];
@@ -22,7 +22,7 @@ export const getTableColumnIndex = <V extends Value>(
   let colIndex = 0;
 
   trNode.children.some((item, index) => {
-    if (item === node) {
+    if (item === cellNode) {
       colIndex = index;
       return true;
     }

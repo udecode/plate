@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-core';
+import { useOnClickOutside, usePlateEditorRef } from '@udecode/plate-common';
 import {
   useCommentById,
   useCommentsActions,

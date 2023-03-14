@@ -1,5 +1,5 @@
 import { TCloudAttachmentElement } from '@udecode/plate-cloud';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 import { CloudStatusBarStyles } from '../StatusBar/StatusBar.types';

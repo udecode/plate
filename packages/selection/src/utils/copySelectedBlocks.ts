@@ -6,7 +6,7 @@ import {
   select,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import copyToClipboard from 'copy-to-clipboard';
 import {
   blockSelectionActions,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEditableProps } from '@udecode/plate-core';
+import { TEditableProps } from '@udecode/plate-common';
 import {
   FloatingLink,
   LaunchIcon,

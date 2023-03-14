@@ -4,7 +4,7 @@ import {
   someNode,
   useEventPlateId,
   usePlateEditorState,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -27,7 +27,7 @@ export const LinkToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Insert link"
+      tooltip={{ content: 'Link' }}
       active={isLink}
       onClick={(e) => {
         e.preventDefault();

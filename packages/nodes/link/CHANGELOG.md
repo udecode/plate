@@ -1,5 +1,31 @@
 # @udecode/plate-link
 
+## 20.0.0
+
+### Major Changes
+
+- [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
+  - Add `allowedSchemes` plugin option
+    - Any URL schemes other than `http(s)`, `mailto` and `tel` must be added to `allowedSchemes`, otherwise they will not be included in links
+
+### Minor Changes
+
+- [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
+  - `upsertLink`:
+    - Removed `isUrl`
+    - Added `skipValidation`
+  - Check that URL scheme is valid when:
+    - Upserting links
+    - Deserializing links from HTL
+    - Passing `href` to `nodeProps`
+    - Rendering the `OpenLinkButton` in `FloatingLink`
+
+## 19.7.0
+
+### Patch Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – fix: hotkey
+
 ## 19.5.0
 
 ## 19.4.4

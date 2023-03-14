@@ -1,5 +1,5 @@
 import React from 'react';
-import { EText, TText, Value } from '@udecode/plate-core';
+import { EText, TText, Value } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { getRootProps } from '../utils/getRootProps';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';

@@ -7,7 +7,7 @@ import {
   useFloating,
 } from '@floating-ui/react-dom-interactions';
 import { UseFloatingProps } from '@floating-ui/react-dom-interactions/src/types';
-import { createElementAs, HTMLPropsAs } from '@udecode/plate-core';
+import { createElementAs, HTMLPropsAs } from '@udecode/plate-common';
 import { useInteractions } from '../floating-ui';
 
 export interface PopoverProps extends HTMLPropsAs<'div'> {

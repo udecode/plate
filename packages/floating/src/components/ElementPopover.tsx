@@ -1,5 +1,5 @@
 import React from 'react';
-import { isCollapsed, usePlateEditorState } from '@udecode/plate-core';
+import { isCollapsed, usePlateEditorState } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 import { Popover, PopoverProps } from './Popover';
 

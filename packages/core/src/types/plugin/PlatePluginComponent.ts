@@ -1,4 +1,4 @@
-import { RenderFunction } from '../react/RenderFunction';
+import { RenderFunction } from '../misc/RenderFunction';
 
 /**
  * The plate plugin component.

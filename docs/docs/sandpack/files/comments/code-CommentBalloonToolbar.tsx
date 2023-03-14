@@ -1,21 +1,29 @@
 export const commentBalloonToolbarCode = `import React from 'react';
 import { Chat } from '@styled-icons/material/Chat';
 import { TippyProps } from '@tippyjs/react';
-import { PlateCommentToolbarButton } from '@udecode/plate';
+import {
+  BalloonToolbarProps,
+  PlateCommentToolbarButton,
+  WithPartial,
+} from '@udecode/plate';
 import {
   MarkBalloonToolbar,
   markTooltip,
 } from '../balloon-toolbar/MarkBalloonToolbar';
 
-export const CommentBalloonToolbar = () => {
+export const CommentBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'children'>) => {
   const commentTooltip: TippyProps = {
     content: 'Comment (⌘+⇧+M)',
     ...markTooltip,
   };
 
   return (
-    <MarkBalloonToolbar>
-      <PlateCommentToolbarButton icon={<Chat />} tooltip={commentTooltip} />
+    <MarkBalloonToolbar {...props}>
+      <PlateCommentToolbarButton
+        icon={<Chat />}
+        tooltip={commentTooltip}
+        actionHandler="onMouseDown"
+      />
     </MarkBalloonToolbar>
   );
 };

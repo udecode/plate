@@ -3,7 +3,7 @@ import {
   focusEditor,
   useEventPlateId,
   usePlateEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { insertImage } from '@udecode/plate-media';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -23,7 +23,7 @@ export const ImageToolbarButton = ({
 
   return (
     <ToolbarButton
-      aria-label="Insert image"
+      tooltip={{ content: 'Image' }}
       onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();

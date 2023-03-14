@@ -1,4 +1,4 @@
-import { focusEditor, useEditorRef, useHotkeys } from '@udecode/plate-core';
+import { focusEditor, useEditorRef, useHotkeys } from '@udecode/plate-common';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -34,7 +34,7 @@ export const useFloatingLinkEscape = () => {
     },
     {
       enabled: open,
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
     },
     []

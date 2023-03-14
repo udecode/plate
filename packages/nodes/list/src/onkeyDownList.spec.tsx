@@ -5,7 +5,7 @@ import {
   HotkeyPlugin,
   Hotkeys,
   PlateEditor,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';

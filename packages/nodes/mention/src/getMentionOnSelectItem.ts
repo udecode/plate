@@ -19,7 +19,7 @@ import {
   TNodeProps,
   withoutMergingHistory,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionPlugin, TMentionElement } from './types';
 

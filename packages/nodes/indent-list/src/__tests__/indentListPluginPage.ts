@@ -4,7 +4,7 @@ import {
   PlatePlugin,
   TElement,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { IndentListPlugin } from '../createIndentListPlugin';
 import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';

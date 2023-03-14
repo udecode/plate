@@ -1,4 +1,4 @@
-import { TDescendant, Value } from '@udecode/plate-core';
+import { TDescendant, Value } from '@udecode/plate-common';
 import { remarkTransformNode } from './remarkTransformNode';
 import { MdastNode, RemarkPluginOptions } from './types';
 

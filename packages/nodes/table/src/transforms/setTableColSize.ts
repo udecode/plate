@@ -4,7 +4,7 @@ import {
   setNodes,
   TEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 import { TTableElement } from '../types';
@@ -15,8 +15,8 @@ export const setTableColSize = <V extends Value>(
   options: GetAboveNodeOptions<V> = {}
 ) => {
   const table = findNode<TTableElement>(editor, {
-    ...options,
     match: { type: ELEMENT_TABLE },
+    ...options,
   });
   if (!table) return;
 

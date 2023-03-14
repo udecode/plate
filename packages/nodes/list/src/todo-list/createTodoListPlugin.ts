@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   HotkeyPlugin,
   onKeyDownToggleElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 
 export const ELEMENT_TODO_LI = 'action_item';
 

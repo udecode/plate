@@ -1,4 +1,4 @@
-import { createStore } from '../../utils/index';
+import { createStore } from '../../libs';
 import { PlateId } from '../plate/index';
 
 export type EventEditorState = {

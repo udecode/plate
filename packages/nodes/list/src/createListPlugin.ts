@@ -3,7 +3,7 @@ import {
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
   someNode,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';

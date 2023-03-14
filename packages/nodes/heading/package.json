@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-heading",
-  "version": "19.5.0",
+  "version": "20.0.0",
   "description": "Headings plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.5.0"
+    "@udecode/plate-common": "20.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,4 +1,7 @@
 module.exports = {
+  '@udecode/slate': 'slate',
+  '@udecode/slate-react': 'slate-react',
+  '@udecode/slate-utils': 'slate-utils',
   '@udecode/plate-alignment': 'nodes/alignment',
   '@udecode/plate-autoformat': 'editor/autoformat',
   '@udecode/plate-basic-elements': 'nodes/basic-elements',
@@ -10,7 +13,9 @@ module.exports = {
   '@udecode/plate-code-block': 'nodes/code-block',
   '@udecode/plate-combobox': 'editor/combobox',
   '@udecode/plate-comments': 'comments',
+  '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
+  '@udecode/plate-dnd': 'dnd',
   '@udecode/plate-emoji': 'nodes/emoji',
   '@udecode/plate-serializer-csv': 'serializers/csv',
   '@udecode/plate-serializer-docx': 'serializers/docx',
@@ -42,4 +47,6 @@ module.exports = {
   '@udecode/plate-table': 'nodes/table',
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'editor/trailing-block',
+  '@udecode/plate-utils': 'plate-utils',
+  '@udecode/utils': 'utils',
 };

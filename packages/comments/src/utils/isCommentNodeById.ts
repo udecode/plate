@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/plate-core';
+import { TNode } from '@udecode/plate-common';
 import { getCommentKey } from './getCommentKey';
 
 /**

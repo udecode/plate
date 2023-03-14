@@ -10,7 +10,7 @@ import {
   setElements,
   someNode,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Range } from 'slate';
 import { AutoformatBlockRule } from '../types';

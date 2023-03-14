@@ -18,7 +18,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const tooltipProps: TippyProps = {
     content: '',
-    offset: [0, 0],
+    offset: [0, 5],
     arrow: false,
     delay: 500,
     duration: [200, 0],
@@ -33,8 +33,9 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
 
   const button = (
     <button
-      type="button"
       data-testid="ToolbarButton"
+      type="button"
+      aria-label={tooltipProps.content as string}
       css={root.css}
       className={clsx(root.className, active?.className, className)}
       {...buttonProps}

@@ -5,7 +5,7 @@ import {
   PlateEditor,
   TDescendant,
   TElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { getIndentListSiblings } from './getIndentListSiblings';
 

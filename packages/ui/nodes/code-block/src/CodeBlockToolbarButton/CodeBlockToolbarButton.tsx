@@ -7,11 +7,10 @@ import {
 import {
   focusEditor,
   getPluginType,
-  getPreventDefaultHandler,
   useEventPlateId,
   usePlateEditorState,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   BlockToolbarButton,
   ToolbarButtonProps,
@@ -28,16 +27,17 @@ export const CodeBlockToolbarButton = <V extends Value>({
 
   return (
     <BlockToolbarButton
-      aria-label="Insert code block"
+      tooltip={{ content: 'Code Block' }}
       type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
+        insertEmptyCodeBlock(editor, {
           insertNodesOptions: { select: true },
           ...options,
         });
+
         focusEditor(editor);
       }}
       {...props}

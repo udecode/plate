@@ -1,5 +1,53 @@
 # @udecode/plate-table
 
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Table width is now preserved when resizing columns, except when resizing the last column
+
+## 20.2.0
+
+### Minor Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) –
+  - `TablePlugin` new option: `minColumnWidth` - Sets the minimum width a column can be resized to
+  - `insertTableColumn` now shrinks columns if the new total width would exceed `initialTableWidth`
+
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+    - `TableCellElement.ResizableWrapper` no longer takes a `colIndex` prop
+    - `TableCellElement.Resizable` now takes `stepX` and `stepY` as overrides for `step` to set the resize increments for the X and Y axes
+    - `setTableRowSize` - sets the height of the selected row
+
+## 20.0.0
+
+### Major Changes
+
+- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) –
+  - `TablePlugin` option `disableUnsetSingleColSize` has been renamed and inverted into `enableUnsetSingleColSize`. New default is disabled. **Migration**:
+    - if using `disableUnsetSingleColSize: true`, the option can be removed
+    - if using `disableUnsetSingleColSize: false`, use `enableUnsetSingleColSize: true`
+  - `getTableColumnIndex` second parameter type is now: `cellNode: TElement`
+
+### Minor Changes
+
+- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) –
+  - `TablePlugin` new option: `initialTableWidth` – If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns. Merged cells not yet supported. If not defined, the table column sizes will stay to `auto`.
+  - `insertTableColumn`: if option `initialTableWidth` is defined, the column size will be set to (a) the size of the next column if defined, (b) the size of the current column if it's the last one or (c) `initialTableWidth / colSizes.length`. If not defined, the column size stays to `auto`.
+  - Headless UI:
+    - `TableElement`:
+      - `onMouseDown` will collapse the selection if some cells are selected
+    - `TableCellElement`
+      - new prop `resizableProps.step?: number`: Resize by step instead of by pixel.
+    - `TableRowElement`
+
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

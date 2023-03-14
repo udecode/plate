@@ -5,7 +5,7 @@ import {
   removeNodes,
   TElement,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { DeleteIcon } from '../Icon/DeleteIcon';
 import { PlateButton, PlateButtonProps } from './PlateButton';
 

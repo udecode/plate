@@ -1,5 +1,19 @@
 # @udecode/plate-code-block-ui
 
+## 20.0.0
+
+### Patch Changes
+
+- [#2242](https://github.com/udecode/plate/pull/2242) by [@12joan](https://github.com/12joan) – Remove `getPreventDefaultHandler` since it was causing issues in CodeBlockToolbarButton and is no longer needed.
+
+## 19.7.0
+
+## 19.6.0
+
+### Minor Changes
+
+- [#2212](https://github.com/udecode/plate/pull/2212) by [@TomMorane](https://github.com/TomMorane) – Toolbar buttons: add default tooltip content
+
 ## 19.5.0
 
 ### Minor Changes

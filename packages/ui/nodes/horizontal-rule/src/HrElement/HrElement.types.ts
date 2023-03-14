@@ -1,4 +1,4 @@
-import { TElement, Value } from '@udecode/plate-core';
+import { TElement, Value } from '@udecode/plate-common';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 

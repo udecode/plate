@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { Link, TLinkElement } from '@udecode/plate-link';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';

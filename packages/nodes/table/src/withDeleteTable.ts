@@ -14,7 +14,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Point } from 'slate';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';

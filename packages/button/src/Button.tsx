@@ -2,8 +2,8 @@ import {
   AsProps,
   createComponentAs,
   createElementAs,
-} from '@udecode/plate-core';
-import { HTMLPropsAs } from '@udecode/plate-core/src/index';
+  HTMLPropsAs,
+} from '@udecode/plate-common';
 
 export type ButtonProps = HTMLPropsAs<'button'>;
 

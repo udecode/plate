@@ -5,7 +5,7 @@ import {
   PlateEditor,
   setNodes,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_MEDIA, MediaPlugin, TMediaElement } from '../types';
 import {
   floatingMediaActions,
