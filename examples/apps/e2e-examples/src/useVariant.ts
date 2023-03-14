@@ -5,7 +5,11 @@ export const useVariant = <T>(variants: { [key: string]: T }) => {
   const activeVariant = variants[variant];
 
   if (!activeVariant) {
-    throw new Error(`Invalid variant: ${variant}. Expected one of ${Object.keys(variants).join(', ')}`);
+    throw new Error(
+      `Invalid variant: ${variant}. Expected one of ${Object.keys(
+        variants
+      ).join(', ')}`
+    );
   }
 
   return activeVariant;

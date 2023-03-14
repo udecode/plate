@@ -1,8 +1,8 @@
 import {
-  Plate,
+  createPlateUI,
   createPlugins,
   createTablePlugin,
-  createPlateUI,
+  Plate,
 } from '@udecode/plate';
 import { useVariant } from './useVariant';
 
@@ -18,15 +18,18 @@ export const TableApp = () => {
     },
   });
 
-  const plugins = createPlugins([
-    createTablePlugin({
-      options: {
-        initialTableWidth,
-      },
-    }),
-  ], {
-    components: createPlateUI(),
-  });
+  const plugins = createPlugins(
+    [
+      createTablePlugin({
+        options: {
+          initialTableWidth,
+        },
+      }),
+    ],
+    {
+      components: createPlateUI(),
+    }
+  );
 
   const initialValue = [
     {
