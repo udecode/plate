@@ -20,6 +20,7 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
 
   const {
     colIndex,
+    rowIndex,
     readOnly,
     selected,
     hovered,
@@ -112,7 +113,11 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
         css={[tw`absolute w-full h-full top-0 select-none`]}
         className="group"
       >
-        <TableCellElement.Resizable colIndex={colIndex} readOnly={readOnly} />
+        <TableCellElement.Resizable
+          colIndex={colIndex}
+          rowIndex={rowIndex}
+          readOnly={readOnly}
+        />
 
         <TableCellElement.Handle
           css={[

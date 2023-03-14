@@ -6,32 +6,29 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { getTableColumnCount } from '../../queries';
+import { getTableColumnCount, getTableOverriddenColSizes } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
 
 /**
- * Returns node.colSizes if it exists, otherwise returns a 0-filled array.
+ * Returns colSizes with overrides applied.
  * Unset node.colSizes if `colCount` updates to 1.
  */
 export const useTableColSizes = (tableNode: TTableElement): number[] => {
   const editor = useEditorRef();
-  const resizingCol = useTableStore().get.resizingCol();
+  const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
   const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
     editor,
     ELEMENT_TABLE
   );
 
+  const overriddenColSizes = getTableOverriddenColSizes(
+    tableNode,
+    colSizeOverrides
+  );
+
   const colCount = getTableColumnCount(tableNode);
-
-  const colSizes = tableNode.colSizes
-    ? [...tableNode.colSizes]
-    : Array(colCount).fill(0);
-
-  if (resizingCol) {
-    colSizes[resizingCol.index ?? 0] = resizingCol.width;
-  }
 
   useEffect(() => {
     if (
@@ -45,5 +42,5 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
     }
   }, [colCount, enableUnsetSingleColSize, editor, tableNode]);
 
-  return colSizes;
+  return overriddenColSizes;
 };

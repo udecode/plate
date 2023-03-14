@@ -12,3 +12,5 @@ export * from './getTableColumnIndex';
 export * from './getTableEntries';
 export * from './getTableGridAbove';
 export * from './getTableGridByRange';
+export * from './getTableOverriddenColSizes';
+export * from './getTableRowIndex';

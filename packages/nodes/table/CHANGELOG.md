@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Table width is now preserved when resizing columns, except when resizing the last column
+
 ## 20.2.0
 
 ### Minor Changes
