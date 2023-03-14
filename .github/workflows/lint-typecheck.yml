@@ -1,4 +1,4 @@
-name: Playwright tests
+name: Lint and typecheck
 
 on:
   push:
@@ -18,8 +18,6 @@ on:
       - 'config'
       - 'scripts'
       - 'patches'
-      - 'playwright/**'
-      - 'examples/apps/e2e-examples/**'
   pull_request:
     types:
       - opened
@@ -38,11 +36,9 @@ on:
       - 'config'
       - 'scripts'
       - 'patches'
-      - 'playwright/**'
-      - 'examples/apps/e2e-examples/**'
 
 jobs:
-  test-e2e:
+  lint-typecheck:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
     steps:
@@ -85,20 +81,15 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
-      - name: Install Playwright dependencies
-        run: yarn install:playwright
-
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
         run: yarn g:build
 
-      - name: Run Playwright tests
-        run: yarn g:playwright
+      # Lint packages that have changed (--include & --since)
+      - name: Lint
+        run: yarn g:lint-changed
 
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+      # Typecheck packages that have changed (--include & --since)
+      - name: Test
+        run: yarn g:typecheck-changed
