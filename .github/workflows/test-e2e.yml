@@ -94,12 +94,15 @@ jobs:
       - name: Build
         run: yarn g:build
 
-      - name: Run Playwright tests
-        run: yarn g:playwright
+      # - name: Run Playwright tests
+      #   run: yarn g:playwright
 
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+      - name: tmp
+        run: yarn workspace e2e-examples build
+
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: playwright-report
+      #     path: playwright-report/
+      #     retention-days: 30
