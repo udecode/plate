@@ -1,4 +1,4 @@
-name: CI-packages
+name: Lint and typecheck
 
 on:
   push:
@@ -38,7 +38,7 @@ on:
       - 'patches'
 
 jobs:
-  ci:
+  lint-typecheck:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
     steps:
@@ -90,8 +90,6 @@ jobs:
       - name: Lint
         run: yarn g:lint-changed
 
-      # Test packages that have changed (--include & --since)
+      # Typecheck packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:test:root
-        env:
-          CI: true
+        run: yarn g:typecheck-changed
