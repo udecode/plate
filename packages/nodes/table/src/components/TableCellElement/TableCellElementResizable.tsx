@@ -17,6 +17,7 @@ import {
 import { setTableColSize, setTableRowSize } from '../../transforms';
 import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
+import { getTableColSizeForSibling } from './getTableColSizeForSibling';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
@@ -65,6 +66,16 @@ export const useTableCellElementResizableProps = ({
   const overrideColSize = useOverrideColSize();
   const overrideRowSize = useOverrideRowSize();
 
+  const getNextColSize = (ownSize: number): number | undefined => {
+    return initialColSize && initialSiblingColSize
+      ? getTableColSizeForSibling(
+          initialColSize,
+          initialSiblingColSize,
+          ownSize
+        )
+      : undefined;
+  };
+
   const handleResize: HandleStyles | undefined = !readOnly
     ? {
         right: {
@@ -107,14 +118,12 @@ export const useTableCellElementResizableProps = ({
   const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
     if (direction === 'right') {
       const newSize = roundCellSizeToStep(ref.offsetWidth, stepX);
+      const siblingSize = getNextColSize(newSize);
 
       overrideColSize(colIndex, newSize);
 
-      if (initialColSize && initialSiblingColSize) {
-        overrideColSize(
-          colIndex + 1,
-          initialColSize + initialSiblingColSize - newSize
-        );
+      if (siblingSize) {
+        overrideColSize(colIndex + 1, siblingSize);
       }
     } else {
       overrideRowSize(rowIndex, roundCellSizeToStep(ref.offsetHeight, stepY));
@@ -150,11 +159,6 @@ export const useTableCellElementResizableProps = ({
     }
   };
 
-  const maxWidth =
-    initialColSize && initialSiblingColSize
-      ? initialColSize + initialSiblingColSize - (minWidth ?? 0)
-      : undefined;
-
   return {
     size: { width: '100%', height: '100%' },
     enable: {
@@ -162,7 +166,7 @@ export const useTableCellElementResizableProps = ({
       bottom: !readOnly,
     },
     minWidth,
-    maxWidth,
+    maxWidth: getNextColSize(minWidth ?? 0),
     handleStyles: handleResize,
     handleComponent: {
       right: (
