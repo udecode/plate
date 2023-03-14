@@ -6,12 +6,12 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { getTableColumnCount } from '../../queries';
+import { getTableColumnCount, getTableOverriddenColSizes } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
 
 /**
- * Returns node.colSizes if it exists, otherwise returns a 0-filled array.
+ * Returns colSizes with overrides applied.
  * Unset node.colSizes if `colCount` updates to 1.
  */
 export const useTableColSizes = (tableNode: TTableElement): number[] => {
@@ -23,12 +23,12 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
     ELEMENT_TABLE
   );
 
-  const colCount = getTableColumnCount(tableNode);
+  const overriddenColSizes = getTableOverriddenColSizes(
+    tableNode,
+    colSizeOverrides
+  );
 
-  const colSizes = (tableNode.colSizes
-    ? [...tableNode.colSizes]
-    : Array(colCount).fill(0)
-  ).map((size, index) => colSizeOverrides.get(index) ?? size);
+  const colCount = getTableColumnCount(tableNode);
 
   useEffect(() => {
     if (
@@ -42,5 +42,5 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
     }
   }, [colCount, enableUnsetSingleColSize, editor, tableNode]);
 
-  return colSizes;
+  return overriddenColSizes;
 };
