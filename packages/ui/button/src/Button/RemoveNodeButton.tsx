@@ -18,11 +18,6 @@ export const RemoveNodeButton = ({
 
   return (
     <PlateButton
-      tw="py-1 px-0 space-x-1"
-      css={`
-        width: 24px;
-        height: 24px;
-      `}
       onClick={() => {
         const path = findNodePath(editor, element);
 
