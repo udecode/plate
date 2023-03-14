@@ -11,13 +11,14 @@ import { PlateButton, PlateButtonProps } from './PlateButton';
 
 export const RemoveNodeButton = ({
   element,
+  children,
   ...props
 }: PlateButtonProps & { element: TElement }) => {
   const editor = useEditorRef();
 
   return (
     <PlateButton
-      tw="py-1 px-0"
+      tw="py-1 px-0 space-x-1"
       css={`
         width: 24px;
         height: 24px;
@@ -32,6 +33,7 @@ export const RemoveNodeButton = ({
       {...props}
     >
       <DeleteIcon />
+      {children}
     </PlateButton>
   );
 };

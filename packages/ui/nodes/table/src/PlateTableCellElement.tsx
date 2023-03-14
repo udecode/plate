@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { flip, offset, shift } from '@floating-ui/react-dom-interactions';
-import { Popover } from '@udecode/plate-floating';
+import { flip, offset, Popover, shift } from '@udecode/plate-floating';
 import {
   ArrowDropDownCircleIcon,
   TableCellElement,

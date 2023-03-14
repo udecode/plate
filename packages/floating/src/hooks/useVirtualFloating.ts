@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   CSSProperties,
   MutableRefObject,
@@ -7,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { ClientRectObject } from '@floating-ui/core';
+import { createVirtualElement } from '../createVirtualElement';
 import {
   autoUpdate,
   ReferenceType,
@@ -14,15 +14,8 @@ import {
   UseFloatingProps,
   UseFloatingReturn,
   VirtualElement,
-} from '@floating-ui/react-dom-interactions';
-import { createVirtualElement } from '../createVirtualElement';
+} from '../libs/floating-ui';
 import { getSelectionBoundingClientRect } from '../utils/index';
-
-export interface ExtendedRefs<RT extends ReferenceType = ReferenceType> {
-  reference: React.MutableRefObject<RT | null>;
-  floating: React.MutableRefObject<HTMLElement | null>;
-  domReference: React.MutableRefObject<Element | null>;
-}
 
 export interface UseVirtualFloatingOptions extends Partial<UseFloatingProps> {
   getBoundingClientRect?: () => ClientRectObject;
@@ -31,8 +24,7 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingProps> {
 
 export interface UseVirtualFloatingReturn<
   RT extends ReferenceType = ReferenceType
-> extends Omit<UseFloatingReturn<RT>, 'refs'> {
-  refs: ExtendedRefs<RT>;
+> extends UseFloatingReturn<RT> {
   virtualElementRef: MutableRefObject<VirtualElement>;
   style: CSSProperties;
 }
@@ -67,15 +59,15 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
     ...floatingOptions,
   });
 
-  const { reference, middlewareData, strategy, x, y, update } = floatingResult;
+  const { refs, middlewareData, strategy, x, y, update } = floatingResult;
 
   useLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
   }, [getBoundingClientRect, update]);
 
   useLayoutEffect(() => {
-    reference(virtualElementRef.current);
-  }, [reference]);
+    refs.setReference(virtualElementRef.current);
+  }, [refs]);
 
   useLayoutEffect(() => {
     if (!middlewareData?.hide) return;

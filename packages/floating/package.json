@@ -19,7 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@floating-ui/react-dom-interactions": "^0.6.6",
+    "@floating-ui/react": "^0.21.1",
+    "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@udecode/plate-common": "20.0.0"
   },
   "peerDependencies": {
