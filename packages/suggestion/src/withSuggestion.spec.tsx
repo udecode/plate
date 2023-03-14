@@ -4,7 +4,7 @@ import {
   createPlateEditor,
   normalizeEditor,
   PlateEditor,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { createSuggestionPlugin } from './createSuggestionPlugin';

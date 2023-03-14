@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { MARK_SUGGESTION } from './constants';
 import { SuggestionPlugin } from './types';
 import { useHooksSuggestion } from './useHooksSuggestion';

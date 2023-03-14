@@ -6,7 +6,7 @@ import {
   usePlateSelectors,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
 import { getSuggestionId } from './utils/getSuggestionId';
 import { MARK_SUGGESTION } from './constants';

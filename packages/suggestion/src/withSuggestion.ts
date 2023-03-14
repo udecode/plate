@@ -15,7 +15,7 @@ import {
   Value,
   withoutNormalizing,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { MoveUnit } from 'slate/dist/interfaces/types';
 import { addSuggestionMark } from './transforms/addSuggestionMark';
 import { getSuggestionId } from './utils/index';
@@ -32,10 +32,9 @@ export const setSuggestionNodes = <V extends Value = Value>(
     suggestionDeletion?: boolean;
   }
 ) => {
-  // get all inline nodes to be set
+  // TODO: get all inline nodes to be set
   const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => ,
-
+    // match: (n) => isText(n) || isInline(editor, n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
@@ -68,11 +67,10 @@ export const setSuggestionNodes = <V extends Value = Value>(
           at: path,
           match: (n) => {
             if (!isText(n) && !isInline(editor, n)) return false;
-            
+
             if (n[MARK_SUGGESTION]) {
-              
             }
-            
+
             return true;
           },
           split: true,
@@ -98,7 +96,7 @@ export const withSuggestion = <
     normalizeNode,
     insertText,
     deleteBackward,
-    deleteForward,
+    // deleteForward,
     deleteFragment,
   } = editor;
 

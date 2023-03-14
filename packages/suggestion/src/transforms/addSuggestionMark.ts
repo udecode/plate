@@ -1,14 +1,14 @@
-import { nanoid, PlateEditor, Value } from '@udecode/plate-core';
+import { nanoid, PlateEditor, Value } from '@udecode/plate-common';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { SuggestionEditorProps } from '../types';
 
 export const addSuggestionMark = <V extends Value = Value>(
-  editor: PlateEditor<V> & SuggestionEditorProps,
-  {
-    isDeletion,
-  }: {
-    isDeletion?: boolean;
-  } = {}
+  editor: PlateEditor<V> & SuggestionEditorProps
+  // {
+  //   isDeletion,
+  // }: {
+  //   isDeletion?: boolean;
+  // } = {}
 ) => {
   if (editor.activeSuggestionId) return;
 

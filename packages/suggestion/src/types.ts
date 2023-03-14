@@ -1,4 +1,4 @@
-import { TText, Value } from '@udecode/plate-core';
+import { TText, Value } from '@udecode/plate-common';
 
 export interface SuggestionUser {
   id: string;

@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/plate-core';
+import { TNode } from '@udecode/plate-common';
 import { KEY_SUGGESTION_ID } from '../constants';
 
 export const getSuggestionId = (node: TNode) => {
