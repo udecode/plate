@@ -6,7 +6,16 @@ import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createListPlugin } from '@udecode/plate-list/src/index';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '@udecode/plate-table/src/index';
+import {
+  createTablePlugin,
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TH,
+  ELEMENT_TR,
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '@udecode/plate-table/src/index';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
 import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { serializeHtml } from '../serializeHtml';
@@ -169,6 +178,12 @@ it('serialize image to html', () => {
 it('serialize table to html', () => {
   const editor = createPlateUIEditor({
     plugins: [createTablePlugin()],
+    components: {
+      [ELEMENT_TABLE]: TableElement.Root,
+      [ELEMENT_TR]: TableRowElement.Root,
+      [ELEMENT_TD]: TableCellElement.Root,
+      [ELEMENT_TH]: TableCellElement.Root,
+    },
   });
 
   const render = htmlStringToDOMNode(
@@ -199,8 +214,18 @@ it('serialize table to html', () => {
       ],
     })
   ).getElementsByTagName('table')[0];
-  expect(render.children[1].children[0].children[0].textContent).toEqual('Foo');
-  expect(render.children[1].children[0].children[1].textContent).toEqual('Bar');
+  expect(
+    render.querySelector('table > tbody > tr:nth-child(1) > td:nth-child(1)')
+      ?.textContent
+  ).toEqual('Foo');
+  expect(
+    render.querySelector('table > tbody > tr:nth-child(1) > td:nth-child(2)')
+      ?.textContent
+  ).toEqual('Bar');
+  expect(
+    render.querySelector('table > tbody > tr:nth-child(2) > td:nth-child(1)')
+      ?.textContent
+  ).toEqual('Span');
 });
 
 it('serialize align style to html', () => {

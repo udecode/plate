@@ -1,14 +1,14 @@
 import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 import { ELEMENT_TR } from '../../createTablePlugin';
-import { getTableColumnIndex } from '../../queries';
-import { useTableRowStore } from '../../stores/tableRowStore';
+import { getTableColumnIndex, getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
 import { TTableRowElement } from '../../types';
 import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
   colIndex: number;
+  rowIndex: number;
   readOnly: boolean;
   hovered: boolean;
   selected: boolean;
@@ -25,19 +25,23 @@ export const useTableCellElementState = ({
 } = {}): TableCellElementState => {
   const editor = usePlateEditorRef();
   const cellElement = useElement<TElement>();
-  const hoveredColIndex = useTableStore().get.hoveredColIndex();
-  const isCellSelected = useIsCellSelected(cellElement);
 
-  const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
-  const rowSizeOverride = useTableRowStore().get.overrideSize();
-  const rowSize = rowSizeOverride ?? rowElement?.size ?? undefined;
+  const colIndex = getTableColumnIndex(editor, cellElement);
+  const rowIndex = getTableRowIndex(editor, cellElement);
 
   const readOnly = useReadOnly();
 
-  const colIndex = getTableColumnIndex(editor, cellElement);
+  const isCellSelected = useIsCellSelected(cellElement);
+  const hoveredColIndex = useTableStore().get.hoveredColIndex();
+
+  const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
+  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
+  const rowSize =
+    rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
 
   return {
     colIndex,
+    rowIndex,
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
     hovered: hoveredColIndex === colIndex,
