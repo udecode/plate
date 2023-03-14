@@ -93,6 +93,9 @@ jobs:
       - name: Build
         run: yarn g:build
 
+      # - name: tmp
+      #   run: yarn workspace e2e-examples build
+
       - name: Run Playwright tests
         run: yarn g:playwright
 
