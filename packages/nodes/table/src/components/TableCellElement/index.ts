@@ -6,5 +6,6 @@ export * from './TableCellElement';
 export * from './TableCellElementResizable';
 export * from './TableCellElementResizableWrapper';
 export * from './TableCellElementRoot';
+export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableCellElementState';

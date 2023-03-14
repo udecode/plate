@@ -17,6 +17,7 @@ import {
 import { setTableColSize, setTableRowSize } from '../../transforms';
 import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
+import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
@@ -32,9 +33,6 @@ export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
     stepX?: number;
     stepY?: number;
   };
-
-const roundToStep = (size: number, step?: number) =>
-  step ? Math.round(size / step) * step : size;
 
 export const useTableCellElementResizableProps = ({
   colIndex,
@@ -108,7 +106,7 @@ export const useTableCellElementResizableProps = ({
 
   const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
     if (direction === 'right') {
-      const newSize = roundToStep(ref.offsetWidth, stepX);
+      const newSize = roundCellSizeToStep(ref.offsetWidth, stepX);
 
       overrideColSize(colIndex, newSize);
 
@@ -119,7 +117,7 @@ export const useTableCellElementResizableProps = ({
         );
       }
     } else {
-      overrideRowSize(rowIndex, roundToStep(ref.offsetHeight, stepY));
+      overrideRowSize(rowIndex, roundCellSizeToStep(ref.offsetHeight, stepY));
     }
   };
 
