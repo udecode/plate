@@ -193,7 +193,7 @@ serially in the current process.
 #### Run Playwright tests
 
 We use Playwright for running end-to-end (e2e) tests in headless browsers.
-The React app these tests use can be found in `/examples/apps/e2e-examples`.
+The React app for these tests use can be found in `/examples/apps/e2e-examples`.
 
 Install Playwright's browsers and dependencies:
 
@@ -209,7 +209,7 @@ yarn g:playwright
 
 To debug a specific test:
 
-```
+```sh
 yarn g:playwright --debug playwright/table.spec.ts
 ```
 
