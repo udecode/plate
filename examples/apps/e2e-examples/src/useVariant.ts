@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 
 export const useVariant = <T>(variants: { [key: string]: T }) => {
   const { variant } = useParams<{ variant: string }>();
-  const activeVariant = variants[variant];
+  const activeVariant = variants[variant!];
 
   if (!activeVariant) {
     throw new Error(
