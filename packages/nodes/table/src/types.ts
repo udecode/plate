@@ -57,10 +57,22 @@ export interface TablePlugin<V extends Value = Value> {
   minColumnWidth?: number;
 }
 
+export interface TableBorderOptions {
+  // https://docx.js.org/api/enums/BorderStyle.html
+  style?: string;
+  size?: number;
+  color?: string;
+}
+
 export interface TTableElement extends TElement {
   colSizes?: number[];
+  borders?: { x: TableBorderOptions[]; y: TableBorderOptions[] };
 }
 
 export interface TTableRowElement extends TElement {
+  size?: number;
+}
+
+export interface TTableCellElement extends TElement {
   size?: number;
 }

@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { Button } from '@udecode/plate-button';
 import { HTMLPropsAs } from '@udecode/plate-common';
-import { css } from 'styled-components';
+import { css, CSSProp } from 'styled-components';
 import tw from 'twin.macro';
 
 export interface PlateButtonProps extends HTMLPropsAs<'button'> {
@@ -37,6 +37,11 @@ export const plateButtonCss = [
   `,
 ];
 
+export const cssMenuItemButton: CSSProp = [
+  plateButtonCss,
+  tw`w-full justify-start`,
+];
+
 export const primaryButtonCss = [
   plateButtonCss,
   tw`bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 active:text-white`,
@@ -44,6 +49,6 @@ export const primaryButtonCss = [
 
 export const PlateButton = forwardRef<HTMLButtonElement, PlateButtonProps>(
   ({ size, px, py, css: _css, ...props }, ref) => (
-    <Button ref={ref} css={plateButtonCss} {...props} />
+    <Button type="button" ref={ref} css={plateButtonCss} {...props} />
   )
 );
