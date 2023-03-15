@@ -102,3 +102,18 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    needs:
+      - test-e2e
+    if: ${{ failure() }}
+    
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}
+          discord-webhook: ${{ secrets.DISCORD_CI_WEBHOOK }}
+          description: ${{ github.event.number && format('https://github.com/udecode/plate/pull/{0}', github.event.number) || 'Push' }}
