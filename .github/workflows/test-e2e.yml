@@ -116,4 +116,4 @@ jobs:
         with:
           github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}
           discord-webhook: ${{ secrets.DISCORD_CI_WEBHOOK }}
-
+          description: ${{ github.event.number && format('https://github.com/udecode/plate/pull/{0}', github.event.number) || 'Push' }}
