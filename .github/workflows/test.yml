@@ -91,3 +91,18 @@ jobs:
         run: yarn g:test:root
         env:
           CI: true
+
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    if: ${{ failure() }}
+    
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}
+          discord-webhook: ${{ secrets.DISCORD_CI_WEBHOOK }}
+
