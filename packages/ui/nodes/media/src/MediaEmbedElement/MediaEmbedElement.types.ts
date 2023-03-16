@@ -1,4 +1,5 @@
 import { Value } from '@udecode/plate-common';
+import { PopoverOptions } from '@udecode/plate-floating';
 import { TMediaEmbedElement } from '@udecode/plate-media';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
@@ -15,8 +16,26 @@ export interface MediaEmbedElementStyles {
   handleRight: CSSProp;
 }
 
-export type MediaEmbedElementProps = StyledElementProps<
-  Value,
-  TMediaEmbedElement,
-  MediaEmbedElementStyles
->;
+export interface MediaEmbedElementPropsCaption {
+  disabled?: boolean;
+
+  /**
+   * Caption placeholder.
+   */
+  placeholder?: string;
+
+  /**
+   * Whether caption is read-only.
+   */
+  readOnly?: boolean;
+}
+
+export interface MediaEmbedElementProps
+  extends StyledElementProps<
+    Value,
+    TMediaEmbedElement,
+    MediaEmbedElementStyles
+  > {
+  caption?: MediaEmbedElementPropsCaption;
+  popover?: PopoverOptions;
+}

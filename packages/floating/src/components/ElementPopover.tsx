@@ -5,13 +5,17 @@ import { Popover, PopoverProps } from './Popover';
 
 /**
  * Popover displayed over an element if:
+ * - not disabled
  * - not read-only
  * - element selected
  */
 export const ElementPopover = ({
   floatingOptions = {},
+  options = {},
   ...props
 }: PopoverProps) => {
+  const { disabled } = options;
+
   const readOnly = useReadOnly();
   const selected = useSelected();
 
@@ -20,7 +24,8 @@ export const ElementPopover = ({
   return (
     <Popover
       floatingOptions={{
-        open: !readOnly && selected && isCollapsed(editor.selection),
+        open:
+          !disabled && !readOnly && selected && isCollapsed(editor.selection),
         ...floatingOptions,
       }}
       {...props}

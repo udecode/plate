@@ -10,8 +10,16 @@ import { UseFloatingProps } from '@floating-ui/react-dom-interactions/src/types'
 import { createElementAs, HTMLPropsAs } from '@udecode/plate-common';
 import { useInteractions } from '../floating-ui';
 
+export interface PopoverOptions {
+  /**
+   * Whether the popover is disabled
+   */
+  disabled?: boolean;
+}
+
 export interface PopoverProps extends HTMLPropsAs<'div'> {
   floatingOptions?: Partial<UseFloatingProps>;
+  options?: PopoverOptions;
   content?: ReactNode;
   children: JSX.Element;
 }
