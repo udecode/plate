@@ -37,5 +37,5 @@ export interface MediaEmbedElementProps
     MediaEmbedElementStyles
   > {
   caption?: MediaEmbedElementPropsCaption;
-  popover?: PopoverOptions;
+  popoverProps?: PopoverOptions;
 }

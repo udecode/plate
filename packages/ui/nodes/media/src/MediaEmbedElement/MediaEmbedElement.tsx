@@ -15,7 +15,7 @@ import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { PlateFloatingMedia } from './PlateFloatingMedia';
 
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
-  const { children, nodeProps, caption = {}, popover = {} } = props;
+  const { children, nodeProps, caption = {}, popoverProps = {} } = props;
 
   const { as, ...rootProps } = props;
 
@@ -37,7 +37,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
     <ElementPopover
       content={<PlateFloatingMedia pluginKey={ELEMENT_MEDIA_EMBED} />}
       floatingOptions={mediaFloatingOptions}
-      options={popover}
+      {...popoverProps}
     >
       <Media.Root {...rootProps} css={styles.root.css}>
         <figure

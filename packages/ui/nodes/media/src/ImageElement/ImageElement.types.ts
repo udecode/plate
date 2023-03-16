@@ -46,7 +46,7 @@ export interface ImageElementProps
 
   caption?: ImageElementPropsCaption;
 
-  popover?: PopoverOptions;
+  popoverProps?: PopoverOptions;
 
   /**
    * Whether the image is draggable.

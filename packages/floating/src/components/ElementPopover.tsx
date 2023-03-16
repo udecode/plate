@@ -11,10 +11,9 @@ import { Popover, PopoverProps } from './Popover';
  */
 export const ElementPopover = ({
   floatingOptions = {},
-  options = {},
   ...props
 }: PopoverProps) => {
-  const { disabled } = options;
+  const { disabled } = props;
 
   const readOnly = useReadOnly();
   const selected = useSelected();

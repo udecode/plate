@@ -19,7 +19,7 @@ export interface PopoverOptions {
 
 export interface PopoverProps extends HTMLPropsAs<'div'> {
   floatingOptions?: Partial<UseFloatingProps>;
-  options?: PopoverOptions;
+  disabled?: boolean;
   content?: ReactNode;
   children: JSX.Element;
 }
