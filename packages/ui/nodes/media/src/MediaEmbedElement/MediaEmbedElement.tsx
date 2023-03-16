@@ -86,7 +86,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
               <Caption.Textarea
                 css={styles.caption?.css}
                 className={styles.caption?.className}
-                placeholder="Write a caption..."
+                placeholder={caption.placeholder ?? 'Write a caption...'}
               />
             </Caption.Root>
           )}
