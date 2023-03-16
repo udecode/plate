@@ -1,16 +1,11 @@
 import React, { forwardRef, ReactElement } from 'react';
-import { Slot } from '@radix-ui/react-slot';
-import { AsProps, Children, Component, Props } from '../types/index';
+import { AsProps, Component, Props } from '../types/index';
 
 /**
  * Creates a type-safe component with the `as` prop and `React.forwardRef`.
- * Also supports `asChild` prop.
- *
- * @see https://www.radix-ui.com/docs/primitives/overview/styling#changing-the-rendered-element
- * @see https://github.com/ariakit/ariakit/blob/ddd19e97a07a21e4d5fc93719d1fdc5bdab697f7/packages/ariakit-utils/src/system.tsx#L33
  *
  * @example
- * import { createComponent } from "ariakit-utils/system";
+ * import { createComponent } from "ariakit-react-utils/system";
  *
  * type Props = {
  *   as?: "div";
@@ -24,13 +19,10 @@ import { AsProps, Children, Component, Props } from '../types/index';
  * <Component as="button" customProp />
  */
 export const createComponentAs = <O extends AsProps>(
-  render: (props: Omit<Props<O>, 'asChild'>) => ReactElement | Children | null
+  render: (props: Props<O>) => ReactElement
 ) => {
-  const Role = ({ asChild, ...props }: Props<O>, ref: React.Ref<any>) => {
-    const Comp: any = asChild ? Slot : render;
-
-    return Comp({ ref, ...props });
-  };
+  const Role = (props: Props<O>, ref: React.Ref<any>) =>
+    render({ ref, ...props });
 
   return (forwardRef(Role) as unknown) as Component<O>;
 };

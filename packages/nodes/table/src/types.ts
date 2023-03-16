@@ -57,7 +57,7 @@ export interface TablePlugin<V extends Value = Value> {
   minColumnWidth?: number;
 }
 
-export interface TableBorderOptions {
+export interface BorderStyle {
   // https://docx.js.org/api/enums/BorderStyle.html
   style?: string;
   size?: number;
@@ -66,7 +66,6 @@ export interface TableBorderOptions {
 
 export interface TTableElement extends TElement {
   colSizes?: number[];
-  borders?: { x: TableBorderOptions[]; y: TableBorderOptions[] };
 }
 
 export interface TTableRowElement extends TElement {
@@ -74,5 +73,20 @@ export interface TTableRowElement extends TElement {
 }
 
 export interface TTableCellElement extends TElement {
+  colSpan?: number;
   size?: number;
+  borders?: {
+    top?: BorderStyle;
+    left?: BorderStyle;
+
+    /**
+     * Only the last row cells have a bottom border.
+     */
+    bottom?: BorderStyle;
+
+    /**
+     * Only the last column cells have a right border.
+     */
+    right?: BorderStyle;
+  };
 }

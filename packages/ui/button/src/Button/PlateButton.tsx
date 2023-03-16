@@ -12,7 +12,7 @@ export interface PlateButtonProps extends HTMLPropsAs<'button'> {
 
 export const plateButtonCss = [
   tw`relative inline-flex justify-center items-center text-center max-w-full p-0 box-border space-x-2`,
-  tw`border-0 font-medium cursor-pointer focus:outline-none`,
+  tw`border-0 font-medium cursor-pointer focus:!outline-none`,
   tw`bg-white hover:bg-gray-100 active:bg-gray-200`,
   tw`px-2.5 py-0 min-w-[28px] min-h-[28px]`,
   css`

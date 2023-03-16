@@ -10,3 +10,4 @@ export * from './getTableColSizeForSibling';
 export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableCellElementState';
+export { getTableCellBorders } from './getTableCellBorders';

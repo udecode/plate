@@ -4,15 +4,15 @@ import {
   createElementAs,
   HTMLPropsAs,
   PlateRenderElementProps,
-  TElement,
   useElementProps,
   Value,
 } from '@udecode/plate-common';
 import { useTableStore } from '../../stores/tableStore';
+import { TTableCellElement } from '../../types';
 
 export type TableCellElementRootProps = PlateRenderElementProps<
   Value,
-  TElement
+  TTableCellElement
 > &
   HTMLPropsAs<'td'>;
 
@@ -27,7 +27,7 @@ export const useTableCellElementRootProps = (
     setHoveredColIndex(null);
   }, [element, setHoveredColIndex]);
 
-  return useElementProps(props);
+  return { colSpan: element.colSpan, ...useElementProps(props) };
 };
 
 export const TableCellElementRoot = createComponentAs<TableCellElementRootProps>(

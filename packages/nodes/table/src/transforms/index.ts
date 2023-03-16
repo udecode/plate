@@ -12,3 +12,4 @@ export * from './moveSelectionFromCell';
 export * from './overrideSelectionFromCell';
 export * from './setTableColSize';
 export * from './setTableRowSize';
+export * from './setBorderSize';

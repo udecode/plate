@@ -1,9 +1,17 @@
-import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-common';
+import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { getTableColumnIndex, getTableRowIndex } from '../../queries';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
+import { getTableColumnIndex, getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
-import { TTableElement, TTableRowElement } from '../../types';
+import {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../../types';
+import {
+  BorderStylesDefault,
+  getTableCellBorders,
+} from './getTableCellBorders';
 import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
@@ -13,8 +21,7 @@ export type TableCellElementState = {
   hovered: boolean;
   selected: boolean;
   rowSize: number | undefined;
-  isLastCell: boolean;
-  isLastRow: boolean;
+  borders: BorderStylesDefault;
 };
 
 export const useTableCellElementState = ({
@@ -26,7 +33,7 @@ export const useTableCellElementState = ({
   ignoreReadOnly?: boolean;
 } = {}): TableCellElementState => {
   const editor = usePlateEditorRef();
-  const cellElement = useElement<TElement>();
+  const cellElement = useElement<TTableCellElement>();
 
   const colIndex = getTableColumnIndex(editor, cellElement);
   const rowIndex = getTableRowIndex(editor, cellElement);
@@ -42,6 +49,14 @@ export const useTableCellElementState = ({
   const rowSize =
     rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
 
+  const isFirstCell = colIndex === 0;
+  const isFirstRow = tableElement.children[0] === rowElement;
+
+  const borders = getTableCellBorders(cellElement, {
+    isFirstCell,
+    isFirstRow,
+  });
+
   return {
     colIndex,
     rowIndex,
@@ -49,8 +64,6 @@ export const useTableCellElementState = ({
     selected: isCellSelected,
     hovered: hoveredColIndex === colIndex,
     rowSize,
-    isLastCell: colIndex === rowElement?.children.length - 1,
-    isLastRow:
-      tableElement.children[tableElement.children.length - 1] === rowElement,
+    borders,
   };
 };

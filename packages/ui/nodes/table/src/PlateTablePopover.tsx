@@ -1,5 +1,5 @@
-import React from 'react';
-import { someNode, useElement, usePlateEditorRef } from '@udecode/plate-common';
+import React, { SVGProps } from 'react';
+import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import {
   DropdownMenu,
   ElementPopover,
@@ -8,7 +8,7 @@ import {
 import {
   BorderAllIcon,
   BorderBottomIcon,
-  getCellTypes,
+  setBorderSize,
   TTableElement,
   useTableStore,
 } from '@udecode/plate-table';
@@ -18,8 +18,21 @@ import {
   RemoveNodeButton,
 } from '@udecode/plate-ui-button';
 import { floatingRootCss } from '@udecode/plate-ui-toolbar';
-import { Editor } from 'slate';
 import tw from 'twin.macro';
+
+const CheckIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    focusable="false"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path fill="none" d="M0 0h24v24H0z" />
+    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+  </svg>
+);
 
 export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
   const editor = usePlateEditorRef();
@@ -27,67 +40,15 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
 
   const selectedCells = useTableStore().get.selectedCells();
 
-  const onClickBottomBorder = () => {
+  const getOnSelectBottomBorder = (
+    border: 'bottom' | 'top' | 'left' | 'right'
+  ) => () => {
     if (selectedCells) return;
 
-    const inCell = someNode(editor, {
-      match: { type: getCellTypes(editor) },
-    });
-    if (!inCell) return;
-
-    let { borders } = element;
-
-    if (!borders) {
-      const xRow new Array(table).fill({})
-      
-      borders = {
-        x: ;,
-        y: [],
-      };
-    }
-
-    const hideBorder = (editor, cellPath, border, newBorderStyle) => {
-      const [rowIndex, cellIndex] = Path.relative(
-        cellPath,
-        Editor.path(editor, cellPath, { edge: 'start' })
-      );
-
-      if (border === 'top' && rowIndex > 0) {
-        // Update the bottom border of the cell above
-        const siblingCellPath = Path.previous(cellPath);
-        Editor.setNodes(
-          editor,
-          { borderStyles: { bottom: newBorderStyle } },
-          { at: siblingCellPath, match: (n) => n.type === 'cell' }
-        );
-      } else if (border === 'bottom') {
-        // Update the bottom border of the current cell
-        Editor.setNodes(
-          editor,
-          { borderStyles: { bottom: newBorderStyle } },
-          { at: cellPath, match: (n) => n.type === 'cell' }
-        );
-      }
-
-      if (border === 'left' && cellIndex > 0) {
-        // Update the right border of the cell to the left
-        const siblingCellPath = Path.previous(cellPath, { depth: 1 });
-        Editor.setNodes(
-          editor,
-          { borderStyles: { right: newBorderStyle } },
-          { at: siblingCellPath, match: (n) => n.type === 'cell' }
-        );
-      } else if (border === 'right') {
-        // Update the right border of the current cell
-        Editor.setNodes(
-          editor,
-          { borderStyles: { right: newBorderStyle } },
-          { at: cellPath, match: (n) => n.type === 'cell' }
-        );
-      }
-    };
-
-    console.log(inCell);
+    setBorderSize(editor, 0, { border });
+    // setTimeout(() => {
+    //   focusEditor(editor);
+    // }, 50);
   };
 
   return (
@@ -116,26 +77,24 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
                 align="start"
                 sideOffset={8}
               >
-                <div>
-                  <PlateButton
-                    css={cssMenuItemButton}
-                    onClick={onClickBottomBorder}
-                  >
+                <DropdownMenu.Item onSelect={getOnSelectBottomBorder('bottom')}>
+                  <PlateButton css={cssMenuItemButton}>
+                    <CheckIcon tw="block" />
                     <BorderBottomIcon />
                     <div>Bottom Border</div>
                   </PlateButton>
-                </div>
-                <div>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={getOnSelectBottomBorder('top')}>
                   <PlateButton css={cssMenuItemButton}>Top Border</PlateButton>
-                </div>
-                <div>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={getOnSelectBottomBorder('left')}>
                   <PlateButton css={cssMenuItemButton}>Left Border</PlateButton>
-                </div>
-                <div>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={getOnSelectBottomBorder('right')}>
                   <PlateButton css={cssMenuItemButton}>
                     Right Border
                   </PlateButton>
-                </div>
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
