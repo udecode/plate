@@ -1,5 +1,7 @@
 # @udecode/plate-toolbar
 
+## 20.3.1
+
 ## 20.0.0
 
 ### Minor Changes
