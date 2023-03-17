@@ -1,5 +1,7 @@
 # @udecode/plate-ui-cursor
 
+## 20.3.2
+
 ## 20.0.1
 
 ### Patch Changes

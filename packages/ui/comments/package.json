@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-comments",
-  "version": "20.3.1",
+  "version": "20.3.2",
   "description": "Comments UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,11 +19,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-comments": "20.0.0",
-    "@udecode/plate-common": "20.0.0",
-    "@udecode/plate-styled-components": "20.0.0",
-    "@udecode/plate-ui-button": "20.0.0",
-    "@udecode/plate-ui-toolbar": "20.3.1"
+    "@udecode/plate-comments": "20.3.2",
+    "@udecode/plate-common": "20.3.2",
+    "@udecode/plate-styled-components": "20.3.2",
+    "@udecode/plate-ui-button": "20.3.2",
+    "@udecode/plate-ui-toolbar": "20.3.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

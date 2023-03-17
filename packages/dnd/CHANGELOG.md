@@ -1,5 +1,7 @@
 # @udecode/plate-dnd
 
+## 20.3.2
+
 ## 20.0.0
 
 ### Minor Changes
