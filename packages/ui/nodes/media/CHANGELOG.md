@@ -1,5 +1,11 @@
 # @udecode/plate-ui-media
 
+## 20.3.1
+
+### Patch Changes
+
+- [#2282](https://github.com/udecode/plate/pull/2282) by [@haydencarlson](https://github.com/haydencarlson) – Add popover options prop
+
 ## 20.0.0
 
 ## 19.7.0
