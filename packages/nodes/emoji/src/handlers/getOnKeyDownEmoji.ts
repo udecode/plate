@@ -24,6 +24,8 @@ const moveSelectionByOffset: <V extends Value>(
 ) => KeyboardEventHandler = (editor, { query = () => true } = {}) => (
   event
 ) => {
+  if (event.defaultPrevented) return;
+
   const { selection } = editor;
 
   if (!selection || Range.isExpanded(selection) || !query(editor)) {

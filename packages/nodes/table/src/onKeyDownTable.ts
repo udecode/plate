@@ -26,6 +26,8 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   const isKeyDown = {
     'shift+up': isHotkey('shift+up', e),
     'shift+down': isHotkey('shift+down', e),
