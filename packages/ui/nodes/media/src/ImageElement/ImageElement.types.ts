@@ -1,5 +1,5 @@
 import { Value } from '@udecode/plate-common';
-import { PopoverOptions } from '@udecode/plate-floating';
+import { PopoverProps } from '@udecode/plate-floating';
 import { ResizableProps, TImageElement } from '@udecode/plate-media';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
@@ -46,7 +46,7 @@ export interface ImageElementProps
 
   caption?: ImageElementPropsCaption;
 
-  popoverProps?: PopoverOptions;
+  popoverProps?: PopoverProps;
 
   /**
    * Whether the image is draggable.

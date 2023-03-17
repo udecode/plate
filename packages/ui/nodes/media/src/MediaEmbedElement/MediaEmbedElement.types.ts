@@ -1,5 +1,5 @@
 import { Value } from '@udecode/plate-common';
-import { PopoverOptions } from '@udecode/plate-floating';
+import { PopoverProps } from '@udecode/plate-floating';
 import { TMediaEmbedElement } from '@udecode/plate-media';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
@@ -37,5 +37,5 @@ export interface MediaEmbedElementProps
     MediaEmbedElementStyles
   > {
   caption?: MediaEmbedElementPropsCaption;
-  popoverProps?: PopoverOptions;
+  popoverProps?: PopoverProps;
 }
