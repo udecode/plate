@@ -90,3 +90,5 @@ export interface TTableCellElement extends TElement {
     right?: BorderStyle;
   };
 }
+
+export type BorderDirection = 'top' | 'left' | 'bottom' | 'right';

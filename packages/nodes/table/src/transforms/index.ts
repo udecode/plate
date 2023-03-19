@@ -10,6 +10,6 @@ export * from './insertTableColumn';
 export * from './insertTableRow';
 export * from './moveSelectionFromCell';
 export * from './overrideSelectionFromCell';
+export * from './setBorderSize';
 export * from './setTableColSize';
 export * from './setTableRowSize';
-export * from './setBorderSize';

@@ -1,24 +1,27 @@
 import {
   findNode,
-  getNodeEntry,
   isElement,
   PlateEditor,
   setNodes,
   SetNodesOptions,
+  Value,
+  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
-import { BorderStyle, TTableCellElement } from '../types';
+import { getLeftTableCell } from '../queries/getLeftTableCell';
+import { getTopTableCell } from '../queries/getTopTableCell';
+import { BorderDirection, BorderStyle, TTableCellElement } from '../types';
 import { getCellTypes } from '../utils/index';
 
-export const setBorderSize = (
-  editor: PlateEditor,
+export const setBorderSize = <V extends Value>(
+  editor: PlateEditor<V>,
   size: number,
   {
     at,
     border = 'all',
   }: {
     at?: Path;
-    border?: 'all' | 'top' | 'bottom' | 'left' | 'right';
+    border?: 'all' | BorderDirection;
   } = {}
 ) => {
   const cellEntry = findNode<TTableCellElement>(editor, {
@@ -44,19 +47,6 @@ export const setBorderSize = (
   if (border === 'top') {
     const isFirstRow = rowIndex === 0;
 
-    // TODO: extract helper
-    const findCellAbove = () => {
-      // If the current cell is in the first row, there is no cell above it
-      if (rowIndex === 0) return;
-
-      const cellAbovePath = [
-        ...Path.parent(Path.parent(cellPath)),
-        rowIndex - 1,
-        cellIndex,
-      ];
-      return getNodeEntry<TTableCellElement>(editor, cellAbovePath);
-    };
-
     if (isFirstRow) {
       const newBorders: TTableCellElement['borders'] = {
         ...cellNode.borders,
@@ -74,7 +64,7 @@ export const setBorderSize = (
       return;
     }
 
-    const cellAboveEntry = findCellAbove();
+    const cellAboveEntry = getTopTableCell(editor, { at: cellPath });
     if (!cellAboveEntry) return;
     const [cellAboveNode, cellAbovePath] = cellAboveEntry;
 
@@ -129,12 +119,10 @@ export const setBorderSize = (
       return;
     }
 
-    const prevCellPath = Path.previous(cellPath);
-    const prevCellNode = getNodeEntry<TTableCellElement>(
-      editor,
-      prevCellPath
-    )?.[0];
-    if (!prevCellNode) return;
+    const prevCellEntry = getLeftTableCell(editor, { at: cellPath });
+    if (!prevCellEntry) return;
+
+    const [prevCellNode, prevCellPath] = prevCellEntry;
 
     const newBorders: TTableCellElement['borders'] = {
       ...prevCellNode.borders,
@@ -165,5 +153,14 @@ export const setBorderSize = (
         ...setNodesOptions,
       }
     );
+  }
+
+  if (border === 'all') {
+    withoutNormalizing(editor, () => {
+      setBorderSize(editor, size, { at, border: 'top' });
+      setBorderSize(editor, size, { at, border: 'bottom' });
+      setBorderSize(editor, size, { at, border: 'left' });
+      setBorderSize(editor, size, { at, border: 'right' });
+    });
   }
 };
