@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@floating-ui/react": "^0.21.1",
+    "@floating-ui/react": "^0.22.0",
     "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@udecode/plate-common": "20.3.2"
   },

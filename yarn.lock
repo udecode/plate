@@ -2704,9 +2704,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react@npm:^0.21.1":
-  version: 0.21.1
-  resolution: "@floating-ui/react@npm:0.21.1"
+"@floating-ui/react@npm:^0.22.0":
+  version: 0.22.0
+  resolution: "@floating-ui/react@npm:0.22.0"
   dependencies:
     "@floating-ui/react-dom": "npm:^1.3.0"
     aria-hidden: "npm:^1.1.3"
@@ -2714,7 +2714,7 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 48ec540892e8e242e5b10202308d4040b26587c0fef425212a84d7a5793b8a6c7075a360d055e8c3b31842f73f6dc60fbcb66845fae86bdacae435666c964cd4
+  checksum: 1e5c3d02480d2fb3712bbc710acd83f155f72852424033f29ac157d5ea921b1ba7f2661110a1ccc2f59cab51c5cc2fcdf84c0f9ff80f54a651198a81f1243838
   languageName: node
   linkType: hard
 
@@ -6629,7 +6629,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-floating@workspace:packages/floating"
   dependencies:
-    "@floating-ui/react": "npm:^0.21.1"
+    "@floating-ui/react": "npm:^0.22.0"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.4"
     "@udecode/plate-common": "npm:20.3.2"
   peerDependencies:
