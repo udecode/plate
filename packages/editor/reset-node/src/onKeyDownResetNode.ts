@@ -22,6 +22,8 @@ export const onKeyDownResetNode = <
   editor: E,
   { options: { rules } }: WithPlatePlugin<ResetNodePlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   let reset;
 
   if (!editor.selection) return;

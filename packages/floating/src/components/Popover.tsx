@@ -12,6 +12,7 @@ import {
 
 export interface PopoverProps extends HTMLPropsAs<'div'> {
   floatingOptions?: Partial<UseFloatingProps>;
+  disabled?: boolean;
   content?: ReactNode;
   children: JSX.Element;
 }

@@ -16,6 +16,8 @@ export const onKeyDownSoftBreak = <
   editor: E,
   { options: { rules = [] } }: WithPlatePlugin<SoftBreakPlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   const entry = getBlockAbove(editor);
   if (!entry) return;
 
