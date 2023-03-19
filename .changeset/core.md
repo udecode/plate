@@ -1,5 +1,5 @@
 ---
-'@udecode/slate': minor
+'@udecode/plate-core': patch
 ---
 
-- `getNodeEntry`: now returns `undefined` instead of throwing if not found.
+- fix `nodeProps`: `undefined` attributes values are ignored 
