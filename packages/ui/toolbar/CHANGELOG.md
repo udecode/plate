@@ -1,5 +1,7 @@
 # @udecode/plate-toolbar
 
+## 20.4.0
+
 ## 20.3.2
 
 ## 20.3.1
