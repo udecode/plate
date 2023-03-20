@@ -1,5 +1,13 @@
 # @udecode/plate-table-ui
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – `PlateTableCellElement` / `PlateTablePopover`:
+  - New popover button to toggle cell borders
+  - style changes: cell only display right and bottom borders, except the leftmost and the topmost cells that display left and top borders.
+
 ## 20.3.2
 
 ## 20.3.1

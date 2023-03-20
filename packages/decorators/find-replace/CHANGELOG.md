@@ -1,5 +1,7 @@
 # @udecode/plate-find-replace
 
+## 20.4.0
+
 ## 20.3.2
 
 ## 20.0.0
