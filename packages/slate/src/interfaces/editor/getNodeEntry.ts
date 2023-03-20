@@ -10,4 +10,8 @@ export const getNodeEntry = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
   at: Location,
   options?: EditorNodeOptions
-): TNodeEntry<N> => Editor.node(editor as any, at, options) as any;
+): TNodeEntry<N> | undefined => {
+  try {
+    return Editor.node(editor as any, at, options) as any;
+  } catch (err) {}
+};

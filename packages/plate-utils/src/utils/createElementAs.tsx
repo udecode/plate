@@ -26,7 +26,10 @@ export const createElementAs = (
   Type: ElementType,
   props: HTMLProps<AsProps>
 ) => {
-  const { as: As, wrapElement, ...rest } = props;
+  const { as, asAlias, wrapElement, ...rest } = props;
+
+  const As = asAlias ?? as;
+
   let element: ReactElement;
   if (As && typeof As !== 'string') {
     element = <As {...rest} />;

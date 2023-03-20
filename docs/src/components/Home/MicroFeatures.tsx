@@ -22,7 +22,7 @@ const microFeatures = [
 
 const Check = ({ children }) => (
   <span tw="mb-2">
-    <span tw="bg-blue dark:bg-darkBlue text-gray-800 w-4 h-4 mr-2 rounded-full inline-flex items-center justify-center">
+    <span tw="bg-blue-500 dark:bg-darkBlue text-gray-800 w-4 h-4 mr-2 rounded-full inline-flex items-center justify-center">
       <CheckSvg tw="w-3 h-3" />
     </span>
     {children}
@@ -31,7 +31,7 @@ const Check = ({ children }) => (
 
 export const MicroFeatures = () => {
   return (
-    <div tw="py-24 px-4 sm:px-6 lg:px-8 mx-auto container maxWidth[1400px]">
+    <div tw="py-24 px-4 sm:px-6 lg:px-8 mx-auto container max-w-[1400px]">
       <div tw="sm:text-center pb-16">
         <h3 tw="text-3xl mx-auto leading-tight font-extrabold tracking-tight text-white sm:text-4xl lg:leading-none mt-2">
           One Dep, All the Features.

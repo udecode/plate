@@ -64,12 +64,12 @@ export const createTable = (): any => (
     </htable>
   </fragment>
 );
-const attributes = { colspan: '2' };
+
 export const createSpanningTable = (): any => (
   <fragment>
     <htable colSizes={[300, 300]}>
       <htr>
-        <hth attributes={attributes}>
+        <hth colSpan={2}>
           <hp>
             <htext bold>Heading</htext>
           </hp>

@@ -17,19 +17,19 @@ export const ToolbarDropdown = ({
   onOpen,
   onClose,
 }: ToolbarDropdownProps) => {
-  const { styles, reference, floating } = useDropdownControls({
+  const { styles, refs } = useDropdownControls({
     open,
     onClose,
   });
 
   return (
     <>
-      <div ref={reference} onMouseDown={onOpen}>
+      <div ref={refs.setReference} onMouseDown={onOpen}>
         {control}
       </div>
 
       {open && (
-        <div ref={floating} css={floatingRootCss} style={styles}>
+        <div ref={refs.setFloating} css={floatingRootCss} style={styles}>
           {children}
         </div>
       )}

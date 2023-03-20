@@ -6,6 +6,10 @@
   ],
   "dependencies": {
     "@codesandbox/sandpack-react": "1.7.2",
+    "@radix-ui/colors": "0.1.8",
+    "@radix-ui/react-dropdown-menu": "2.0.2",
+    "@radix-ui/react-select": "1.2.0",
+    "@stitches/react": "1.2.8",
     "@styled-icons/boxicons-regular": "10.23.0",
     "@styled-icons/foundation": "10.28.0",
     "@styled-icons/material": "10.28.0",

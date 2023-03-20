@@ -24,6 +24,7 @@ module.exports = {
   '@udecode/plate-ui-media': 'ui/nodes/media',
   '@udecode/plate-ui-mention': 'ui/nodes/mention',
   '@udecode/plate-ui-placeholder': 'ui/placeholder',
+  '@udecode/plate-ui-suggestion': 'ui/suggestion',
   '@udecode/plate-ui-table': 'ui/nodes/table',
   '@udecode/plate-ui-toolbar': 'ui/toolbar',
 };
