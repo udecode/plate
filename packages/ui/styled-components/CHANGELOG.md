@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – vendor upgrade: `"tailwindcss": "^3.2.7"`
+
 ## 20.3.2
 
 ## 20.0.0

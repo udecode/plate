@@ -1,5 +1,19 @@
 # @udecode/plate-table
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – New queries:
+  - `getTableCellBorders`
+  - `getLeftTableCell`
+  - `getTopTableCell`
+  - `isTableBorderHidden`
+    New transforms:
+  - `setBorderSize`
+    `TableCellElementState` new field:
+  - `borders: BorderStylesDefault`
+
 ## 20.3.2
 
 ### Patch Changes
