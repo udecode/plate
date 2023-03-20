@@ -77,7 +77,7 @@ export type Children<T = any> =
  * @example
  * type ButtonAsProps = AsProps<"button">;
  */
-export type AsProps<T extends As = ElementType> = {
+export type AsProps<T extends As = any> = {
   as?: T;
 
   /**
@@ -117,8 +117,10 @@ export type HTMLPropsAs<T extends As = any> = AsProps & HTMLProps<AsProps<T>>;
  * type ButtonComponent = Component<AsProps<"button">>;
  */
 export type Component<O extends AsProps> = {
-  <T extends As = NonNullable<O['as']>>(
-    props: Omit<O, 'as'> & Omit<HTMLProps<AsProps<T>>, keyof O> & AsProps<T>
+  <T extends As>(
+    props: Omit<O, 'as'> &
+      Omit<HTMLProps<AsProps<T>>, keyof O> &
+      Required<AsProps<T>>
   ): JSX.Element | null;
   (props: Props<O>): JSX.Element | null;
   displayName?: string;

@@ -1,14 +1,13 @@
 import React, { SVGProps } from 'react';
-import { focusEditor, usePlateEditorState } from '@udecode/plate-common';
 import { DropdownMenu } from '@udecode/plate-floating';
 import {
   BorderBottomIcon,
   BorderLeftIcon,
+  BorderNoneIcon,
+  BorderOuterIcon,
   BorderRightIcon,
   BorderTopIcon,
-  isTableBorderHidden,
-  setBorderSize,
-  useTableStore,
+  useTableBordersDropdownMenuContentState,
 } from '@udecode/plate-table';
 import { cssMenuItemButton, PlateButton } from '@udecode/plate-ui-button';
 import { floatingRootCss } from '@udecode/plate-ui-toolbar';
@@ -32,73 +31,72 @@ const Check = ({ checked }: { checked?: boolean }) =>
   checked ? <CheckIcon tw="block" /> : <div tw="w-4 h-4" />;
 
 export const PlateTableBordersDropdownMenuContent = () => {
-  const editor = usePlateEditorState();
-  const selectedCells = useTableStore().get.selectedCells();
-
-  const hiddenBottomBorder = isTableBorderHidden(editor, 'bottom');
-  const hiddenTopBorder = isTableBorderHidden(editor, 'top');
-  const hiddenLeftBorder = isTableBorderHidden(editor, 'left');
-  const hiddenRightBorder = isTableBorderHidden(editor, 'right');
-
-  const getOnSelectBorder = (
-    border: 'bottom' | 'top' | 'left' | 'right'
-  ) => () => {
-    if (selectedCells) return;
-
-    const size = isTableBorderHidden(editor, border) ? 1 : 0;
-
-    setBorderSize(editor, size, { border });
-
-    setTimeout(() => {
-      focusEditor(editor);
-    }, 50);
-  };
+  const {
+    getOnSelectTableBorder,
+    hasOuterBorders,
+    hasBottomBorder,
+    hasLeftBorder,
+    hasNoBorders,
+    hasRightBorder,
+    hasTopBorder,
+  } = useTableBordersDropdownMenuContentState();
 
   return (
     <DropdownMenu.Content
-      css={[
-        floatingRootCss,
-        tw`min-w-[220px] px-1 py-1.5 z-20 text-neutral-900`,
-      ]}
+      css={[floatingRootCss, tw`min-w-[220px] py-1.5 text-neutral-900`]}
       side="right"
       align="start"
       sideOffset={8}
     >
-      <DropdownMenu.Item onSelect={getOnSelectBorder('bottom')}>
-        <PlateButton css={cssMenuItemButton}>
-          <Check checked={!hiddenBottomBorder} />
-          <BorderBottomIcon />
-          <div>Bottom Border</div>
-        </PlateButton>
-      </DropdownMenu.Item>
-      <DropdownMenu.Item onSelect={getOnSelectBorder('top')}>
-        <PlateButton css={cssMenuItemButton}>
-          <Check checked={!hiddenTopBorder} />
-          <BorderTopIcon />
-          <div>Top Border</div>
-        </PlateButton>
-      </DropdownMenu.Item>
-      <DropdownMenu.Item onSelect={getOnSelectBorder('left')}>
-        <PlateButton css={cssMenuItemButton}>
-          <Check checked={!hiddenLeftBorder} />
-          <BorderLeftIcon />
-          <div>Left Border</div>
-        </PlateButton>
-      </DropdownMenu.Item>
-      <DropdownMenu.Item onSelect={getOnSelectBorder('right')}>
-        <PlateButton css={cssMenuItemButton}>
-          <Check checked={!hiddenRightBorder} />
-          <BorderRightIcon />
-          <div>Right Border</div>
-        </PlateButton>
-      </DropdownMenu.Item>
-      <DropdownMenu.Item onSelect={getOnSelectBorder('right')}>
-        <PlateButton css={cssMenuItemButton}>
-          <Check checked={!hiddenRightBorder} />
-          <BorderRightIcon />
-          <div>Right Border</div>
-        </PlateButton>
-      </DropdownMenu.Item>
+      <div tw="px-1">
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('bottom')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasBottomBorder} />
+            <BorderBottomIcon />
+            <div>Bottom Border</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('top')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasTopBorder} />
+            <BorderTopIcon />
+            <div>Top Border</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('left')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasLeftBorder} />
+            <BorderLeftIcon />
+            <div>Left Border</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('right')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasRightBorder} />
+            <BorderRightIcon />
+            <div>Right Border</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+      </div>
+
+      <div tw="w-full h-px bg-gray-200 my-1.5" />
+
+      <div tw="px-1">
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('none')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasNoBorders} />
+            <BorderNoneIcon />
+            <div>No Border</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={getOnSelectTableBorder('outer')}>
+          <PlateButton css={cssMenuItemButton}>
+            <Check checked={hasOuterBorders} />
+            <BorderOuterIcon />
+            <div>Outside Borders</div>
+          </PlateButton>
+        </DropdownMenu.Item>
+      </div>
     </DropdownMenu.Content>
   );
 };

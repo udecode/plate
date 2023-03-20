@@ -1,6 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createTablePlugin } from '../createTablePlugin';
 import { getTopTableCell } from './getTopTableCell';
@@ -69,7 +73,9 @@ describe('getTopTableCell', () => {
   it('should return the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
-    expect(cellAbove?.[0].children[0].children[0].text).toEqual('12');
+    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toEqual(
+      '12'
+    );
   });
 
   it('should return undefined if the current cell is in the first row', () => {

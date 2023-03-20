@@ -21,7 +21,7 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
   return (
     <ElementPopover
       content={
-        <div css={tw`min-w-[140px] py-1.5`}>
+        <div css={tw`min-w-[140px] px-1 py-1.5`}>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <PlateButton
