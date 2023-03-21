@@ -5,45 +5,26 @@ import {
   CodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
+import { getPluginOptions, useEditorRef, Value } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { CSSProp } from 'styled-components';
+import { CodeBlockSelectElement } from './CodeBlockSelectElement';
+import { CodeBlockSelectElementRootProps } from './CodeBlockSelectElementRoot';
 
-export const CodeBlockSelectElement = ({
-  lang,
-  onChange,
-  ...props
-}: {
-  lang?: string;
-  onChange: Function;
-  className?: string;
-  css?: CSSProp;
-}) => {
-  const [value, setValue] = React.useState(lang);
+export const PlateCodeBlockSelectElement = (
+  props: CodeBlockSelectElementRootProps<Value>
+) => {
   const editor = useEditorRef();
-
   if (useReadOnly()) return null;
 
-  const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin>(
+  const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin, Value>(
     editor,
     ELEMENT_CODE_BLOCK
   );
 
   return (
-    <select
-      value={value}
-      style={{ float: 'right' }}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-      onChange={(e) => {
-        onChange(e.target.value);
-        setValue(e.target.value);
-      }}
-      contentEditable={false}
-      {...props}
-    >
+    <CodeBlockSelectElement.Root {...props}>
       <option value="">Plain text</option>
+
       {syntaxPopularFirst &&
         Object.entries(CODE_BLOCK_LANGUAGES_POPULAR).map(([key, val]) => (
           <option key={key} value={key}>
@@ -55,6 +36,6 @@ export const CodeBlockSelectElement = ({
           {val}
         </option>
       ))}
-    </select>
+    </CodeBlockSelectElement.Root>
   );
 };
