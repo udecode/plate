@@ -27,7 +27,7 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   if (!forceSubmit && !validateUrl(editor, url)) return;
 
   const text = floatingLinkSelectors.text();
-  const target = floatingLinkSelectors.newTab() ? undefined : '_self';
+  const target = floatingLinkSelectors.newTab() ? '_blank' : '_self';
 
   floatingLinkActions.hide();
 
