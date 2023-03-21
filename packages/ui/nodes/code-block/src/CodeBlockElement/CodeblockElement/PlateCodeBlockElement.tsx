@@ -1,18 +1,12 @@
 import React from 'react';
-import {
-  CodeBlockPlugin,
-  ELEMENT_CODE_BLOCK,
-  TCodeBlockElement,
-} from '@udecode/plate-code-block';
-import { getPluginOptions, Value } from '@udecode/plate-common';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { CodeBlockPlugin, ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { getPluginOptions } from '@udecode/plate-common';
 import { getCodeBlockElementStyles } from '../CodeBlockElement.styles';
 import { PlateCodeBlockSelectElement } from '../CodeBlockSelectElementRoot/PlateCodeBlockSelectElement';
 import { CodeBlockElement } from './CodeBlockElement';
+import { CodeBlockElementRootProps } from './CodeBlockElementRoot';
 
-export const PlateCodeBlockElement = <V extends Value>(
-  props: StyledElementProps<V, TCodeBlockElement>
-) => {
+export const PlateCodeBlockElement = (props: CodeBlockElementRootProps) => {
   const { element, editor } = props;
   const { children, as, ...rootProps } = props;
 
@@ -21,7 +15,7 @@ export const PlateCodeBlockElement = <V extends Value>(
 
   const { root } = getCodeBlockElementStyles(props as any);
 
-  const { syntax } = getPluginOptions<CodeBlockPlugin, V>(
+  const { syntax } = getPluginOptions<CodeBlockPlugin>(
     editor,
     ELEMENT_CODE_BLOCK
   );

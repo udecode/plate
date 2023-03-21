@@ -8,8 +8,11 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-export type CodeBlockElementRootProps = HTMLPropsAs<'pre'> &
-  PlateRenderElementProps<Value, TCodeBlockElement>;
+export type CodeBlockElementRootProps = PlateRenderElementProps<
+  Value,
+  TCodeBlockElement
+> &
+  HTMLPropsAs<'pre'>;
 
 export const useCodeBlockElementRootProps = (
   props: CodeBlockElementRootProps
