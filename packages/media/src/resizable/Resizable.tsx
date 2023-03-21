@@ -104,6 +104,5 @@ export const useResizable = ({
 
 export const Resizable = createComponentAs<ResizableProps>((props) => {
   const resizableProps = useResizable(props);
-
   return <ReResizable {...resizableProps} />;
 });

@@ -24,8 +24,7 @@
     "@udecode/plate-styled-components": "20.4.0",
     "@udecode/plate-table": "20.4.0",
     "@udecode/plate-ui-button": "20.4.0",
-    "@udecode/plate-ui-toolbar": "20.4.0",
-    "re-resizable": "^6.9.9"
+    "@udecode/plate-ui-toolbar": "20.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

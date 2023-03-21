@@ -10,14 +10,17 @@ import tw from 'twin.macro';
 
 export interface PlateTableCellElementProps extends TableCellElementRootProps {
   hideBorder?: boolean;
+  isHeader?: boolean;
 }
 
 export const getCssTableCellRoot = ({
   hideBorder,
+  isHeader,
   selected,
   borders,
 }: {
   hideBorder?: boolean;
+  isHeader?: boolean;
   selected?: boolean;
   borders?: BorderStylesDefault;
 } = {}): CSSProp => [
@@ -56,6 +59,17 @@ export const getCssTableCellRoot = ({
         `,
     ],
   ],
+  isHeader && tw`text-left`,
+  isHeader &&
+    css`
+      ::before {
+        background-color: rgb(244, 245, 247);
+      }
+
+      > * {
+        margin: 0;
+      }
+    `,
   tw`before:w-full before:h-full`,
   selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
 ];
@@ -68,22 +82,18 @@ export const cssTableCellResizable: CSSProp = [
   tw`absolute w-full h-full top-0 select-none`,
 ];
 
-export const getCssTableCellHandle = ({
-  hovered,
-  readOnly,
-}: { readOnly?: boolean; hovered?: boolean } = {}) => [
-  tw`absolute z-30 w-1`,
-  !readOnly && hovered && tw`bg-blue-500`,
+export const getCssTableCellHandle = ({ side }: { side: 'left' | 'right' }) => [
+  tw`absolute z-30 w-1 bg-blue-500`,
   css`
     top: -12px;
-    right: -1.5px;
+    ${side}: -1.5px;
 
     height: calc(100% + 12px);
   `,
 ];
 
 export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
-  const { as, children, hideBorder, ...rootProps } = props;
+  const { children, hideBorder, isHeader, ...rootProps } = props;
 
   const {
     colIndex,
@@ -91,6 +101,7 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
     readOnly,
     selected,
     hovered,
+    hoveredLeft,
     rowSize,
     borders,
   } = useTableCellElementState();
@@ -99,7 +110,8 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
 
   return (
     <TableCellElement.Root
-      css={getCssTableCellRoot({ borders, hideBorder, selected })}
+      asAlias={isHeader ? 'th' : 'td'}
+      css={getCssTableCellRoot({ borders, hideBorder, isHeader, selected })}
       {...rootProps}
     >
       {/* <div css={[tw`absolute top-0 right-2 z-30`]} contentEditable={false}> */}
@@ -159,9 +171,17 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
           readOnly={readOnly}
         />
 
-        <TableCellElement.Handle
-          css={getCssTableCellHandle({ readOnly, hovered })}
-        />
+        {!readOnly && hovered && (
+          <TableCellElement.Handle
+            css={getCssTableCellHandle({ side: 'right' })}
+          />
+        )}
+
+        {!readOnly && hoveredLeft && (
+          <TableCellElement.Handle
+            css={getCssTableCellHandle({ side: 'left' })}
+          />
+        )}
       </TableCellElement.ResizableWrapper>
     </TableCellElement.Root>
   );

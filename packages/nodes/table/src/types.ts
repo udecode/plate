@@ -12,6 +12,9 @@ export interface TablePlugin<V extends Value = Value> {
    */
   disableExpandOnInsert?: boolean;
 
+  // Disable first column left resizer.
+  disableMarginLeft?: boolean;
+
   /**
    * Disable unsetting the first column width when the table has one column.
    * Set it to true if you want to resize the table width when there is only one column.
@@ -66,6 +69,7 @@ export interface BorderStyle {
 
 export interface TTableElement extends TElement {
   colSizes?: number[];
+  marginLeft?: number;
 }
 
 export interface TTableRowElement extends TElement {

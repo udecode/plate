@@ -8,14 +8,14 @@ import { getTableColumnCount } from '.';
  */
 export const getTableOverriddenColSizes = (
   tableNode: TTableElement,
-  colSizeOverrides: TableStoreSizeOverrides
+  colSizeOverrides?: TableStoreSizeOverrides
 ): number[] => {
   const colCount = getTableColumnCount(tableNode);
 
   const colSizes = (tableNode.colSizes
     ? [...tableNode.colSizes]
     : Array(colCount).fill(0)
-  ).map((size, index) => colSizeOverrides.get(index) ?? size);
+  ).map((size, index) => colSizeOverrides?.get(index) ?? size);
 
   return colSizes;
 };

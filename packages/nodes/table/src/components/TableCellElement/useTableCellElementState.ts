@@ -19,6 +19,7 @@ export type TableCellElementState = {
   rowIndex: number;
   readOnly: boolean;
   hovered: boolean;
+  hoveredLeft: boolean;
   selected: boolean;
   rowSize: number | undefined;
   borders: BorderStylesDefault;
@@ -63,6 +64,7 @@ export const useTableCellElementState = ({
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
     hovered: hoveredColIndex === colIndex,
+    hoveredLeft: isFirstCell && hoveredColIndex === -1,
     rowSize,
     borders,
   };
