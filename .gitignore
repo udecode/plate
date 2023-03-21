@@ -119,3 +119,6 @@ config/typedoc/
 !config/typedoc/_redirects
 # Local Netlify folder
 .netlify
+/test-results/
+/playwright-report/
+/playwright/.cache/

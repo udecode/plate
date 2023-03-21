@@ -34,6 +34,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         disableSelect: true,
       });
     },
+    minColumnWidth: 48,
   },
   withOverrides: withTable,
   plugins: [

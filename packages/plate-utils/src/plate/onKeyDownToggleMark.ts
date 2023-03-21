@@ -15,6 +15,7 @@ export const onKeyDownToggleMark = <
   editor: E,
   { type, options: { hotkey, clear } }: WithPlatePlugin<ToggleMarkPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
   if (!hotkey) return;
 
   if (isHotkey(hotkey, e as any)) {

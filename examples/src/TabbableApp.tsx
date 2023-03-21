@@ -32,7 +32,7 @@ const plugins = createMyPlugins(
     }),
     createTabbableElementPlugin({
       component: TabbableElement,
-    }),
+    }) as any,
   ],
   {
     components: plateUI,

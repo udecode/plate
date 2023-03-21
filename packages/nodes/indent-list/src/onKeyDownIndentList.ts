@@ -22,6 +22,7 @@ export const onKeyDownIndentList = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<IndentListPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
   if (!editor.selection) return;
 
   const entry = getBlockAbove(editor);

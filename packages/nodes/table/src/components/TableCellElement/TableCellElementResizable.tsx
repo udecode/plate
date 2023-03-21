@@ -2,18 +2,27 @@ import React, { useState } from 'react';
 import {
   Box,
   findNodePath,
+  getPluginOptions,
   HTMLPropsAs,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
-import { useTableRowStore } from '../../stores/tableRowStore';
-import { useTableStore } from '../../stores/tableStore';
+import { ELEMENT_TABLE } from '../../createTablePlugin';
+import {
+  useOverrideColSize,
+  useOverrideRowSize,
+  useTableStore,
+} from '../../stores/tableStore';
 import { setTableColSize, setTableRowSize } from '../../transforms';
+import { TablePlugin, TTableElement } from '../../types';
+import { useTableColSizes } from '../TableElement/useTableColSizes';
+import { getTableColSizeForSibling } from './getTableColSizeForSibling';
+import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
-  Pick<TableCellElementState, 'colIndex' | 'readOnly'> & {
+  Pick<TableCellElementState, 'colIndex' | 'rowIndex' | 'readOnly'> & {
     /**
      * Resize by step instead of by pixel.
      */
@@ -26,11 +35,9 @@ export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
     stepY?: number;
   };
 
-const roundToStep = (size: number, step?: number) =>
-  step ? Math.round(size / step) * step : size;
-
 export const useTableCellElementResizableProps = ({
   colIndex,
+  rowIndex,
   readOnly,
   step,
   stepX = step,
@@ -38,11 +45,36 @@ export const useTableCellElementResizableProps = ({
   ...props
 }: TableCellElementResizableProps): ResizableProps => {
   const editor = usePlateEditorRef();
+  const { minColumnWidth: minWidth } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
   const element = useElement();
+  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const setHoveredColIndex = useTableStore().set.hoveredColIndex();
-  const setResizingCol = useTableStore().set.resizingCol();
-  const setOverrideRowSize = useTableRowStore().set.overrideSize();
   const [isResizingRight, setIsResizingRight] = useState(false);
+
+  const colSizes = useTableColSizes(tableElement);
+  const [initialColSize, setInitialColSize] = useState<number | null>(null);
+  const [initialSiblingColSize, setInitialSiblingColSize] = useState<
+    number | null
+  >(null);
+
+  const colSizeOverrides = useTableStore().get.colSizeOverrides();
+  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
+
+  const overrideColSize = useOverrideColSize();
+  const overrideRowSize = useOverrideRowSize();
+
+  const getNextColSize = (ownSize: number): number | undefined => {
+    return initialColSize && initialSiblingColSize
+      ? getTableColSizeForSibling(
+          initialColSize,
+          initialSiblingColSize,
+          ownSize
+        )
+      : undefined;
+  };
 
   const handleResize: HandleStyles | undefined = !readOnly
     ? {
@@ -75,41 +107,55 @@ export const useTableCellElementResizableProps = ({
     setIsResizingRight(true);
   };
 
-  const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
+  const onResizeStart: ResizableProps['onResizeStart'] = (e, direction) => {
     if (direction === 'right') {
       setHoveredColIndex(colIndex);
-
-      setResizingCol({
-        index: colIndex,
-        width: roundToStep(ref.offsetWidth, stepX),
-      });
-    } else {
-      setOverrideRowSize(roundToStep(ref.offsetHeight, stepY));
+      setInitialColSize(colSizes[colIndex]);
+      setInitialSiblingColSize(colSizes[colIndex + 1] ?? null);
     }
   };
 
-  const onResizeStop: ResizableProps['onResizeStop'] = (e, direction, ref) => {
+  const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
     if (direction === 'right') {
-      setTableColSize(
-        editor,
-        { colIndex, width: roundToStep(ref.offsetWidth, stepX) },
-        { at: findNodePath(editor, element)! }
-      );
+      const newSize = roundCellSizeToStep(ref.offsetWidth, stepX);
+      const siblingSize = getNextColSize(newSize);
 
-      // Prevent flickering
-      setTimeout(() => setResizingCol(null), 0);
+      overrideColSize(colIndex, newSize);
+
+      if (siblingSize) {
+        overrideColSize(colIndex + 1, siblingSize);
+      }
+    } else {
+      overrideRowSize(rowIndex, roundCellSizeToStep(ref.offsetHeight, stepY));
+    }
+  };
+
+  const onResizeStop: ResizableProps['onResizeStop'] = (e, direction) => {
+    if (direction === 'right') {
+      colSizeOverrides.forEach((size, index) => {
+        setTableColSize(
+          editor,
+          { colIndex: index, width: size },
+          { at: findNodePath(editor, element)! }
+        );
+
+        // Prevent flickering
+        setTimeout(() => overrideColSize(index, null), 0);
+      });
 
       setHoveredColIndex(null);
       setIsResizingRight(false);
     } else {
-      setTableRowSize(
-        editor,
-        { height: roundToStep(ref.offsetHeight, stepY) },
-        { at: findNodePath(editor, element)! }
-      );
+      rowSizeOverrides.forEach((size, index) => {
+        setTableRowSize(
+          editor,
+          { rowIndex: index, height: size },
+          { at: findNodePath(editor, element)! }
+        );
 
-      // Prevent flickering
-      setTimeout(() => setOverrideRowSize(null), 0);
+        // Prevent flickering
+        setTimeout(() => overrideRowSize(index, null), 0);
+      });
     }
   };
 
@@ -119,7 +165,8 @@ export const useTableCellElementResizableProps = ({
       right: !readOnly,
       bottom: !readOnly,
     },
-    minWidth: 48,
+    minWidth,
+    maxWidth: getNextColSize(minWidth ?? 0),
     handleStyles: handleResize,
     handleComponent: {
       right: (
@@ -131,6 +178,7 @@ export const useTableCellElementResizableProps = ({
         />
       ),
     },
+    onResizeStart,
     onResize,
     onResizeStop,
     ...props,

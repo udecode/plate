@@ -60,6 +60,7 @@ module.exports = {
   },
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
+  testPathIgnorePatterns: ['/playwright/'],
   transform: {
     '.*': ['<rootDir>/scripts/fileTransformer.js', 'ts-jest'],
   },

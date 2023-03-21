@@ -14,6 +14,7 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     nodeProps,
     caption = {},
+    popoverProps = {},
     resizableProps,
     align = 'center',
     ignoreReadOnly = false,
@@ -31,6 +32,7 @@ export const ImageElement = (props: ImageElementProps) => {
     <ElementPopover
       content={<PlateFloatingMedia pluginKey={ELEMENT_IMAGE} />}
       floatingOptions={mediaFloatingOptions}
+      {...popoverProps}
     >
       <Media.Root {...rootProps} css={styles.root.css}>
         <figure

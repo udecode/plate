@@ -13,10 +13,9 @@ export const getNextTableCell = <V extends Value>(
   currentPath: Path,
   currentRow: TNodeEntry
 ): TNodeEntry | undefined => {
-  try {
-    return getNodeEntry(editor, Path.next(currentPath));
-  } catch (err) {
-    const [, currentRowPath] = currentRow;
-    return getCellInNextTableRow(editor, currentRowPath);
-  }
+  const cell = getNodeEntry(editor, Path.next(currentPath));
+  if (cell) return cell;
+
+  const [, currentRowPath] = currentRow;
+  return getCellInNextTableRow(editor, currentRowPath);
 };

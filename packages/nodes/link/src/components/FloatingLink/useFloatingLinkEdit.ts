@@ -60,7 +60,7 @@ export const useFloatingLinkEdit = ({
 
   const isOpen = open && mode === 'edit';
 
-  const { update, style, floating } = useVirtualFloatingLink({
+  const { update, style, refs } = useVirtualFloatingLink({
     editorId: editor.id,
     open: isOpen,
     getBoundingClientRect,
@@ -110,6 +110,6 @@ export const useFloatingLinkEdit = ({
       zIndex: 1,
     },
     ...props,
-    ref: useComposedRef<HTMLElement | null>(props.ref, floating),
+    ref: useComposedRef<HTMLElement | null>(props.ref, refs.setFloating),
   };
 };

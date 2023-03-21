@@ -1,5 +1,36 @@
 # @udecode/plate-table-ui
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – `PlateTableCellElement` / `PlateTablePopover`:
+  - New popover button to toggle cell borders
+  - style changes: cell only display right and bottom borders, except the leftmost and the topmost cells that display left and top borders.
+
+## 20.3.2
+
+## 20.3.1
+
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Pass rowIndex to TableCellElementResizable
+
+## 20.2.0
+
+### Patch Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) – Get `minColumnWidth` from table plugin options
+
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+
 ## 20.0.0
 
 ### Major Changes

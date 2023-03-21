@@ -1,5 +1,49 @@
 # @udecode/plate-table
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – New queries:
+  - `getTableCellBorders`
+  - `getLeftTableCell`
+  - `getTopTableCell`
+  - `isTableBorderHidden`
+    New transforms:
+  - `setBorderSize`
+    `TableCellElementState` new field:
+  - `borders: BorderStylesDefault`
+
+## 20.3.2
+
+### Patch Changes
+
+- [#2285](https://github.com/udecode/plate/pull/2285) by [@12joan](https://github.com/12joan) – Ignore `defaultPrevented` keydown events
+
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Table width is now preserved when resizing columns, except when resizing the last column
+
+## 20.2.0
+
+### Minor Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) –
+  - `TablePlugin` new option: `minColumnWidth` - Sets the minimum width a column can be resized to
+  - `insertTableColumn` now shrinks columns if the new total width would exceed `initialTableWidth`
+
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+    - `TableCellElement.ResizableWrapper` no longer takes a `colIndex` prop
+    - `TableCellElement.Resizable` now takes `stepX` and `stepY` as overrides for `step` to set the resize increments for the X and Y axes
+    - `setTableRowSize` - sets the height of the selected row
+
 ## 20.0.0
 
 ### Major Changes

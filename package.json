@@ -21,6 +21,7 @@
     "g:lint": "yarn workspaces foreach -ptv --no-private run p:lint --color",
     "g:lint-changed": "yarn workspaces foreach -ptv --no-private --since=origin/main --recursive run p:lint --color",
     "g:lint:all": "eslint packages/**/src --ext .js,.jsx,.ts,.tsx --cache --cache-location .cache/eslint/core-lib.eslintcache --color",
+    "g:playwright": "yarn playwright test",
     "g:prerelease": "yarn g:build && yarn g:test:root && yarn g:lint",
     "g:rebuild": "rimraf packages/**/dist && yarn g:build",
     "g:release:next": "yarn g:prerelease && yarn changeset publish --tag next",
@@ -34,6 +35,7 @@
     "g:test:wa": "yarn g:test --watchAll",
     "g:typecheck": "yarn workspaces foreach -ptv --no-private run p:typecheck",
     "g:typecheck-changed": "yarn workspaces foreach -ptv --no-private --from '@udecode/plate*' --since=origin/main --recursive run p:typecheck",
+    "install:playwright": "yarn playwright install --with-deps",
     "nuke:node_modules": "rimraf '**/node_modules'",
     "p:brl": "cd $INIT_CWD && barrelsby -d src -D -l all -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:brl:below": "cd $INIT_CWD && barrelsby -d src -D -l below -q -e '.*(fixture|template|spec|__tests__).*'",
@@ -66,6 +68,7 @@
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.17.10",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.16.7",
     "@babel/plugin-proposal-optional-chaining": "^7.16.7",
     "@babel/plugin-transform-react-jsx": "^7.17.3",
@@ -76,6 +79,7 @@
     "@changesets/get-github-info": "^0.5.0",
     "@changesets/parse": "^0.3.13",
     "@changesets/types": "^5.0.0",
+    "@playwright/test": "1.31.2",
     "@react-hook/merged-ref": "^1.3.2",
     "@styled-icons/boxicons-regular": "^10.38.0",
     "@styled-icons/foundation": "^10.34.0",
@@ -140,6 +144,7 @@
     "react-dnd-test-backend": "^15.1.2",
     "react-dom": "17.0.2",
     "react-is": "17.0.2",
+    "react-router-dom": "6.9.0",
     "react-test-renderer": "17.0.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.72.1",
@@ -160,9 +165,9 @@
     "slate-react": "0.90.0",
     "slate-test-utils": "1.3.2",
     "styled-components": "5.3.3",
-    "tailwindcss": "^3.0.24",
+    "tailwindcss": "^3.2.7",
     "ts-jest": "^26.5.6",
-    "twin.macro": "2.8.2",
+    "twin.macro": "^3.1.0",
     "typedoc": "^0.21.0-beta.2",
     "typescript": "4.6.4"
   },
@@ -173,7 +178,6 @@
   },
   "babelMacros": {
     "twin": {
-      "config": "./docs/config/tailwind.config.js",
       "preset": "styled-components"
     }
   },

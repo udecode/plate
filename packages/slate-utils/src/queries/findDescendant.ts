@@ -51,7 +51,7 @@ export const findDescendant = <
 
     let root: ENodeEntry<V> = [editor, []];
     if (Path.isPath(at)) {
-      root = getNodeEntry(editor, at);
+      root = getNodeEntry(editor, at) as any;
     }
 
     const nodeEntries = getNodeDescendants<N>(root[0], {

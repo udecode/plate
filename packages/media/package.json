@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-media",
-  "version": "20.0.0",
+  "version": "20.4.0",
   "description": "Plate Media plugin",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "20.0.0",
+    "@udecode/plate-common": "20.4.0",
     "js-video-url-parser": "^0.5.1",
     "re-resizable": "^6.9.9",
     "react-textarea-autosize": "^8.3.3",
