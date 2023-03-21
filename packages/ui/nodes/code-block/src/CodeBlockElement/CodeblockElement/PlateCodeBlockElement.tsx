@@ -13,7 +13,8 @@ import { CodeBlockElement } from './CodeBlockElement';
 export const PlateCodeBlockElement = <V extends Value>(
   props: StyledElementProps<V, TCodeBlockElement>
 ) => {
-  const { children, element, editor } = props;
+  const { element, editor } = props;
+  const { children, as, ...rootProps } = props;
 
   const { lang } = element;
   const codeClassName = lang ? `${lang} language-${lang}` : '';
@@ -27,7 +28,7 @@ export const PlateCodeBlockElement = <V extends Value>(
 
   return (
     <>
-      <CodeBlockElement.Pre
+      <CodeBlockElement.Root
         className={root.className}
         css={root.css}
         {...rootProps}
@@ -36,7 +37,7 @@ export const PlateCodeBlockElement = <V extends Value>(
         <CodeBlockElement.Code className={codeClassName}>
           {children}
         </CodeBlockElement.Code>
-      </CodeBlockElement.Pre>
+      </CodeBlockElement.Root>
     </>
   );
 };

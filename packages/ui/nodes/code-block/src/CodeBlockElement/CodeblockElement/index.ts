@@ -4,5 +4,5 @@
 
 export * from './CodeBlockElement';
 export * from './CodeBlockElementCode';
-export * from './CodeBlockElementPre';
+export * from './CodeBlockElementRoot';
 export * from './PlateCodeBlockElement';

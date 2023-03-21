@@ -39,7 +39,10 @@ import {
 } from '@udecode/plate-headless';
 import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
 import { BlockquoteElement } from '@udecode/plate-ui-block-quote';
-import { CodeLineElement, CodeSyntaxLeaf } from '@udecode/plate-ui-code-block';
+import {
+  CodeLineElement,
+  PlateCodeSyntaxLeaf,
+} from '@udecode/plate-ui-code-block';
 import { PlateCommentLeaf } from '@udecode/plate-ui-comments';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { LinkElement } from '@udecode/plate-ui-link';
@@ -65,7 +68,7 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
-    [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
+    [ELEMENT_CODE_SYNTAX]: PlateCodeSyntaxLeaf,
     [ELEMENT_HR]: HrElement,
     [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',

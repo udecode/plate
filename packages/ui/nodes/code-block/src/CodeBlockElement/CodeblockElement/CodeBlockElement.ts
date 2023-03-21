@@ -1,7 +1,7 @@
 import { CodeBlockElementCode } from './CodeBlockElementCode';
-import { CodeBlockElementPre } from './CodeBlockElementPre';
+import { CodeBlockElementRoot } from './CodeBlockElementRoot';
 
 export const CodeBlockElement = {
-  Pre: CodeBlockElementPre,
+  Root: CodeBlockElementRoot,
   Code: CodeBlockElementCode,
 };
