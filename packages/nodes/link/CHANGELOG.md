@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 20.4.1
+
+### Patch Changes
+
+- [#2296](https://github.com/udecode/plate/pull/2296) by [@bojangles-m](https://github.com/bojangles-m) – fix target for new tab
+
 ## 20.4.0
 
 ## 20.3.2
