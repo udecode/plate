@@ -23,7 +23,7 @@ export const triggerFloatingLinkEdit = <V extends Value>(
 
   floatingLinkActions.url(link.url);
 
-  floatingLinkActions.newTab(link.target === undefined);
+  floatingLinkActions.newTab(link.target === '_blank');
 
   if (text === link.url) {
     text = '';
