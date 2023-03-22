@@ -6,9 +6,6 @@ import { withEmoji } from './withEmoji';
 
 export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
   key: KEY_EMOJI,
-  // handlers: {
-  //   onKeyDown: getOnKeyDownEmoji(),
-  // },
   withOverrides: withEmoji,
   options: {
     trigger: EMOJI_TRIGGER,

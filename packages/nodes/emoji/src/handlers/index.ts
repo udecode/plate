@@ -5,4 +5,3 @@
 export * from './getEmojiOnInsert';
 export * from './getEmojiOnSelectItem';
 export * from './getFindTriggeringInput';
-export * from './getOnKeyDownEmoji';
