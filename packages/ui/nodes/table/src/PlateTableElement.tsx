@@ -19,34 +19,37 @@ export const PlateTableElement = (props: TableElementRootProps) => {
   } = useTableElementState();
 
   return (
-    <TableElement.Root
-      css={[
-        tw`table table-fixed w-full h-px my-4 ml-px mr-0 border-collapse`,
-        isSelectingCell &&
-          css`
-            *::selection {
-              background: none;
-            }
-          `,
-      ]}
-      style={{ marginLeft }}
-      {...rootProps}
-    >
-      <TableElement.ColGroup>
-        {colSizes.map((width, index) => (
-          <TableElement.Col
-            key={index}
-            style={{
-              minWidth: minColumnWidth,
-              width: width || undefined,
-            }}
-          />
-        ))}
-      </TableElement.ColGroup>
+    <PlateTablePopover>
+      <TableElement.Wrapper style={{ paddingLeft: marginLeft }}>
+        <TableElement.Root
+          css={[
+            tw`table table-fixed w-full h-px my-4 ml-px mr-0 border-collapse`,
+            isSelectingCell &&
+              css`
+                *::selection {
+                  background: none;
+                }
+              `,
+          ]}
+          {...rootProps}
+        >
+          <TableElement.ColGroup>
+            {colSizes.map((width, index) => (
+              <TableElement.Col
+                key={index}
+                style={{
+                  minWidth: minColumnWidth,
+                  width: width || undefined,
+                }}
+              />
+            ))}
+          </TableElement.ColGroup>
 
-      <PlateTablePopover>
-        <TableElement.TBody css={tw`min-w-full`}>{children}</TableElement.TBody>
-      </PlateTablePopover>
-    </TableElement.Root>
+          <TableElement.TBody css={tw`min-w-full`}>
+            {children}
+          </TableElement.TBody>
+        </TableElement.Root>
+      </TableElement.Wrapper>
+    </PlateTablePopover>
   );
 };
