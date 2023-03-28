@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Table margin left resizing. Fixes #2301
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
 ## 20.4.0
 
 ### Minor Changes
