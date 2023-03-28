@@ -7,7 +7,12 @@ import {
 import { useVariant } from './useVariant';
 
 export const TableApp = () => {
-  const { initialTableWidth, colSizes } = useVariant({
+  const {
+    initialTableWidth,
+    colSizes,
+    readOnly = false,
+    disableMarginLeft = false,
+  } = useVariant({
     auto: {
       initialTableWidth: undefined,
       colSizes: undefined,
@@ -16,6 +21,16 @@ export const TableApp = () => {
       initialTableWidth: 500,
       colSizes: [350, 150],
     },
+    readOnly: {
+      initialTableWidth: 500,
+      colSizes: [350, 150],
+      readOnly: true,
+    },
+    disableMarginLeft: {
+      initialTableWidth: 500,
+      colSizes: [350, 150],
+      disableMarginLeft: true,
+    },
   });
 
   const plugins = createPlugins(
@@ -23,6 +38,7 @@ export const TableApp = () => {
       createTablePlugin({
         options: {
           initialTableWidth,
+          disableMarginLeft,
         },
       }),
     ],
@@ -66,5 +82,11 @@ export const TableApp = () => {
     },
   ];
 
-  return <Plate plugins={plugins} initialValue={initialValue} />;
+  return (
+    <Plate
+      plugins={plugins}
+      initialValue={initialValue}
+      editableProps={{ readOnly }}
+    />
+  );
 };

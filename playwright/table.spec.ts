@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const getCell = (page: Locator, row: number, column: number) => page.locator(`table > tbody > tr:nth-child(${row}) > :nth-child(${column})`);
+const getLeftEdge = (locator: Locator) => locator.boundingBox().then((box) => box.x);
 const getWidth = (locator: Locator) => locator.boundingBox().then((box) => box.width);
 const getHeight = (locator: Locator) => locator.boundingBox().then((box) => box.height);
 
@@ -74,4 +75,37 @@ test('resize row', async ({ page }) => {
 
   // Height is off by < 1px in Chromium and Firefox
   expect(rowOneCellOneNewHeight - rowOneCellOnePreviousHeight - 13).toBeLessThan(1);
+});
+
+test('resize margin left', async ({ page }) => {
+  await page.goto('http://localhost:3030/table/fixed');
+
+  const rowOneCellOne = await getCell(page, 1, 1);
+  const rowOneCellOnePreviousLeftEdge = await getLeftEdge(rowOneCellOne);
+  const rowOneCellOnePreviousWidth = await getWidth(rowOneCellOne);
+
+  const leftResizable = await getLeftResizable(rowOneCellOne);
+  await dragResizable(page, leftResizable, 13, 0);
+
+  const rowOneCellOneNewLeftEdge = await getLeftEdge(rowOneCellOne);
+  const rowOneCellOneNewWidth = await getWidth(rowOneCellOne);
+
+  expect(rowOneCellOneNewLeftEdge).toBe(rowOneCellOnePreviousLeftEdge + 13);
+  expect(rowOneCellOneNewWidth).toBe(rowOneCellOnePreviousWidth - 13);
+});
+
+test('read only', async ({ page }) => {
+  await page.goto('http://localhost:3030/table/readOnly');
+  const rowOneCellOne = await getCell(page, 1, 1);
+  const resizableWrapper = await getResizableWrapper(rowOneCellOne);
+  const children = await resizableWrapper.evaluate((node) => node.children.length);
+  expect(children).toBe(0);
+});
+
+test('disable margin left', async ({ page }) => {
+  await page.goto('http://localhost:3030/table/disableMarginLeft');
+  const rowOneCellOne = await getCell(page, 1, 1);
+  const resizableWrapper = await getResizableWrapper(rowOneCellOne);
+  const children = await resizableWrapper.evaluate((node) => node.children.length);
+  expect(children).toBe(2);
 });
