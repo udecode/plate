@@ -12,4 +12,5 @@ export * from './moveSelectionFromCell';
 export * from './overrideSelectionFromCell';
 export * from './setBorderSize';
 export * from './setTableColSize';
+export * from './setTableMarginLeft';
 export * from './setTableRowSize';

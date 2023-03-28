@@ -8,7 +8,6 @@ export * from './TableCellElementResizableWrapper';
 export * from './TableCellElementRoot';
 export * from './getOnSelectTableBorderFactory';
 export * from './getTableCellBorders';
-export * from './getTableColSizeForSibling';
 export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableBordersDropdownMenuContentState';

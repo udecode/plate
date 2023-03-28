@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-table",
+  "name": "@udecode/resizable",
   "version": "20.4.0",
-  "description": "Table plugin for Plate",
+  "description": "Resize components",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/nodes/table"
+    "directory": "packages/resizable"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -19,20 +19,15 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "20.4.0",
-    "@udecode/resizable": "20.4.0"
+    "@udecode/plate-common": "20.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.87.0",
-    "slate-history": ">=0.86.0",
-    "slate-react": ">=0.88.0"
+    "react-dom": ">=16.8.0"
   },
   "keywords": [
     "plate",
-    "plugin",
-    "slate"
+    "resize"
   ],
   "publishConfig": {
     "access": "public"

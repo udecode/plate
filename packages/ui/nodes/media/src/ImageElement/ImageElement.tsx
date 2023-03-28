@@ -44,20 +44,20 @@ export const ImageElement = (props: ImageElementProps) => {
             // @ts-ignore
             css={styles.resizable?.css}
             className={styles.resizable?.className}
-            handleComponent={{
-              left: (
-                <Box
-                  css={[styles.handleLeft?.css]}
-                  className={styles.handleLeft?.className}
-                />
-              ),
-              right: (
-                <Box
-                  css={styles.handleRight?.css}
-                  className={styles.handleRight?.className}
-                />
-              ),
-            }}
+            renderHandleLeft={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={[styles.handleLeft?.css]}
+                className={styles.handleLeft?.className}
+              />
+            )}
+            renderHandleRight={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={styles.handleRight?.css}
+                className={styles.handleRight?.className}
+              />
+            )}
             align={align}
             readOnly={!ignoreReadOnly && readOnly}
             {...resizableProps}

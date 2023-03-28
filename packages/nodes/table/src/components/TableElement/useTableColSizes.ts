@@ -14,7 +14,10 @@ import { TablePlugin, TTableElement } from '../../types';
  * Returns colSizes with overrides applied.
  * Unset node.colSizes if `colCount` updates to 1.
  */
-export const useTableColSizes = (tableNode: TTableElement): number[] => {
+export const useTableColSizes = (
+  tableNode: TTableElement,
+  { disableOverrides = false } = {}
+): number[] => {
   const editor = useEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
@@ -25,7 +28,7 @@ export const useTableColSizes = (tableNode: TTableElement): number[] => {
 
   const overriddenColSizes = getTableOverriddenColSizes(
     tableNode,
-    colSizeOverrides
+    disableOverrides ? undefined : colSizeOverrides
   );
 
   const colCount = getTableColumnCount(tableNode);

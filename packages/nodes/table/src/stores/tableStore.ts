@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { createAtomStore, TElement } from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
@@ -7,6 +8,7 @@ export const { tableStore, useTableStore } = createAtomStore(
   {
     colSizeOverrides: new Map() as TableStoreSizeOverrides,
     rowSizeOverrides: new Map() as TableStoreSizeOverrides,
+    marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,
   },
@@ -17,19 +19,23 @@ const useOverrideSizeFactory = (
   setOverrides: (
     fn: (overrides: TableStoreSizeOverrides) => TableStoreSizeOverrides
   ) => void
-) => (index: number, size: number | null) => {
-  setOverrides((overrides) => {
-    const newOverrides = new Map(overrides);
+) =>
+  useCallback(
+    (index: number, size: number | null) => {
+      setOverrides((overrides) => {
+        const newOverrides = new Map(overrides);
 
-    if (size === null) {
-      newOverrides.delete(index);
-    } else {
-      newOverrides.set(index, size);
-    }
+        if (size === null) {
+          newOverrides.delete(index);
+        } else {
+          newOverrides.set(index, size);
+        }
 
-    return newOverrides;
-  });
-};
+        return newOverrides;
+      });
+    },
+    [setOverrides]
+  );
 
 // jotai supports setting with functions, but createAtomStore doesn't know that
 export const useOverrideColSize = () => {
@@ -41,3 +47,6 @@ export const useOverrideRowSize = () => {
   const setRowSizeOverrides = useTableStore().set.rowSizeOverrides();
   return useOverrideSizeFactory((setRowSizeOverrides as unknown) as any);
 };
+
+export const useOverrideMarginLeft = () =>
+  useTableStore().set.marginLeftOverride();
