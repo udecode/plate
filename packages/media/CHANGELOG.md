@@ -1,5 +1,12 @@
 # @udecode/plate-media
 
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
 ## 20.4.0
 
 ## 20.3.2
