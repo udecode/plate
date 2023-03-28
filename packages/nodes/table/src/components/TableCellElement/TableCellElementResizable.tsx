@@ -4,7 +4,6 @@ import {
   findNodePath,
   getPluginOptions,
   HTMLPropsAs,
-  isDefined,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
@@ -123,26 +122,25 @@ export const useTableCellElementResizableProps = ({
   );
 
   const handleResizeRight = useCallback(
-    (event: ResizeEvent) => {
-      const [currentInitial, nextInitial] = colSizesWithoutOverrides.slice(
-        colIndex,
-        colIndex + 2
+    ({ initialSize: currentInitial, delta, finished }: ResizeEvent) => {
+      const nextInitial = colSizesWithoutOverrides[colIndex + 1];
+
+      const complement = (width: number) =>
+        currentInitial + nextInitial - width;
+
+      const currentNew = roundCellSizeToStep(
+        resizeLengthClampStatic(currentInitial + delta, {
+          min: minColumnWidth,
+          max: nextInitial ? complement(minColumnWidth) : undefined,
+        }),
+        stepX
       );
 
-      const clampedDelta = resizeLengthClampStatic(event.delta, {
-        min: minColumnWidth - currentInitial,
-        max: isDefined(nextInitial) ? nextInitial - minColumnWidth : Infinity,
-      });
+      const nextNew = nextInitial ? complement(currentNew) : undefined;
 
-      const roundedDelta = roundCellSizeToStep(clampedDelta, stepX);
-
-      const fn = event.finished ? setColSize : overrideColSize;
-
-      fn(colIndex, currentInitial + roundedDelta);
-
-      if (isDefined(nextInitial)) {
-        fn(colIndex + 1, nextInitial - roundedDelta);
-      }
+      const fn = finished ? setColSize : overrideColSize;
+      fn(colIndex, currentNew);
+      if (nextNew) fn(colIndex + 1, nextNew);
     },
     [
       colIndex,
@@ -156,10 +154,16 @@ export const useTableCellElementResizableProps = ({
 
   const handleResizeBottom = useCallback(
     (event: ResizeEvent) => {
-      const roundedDelta = roundCellSizeToStep(event.delta, stepY);
+      const newHeight = roundCellSizeToStep(
+        event.initialSize + event.delta,
+        stepY
+      );
 
-      const fn = event.finished ? setRowSize : overrideRowSize;
-      fn(rowIndex, event.initialSize + roundedDelta);
+      if (event.finished) {
+        setRowSize(rowIndex, newHeight);
+      } else {
+        overrideRowSize(rowIndex, newHeight);
+      }
     },
     [overrideRowSize, rowIndex, setRowSize, stepY]
   );
@@ -168,21 +172,25 @@ export const useTableCellElementResizableProps = ({
     (event: ResizeEvent) => {
       const initial = colSizesWithoutOverrides[colIndex];
 
-      const clampedDelta = resizeLengthClampStatic(event.delta, {
-        min: -marginLeft,
-        max: initial - minColumnWidth,
-      });
+      const complement = (width: number) => initial + marginLeft - width;
 
-      const roundedDelta = roundCellSizeToStep(clampedDelta, stepX);
+      const newMargin = roundCellSizeToStep(
+        resizeLengthClampStatic(marginLeft + event.delta, {
+          min: 0,
+          max: complement(minColumnWidth),
+        }),
+        stepX
+      );
 
-      const { finished } = event;
-      (finished ? setColSize : overrideColSize)(
-        colIndex,
-        initial - roundedDelta
-      );
-      (finished ? setMarginLeft : overrideMarginLeft)(
-        marginLeft + roundedDelta
-      );
+      const newWidth = complement(newMargin);
+
+      if (event.finished) {
+        setMarginLeft(newMargin);
+        setColSize(colIndex, newWidth);
+      } else {
+        overrideMarginLeft(newMargin);
+        overrideColSize(colIndex, newWidth);
+      }
     },
     [
       colIndex,

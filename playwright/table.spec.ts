@@ -4,8 +4,10 @@ const getCell = (page: Locator, row: number, column: number) => page.locator(`ta
 const getWidth = (locator: Locator) => locator.boundingBox().then((box) => box.width);
 const getHeight = (locator: Locator) => locator.boundingBox().then((box) => box.height);
 
-const getRightResizable = (cell: Locator) => cell.locator('//div[2]/div[1]/div[1]/div[1]');
-const getBottomResizable = (cell: Locator) => cell.locator('//div[2]/div[1]/div[1]/div[2]');
+const getResizableWrapper = (cell: Locator) => cell.locator('[class*=\'ResizableWrapper\']');
+const getRightResizable = (cell: Locator) => getResizableWrapper(cell).locator(':nth-child(1)');
+const getBottomResizable = (cell: Locator) => getResizableWrapper(cell).locator(':nth-child(2)');
+const getLeftResizable = (cell: Locator) => getResizableWrapper(cell).locator(':nth-child(3)');
 
 const dragResizable = async (page: Page, resizable: Locator, dx: number, dy: number) => {
   const resizableBoundingBox = await resizable.boundingBox();
