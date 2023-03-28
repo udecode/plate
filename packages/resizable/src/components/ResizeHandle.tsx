@@ -4,10 +4,10 @@ import {
   createElementAs,
   HTMLPropsAs,
 } from '@udecode/plate-common';
-import { ResizeEvent } from '../types';
+import { ResizeDirection, ResizeEvent } from '../types';
 
 export type ResizeHandleProps = HTMLPropsAs<'div'> & {
-  direction: 'left' | 'right' | 'top' | 'bottom';
+  direction: ResizeDirection;
   width?: number;
   startMargin?: number;
   endMargin?: number;
@@ -56,7 +56,7 @@ export const useResizeHandleProps = ({
       const { clientX, clientY } = event;
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      onResize?.({ initialSize, delta, finished });
+      onResize?.({ initialSize, delta, finished, direction });
     };
 
     const handleMouseMove = (event: MouseEvent) =>
@@ -82,6 +82,7 @@ export const useResizeHandleProps = ({
     onResize,
     isHorizontal,
     onHoverEnd,
+    direction,
   ]);
 
   const handleMouseOver = () => {

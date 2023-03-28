@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   AsProps,
   createComponentAs,
@@ -10,34 +10,45 @@ import {
   useElement,
 } from '@udecode/plate-common';
 import {
-  Resizable as ReResizable,
-  ResizableProps as ReResizableProps,
-} from 're-resizable';
+  ResizeEvent,
+  ResizeLength,
+  resizeLengthClamp,
+  useResizeHandleProps,
+} from '@udecode/resizable';
 import { useReadOnly } from 'slate-react';
 import { TMediaElement } from '../media/types';
 import { useResizableStore } from './resizableStore';
 import { TResizableElement } from './TResizableElement';
 
-export interface ResizableProps
-  extends Omit<ReResizableProps, 'as'>,
-    AsProps<'div'> {
+export interface ResizableProps extends AsProps<'div'> {
   /**
    * Node alignment.
    */
   align?: 'left' | 'center' | 'right';
 
   readOnly?: boolean;
+
+  minWidth?: ResizeLength;
+  maxWidth?: ResizeLength;
+
+  renderHandleLeft?: (props: AsProps<'div'>) => JSX.Element;
+  renderHandleRight?: (props: AsProps<'div'>) => JSX.Element;
 }
 
 export const useResizable = ({
   align = 'center',
   readOnly,
+  minWidth = 92,
+  maxWidth = '100%',
+  renderHandleLeft,
+  renderHandleRight,
   ...props
-}: ResizableProps): ReResizableProps => {
+}: ResizableProps) => {
   const element = useElement<TMediaElement>();
   const editor = useEditorRef();
   const _readOnly = useReadOnly();
   readOnly = isDefined(readOnly) ? readOnly : _readOnly;
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const nodeWidth = element?.width ?? '100%';
 
@@ -62,47 +73,91 @@ export const useResizable = ({
     setWidth(nodeWidth);
   }, [nodeWidth, setWidth]);
 
-  const defaultProps: ReResizableProps = {
-    minWidth: 92,
-    size: { width: width!, height: '100%' },
-    maxWidth: '100%',
-    lockAspectRatio: true,
-    resizeRatio: align === 'center' ? 2 : 1,
-    enable: {
-      left: ['center', 'left'].includes(align),
-      right: ['center', 'right'].includes(align),
+  const handleResize = useCallback(
+    ({ initialSize, delta, finished, direction }: ResizeEvent) => {
+      const wrapperStaticWidth = wrapperRef.current!.offsetWidth;
+      const deltaFactor =
+        (align === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
+
+      const newWidth = resizeLengthClamp(
+        initialSize + delta * deltaFactor,
+        wrapperStaticWidth,
+        {
+          min: minWidth,
+          max: maxWidth,
+        }
+      );
+
+      if (finished) {
+        setNodeWidth(newWidth);
+      } else {
+        setWidth(newWidth);
+      }
     },
-    handleStyles: {
-      left: { left: 0 },
-      right: { right: 0 },
-    },
-    onResize: (e, direction, ref) => {
-      setWidth(ref.offsetWidth);
-    },
-    onResizeStop: (e, direction, ref) => setNodeWidth(ref.offsetWidth),
+    [align, maxWidth, minWidth, setNodeWidth, setWidth]
+  );
+
+  // Remove style except for cursor
+  const handlePropsLeft = {
+    ...useResizeHandleProps({
+      direction: 'left',
+      onResize: handleResize,
+    }),
+    style: { cursor: 'ew-resize' },
   };
 
-  if (readOnly) {
-    return {
-      ...defaultProps,
-      ...props,
-      enable: {
-        left: false,
-        right: false,
-        top: false,
-        bottom: false,
-        topLeft: false,
-        bottomLeft: false,
-        topRight: false,
-        bottomRight: false,
-      },
-    };
-  }
+  const handlePropsRight = {
+    ...useResizeHandleProps({
+      direction: 'right',
+      onResize: handleResize,
+    }),
+    style: { cursor: 'ew-resize' },
+  };
 
-  return { ...defaultProps, ...props };
+  const handleLeft =
+    !readOnly && align !== 'left' && renderHandleLeft?.(handlePropsLeft);
+  const handleRight =
+    !readOnly && align !== 'right' && renderHandleRight?.(handlePropsRight);
+
+  return {
+    wrapperProps: {
+      ref: wrapperRef,
+      style: {
+        position: 'relative',
+      },
+    } as AsProps<'div'>,
+    resizableProps: {
+      style: {
+        width,
+        minWidth,
+        maxWidth,
+        position: 'relative',
+      },
+    } as AsProps<'div'>,
+    handleLeft,
+    handleRight,
+    restProps: props,
+  };
 };
 
-export const Resizable = createComponentAs<ResizableProps>((props) => {
-  const resizableProps = useResizable(props);
-  return <ReResizable {...resizableProps} />;
-});
+export const Resizable = createComponentAs<ResizableProps>(
+  ({ children, ...props }) => {
+    const {
+      wrapperProps,
+      resizableProps,
+      handleLeft,
+      handleRight,
+      restProps,
+    } = useResizable(props);
+
+    return (
+      <div {...wrapperProps}>
+        <div {...resizableProps} {...restProps}>
+          {handleLeft}
+          {children}
+          {handleRight}
+        </div>
+      </div>
+    );
+  }
+);

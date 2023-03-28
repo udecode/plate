@@ -6858,8 +6858,8 @@ __metadata:
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
     "@udecode/plate-common": "npm:20.4.0"
+    "@udecode/resizable": "npm:20.4.0"
     js-video-url-parser: "npm:^0.5.1"
-    re-resizable: "npm:^6.9.9"
     react-textarea-autosize: "npm:^8.3.3"
     scriptjs: "npm:2.5.9"
   peerDependencies:
@@ -7529,7 +7529,6 @@ __metadata:
     "@udecode/plate-table": "npm:20.4.0"
     "@udecode/plate-ui-button": "npm:20.4.0"
     "@udecode/plate-ui-toolbar": "npm:20.4.0"
-    re-resizable: "npm:^6.9.9"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -21839,16 +21838,6 @@ __metadata:
     iconv-lite: "npm:0.4.24"
     unpipe: "npm:1.0.0"
   checksum: b5e41c0e7213e078f045a2b2397eb35665e952ad5176ff7462b740f7c7730b3d47d496ab2b1dd31ed36f8ffed41291cf93b035516403e0babea72c42d039b66b
-  languageName: node
-  linkType: hard
-
-"re-resizable@npm:^6.9.9":
-  version: 6.9.9
-  resolution: "re-resizable@npm:6.9.9"
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: b63d0ce559b84bae85aa3457fc329f0cfdf9a1c68397d7bc173329915a00ca96d40a311f4e6c1cd49c697684de7263eef807750086555bfebd4ce3fdff616b91
   languageName: node
   linkType: hard
 

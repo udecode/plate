@@ -51,20 +51,20 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             className={styles.resizable?.className}
             maxWidth={provider === 'twitter' ? 550 : '100%'}
             minWidth={provider === 'twitter' ? 300 : 100}
-            handleComponent={{
-              left: (
-                <Box
-                  css={[styles.handleLeft?.css]}
-                  className={styles.handleLeft?.className}
-                />
-              ),
-              right: (
-                <Box
-                  css={styles.handleRight?.css}
-                  className={styles.handleRight?.className}
-                />
-              ),
-            }}
+            renderHandleLeft={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={[styles.handleLeft?.css]}
+                className={styles.handleLeft?.className}
+              />
+            )}
+            renderHandleRight={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={styles.handleRight?.css}
+                className={styles.handleRight?.className}
+              />
+            )}
           >
             <div
               css={styles.iframeWrapper?.css}

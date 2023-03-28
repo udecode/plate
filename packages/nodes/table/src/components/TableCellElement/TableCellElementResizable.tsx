@@ -12,8 +12,8 @@ import {
   ResizeEvent,
   ResizeHandle,
   ResizeHandleProps,
+  resizeLengthClampStatic,
 } from '@udecode/resizable';
-import tw from 'twin.macro';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
   useOverrideColSize,
@@ -52,7 +52,6 @@ export const useTableCellElementResizableProps = ({
   stepX = step,
   stepY = step,
 }: TableCellElementResizableProps): {
-  wrapperProps: HTMLPropsAs<'div'>;
   rightProps: ResizeHandleProps;
   bottomProps: ResizeHandleProps;
   leftProps: ResizeHandleProps;
@@ -130,11 +129,11 @@ export const useTableCellElementResizableProps = ({
         colIndex + 2
       );
 
-      const minDelta = minColumnWidth - currentInitial;
-      const maxDelta = isDefined(nextInitial)
-        ? nextInitial - minColumnWidth
-        : Infinity;
-      const clampedDelta = Math.min(Math.max(event.delta, minDelta), maxDelta);
+      const clampedDelta = resizeLengthClampStatic(event.delta, {
+        min: minColumnWidth - currentInitial,
+        max: isDefined(nextInitial) ? nextInitial - minColumnWidth : Infinity,
+      });
+
       const roundedDelta = roundCellSizeToStep(clampedDelta, stepX);
 
       const fn = event.finished ? setColSize : overrideColSize;
@@ -169,9 +168,11 @@ export const useTableCellElementResizableProps = ({
     (event: ResizeEvent) => {
       const initial = colSizesWithoutOverrides[colIndex];
 
-      const minDelta = -marginLeft;
-      const maxDelta = initial - minColumnWidth;
-      const clampedDelta = Math.min(Math.max(event.delta, minDelta), maxDelta);
+      const clampedDelta = resizeLengthClampStatic(event.delta, {
+        min: -marginLeft,
+        max: initial - minColumnWidth,
+      });
+
       const roundedDelta = roundCellSizeToStep(clampedDelta, stepX);
 
       const { finished } = event;
@@ -215,9 +216,6 @@ export const useTableCellElementResizableProps = ({
   };
 
   return {
-    wrapperProps: {
-      css: [tw`relative w-full h-full`],
-    },
     rightProps: {
       direction: 'right',
       onResize: handleResizeRight,
@@ -247,7 +245,6 @@ export const TableCellElementResizable = createComponentAs<TableCellElementResiz
     );
     const { readOnly, colIndex } = props;
     const {
-      wrapperProps,
       rightProps,
       bottomProps,
       leftProps,
@@ -257,11 +254,11 @@ export const TableCellElementResizable = createComponentAs<TableCellElementResiz
 
     return (
       !readOnly && (
-        <div {...wrapperProps}>
+        <>
           <ResizeHandle {...rightProps} />
           <ResizeHandle {...bottomProps} />
           {hasLeftHandle && <ResizeHandle {...leftProps} />}
-        </div>
+        </>
       )
     );
   }
