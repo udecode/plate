@@ -24,6 +24,7 @@ const plugins = createMyPlugins(
     createTablePlugin({
       options: {
         initialTableWidth: 600,
+        // disableMarginLeft: true,
       },
     }),
   ],
