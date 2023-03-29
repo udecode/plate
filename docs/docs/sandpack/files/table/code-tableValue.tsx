@@ -6,7 +6,7 @@ jsx;
 
 export const createTable = (): any => (
   <fragment>
-    <htable colSizes={[150, 150, 150, 150]}>
+    <htable colSizes={[150, 150, 150, 150]} marginLeft={50}>
       <htr>
         <hth>
           <hp>
