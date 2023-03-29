@@ -3,13 +3,42 @@ slug: /plugins/basic-elements
 title: Basic Elements
 ---
 
-Includes the following plugins:
-- `createBlockquotePlugin()` for the `blockquote` element
-- `createCodeBlockPlugin()` for the `code_block` element
-- `createHeadingPlugin()` for the `h1`, `h2`,... elements
-- `createParagraphPlugin()` for the `p` element
+The Basic Elements plugin bundle includes the following plugins to enhance your editor with essential formatting elements:
+
+- **`createBlockquotePlugin()`** for the `blockquote` element
+- **`createCodeBlockPlugin()`** for the `code_block` element
+- **`createHeadingPlugin()`** for the `h1`, `h2`,... elements
+- **`createParagraphPlugin()`** for the `p` element
+
+These plugins provide the foundational formatting options for structuring your content effectively,
+allowing you to create blockquotes, code blocks, headings, and paragraphs with ease.
+
+### Demo
+
+The Basic Elements plugins enrich your editor with essential formatting elements, enabling you to create and edit content effectively.
+Use the toolbar buttons to apply blockquote, code block, heading, and paragraph formatting to your text.
+
+
+
+
+
+
+
+
+
+
+
+
+import { BasicElementsSandpack } from "./BasicElementsSandpack";
+
+<BasicElementsSandpack />
 
 ### Installation
+
+Follow these steps to integrate the basic elements plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -22,12 +51,20 @@ npm install @udecode/plate-heading
 npm install @udecode/plate-paragraph
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
+```
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 
-import { BasicElementsSandpack } from "./BasicElementsSandpack";
+const plugins = createPlugins([
+  ...otherPlugins,
+  createBasicElementsPlugin(),
+], {
+  components: plateUI,
+});
 
-<BasicElementsSandpack />
+```
+
 
 #### Code Block
 

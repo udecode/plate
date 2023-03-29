@@ -5,7 +5,34 @@ title: Mention
 
 The mention plugin is using the [combobox plugin](docs/plugins/combobox).
 
+The Mention plugin provides smart autocompletion support for user input. When a user types a pre-configured marker,
+such as "@" or "#", they will receive autocomplete suggestions in a panel displayed next to the cursor.
+The selected suggestion is then inserted into the content,
+allowing for efficient user interactions such as mentioning users or applying tags.
+
+### Demo
+
+To use the Mention feature, type "@" or "#" to invoke the autocomplete panel and select a suggestion from the list.
+
+
+
+
+
+
+
+
+
+
+import { MentionSandpack } from "./MentionSandpack";
+
+<MentionSandpack />
+
 ### Installation
+
+Follow these steps to integrate the mention plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -15,11 +42,45 @@ npm install @udecode/plate-mention
 npm install @udecode/plate-ui-mention
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { MentionSandpack } from './MentionSandpack'
+```
+import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
+import { MentionElement } from './MentionElement';
 
-<MentionSandpack />
+const plugins = createPlugins([
+  ...otherPlugins,
+  createComboboxPlugin(),
+  createMentionPlugin(),
+  createMentionPlugin({
+    key: '#',
+    component: MentionElement,
+    options: {
+      trigger: '#',
+      inputCreation: { key: 'creationId', value: 'main' },
+    },
+  }),
+  createMentionPlugin({
+    key: '/',
+    component: MentionElement,
+    options: {
+      trigger: '/',
+      query: (editor) => {
+        const blockPath = getBlockAbove(editor)?.[1];
+        return (
+          !!editor.selection &&
+          !!blockPath &&
+          isStartPoint(editor, editor.selection.anchor, blockPath)
+        );
+      },
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+
+```
+
 
 ### Options
 

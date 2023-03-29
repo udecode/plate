@@ -3,9 +3,40 @@ slug: /components/dnd
 title: Drag & Drop
 ---
 
-Includes drag & drop feature using a drag handle on the left side of each block.
+The Drag and Drop component allows for easy movement of text and block objects, such as images or tables, within the editor.
+It also enables the ability to drop HTML and plain text from external sources into the editor.
+This feature improves the user experience by making it simple to move and insert content within the editor.
+
+
+### Demo
+
+The Drag and Drop component allows you to select a block with the handle located on its left side and move it to a different location within the editor.
+You can also select text and move it to a different location. Try it out for yourself to see how it can improve your editing workflow.
+
+- Wrap your editor with `<DndProvider backend={HTML5Backend}>` provider
+- Override your components with `components = withStyledDraggables(components)`, these will wrap your block components with a draggable handle.
+- Use `createNodeIdPlugin()` plugin as it requires `id` property on your blocks.
+
+
+
+
+
+
+
+
+
+
+
+import { DndSandpack } from "./DndSandpack";
+
+<DndSandpack />
 
 ### Installation
+
+Follow these steps to integrate the drag & drop component into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
@@ -14,13 +45,21 @@ npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
 npm install @udecode/plate-ui-dnd
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-- Wrap your editor with `<DndProvider backend={HTML5Backend}>` provider
-- Override your components with `components = withStyledDraggables(components)`, these will wrap your block components with a draggable handle.
-- Use `createNodeIdPlugin()` plugin as it requires `id` property on your blocks.
+```
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { createDndPlugin } from '@udecode/plate-dnd';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
+const plugins = createPlugins([
+...otherPlugins,
+createBasicElementsPlugin(),
+createNodeIdPlugin(),
+createDndPlugin({ options: { enableScroller: true } }),
+], {
+components: components,
+});
 
-import { DndSandpack } from "./DndSandpack";
+```
 
-<DndSandpack />

@@ -3,9 +3,30 @@ slug: /tabbable
 title: Tabbable
 ---
 
-Programmatically corrects the tab order for tabbable elements inside the editor
+The Tabbable plugin ensures a consistent tab order when navigating into and out of void nodes.
+
+Without this plugin, DOM elements inside void nodes appear after the editor in the tab order, disrupting user experience.
+
+The Tabbable plugin enables intuitive tabbing behavior, enhancing the overall editing process.
+
+### Demo
+
+
+
+
+
+
+import { TabbableSandpack } from "./TabbableSandpack";
+
+<TabbableSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the tabbable plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -13,11 +34,53 @@ npm install @udecode/plate
 npm install @udecode/plate-tabbable
 ```
 
-### Usage
 
-import { TabbableSandpack } from './TabbableSandpack'
+2. Import the plugin and add it to your plugin list:
 
-<TabbableSandpack />
+```
+import React from 'react';
+import {
+  createListPlugin,
+  createTabbablePlugin,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_LI,
+  findNode,
+  Plate,
+} from '@udecode/plate';
+import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
+import { editableProps } from './common/editableProps';
+import { plateUI } from './common/plateUI';
+import { createTabbableElementPlugin } from './tabbable/createTabbableElementPlugin';
+import { TabbableElement } from './tabbable/TabbableElement';
+import { tabbableValue } from './tabbable/tabbableValue';
+import { createMyPlugins, MyValue } from './typescript/plateTypes';
+
+const plugins = createMyPlugins(
+  [
+    ...basicNodesPlugins,
+    createListPlugin(),
+    createTabbablePlugin({
+      options: {
+        query: (editor) => {
+          const inList = findNode(editor, { match: { type: ELEMENT_LI } });
+          const inCodeBlock = findNode(editor, {
+            match: { type: ELEMENT_CODE_BLOCK },
+          });
+          return !inList && !inCodeBlock;
+        },
+      },
+    }),
+    createTabbableElementPlugin({
+      component: TabbableElement,
+    }) as any,
+  ],
+  {
+    components: plateUI,
+  }
+);
+
+```
+
 
 #### Conflicts with other plugins
 

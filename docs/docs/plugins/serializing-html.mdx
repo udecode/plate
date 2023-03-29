@@ -3,7 +3,47 @@ slug: /serializing-html
 title: HTML
 ---
 
+The **`@udecode/plate-serializer-html`** plugin provides functionality to convert JSON content to HTML and to create JSON from HTML without requiring an editor instance.
+
+This feature is particularly useful for server-side rendering, as it does not require a complicated setup.
+
+All that is required is a JSON or HTML string, along with a set of extensions.
+
+### Demo
+
+By default, pasting content into a Slate editor will use the clipboard's **`'text/plain'`** data.
+
+While this is acceptable for some use cases, in other cases you may want users to be able to paste in content and have it maintain its formatting.
+
+To achieve this, your editor needs to handle **`'text/html'`** data.
+
+This is an example of doing exactly that! To try it out for yourself,
+copy and paste some rendered HTML rich text content (not the source code) from another site into this editor, and its formatting should be preserved.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { SerializingHtmlSandpack } from "./SerializingHtmlSandpack";
+
+<SerializingHtmlSandpack />
+
+
 ### Installation
+
+Follow these steps to integrate the HTML plugin plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -11,11 +51,60 @@ npm install @udecode/plate
 npm install @udecode/plate-serializer-html
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { SerializingHtmlSandpack } from './SerializingHtmlSandpack'
+```
+import {
+  createExcalidrawPlugin,
+  createHighlightPlugin,
+  createImagePlugin,
+  createLinkPlugin,
+  createListPlugin,
+  createMediaEmbedPlugin,
+  createMentionPlugin,
+  createSoftBreakPlugin,
+  createTablePlugin,
+  createTodoListPlugin,
+} from '@udecode/plate';
 
-<SerializingHtmlSandpack />
+import { createDeserializeHTMLPlugin } from '@udecode/plate-serializer-html';
+
+const plugins = createPlugins([
+  ...otherPlugins,
+  ...basicNodesPlugins,
+  createImagePlugin(),
+  createLinkPlugin(linkPlugin),
+  createListPlugin(),
+  createTablePlugin(),
+  createTodoListPlugin(),
+  createMediaEmbedPlugin(),
+  createExcalidrawPlugin(),
+  createHighlightPlugin(),
+  createMentionPlugin(),
+  createSoftBreakPlugin(softBreakPlugin),
+  createDeserializeHTMLPlugin({
+    plugins: [
+      createImagePlugin(),
+      createLinkPlugin(linkPlugin),
+      createListPlugin(),
+      createTablePlugin(),
+      createTodoListPlugin(),
+      createMediaEmbedPlugin(),
+      createExcalidrawPlugin(),
+      createHighlightPlugin(),
+      createMentionPlugin(),
+      createSoftBreakPlugin(softBreakPlugin),
+    ],
+  }),
+], {
+  components: createPlateUI(),
+});
+
+```
+
+Note that the **`createDeserializeHTMLPlugin`** is used to enable HTML pasting in the editor.
+
+
 
 ### Source Code
 

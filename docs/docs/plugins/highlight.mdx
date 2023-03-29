@@ -3,7 +3,35 @@ slug: /plugins/highlight
 title: Highlight
 ---
 
+The Highlight plugin provides text marking tools to aid content authors in their work, such as reviewing and referencing content.
+
+It utilizes inline **`<mark>`** elements, supporting both markers (background color) and pens (text color), and comes with a flexible configuration.
+
+### Demo
+
+To utilize the highlight feature, first select the desired text and then use the Highlight toolbar button to apply the highlight.
+
+You can choose from a predefined and limited number of available colors.
+
+
+
+
+
+
+
+
+
+import { HighlightSandpack } from "./HighlightSandpack";
+
+<HighlightSandpack />
+
+
 ### Installation
+
+Follow these steps to integrate the highlight plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -11,11 +39,22 @@ npm install @udecode/plate
 npm install @udecode/plate-highlight
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { HighlightSandpack } from './HighlightSandpack'
+```
+import { createHighlightPlugin } from '@udecode/plate-highlight';
 
-<HighlightSandpack />
+const plugins = createPlugins([
+  ...otherPlugins,
+  ...basicNodesPlugins,
+  createHighlightPlugin(),
+], {
+  components: createPlateUI(),
+});
+
+```
+
+
 
 ### Source Code
 

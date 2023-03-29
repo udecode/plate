@@ -3,9 +3,34 @@ slug: /plugins/soft-break
 title: Soft Break
 ---
 
-Allows you to create hotkeys which insert a line break, without exiting the current block.
+The Soft Break plugin allows users to insert line breaks within a block of text without starting a new block.
+
+This can be useful for creating spacing or separating elements within a block of text without disrupting the structure of the document.
+
+### Demo
+
+To test the Soft Break feature, use the Shift+Enter keyboard shortcut in the provided demo.
+
+The results will vary depending on the type of block you're currently working with.
+
+
+
+
+
+
+
+
+
+
+import { SoftBreakSandpack } from "./SoftBreakSandpack";
+
+<SoftBreakSandpack />
 
 ### Installation
+
+Follow these steps to integrate the soft break plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -13,11 +38,22 @@ npm install @udecode/plate
 npm install @udecode/plate-break
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { SoftBreakSandpack } from './SoftBreakSandpack'
+```
+import { createSoftBreakPlugin } from '@udecode/plate';
 
-<SoftBreakSandpack />
+const plugins = createPlugins([
+...otherPlugins,
+...basicNodesPlugins,
+createSoftBreakPlugin(softBreakPlugin),
+], {
+components: createPlateUI(),
+});
+
+```
+
+
 
 ### Options
 

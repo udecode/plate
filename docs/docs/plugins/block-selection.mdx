@@ -3,21 +3,56 @@ slug: /plugins/block-selection
 title: Block Selection
 ---
 
-Adds a visual way of selecting blocks.
+The Block Selection plugin enhances user productivity by enabling the selection and manipulation of entire text blocks, as opposed to individual words or characters.
+
+This streamlined approach facilitates efficient editing of large text sections and simplifies copying and pasting of content blocks.
+
+### Demo
+
+To experience the block selection feature, initiate your selection outside the text area and then move the cursor into the text to select an entire block.
+
+
+
+
+
+
+
+
+import { BlockSelectionSandpack } from "./BlockSelectionSandpack";
+
+<BlockSelectionSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the selection plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate-selection
 npm install @udecode/plate-node-id
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
+
+```
+import { createBlockSelectionPlugin } from '@udecode/plate-block-select';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+
+const plugins = createPlugins([
+  ...otherPlugins,
+  ...basicNodesPlugins,
+  createNodeIdPlugin(),
+  createBlockSelectionPlugin(),
+], {
+  components: createPlateUI(),
+});
+
+```
 
 
-import { BlockSelectionSandpack } from "./BlockSelectionSandpack";
-
-<BlockSelectionSandpack />
 
 ### Styling
 

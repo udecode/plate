@@ -9,22 +9,53 @@ editor.
 
 > For easy cloud uploads of images and attachment including server-side image resizing, please see our official [Plate Cloud](/docs/guides/cloud) service and associated plugin.
 
-It also provides the following features:
-
-- editable caption below the media
-- resizable
 
 Media providers supported by this plugin:
 
 - video:
-  - youtube
-  - vimeo
-  - dailymotion
-  - youku
-  - coub
+- youtube
+- vimeo
+- dailymotion
+- youku
+- coub
 - twitter
 
+
+
+In addition to basic media embedding, this plugin offers features like editable captions below the media and resizing capabilities.
+
+### Demo
+
+To insert media, click on the media button in the toolbar to embed media or images.
+
+You can also paste the media URL directly into the editor, and it will be automatically embedded.
+
+Experiment with the demo below to explore these features.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { MediaSandpack } from "./MediaSandpack";
+
+<MediaSandpack />
+
+
 ### Installation
+
+Follow these steps to integrate the media embed plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -33,13 +64,32 @@ npm install @udecode/plate-media
 npm install @udecode/plate-ui-media
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
+```
+import { createImagePlugin } from '@udecode/plate-image';
+import { createMediaEmbedPlugin } from '@udecode/plate-media-embed';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select-on-backspace';
+import { basicNodesPlugins, ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate';
 
+const plugins = createPlugins([
+  ...otherPlugins,
+  ...basicNodesPlugins,
+  createImagePlugin(),
+  createMediaEmbedPlugin(),
+  createSelectOnBackspacePlugin({
+    options: {
+      query: {
+        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+      },
+    },
+  }),
+], {
+  components: plateUI,
+});
 
-import { MediaSandpack } from "./MediaSandpack";
+```
 
-<MediaSandpack />
 
 ### Options
 

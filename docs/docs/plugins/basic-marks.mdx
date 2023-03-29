@@ -3,6 +3,10 @@ slug: /plugins/basic-marks
 title: Basic Marks
 ---
 
+
+The Basic Marks plugin offers users a set of essential text formatting options that are fundamental to content creation in a WYSIWYG editor.
+This package includes commonly used text styling features such as bold, italic, underline, strikethrough, subscript, superscript, and code.
+
 Includes the following plugins:
 - `createBoldPlugin()` for the `bold` mark
 - `createItalicPlugin()` for the `italic` mark
@@ -12,7 +16,41 @@ Includes the following plugins:
 - `createSuperscriptPlugin()` for the `superscript` mark
 - `createCodePlugin()` for the `code` mark
 
+### Demo
+
+Basic marks can be applied using toolbar buttons or keyboard shortcuts:
+
+- Bold – Use the bold toolbar button or press Cmd/Ctrl + B
+- Italic – Use the italic toolbar button or press Cmd/Ctrl + I
+- Underline – Use the underline toolbar button or press Cmd/Ctrl + U
+- Strikethrough – Use the strikethrough toolbar button or press Cmd/Ctrl + Shift + X
+- Code – Use the code toolbar button
+- Superscript – Use the superscript toolbar button
+- Subscript – Use the subscript toolbar button
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { BasicMarksSandpack } from "./BasicMarksSandpack";
+
+<BasicMarksSandpack />
+
 ### Installation
+
+Follow these steps to integrate the basic marks plugin into your Plate editor:
+
+
+1. Install the required packages:
+
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -20,11 +58,23 @@ npm install @udecode/plate
 npm install @udecode/plate-basic-marks
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { BasicMarksSandpack } from './BasicMarksSandpack'
+```
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { createBasicElementsPlugins } from '@udecode/plate-basic-elements';
 
-<BasicMarksSandpack />
+const plugins = createPlugins([
+  ...otherPlugins,
+  ...createBasicElementsPlugins(),
+  createBasicMarksPlugin(),
+], {
+  components: createPlateUI(),
+});
+
+```
+
+
 
 ### Options
 
