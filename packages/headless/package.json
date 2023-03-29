@@ -56,7 +56,8 @@
     "@udecode/plate-serializer-md": "20.4.1",
     "@udecode/plate-tabbable": "20.4.0",
     "@udecode/plate-table": "20.5.0",
-    "@udecode/plate-trailing-block": "20.4.0"
+    "@udecode/plate-trailing-block": "20.4.0",
+    "@udecode/resizable": "20.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
