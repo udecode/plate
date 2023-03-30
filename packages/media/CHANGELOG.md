@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 20.6.0
+
+### Minor Changes
+
+- [#2311](https://github.com/udecode/plate/pull/2311) by [@haydencarlson](https://github.com/haydencarlson) – Added options for twitter embeds
+
 ## 20.5.0
 
 ### Minor Changes
