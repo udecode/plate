@@ -1,6 +1,5 @@
 ---
-'examples': patch
-'@udecode/plate-media': patch
+'@udecode/plate-media': minor
 ---
 
 Added options for twitter embeds
