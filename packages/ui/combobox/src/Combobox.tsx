@@ -80,7 +80,7 @@ const ComboboxContent = <TData extends Data = NoData>(
   );
 
   // Update popper position
-  const { style, floating } = useVirtualFloating({
+  const { style, refs } = useVirtualFloating({
     placement: 'bottom-start',
     getBoundingClientRect,
     middleware: [offset(4), shift(), flip()],
@@ -99,7 +99,7 @@ const ComboboxContent = <TData extends Data = NoData>(
     <PortalBody element={portalElement}>
       <ul
         {...menuProps}
-        ref={floating}
+        ref={refs.setFloating}
         style={style}
         css={root.css}
         className={root.className}

@@ -22,8 +22,9 @@ export const onKeyDownAutoformat = <
     options: { rules, enableUndoOnDelete },
   }: WithPlatePlugin<AutoformatPlugin, V, E>
 ): KeyboardHandlerReturnType => (e: KeyboardEvent) => {
-  // Abort quicky if hotKey was not pressed.
+  if (e.defaultPrevented) return false;
 
+  // Abort quicky if hotKey was not pressed.
   if (!isHotkey('backspace', { byKey: true }, e)) return false;
 
   if (!rules) return false;

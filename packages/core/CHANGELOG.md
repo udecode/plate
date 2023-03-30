@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 20.4.0
+
+### Patch Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) –
+  - fix `nodeProps`: `undefined` attributes values are ignored
+
 ## 20.0.0
 
 ### Major Changes

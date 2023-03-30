@@ -32,6 +32,15 @@ export const getRenderNodeProps = <V extends Value>({
 
   nodeProps = { ...nodeProps, ...newProps };
 
+  if (nodeProps.nodeProps) {
+    // remove attributes values that are undefined
+    Object.keys(nodeProps.nodeProps).forEach((key) => {
+      if (nodeProps.nodeProps?.[key] === undefined) {
+        delete nodeProps.nodeProps?.[key];
+      }
+    });
+  }
+
   const { className } = nodeProps;
 
   return { ...nodeProps, className: clsx(getSlateClass(type), className) };

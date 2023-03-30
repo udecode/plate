@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-combobox",
-  "version": "20.0.0",
+  "version": "20.4.0",
   "description": "Combobox UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,10 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-combobox": "20.0.0",
-    "@udecode/plate-common": "20.0.0",
-    "@udecode/plate-floating": "20.0.0",
-    "@udecode/plate-styled-components": "20.0.0"
+    "@udecode/plate-combobox": "20.4.0",
+    "@udecode/plate-common": "20.4.0",
+    "@udecode/plate-floating": "20.4.0",
+    "@udecode/plate-styled-components": "20.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

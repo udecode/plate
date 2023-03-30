@@ -14,7 +14,7 @@ export {
   hide,
   shift,
   size,
-  // react-dom-interactions
+  // react
   safePolygon,
   useClick,
   useDelayGroup,
@@ -32,7 +32,13 @@ export {
   useListNavigation,
   useRole,
   useTypeahead,
-} from '@floating-ui/react-dom-interactions';
+  FloatingNode,
+  FloatingPortal,
+  FloatingFocusManager,
+  FloatingDelayGroup,
+  FloatingOverlay,
+  FloatingTree,
+} from '@floating-ui/react';
 
 export type {
   AlignedPlacement,
@@ -50,20 +56,14 @@ export type {
   ElementProps,
   ElementRects,
   Elements,
-  FloatingContext,
-  FloatingDelayGroup,
+  ExtendedRefs,
   FloatingElement,
   FloatingEvents,
-  FloatingFocusManager,
-  FloatingNode,
   FloatingNodeType,
-  FloatingOverlay,
-  FloatingPortal,
-  FloatingTree,
   FloatingTreeType,
+  FloatingContext,
   Length,
   Middleware,
-  MiddlewareArguments,
   MiddlewareData,
   MiddlewareReturn,
   NodeScroll,
@@ -82,4 +82,4 @@ export type {
   UseFloatingProps,
   UseFloatingReturn,
   VirtualElement,
-} from '@floating-ui/react-dom-interactions';
+} from '@floating-ui/react';

@@ -4,6 +4,7 @@
 
 export * from './getCellInNextTableRow';
 export * from './getCellInPreviousTableRow';
+export * from './getLeftTableCell';
 export * from './getNextTableCell';
 export * from './getPreviousTableCell';
 export * from './getTableAbove';
@@ -14,3 +15,5 @@ export * from './getTableGridAbove';
 export * from './getTableGridByRange';
 export * from './getTableOverriddenColSizes';
 export * from './getTableRowIndex';
+export * from './getTopTableCell';
+export * from './isTableBorderHidden';

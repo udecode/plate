@@ -5,7 +5,8 @@ const packageJsonJuice = require('@udecode/plate-juice/package.json');
 const packageJsonSelection = require('@udecode/plate-selection/package.json');
 const packageJsonCloud = require('@udecode/plate-cloud/package.json');
 const packageJsonCloudUi = require('@udecode/plate-ui-cloud/package.json');
-const packageJsonDnd = require('@udecode/plate-ui-dnd/package.json');
+const packageJsonDnd = require('@udecode/plate-dnd/package.json');
+const packageJsonDndUi = require('@udecode/plate-ui-dnd/package.json');
 const { sandpackPath } = require('./plop-config');
 
 const templateVersions = `export const plateVersion = '${packageJsonPlate.version}';
@@ -16,6 +17,7 @@ export const selectionVersion = '${packageJsonSelection.version}';
 export const cloudVersion = '${packageJsonCloud.version}';
 export const cloudUiVersion = '${packageJsonCloudUi.version}';
 export const dndVersion = '${packageJsonDnd.version}';
+export const dndUiVersion = '${packageJsonDndUi.version}';
 `;
 
 module.exports = (_plop) => {

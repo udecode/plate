@@ -1,5 +1,21 @@
 # @udecode/plate-floating
 
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) –
+  - updated dep: `"@floating-ui/react-dom-interactions": "^0.6.6"` -> `"@floating-ui/react": "^0.22.0"`
+  - new dep: `"@radix-ui/react-dropdown-menu": "^2.0.4"`
+
+## 20.3.2
+
+## 20.3.1
+
+### Patch Changes
+
+- [#2282](https://github.com/udecode/plate/pull/2282) by [@haydencarlson](https://github.com/haydencarlson) – Add popover options prop
+
 ## 20.0.0
 
 ## 19.7.0

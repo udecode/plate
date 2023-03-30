@@ -42,6 +42,7 @@ import { serializingHtmlFiles } from './serializing-html/code-serializingHtmlFil
 import { serializingMdFiles } from './serializing-md/code-serializingMdFiles';
 import { singleLineFiles } from './single-line/code-singleLineFiles';
 import { softBreakFiles } from './soft-break/code-softBreakFiles';
+import { suggestionFiles } from './suggestion/code-suggestionFiles';
 import { tabbableFiles } from './tabbable/code-tabbableFiles';
 import { tableFiles } from './table/code-tableFiles';
 import { toolbarFiles } from './toolbar/code-toolbarFiles';
@@ -93,6 +94,7 @@ export const rootFiles = {
   ...serializingMdFiles,
   ...singleLineFiles,
   ...softBreakFiles,
+  ...suggestionFiles,
   ...tabbableFiles,
   ...tableFiles,
   ...toolbarFiles,

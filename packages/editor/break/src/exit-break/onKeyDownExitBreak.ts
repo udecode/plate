@@ -17,6 +17,8 @@ export const onKeyDownExitBreak = <
   editor: E,
   { options: { rules = [] } }: WithPlatePlugin<ExitBreakPlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

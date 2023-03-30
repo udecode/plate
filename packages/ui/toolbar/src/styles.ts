@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components';
 import tw from 'twin.macro';
 
 export const floatingRootCss = css`
-  ${tw`bg-white !z-20 w-auto`};
+  ${tw`bg-white !z-40 w-auto`};
 
   border-radius: 4px;
   box-shadow: rgb(15 15 15 / 5%) 0 0 0 1px, rgb(15 15 15 / 10%) 0 3px 6px,

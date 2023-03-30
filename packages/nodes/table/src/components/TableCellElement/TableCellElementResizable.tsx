@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import {
-  Box,
+  createComponentAs,
   findNodePath,
   getPluginOptions,
   HTMLPropsAs,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
-import { HandleStyles, Resizable, ResizableProps } from 're-resizable';
+import {
+  ResizeEvent,
+  ResizeHandle,
+  ResizeHandleProps,
+  resizeLengthClampStatic,
+} from '@udecode/resizable';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
   useOverrideColSize,
+  useOverrideMarginLeft,
   useOverrideRowSize,
   useTableStore,
 } from '../../stores/tableStore';
-import { setTableColSize, setTableRowSize } from '../../transforms';
+import {
+  setTableColSize,
+  setTableMarginLeft,
+  setTableRowSize,
+} from '../../transforms';
 import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
-import { getTableColSizeForSibling } from './getTableColSizeForSibling';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
@@ -38,157 +47,227 @@ export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
 export const useTableCellElementResizableProps = ({
   colIndex,
   rowIndex,
-  readOnly,
   step,
   stepX = step,
   stepY = step,
-  ...props
-}: TableCellElementResizableProps): ResizableProps => {
+}: TableCellElementResizableProps): {
+  rightProps: ResizeHandleProps;
+  bottomProps: ResizeHandleProps;
+  leftProps: ResizeHandleProps;
+} => {
   const editor = usePlateEditorRef();
-  const { minColumnWidth: minWidth } = getPluginOptions<TablePlugin>(
+  const element = useElement();
+  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
+  const { minColumnWidth = 0 } = getPluginOptions<TablePlugin>(
     editor,
     ELEMENT_TABLE
   );
-  const element = useElement();
-  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
-  const setHoveredColIndex = useTableStore().set.hoveredColIndex();
-  const [isResizingRight, setIsResizingRight] = useState(false);
 
-  const colSizes = useTableColSizes(tableElement);
-  const [initialColSize, setInitialColSize] = useState<number | null>(null);
-  const [initialSiblingColSize, setInitialSiblingColSize] = useState<
-    number | null
-  >(null);
+  const [
+    hoveredColIndex,
+    setHoveredColIndex,
+  ] = useTableStore().use.hoveredColIndex();
 
-  const colSizeOverrides = useTableStore().get.colSizeOverrides();
-  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
+  const colSizesWithoutOverrides = useTableColSizes(tableElement, {
+    disableOverrides: true,
+  });
+  const { marginLeft = 0 } = tableElement;
 
   const overrideColSize = useOverrideColSize();
   const overrideRowSize = useOverrideRowSize();
+  const overrideMarginLeft = useOverrideMarginLeft();
 
-  const getNextColSize = (ownSize: number): number | undefined => {
-    return initialColSize && initialSiblingColSize
-      ? getTableColSizeForSibling(
-          initialColSize,
-          initialSiblingColSize,
-          ownSize
-        )
-      : undefined;
-  };
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const setColSize = useCallback(
+    (colIndex: number, width: number) => {
+      setTableColSize(
+        editor,
+        { colIndex, width },
+        { at: findNodePath(editor, element)! }
+      );
 
-  const handleResize: HandleStyles | undefined = !readOnly
-    ? {
-        right: {
-          top: -12,
-          height: 'calc(100% + 12px)',
-          zIndex: 40,
-          userSelect: 'none',
-        },
-        bottom: {
-          left: -12,
-          width: 'calc(100% + 12px)',
-          zIndex: 40,
-          userSelect: 'none',
-        },
+      // Prevent flickering
+      setTimeout(() => overrideColSize(colIndex, null), 0);
+    },
+    [editor, element, overrideColSize]
+  );
+
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const setRowSize = useCallback(
+    (rowIndex: number, height: number) => {
+      setTableRowSize(
+        editor,
+        { rowIndex, height },
+        { at: findNodePath(editor, element)! }
+      );
+
+      // Prevent flickering
+      setTimeout(() => overrideRowSize(rowIndex, null), 0);
+    },
+    [editor, element, overrideRowSize]
+  );
+
+  const setMarginLeft = useCallback(
+    (marginLeft: number) => {
+      setTableMarginLeft(
+        editor,
+        { marginLeft },
+        { at: findNodePath(editor, element)! }
+      );
+
+      // Prevent flickering
+      setTimeout(() => overrideMarginLeft(null), 0);
+    },
+    [editor, element, overrideMarginLeft]
+  );
+
+  const handleResizeRight = useCallback(
+    ({ initialSize: currentInitial, delta, finished }: ResizeEvent) => {
+      const nextInitial = colSizesWithoutOverrides[colIndex + 1];
+
+      const complement = (width: number) =>
+        currentInitial + nextInitial - width;
+
+      const currentNew = roundCellSizeToStep(
+        resizeLengthClampStatic(currentInitial + delta, {
+          min: minColumnWidth,
+          max: nextInitial ? complement(minColumnWidth) : undefined,
+        }),
+        stepX
+      );
+
+      const nextNew = nextInitial ? complement(currentNew) : undefined;
+
+      const fn = finished ? setColSize : overrideColSize;
+      fn(colIndex, currentNew);
+      if (nextNew) fn(colIndex + 1, nextNew);
+    },
+    [
+      colIndex,
+      colSizesWithoutOverrides,
+      minColumnWidth,
+      overrideColSize,
+      setColSize,
+      stepX,
+    ]
+  );
+
+  const handleResizeBottom = useCallback(
+    (event: ResizeEvent) => {
+      const newHeight = roundCellSizeToStep(
+        event.initialSize + event.delta,
+        stepY
+      );
+
+      if (event.finished) {
+        setRowSize(rowIndex, newHeight);
+      } else {
+        overrideRowSize(rowIndex, newHeight);
       }
-    : undefined;
+    },
+    [overrideRowSize, rowIndex, setRowSize, stepY]
+  );
 
-  const onMouseOverRight = () => {
-    setHoveredColIndex(colIndex);
-  };
+  const handleResizeLeft = useCallback(
+    (event: ResizeEvent) => {
+      const initial = colSizesWithoutOverrides[colIndex];
 
-  const onMouseOutRight = () => {
-    if (!isResizingRight) {
-      setHoveredColIndex(null);
-    }
-  };
+      const complement = (width: number) => initial + marginLeft - width;
 
-  const onMouseDownRight = () => {
-    setIsResizingRight(true);
-  };
+      const newMargin = roundCellSizeToStep(
+        resizeLengthClampStatic(marginLeft + event.delta, {
+          min: 0,
+          max: complement(minColumnWidth),
+        }),
+        stepX
+      );
 
-  const onResizeStart: ResizableProps['onResizeStart'] = (e, direction) => {
-    if (direction === 'right') {
-      setHoveredColIndex(colIndex);
-      setInitialColSize(colSizes[colIndex]);
-      setInitialSiblingColSize(colSizes[colIndex + 1] ?? null);
-    }
-  };
+      const newWidth = complement(newMargin);
 
-  const onResize: ResizableProps['onResize'] = (e, direction, ref) => {
-    if (direction === 'right') {
-      const newSize = roundCellSizeToStep(ref.offsetWidth, stepX);
-      const siblingSize = getNextColSize(newSize);
-
-      overrideColSize(colIndex, newSize);
-
-      if (siblingSize) {
-        overrideColSize(colIndex + 1, siblingSize);
+      if (event.finished) {
+        setMarginLeft(newMargin);
+        setColSize(colIndex, newWidth);
+      } else {
+        overrideMarginLeft(newMargin);
+        overrideColSize(colIndex, newWidth);
       }
-    } else {
-      overrideRowSize(rowIndex, roundCellSizeToStep(ref.offsetHeight, stepY));
-    }
-  };
+    },
+    [
+      colIndex,
+      colSizesWithoutOverrides,
+      marginLeft,
+      minColumnWidth,
+      overrideColSize,
+      overrideMarginLeft,
+      setColSize,
+      setMarginLeft,
+      stepX,
+    ]
+  );
 
-  const onResizeStop: ResizableProps['onResizeStop'] = (e, direction) => {
-    if (direction === 'right') {
-      colSizeOverrides.forEach((size, index) => {
-        setTableColSize(
-          editor,
-          { colIndex: index, width: size },
-          { at: findNodePath(editor, element)! }
-        );
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const getHandleHoverProps = (colIndex: number) => ({
+    onHover: () => {
+      if (hoveredColIndex === null) {
+        setHoveredColIndex(colIndex);
+      }
+    },
+    onHoverEnd: () => {
+      if (hoveredColIndex === colIndex) {
+        setHoveredColIndex(null);
+      }
+    },
+  });
 
-        // Prevent flickering
-        setTimeout(() => overrideColSize(index, null), 0);
-      });
-
-      setHoveredColIndex(null);
-      setIsResizingRight(false);
-    } else {
-      rowSizeOverrides.forEach((size, index) => {
-        setTableRowSize(
-          editor,
-          { rowIndex: index, height: size },
-          { at: findNodePath(editor, element)! }
-        );
-
-        // Prevent flickering
-        setTimeout(() => overrideRowSize(index, null), 0);
-      });
-    }
+  const commonHandleProps = {
+    startMargin: -12,
   };
 
   return {
-    size: { width: '100%', height: '100%' },
-    enable: {
-      right: !readOnly,
-      bottom: !readOnly,
+    rightProps: {
+      direction: 'right',
+      onResize: handleResizeRight,
+      ...getHandleHoverProps(colIndex),
+      ...commonHandleProps,
     },
-    minWidth,
-    maxWidth: getNextColSize(minWidth ?? 0),
-    handleStyles: handleResize,
-    handleComponent: {
-      right: (
-        <Box
-          style={{ width: '100%', height: '100%' }}
-          onMouseOver={onMouseOverRight}
-          onMouseOut={onMouseOutRight}
-          onMouseDown={onMouseDownRight}
-        />
-      ),
+    bottomProps: {
+      direction: 'bottom',
+      onResize: handleResizeBottom,
+      ...commonHandleProps,
     },
-    onResizeStart,
-    onResize,
-    onResizeStop,
-    ...props,
+    leftProps: {
+      direction: 'left',
+      onResize: handleResizeLeft,
+      ...getHandleHoverProps(-1),
+      ...commonHandleProps,
+    },
   };
 };
 
-export const TableCellElementResizable = (
-  props: TableCellElementResizableProps
-) => {
-  const htmlProps = useTableCellElementResizableProps(props);
+export const TableCellElementResizable = createComponentAs<TableCellElementResizableProps>(
+  (props) => {
+    const editor = usePlateEditorRef();
+    const { disableMarginLeft } = getPluginOptions<TablePlugin>(
+      editor,
+      ELEMENT_TABLE
+    );
+    const { readOnly, colIndex } = props;
+    const {
+      rightProps,
+      bottomProps,
+      leftProps,
+    } = useTableCellElementResizableProps(props);
 
-  return <Resizable {...htmlProps} />;
-};
+    const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
+
+    return (
+      !readOnly && (
+        <>
+          <ResizeHandle {...rightProps} />
+          <ResizeHandle {...bottomProps} />
+          {hasLeftHandle && <ResizeHandle {...leftProps} />}
+        </>
+      )
+    );
+  }
+);
