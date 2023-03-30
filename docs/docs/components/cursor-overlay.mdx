@@ -10,21 +10,12 @@ It's the strategy used by [slate-yjs](https://github.com/BitPhinix/slate-yjs) to
 
 The cursor overlay is shown when the user drags over the editor.
 
-
-
-
-
-
-
-
-
 import { CursorOverlaySandpack } from "./CursorOverlaySandpack";
 
 <CursorOverlaySandpack />
 
 ### Installation
 
-To integrate the cursor overlay plugin into your editor, follow these steps:
 Follow these steps to integrate the cursor overlay plugin into your Plate editor:
 
 
@@ -44,14 +35,13 @@ import { createCursorPlugin } from '@udecode/plate-cursor';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
 const plugins = createPlugins([
-...otherPlugins,
-createBasicElementsPlugin(),
-createNodeIdPlugin(),
-createCursorPlugin(),
+  ...otherPlugins,
+  createBasicElementsPlugin(),
+  createNodeIdPlugin(),
+  createCursorPlugin(),
 ], {
-components: components,
+  components: components,
 });
-
 ```
 
 
