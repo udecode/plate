@@ -27,19 +27,20 @@ npm install @udecode/plate
 npm install @udecode/plate-ui-cursor
 ```
 
-2. Import the plugin and add it to your plugin list:
+2. Import `CursorOverlay` and add `CursorOverlayContainer` below your `Plate` component.
 
 ```
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createCursorPlugin } from '@udecode/plate-cursor';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import {
+  CursorData,
+  CursorOverlay,
+  CursorOverlayProps,
+} from '@udecode/plate';
 
-const plugins = createPlugins([
-  ...otherPlugins,
-  createCursorPlugin(),
-], {
-  components: components,
-});
+const CursorOverlayContainer = (props: CursorOverlayProps<CursorData>) => {
+  const cursors = cursorStore.use.cursors();
+
+  return <CursorOverlay {...props} cursors={cursors} />;
+}
 ```
 
 
