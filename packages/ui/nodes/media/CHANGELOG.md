@@ -1,5 +1,7 @@
 # @udecode/plate-ui-media
 
+## 20.6.0
+
 ## 20.5.0
 
 ### Minor Changes

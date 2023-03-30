@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 20.6.0
+
 ## 20.5.1
 
 ### Patch Changes
