@@ -1,5 +1,11 @@
 # @udecode/plate-ui-cloud
 
+## 20.6.1
+
+### Patch Changes
+
+- [#2318](https://github.com/udecode/plate/pull/2318) by [@thesunny](https://github.com/thesunny) – Fix document with Plate Cloud so it contains the URLs for improved ex…
+
 ## 20.4.0
 
 ## 20.3.2
