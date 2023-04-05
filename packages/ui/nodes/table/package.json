@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-table",
-  "version": "20.5.0",
+  "version": "20.6.3",
   "description": "Table UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -22,7 +22,7 @@
     "@udecode/plate-common": "20.4.0",
     "@udecode/plate-floating": "20.4.0",
     "@udecode/plate-styled-components": "20.4.0",
-    "@udecode/plate-table": "20.5.0",
+    "@udecode/plate-table": "20.6.3",
     "@udecode/plate-ui-button": "20.4.0",
     "@udecode/plate-ui-toolbar": "20.4.0"
   },
