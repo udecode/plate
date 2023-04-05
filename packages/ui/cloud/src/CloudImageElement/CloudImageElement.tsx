@@ -109,14 +109,30 @@ export const CloudImageElement = <V extends Value>(
           userSelect: 'none',
         }}
       >
-        <img
-          css={styles.img?.css}
-          src={src}
-          srcSet={srcSet}
-          width={size.width}
-          height={size.height}
-          alt=""
-        />
+        {src !== '' ? (
+          <img
+            css={styles.img?.css}
+            src={src}
+            srcSet={srcSet}
+            width={size.width}
+            height={size.height}
+            alt=""
+          />
+        ) : (
+          /**
+           * TODO:
+           * We might want to make a custom `styles` for the placeholder to
+           * allow customization  of the background color for example.
+           */
+          <div
+            css={styles.img?.css}
+            style={{
+              width: size.width,
+              height: size.height,
+              background: '#e0e0e0',
+            }}
+          />
+        )}
         <div css={styles.statusBarContainer?.css}>
           <StatusBar
             upload={upload}

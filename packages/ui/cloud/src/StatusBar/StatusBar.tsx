@@ -106,7 +106,7 @@ export function StatusBar(props: {
     case 'error':
       return <FailBar failBarCss={failBarCss}>Upload Failed</FailBar>;
     case 'not-found':
-      return <FailBar failBarCss={failBarCss}>State Not Found</FailBar>;
+      return <FailBar failBarCss={failBarCss}>Uploading...</FailBar>;
     case 'success':
       return children || null;
     default:
