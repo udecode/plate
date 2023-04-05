@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 20.6.3
+
 ## 20.6.0
 
 ### Minor Changes
