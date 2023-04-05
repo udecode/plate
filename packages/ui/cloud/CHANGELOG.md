@@ -1,5 +1,11 @@
 # @udecode/plate-ui-cloud
 
+## 20.6.2
+
+### Patch Changes
+
+- [#2322](https://github.com/udecode/plate/pull/2322) by [@thesunny](https://github.com/thesunny) – Make Plate Cloud state not found look correct for collaborative uploads
+
 ## 20.6.1
 
 ### Patch Changes
