@@ -37,6 +37,7 @@ export const useDragNode = <V extends Value>(
 
         return {
           id,
+          editorId: editor.id,
           ..._item,
         };
       },

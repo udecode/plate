@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { DropTargetMonitor } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { useEditorRef } from '@udecode/plate-common';
-import { DropLineDirection } from '../types';
+import { TEditor, useEditorRef } from '@udecode/plate-common';
+import { DragItemNode, DropLineDirection } from '../types';
 import { useDragNode, UseDragNodeOptions } from './useDragNode';
 import { useDropNode, UseDropNodeOptions } from './useDropNode';
 
@@ -10,6 +11,15 @@ export interface UseDndNodeOptions
     Pick<UseDragNodeOptions, 'type'> {
   drag?: UseDragNodeOptions;
   drop?: UseDropNodeOptions;
+  onDropHandler?: (
+    editor: TEditor,
+    props: {
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      dragItem: DragItemNode;
+      nodeRef: any;
+      id: string;
+    }
+  ) => boolean;
   preview?: {
     /**
      * Whether to disable the preview.
@@ -35,6 +45,7 @@ export const useDndNode = ({
   preview: previewOptions = {},
   drag: dragOptions,
   drop: dropOptions,
+  onDropHandler,
 }: UseDndNodeOptions) => {
   const editor = useEditorRef();
 
@@ -51,6 +62,7 @@ export const useDndNode = ({
     nodeRef,
     dropLine,
     onChangeDropLine: setDropLine,
+    onDropHandler,
     ...dropOptions,
   });
 

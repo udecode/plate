@@ -1,5 +1,5 @@
 import { DropTargetHookSpec, DropTargetMonitor, useDrop } from 'react-dnd';
-import { TReactEditor, Value } from '@udecode/plate-common';
+import { TEditor, TReactEditor, Value } from '@udecode/plate-common';
 import { onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
 import { DragItemNode, DropLineDirection } from '../types';
@@ -25,6 +25,20 @@ export interface UseDropNodeOptions
    * Callback called on dropLine change.
    */
   onChangeDropLine: (newValue: DropLineDirection) => void;
+  /**
+   * Intercepts the drop handling.
+   * If `false` is returned, the default drop behavior is called after.
+   * If `true` is returned, the default behavior is not called.
+   */
+  onDropHandler?: (
+    editor: TEditor,
+    props: {
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      dragItem: DragItemNode;
+      nodeRef: any;
+      id: string;
+    }
+  ) => boolean;
 }
 
 /**
@@ -46,10 +60,28 @@ export interface UseDropNodeOptions
  */
 export const useDropNode = <V extends Value>(
   editor: TReactEditor<V>,
-  { nodeRef, id, dropLine, onChangeDropLine, ...options }: UseDropNodeOptions
+  {
+    nodeRef,
+    id,
+    dropLine,
+    onChangeDropLine,
+    onDropHandler,
+    ...options
+  }: UseDropNodeOptions
 ) => {
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     drop: (dragItem, monitor) => {
+      const handled =
+        !!onDropHandler &&
+        onDropHandler(editor, {
+          nodeRef,
+          id,
+          dragItem,
+          monitor,
+        });
+
+      if (handled) return;
+
       onDropNode(editor, { nodeRef, id, dragItem, monitor });
     },
     collect: (monitor) => ({
