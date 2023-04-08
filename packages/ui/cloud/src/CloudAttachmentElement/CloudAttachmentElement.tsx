@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useUpload } from '@udecode/plate-cloud';
+import { TCloudAttachmentElement, useUpload } from '@udecode/plate-cloud';
 import { findNodePath, setNodes, Value } from '@udecode/plate-common';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
@@ -36,7 +36,7 @@ export const CloudAttachmentElement = <V extends Value>(
       url !== element.url
     ) {
       const path = findNodePath(editor, element);
-      setNodes<TCloudImageElement>(
+      setNodes<TCloudAttachmentElement>(
         editor,
         { url },
         {
