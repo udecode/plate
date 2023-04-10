@@ -24,7 +24,9 @@ To create a leaf component:
 import { PlateRenderLeafProps } from '@udecode/plate';
 
 export const CustomLeaf = ({ attributes, children }: PlateRenderLeafProps) => (
-  <span {...attributes}>{children}</span>
+  <span {...attributes}>
+    {children}
+  </span>
 );
 ```
 
