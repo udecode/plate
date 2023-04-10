@@ -6,6 +6,28 @@ title: Styling
 By default, plate plugins have no component: you'll need to plug them.
 There is multiple ways to style your editor.
 
+## Create Component
+
+To create an element component:
+```tsx
+import { PlateRenderElementProps } from '@udecode/plate';
+
+export const CustomElement = ({ attributes, children }: PlateRenderElementProps) => (
+  <div {...attributes}>
+    {children}
+  </div>
+);
+```
+
+To create a leaf component:
+```tsx
+import { PlateRenderLeafProps } from '@udecode/plate';
+
+export const CustomLeaf = ({ attributes, children }: PlateRenderLeafProps) => (
+  <span {...attributes}>{children}</span>
+);
+```
+
 ## Plugins
 
 To register a single component, use the plugin property `component`:
