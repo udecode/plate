@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
-import { EElement, Value } from '@udecode/plate-common';
+import { DropTargetMonitor } from 'react-dnd';
+import { EElement, TEditor, Value } from '@udecode/plate-common';
 import {
   DraggableBlock,
   DraggableBlockToolbar,
@@ -8,6 +9,7 @@ import {
   DraggableGutterLeft,
   DraggableRoot,
   DragHandle as DefaultDragHandle,
+  DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
 import { StyledElementProps } from '@udecode/plate-styled-components';
@@ -20,6 +22,20 @@ export interface PlateDraggableProps
    * An override to render the drag handle.
    */
   onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
+  /**
+   * Intercepts the drop handling.
+   * If `false` is returned, the default drop behavior is called after.
+   * If `true` is returned, the default behavior is not called.
+   */
+  onDropHandler?: (
+    editor: TEditor,
+    props: {
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      dragItem: DragItemNode;
+      nodeRef: any;
+      id: string;
+    }
+  ) => boolean;
 }
 
 export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
