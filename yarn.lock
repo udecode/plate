@@ -6578,7 +6578,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-dnd@npm:20.4.0, @udecode/plate-dnd@workspace:packages/dnd":
+"@udecode/plate-dnd@npm:20.6.4, @udecode/plate-dnd@workspace:packages/dnd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-dnd@workspace:packages/dnd"
   dependencies:
@@ -7284,7 +7284,7 @@ __metadata:
   dependencies:
     "@tippyjs/react": "npm:^4.2.6"
     "@udecode/plate-common": "npm:20.4.0"
-    "@udecode/plate-dnd": "npm:20.4.0"
+    "@udecode/plate-dnd": "npm:20.6.4"
     "@udecode/plate-styled-components": "npm:20.4.0"
   peerDependencies:
     react: ">=16.8.0"
