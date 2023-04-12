@@ -1,5 +1,11 @@
 # @udecode/plate-ui-cloud
 
+## 20.6.4
+
+### Patch Changes
+
+- [#2327](https://github.com/udecode/plate/pull/2327) by [@thesunny](https://github.com/thesunny) – Fix Plate Cloud attachments so that it works with collaborative
+
 ## 20.6.2
 
 ### Patch Changes
