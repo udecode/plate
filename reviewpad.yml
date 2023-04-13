@@ -37,7 +37,7 @@ workflows:
     always-run: true
     if:
       # Automatically assign reviewer when the pull request is ready for review;
-      - rule: $isDraft() == false
+      - rule: $isDraft() == false && $eventType() == "opened" && $state() == "open"
         extra-actions:
           - $assignCodeAuthorReviewers()
 
