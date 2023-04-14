@@ -1,5 +1,9 @@
 # @udecode/plate-docx-serializer
 
+## 20.6.3
+
+## 20.6.0
+
 ## 20.5.0
 
 ## 20.4.0
