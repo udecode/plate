@@ -18,6 +18,7 @@ The Drag and Drop component allows you to select a block with the handle located
 
 
 
+
 import { DndSandpack } from "./DndSandpack";
 
 <DndSandpack />
@@ -194,8 +195,8 @@ const components = withStyledDraggables(createPlateUI());
 3. Import the plugins and add these to your plugin list:
 
 ```tsx
+import { createNodeIdPlugin } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
 const plugins = createPlugins([
   // ...otherPlugins,

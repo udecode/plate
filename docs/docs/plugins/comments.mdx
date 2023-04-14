@@ -16,8 +16,6 @@ To add a comment, select the text and:
 - Alternatively, use the hotkey **`⌘+⇧+M`**
 
 
-
-
 import { CommentsSandpack } from "./CommentsSandpack";
 
 <CommentsSandpack />
@@ -39,8 +37,7 @@ npm install @udecode/plate-ui-comments
 2. Import the plugin and add it to your plugin list:
 
 ```tsx
-import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
-import { PlateCommentLeaf } from './PlateCommentLeaf';
+import { createCommentsPlugin, MARK_COMMENT, PlateCommentLeaf } from '@udecode/plate';
 
 const plugins = createPlugins([
   // ...otherPlugins,
@@ -52,9 +49,6 @@ const plugins = createPlugins([
   },
 });
 ```
-
-
-
 
 ### Options
 

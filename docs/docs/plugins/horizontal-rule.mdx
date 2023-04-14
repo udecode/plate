@@ -20,6 +20,7 @@ To add a horizontal rule in the provided demo, type three dashes (**`---`**), an
 [//]: # (To add a horizontal rule in the provided demo, type three dashes &#40;**`---`**&#41; or three underscores followed by a space &#40;**`___`** &#41; at the beginning of a new line, and it will automatically transform into a horizontal line.)
 
 
+
 import { HorizontalRuleSandpack } from "./HorizontalRuleSandpack";
 
 <HorizontalRuleSandpack />
@@ -47,9 +48,10 @@ import {
   createHorizontalRulePlugin,
   createSelectOnBackspacePlugin,
   ELEMENT_DEFAULT, 
-  ELEMENT_HR
+  ELEMENT_HR,
+  setNodes,
+  insertNodes
 } from '@udecode/plate';
-import { setNodes, insertNodes } from '@udecode/plate-common';
 
 const plugins = createPlugins([
   // ...otherPlugins,
