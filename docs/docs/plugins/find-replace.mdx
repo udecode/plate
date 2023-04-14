@@ -7,7 +7,34 @@ title: Find & Replace
 "Replace" feature is not yet supported
 :::
 
+The Find and Replace plugin enhances your editor by enabling users to easily locate and substitute text within the content.
+
+The feature can search for whole words, word parts, or phrases, and match the case of the searched text.
+
+This is particularly useful in long documents or those that use specific words in various contexts.
+
+[//]: # (With the ability to replace individual instances or all occurrences of the searched phrase, this plugin streamlines the editing process and ensures content consistency.)
+
+### Demo
+
+To utilize the Find and Replace feature, you can click on the search input, allowing you to find and replace desired words or phrases.
+
+For example, try searching "text" in the demo content, making sure to match the case as there are different instances of the word present in the document.
+
+
+
+
+import { FindReplaceSandpack } from "./FindReplaceSandpack";
+
+<FindReplaceSandpack />
+
+
 ### Installation
+
+Follow these steps to integrate the find & replace plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -16,11 +43,25 @@ npm install @udecode/plate-find-replace
 npm install @udecode/plate-ui-find-replace
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
-import { FindReplaceSandpack } from './FindReplaceSandpack'
+```tsx
+import { createFindReplacePlugin } from '@udecode/plate';
 
-<FindReplaceSandpack />
+const [search, setSearch] = useState('');
+
+const plugins = useMemo(() =>
+  createPlugins([
+    // ...otherPlugins,
+    createFindReplacePlugin({ options: { search } }),
+  ], {
+    components: createPlateUI(),
+  }),
+  [search]
+);
+```
+
+
 
 ### Options
 

@@ -3,12 +3,38 @@ slug: /plugins/combobox
 title: Combobox
 ---
 
+The Combobox plugin provides a combobox element that allows users to select an option from a list of predefined choices.
+Comboboxes are commonly used for mentions, tags, slash commands
+and other user interfaces to offer a quick and straightforward way for users to make a selection from a predefined set of options.
+
+### Demo
+
+Try out the Combobox plugin paired with the [Mention plugin](docs/plugins/mention). 
+
 ### Installation
+
+Follow these steps to integrate the combobox plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
 # or
 npm install @udecode/plate-ui-combobox
+```
+
+2. Import the plugin and add it to your plugin list:
+
+```tsx
+import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createMentionPlugin(),
+], {
+  components: createPlateUI(),
+});
 ```
 
 ### Combobox Store

@@ -3,7 +3,24 @@ slug: /serializing-md
 title: Markdown
 ---
 
+The Deserialize Markdown plugin enables copying and pasting Markdown content from external sources like **[https://markdown-it.github.io/](https://markdown-it.github.io/)**.
+
+This plugin simplifies the process of importing Markdown content into your Plate editor, ensuring seamless integration of formatted text.
+
+### Demo
+
+The plugin will automatically convert the Markdown formatting to match the editor's styling.
+
+
+import { SerializingMdSandpack } from "./SerializingMdSandpack";
+
+<SerializingMdSandpack />
+
 ### Installation
+
+Follow these steps to integrate the deserialize markdown plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -11,11 +28,21 @@ npm install @udecode/plate
 npm install @udecode/plate-serializer-md
 ```
 
-### Deserializer Usage
+1. Import the plugin and add it to your plugin list:
 
-import { SerializingMdSandpack } from './SerializingMdSandpack'
+```tsx
+import { createDeserializeMdPlugin } from '@udecode/plate';
 
-<SerializingMdSandpack />
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createDeserializeMdPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```
 
 ### Serializer Usage
 

@@ -3,7 +3,25 @@ slug: /plugins/list
 title: List
 ---
 
+
+The List plugin allows you to create both ordered (numbered) and unordered (bulleted) lists within your Plate editor.
+
+Ordered lists are useful when the sequence of items is crucial, such as step-by-step instructions, while unordered lists are suitable for presenting items where the order is not significant, like a list of ingredients or features.
+
+### Demo
+
+Experience the List plugin in action by using the toolbar buttons to insert ordered and unordered lists within the editor.
+
+
+import { ListSandpack } from "./ListSandpack";
+
+<ListSandpack />
+
 ### Installation
+
+Follow these steps to integrate the list plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -12,11 +30,19 @@ npm install @udecode/plate-list
 npm install @udecode/plate-ui-list
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
-import { ListSandpack } from './ListSandpack'
+```tsx
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate';
 
-<ListSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createListPlugin(),
+  createTodoListPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
 
 ### Options
 

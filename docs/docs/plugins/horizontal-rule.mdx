@@ -3,11 +3,34 @@ slug: /plugins/horizontal-rule
 title: Horizontal Rule
 ---
 
+The Horizontal Rule plugin allows you to easily insert a horizontal line, or horizontal rule, within the Plate editor.
+
+This visual element can be used to separate content, indicate a shift in topic between paragraphs or sections, or enhance the overall layout of the content.
+
 Use this plugin to render a `<hr>` HTML tag.
 
-Type three dashes (`---`) or three underscores and a space (`___ `) at the beginning of a new line and it will magically transform to a horizontal rule.
+Type three dashes (`---`) at the beginning of a new line and it will magically transform to a horizontal rule.
+
+[//]: # (Type three dashes &#40;`---`&#41; or three underscores and a space &#40;`___ `&#41; at the beginning of a new line and it will magically transform to a horizontal rule.)
+
+### Demo
+
+To add a horizontal rule in the provided demo, type three dashes (**`---`**), and it will automatically transform into a horizontal line.
+
+[//]: # (To add a horizontal rule in the provided demo, type three dashes &#40;**`---`**&#41; or three underscores followed by a space &#40;**`___`** &#41; at the beginning of a new line, and it will automatically transform into a horizontal line.)
+
+
+
+import { HorizontalRuleSandpack } from "./HorizontalRuleSandpack";
+
+<HorizontalRuleSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the horizontal rule plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -17,11 +40,48 @@ npm install @udecode/plate-ui-horizontal-rule
 npm install @udecode/plate-autoformat
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
-import { HorizontalRuleSandpack } from './HorizontalRuleSandpack'
+```tsx
+import { 
+  createAutoformatPlugin,
+  createHorizontalRulePlugin,
+  createSelectOnBackspacePlugin,
+  ELEMENT_DEFAULT, 
+  ELEMENT_HR,
+  setNodes,
+  insertNodes
+} from '@udecode/plate';
 
-<HorizontalRuleSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createHorizontalRulePlugin(),
+  createSelectOnBackspacePlugin({
+    options: { query: { allow: [ELEMENT_HR] } },
+  }),
+  createAutoformatPlugin({
+    options: {
+      rules: [
+        {
+          mode: 'block',
+          type: ELEMENT_HR,
+          match: ['---', '—-', '___ '],
+          format: (editor) => {
+            setNodes(editor, { type: ELEMENT_HR });
+            insertNodes(editor, {
+              type: ELEMENT_DEFAULT,
+              children: [{ text: '' }],
+            });
+          },
+        },
+      ],
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
 
 ### Source Code
 
