@@ -13,17 +13,9 @@ Ordered lists are useful when the sequence of items is crucial, such as step-by-
 Experience the List plugin in action by using the toolbar buttons to insert ordered and unordered lists within the editor.
 
 
-
-
-
-
-
-
-
 import { ListSandpack } from "./ListSandpack";
 
 <ListSandpack />
-
 
 ### Installation
 
@@ -38,25 +30,19 @@ npm install @udecode/plate-list
 npm install @udecode/plate-ui-list
 ```
 
-
 2. Import the plugin and include it in your plugin list:
 
-```
-import { createListPlugin } from '@udecode/plate-list';
-import { createTodoListPlugin } from '@udecode/plate-todo-list';
-import { basicNodesPlugins } from '@udecode/plate';
+```tsx
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createListPlugin(),
   createTodoListPlugin(),
 ], {
-  components: plateUI,
+  components: createPlateUI(),
 });
-
 ```
-
 
 ### Options
 

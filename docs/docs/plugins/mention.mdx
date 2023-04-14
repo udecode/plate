@@ -12,15 +12,7 @@ allowing for efficient user interactions such as mentioning users or applying ta
 
 ### Demo
 
-To use the Mention feature, type "@" or "#" to invoke the autocomplete panel and select a suggestion from the list.
-
-
-
-
-
-
-
-
+To use the Mention feature, type "@" or "#" to invoke the combobox and select a suggestion from the list.
 
 
 import { MentionSandpack } from "./MentionSandpack";
@@ -30,7 +22,6 @@ import { MentionSandpack } from "./MentionSandpack";
 ### Installation
 
 Follow these steps to integrate the mention plugin into your Plate editor:
-
 
 1. Install the required packages:
 
@@ -44,41 +35,16 @@ npm install @udecode/plate-ui-mention
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
-import { MentionElement } from './MentionElement';
 
 const plugins = createPlugins([
-  ...otherPlugins,
+  // ...otherPlugins,
   createComboboxPlugin(),
   createMentionPlugin(),
-  createMentionPlugin({
-    key: '#',
-    component: MentionElement,
-    options: {
-      trigger: '#',
-      inputCreation: { key: 'creationId', value: 'main' },
-    },
-  }),
-  createMentionPlugin({
-    key: '/',
-    component: MentionElement,
-    options: {
-      trigger: '/',
-      query: (editor) => {
-        const blockPath = getBlockAbove(editor)?.[1];
-        return (
-          !!editor.selection &&
-          !!blockPath &&
-          isStartPoint(editor, editor.selection.anchor, blockPath)
-        );
-      },
-    },
-  }),
 ], {
   components: createPlateUI(),
 });
-
 ```
 
 

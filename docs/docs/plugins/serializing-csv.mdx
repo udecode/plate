@@ -3,19 +3,15 @@ slug: /serializing-csv
 title: CSV
 ---
 
-
 The Deserialize CSV plugin enables copying and pasting CSV content directly into a table within your Plate editor.
 
 This functionality simplifies the process of importing tabular data from CSV files and streamlines the integration of structured data into your editor.
-
 
 ### Demo
 
 To see the Deserialize CSV plugin in action, copy CSV content from a source and paste it into your Plate editor.
 
 The plugin will automatically convert the CSV data into a properly formatted table.
-
-
 
 
 
@@ -27,7 +23,6 @@ import { SerializingCsvSandpack } from "./SerializingCsvSandpack";
 
 Follow these steps to integrate the deserialize CSV plugin into your Plate editor:
 
-
 1. Install the required packages:
 
 ```bash npm2yarn
@@ -37,28 +32,21 @@ npm install @udecode/plate-serializer-csv
 ```
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import React from 'react';
 import {
   createDeserializeCsvPlugin,
-  Plate,
 } from '@udecode/plate';
-import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { plateUI } from './common/plateUI';
-import { deserializeCsvValue } from './serializing-csv/deserializeCsvValue';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
-		...otherPlugins,
-    ...basicNodesPlugins,
+		// ...otherPlugins,
     createDeserializeCsvPlugin(),
   ],
   {
-    components: plateUI,
+    components: createPlateUI(),
   }
 );
-
 ```
 
 ### Options

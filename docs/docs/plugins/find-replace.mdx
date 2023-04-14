@@ -13,22 +13,13 @@ The feature can search for whole words, word parts, or phrases, and match the ca
 
 This is particularly useful in long documents or those that use specific words in various contexts.
 
-With the ability to replace individual instances or all occurrences of the searched phrase, this plugin streamlines the editing process and ensures content consistency.
+[//]: # (With the ability to replace individual instances or all occurrences of the searched phrase, this plugin streamlines the editing process and ensures content consistency.)
 
 ### Demo
 
-To utilize the Find and Replace feature, you can click the toolbar button or use the **`Ctrl/Cmd+F`** keyboard shortcut.
+To utilize the Find and Replace feature, you can click on the search input, allowing you to find and replace desired words or phrases.
 
-This will bring up the search panel, allowing you to find and replace desired words or phrases.
-
-For example, try replacing "steam" with "diesel" in the demo content, making sure to match the case as there are different instances of the word present in the document.
-
-
-
-
-
-
-
+For example, try searching "text" in the demo content, making sure to match the case as there are different instances of the word present in the document.
 
 
 
@@ -53,20 +44,20 @@ npm install @udecode/plate-ui-find-replace
 
 2. Import the plugin and include it in your plugin list:
 
-```
+```tsx
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
+
+const [search, setSearch] = useState('');
 
 const plugins = useMemo(() =>
   createPlugins([
-    ...otherPlugins,
-    ...basicNodesPlugins,
+    // ...otherPlugins,
     createFindReplacePlugin({ options: { search } }),
   ], {
     components: createPlateUI(),
   }),
   [search]
 );
-
 ```
 
 

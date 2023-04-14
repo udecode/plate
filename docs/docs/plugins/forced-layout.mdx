@@ -5,8 +5,6 @@ title: Forced Layout
 
 The Forced Layout plugin empowers users to maintain a consistent document structure by enforcing specific element usage.
 
-For instance, the first line could be mandated as an H1 element.
-
 This feature promotes uniformity and organization within the created content.
 
 ### Demo
@@ -14,14 +12,7 @@ This feature promotes uniformity and organization within the created content.
 When using the Forced Layout plugin, the editor will automatically ensure that the specified elements are used as required,
 maintaining the desired structure throughout the document.
 
-Allows you to enforce document structure. For example, you can require that the first line is an H1.
-
-
-
-
-
-
-
+For instance, the first line could be mandated as an H1 element.
 
 
 import { ForcedLayoutSandpack } from "./ForcedLayoutSandpack";
@@ -32,7 +23,6 @@ import { ForcedLayoutSandpack } from "./ForcedLayoutSandpack";
 ### Installation
 
 Follow these steps to integrate the forced layout plugin into your Plate editor:
-
 
 1. Install the required packages:
 
@@ -45,25 +35,26 @@ npm install @udecode/plate-trailing-block
 
 2. Import the plugin and add it to your plugin list:
 
+```tsx
+import {
+  createNormalizeTypesPlugin,
+  createTrailingBlockPlugin,
+  ELEMENT_H1,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate';
+
+const plugins = createPlugins([
+  ...basicNodesPlugins,
+  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH }}),
+  createNormalizeTypesPlugin({
+    options: {
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
 ```
-const plugins = createMyPlugins(
-  [
-    ...basicNodesPlugins,
-    createTrailingBlockPlugin(trailingBlockPlugin),
-    createNormalizeTypesPlugin({
-      options: {
-        rules: [{ path: [0], strictType: ELEMENT_H1 }],
-      },
-    }),
-  ],
-  {
-    components: plateUI,
-  }
-);
-
-```
-
-
 
 ### Options
 

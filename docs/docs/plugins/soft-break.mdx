@@ -15,13 +15,6 @@ The results will vary depending on the type of block you're currently working wi
 
 
 
-
-
-
-
-
-
-
 import { SoftBreakSandpack } from "./SoftBreakSandpack";
 
 <SoftBreakSandpack />
@@ -40,20 +33,28 @@ npm install @udecode/plate-break
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createSoftBreakPlugin } from '@udecode/plate';
+```tsx
+import { createSoftBreakPlugin, ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD } from '@udecode/plate';
 
 const plugins = createPlugins([
-...otherPlugins,
-...basicNodesPlugins,
-createSoftBreakPlugin(softBreakPlugin),
+  // ...otherPlugins,
+  createSoftBreakPlugin({
+    options: {
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          },
+        },
+      ],
+    },
+  }),
 ], {
-components: createPlateUI(),
+  components: createPlateUI(),
 });
-
 ```
-
-
 
 ### Options
 

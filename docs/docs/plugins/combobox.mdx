@@ -3,15 +3,13 @@ slug: /plugins/combobox
 title: Combobox
 ---
 
-The Combobox plugin provides a user interface element that allows users to select an option from a list of predefined choices.
-Comboboxes are commonly used in forms, dialog boxes,
+The Combobox plugin provides a combobox element that allows users to select an option from a list of predefined choices.
+Comboboxes are commonly used for mentions, tags, slash commands
 and other user interfaces to offer a quick and straightforward way for users to make a selection from a predefined set of options.
 
 ### Demo
 
-Experience the Combobox by activating the text box with the mention symbol (@).
-Then, navigate the available options using arrow keys or your mouse.
-
+Try out the Combobox plugin paired with the [Mention plugin](docs/plugins/mention). 
 
 ### Installation
 
@@ -27,43 +25,17 @@ npm install @udecode/plate-ui-combobox
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
-import { MentionElement } from './MentionElement';
 
 const plugins = createPlugins([
-  ...otherPlugins,
+  // ...otherPlugins,
   createComboboxPlugin(),
   createMentionPlugin(),
-  createMentionPlugin({
-    key: '#',
-    component: MentionElement,
-    options: {
-      trigger: '#',
-      inputCreation: { key: 'creationId', value: 'main' },
-    },
-  }),
-  createMentionPlugin({
-    key: '/',
-    component: MentionElement,
-    options: {
-      trigger: '/',
-      query: (editor) => {
-        const blockPath = getBlockAbove(editor)?.[1];
-        return (
-          !!editor.selection &&
-          !!blockPath &&
-          isStartPoint(editor, editor.selection.anchor, blockPath)
-        );
-      },
-    },
-  }),
 ], {
   components: createPlateUI(),
 });
-
 ```
-
 
 ### Combobox Store
 

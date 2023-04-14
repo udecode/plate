@@ -7,14 +7,11 @@ The Deserialize Docx plugin allows you to copy and paste content from Microsoft 
 
 This functionality makes it easy to integrate formatted text and other content from Word documents into your editor without losing formatting or structure.
 
-
-
 ### Demo
 
 To see the Deserialize Docx plugin in action, simply copy content from a Microsoft Word document and paste it into your Plate editor.
 
 The plugin will automatically preserve the formatting and structure of the pasted content.
-
 
 
 
@@ -27,7 +24,6 @@ import { SerializingDocxSandpack } from "./SerializingDocxSandpack";
 
 Follow these steps to integrate the deserialize Docx plugin into your Plate editor:
 
-
 1. Install the required packages:
 
 ```bash npm2yarn
@@ -37,30 +33,46 @@ npm install @udecode/plate-serializer-docx @udecode/plate-juice
 ```
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import React from 'react';
 import {
+  createImagePlugin,
+  createHorizontalRulePlugin,
+  createLineHeightPlugin,
+  createTablePlugin,
+  createAlignPlugin,
+  createFontBackgroundColorPlugin,
+  createFontFamilyPlugin,
+  createFontColorPlugin,
+  createFontSizePlugin,
+  createFontWeightPlugin,
+  createIndentListPlugin,
+  createIndentPlugin,
+  createTextIndentPlugin,
   createDeserializeDocxPlugin,
-  Plate,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
-import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
-import { plateUI } from './common/plateUI';
-import { deserializeDocxValue } from './serializing-docx/deserializeDocxValue';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-const plugins = createMyPlugins(
-  [
-		...otherPlugins,
-    ...basicNodesPlugins,
-    createDeserializeDocxPlugin(),
-    createJuicePlugin(),
-  ],
-  {
-    components: plateUI,
-  }
-);
-
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createImagePlugin(),
+  createHorizontalRulePlugin(),
+  createLineHeightPlugin(),
+  createTablePlugin(),
+  createAlignPlugin(),
+  createFontBackgroundColorPlugin(),
+  createFontFamilyPlugin(),
+  createFontColorPlugin(),
+  createFontSizePlugin(),
+  createFontWeightPlugin(),
+  createIndentListPlugin(),
+  createIndentPlugin(),
+  createTextIndentPlugin(),
+  createDeserializeDocxPlugin(),
+  createJuicePlugin(),
+], {
+  components: createPlateUI(),
+});
 ```
 
 Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.

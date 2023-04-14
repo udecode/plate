@@ -15,16 +15,6 @@ To test the Reset Node feature, press:
 - Backspace at the start of a block quote
 
 
-
-
-
-
-
-
-
-
-
-
 import { ResetNodeSandpack } from "./ResetNodeSandpack";
 
 <ResetNodeSandpack />
@@ -33,7 +23,6 @@ import { ResetNodeSandpack } from "./ResetNodeSandpack";
 ### Installation
 
 Follow these steps to integrate the reset node plugin into your Plate editor:
-
 
 1. Install the required packages:
 
@@ -45,20 +34,54 @@ npm install @udecode/plate-reset-node
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import { createResetNodePlugin, } from '@udecode/plate';
 
+const resetBlockTypesCommonRule = {
+  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
+  defaultType: ELEMENT_PARAGRAPH,
+};
+
+const resetBlockTypesCodeBlockRule = {
+  types: [ELEMENT_CODE_BLOCK],
+  defaultType: ELEMENT_PARAGRAPH,
+  onReset: unwrapCodeBlock,
+};
+
+export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
+  options: {
+    rules: [
+      {
+        ...resetBlockTypesCommonRule,
+        hotkey: 'Enter',
+        predicate: isBlockAboveEmpty,
+      },
+      {
+        ...resetBlockTypesCommonRule,
+        hotkey: 'Backspace',
+        predicate: isSelectionAtBlockStart,
+      },
+      {
+        ...resetBlockTypesCodeBlockRule,
+        hotkey: 'Enter',
+        predicate: isCodeBlockEmpty,
+      },
+      {
+        ...resetBlockTypesCodeBlockRule,
+        hotkey: 'Backspace',
+        predicate: isSelectionAtCodeBlockStart,
+      },
+    ],
+  },
+};
+
 const plugins = createPlugins([
-...otherPlugins,
-...basicNodesPlugins,
-createResetNodePlugin(resetBlockTypePlugin),
+  // ...otherPlugins,
+  createResetNodePlugin(resetBlockTypePlugin),
 ], {
-components: createPlateUI(),
+  components: createPlateUI(),
 });
-
 ```
-
-
 
 ### Options
 

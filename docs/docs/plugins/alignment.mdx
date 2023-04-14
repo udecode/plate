@@ -8,14 +8,7 @@ This feature enhances the visual presentation of your text.
 
 ### Demo
 
-To apply the desired alignment to a paragraph, click within the paragraph or header, and then use the Text Alignment option on the toolbar dropdown menu.
-
-Click inside a paragraph or a header and click on a toolbar button to apply the desired text alignment.
-
-
-
-
-
+Click inside a paragraph or a header and click on the align toolbar button to apply the desired text alignment.
 
 
 
@@ -27,7 +20,7 @@ import { AlignmentSandpack } from "./AlignmentSandpack";
 
 ### Installation
 
-Follow these steps to integrate the alignment plugin into your Plate editor:
+Follow these steps to integrate the Alignment plugin into your Plate editor:
 
 
 1. Install the required packages:
@@ -41,10 +34,10 @@ npm install @udecode/plate-ui-alignment
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createAlignPlugin } from '@udecode/plate-align';
-import { basicNodesPlugins } from '@udecode/plate-basic-nodes';
+```tsx
 import {
+  basicNodesPlugins,
+  createAlignPlugin,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -55,7 +48,7 @@ import {
 } from '@udecode/plate';
 
 const plugins = createPlugins([
-  ...otherPlugins,
+  // ...otherPlugins,
   ...basicNodesPlugins,
   createAlignPlugin({
     inject: {
@@ -73,11 +66,51 @@ const plugins = createPlugins([
     },
   }),
 ], {
-  components: plateUI,
+  components: createPlateUI(),
 });
-
 ```
 
+3. Add the toolbar buttons to your toolbar:
+
+```tsx
+import React from 'react';
+import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
+import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
+import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
+import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
+import { AlignToolbarButton } from '@udecode/plate';
+
+const tooltip = (content: string) => ({
+  content,
+});
+
+export const AlignToolbarButtons = () => {
+  return (
+    <>
+      <AlignToolbarButton
+        tooltip={tooltip('Align Left')}
+        value="left"
+        icon={<FormatAlignLeft />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Center')}
+        value="center"
+        icon={<FormatAlignCenter />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Right')}
+        value="right"
+        icon={<FormatAlignRight />}
+      />
+      <AlignToolbarButton
+        tooltip={tooltip('Align Justify')}
+        value="justify"
+        icon={<FormatAlignJustify />}
+      />
+    </>
+  );
+};
+```
 
 
 ### Source Code

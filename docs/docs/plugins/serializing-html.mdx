@@ -3,34 +3,11 @@ slug: /serializing-html
 title: HTML
 ---
 
-The **`@udecode/plate-serializer-html`** plugin provides functionality to convert JSON content to HTML and to create JSON from HTML without requiring an editor instance.
+The **`@udecode/plate-serializer-html`** plugin provides functionality to convert Slate value to HTML without requiring an editor instance.
 
 This feature is particularly useful for server-side rendering, as it does not require a complicated setup.
 
-All that is required is a JSON or HTML string, along with a set of extensions.
-
 ### Demo
-
-By default, pasting content into a Slate editor will use the clipboard's **`'text/plain'`** data.
-
-While this is acceptable for some use cases, in other cases you may want users to be able to paste in content and have it maintain its formatting.
-
-To achieve this, your editor needs to handle **`'text/html'`** data.
-
-This is an example of doing exactly that! To try it out for yourself,
-copy and paste some rendered HTML rich text content (not the source code) from another site into this editor, and its formatting should be preserved.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import { SerializingHtmlSandpack } from "./SerializingHtmlSandpack";
@@ -40,8 +17,7 @@ import { SerializingHtmlSandpack } from "./SerializingHtmlSandpack";
 
 ### Installation
 
-Follow these steps to integrate the HTML plugin plugin into your Plate editor:
-
+Follow these steps to serialize Slate value into HTML:
 
 1. Install the required packages:
 
@@ -51,60 +27,17 @@ npm install @udecode/plate
 npm install @udecode/plate-serializer-html
 ```
 
-2. Import the plugin and add it to your plugin list:
+2. Import `serializeHtml` and pass the `editor` instance and its children as arguments:
 
-```
-import {
-  createExcalidrawPlugin,
-  createHighlightPlugin,
-  createImagePlugin,
-  createLinkPlugin,
-  createListPlugin,
-  createMediaEmbedPlugin,
-  createMentionPlugin,
-  createSoftBreakPlugin,
-  createTablePlugin,
-  createTodoListPlugin,
-} from '@udecode/plate';
+```tsx
+import { serializeHtml } from '@udecode/plate';
 
-import { createDeserializeHTMLPlugin } from '@udecode/plate-serializer-html';
-
-const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
-  createImagePlugin(),
-  createLinkPlugin(linkPlugin),
-  createListPlugin(),
-  createTablePlugin(),
-  createTodoListPlugin(),
-  createMediaEmbedPlugin(),
-  createExcalidrawPlugin(),
-  createHighlightPlugin(),
-  createMentionPlugin(),
-  createSoftBreakPlugin(softBreakPlugin),
-  createDeserializeHTMLPlugin({
-    plugins: [
-      createImagePlugin(),
-      createLinkPlugin(linkPlugin),
-      createListPlugin(),
-      createTablePlugin(),
-      createTodoListPlugin(),
-      createMediaEmbedPlugin(),
-      createExcalidrawPlugin(),
-      createHighlightPlugin(),
-      createMentionPlugin(),
-      createSoftBreakPlugin(softBreakPlugin),
-    ],
-  }),
-], {
-  components: createPlateUI(),
+const html = serializeHtml(editor, {
+  nodes: editor.children,
 });
-
 ```
 
-Note that the **`createDeserializeHTMLPlugin`** is used to enable HTML pasting in the editor.
-
-
+Note that the **`createDeserializeHTMLPlugin`** is installed by `Plate` by default so you don't need to do it.
 
 ### Source Code
 

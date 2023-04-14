@@ -19,6 +19,8 @@ Explore the full range of capabilities offered by the Excalidraw tool by trying 
 
 
 
+
+
 import { ExcalidrawSandpack } from "./ExcalidrawSandpack";
 
 <ExcalidrawSandpack />
@@ -36,7 +38,7 @@ npm install @udecode/plate-ui-excalidraw
 
 2. Import the plugin and include it in your plugin list:
 
-```
+```tsx
 import { createExcalidrawPlugin, ExcalidrawElement } from '@udecode/plate-ui-excalidraw';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { MyPlatePlugin } from '@udecode/plate-core';
@@ -50,7 +52,6 @@ const plugins: MyPlatePlugin[] = [
     options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
   }),
 ];
-
 ```
 
 

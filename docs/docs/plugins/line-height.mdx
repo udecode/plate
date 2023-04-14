@@ -11,18 +11,6 @@ It allows you to set the line height for selected elements, such as paragraphs o
 
 To apply a custom line height, click within a paragraph or header and use the toolbar button to select and apply the desired line height value.
 
-Click inside a paragraph or a header and click on a toolbar button to apply the desired line height.
-
-
-
-
-
-
-
-
-
-
-
 
 import { LineHeightSandpack } from "./LineHeightSandpack";
 
@@ -31,7 +19,6 @@ import { LineHeightSandpack } from "./LineHeightSandpack";
 ### Installation
 
 Follow these steps to integrate the line height plugin into your Plate editor:
-
 
 1. Install the required packages:
 
@@ -44,21 +31,16 @@ npm install @udecode/plate-ui-line-height
 
 2. Import the plugin and include it in your plugin list:
 
-```
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { basicNodesPlugins } from '@udecode/plate-basic-nodes';
+```tsx
+import { createLineHeightPlugin } from '@udecode/plate';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createLineHeightPlugin(lineHeightPlugin),
 ], {
-  components: plateUI,
+  components: createPlateUI(),
 });
-
 ```
-
-
 
 ### Source Code
 

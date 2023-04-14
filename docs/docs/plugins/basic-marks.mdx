@@ -29,17 +29,6 @@ Basic marks can be applied using toolbar buttons or keyboard shortcuts:
 - Subscript – Use the subscript toolbar button
 
 
-
-
-
-
-
-
-
-
-
-
-
 import { BasicMarksSandpack } from "./BasicMarksSandpack";
 
 <BasicMarksSandpack />
@@ -48,9 +37,7 @@ import { BasicMarksSandpack } from "./BasicMarksSandpack";
 
 Follow these steps to integrate the basic marks plugin into your Plate editor:
 
-
 1. Install the required packages:
-
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -60,20 +47,92 @@ npm install @udecode/plate-basic-marks
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { createBasicElementsPlugins } from '@udecode/plate-basic-elements';
+```tsx
+import { createBasicMarksPlugin, createBasicElementsPlugins } from '@udecode/plate';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...createBasicElementsPlugins(),
+  // ...otherPlugins,
+  createBasicElementsPlugins(),
   createBasicMarksPlugin(),
 ], {
   components: createPlateUI(),
 });
-
 ```
 
+3. Add the toolbar buttons to your toolbar:
+
+```tsx
+import React from 'react';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { Subscript } from '@styled-icons/foundation/Subscript';
+import { Superscript } from '@styled-icons/foundation/Superscript';
+import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatItalic } from '@styled-icons/material/FormatItalic';
+import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
+import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
+import {
+  getPluginType,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
+  MarkToolbarButton,
+  usePlateEditorRef
+} from '@udecode/plate';
+
+const tooltip = (content: string) => ({
+  content,
+});
+
+export const BasicMarkToolbarButtons = () => {
+  const editor = usePlateEditorRef();
+
+  return (
+    <>
+      <MarkToolbarButton
+        tooltip={tooltip('Bold (⌘+B)')}
+        type={getPluginType(editor, MARK_BOLD)}
+        icon={<FormatBold />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Italic (⌘+I)')}
+        type={getPluginType(editor, MARK_ITALIC)}
+        icon={<FormatItalic />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Underline (⌘+U)')}
+        type={getPluginType(editor, MARK_UNDERLINE)}
+        icon={<FormatUnderlined />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Strikethrough (⌘+⇧+M)')}
+        type={getPluginType(editor, MARK_STRIKETHROUGH)}
+        icon={<FormatStrikethrough />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Code (⌘+E)')}
+        type={getPluginType(editor, MARK_CODE)}
+        icon={<CodeAlt />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Superscript (⌘+,)')}
+        type={getPluginType(editor, MARK_SUPERSCRIPT)}
+        clear={getPluginType(editor, MARK_SUBSCRIPT)}
+        icon={<Superscript />}
+      />
+      <MarkToolbarButton
+        tooltip={tooltip('Subscript (⌘+.)')}
+        type={getPluginType(editor, MARK_SUBSCRIPT)}
+        clear={getPluginType(editor, MARK_SUPERSCRIPT)}
+        icon={<Subscript />}
+      />
+    </>
+  );
+};
+```
 
 
 ### Options

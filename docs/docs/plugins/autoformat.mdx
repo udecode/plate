@@ -3,27 +3,20 @@ slug: /plugins/autoformat
 title: Autoformat
 ---
 
-The autoformat plugin enables fast application of formatting to content through the use of shortcodes.
+The Autoformat plugin enables fast application of formatting to content through the use of shortcodes.
 
 By using Markdown-like inline codes while you type,
 this plugin speeds up and simplifies the editing process by eliminating the need to use toolbar buttons and shortcuts for common formatting features.
 
-Such as automatically converting `# `into an H1. This package also provides predefined rules.
-
-The following options are easy to remember and use for a more efficient workflow.
+Such as automatically converting `# ` into an H1. This package also provides predefined rules.
 
 ### Demo
 
-To try the autoformat feature, use the demo provided below. As you type, enter the following shortcodes to apply the formatting:
+As you type, enter the following shortcodes to apply the formatting:
 
-- **`text*`** for bold text
+- **`*text*`** for bold text
 - **`_text_`** for italicized text
 - **`~~text~~`** for strikethrough text
-
-
-
-
-
 
 
 
@@ -48,19 +41,17 @@ npm install @udecode/plate-autoformat
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import {
   createAutoformatPlugin,
 } from '@udecode/plate';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createAutoformatPlugin(autoformatPlugin),
 ], {
   components: createPlateUI(),
 });
-
 ```
 
 

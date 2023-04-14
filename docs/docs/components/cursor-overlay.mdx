@@ -10,6 +10,10 @@ It's the strategy used by [slate-yjs](https://github.com/BitPhinix/slate-yjs) to
 
 The cursor overlay is shown when the user drags over the editor.
 
+
+
+
+
 import { CursorOverlaySandpack } from "./CursorOverlaySandpack";
 
 <CursorOverlaySandpack />
@@ -29,18 +33,35 @@ npm install @udecode/plate-ui-cursor
 
 2. Import `CursorOverlay` and add `CursorOverlayContainer` below your `Plate` component.
 
-```
+```tsx
 import {
+  createStore,
   CursorData,
   CursorOverlay,
   CursorOverlayProps,
 } from '@udecode/plate';
+
+const cursorStore = createStore('cursor')({
+  cursors: {},
+}).extendActions((set) => ({
+  reset() {
+    set.cursors({});
+  },
+}));
 
 const CursorOverlayContainer = (props: CursorOverlayProps<CursorData>) => {
   const cursors = cursorStore.use.cursors();
 
   return <CursorOverlay {...props} cursors={cursors} />;
 }
+```
+
+3. Add `CursorOverlayContainer` below your `Plate` component:
+
+```tsx
+<Plate>
+  <MarkBalloonToolbar />
+</Plate>
 ```
 
 

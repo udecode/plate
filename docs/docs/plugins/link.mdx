@@ -5,9 +5,11 @@ title: Link
 
 Specs in [editor-protocol](https://github.com/udecode/editor-protocol/issues/33)
 
-
 The Link plugin for Plate provides comprehensive support for hyperlink insertion and management within the rich-text editor.
-It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.
+
+It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs into functional links.
+
+[//]: # (It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.)
 
 ### Demo
 
@@ -17,26 +19,9 @@ where you can edit or unlink the link with ease.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 import { LinkSandpack } from "./LinkSandpack";
 
 <LinkSandpack />
-
-Enable floating link using:
-```tsx
-renderAfterEditable: PlateFloatingLink
-```
-
 
 ### Installation
 
@@ -53,13 +38,17 @@ npm install @udecode/plate-ui-link
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createLinkPlugin } from '@udecode/plate';
+```tsx
+import { createLinkPlugin, PlateFloatingLink } from '@udecode/plate';
 
-const plugins = createPlugins([...otherPlugins, createLinkPlugin()], {
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createLinkPlugin({
+    renderAfterEditable: PlateFloatingLink,
+  })
+], {
   components: createPlateUI(),
 });
-
 ```
 
 ### Options

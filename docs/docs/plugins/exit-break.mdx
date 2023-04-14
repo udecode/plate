@@ -3,8 +3,6 @@ slug: /plugins/exit-break
 title: Exit Break
 ---
 
-
-
 The Exit Break plugin streamlines the workflow when working with large blocks of text
 by enabling users to quickly navigate to the end of a block and start a new one with a single keystroke.
 
@@ -13,15 +11,6 @@ This feature is particularly beneficial for writers, bloggers, or anyone who fre
 ### Demo
 
 To use the Exit Break feature, press the cmd+enter (Mac) or ctrl+enter (Windows) keyboard shortcut to move to the end of a text block and begin a new one.
-
-You can see this in action by testing it out in the demo we've provided.
-
-
-
-
-
-
-
 
 
 
@@ -34,7 +23,6 @@ import { ExitBreakSandpack } from "./ExitBreakSandpack";
 
 Follow these steps to integrate the exit break plugin into your Plate editor:
 
-
 1. Install the required packages:
 
 ```bash npm2yarn
@@ -45,19 +33,45 @@ npm install @udecode/plate-break
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import {
-createExitBreakPlugin,
+  createExitBreakPlugin,
+  ExitBreakPlugin, 
+  KEYS_HEADING,
+  PlatePlugin
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-...otherPlugins,
-...basicNodesPlugins,
-createExitBreakPlugin(exitBreakPlugin),
-], {
-components: createPlateUI(),
-});
+const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
+  options: {
+    rules: [
+      {
+        hotkey: 'mod+enter',
+      },
+      {
+        hotkey: 'mod+shift+enter',
+        before: true,
+      },
+      {
+        hotkey: 'enter',
+        query: {
+          start: true,
+          end: true,
+          allow: KEYS_HEADING,
+        },
+        relative: true,
+        level: 1,
+      },
+    ],
+  },
+};
 
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createExitBreakPlugin(exitBreakPlugin),
+], {
+  components: createPlateUI(),
+});
 ```
 
 

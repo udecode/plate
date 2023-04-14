@@ -3,23 +3,21 @@ slug: /plugins/horizontal-rule
 title: Horizontal Rule
 ---
 
-
 The Horizontal Rule plugin allows you to easily insert a horizontal line, or horizontal rule, within the Plate editor.
 
 This visual element can be used to separate content, indicate a shift in topic between paragraphs or sections, or enhance the overall layout of the content.
 
 Use this plugin to render a `<hr>` HTML tag.
 
-Type three dashes (`---`) or three underscores and a space (`___ `) at the beginning of a new line and it will magically transform to a horizontal rule.
+Type three dashes (`---`) at the beginning of a new line and it will magically transform to a horizontal rule.
+
+[//]: # (Type three dashes &#40;`---`&#41; or three underscores and a space &#40;`___ `&#41; at the beginning of a new line and it will magically transform to a horizontal rule.)
 
 ### Demo
 
-To add a horizontal rule in the provided demo, type three dashes (**`---`**) or three underscores followed by a space (**`___`** ) at the beginning of a new line, and it will automatically transform into a horizontal line.
+To add a horizontal rule in the provided demo, type three dashes (**`---`**), and it will automatically transform into a horizontal line.
 
-
-
-
-
+[//]: # (To add a horizontal rule in the provided demo, type three dashes &#40;**`---`**&#41; or three underscores followed by a space &#40;**`___`** &#41; at the beginning of a new line, and it will automatically transform into a horizontal line.)
 
 
 import { HorizontalRuleSandpack } from "./HorizontalRuleSandpack";
@@ -43,30 +41,29 @@ npm install @udecode/plate-autoformat
 
 2. Import the plugin and include it in your plugin list:
 
-```
-import { createAutoformatPlugin } from '@udecode/plate-autoformat';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select-on-backspace';
-import { basicNodesPlugins, ELEMENT_DEFAULT, ELEMENT_HR } from '@udecode/plate';
+```tsx
+import { 
+  createAutoformatPlugin,
+  createHorizontalRulePlugin,
+  createSelectOnBackspacePlugin,
+  ELEMENT_DEFAULT, 
+  ELEMENT_HR
+} from '@udecode/plate';
 import { setNodes, insertNodes } from '@udecode/plate-common';
-import type { AutoformatPlugin } from '@udecode/plate-autoformat';
-import type { MyEditor, MyValue } from '../types';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createHorizontalRulePlugin(),
   createSelectOnBackspacePlugin({
     options: { query: { allow: [ELEMENT_HR] } },
   }),
-  createAutoformatPlugin<AutoformatPlugin<MyValue, MyEditor>, MyValue>({
+  createAutoformatPlugin({
     options: {
       rules: [
         {
           mode: 'block',
           type: ELEMENT_HR,
           match: ['---', '—-', '___ '],
-          preFormat,
           format: (editor) => {
             setNodes(editor, { type: ELEMENT_HR });
             insertNodes(editor, {
@@ -79,9 +76,8 @@ const plugins = createPlugins([
     },
   }),
 ], {
-  components: plateUI,
+  components: createPlateUI(),
 });
-
 ```
 
 

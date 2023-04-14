@@ -3,39 +3,20 @@ slug: /plugins/font
 title: Font
 ---
 
-
-The font plugin provides extended formatting options for document content.
+The font plugins provide extended formatting options for document content.
 Users can alter font size, font families, font colors, and font background colors to make text stand out,
-distinguish between sections, and draw attention to certain parts of the text. This plugin includes the following options:
+distinguish between sections, and draw attention to certain parts of the text. Plate provides the following plugins:
 
-- FontFamily: Allows users to change the font family by applying inline elements with a font-family in the style attribute;
-- FontSize: Allows for control over font size through the use of inline elements with either a CSS class or a font-size in the style attribute;
-- FontColor: Allows for control over font color through the application of inline elements with a color in the style attribute; and
-- FontBackgroundColor: Allows for control over font background color through the use of inline elements with a background-color in the style attribute.
-- FontWeight: Allos for control over font weight through the use of inline elements with a font-weight in the style attribute.
+- `fontFamily`: Allows users to change the font family by applying inline elements with a font-family in the style attribute;
+- `fontSize`: Allows for control over font size through the use of inline elements with either a CSS class or a font-size in the style attribute;
+- `fontColor`: Allows for control over font color through the application of inline elements with a color in the style attribute;
+- `fontBackgroundColor`: Allows for control over font background color through the use of inline elements with a background-color in the style attribute;
+- `fontWeight`: Allos for control over font weight through the use of inline elements with a font-weight in the style attribute.
 
 
 ### Demo
 
 Use the toolbar dropdowns to control font color and font background color.
-
-Note that the **`createFontFamilyPlugin`** function needs to be imported along with the other font plugins, and added to the **`createPlugins`** array.
-
-Use the toolbar dropdowns to control font color and font background color.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import { FontSandpack } from "./FontSandpack";
@@ -50,7 +31,6 @@ Follow these steps to integrate the font plugin into your Plate editor:
 
 1. Install the required packages:
 
-
 ```bash npm2yarn
 npm install @udecode/plate
 # or
@@ -60,26 +40,22 @@ npm install @udecode/plate-ui-font
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import {
-createFontColorPlugin,
-createFontBackgroundColorPlugin,
-createFontSizePlugin,
+  createFontColorPlugin,
+  createFontBackgroundColorPlugin,
+  createFontSizePlugin,
 } from '@udecode/plate-font';
 
 const plugins = createPlugins([
-...otherPlugins,
-...basicNodesPlugins,
-createFontColorPlugin(),
-createFontBackgroundColorPlugin(),
-createFontSizePlugin(),
+  // ...otherPlugins,
+  createFontColorPlugin(),
+  createFontBackgroundColorPlugin(),
+  createFontSizePlugin(),
 ], {
-components: createPlateUI(),
+  components: createPlateUI(),
 });
-
 ```
-
-
 
 ### Source Code
 

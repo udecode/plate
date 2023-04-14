@@ -3,11 +3,10 @@ slug: /plugins/comments
 title: Comments
 ---
 
-The "Comments" plugin allows users to add comments to text as marks.
+The Comments plugin allows users to add comments to text as marks.
 These comments can include explanations of what the author or editor did or suggests,
 such as questions about unclear statements,
 notes on facts or continuity errors, common mistakes, or ideas for expanding a paragraph.
-This feature helps to improve the overall content.
 
 ### Demo
 
@@ -15,14 +14,6 @@ To add a comment, select the text and:
 
 - Click on the comment button to add a comment
 - Alternatively, use the hotkey **`⌘+⇧+M`**
-
-
-
-
-
-
-
-
 
 
 
@@ -47,13 +38,12 @@ npm install @udecode/plate-ui-comments
 
 2. Import the plugin and add it to your plugin list:
 
-```
+```tsx
 import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import { PlateCommentLeaf } from './PlateCommentLeaf';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createCommentsPlugin(),
 ], {
   components: {
@@ -61,8 +51,7 @@ const plugins = createPlugins([
     [MARK_COMMENT]: PlateCommentLeaf,
   },
 });
-
-  ```
+```
 
 
 

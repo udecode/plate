@@ -3,21 +3,12 @@ slug: /components/dnd
 title: Drag & Drop
 ---
 
-The Drag and Drop component allows for easy movement of text and block objects, such as images or tables, within the editor.
-It also enables the ability to drop HTML and plain text from external sources into the editor.
+The Drag and Drop component allows for easy movement of blocks, such as images or tables, within the editor.
 This feature improves the user experience by making it simple to move and insert content within the editor.
-
 
 ### Demo
 
 The Drag and Drop component allows you to select a block with the handle located on its left side and move it to a different location within the editor.
-You can also select text and move it to a different location. Try it out for yourself to see how it can improve your editing workflow.
-
-- Wrap your editor with `<DndProvider backend={HTML5Backend}>` provider
-- Override your components with `components = withStyledDraggables(components)`, these will wrap your block components with a draggable handle.
-- Use `createNodeIdPlugin()` plugin as it requires `id` property on your blocks.
-
-
 
 
 
@@ -33,7 +24,7 @@ import { DndSandpack } from "./DndSandpack";
 
 ### Installation
 
-Follow these steps to integrate the drag & drop component into your Plate editor:
+Follow these steps to integrate the drag & drop feature into your Plate editor:
 
 
 1. Install the required packages:
@@ -45,21 +36,185 @@ npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
 npm install @udecode/plate-ui-dnd
 ```
 
-2. Import the plugin and add it to your plugin list:
+2. Create your own `withStyledDraggables` HOC:
 
+```tsx
+import React from 'react';
+import {
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  ELEMENT_OL,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_TABLE,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
+} from '@udecode/plate';
+import { withPlateDraggables } from '@udecode/plate-ui-dnd';
+
+const withStyledDraggables = (components: any) => {
+  return withPlateDraggables(components, [
+    {
+      keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+      level: 0,
+    },
+    {
+      keys: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_BLOCKQUOTE,
+        ELEMENT_TODO_LI,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+        ELEMENT_IMAGE,
+        ELEMENT_OL,
+        ELEMENT_UL,
+        ELEMENT_TABLE,
+        ELEMENT_MEDIA_EMBED,
+        ELEMENT_CODE_BLOCK,
+      ],
+      draggableProps: {
+        onRenderDragHandle: () => {
+          return (
+            <button type="button" className="drag-button">
+              Drag
+            </button>
+          );
+        },
+      },
+    },
+    {
+      key: ELEMENT_H1,
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '2em 0 4px',
+            fontSize: '1.875em',
+          },
+          blockToolbarWrapper: {
+            height: '1.3em',
+          },
+        },
+      },
+    },
+    {
+      key: ELEMENT_H2,
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '1.4em 0 1px',
+            fontSize: '1.5em',
+          },
+          blockToolbarWrapper: {
+            height: '1.3em',
+          },
+        },
+      },
+    },
+    {
+      key: ELEMENT_H3,
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '1em 0 1px',
+            fontSize: '1.25em',
+          },
+          blockToolbarWrapper: {
+            height: '1.3em',
+          },
+        },
+      },
+    },
+    {
+      keys: [ELEMENT_H4, ELEMENT_H5, ELEMENT_H6],
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '0.75em 0 0',
+            fontSize: '1.1em',
+          },
+          blockToolbarWrapper: {
+            height: '1.3em',
+          },
+        },
+      },
+    },
+    {
+      keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '4px 0 0',
+          },
+        },
+      },
+    },
+    {
+      key: ELEMENT_BLOCKQUOTE,
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '18px 0 0',
+          },
+        },
+      },
+    },
+    {
+      key: ELEMENT_CODE_BLOCK,
+      draggableProps: {
+        styles: {
+          gutterLeft: {
+            padding: '12px 0 0',
+          },
+        },
+      },
+    },
+  ]);
+};
 ```
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+
+2. Wrap your block components with a draggable handle using `withStyledDraggables`:
+
+```tsx
+import { createPlateUI } from '@udecode/plate';
+
+const components = withStyledDraggables(createPlateUI());
+```
+
+3. Import the plugins and add these to your plugin list:
+
+```tsx
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
 const plugins = createPlugins([
-...otherPlugins,
-createBasicElementsPlugin(),
-createNodeIdPlugin(),
-createDndPlugin({ options: { enableScroller: true } }),
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createDndPlugin({ options: { enableScroller: true } }),
 ], {
-components: components,
+  components: components,
 });
-
 ```
 
+Note: the Dnd plugin needs `id` property on each draggable block. You can use `createNodeIdPlugin()` to add it automatically.
+
+4. Wrap your `Plate` component with `DndProvider`:
+
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+<DndProvider backend={HTML5Backend}>
+  <Plate plugins={plugins} />
+</DndProvider>
+```

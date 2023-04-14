@@ -14,13 +14,6 @@ It limits the editor to one line of text, perfect for brief content or titles.
 
 
 
-
-
-
-
-
-
-
 import { SingleLineSandpack } from "./SingleLineSandpack";
 
 <SingleLineSandpack />
@@ -28,7 +21,6 @@ import { SingleLineSandpack } from "./SingleLineSandpack";
 ### Installation
 
 Follow these steps to integrate the single line plugin into your Plate editor:
-
 
 1. Install the required packages:
 
@@ -40,21 +32,15 @@ npm install @udecode/plate-break
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createListPlugin } from '@udecode/plate-list';
-import { createSingleLinePlugin } from '@udecode/plate-single-line';
-import { createTablePlugin } from '@udecode/plate-table';
+```tsx
+import { createSingleLinePlugin } from '@udecode/plate';
 
 const plugins = createPlugins([
-...otherPlugins,
-...basicNodesPlugins,
-createListPlugin(),
-createTablePlugin(),
-createSingleLinePlugin(),
+  ...otherPlugins,
+  createSingleLinePlugin(),
 ], {
-components: createPlateUI(),
+  components: createPlateUI(),
 });
-
 ```
 
 

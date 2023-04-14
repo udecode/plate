@@ -14,10 +14,6 @@ To experience the block selection feature, initiate your selection outside the t
 
 
 
-
-
-
-
 import { BlockSelectionSandpack } from "./BlockSelectionSandpack";
 
 <BlockSelectionSandpack />
@@ -25,33 +21,35 @@ import { BlockSelectionSandpack } from "./BlockSelectionSandpack";
 
 ### Installation
 
-Follow these steps to integrate the selection plugin into your Plate editor:
+Follow these steps to integrate the Block Selection plugin into your Plate editor:
 
 
 1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate-selection
+
+npm install @udecode/plate
+# or
 npm install @udecode/plate-node-id
 ```
 
 2. Import the plugin and add it to your plugin list:
 
-```
-import { createBlockSelectionPlugin } from '@udecode/plate-block-select';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
+```tsx
+import { createNodeIdPlugin } from '@udecode/plate';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
 const plugins = createPlugins([
-  ...otherPlugins,
-  ...basicNodesPlugins,
+  // ...otherPlugins,
   createNodeIdPlugin(),
   createBlockSelectionPlugin(),
 ], {
   components: createPlateUI(),
 });
-
 ```
 
+Note: the Selection plugin needs `id` property on each selectable block. You can use `createNodeIdPlugin()` to add it automatically.
 
 
 ### Styling
