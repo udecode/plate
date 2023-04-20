@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 20.6.5
+
+### Patch Changes
+
+- [#2317](https://github.com/udecode/plate/pull/2317) by [@santialbo](https://github.com/santialbo) – Get right mention input type when overriden
+
 ## 20.4.0
 
 ## 20.3.2
