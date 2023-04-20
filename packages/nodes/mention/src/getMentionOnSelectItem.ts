@@ -20,7 +20,8 @@ import {
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
+import { isNodeMentionInput } from './queries/isNodeMentionInput';
+import { ELEMENT_MENTION } from './createMentionPlugin';
 import { MentionPlugin, TMentionElement } from './types';
 
 export interface CreateMentionNode<TData extends Data> {
@@ -63,7 +64,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
     withoutMergingHistory(editor, () =>
       removeNodes(editor, {
-        match: (node) => node.type === ELEMENT_MENTION_INPUT,
+        match: (node) => isNodeMentionInput(editor, node),
       })
     );
 
