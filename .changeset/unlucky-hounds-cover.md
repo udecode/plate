@@ -11,13 +11,13 @@ The plugin now has two new optional options:
 ```tsx
 createTodoListPlugin(
     options:{
-        inheritCheckStateOnLineStartInsert: false,
-        inheritCheckStateOnLineEndInsert: false
+        inheritCheckStateOnLineStartBreak: false,
+        inheritCheckStateOnLineEndBreak: false
     }
 )
 ```
 
 
-`inheritCheckStateOnLineStartInsert` option will create a new todo item on **top** of the current one, and the new todo item will inherit the checkbox state of the current todo item. Default value is `false`.
+`inheritCheckStateOnLineStartBreak` option will create a new todo item on **top** of the current one, and the new todo item will inherit the checkbox state of the current todo item. Default value is `false`.
 
-`inheritCheckStateOnLineEndInsert` option will create a new todo item **below** the current one, and the new todo item will inherit the checkbox state of the current todo item. Default value is `false`.
+`inheritCheckStateOnLineEndBreak` option will create a new todo item **below** the current one, and the new todo item will inherit the checkbox state of the current todo item. Default value is `false`.
