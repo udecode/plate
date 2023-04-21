@@ -23,8 +23,8 @@ import { TodoListPlugin } from '../types';
 export const insertTodoListItem = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    inherentCheckStateOnLineStartInsert = false,
-    inherentCheckStateOnLineEndInsert = false,
+    inheritCheckStateOnLineStartInsert = false,
+    inheritCheckStateOnLineEndInsert = false,
   }: TodoListPlugin
 ): boolean => {
   const todoType = getPluginType(editor, ELEMENT_TODO_LI);
@@ -61,7 +61,7 @@ export const insertTodoListItem = <V extends Value>(
         editor,
         {
           type: todoType,
-          checked: inherentCheckStateOnLineStartInsert ? todo.checked : false,
+          checked: inheritCheckStateOnLineStartInsert ? todo.checked : false,
           children: [{ text: '' }],
         },
         { at: paragraphPath }
@@ -88,7 +88,7 @@ export const insertTodoListItem = <V extends Value>(
         editor,
         {
           type: todoType,
-          checked: inherentCheckStateOnLineEndInsert ? todo.checked : false,
+          checked: inheritCheckStateOnLineEndInsert ? todo.checked : false,
           children: [{ text: '', ...marks }],
         },
         { at: nextParagraphPath }

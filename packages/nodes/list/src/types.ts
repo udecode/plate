@@ -9,6 +9,6 @@ export interface ListPlugin extends HotkeyPlugin {
 }
 
 export interface TodoListPlugin extends HotkeyPlugin {
-  inherentCheckStateOnLineStartInsert?: boolean;
-  inherentCheckStateOnLineEndInsert?: boolean;
+  inheritCheckStateOnLineStartInsert?: boolean;
+  inheritCheckStateOnLineEndInsert?: boolean;
 }
