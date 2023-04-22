@@ -7,3 +7,8 @@ export interface ListPlugin extends HotkeyPlugin {
   validLiChildrenTypes?: string[];
   enableResetOnShiftTab?: boolean;
 }
+
+export interface TodoListPlugin extends HotkeyPlugin {
+  inheritCheckStateOnLineStartBreak?: boolean;
+  inheritCheckStateOnLineEndBreak?: boolean;
+}
