@@ -21,7 +21,6 @@ const plugins = createMyPlugins(
   }
 );
 
-
 export default () => (
   <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
     <Toolbar>
