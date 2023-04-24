@@ -67,7 +67,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, renderElement, renderLeaf]);
+  }, [decorate, editableProps, renderElement, renderLeaf, readOnly]);
 
   return useDeepCompareMemo(
     () => ({
