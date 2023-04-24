@@ -1,5 +1,7 @@
 # @udecode/plate-link
 
+## 20.7.0
+
 ## 20.4.1
 
 ### Patch Changes
