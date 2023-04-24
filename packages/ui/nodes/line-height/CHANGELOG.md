@@ -1,5 +1,7 @@
 # @udecode/plate-line-height-ui
 
+## 20.7.0
+
 ## 20.4.0
 
 ## 20.3.2

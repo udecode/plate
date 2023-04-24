@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-dnd",
-  "version": "20.6.4",
+  "version": "20.7.0",
   "description": "Drag &amp; drop feature for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "20.4.0",
+    "@udecode/plate-common": "20.7.0",
     "raf": "^3.4.1"
   },
   "peerDependencies": {

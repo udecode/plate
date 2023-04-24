@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 20.7.0
+
+### Patch Changes
+
+- [#2358](https://github.com/udecode/plate/pull/2358) by [@etienne-dldc](https://github.com/etienne-dldc) – fix readOnly not being properly updated on Editable
+
 ## 20.4.0
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-md-serializer
 
+## 20.7.0
+
 ## 20.4.1
 
 ## 20.4.0
