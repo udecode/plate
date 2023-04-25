@@ -54,6 +54,9 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        disableCorePlugins: {
+          staging: true,
+        },
       });
 
       editor.insertNode(
@@ -104,6 +107,9 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        disableCorePlugins: {
+          staging: true,
+        },
       });
 
       editor.insertNode(
@@ -144,6 +150,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -195,6 +204,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -244,6 +256,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -284,6 +299,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -334,6 +352,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -380,6 +401,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -427,6 +451,9 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -471,6 +498,9 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [createNodeIdPlugin()],
       });
@@ -500,6 +530,9 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -541,6 +574,9 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -581,6 +617,9 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -624,6 +663,9 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -668,6 +710,9 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -704,6 +749,9 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({
@@ -747,6 +795,9 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createPlateEditor({
+        disableCorePlugins: {
+          staging: true,
+        },
         editor: input,
         plugins: [
           createNodeIdPlugin({

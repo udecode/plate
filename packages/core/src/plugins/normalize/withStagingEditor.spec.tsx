@@ -6,7 +6,7 @@ import { createPlateEditor } from '../../utils/index';
 
 jsx;
 
-describe('withNormalizeNode', () => {
+describe('withStagingEditor', () => {
   it('normalizeNode', () => {
     const input = (
       <editor>
@@ -109,6 +109,38 @@ describe('withNormalizeNode', () => {
     //   at: [10],
     //   to: [11],
     // });
+    editor.undo();
+    editor.redo();
+
+    expect(editor.children).toEqual(output.children);
+  });
+
+  it('insertFragment', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext>
+            <cursor />
+          </htext>
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          <htext>
+            <cursor />
+          </htext>
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = createPlateEditor({
+      editor: input,
+    });
+
+    editor.insertFragment([{ text: 'a' }, { text: 'b' }]);
     editor.undo();
     editor.redo();
 
