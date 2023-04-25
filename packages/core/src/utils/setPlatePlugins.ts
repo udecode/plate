@@ -1,6 +1,5 @@
 import { Value } from '@udecode/slate';
 import { PlateProps } from '../components/Plate';
-import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
 import {
   createDeserializeAstPlugin,
   KEY_DESERIALIZE_AST,
@@ -19,10 +18,6 @@ import {
   KEY_INLINE_VOID,
 } from '../plugins/createInlineVoidPlugin';
 import {
-  createInsertDataPlugin,
-  KEY_INSERT_DATA,
-} from '../plugins/createInsertDataPlugin';
-import {
   createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
 } from '../plugins/createNodeFactoryPlugin';
@@ -31,22 +26,16 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
-import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugin/PlatePlugin';
-} from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
-import {
-  createNormalizePlugin,
-  createPrevSelectionPlugin,
-  KEY_NORMALIZE,
-  KEY_PREV_SELECTION,
-} from '../../plugins/index';
 import {
   createInsertDataPlugin,
+  createNormalizePlugin,
+  createPrevSelectionPlugin,
   KEY_INSERT_DATA,
-} from '../../plugins/insert-data/createInsertDataPlugin';
-import { Value } from '../../slate/editor/TEditor';
-import { PlateEditor } from '../../types/plate/PlateEditor';
-import { PlatePlugin } from '../../types/plugin/PlatePlugin';
+  KEY_NORMALIZE,
+  KEY_PREV_SELECTION,
+} from '../plugins/index';
+import { PlateEditor } from '../types/PlateEditor';
+import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
 import { overridePluginsByKey } from './overridePluginsByKey';
 

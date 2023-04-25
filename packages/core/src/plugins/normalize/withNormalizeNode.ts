@@ -1,6 +1,6 @@
+import { Value } from '@udecode/slate';
 import { cloneDeep } from 'lodash';
-import { Value } from '../../slate';
-import { PlateEditor } from '../../types/plate';
+import { PlateEditor } from '../../types/index';
 import { PluginOptions, WithPlatePlugin } from '../../types/plugin/PlatePlugin';
 import { createPlateEditor } from '../../utils';
 import { KEY_NORMALIZE } from './createNormalizePlugin';
@@ -14,7 +14,7 @@ export const withNormalizeNode = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<P, V, E>
 ) => {
-  const { normalizeNode, setNormalizing, apply, onChange } = editor;
+  const { setNormalizing, apply, onChange } = editor;
 
   const iterationCountByNodeIdByPlugin = new WeakMap<
     WithPlatePlugin<{}, V>,

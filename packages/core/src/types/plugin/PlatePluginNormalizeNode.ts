@@ -1,9 +1,8 @@
-import { ENode, TNodeEntry } from "../../slate";
-import { Value } from "../../slate/editor/TEditor";
-import { Nullable } from "../misc";
-import { PlateEditor } from "../plate";
-import { HandlerReturnType } from "./DOMHandlers";
-import { PluginOptions, WithPlatePlugin } from "./PlatePlugin";
+import { ENode, TNodeEntry, Value } from '@udecode/slate';
+import { Nullable } from '../misc';
+import { PlateEditor } from '../PlateEditor';
+import { HandlerReturnType } from './DOMHandlers';
+import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
 export type PlatePluginNormalizeNode<
   P = PluginOptions,
@@ -43,4 +42,3 @@ export type PlatePluginNormalizeNode<
    */
   apply?: (entry: TNodeEntry<ENode<V>>) => HandlerReturnType;
 }>;
-
