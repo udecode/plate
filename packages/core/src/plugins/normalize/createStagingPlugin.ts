@@ -1,11 +1,11 @@
 import { createPluginFactory } from '../../utils/createPluginFactory';
-import { withNormalizeNode } from './withNormalizeNode';
+import { withStagingEditor } from './withStagingEditor';
 
-export const KEY_NORMALIZE = 'normalize';
+export const KEY_STAGING = 'staging';
 
-export const createNormalizePlugin = createPluginFactory({
-  key: KEY_NORMALIZE,
-  withOverrides: withNormalizeNode,
+export const createStagingPlugin = createPluginFactory({
+  key: KEY_STAGING,
+  withOverrides: withStagingEditor,
   // editor: {
   //   normalizeNode: (editor) => ({
   //     maxIterations: 2,

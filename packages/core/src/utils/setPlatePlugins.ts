@@ -28,11 +28,11 @@ import {
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
 import {
   createInsertDataPlugin,
-  createNormalizePlugin,
   createPrevSelectionPlugin,
+  createStagingPlugin,
   KEY_INSERT_DATA,
-  KEY_NORMALIZE,
   KEY_PREV_SELECTION,
+  KEY_STAGING,
 } from '../plugins/index';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
@@ -116,10 +116,9 @@ export const setPlatePlugins = <
       );
     }
 
-    if (typeof dcp !== 'object' || !dcp?.normalize) {
+    if (typeof dcp !== 'object' || !dcp?.staging) {
       lastPlugins.push(
-        (editor?.pluginsByKey?.[KEY_NORMALIZE] as any) ??
-          createNormalizePlugin()
+        (editor?.pluginsByKey?.[KEY_STAGING] as any) ?? createStagingPlugin()
       );
     }
   }
