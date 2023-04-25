@@ -14,7 +14,7 @@ export const withNormalizeNode = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<P, V, E>
 ) => {
-  const { normalizeNode, apply, onChange } = editor;
+  const { normalizeNode, setNormalizing, apply, onChange } = editor;
 
   const iterationCountByNodeIdByPlugin = new WeakMap<
     WithPlatePlugin<{}, V>,
@@ -119,8 +119,8 @@ export const withNormalizeNode = <
   });
 
   const cloneEditor = (from: PlateEditor<V>, target: PlateEditor<V>) => {
-    target.key = 'another one';
-    target.id = 'another one';
+    target.key = 'staging';
+    target.id = 'staging';
     target.children = cloneDeep(from.children);
     target.history = cloneDeep(from.history);
     target.operations = cloneDeep(from.operations);
@@ -132,20 +132,48 @@ export const withNormalizeNode = <
     return target;
   };
 
+  editor.setNormalizing = (value) => {
+    editor.stagingEditor.setNormalizing(value);
+    setNormalizing(value);
+  };
+
+  editor.withoutNormalizing = (fn) => {
+    const value = editor.isNormalizing();
+    editor.setNormalizing(false);
+    try {
+      fn();
+    } finally {
+      editor.setNormalizing(value);
+    }
+
+    let hasError = false;
+
+    try {
+      editor.stagingEditor.normalize();
+    } catch (err) {
+      hasError = true;
+      console.log('ERROR normalize');
+    }
+
+    if (!hasError) {
+      editor.normalize();
+    }
+  };
+
   editor.apply = (op) => {
     if (!editor.stagingEditor.children.length) {
-      console.log(1);
+      console.log('init');
       editor.stagingEditor = cloneEditor(editor, editor.stagingEditor);
     }
 
-    const hasError = false;
+    let hasError = false;
 
     console.log(op);
 
     try {
       editor.stagingEditor.apply(cloneDeep(op));
     } catch (err) {
-      // hasError = true;
+      hasError = true;
       console.log({
         editor: editor.children,
         staging: editor.stagingEditor.children,
