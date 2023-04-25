@@ -17,13 +17,7 @@ export const withInsertData = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<P, V, E>
 ) => {
-  const { insertData, apply } = editor;
-
-  editor.apply = (entry) => {
-    // editor.insertText(' ');
-
-    return apply(entry);
-  };
+  const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {
     const inserted = [...editor.plugins].reverse().some((p) => {

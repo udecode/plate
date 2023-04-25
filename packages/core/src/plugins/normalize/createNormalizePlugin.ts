@@ -1,4 +1,4 @@
-import { createPluginFactory } from '../../utils/index';
+import { createPluginFactory } from '../../utils/createPluginFactory';
 import { withNormalizeNode } from './withNormalizeNode';
 
 export const KEY_NORMALIZE = 'normalize';

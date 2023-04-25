@@ -1,4 +1,4 @@
-import { createPluginFactory } from '../../utils/index';
+import { createPluginFactory } from '../../utils/createPluginFactory';
 import { withInsertData } from './withInsertData';
 
 export const KEY_INSERT_DATA = 'insertData';
