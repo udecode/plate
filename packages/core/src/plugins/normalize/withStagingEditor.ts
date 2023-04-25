@@ -112,10 +112,7 @@ export const withStagingEditor = <
       if (typeof cloneEditor[key] === 'function') delete cloneEditor[key];
     });
 
-    Object.assign(editor.stagingEditor, {
-      ...editor.stagingEditor,
-      ...cloneEditor,
-    });
+    Object.assign(editor.stagingEditor, cloneEditor);
   };
 
   editor.setNormalizing = (value) => {
