@@ -3,9 +3,9 @@ import { cloneDeep } from 'lodash';
 import { PlateEditor } from '../../types/index';
 import { PluginOptions, WithPlatePlugin } from '../../types/plugin/PlatePlugin';
 import { createPlateEditor } from '../../utils';
-import { KEY_NORMALIZE } from './createNormalizePlugin';
+import { KEY_STAGING } from './createStagingPlugin';
 
-export const withNormalizeNode = <
+export const withStagingEditor = <
   P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -16,7 +16,7 @@ export const withNormalizeNode = <
 ) => {
   const { setNormalizing, apply } = editor;
 
-  editor.normalizingPluginKeys = {};
+  // editor.normalizingPluginKeys = {};
 
   // editor.normalizeNode = (entry) => {
   //   const normalized = [...editor.plugins].reverse().some((p) => {
@@ -93,14 +93,14 @@ export const withNormalizeNode = <
   // };
 
   const stagingEditorPlugins = editor.plugins.filter(
-    (p) => p.key !== KEY_NORMALIZE
+    (p) => p.key !== KEY_STAGING
   );
 
   editor.stagingEditor = createPlateEditor({
     id: 'staging',
     plugins: stagingEditorPlugins,
     disableCorePlugins: {
-      normalize: true,
+      staging: true,
     },
   });
 
@@ -153,6 +153,9 @@ export const withNormalizeNode = <
     try {
       editor.stagingEditor.apply(cloneDeep(op));
     } catch (err) {
+      console.log(JSON.stringify(editor.children));
+      console.log(JSON.stringify(editor.stagingEditor.children));
+      console.log(err);
       hasError = true;
 
       // editor.stagingEditor.children is dirty so we need to reset it
