@@ -35,4 +35,9 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
     currentKeyboardEvent: KeyboardEvent | null;
 
     stagingEditor: PlateEditor<V>;
+
+    /**
+     * Errors caught by the staging editor.
+     */
+    errors: { type: 'apply' | 'normalize'; error: any }[];
   };
