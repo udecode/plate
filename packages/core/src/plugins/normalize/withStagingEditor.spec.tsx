@@ -59,6 +59,7 @@ describe('withStagingEditor', () => {
     editor.redo();
 
     expect(editor.children).toEqual(output.children);
+    expect(editor.errors[0].type).toBe('normalize');
   });
 
   it('apply', () => {
@@ -113,6 +114,7 @@ describe('withStagingEditor', () => {
     editor.redo();
 
     expect(editor.children).toEqual(output.children);
+    expect(editor.errors[0].type).toBe('apply');
   });
 
   it('insertFragment', () => {
@@ -130,6 +132,7 @@ describe('withStagingEditor', () => {
       <editor>
         <hp>
           <htext>
+            ab
             <cursor />
           </htext>
         </hp>
@@ -145,5 +148,6 @@ describe('withStagingEditor', () => {
     editor.redo();
 
     expect(editor.children).toEqual(output.children);
+    expect(editor.errors).toEqual([]);
   });
 });
