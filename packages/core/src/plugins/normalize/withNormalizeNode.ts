@@ -14,23 +14,9 @@ export const withNormalizeNode = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<P, V, E>
 ) => {
-  const { setNormalizing, apply, onChange } = editor;
-
-  const iterationCountByNodeIdByPlugin = new WeakMap<
-    WithPlatePlugin<{}, V>,
-    Record<string, number>
-  >();
+  const { setNormalizing, apply } = editor;
 
   editor.normalizingPluginKeys = {};
-
-  editor.onChange = () => {
-    editor.plugins.forEach((p) => {
-      iterationCountByNodeIdByPlugin.set(p, {});
-    });
-    console.log('reset');
-
-    onChange();
-  };
 
   // editor.normalizeNode = (entry) => {
   //   const normalized = [...editor.plugins].reverse().some((p) => {
@@ -95,7 +81,6 @@ export const withNormalizeNode = <
   //       //   ...iterationCountByNodeId,
   //       //   [key]: iterationCount + 1,
   //       // });
-  //       // console.log(key, iterationCount + 1);
   //       return stop(true);
   //     }
   //
@@ -112,24 +97,23 @@ export const withNormalizeNode = <
   );
 
   editor.stagingEditor = createPlateEditor({
+    id: 'staging',
     plugins: stagingEditorPlugins,
     disableCorePlugins: {
       normalize: true,
     },
   });
 
-  const cloneEditor = (from: PlateEditor<V>, target: PlateEditor<V>) => {
-    target.key = 'staging';
-    target.id = 'staging';
-    target.children = cloneDeep(from.children);
-    target.history = cloneDeep(from.history);
-    target.operations = cloneDeep(from.operations);
-    target.selection = cloneDeep(from.selection);
-    target.prevSelection = cloneDeep(from.prevSelection);
-    target.marks = cloneDeep(from.marks);
-    target.currentKeyboardEvent = cloneDeep(from.currentKeyboardEvent);
+  const resetStagingEditor = () => {
+    const { id, key: _key, ...cloneEditor } = cloneDeep(editor);
+    Object.keys(cloneEditor).forEach((key) => {
+      if (typeof cloneEditor[key] === 'function') delete cloneEditor[key];
+    });
 
-    return target;
+    Object.assign(editor.stagingEditor, {
+      ...editor.stagingEditor,
+      ...cloneEditor,
+    });
   };
 
   editor.setNormalizing = (value) => {
@@ -152,7 +136,6 @@ export const withNormalizeNode = <
       editor.stagingEditor.normalize();
     } catch (err) {
       hasError = true;
-      console.log('ERROR normalize');
     }
 
     if (!hasError) {
@@ -162,25 +145,18 @@ export const withNormalizeNode = <
 
   editor.apply = (op) => {
     if (!editor.stagingEditor.children.length) {
-      console.log('init');
-      editor.stagingEditor = cloneEditor(editor, editor.stagingEditor);
+      resetStagingEditor();
     }
 
     let hasError = false;
-
-    console.log(op);
 
     try {
       editor.stagingEditor.apply(cloneDeep(op));
     } catch (err) {
       hasError = true;
-      console.log({
-        editor: editor.children,
-        staging: editor.stagingEditor.children,
-      });
 
       // editor.stagingEditor.children is dirty so we need to reset it
-      editor.stagingEditor = cloneEditor(editor, editor.stagingEditor);
+      resetStagingEditor();
 
       console.warn(err, op);
     }
@@ -188,27 +164,6 @@ export const withNormalizeNode = <
     if (!hasError) {
       apply(op);
     }
-
-    // op.normalizingPluginKeys = { ...editor.normalizingPluginKeys };
-
-    // editor.plugins.forEach((p) => {
-    //   const iterationCountByNodeId =
-    //     iterationCountByNodeIdByPlugin.get(p) ?? {};
-    //
-    //   Object.keys(iterationCountByNodeId).forEach((key) => {
-    //     const path = key.split(',').map(Number);
-    //     const newPath = Path.transform(path, op);
-    //     if (!newPath) return;
-    //
-    //     const newKey = newPath.join(',');
-    //
-    //     console.log(op, path, newPath);
-    //
-    //     const iterationCount = iterationCountByNodeId[key] ?? 0;
-    //     iterationCountByNodeId[newKey] = iterationCount;
-    //     console.log(iterationCountByNodeId);
-    //   });
-    // });
   };
 
   return editor;
