@@ -9,7 +9,7 @@ import { createPlugins } from './createPlugins';
 export interface CreatePlateEditorOptions<
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>
-> extends Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'> {
+> extends Partial<Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'>> {
   /**
    * Initial editor (without `withPlate`).
    */
