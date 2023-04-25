@@ -96,6 +96,8 @@ export const withStagingEditor = <
     (p) => p.key !== KEY_STAGING
   );
 
+  editor.errors = [];
+
   editor.stagingEditor = createPlateEditor({
     id: 'staging',
     plugins: stagingEditorPlugins,
@@ -135,6 +137,7 @@ export const withStagingEditor = <
     try {
       editor.stagingEditor.normalize();
     } catch (err) {
+      editor.errors.push({ type: 'normalize', error: err });
       hasError = true;
     }
 
@@ -153,15 +156,14 @@ export const withStagingEditor = <
     try {
       editor.stagingEditor.apply(cloneDeep(op));
     } catch (err) {
+      editor.errors.push({ type: 'apply', error: err });
+
       console.log(JSON.stringify(editor.children));
       console.log(JSON.stringify(editor.stagingEditor.children));
-      console.log(err);
       hasError = true;
 
       // editor.stagingEditor.children is dirty so we need to reset it
       resetStagingEditor();
-
-      console.warn(err, op);
     }
 
     if (!hasError) {
