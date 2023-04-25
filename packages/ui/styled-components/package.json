@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-styled-components",
-  "version": "19.5.0",
+  "version": "20.7.0",
   "description": "Standard UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-core": "19.5.0",
+    "@udecode/plate-common": "20.7.0",
     "clsx": "^1.1.1"
   },
   "peerDependencies": {
@@ -32,7 +32,8 @@
     "styled-components": ">=5.0.0"
   },
   "devDependencies": {
-    "twin.macro": "2.8.2"
+    "tailwindcss": "^3.2.7",
+    "twin.macro": "^3.1.0"
   },
   "keywords": [
     "plate",

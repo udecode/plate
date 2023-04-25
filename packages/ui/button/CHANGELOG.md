@@ -1,5 +1,21 @@
 # @udecode/plate-ui-button
 
+## 20.7.0
+
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – `PlateButton`:
+  - `forwardRef`
+  - style changes
+
+## 20.3.2
+
+## 20.0.0
+
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

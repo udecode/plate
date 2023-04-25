@@ -7,7 +7,7 @@ import {
   nanoid,
   Value,
   WithPartial,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { CommentUser, TComment } from '../../types';
 
 export const SCOPE_COMMENTS = Symbol('comments');
@@ -39,7 +39,7 @@ export interface CommentsStoreState {
 
   focusTextarea: boolean;
 
-  onCommentAdd: ((value: Partial<TComment>) => void) | null;
+  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
   onCommentUpdate:
     | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
     | null;
@@ -175,19 +175,23 @@ export const useAddComment = () => {
   const myUserId = useCommentsSelectors().myUserId();
 
   return (value: WithPartial<TComment, 'id' | 'userId' | 'createdAt'>) => {
-    if (!myUserId) return;
-
     const id = value.id ?? nanoid();
 
-    setComments({
-      ...comments,
-      [id]: {
-        id,
-        userId: myUserId,
-        createdAt: Date.now(),
-        ...value,
-      },
-    });
+    const newComment: WithPartial<TComment, 'userId'> = {
+      id,
+      userId: myUserId ?? undefined,
+      createdAt: Date.now(),
+      ...value,
+    };
+
+    if (newComment.userId) {
+      setComments({
+        ...comments,
+        [id]: newComment as TComment,
+      });
+    }
+
+    return newComment;
   };
 };
 

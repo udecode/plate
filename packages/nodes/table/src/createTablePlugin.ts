@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { insertTableColumn, insertTableRow } from './transforms/index';
 import { onKeyDownTable } from './onKeyDownTable';
 import { TablePlugin } from './types';
@@ -34,6 +34,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         disableSelect: true,
       });
     },
+    minColumnWidth: 48,
   },
   withOverrides: withTable,
   plugins: [

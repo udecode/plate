@@ -115,7 +115,7 @@ yarn g:build
 #### How to: Create a plate plugin
 
 - create file `createXPlugin.ts`
-    
+  
     ```tsx
     import { createPluginFactory } from '@udecode/plate-core';
     
@@ -152,7 +152,7 @@ isElement: true
 isInline: true
 ```
 - create the components in `/components`
-        
+  
 - is void?
   - add to plugin: 
 ```tsx
@@ -189,6 +189,36 @@ to `yarn g:test` with specific parameters. Available modes include
 `--watch`, `--coverage`, and `--runInBand`, which will respectively run
 tests in watch mode, output code coverage, and run selected test suites
 serially in the current process.
+
+#### Run Playwright tests
+
+We use Playwright for running end-to-end (e2e) tests in headless browsers.
+The React app for these tests use can be found in `/examples/apps/e2e-examples`.
+
+Install Playwright's browsers and dependencies:
+
+```sh
+yarn install:playwright # first time
+```
+
+To run all tests:
+
+```sh
+yarn g:playwright
+```
+
+To debug a specific test:
+
+```sh
+yarn g:playwright --debug playwright/table.spec.ts
+```
+
+You can use Playwright's [codegen](https://playwright.dev/docs/codegen)
+feature by running:
+
+```sh
+yarn playwright codegen
+```
 
 #### Updating Tests
 
@@ -259,10 +289,10 @@ is few of those ways:
 
 Before you submit a new PR, please run `yarn g:prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the #plate channel](https://slate-js.slack.com/messages/plate).
+[join Plate's Discord and ask in the #contributing channel](https://discord.gg/mAZRuBzGM3).
 
 You miss time/knowledge but still want to contribute? Just open a PR or
-a gist on Slack and we'll try to help.
+a gist on Discord and we'll try to help.
 
 ### Reviewing PRs
 

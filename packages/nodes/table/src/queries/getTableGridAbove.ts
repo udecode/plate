@@ -5,7 +5,7 @@ import {
   TElement,
   TElementEntry,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';

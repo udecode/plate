@@ -1,4 +1,4 @@
-import { insertElements, PlateEditor, Value } from '@udecode/plate-core';
+import { insertElements, PlateEditor, Value } from '@udecode/plate-common';
 import { getCodeLineType } from '../options';
 
 /**

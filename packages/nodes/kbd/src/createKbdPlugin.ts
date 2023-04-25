@@ -1,4 +1,7 @@
-import { createPluginFactory, onKeyDownToggleMark } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  onKeyDownToggleMark,
+} from '@udecode/plate-common';
 
 export const MARK_KBD = 'kbd';
 

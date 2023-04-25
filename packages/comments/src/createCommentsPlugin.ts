@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { MARK_COMMENT } from './constants';
 import { CommentsPlugin } from './types';
 import { useHooksComments } from './useHooksComments';
@@ -10,6 +10,6 @@ export const createCommentsPlugin = createPluginFactory<CommentsPlugin>({
   withOverrides: withComments,
   useHooks: useHooksComments,
   options: {
-    hotkey: 'command+shift+m',
+    hotkey: ['meta+shift+m', 'ctrl+shift+m'],
   },
 });

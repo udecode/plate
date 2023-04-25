@@ -1,14 +1,16 @@
 import {
   createPluginFactory,
-  HotkeyPlugin,
   onKeyDownToggleElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
+import { TodoListPlugin } from '../types';
+import { withTodoList } from '../withTodoList';
 
 export const ELEMENT_TODO_LI = 'action_item';
 
-export const createTodoListPlugin = createPluginFactory<HotkeyPlugin>({
+export const createTodoListPlugin = createPluginFactory<TodoListPlugin>({
   key: ELEMENT_TODO_LI,
   isElement: true,
+  withOverrides: withTodoList,
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

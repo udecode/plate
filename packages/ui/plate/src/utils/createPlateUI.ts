@@ -47,9 +47,10 @@ import { TodoListElement } from '@udecode/plate-ui-list';
 import { ImageElement, MediaEmbedElement } from '@udecode/plate-ui-media';
 import { MentionElement, MentionInputElement } from '@udecode/plate-ui-mention';
 import {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
+  PlateTableCellElement,
+  PlateTableCellHeaderElement,
+  PlateTableElement,
+  PlateTableRowElement,
 } from '@udecode/plate-ui-table';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
@@ -167,27 +168,11 @@ export const createPlateUI = <T extends string = string>(
       },
       prefixClassNames: 'p',
     }),
-    [ELEMENT_TABLE]: TableElement,
-    [ELEMENT_TD]: TableCellElement,
-    [ELEMENT_TH]: withProps(StyledElement, {
-      as: 'th',
-      styles: {
-        root: [
-          tw`p-2 text-left`,
-          css`
-            background-color: rgb(244, 245, 247);
-            border: 1px solid rgb(193, 199, 208);
-            min-width: 48px;
-
-            > * {
-              margin: 0;
-            }
-          `,
-        ],
-      },
-    }),
+    [ELEMENT_TABLE]: PlateTableElement,
+    [ELEMENT_TD]: PlateTableCellElement,
+    [ELEMENT_TH]: PlateTableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
-    [ELEMENT_TR]: TableRowElement,
+    [ELEMENT_TR]: PlateTableRowElement,
     [MARK_BOLD]: withProps(StyledLeaf, { as: 'strong' }),
     [MARK_CODE]: withProps(StyledLeaf, {
       as: 'code',
@@ -209,7 +194,7 @@ export const createPlateUI = <T extends string = string>(
     [MARK_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'mark',
       styles: {
-        root: tw`backgroundColor[#FEF3B7]`,
+        root: tw`bg-[#FEF3B7]`,
       },
     }),
     [MARK_ITALIC]: withProps(StyledLeaf, { as: 'em' }),
@@ -236,7 +221,7 @@ export const createPlateUI = <T extends string = string>(
     [MARK_SEARCH_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'span',
       styles: {
-        root: tw`backgroundColor[#fff59d]`,
+        root: tw`bg-[#fff59d]`,
       },
     }),
     [MARK_STRIKETHROUGH]: withProps(StyledLeaf, { as: 's' }),

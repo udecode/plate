@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { normalizeEditor, PlateEditor, Value } from '@udecode/plate-core';
+import { normalizeEditor, PlateEditor, Value } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from '../createListPlugin';
 

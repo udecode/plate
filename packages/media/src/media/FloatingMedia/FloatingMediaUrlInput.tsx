@@ -8,7 +8,7 @@ import {
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { TMediaElement } from '../types';
 import {
   floatingMediaActions,
@@ -41,7 +41,7 @@ export const useFloatingMediaUrlInput = ({
       }
     },
     {
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
     },
     []
   );
@@ -55,7 +55,7 @@ export const useFloatingMediaUrlInput = ({
       }
     },
     {
-      enableOnTags: ['INPUT'],
+      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
     },
     []

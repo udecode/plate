@@ -3,9 +3,23 @@ slug: /tabbable
 title: Tabbable
 ---
 
-Programmatically corrects the tab order for tabbable elements inside the editor
+The Tabbable plugin ensures a consistent tab order between tabbable elements when navigating inside the editor.
+
+### Demo
+
+
+
+import { TabbableSandpack } from "./TabbableSandpack";
+
+<TabbableSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the tabbable plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -13,11 +27,20 @@ npm install @udecode/plate
 npm install @udecode/plate-tabbable
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { TabbableSandpack } from './TabbableSandpack'
+```tsx
+import React from 'react';
+import { createTabbablePlugin } from '@udecode/plate';
 
-<TabbableSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createTabbablePlugin(),
+],
+{
+  components: createPlateUI(),
+});
+```
 
 #### Conflicts with other plugins
 

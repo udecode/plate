@@ -1,5 +1,4 @@
-import { flip, offset, shift } from '@floating-ui/react-dom-interactions';
-import { PopoverProps } from '@udecode/plate-floating';
+import { flip, offset, PopoverProps, shift } from '@udecode/plate-floating';
 
 export const mediaFloatingOptions: PopoverProps['floatingOptions'] = {
   middleware: [

@@ -11,7 +11,7 @@ import {
   select,
   TEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   createFontBackgroundColorPlugin,
   createFontColorPlugin,

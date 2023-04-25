@@ -14,7 +14,7 @@ import {
   TText,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';

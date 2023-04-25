@@ -1,5 +1,5 @@
 import React from 'react';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import {
   getRootProps,
   StyledElementProps,

@@ -12,7 +12,7 @@ import {
   isSelectionAtBlockStart,
   mockPlugin,
   PlateEditor,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list/src/index';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

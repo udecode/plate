@@ -4,7 +4,7 @@ import {
   getPluginType,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
 export const getTableAbove = <V extends Value = Value>(

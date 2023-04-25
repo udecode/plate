@@ -1,5 +1,21 @@
 # @udecode/plate-trailing-block
 
+## 20.7.1
+
+### Patch Changes
+
+- [#2359](https://github.com/udecode/plate/pull/2359) by [@zbeyens](https://github.com/zbeyens) – 🐛 `type` option was not used
+
+## 20.7.0
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.0.0
+
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

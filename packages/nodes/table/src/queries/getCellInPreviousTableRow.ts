@@ -4,26 +4,26 @@ import {
   TElement,
   TNodeEntry,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 export const getCellInPreviousTableRow = <V extends Value>(
   editor: TEditor<V>,
   currentRowPath: Path
 ): TNodeEntry | undefined => {
-  try {
-    const previousRow = getNodeEntry<TElement>(
-      editor,
-      Path.previous(currentRowPath)
-    );
-    const [previousRowNode, previousRowPath] = previousRow;
-    const previousCell =
-      previousRowNode?.children?.[previousRowNode.children.length - 1];
-    const previousCellPath = previousRowPath.concat(
-      previousRowNode.children.length - 1
-    );
-    if (previousCell && previousCellPath) {
-      return getNodeEntry(editor, previousCellPath);
-    }
-  } catch (err) {}
+  const previousRow = getNodeEntry<TElement>(
+    editor,
+    Path.previous(currentRowPath)
+  );
+  if (!previousRow) return;
+
+  const [previousRowNode, previousRowPath] = previousRow;
+  const previousCell =
+    previousRowNode?.children?.[previousRowNode.children.length - 1];
+  const previousCellPath = previousRowPath.concat(
+    previousRowNode.children.length - 1
+  );
+  if (previousCell && previousCellPath) {
+    return getNodeEntry(editor, previousCellPath);
+  }
 };

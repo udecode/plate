@@ -5,7 +5,7 @@ import {
   HTMLPropsAs,
   toDOMNode,
   usePlateEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { getCommentPosition } from '../queries/index';
 import { useCommentsSelectors } from '../stores/comments/CommentsProvider';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';

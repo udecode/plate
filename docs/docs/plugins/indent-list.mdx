@@ -3,34 +3,75 @@ slug: /plugins/indent-list
 title: Indent List
 ---
 
-The list indentation feature allows you to set list indentation for blocks such as paragraphs or headings.
+The List Indent plugin allows you to set list indentation for various content blocks, such as paragraphs or headings.
 
-The "indent list" plugin differs from the ["list" plugin](/docs/plugins/list):
-- the list plugin has a nested structure ("list" block having "list item" block children) whereas 
-the indent list plugin has a flat structure, resulting into different queries and transforms
-- any block can be indented as a list
-- the rendered block tags stay the same (e.g. `div`) instead of using `ul`/`ol`
-- the indent list plugin has more freedom by default but anyone can extend it to reproduce the list plugin rules. 
-The list plugin has strict rules between parent and children   
+It differs from the **["list" plugin](https://plate.udecode.io/docs/plugins/list)** in several ways:
+
+- The list plugin has a nested structure (a "list" block containing "list item" block children), while the indent list plugin has a flat structure, resulting in different queries and transforms.
+- Any block can be indented as a list.
+- Rendered block tags remain the same (e.g., **`div`**) instead of using **`ul`**/**`ol`**.
+- The indent list plugin offers more flexibility by default, but can be extended to reproduce the list plugin rules. The list plugin enforces strict rules between parent and children.
+
+Refer to the **[Indent](https://plate.udecode.io/docs/plugins/indent)** documentation.
+
+### Demo
+
+In the editor below, use the indent or outdent toolbar buttons to control the level of indentation for various content types, including paragraph text and headers.
+
+
+import { IndentListSandpack } from "./IndentListSandpack";
+
+<IndentListSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the indent list plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
 # or
 npm install @udecode/plate-indent-list
 ```
+2. Import the plugin and include it in your plugin list:
 
-### Usage
+```tsx
+import { 
+  createHeadingPlugin,
+  createParagraphPlugin,
+  createResetNodePlugin,
+  createIndentPlugin,
+  createIndentListPlugin,
+  ELEMENT_H1,
+  ELEMENT_PARAGRAPH
+} from '@udecode/plate';
 
-- See [Indent](/docs/plugins/indent).
-- `createIndentPlugin` sets the indentation style (margin left).
-- `createIndentListPlugin` sets the list style (`display: list-item`)
-- Use the indent or outdent toolbar buttons in the editor below to control the level of indentation of the content, both for paragraph text and headers.
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createHeadingPlugin(),
+  createParagraphPlugin(),
+  createIndentListPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+  createIndentPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+  createResetNodePlugin(),
+], {
+  components: createPlateUI(),
+});
+```
 
-import { IndentListSandpack } from './IndentListSandpack'
-
-<IndentListSandpack />
 
 ### Commands
 

@@ -1,4 +1,9 @@
-import { getNodeEntries, TEditor, TElement, Value } from '@udecode/plate-core';
+import {
+  getNodeEntries,
+  TEditor,
+  TElement,
+  Value,
+} from '@udecode/plate-common';
 import { blockSelectionSelectors } from '../blockSelectionStore';
 
 export const getSelectedBlocks = <V extends Value>(editor: TEditor<V>) => {

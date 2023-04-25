@@ -4,10 +4,26 @@ title: Cursor Overlay
 ---
 
 The cursor overlay is a component that can be used to display controlled cursors or selections over the editor.
-
 It's the strategy used by [slate-yjs](https://github.com/BitPhinix/slate-yjs) to display the remote cursors.
 
+### Demo
+
+The cursor overlay is shown when the user drags over the editor.
+
+
+
+
+
+import { CursorOverlaySandpack } from "./CursorOverlaySandpack";
+
+<CursorOverlaySandpack />
+
 ### Installation
+
+Follow these steps to integrate the cursor overlay plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -15,13 +31,39 @@ npm install @udecode/plate
 npm install @udecode/plate-ui-cursor
 ```
 
-### Usage
+2. Import `CursorOverlay` and add `CursorOverlayContainer` below your `Plate` component.
 
-The following example shows a cursor when dragging over the editor.
+```tsx
+import {
+  createStore,
+  CursorData,
+  CursorOverlay,
+  CursorOverlayProps,
+} from '@udecode/plate';
 
-import { CursorOverlaySandpack } from './CursorOverlaySandpack'
+const cursorStore = createStore('cursor')({
+  cursors: {},
+}).extendActions((set) => ({
+  reset() {
+    set.cursors({});
+  },
+}));
 
-<CursorOverlaySandpack />
+const CursorOverlayContainer = (props: CursorOverlayProps<CursorData>) => {
+  const cursors = cursorStore.use.cursors();
+
+  return <CursorOverlay {...props} cursors={cursors} />;
+}
+```
+
+3. Add `CursorOverlayContainer` below your `Plate` component:
+
+```tsx
+<Plate>
+  <MarkBalloonToolbar />
+</Plate>
+```
+
 
 ### Source Code
 

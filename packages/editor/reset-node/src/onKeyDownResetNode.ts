@@ -6,7 +6,7 @@ import {
   someNode,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { ResetNodePlugin } from './types';
 
@@ -22,6 +22,8 @@ export const onKeyDownResetNode = <
   editor: E,
   { options: { rules } }: WithPlatePlugin<ResetNodePlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   let reset;
 
   if (!editor.selection) return;

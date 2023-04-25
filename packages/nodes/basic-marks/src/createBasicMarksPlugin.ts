@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-common';
 import { createBoldPlugin } from './createBoldPlugin';
 import { createCodePlugin } from './createCodePlugin';
 import { createItalicPlugin } from './createItalicPlugin';

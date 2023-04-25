@@ -1,0 +1,42 @@
+{
+  "name": "@udecode/plate-dnd",
+  "version": "20.7.0",
+  "description": "Drag &amp; drop feature for Plate",
+  "license": "MIT",
+  "homepage": "https://plate.udecode.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/dnd"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@udecode/plate-common": "20.7.0",
+    "raf": "^3.4.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dnd": ">=14.0.0",
+    "react-dnd-html5-backend": ">=14.0.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.87.0",
+    "slate-history": ">=0.86.0",
+    "slate-react": ">=0.88.0"
+  },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

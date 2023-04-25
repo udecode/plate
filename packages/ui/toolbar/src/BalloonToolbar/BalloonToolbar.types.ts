@@ -23,4 +23,6 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   portalElement?: Element;
 
   floatingOptions?: UseVirtualFloatingOptions;
+
+  ignoreReadOnly?: boolean;
 }

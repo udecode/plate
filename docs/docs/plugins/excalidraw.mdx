@@ -3,17 +3,57 @@ slug: /plugins/excalidraw
 title: Excalidraw
 ---
 
+The Excalidraw plugin for Plate enhances your editor by integrating the Excalidraw library, which allows users to create drawings and diagrams effortlessly. These visual elements are stored as block nodes within Plate, making it simple to incorporate them into your content.
+
+### Demo
+
+Explore the full range of capabilities offered by the Excalidraw tool by trying out the Embed plugin in the provided demo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { ExcalidrawSandpack } from "./ExcalidrawSandpack";
+
+<ExcalidrawSandpack />
+
 ### Installation
+
+Follow these steps to integrate the excalidraw plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate-ui-excalidraw
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
-import { ExcalidrawSandpack } from './ExcalidrawSandpack'
+```tsx
+import { createSelectOnBackspacePlugin } from '@udecode/plate';
+import { createExcalidrawPlugin, ExcalidrawElement, ELEMENT_EXCALIDRAW } from '@udecode/plate-ui-excalidraw';
 
-<ExcalidrawSandpack />
+const plugins = createPlugins([
+  // ...basicNodesPlugins,
+  createExcalidrawPlugin({
+    component: ExcalidrawElement,
+  }),
+  createSelectOnBackspacePlugin({
+    options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
+  }),
+]);
+```
+
 
 ### Source Code
 

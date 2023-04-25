@@ -14,7 +14,8 @@ const buttonStyle: React.CSSProperties = {
 export const CloudToolbarButtons = () => {
   const editor = useMyPlateEditorRef(useEventPlateId()) as PlateCloudEditor;
   const getSaveValue = () => {
-    console.info(editor.cloud.getSaveValue());
+    console.info('editor.children', editor.children);
+    console.info('editor.cloud.getSaveValue()', editor.cloud.getSaveValue());
   };
 
   const finishUploads = async () => {

@@ -7,7 +7,7 @@ import {
   useEditorRef,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { getSelectionBoundingClientRect } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
@@ -60,7 +60,7 @@ export const useFloatingLinkInsert = ({
     }
   );
 
-  const { update, style, floating } = useVirtualFloatingLink({
+  const { update, style, refs } = useVirtualFloatingLink({
     editorId: editor.id,
     open: open && mode === 'insert',
     getBoundingClientRect: getSelectionBoundingClientRect,
@@ -86,6 +86,6 @@ export const useFloatingLinkInsert = ({
       zIndex: 1,
     },
     ...props,
-    ref: useComposedRef<HTMLElement | null>(props.ref, floating, ref),
+    ref: useComposedRef<HTMLElement | null>(props.ref, refs.setFloating, ref),
   };
 };

@@ -1,17 +1,47 @@
 import { resizeIn } from '@portive/client';
-import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-core';
+import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
 import Defer from 'p-defer';
-import { PlateCloudEditor } from '../cloud/types';
+import { PlateCloudEditor } from '../cloud';
 import { UploadError, UploadSuccess } from '../upload';
-import { CloudImagePlugin, TCloudImageElement } from './types';
+import {
+  CloudImagePlugin,
+  PlateCloudImageEditor,
+  TCloudImageElement,
+} from './types';
+
+const DEFAULT_MAX_INITIAL_WIDTH = 320;
+const DEFAULT_MAX_INITIAL_HEIGHT = 320;
+const DEFAULT_MIN_RESIZE_WIDTH = 100;
+const DEFAULT_MAX_RESIZE_WIDTH = 640;
 
 export const withCloudImage = <
   V extends Value = Value,
-  E extends PlateCloudEditor<V> = PlateCloudEditor<V>
+  E extends PlateCloudImageEditor<V> = PlateCloudImageEditor<V>
 >(
-  editor: E,
+  $editor: E,
   plugin: WithPlatePlugin<CloudImagePlugin, V, E>
 ) => {
+  const editor = $editor as E & PlateCloudEditor<V>;
+  const {
+    maxInitialWidth,
+    maxInitialHeight,
+    minResizeWidth,
+    maxResizeWidth,
+  } = {
+    maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
+    maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
+    minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
+    maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
+    ...plugin.options,
+  };
+
+  editor.cloudImage = {
+    maxInitialWidth,
+    maxInitialHeight,
+    minResizeWidth,
+    maxResizeWidth,
+  };
+
   /**
    * We create a deferredFinish which is an object with a `promise` and a way
    * to `resolve` or `reject` the Promise outside of the Promise. We use
@@ -24,10 +54,9 @@ export const withCloudImage = <
 
   editor.cloud.imageFileHandlers = {
     onStart(e) {
-      const { maxInitialWidth, maxInitialHeight } = plugin.options;
       const { width, height } = resizeIn(
         { width: e.width, height: e.height },
-        { width: maxInitialWidth || 320, height: maxInitialHeight || 320 }
+        { width: maxInitialWidth, height: maxInitialHeight }
       );
       const node: TCloudImageElement = {
         type: 'cloud_image',

@@ -2,7 +2,7 @@
 
 import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
-import { toggleMark } from '../../toggleMark';
+import { toggleMark } from '../../../../../slate-utils/src/transforms/toggleMark';
 
 jsx;
 

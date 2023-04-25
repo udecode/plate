@@ -5,23 +5,19 @@ import {
   removeNodes,
   TElement,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { DeleteIcon } from '../Icon/DeleteIcon';
 import { PlateButton, PlateButtonProps } from './PlateButton';
 
 export const RemoveNodeButton = ({
   element,
+  children,
   ...props
 }: PlateButtonProps & { element: TElement }) => {
   const editor = useEditorRef();
 
   return (
     <PlateButton
-      tw="py-1 px-0"
-      css={`
-        width: 24px;
-        height: 24px;
-      `}
       onClick={() => {
         const path = findNodePath(editor, element);
 
@@ -32,6 +28,7 @@ export const RemoveNodeButton = ({
       {...props}
     >
       <DeleteIcon />
+      {children}
     </PlateButton>
   );
 };

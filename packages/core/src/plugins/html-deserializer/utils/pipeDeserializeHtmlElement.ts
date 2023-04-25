@@ -1,8 +1,7 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { AnyObject } from '../../../types/misc/AnyObject';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
+import { DeserializeHtml, PlateEditor } from '../../../types';
 import { Nullable } from '../../../types/misc/Nullable';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlElement = <V extends Value>(

@@ -3,9 +3,26 @@ slug: /plugins/single-line
 title: Single Line
 ---
 
-Allows you to force the editor to only have one line.
+The Single Line plugin limits the editor to only one line of text, making it suitable for certain types of content,
+such as headlines or short phrases, where a single line is sufficient.
+
+### Demo
+
+Test out the Single Line feature in the demo provided.
+
+It limits the editor to one line of text, perfect for brief content or titles.
+
+
+
+import { SingleLineSandpack } from "./SingleLineSandpack";
+
+<SingleLineSandpack />
 
 ### Installation
+
+Follow these steps to integrate the single line plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -13,11 +30,19 @@ npm install @udecode/plate
 npm install @udecode/plate-break
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { SingleLineSandpack } from './SingleLineSandpack'
+```tsx
+import { createSingleLinePlugin } from '@udecode/plate';
 
-<SingleLineSandpack />
+const plugins = createPlugins([
+  ...otherPlugins,
+  createSingleLinePlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
 
 ### Source Code
 

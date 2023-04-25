@@ -3,12 +3,13 @@ import {
   getPluginOptions,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
+import { validateUrl } from '../utils/index';
 import { upsertLink } from './index';
 
 /**
@@ -20,17 +21,13 @@ import { upsertLink } from './index';
 export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   if (!editor.selection) return;
 
-  const { isUrl, forceSubmit } = getPluginOptions<LinkPlugin, V>(
-    editor,
-    ELEMENT_LINK
-  );
+  const { forceSubmit } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
 
   const url = floatingLinkSelectors.url();
-  const isValid = isUrl?.(url) || forceSubmit;
-  if (!isValid) return;
+  if (!forceSubmit && !validateUrl(editor, url)) return;
 
   const text = floatingLinkSelectors.text();
-  const target = floatingLinkSelectors.newTab() ? undefined : '_self';
+  const target = floatingLinkSelectors.newTab() ? '_blank' : undefined;
 
   floatingLinkActions.hide();
 
@@ -38,7 +35,7 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
     url,
     text,
     target,
-    isUrl: (_url) => (forceSubmit || !isUrl ? true : isUrl(_url)),
+    skipValidation: true,
   });
 
   setTimeout(() => {

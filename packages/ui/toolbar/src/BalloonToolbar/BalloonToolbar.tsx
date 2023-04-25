@@ -12,10 +12,12 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
     arrow = false,
     portalElement,
     floatingOptions,
+    ignoreReadOnly,
   } = props;
 
-  const { floating, style, placement, open } = useFloatingToolbar({
+  const { refs, style, placement, open } = useFloatingToolbar({
     floatingOptions,
+    ignoreReadOnly,
   });
 
   const styles = getBalloonToolbarStyles({
@@ -32,7 +34,7 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
       <ToolbarBase
         css={styles.root.css}
         className={styles.root.className}
-        ref={floating}
+        ref={refs.setFloating}
         style={style}
       >
         {children}

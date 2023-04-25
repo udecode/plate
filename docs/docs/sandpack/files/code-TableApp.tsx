@@ -21,7 +21,12 @@ const plugins = createMyPlugins(
     ...basicNodesPlugins,
     createSoftBreakPlugin(softBreakPlugin),
     createExitBreakPlugin(exitBreakPlugin),
-    createTablePlugin(),
+    createTablePlugin({
+      options: {
+        initialTableWidth: 600,
+        // disableMarginLeft: true,
+      },
+    }),
   ],
   {
     components: plateUI,

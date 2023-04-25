@@ -1,5 +1,55 @@
 # @udecode/plate-core
 
+## 20.7.0
+
+### Patch Changes
+
+- [#2358](https://github.com/udecode/plate/pull/2358) by [@etienne-dldc](https://github.com/etienne-dldc) – fix readOnly not being properly updated on Editable
+
+## 20.4.0
+
+### Patch Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) –
+  - fix `nodeProps`: `undefined` attributes values are ignored
+
+## 20.0.0
+
+### Major Changes
+
+- [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
+  - This package has been split into multiple packages for separation of concerns and decoupled versioning:
+    - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
+    - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
+    - `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
+    - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
+    - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
+    - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
+    - `@udecode/plate-common` re-exports the 6 previous packages and is a dependency of all the other packages. It's basically replacing `@udecore/plate-core` as a bundle.
+  - Removed `getPreventDefaultHandler` since it is no longer needed.
+    **Migration**:
+    - If using `@udecode/plate` or `@udecode/plate-headless`: none
+    - Else: find & replace `@udecode/plate-core` by `@udecode/plate-common`
+
+### Minor Changes
+
+- [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
+  - Add `sanitizeUrl` util to check if URL has an allowed scheme
+
+### Patch Changes
+
+- [#2237](https://github.com/udecode/plate/pull/2237) by [@TomMorane](https://github.com/TomMorane) – `createHOC`: deep merge props
+
+## 19.7.0
+
+### Minor Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – vendor: upgrade react-hotkeys-hook to v4
+
+### Patch Changes
+
+- [#2233](https://github.com/udecode/plate/pull/2233) by [@fimion](https://github.com/fimion) – Fixes #2230: infinite recursion when using plugin field `then`
+
 ## 19.5.0
 
 ### Patch Changes

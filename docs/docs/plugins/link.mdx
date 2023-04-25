@@ -5,7 +5,29 @@ title: Link
 
 Specs in [editor-protocol](https://github.com/udecode/editor-protocol/issues/33)
 
+The Link plugin for Plate provides comprehensive support for hyperlink insertion and management within the rich-text editor.
+
+It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs into functional links.
+
+[//]: # (It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.)
+
+### Demo
+
+To create a new link, use the Link toolbar button or press Ctrl/Cmd+K.
+Clicking on an existing link will activate the contextual toolbar,
+where you can edit or unlink the link with ease.
+
+
+
+import { LinkSandpack } from "./LinkSandpack";
+
+<LinkSandpack />
+
 ### Installation
+
+Follow these steps to integrate the link plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -14,16 +36,19 @@ npm install @udecode/plate-link
 npm install @udecode/plate-ui-link
 ```
 
-### Usage
-
-import { LinkSandpack } from './LinkSandpack'
-
-<LinkSandpack />
-
-Enable floating link using:
+2. Import the plugin and add it to your plugin list:
 
 ```tsx
-renderAfterEditable: PlateFloatingLink
+import { createLinkPlugin, PlateFloatingLink } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createLinkPlugin({
+    renderAfterEditable: PlateFloatingLink,
+  })
+], {
+  components: createPlateUI(),
+});
 ```
 
 ### Options
@@ -43,9 +68,15 @@ interface LinkPlugin {
 
   /**
    * Hotkeys to trigger floating link.
-   * @default 'command+k, ctrl+k'
+   * @default 'meta+k, ctrl+k'
    */
-  triggerFloatingLinkHotkeys?: string;
+  triggerFloatingLinkHotkeys?: string | string[];
+
+  /**
+   * List of allowed URL schemes.
+   * @default ['http', 'https', 'mailto', 'tel']
+   */
+  allowedSchemes?: string[];
 
   /**
    * Callback to validate an url.
@@ -72,3 +103,5 @@ interface LinkPlugin {
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/link/src/createLinkPlugin.ts)
 - [packages/ui/nodes/link](https://github.com/udecode/plate/tree/main/packages/ui/nodes/link/src)
 - [Variables](https://github.com/udecode/plate/blob/main/examples/src)
+
+

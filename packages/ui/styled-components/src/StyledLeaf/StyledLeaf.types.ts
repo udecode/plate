@@ -1,4 +1,9 @@
-import { EText, PlateRenderLeafProps, TText, Value } from '@udecode/plate-core';
+import {
+  EText,
+  PlateRenderLeafProps,
+  TText,
+  Value,
+} from '@udecode/plate-common';
 import { StyledProps } from '../types/StyledProps';
 
 export type StyledLeafProps<

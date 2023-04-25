@@ -2,7 +2,7 @@ import {
   createComponentAs,
   createElementAs,
   HTMLPropsAs,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { FloatingLinkEditButton } from './FloatingLinkEditButton';
 import { FloatingLinkNewTabInput } from './FloatingLinkNewTabInput';

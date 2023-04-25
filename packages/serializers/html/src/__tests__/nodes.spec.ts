@@ -1,7 +1,6 @@
 import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
 import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
-import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { Value } from '@udecode/plate-core/src/slate/editor/TEditor';
+import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';

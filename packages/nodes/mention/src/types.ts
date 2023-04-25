@@ -1,5 +1,5 @@
 import { Data, NoData } from '@udecode/plate-combobox';
-import { PlateEditor, TElement, Value } from '@udecode/plate-core';
+import { PlateEditor, TElement, Value } from '@udecode/plate-common';
 import { CreateMentionNode } from './getMentionOnSelectItem';
 
 export interface TMentionElement extends TElement {

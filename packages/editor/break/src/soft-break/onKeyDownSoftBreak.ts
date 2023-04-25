@@ -5,7 +5,7 @@ import {
   queryNode,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { SoftBreakPlugin } from './types';
 
@@ -16,6 +16,8 @@ export const onKeyDownSoftBreak = <
   editor: E,
   { options: { rules = [] } }: WithPlatePlugin<SoftBreakPlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

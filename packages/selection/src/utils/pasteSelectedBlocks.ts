@@ -7,7 +7,7 @@ import {
   isElementEmpty,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { getSelectedBlocks } from '../queries/getSelectedBlocks';
 import { selectInsertedBlocks } from './selectInsertedBlocks';

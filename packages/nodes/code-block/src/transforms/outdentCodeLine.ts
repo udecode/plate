@@ -1,4 +1,4 @@
-import { TEditor, TElementEntry, Value } from '@udecode/plate-core';
+import { TEditor, TElementEntry, Value } from '@udecode/plate-common';
 import { deleteStartSpace } from './deleteStartSpace';
 
 export interface OutdentCodeLineOptions {

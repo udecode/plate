@@ -1,12 +1,13 @@
+import { Value } from '@udecode/slate';
+import { PlateEditor } from '../types/PlateEditor';
+import { createPluginFactory } from '../utils/createPluginFactory';
+import { getInjectedPlugins } from '../utils/getInjectedPlugins';
+import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
+import { pipeInsertFragment } from '../utils/pipeInsertFragment';
+import { pipeTransformData } from '../utils/pipeTransformData';
+import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 import { Value } from '../../slate';
 import { PlateEditor, PluginOptions, WithPlatePlugin } from '../../types';
-import {
-  getInjectedPlugins,
-  pipeInsertDataQuery,
-  pipeInsertFragment,
-  pipeTransformData,
-  pipeTransformFragment,
-} from '../../utils';
 
 export const withInsertData = <
   P = PluginOptions,

@@ -1,5 +1,40 @@
 # @udecode/plate-media
 
+## 20.7.0
+
+## 20.6.3
+
+## 20.6.0
+
+### Minor Changes
+
+- [#2311](https://github.com/udecode/plate/pull/2311) by [@haydencarlson](https://github.com/haydencarlson) – Added options for twitter embeds
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.0
+
+## 20.3.2
+
+### Patch Changes
+
+- [#2285](https://github.com/udecode/plate/pull/2285) by [@12joan](https://github.com/12joan) – Ignore `defaultPrevented` keydown events
+
+## 20.0.0
+
+## 19.7.0
+
+### Patch Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – fix: hotkey
+
+- [#2220](https://github.com/udecode/plate/pull/2220) by [@TomMorane](https://github.com/TomMorane) – fix: Cannot read properties of null (reading 'toString') when image width is null
+
 ## 19.5.0
 
 ## 19.4.4

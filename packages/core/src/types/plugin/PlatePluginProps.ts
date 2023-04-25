@@ -1,7 +1,7 @@
-import { Value } from '../../slate/editor/TEditor';
-import { AnyObject } from '../misc/AnyObject';
-import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
-import { PlateRenderLeafProps } from '../plate/PlateRenderLeafProps';
+import { Value } from '@udecode/slate';
+import { AnyObject } from '@udecode/utils';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /**
  * Props object or function returning props object.

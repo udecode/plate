@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
 import { upsertLink } from './upsertLink';
@@ -415,7 +415,34 @@ describe('upsertLink', () => {
     });
   });
 
-  describe('when isUrl always true', () => {
+  describe('when skipValidation is false and url is invalid', () => {
+    const input = (
+      <editor>
+        <hp>
+          insert link
+          <cursor />.
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>insert link.</hp>
+      </editor>
+    ) as any;
+
+    it('should do nothing', () => {
+      const editor = createEditor(input);
+      upsertLink(editor, {
+        url: 'invalid',
+        skipValidation: false,
+      });
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when skipValidation is true and url is invalid', () => {
     const input = (
       <editor>
         <hp>
@@ -428,14 +455,17 @@ describe('upsertLink', () => {
     const output = (
       <editor>
         <hp>
-          insert link<ha url="test">test</ha>.
+          insert link<ha url="invalid">invalid</ha>.
         </hp>
       </editor>
     ) as any;
 
     it('should insert', () => {
       const editor = createEditor(input);
-      upsertLink(editor, { url: 'test', isUrl: (_url) => true });
+      upsertLink(editor, {
+        url: 'invalid',
+        skipValidation: true,
+      });
 
       expect(input.children).toEqual(output.children);
     });

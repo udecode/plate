@@ -1,10 +1,11 @@
+import { comboboxActions } from '@udecode/plate-combobox';
 import {
   getEditorString,
   getPointBefore,
   getRange,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { BasePoint, BaseRange } from 'slate';
 import { IEmojiTriggeringController } from '../utils';
 
@@ -23,7 +24,7 @@ const getFoundText = <V extends Value>(
   end?: BasePoint
 ) => getEditorString(editor, getRange(editor, start, end));
 
-const isBreakingCharInText = (text: string) => /^\s/.test(text);
+const isBreakingCharInText = (text: string) => /\s/.test(text);
 
 export const getFindTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
@@ -49,8 +50,9 @@ export const getFindTriggeringInput = <V extends Value>(
     endPoint = nextPoint!;
     currentText = `${foundText}${text}`;
 
-    if (isBreakingCharInText(foundText)) {
+    if (isBreakingCharInText(currentText)) {
       emojiTriggeringController.reset();
+      comboboxActions.reset();
       break;
     }
   } while (--repeat > 0);

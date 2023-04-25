@@ -3,7 +3,7 @@ import {
   createElementAs,
   HTMLPropsAs,
   useElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { useCaptionString } from '../../caption/index';
 import { TMediaElement } from '../../media/index';
 

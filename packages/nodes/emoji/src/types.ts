@@ -1,5 +1,5 @@
 import { TComboboxItem } from '@udecode/plate-combobox';
-import { TEditableProps, Value } from '@udecode/plate-core';
+import { TEditableProps, Value } from '@udecode/plate-common';
 import { IEmojiTriggeringController } from './utils';
 
 type ReverseMap<T> = T[keyof T];

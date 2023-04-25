@@ -6,7 +6,7 @@ import {
   useEventPlateId,
   usePlateEditorState,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
 
@@ -29,9 +29,7 @@ export const MarkToolbarButton = <V extends Value>({
         e.stopPropagation();
 
         toggleMark(editor, { key: type!, clear });
-        setTimeout(() => {
-          focusEditor(editor, editor.selection ?? editor.prevSelection!);
-        }, 0);
+        focusEditor(editor);
       }}
       {...props}
     />

@@ -15,7 +15,7 @@ import {
   Value,
   withoutNormalizing,
   wrapNodes,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';

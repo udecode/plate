@@ -5,7 +5,7 @@ import {
   queryNode,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { exitBreak } from './transforms/exitBreak';
 import { ExitBreakPlugin } from './types';
@@ -17,6 +17,8 @@ export const onKeyDownExitBreak = <
   editor: E,
   { options: { rules = [] } }: WithPlatePlugin<ExitBreakPlugin, V, E>
 ): KeyboardHandlerReturnType => (event) => {
+  if (event.defaultPrevented) return;
+
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

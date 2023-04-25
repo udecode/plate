@@ -1,5 +1,74 @@
 # @udecode/plate-table-ui
 
+## 20.7.0
+
+## 20.6.3
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Table margin left resizing. Fixes #2301
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – `PlateTableCellElement` / `PlateTablePopover`:
+  - New popover button to toggle cell borders
+  - style changes: cell only display right and bottom borders, except the leftmost and the topmost cells that display left and top borders.
+
+## 20.3.2
+
+## 20.3.1
+
+## 20.3.0
+
+### Minor Changes
+
+- [#2276](https://github.com/udecode/plate/pull/2276) by [@12joan](https://github.com/12joan) – Pass rowIndex to TableCellElementResizable
+
+## 20.2.0
+
+### Patch Changes
+
+- [#2273](https://github.com/udecode/plate/pull/2273) by [@12joan](https://github.com/12joan) – Get `minColumnWidth` from table plugin options
+
+## 20.1.0
+
+### Minor Changes
+
+- [#2270](https://github.com/udecode/plate/pull/2270) by [@12joan](https://github.com/12joan) –
+  - Make rows resizable in addition to columns
+
+## 20.0.0
+
+### Major Changes
+
+- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) – Headless components and hooks moved to `@udecode/plate-table`, so the following components have been renamed:
+  - `TableElement` -> `PlateTableElement`
+    - removed table border to set it at the cell level
+    - `margin-left: 1px` to support cell borders
+    - if all columns have a fixed size, the table will have a dynamic width instead of always 100%
+  - `TableRowElement` -> `PlateTableRowElement`
+  - `TableCellElement` -> `PlateTableCellElement`
+    - removed td border in favor of td::before. The latter is responsible of having the border and the selected background color.
+    - z-index: td is 0, td::before is 10, td::before in selected state is 20, handle is 30, handle resize is 40.
+    - removed `selectedCell` div in favor of `::before`
+  - `TablePopover` -> `PlateTablePopover`
+    Styled props have been removed.
+
+### Minor Changes
+
+- [#2256](https://github.com/udecode/plate/pull/2256) by [@zbeyens](https://github.com/zbeyens) –
+  - New component: `PlateTableCellHeaderElement`: extends `PlateTableCellElement` +
+    - `td` -> `th`
+    - styling
+
+## 19.7.0
+
 ## 19.6.0
 
 ### Minor Changes

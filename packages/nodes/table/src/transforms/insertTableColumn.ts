@@ -9,7 +9,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { TablePlugin, TTableElement } from '../types';
@@ -75,10 +75,11 @@ export const insertTableColumn = <V extends Value>(
   }
   const currentRowIndex = cellPath[cellPath.length - 2];
 
-  const { newCellChildren } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const {
+    newCellChildren,
+    initialTableWidth,
+    minColumnWidth,
+  } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -112,14 +113,34 @@ export const insertTableColumn = <V extends Value>(
     const { colSizes } = tableNode;
 
     if (colSizes) {
+      let newColSizes = [
+        ...colSizes.slice(0, nextColIndex),
+        0,
+        ...colSizes.slice(nextColIndex),
+      ];
+
+      if (initialTableWidth) {
+        newColSizes[nextColIndex] =
+          colSizes[nextColIndex] ??
+          colSizes[nextColIndex - 1] ??
+          initialTableWidth / colSizes.length;
+
+        const oldTotal = colSizes.reduce((a, b) => a + b, 0);
+        const newTotal = newColSizes.reduce((a, b) => a + b, 0);
+        const maxTotal = Math.max(oldTotal, initialTableWidth);
+
+        if (newTotal > maxTotal) {
+          const factor = maxTotal / newTotal;
+          newColSizes = newColSizes.map((size) =>
+            Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
+          );
+        }
+      }
+
       setNodes<TTableElement>(
         editor,
         {
-          colSizes: [
-            ...colSizes.slice(0, nextColIndex),
-            0,
-            ...colSizes.slice(nextColIndex),
-          ],
+          colSizes: newColSizes,
         },
         {
           at: tablePath,

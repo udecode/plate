@@ -1,5 +1,21 @@
 # @udecode/plate-code-block-ui
 
+## 20.7.0
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.3.1
+
+## 20.0.0
+
+### Patch Changes
+
+- [#2242](https://github.com/udecode/plate/pull/2242) by [@12joan](https://github.com/12joan) – Remove `getPreventDefaultHandler` since it was causing issues in CodeBlockToolbarButton and is no longer needed.
+
+## 19.7.0
+
 ## 19.6.0
 
 ### Minor Changes

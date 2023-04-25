@@ -1,17 +1,18 @@
 import React, { cloneElement, ReactNode } from 'react';
+import { createElementAs, HTMLPropsAs } from '@udecode/plate-common';
 import {
   autoUpdate,
   flip,
   offset,
   shift,
   useFloating,
-} from '@floating-ui/react-dom-interactions';
-import { UseFloatingProps } from '@floating-ui/react-dom-interactions/src/types';
-import { createElementAs, HTMLPropsAs } from '@udecode/plate-core';
-import { useInteractions } from '../floating-ui';
+  UseFloatingProps,
+  useInteractions,
+} from '../libs/floating-ui';
 
 export interface PopoverProps extends HTMLPropsAs<'div'> {
   floatingOptions?: Partial<UseFloatingProps>;
+  disabled?: boolean;
   content?: ReactNode;
   children: JSX.Element;
 }
@@ -25,7 +26,7 @@ export const Popover = ({
   content,
   ...props
 }: PopoverProps) => {
-  const { x, y, reference, floating, strategy } = useFloating({
+  const { x, y, refs, strategy } = useFloating({
     middleware: [
       offset(12),
       flip({
@@ -43,12 +44,12 @@ export const Popover = ({
     <>
       {cloneElement(
         children,
-        getReferenceProps({ ref: reference, ...children.props })
+        getReferenceProps({ ref: refs.setReference, ...children.props })
       )}
 
       {floatingOptions?.open &&
         createElementAs('div', {
-          ref: floating,
+          ref: refs.setFloating,
           style: {
             position: strategy,
             top: y ?? 0,

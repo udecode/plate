@@ -5,7 +5,7 @@ import {
   nanoid,
   setNodes,
   usePlateEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { MARK_COMMENT } from '../../constants';
 import { getCommentKey } from '../../utils/index';
 import { useCommentsActions } from './CommentsProvider';

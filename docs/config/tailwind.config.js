@@ -1,7 +1,8 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
+const colors = require('tailwindcss/colors');
 
 module.exports = {
-  purge: ['../src/**/*.html', '../src/**/*.js', '../src/**/*.tsx'],
+  content: ['../src/**/*.html', '../src/**/*.js', '../src/**/*.tsx'],
   darkMode: 'class', // or 'media' or 'class'
   corePlugins: { preflight: false },
   important: true,
@@ -14,6 +15,7 @@ module.exports = {
         darkBlue: '#8be9fd',
         darkPink: '#ff79c6',
         darkBodyBackground: '#272b36',
+        ...colors,
       },
     },
     fontFamily: {
@@ -29,9 +31,6 @@ module.exports = {
     container: {
       padding: '1rem',
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [],
 };

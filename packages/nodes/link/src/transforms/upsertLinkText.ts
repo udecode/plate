@@ -6,7 +6,7 @@ import {
   replaceNodeChildren,
   TText,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 import { UpsertLinkOptions } from './upsertLink';

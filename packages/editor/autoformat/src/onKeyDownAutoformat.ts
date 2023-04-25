@@ -8,7 +8,7 @@ import {
   PlateEditor,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';
@@ -22,8 +22,9 @@ export const onKeyDownAutoformat = <
     options: { rules, enableUndoOnDelete },
   }: WithPlatePlugin<AutoformatPlugin, V, E>
 ): KeyboardHandlerReturnType => (e: KeyboardEvent) => {
-  // Abort quicky if hotKey was not pressed.
+  if (e.defaultPrevented) return false;
 
+  // Abort quicky if hotKey was not pressed.
   if (!isHotkey('backspace', { byKey: true }, e)) return false;
 
   if (!rules) return false;

@@ -3,7 +3,29 @@ slug: /components/placeholder
 title: Placeholder
 ---
 
+The Placeholder component allows for the display of a customizable placeholder text when a block is empty.
+It helps users locate the cursor in the application and prompts them to input content.
+The feature works similarly to the native DOM Placeholder attribute used by inputs.
+It can be configured to display a specific message or prompt for specific types of blocks.
+
+### Demo
+
+To test the Placeholder component, simply focus on an empty paragraph, and the placeholder will be shown.
+
+Try to focus an empty paragraph: a placeholder will be shown.
+
+
+
+import { PlaceholderSandpack } from "./PlaceholderSandpack";
+
+<PlaceholderSandpack />
+
 ### Installation
+
+Follow these steps to integrate the Placeholder component into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -11,13 +33,44 @@ npm install @udecode/plate
 npm install @udecode/plate-ui-placeholder
 ```
 
-### Usage
+2. Wrap your block components with the Placeholder component:
 
-Try to focus an empty paragraph: a placeholder will be shown.
+```tsx
+import {
+  ELEMENT_H1,
+  ELEMENT_PARAGRAPH,
+  withPlaceholders,
+} from '@udecode/plate';
 
-import { PlaceholderSandpack } from './PlaceholderSandpack'
+export const withStyledPlaceHolders = (components: any) =>
+  withPlaceholders(components, [
+    {
+      key: ELEMENT_PARAGRAPH,
+      placeholder: 'Type a paragraph',
+      hideOnBlur: true,
+    },
+    {
+      key: ELEMENT_H1,
+      placeholder: 'Untitled',
+      hideOnBlur: false,
+    },
+  ]);
+```
 
-<PlaceholderSandpack />
+3. Create your plugins using these components:
+
+```tsx
+import { createPlateUI } from '@udecode/plate';
+
+const components = withStyledPlaceHolders(createPlateUI());
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+], {
+  components: components,
+});
+```
+
 
 ### Source Code
 

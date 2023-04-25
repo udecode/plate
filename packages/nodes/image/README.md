@@ -1,1 +1,0 @@
-Deprecated, use instead [@udecode/plate-media](https://npmjs.com/package/@udecode/plate-media)

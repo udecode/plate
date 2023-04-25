@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "19.5.0",
+  "version": "20.7.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,13 +19,15 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@radix-ui/react-slot": "^1.0.1",
+    "@udecode/slate": "19.8.0",
+    "@udecode/slate-react": "19.7.1",
+    "@udecode/utils": "19.7.0",
     "@udecode/zustood": "^1.1.1",
     "clsx": "^1.1.1",
     "jotai": "^1.7.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.4",
-    "react-hotkeys-hook": "^3.4.6",
+    "react-hotkeys-hook": "^4.3.7",
     "use-deep-compare": "^1.1.0",
     "zustand": "^3.7.2"
   },

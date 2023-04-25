@@ -8,7 +8,7 @@ import {
   TElement,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import {
   getNextTableCell,
@@ -26,6 +26,8 @@ export const onKeyDownTable = <
   editor: E,
   { type }: WithPlatePlugin<P, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   const isKeyDown = {
     'shift+up': isHotkey('shift+up', e),
     'shift+down': isHotkey('shift+down', e),

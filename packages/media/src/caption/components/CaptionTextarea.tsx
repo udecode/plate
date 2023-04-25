@@ -19,7 +19,7 @@ import {
   useComposedRef,
   useEditorRef,
   useElement,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';

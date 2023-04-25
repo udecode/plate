@@ -1,16 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { resizeInWidth } from '@portive/client';
-import { PlateCloudEditor, TCloudImageElement } from '@udecode/plate-cloud';
-import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-core';
+import {
+  PlateCloudEditor,
+  PlateCloudImageEditor,
+  TCloudImageElement,
+} from '@udecode/plate-cloud';
+import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 import { ImageSize, SetImageSize } from './types';
-// import { ImageFileInterface } from '../types';
-// import { useHostedImageContext } from './hosted-image-context';
-
-/**
- * FIXME: These constant should be options in the plugin.
- */
-const PLUGIN_MIN_RESIZE_WIDTH = 100;
-const PLUGIN_MAX_RESIZE_WIDTH = 640;
 
 /**
  * The resize label that shows the width/height of the image
@@ -106,8 +102,10 @@ export function ResizeControls({
   size: ImageSize;
   setSize: SetImageSize;
 }) {
-  const editor = useEditorRef() as PlateCloudEditor;
+  const editor = useEditorRef() as PlateCloudEditor & PlateCloudImageEditor;
   const [isResizing, setIsResizing] = useState(false);
+
+  const { minResizeWidth, maxResizeWidth } = editor.cloudImage;
 
   const currentSizeRef = useRef<{ width: number; height: number }>();
 
@@ -116,8 +114,8 @@ export function ResizeControls({
       setIsResizing(true);
       const startX = mouseDownEvent.clientX;
       const startWidth = size.width;
-      const minWidth = PLUGIN_MIN_RESIZE_WIDTH;
-      const maxWidth = Math.min(element.maxWidth, PLUGIN_MAX_RESIZE_WIDTH);
+      const minWidth = minResizeWidth;
+      const maxWidth = Math.min(element.maxWidth, maxResizeWidth);
       /**
        * Handle resize dragging through an event handler on mouseMove on the
        * document.
@@ -178,10 +176,10 @@ export function ResizeControls({
        */
       document.body.style.cursor = 'ew-resize';
     },
-    [editor, element, size, setSize]
+    [size.width, minResizeWidth, element, maxResizeWidth, setSize, editor]
   );
 
-  if (element.width < PLUGIN_MIN_RESIZE_WIDTH) return null;
+  if (element.width < minResizeWidth) return null;
 
   return (
     <>

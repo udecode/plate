@@ -12,7 +12,7 @@ import {
   TElementEntry,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
@@ -55,6 +55,7 @@ export const removeListItem = <V extends Value>(
      */
     if (previousLiPath) {
       const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
+      if (!previousLi) return;
 
       // 1
       let tempLiPath = Path.next(liPath);
@@ -73,6 +74,7 @@ export const removeListItem = <V extends Value>(
       );
 
       const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
+      if (!tempLi) return;
       const tempLiPathRef = createPathRef(editor, tempLi[1]);
 
       // 2

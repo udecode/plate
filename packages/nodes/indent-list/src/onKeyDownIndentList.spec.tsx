@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, getPlugin } from '@udecode/plate-core';
+import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';

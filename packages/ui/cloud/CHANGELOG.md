@@ -1,5 +1,52 @@
 # @udecode/plate-ui-cloud
 
+## 20.7.0
+
+## 20.6.4
+
+### Patch Changes
+
+- [#2327](https://github.com/udecode/plate/pull/2327) by [@thesunny](https://github.com/thesunny) – Fix Plate Cloud attachments so that it works with collaborative
+
+## 20.6.2
+
+### Patch Changes
+
+- [#2322](https://github.com/udecode/plate/pull/2322) by [@thesunny](https://github.com/thesunny) – Make Plate Cloud state not found look correct for collaborative uploads
+
+## 20.6.1
+
+### Patch Changes
+
+- [#2318](https://github.com/udecode/plate/pull/2318) by [@thesunny](https://github.com/thesunny) – Fix document with Plate Cloud so it contains the URLs for improved ex…
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.0.0
+
+### Minor Changes
+
+- [#2254](https://github.com/udecode/plate/pull/2254) by [@thesunny](https://github.com/thesunny) – Add options to set `minResizeWidth` and `maxResizeWidth` to `CloudImagePlugin`.
+
+  ```typescript
+      createCloudImagePlugin({
+        options: {
+          maxInitialWidth: 320,
+          maxInitialHeight: 320,
+          minResizeWidth: 100,
+          maxResizeWidth: 720,
+        },
+      }),
+  ```
+
+### Patch Changes
+
+- [#2261](https://github.com/udecode/plate/pull/2261) by [@thesunny](https://github.com/thesunny) – Disable server side resizing of GIF files
+
+## 19.7.0
+
 ## 19.5.0
 
 ## 19.4.4

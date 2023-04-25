@@ -1,4 +1,4 @@
-import { getEditorString, TEditor, Value } from '@udecode/plate-core';
+import { getEditorString, TEditor, Value } from '@udecode/plate-common';
 import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = <V extends Value>(

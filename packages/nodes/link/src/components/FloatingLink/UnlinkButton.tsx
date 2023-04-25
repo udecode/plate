@@ -7,7 +7,7 @@ import {
   focusEditor,
   HTMLPropsAs,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { unwrapLink } from '../../transforms/index';
 
 export const useUnlinkButton = (

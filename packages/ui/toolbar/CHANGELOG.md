@@ -1,5 +1,25 @@
 # @udecode/plate-toolbar
 
+## 20.7.0
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.3.1
+
+## 20.0.0
+
+### Minor Changes
+
+- [#2262](https://github.com/udecode/plate/pull/2262) by [@12joan](https://github.com/12joan) – Add `ignoreReadOnly` prop to BalloonToolbar
+
+## 19.7.0
+
+### Patch Changes
+
+- [#2231](https://github.com/udecode/plate/pull/2231) by [@12joan](https://github.com/12joan) – Fix mark toolbar button not applying mark properly
+
 ## 19.6.0
 
 ### Minor Changes

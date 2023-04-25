@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import { createStyles } from '@udecode/plate-styled-components';
 import tw from 'twin.macro';
 import { TodoListElementStyleProps } from './TodoListElement.types';
@@ -15,7 +15,7 @@ export const getTodoListElementStyles = <V extends Value>(
       checkbox: tw`w-4 h-4 m-0`,
       text: [
         tw`flex-1 focus:outline-none`,
-        props.checked && tw`line-through opacity[0.666]`,
+        props.checked && tw`line-through opacity-[0.666]`,
       ],
     }
   );

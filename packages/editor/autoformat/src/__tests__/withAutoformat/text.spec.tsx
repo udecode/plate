@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-core';
+import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';

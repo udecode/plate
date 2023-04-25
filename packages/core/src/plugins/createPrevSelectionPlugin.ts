@@ -1,5 +1,5 @@
-import { TRange } from '../slate/index';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { TRange } from '@udecode/slate';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_PREV_SELECTION = 'prevSelection';
 

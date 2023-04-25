@@ -15,7 +15,7 @@ import {
   TElementEntry,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
@@ -125,6 +125,7 @@ const selectionIsInAListHandler = <V extends Value>(
       editor,
       Path.next(liWithSiblings)
     );
+    if (!siblingListItem) return false;
 
     const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
 
@@ -149,6 +150,8 @@ const selectionIsInAListHandler = <V extends Value>(
     editor,
     Path.next([...listItem[1], 0])
   );
+  if (!nestedList) return false;
+
   const nestedListItem = getChildren<TElement>(nestedList)[0];
 
   if (

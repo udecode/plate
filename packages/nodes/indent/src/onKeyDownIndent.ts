@@ -3,7 +3,7 @@ import {
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { indent, outdent } from './transforms/index';
 
 export const onKeyDownIndent = <
@@ -12,6 +12,8 @@ export const onKeyDownIndent = <
 >(
   editor: E
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   if (Hotkeys.isTab(editor, e)) {
     e.preventDefault();
     indent(editor);

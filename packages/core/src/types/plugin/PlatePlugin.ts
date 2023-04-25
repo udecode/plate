@@ -1,9 +1,8 @@
 import { FC, ReactNode } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { AnyObject } from '../misc/AnyObject';
-import { Nullable } from '../misc/Nullable';
-import { WithRequired } from '../misc/types';
-import { PlateEditor } from '../plate/PlateEditor';
+import { Value } from '@udecode/slate';
+import { AnyObject, WithRequired } from '@udecode/utils';
+import { Nullable } from '../misc';
+import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
 import { DOMHandlers } from './DOMHandlers';
@@ -189,6 +188,11 @@ export type PlatePlugin<
       editor: E,
       plugin: WithPlatePlugin<P, V, E>
     ) => Partial<PlatePlugin<P, V, E>> | void;
+
+    /**
+     * For internal use. Tracks if then has been replaced for recursive calls.
+     */
+    _thenReplaced?: number;
 
     /**
      * Hook called when the editor is initialized.

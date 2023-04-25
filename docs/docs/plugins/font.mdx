@@ -3,14 +3,34 @@ slug: /plugins/font
 title: Font
 ---
 
-Includes the following plugins:
-- Font background color
-- Font color
-- Font family
-- Font size
-- Font weight
+The font plugins provide extended formatting options for document content.
+Users can alter font size, font families, font colors, and font background colors to make text stand out,
+distinguish between sections, and draw attention to certain parts of the text. Plate provides the following plugins:
+
+- `fontFamily`: Allows users to change the font family by applying inline elements with a font-family in the style attribute;
+- `fontSize`: Allows for control over font size through the use of inline elements with either a CSS class or a font-size in the style attribute;
+- `fontColor`: Allows for control over font color through the application of inline elements with a color in the style attribute;
+- `fontBackgroundColor`: Allows for control over font background color through the use of inline elements with a background-color in the style attribute;
+- `fontWeight`: Allos for control over font weight through the use of inline elements with a font-weight in the style attribute.
+
+
+### Demo
+
+Use the toolbar dropdowns to control font color and font background color.
+
+
+
+import { FontSandpack } from "./FontSandpack";
+
+<FontSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the font plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -19,13 +39,24 @@ npm install @udecode/plate-font
 npm install @udecode/plate-ui-font
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-Use the toolbar dropdowns to control font color and font background color.
+```tsx
+import {
+  createFontColorPlugin,
+  createFontBackgroundColorPlugin,
+  createFontSizePlugin,
+} from '@udecode/plate';
 
-import { FontSandpack } from './FontSandpack'
-
-<FontSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createFontColorPlugin(),
+  createFontBackgroundColorPlugin(),
+  createFontSizePlugin(),
+], {
+  components: createPlateUI(),
+});
+```
 
 ### Source Code
 

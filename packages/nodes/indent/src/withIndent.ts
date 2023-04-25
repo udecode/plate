@@ -4,7 +4,7 @@ import {
   unsetNodes,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { IndentPlugin, TIndentElement } from './types';
 
 /**

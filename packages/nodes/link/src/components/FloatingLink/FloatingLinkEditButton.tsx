@@ -5,7 +5,7 @@ import {
   createElementAs,
   HTMLPropsAs,
   useEditorRef,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 
 export const useFloatingLinkEditButton = (

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate';
-import { PlateEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';

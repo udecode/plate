@@ -5,7 +5,7 @@ import {
   insertElements,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 import { ExitBreakRule } from '../types';

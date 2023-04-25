@@ -1,5 +1,5 @@
 import { TCodeBlockElement } from '@udecode/plate-code-block';
-import { Value } from '@udecode/plate-core';
+import { Value } from '@udecode/plate-common';
 import {
   createStyles,
   StyledElementProps,

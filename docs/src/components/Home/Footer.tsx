@@ -5,7 +5,7 @@ import { PoweredByVercel } from './PoweredByVercel';
 
 export const Footer = () => (
   <div tw="bg-gray-50 dark:bg-gray-850 border-t border-gray-200">
-    <div tw="container mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 maxWidth[1140px]!">
+    <div tw="container mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 max-w-[1140px]!">
       <div tw="flex justify-between">
         <div>
           <h4 tw="text-sm leading-5 font-semibold tracking-wider text-gray-400 dark:text-white uppercase">
@@ -72,10 +72,10 @@ export const Footer = () => (
             </li>
             <li tw="mt-4">
               <a
-                href="https://slate-js.slack.com/messages/plate"
+                href="https://discord.gg/mAZRuBzGM3"
                 tw="text-base leading-6 text-gray-500 dark:text-gray-300 hover:text-gray-900"
               >
-                Slack
+                Discord
               </a>
             </li>
           </ul>

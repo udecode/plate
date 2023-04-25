@@ -4,7 +4,7 @@ import {
   getPluginType,
   PlateEditor,
   Value,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
@@ -23,7 +23,7 @@ export const triggerFloatingLinkEdit = <V extends Value>(
 
   floatingLinkActions.url(link.url);
 
-  floatingLinkActions.newTab(link.target === undefined);
+  floatingLinkActions.newTab(link.target === '_blank');
 
   if (text === link.url) {
     text = '';

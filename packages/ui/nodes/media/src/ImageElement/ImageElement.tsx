@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React from 'react';
-import { Box } from '@udecode/plate-core';
+import { Box } from '@udecode/plate-common';
 import { ElementPopover } from '@udecode/plate-floating';
 import { Caption, ELEMENT_IMAGE, Image, Media } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
@@ -14,6 +14,7 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     nodeProps,
     caption = {},
+    popoverProps = {},
     resizableProps,
     align = 'center',
     ignoreReadOnly = false,
@@ -31,6 +32,7 @@ export const ImageElement = (props: ImageElementProps) => {
     <ElementPopover
       content={<PlateFloatingMedia pluginKey={ELEMENT_IMAGE} />}
       floatingOptions={mediaFloatingOptions}
+      {...popoverProps}
     >
       <Media.Root {...rootProps} css={styles.root.css}>
         <figure
@@ -42,20 +44,20 @@ export const ImageElement = (props: ImageElementProps) => {
             // @ts-ignore
             css={styles.resizable?.css}
             className={styles.resizable?.className}
-            handleComponent={{
-              left: (
-                <Box
-                  css={[styles.handleLeft?.css]}
-                  className={styles.handleLeft?.className}
-                />
-              ),
-              right: (
-                <Box
-                  css={styles.handleRight?.css}
-                  className={styles.handleRight?.className}
-                />
-              ),
-            }}
+            renderHandleLeft={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={[styles.handleLeft?.css]}
+                className={styles.handleLeft?.className}
+              />
+            )}
+            renderHandleRight={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={styles.handleRight?.css}
+                className={styles.handleRight?.className}
+              />
+            )}
             align={align}
             readOnly={!ignoreReadOnly && readOnly}
             {...resizableProps}
