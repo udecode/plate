@@ -14,7 +14,7 @@ export const withStagingEditor = <
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   plugin: WithPlatePlugin<P, V, E>
 ) => {
-  const { setNormalizing, apply } = editor;
+  const { setNormalizing, apply, normalize } = editor;
 
   // editor.normalizingPluginKeys = {};
 
@@ -106,6 +106,17 @@ export const withStagingEditor = <
     },
   });
 
+  const {
+    setNormalizing: setNormalizingStaging,
+    normalizeStaging,
+    apply: applyStaging,
+  } = editor.stagingEditor;
+
+  // editor.setNormalizing = (value) => {
+  //   editor.stagingEditor.setNormalizing(value);
+  //   setNormalizing(value);
+  // };
+
   const resetStagingEditor = () => {
     const { id, key: _key, ...cloneEditor } = cloneDeep(editor);
     Object.keys(cloneEditor).forEach((key) => {
@@ -115,25 +126,61 @@ export const withStagingEditor = <
     Object.assign(editor.stagingEditor, cloneEditor);
   };
 
-  editor.setNormalizing = (value) => {
-    editor.stagingEditor.setNormalizing(value);
-    setNormalizing(value);
+  // editor.stagingEditor.normalize = (force?: boolean) => {
+  //   // if (force) {
+  //   normalizeStaging();
+  //   // }
+  // };
+
+  // editor.normalize = () => {
+  //
+  // };
+
+  editor.stagingEditor.isNormalizing = () => {
+    return editor.isNormalizing();
+  };
+
+  editor.stagingEditor.apply = (op) => {
+    if (editor.isNormalizing()) {
+      console.log(op);
+      applyStaging(op);
+    }
+
+    // if (force) {
+    //   applyStaging(op);
+    // }
+    // console.log(editor.isNormalizing());
+    // console.log(editor.stagingEditor.isNormalizing());
+    // console.log('STAGING', op);
+    // if (editor.stagingEditor.isNormalizing()) {
+    // applyStaging(op);
+    // }
   };
 
   editor.withoutNormalizing = (fn) => {
     const value = editor.isNormalizing();
+    // const valueStaging = editor.stagingEditor.isNormalizing();
+
     editor.setNormalizing(false);
+    // editor.stagingEditor.setNormalizing(false);
+
     try {
       fn();
     } finally {
       editor.setNormalizing(value);
+      // editor.stagingEditor.setNormalizing(value);
     }
 
     let hasError = false;
 
     try {
+      // console.log(1, value, valueStaging);
+      // editor.stagingEditor.setNormalizing(false);
       editor.stagingEditor.normalize();
+      console.log('1');
+      // editor.normalize();
     } catch (err) {
+      console.log(err);
       editor.errors.push({ type: 'normalize', error: err });
       hasError = true;
     }
@@ -151,10 +198,14 @@ export const withStagingEditor = <
     let hasError = false;
 
     try {
-      editor.stagingEditor.apply(cloneDeep(op));
+      // editor.stagingEditor.setNormalizing(false);
+      applyStaging(cloneDeep(op));
+      // editor.stagingEditor.setNormalizing(true);
+      // console.log('EDITOR', op);
     } catch (err) {
       editor.errors.push({ type: 'apply', error: err });
 
+      console.log(err);
       console.log(JSON.stringify(editor.children));
       console.log(JSON.stringify(editor.stagingEditor.children));
       hasError = true;

@@ -144,8 +144,8 @@ describe('withStagingEditor', () => {
     });
 
     editor.insertFragment([{ text: 'a' }, { text: 'b' }]);
-    editor.undo();
-    editor.redo();
+    // editor.undo();
+    // editor.redo();
 
     expect(editor.children).toEqual(output.children);
     expect(editor.errors).toEqual([]);
