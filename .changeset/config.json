@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@changesets/config@1.6.0/schema.json",
   "changelog": ["./changelog-config", { "repo": "udecode/plate" }],
   "commit": false,
-  "linked": [["@udecode/plate*"]],
+  "linked": [["@udecode/slate*", "@udecode/plate*"]],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
