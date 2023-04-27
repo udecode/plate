@@ -41,7 +41,7 @@ export const withMention = <
     insertBreak,
     insertText: _insertText,
     deleteBackward,
-    insertFragment: _insertFragment,
+    insertFragment,
     insertTextData,
   } = editor;
 
@@ -55,7 +55,7 @@ export const withMention = <
   editor.insertFragment = (fragment) => {
     const inMentionInput = findMentionInput(editor) !== undefined;
     if (!inMentionInput) {
-      return _insertFragment(fragment);
+      return insertFragment(fragment);
     }
 
     return insertText(

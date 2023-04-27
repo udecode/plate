@@ -7,7 +7,6 @@ import {
   getNodeTexts,
   getPlugin,
   insertElements,
-  insertFragment,
   isElement,
   PlateEditor,
   removeNodes,
@@ -26,7 +25,7 @@ import { ELEMENT_LI } from './createListPlugin';
 import { getListItemContentType, getListItemType, isListRoot } from './queries';
 
 export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
-  const { insertFragment: _insertFragment } = editor;
+  const { insertFragment } = editor;
 
   const listItemPlugin = getPlugin<{}, V>(editor, ELEMENT_LI);
   const listItemType = getListItemType(editor);
@@ -181,13 +180,13 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     });
     // not inserting into a list item, delegate to other plugins
     if (!liEntry) {
-      return _insertFragment(
+      return insertFragment(
         isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
 
     // delete selection (if necessary) so that it can check if needs to insert into an empty block
-    insertFragment<TText>(editor, [{ text: '' }]);
+    insertFragment([{ text: '' }] as any);
 
     // refetch to find the currently selected LI after the deletion above is performed
     liEntry = findNode<TElement>(editor, {
@@ -200,7 +199,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       mode: 'lowest',
     });
     if (!licEntry) {
-      return _insertFragment(
+      return insertFragment(
         isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
@@ -211,7 +210,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       licEntry
     );
 
-    insertFragment<TText>(editor, [textNode]); // insert text if needed
+    insertFragment<TText>([textNode]); // insert text if needed
 
     const [, liPath] = liEntry!;
 
