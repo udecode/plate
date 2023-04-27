@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 21.0.0
+
 ## 20.7.2
 
 ## 20.7.0
