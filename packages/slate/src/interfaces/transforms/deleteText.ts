@@ -1,5 +1,5 @@
 import { Transforms } from 'slate';
-import { TextDeleteOptions } from 'slate/dist/transforms/text';
+import { TextDeleteOptions } from 'slate/dist/interfaces/transforms/text';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
