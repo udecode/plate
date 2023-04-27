@@ -1,5 +1,5 @@
 import { Point, Transforms } from 'slate';
-import { SelectionSetPointOptions } from 'slate/dist/transforms/selection';
+import { SelectionSetPointOptions } from 'slate/dist/interfaces/transforms/selection';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**

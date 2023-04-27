@@ -22,8 +22,8 @@
     "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {
-    "slate": ">=0.87.0",
-    "slate-history": ">=0.86.0"
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0"
   },
   "keywords": [
     "slate"

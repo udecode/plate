@@ -16,7 +16,7 @@ import {
   withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { MoveUnit } from 'slate/dist/interfaces/types';
+import { MoveUnit } from 'slate';
 import { addSuggestionMark } from './transforms/addSuggestionMark';
 import { getSuggestionId } from './utils/index';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';

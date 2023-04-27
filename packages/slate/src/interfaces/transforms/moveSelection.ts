@@ -1,5 +1,5 @@
 import { Transforms } from 'slate';
-import { SelectionMoveOptions } from 'slate/dist/transforms/selection';
+import { SelectionMoveOptions } from 'slate/dist/interfaces/transforms/selection';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**
