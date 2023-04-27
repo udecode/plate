@@ -1,5 +1,7 @@
 # @udecode/plate-trailing-block
 
+## 20.7.2
+
 ## 20.7.1
 
 ### Patch Changes

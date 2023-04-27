@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 20.7.2
+
 ## 20.7.0
 
 ### Minor Changes

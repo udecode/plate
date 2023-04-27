@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 20.7.2
+
+### Patch Changes
+
+- [#2368](https://github.com/udecode/plate/pull/2368) by [@zbeyens](https://github.com/zbeyens) –
+  - error handling when pasting (`x-slate-fragment`)
+
 ## 20.7.0
 
 ### Patch Changes
