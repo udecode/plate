@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-utils",
-  "version": "19.7.1",
+  "version": "21.0.0",
   "description": "Slate utils",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/slate": "19.8.0",
+    "@udecode/slate": "21.0.0",
     "@udecode/utils": "19.7.0",
     "lodash": "^4.17.21"
   },

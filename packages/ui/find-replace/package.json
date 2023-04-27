@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-find-replace",
-  "version": "20.7.2",
+  "version": "21.0.0",
   "description": "Find and replace UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,10 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "20.7.2",
-    "@udecode/plate-find-replace": "20.7.2",
-    "@udecode/plate-styled-components": "20.7.2",
-    "@udecode/plate-ui-toolbar": "20.7.2"
+    "@udecode/plate-common": "21.0.0",
+    "@udecode/plate-find-replace": "21.0.0",
+    "@udecode/plate-styled-components": "21.0.0",
+    "@udecode/plate-ui-toolbar": "21.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

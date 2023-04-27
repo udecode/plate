@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 21.0.0
+
 ## 20.7.2
 
 ## 20.7.0
