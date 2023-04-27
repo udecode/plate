@@ -1,3 +1,4 @@
+import { isUrl } from '@udecode/plate-common';
 import videoParser from 'js-video-url-parser';
 import { EmbedUrlData } from '../media/parseMediaUrl';
 
@@ -8,6 +9,8 @@ const YOUKU_PREFIX = 'https://player.youku.com/embed/';
 const COUB_PREFIX = 'https://coub.com/embed/';
 
 export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
+  if (!isUrl(url)) return;
+
   const videoData = videoParser.parse(url);
   if (videoData?.provider && videoData.id) {
     const { id, provider } = videoData;
