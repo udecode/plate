@@ -34,7 +34,13 @@ const plugins = createMyPlugins(
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(softBreakPlugin),
-    createDeserializeCsvPlugin(),
+    createDeserializeCsvPlugin({
+      options: {
+        parseOptions: {
+          header: false,
+        },
+      },
+    }),
   ],
   {
     components: plateUI,
