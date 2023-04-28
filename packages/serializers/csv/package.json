@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-csv",
-  "version": "21.0.0",
+  "version": "21.1.0",
   "description": "CSV serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
