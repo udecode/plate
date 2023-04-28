@@ -59,6 +59,13 @@ export interface DeserializeCsvPlugin {
    * @default 0.25
    */
   errorTolerance?: number;
+
+  /**
+   * Options to pass to papaparse
+   * @default { header: true }
+   * @see https://www.papaparse.com/docs#config
+   */
+  parseOptions?: DeserializeCsvParseOptions;
 }
 ```
 
