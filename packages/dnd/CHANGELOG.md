@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 21.1.1
+
+### Patch Changes
+
+- [#2357](https://github.com/udecode/plate/pull/2357) by [@zbeyens](https://github.com/zbeyens) – fix: add delay to DnD scroller
+
 ## 21.0.0
 
 ## 20.7.2
