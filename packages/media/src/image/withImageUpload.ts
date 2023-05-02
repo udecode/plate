@@ -28,7 +28,7 @@ export const withImageUpload = <
     const text = dataTransfer.getData('text/plain');
     const { files } = dataTransfer;
 
-    if (files && files.length > 0) {
+    if (!text && files && files.length > 0) {
       const injectedPlugins = getInjectedPlugins<{}, V, E>(editor, plugin);
       if (
         !pipeInsertDataQuery<{}, V, E>(injectedPlugins, {

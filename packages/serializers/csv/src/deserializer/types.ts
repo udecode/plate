@@ -1,3 +1,7 @@
+import { ParseConfig } from 'papaparse';
+
+export type DeserializeCsvParseOptions = ParseConfig;
+
 export interface DeserializeCsvPlugin {
   /**
    * Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed,
@@ -5,4 +9,11 @@ export interface DeserializeCsvPlugin {
    * @default 0.25
    */
   errorTolerance?: number;
+
+  /**
+   * Options to pass to papaparse
+   * @default { header: true }
+   * @see https://www.papaparse.com/docs#config
+   */
+  parseOptions?: DeserializeCsvParseOptions;
 }

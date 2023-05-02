@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "20.6.5",
+  "version": "21.1.0",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,16 +19,16 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-headless": "20.6.5",
-    "@udecode/plate-ui": "20.6.5"
+    "@udecode/plate-headless": "21.1.0",
+    "@udecode/plate-ui": "21.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.87.0",
-    "slate-history": ">=0.86.0",
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.88.0",
+    "slate-react": ">=0.94.0",
     "styled-components": ">=5.0.0"
   },
   "keywords": [

@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.0
+
 ## 20.6.4
 
 ### Patch Changes

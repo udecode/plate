@@ -1,5 +1,20 @@
 # @udecode/plate-core
 
+## 21.0.0
+
+## 20.7.2
+
+### Patch Changes
+
+- [#2368](https://github.com/udecode/plate/pull/2368) by [@zbeyens](https://github.com/zbeyens) –
+  - error handling when pasting (`x-slate-fragment`)
+
+## 20.7.0
+
+### Patch Changes
+
+- [#2358](https://github.com/udecode/plate/pull/2358) by [@etienne-dldc](https://github.com/etienne-dldc) – fix readOnly not being properly updated on Editable
+
 ## 20.4.0
 
 ### Patch Changes
