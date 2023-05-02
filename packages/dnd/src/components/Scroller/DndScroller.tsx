@@ -4,7 +4,7 @@ import { Scroller, ScrollerProps } from './Scroller';
 
 export const DndScroller = (props: Partial<ScrollerProps>) => {
   const isDragging = dndStore.use.isDragging();
-  const [show, setShow] = React.useState(false)
+  const [show, setShow] = React.useState(false);
 
   useEffect(() => {
     if (isDragging) {
@@ -12,9 +12,8 @@ export const DndScroller = (props: Partial<ScrollerProps>) => {
         setShow(true);
       }, 100);
       return () => clearTimeout(timeout);
-    } else {
-      setShow(false)
     }
+    setShow(false);
   }, [isDragging, show]);
 
   return <Scroller enabled={isDragging && show} {...props} />;
