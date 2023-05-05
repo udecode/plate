@@ -1,10 +1,12 @@
 import {
+  addRangeMark,
   collapseSelection,
+  findNode,
+  getEditorString,
   getNodeEntries,
   getPointBefore,
   isExpanded,
   isInline,
-  isText,
   moveSelection,
   nanoid,
   PlateEditor,
@@ -16,7 +18,7 @@ import {
   withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { MoveUnit } from 'slate/dist/interfaces/types';
+import { Point, Range } from 'slate';
 import { addSuggestionMark } from './transforms/addSuggestionMark';
 import { getSuggestionId } from './utils/index';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
@@ -30,35 +32,43 @@ export const setSuggestionNodes = <V extends Value = Value>(
   editor: PlateEditor<V> & SuggestionEditorProps,
   options?: SetNodesOptions & {
     suggestionDeletion?: boolean;
+    suggestionId?: string;
   }
 ) => {
+  const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
+
+  if (!Range.isRange(at)) return;
+
   // TODO: get all inline nodes to be set
   const _nodeEntries = getNodeEntries(editor, {
-    // match: (n) => isText(n) || isInline(editor, n),
+    match: (n) => isInline(editor, n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
 
   withoutNormalizing(editor, () => {
-    nodeEntries.forEach(([_node, path]) => {
-      const node = _node as TSuggestionText;
+    const props: TNodeProps<TSuggestionText> = {
+      [MARK_SUGGESTION]: true,
+      [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? suggestionId,
+    };
+    if (options?.suggestionDeletion) {
+      props.suggestionDeletion = true;
+    }
 
-      const props: TNodeProps<TSuggestionText> = {
-        [MARK_SUGGESTION]: true,
-        [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? nanoid(),
-      };
-      if (options?.suggestionDeletion) {
-        props.suggestionDeletion = true;
-      }
-      if (!node[KEY_SUGGESTION_ID]) {
-        node[KEY_SUGGESTION_ID] = editor.activeSuggestionId ?? nanoid();
-      }
+    addRangeMark(editor, props, {
+      at,
+    });
 
-      if (node[MARK_SUGGESTION]) {
-        if (node[KEY_SUGGESTION_ID] === props[KEY_SUGGESTION_ID]) {
-          return;
-        }
-      }
+    nodeEntries.forEach(([, path]) => {
+      // const node = _node as TSuggestionText;
+      // if (!node[KEY_SUGGESTION_ID]) {
+      //   node[KEY_SUGGESTION_ID] = editor.activeSuggestionId ?? nanoid();
+      // }
+      // if (node[MARK_SUGGESTION]) {
+      //   if (node[KEY_SUGGESTION_ID] === props[KEY_SUGGESTION_ID]) {
+      //     return;
+      //   }
+      // }
 
       setNodes<TSuggestionText>(
         editor,
@@ -66,14 +76,13 @@ export const setSuggestionNodes = <V extends Value = Value>(
         {
           at: path,
           match: (n) => {
-            if (!isText(n) && !isInline(editor, n)) return false;
+            if (!isInline(editor, n)) return false;
 
-            if (n[MARK_SUGGESTION]) {
-            }
+            // if (n[MARK_SUGGESTION]) {
+            // }
 
             return true;
           },
-          split: true,
           ...options,
         }
       );
@@ -118,7 +127,7 @@ export const withSuggestion = <
       setSuggestionNodes(editor, {
         suggestionDeletion: true,
       });
-      collapseSelection(editor);
+      collapseSelection(editor, { edge: 'start' });
       return;
     }
 
@@ -129,19 +138,60 @@ export const withSuggestion = <
     if (editor.isSuggesting) {
       const selection = editor.selection!;
 
-      const pointBefore = getPointBefore(editor, selection, { unit });
-      if (pointBefore) {
-        setSuggestionNodes(editor, {
-          at: {
-            anchor: pointBefore,
-            focus: selection.focus,
-          },
-          suggestionDeletion: true,
-        });
-        moveSelection(editor, { reverse: true, unit: unit as MoveUnit });
+      withoutNormalizing(editor, () => {
+        const pointTarget = getPointBefore(editor, selection, { unit });
+        if (!pointTarget) return;
 
-        return;
-      }
+        // delete one character at a time until target point is reached
+        let pointCurrent: Point | undefined;
+        while (true) {
+          pointCurrent = editor.selection?.anchor;
+          if (!pointCurrent) break;
+
+          const str = getEditorString(editor, {
+            anchor: pointTarget,
+            focus: pointCurrent,
+          });
+          if (str.length === 0) break;
+
+          const pointBefore = getPointBefore(editor, pointCurrent);
+          if (!pointBefore) break;
+
+          const at = {
+            anchor: pointBefore,
+            focus: pointCurrent,
+          };
+
+          const entry = findNode<TSuggestionText>(editor, {
+            at,
+            match: (n) => !!n[MARK_SUGGESTION] && !n.suggestionDeletion,
+          });
+          if (entry) {
+            // delete suggestion additions only
+            deleteBackward('character');
+            continue;
+          }
+
+          setSuggestionNodes(editor, {
+            at,
+            suggestionDeletion: true,
+          });
+          moveSelection(editor, {
+            reverse: true,
+            unit: 'character',
+          });
+          // hack to get in the correct path
+          moveSelection(editor, {
+            reverse: true,
+            unit: 'character',
+          });
+          moveSelection(editor, {
+            unit: 'character',
+          });
+        }
+      });
+
+      return;
     }
 
     deleteBackward(unit);
