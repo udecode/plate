@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-code-block",
-  "version": "21.0.0",
+  "version": "21.1.2",
   "description": "Code block UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -22,7 +22,7 @@
     "@udecode/plate-code-block": "21.0.0",
     "@udecode/plate-common": "21.0.0",
     "@udecode/plate-styled-components": "21.0.0",
-    "@udecode/plate-ui-toolbar": "21.0.0"
+    "@udecode/plate-ui-toolbar": "21.1.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

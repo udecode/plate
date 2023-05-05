@@ -1,5 +1,11 @@
 # @udecode/plate-toolbar
 
+## 21.1.2
+
+### Patch Changes
+
+- [#2382](https://github.com/udecode/plate/pull/2382) by [@zbeyens](https://github.com/zbeyens) – Fixes #2298
+
 ## 21.0.0
 
 ## 20.7.2
