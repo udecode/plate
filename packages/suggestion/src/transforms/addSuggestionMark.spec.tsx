@@ -47,8 +47,8 @@ describe('addSuggestionMark', () => {
         });
 
         addSuggestionMark(editor);
-        expect(editor.marks[MARK_SUGGESTION]).toBeTruthy();
-        expect(editor.marks[KEY_SUGGESTION_ID]).toBeTruthy();
+        expect(editor.marks?.[MARK_SUGGESTION]).toBeTruthy();
+        expect(editor.marks?.[KEY_SUGGESTION_ID]).toBeTruthy();
       });
     });
   });

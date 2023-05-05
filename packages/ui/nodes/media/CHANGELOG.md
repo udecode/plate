@@ -1,5 +1,34 @@
 # @udecode/plate-ui-media
 
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.0
+
+## 20.6.3
+
+## 20.6.0
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.1
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.3.1
+
+### Patch Changes
+
+- [#2282](https://github.com/udecode/plate/pull/2282) by [@haydencarlson](https://github.com/haydencarlson) – Add popover options prop
+
 ## 20.0.0
 
 ## 19.7.0

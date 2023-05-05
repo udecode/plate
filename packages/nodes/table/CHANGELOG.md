@@ -1,5 +1,41 @@
 # @udecode/plate-table
 
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.0
+
+## 20.6.3
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Table margin left resizing. Fixes #2301
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – New queries:
+  - `getTableCellBorders`
+  - `getLeftTableCell`
+  - `getTopTableCell`
+  - `isTableBorderHidden`
+    New transforms:
+  - `setBorderSize`
+    `TableCellElementState` new field:
+  - `borders: BorderStylesDefault`
+
+## 20.3.2
+
+### Patch Changes
+
+- [#2285](https://github.com/udecode/plate/pull/2285) by [@12joan](https://github.com/12joan) – Ignore `defaultPrevented` keydown events
+
 ## 20.3.0
 
 ### Minor Changes

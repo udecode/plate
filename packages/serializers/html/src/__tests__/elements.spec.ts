@@ -291,6 +291,6 @@ it('serialize image and paragraph to html', () => {
     ],
   });
   const result =
-    '<p class="slate-p">I am centered text!</p><div class="slate-img"><figure class="slate-ImageElement-figure" contenteditable="false"><div style="position:relative;user-select:auto;width:0px;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0" class="slate-ImageElement-resizable"><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" class="slate-ImageElement-img"/><div><div  style="position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize"><div class="slate-ImageElement-handleLeft"></div></div><div  style="position:absolute;user-select:none;width:10px;height:100%;top:0px;cursor:col-resize;right:0"><div class="slate-ImageElement-handleRight"></div></div></div></div></figure></div>';
+    '<p class="slate-p">I am centered text!</p><div class="slate-img"><figure class="slate-ImageElement-figure" contenteditable="false"><div style="position:relative"><div style="width:0;min-width:92px;max-width:100%;position:relative" class="slate-ImageElement-resizable"><div style="cursor:ew-resize" class="slate-ImageElement-handleLeft"></div><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" class="slate-ImageElement-img"/><div style="cursor:ew-resize" class="slate-ImageElement-handleRight"></div></div></div></figure></div>';
   expect(render).toBe(result);
 });

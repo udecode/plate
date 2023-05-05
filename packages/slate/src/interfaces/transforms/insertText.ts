@@ -1,5 +1,5 @@
 import { Transforms } from 'slate';
-import { TextInsertTextOptions } from 'slate/dist/transforms/text';
+import { TextInsertTextOptions } from 'slate/dist/interfaces/transforms/text';
 import { TEditor, Value } from '../editor/TEditor';
 
 /**

@@ -3,10 +3,35 @@ slug: /plugins/autoformat
 title: Autoformat
 ---
 
-Allows you to apply formatting based on character sequences, such as automatically converting `# `
-into an H1. This package also provides predefined rules.
+The Autoformat plugin enables fast application of formatting to content through the use of shortcodes.
+
+By using Markdown-like inline codes while you type,
+this plugin speeds up and simplifies the editing process by eliminating the need to use toolbar buttons and shortcuts for common formatting features.
+
+Such as automatically converting `# ` into an H1. This package also provides predefined rules.
+
+### Demo
+
+As you type, enter the following shortcodes to apply the formatting:
+
+- **`*text*`** for bold text
+- **`_text_`** for italicized text
+- **`~~text~~`** for strikethrough text
+
+
+
+
+import { AutoformatSandpack } from "./AutoformatSandpack";
+
+<AutoformatSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the autoformat plugin into your Plate editor:
+
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -14,11 +39,21 @@ npm install @udecode/plate
 npm install @udecode/plate-autoformat
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { AutoformatSandpack } from './AutoformatSandpack'
+```tsx
+import {
+  createAutoformatPlugin,
+} from '@udecode/plate';
 
-<AutoformatSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createAutoformatPlugin(autoformatPlugin),
+], {
+  components: createPlateUI(),
+});
+```
+
 
 ### Rules
 

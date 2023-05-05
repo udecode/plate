@@ -1,5 +1,36 @@
 # @udecode/plate-serializer-csv
 
+## 21.1.0
+
+### Minor Changes
+
+- [#2374](https://github.com/udecode/plate/pull/2374) by [@12joan](https://github.com/12joan) –
+  - Make papaparse options customisable using `parseOptions` plugin option.
+    ```ts
+      createDeserializeCsvPlugin({
+        options: {
+          parseOptions: {
+            header: false,
+          },
+        },
+      }),
+    ```
+  - Options can also be passed directly to `deserializeCsv` as follows: `deserializeCsv({ data, headers: true })`.
+
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.0
+
+## 20.6.3
+
+## 20.5.0
+
+## 20.4.0
+
+## 20.3.2
+
 ## 20.3.0
 
 ## 20.2.0

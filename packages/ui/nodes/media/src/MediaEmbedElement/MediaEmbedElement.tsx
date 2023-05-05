@@ -15,7 +15,7 @@ import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { PlateFloatingMedia } from './PlateFloatingMedia';
 
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
-  const { children, nodeProps } = props;
+  const { children, nodeProps, caption = {}, popoverProps = {} } = props;
 
   const { as, ...rootProps } = props;
 
@@ -37,6 +37,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
     <ElementPopover
       content={<PlateFloatingMedia pluginKey={ELEMENT_MEDIA_EMBED} />}
       floatingOptions={mediaFloatingOptions}
+      {...popoverProps}
     >
       <Media.Root {...rootProps} css={styles.root.css}>
         <figure
@@ -50,20 +51,20 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             className={styles.resizable?.className}
             maxWidth={provider === 'twitter' ? 550 : '100%'}
             minWidth={provider === 'twitter' ? 300 : 100}
-            handleComponent={{
-              left: (
-                <Box
-                  css={[styles.handleLeft?.css]}
-                  className={styles.handleLeft?.className}
-                />
-              ),
-              right: (
-                <Box
-                  css={styles.handleRight?.css}
-                  className={styles.handleRight?.className}
-                />
-              ),
-            }}
+            renderHandleLeft={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={[styles.handleLeft?.css]}
+                className={styles.handleLeft?.className}
+              />
+            )}
+            renderHandleRight={(htmlProps) => (
+              <Box
+                {...htmlProps}
+                css={styles.handleRight?.css}
+                className={styles.handleRight?.className}
+              />
+            )}
           >
             <div
               css={styles.iframeWrapper?.css}
@@ -77,16 +78,18 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             </div>
           </Media.Resizable>
 
-          <Caption.Root
-            css={styles.figcaption?.css}
-            className={styles.figcaption?.className}
-          >
-            <Caption.Textarea
-              css={styles.caption?.css}
-              className={styles.caption?.className}
-              placeholder="Write a caption..."
-            />
-          </Caption.Root>
+          {!caption.disabled && (
+            <Caption.Root
+              css={styles.figcaption?.css}
+              className={styles.figcaption?.className}
+            >
+              <Caption.Textarea
+                css={styles.caption?.css}
+                className={styles.caption?.className}
+                placeholder={caption.placeholder ?? 'Write a caption...'}
+              />
+            </Caption.Root>
+          )}
         </figure>
 
         {children}

@@ -18,6 +18,8 @@ export const onKeyDownToggleElement = <
   editor: E,
   { type, options: { hotkey } }: WithPlatePlugin<HotkeyPlugin, V, E>
 ): KeyboardHandlerReturnType => (e) => {
+  if (e.defaultPrevented) return;
+
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
   if (!hotkey) return;

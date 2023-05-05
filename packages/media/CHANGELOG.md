@@ -1,5 +1,40 @@
 # @udecode/plate-media
 
+## 21.0.0
+
+## 20.7.2
+
+### Patch Changes
+
+- [#2366](https://github.com/udecode/plate/pull/2366) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix freeze on image upload: This patch adds a check to ensure the given URL is valid before parsing and extracting video data using `js-video-url-parser` in the `parseVideoUrl` function.
+  - Fix insert CSV: This patch modifies the logic in the `withImageUpload` function to ensure that it processes file uploads only if there is no plaintext present.
+
+## 20.7.0
+
+## 20.6.3
+
+## 20.6.0
+
+### Minor Changes
+
+- [#2311](https://github.com/udecode/plate/pull/2311) by [@haydencarlson](https://github.com/haydencarlson) – Added options for twitter embeds
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.0
+
+## 20.3.2
+
+### Patch Changes
+
+- [#2285](https://github.com/udecode/plate/pull/2285) by [@12joan](https://github.com/12joan) – Ignore `defaultPrevented` keydown events
+
 ## 20.0.0
 
 ## 19.7.0

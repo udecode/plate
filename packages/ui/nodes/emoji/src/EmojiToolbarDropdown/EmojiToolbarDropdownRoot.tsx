@@ -17,19 +17,19 @@ export const EmojiToolbarDropdownRoot = ({
   onOpen,
   onClose,
 }: EmojiToolbarDropdownProps) => {
-  const { styles, reference, floating } = useDropdownControls({
+  const { styles, refs } = useDropdownControls({
     open,
     onClose,
   });
 
   return (
     <>
-      <div ref={reference} onMouseDown={onOpen}>
+      <div ref={refs.setReference} onMouseDown={onOpen}>
         {control}
       </div>
 
       {open && (
-        <div ref={floating} css={tw`!z-20`} style={styles}>
+        <div ref={refs.setFloating} css={tw`!z-20`} style={styles}>
           {children}
         </div>
       )}

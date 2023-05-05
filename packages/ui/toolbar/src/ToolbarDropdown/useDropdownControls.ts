@@ -15,9 +15,10 @@ const closeAllExceptSelectedOneListener = ({
 ) => {
   if (open) {
     const target = ev.target as HTMLElement;
-    if (refs.reference.current?.contains(target)) {
-      return;
-    }
+    // TS2339: Property 'contains' does not exist on type 'ReferenceType'
+    // if (refs.reference.current?.contains(target)) {
+    //   return;
+    // }
     if (refs.floating.current?.contains(target)) {
       return;
     }
@@ -30,19 +31,13 @@ export const useDropdownControls = ({
   open,
   onClose,
 }: useDropdownControlsProps) => {
-  const {
-    x,
-    y,
-    reference,
-    floating,
-    strategy,
-    refs,
-  } = useFloating<HTMLElement>({
+  const floatingResult = useFloating<HTMLElement>({
     open,
     strategy: 'fixed',
     placement: 'bottom-start',
     middleware: [flip()],
   });
+  const { x, y, refs, strategy } = floatingResult;
 
   useEffect(() => {
     const listener = closeAllExceptSelectedOneListener({ open, onClose, refs });
@@ -59,7 +54,6 @@ export const useDropdownControls = ({
       left: x ?? 0,
       width: 'max-content',
     },
-    reference,
-    floating,
+    ...floatingResult,
   };
 };

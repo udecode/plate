@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate",
-  "version": "19.7.0",
+  "version": "21.0.0",
   "description": "Slate extension",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -22,8 +22,8 @@
     "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {
-    "slate": ">=0.87.0",
-    "slate-history": ">=0.86.0"
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0"
   },
   "keywords": [
     "slate"

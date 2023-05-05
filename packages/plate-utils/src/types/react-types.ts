@@ -77,7 +77,14 @@ export type Children<T = any> =
  * @example
  * type ButtonAsProps = AsProps<"button">;
  */
-export type AsProps<T extends As = As> = { as?: T; asChild?: boolean };
+export type AsProps<T extends As = any> = {
+  as?: T;
+
+  /**
+   * Alias to `as` to avoid conflict with styled-components `as` prop.
+   */
+  asAlias?: T;
+};
 
 /**
  * Props that automatically includes HTML props based on the `as` prop.
@@ -99,8 +106,7 @@ export type HTMLProps<O extends AsProps> = {
  */
 export type Props<O extends AsProps> = O & HTMLProps<O>;
 
-export type HTMLPropsAs<T extends As = any> = AsProps<T> &
-  HTMLProps<AsProps<T>>;
+export type HTMLPropsAs<T extends As = any> = AsProps & HTMLProps<AsProps<T>>;
 
 /**
  * A component that supports the `as` prop and the `children` prop as a
@@ -111,8 +117,10 @@ export type HTMLPropsAs<T extends As = any> = AsProps<T> &
  * type ButtonComponent = Component<AsProps<"button">>;
  */
 export type Component<O extends AsProps> = {
-  <T extends As = NonNullable<O['as']>>(
-    props: Omit<O, 'as'> & Omit<HTMLProps<AsProps<T>>, keyof O> & AsProps<T>
+  <T extends As>(
+    props: Omit<O, 'as'> &
+      Omit<HTMLProps<AsProps<T>>, keyof O> &
+      Required<AsProps<T>>
   ): JSX.Element | null;
   (props: Props<O>): JSX.Element | null;
   displayName?: string;

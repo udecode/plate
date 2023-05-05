@@ -13,7 +13,11 @@ export const createDeserializeAstPlugin = createPluginFactory({
       format: 'application/x-slate-fragment',
       getFragment: ({ data }) => {
         const decoded = decodeURIComponent(window.atob(data));
-        return JSON.parse(decoded);
+        let parsed;
+        try {
+          parsed = JSON.parse(decoded);
+        } catch (err) {}
+        return parsed;
       },
     },
   },

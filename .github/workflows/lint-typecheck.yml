@@ -1,4 +1,4 @@
-name: CI-packages
+name: Lint and typecheck
 
 on:
   push:
@@ -38,7 +38,7 @@ on:
       - 'patches'
 
 jobs:
-  ci:
+  lint-typecheck:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
     steps:
@@ -90,8 +90,21 @@ jobs:
       - name: Lint
         run: yarn g:lint-changed
 
-      # Test packages that have changed (--include & --since)
+      # Typecheck packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:test:root
-        env:
-          CI: true
+        run: yarn g:typecheck-changed
+
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    needs:
+      - lint-typecheck
+    if: ${{ failure() }}
+    
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}
+          discord-webhook: ${{ secrets.DISCORD_CI_WEBHOOK }}
+          description: ${{ github.event.number && format('https://github.com/udecode/plate/pull/{0}', github.event.number) || 'Push' }}

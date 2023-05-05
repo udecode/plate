@@ -3,11 +3,28 @@ slug: /plugins/reset-node
 title: Reset Node
 ---
 
-Allows you to reset the block type based on certain rules.
+The Reset Node plugin allows users to quickly reset the formatting of a selected block of text to its default settings on key events like Enter.
 
-In the following example, you can press `Enter` in an empty block quote or `Backspace` at the start of a block so it resets to a paragraph.
+This feature is particularly useful when you want to reset a block on Enter instead of the default behavior.
+
+### Demo
+
+To test the Reset Node feature, press:
+
+- Enter in an empty or at the end of a block quote
+- Backspace at the start of a block quote
+
+
+import { ResetNodeSandpack } from "./ResetNodeSandpack";
+
+<ResetNodeSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the reset node plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -15,11 +32,56 @@ npm install @udecode/plate
 npm install @udecode/plate-reset-node
 ```
 
-### Usage
+2. Import the plugin and add it to your plugin list:
 
-import { ResetNodeSandpack } from './ResetNodeSandpack'
+```tsx
+import { createResetNodePlugin, } from '@udecode/plate';
 
-<ResetNodeSandpack />
+const resetBlockTypesCommonRule = {
+  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
+  defaultType: ELEMENT_PARAGRAPH,
+};
+
+const resetBlockTypesCodeBlockRule = {
+  types: [ELEMENT_CODE_BLOCK],
+  defaultType: ELEMENT_PARAGRAPH,
+  onReset: unwrapCodeBlock,
+};
+
+export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
+  options: {
+    rules: [
+      {
+        ...resetBlockTypesCommonRule,
+        hotkey: 'Enter',
+        predicate: isBlockAboveEmpty,
+      },
+      {
+        ...resetBlockTypesCommonRule,
+        hotkey: 'Backspace',
+        predicate: isSelectionAtBlockStart,
+      },
+      {
+        ...resetBlockTypesCodeBlockRule,
+        hotkey: 'Enter',
+        predicate: isCodeBlockEmpty,
+      },
+      {
+        ...resetBlockTypesCodeBlockRule,
+        hotkey: 'Backspace',
+        predicate: isSelectionAtCodeBlockStart,
+      },
+    ],
+  },
+};
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createResetNodePlugin(resetBlockTypePlugin),
+], {
+  components: createPlateUI(),
+});
+```
 
 ### Options
 

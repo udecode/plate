@@ -1,9 +1,17 @@
-import { TElement, useElement, usePlateEditorRef } from '@udecode/plate-common';
+import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { ELEMENT_TR } from '../../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
-import { TTableRowElement } from '../../types';
+import {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../../types';
+import {
+  BorderStylesDefault,
+  getTableCellBorders,
+} from './getTableCellBorders';
 import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
@@ -11,8 +19,10 @@ export type TableCellElementState = {
   rowIndex: number;
   readOnly: boolean;
   hovered: boolean;
+  hoveredLeft: boolean;
   selected: boolean;
   rowSize: number | undefined;
+  borders: BorderStylesDefault;
 };
 
 export const useTableCellElementState = ({
@@ -24,7 +34,7 @@ export const useTableCellElementState = ({
   ignoreReadOnly?: boolean;
 } = {}): TableCellElementState => {
   const editor = usePlateEditorRef();
-  const cellElement = useElement<TElement>();
+  const cellElement = useElement<TTableCellElement>();
 
   const colIndex = getTableColumnIndex(editor, cellElement);
   const rowIndex = getTableRowIndex(editor, cellElement);
@@ -34,10 +44,19 @@ export const useTableCellElementState = ({
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
 
+  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
     rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
+
+  const isFirstCell = colIndex === 0;
+  const isFirstRow = tableElement.children[0] === rowElement;
+
+  const borders = getTableCellBorders(cellElement, {
+    isFirstCell,
+    isFirstRow,
+  });
 
   return {
     colIndex,
@@ -45,6 +64,8 @@ export const useTableCellElementState = ({
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
     hovered: hoveredColIndex === colIndex,
+    hoveredLeft: isFirstCell && hoveredColIndex === -1,
     rowSize,
+    borders,
   };
 };

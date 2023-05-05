@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-alignment",
-  "version": "20.0.0",
+  "version": "21.0.0",
   "description": "Text alignment UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,17 +19,17 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-alignment": "20.0.0",
-    "@udecode/plate-common": "20.0.0",
-    "@udecode/plate-styled-components": "20.0.0",
-    "@udecode/plate-ui-toolbar": "20.0.0"
+    "@udecode/plate-alignment": "21.0.0",
+    "@udecode/plate-common": "21.0.0",
+    "@udecode/plate-styled-components": "21.0.0",
+    "@udecode/plate-ui-toolbar": "21.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.87.0",
-    "slate-history": ">=0.86.0",
-    "slate-react": ">=0.88.0",
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0",
+    "slate-react": ">=0.94.0",
     "styled-components": ">=5.0.0"
   },
   "keywords": [

@@ -1,11 +1,18 @@
-import { useElement } from '@udecode/plate-common';
+import {
+  getPluginOptions,
+  useElement,
+  usePlateEditorRef,
+} from '@udecode/plate-common';
+import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { useTableStore } from '../../stores/tableStore';
+import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from './useTableColSizes';
 
 export interface TableElementState {
   colSizes: number[];
-
   isSelectingCell: boolean;
+  minColumnWidth: number;
+  marginLeft: number;
 }
 
 export const useTableElementState = ({
@@ -16,8 +23,20 @@ export const useTableElementState = ({
    */
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): TableElementState => {
-  const element = useElement();
+  const editor = usePlateEditorRef();
+
+  const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
+
+  const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();
+  const marginLeftOverride = useTableStore().get.marginLeftOverride();
+
+  const marginLeft = disableMarginLeft
+    ? 0
+    : marginLeftOverride ?? element.marginLeft ?? 0;
 
   let colSizes = useTableColSizes(element);
 
@@ -33,5 +52,7 @@ export const useTableElementState = ({
   return {
     colSizes,
     isSelectingCell: !!selectedCells,
+    minColumnWidth: minColumnWidth!,
+    marginLeft,
   };
 };

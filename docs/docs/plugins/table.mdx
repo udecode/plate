@@ -3,14 +3,35 @@ slug: /plugins/table
 title: Table
 ---
 
-The table plugin enables table rendering with these behaviors:
+Tables are useful for organizing content in a visually distinct way, making it more easily readable for certain types of information.
+
+They are perfect for listing, grouping, and otherwise organizing data sets or for presenting information in a clear and efficient manner.
+
+The Table plugin provides tools for creating and editing tables, enabling table rendering with advanced behaviors such as:
 
 - Arrow navigation (up/down)
-- Select cells as a grid
-- Expand cell selection with ⇧ + arrow keys
-- Copy paste cells
+- Selecting cells as a grid
+- Expanding cell selection with ⇧ + arrow keys
+- Copying and pasting cells
+
+### Demo
+
+Click anywhere within the table and use the toolbar buttons to explore the features.
+
+Use ⇧ + arrow keys to select multiple cells.
+
+
+
+import { TableSandpack } from "./TableSandpack";
+
+<TableSandpack />
+
 
 ### Installation
+
+Follow these steps to integrate the table plugin into your Plate editor:
+
+1. Install the required packages:
 
 ```bash npm2yarn
 npm install @udecode/plate
@@ -19,11 +40,22 @@ npm install @udecode/plate-table
 npm install @udecode/plate-ui-table
 ```
 
-### Usage
+2. Import the plugin and include it in your plugin list:
 
-import { TableSandpack } from './TableSandpack'
+```tsx
+import { createTablePlugin } from '@udecode/plate';
 
-<TableSandpack />
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createTablePlugin({
+    options: {
+      initialTableWidth: 600,
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
 
 ### Source Code
 

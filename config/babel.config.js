@@ -3,6 +3,7 @@ module.exports = {
     'babel-plugin-twin',
     'babel-plugin-macros',
     '@babel/plugin-proposal-class-properties',
+    '@babel/plugin-proposal-export-namespace-from',
     ['styled-components', { ssr: true }],
   ],
   presets: [

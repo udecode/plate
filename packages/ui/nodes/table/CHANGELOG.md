@@ -1,5 +1,33 @@
 # @udecode/plate-table-ui
 
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.0
+
+## 20.6.3
+
+## 20.5.0
+
+### Minor Changes
+
+- [#2302](https://github.com/udecode/plate/pull/2302) by [@zbeyens](https://github.com/zbeyens) –
+  - Table margin left resizing. Fixes #2301
+  - Remove depedency on `re-resizable` in favor of new `@udecode/resizable` package.
+
+## 20.4.0
+
+### Minor Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) – `PlateTableCellElement` / `PlateTablePopover`:
+  - New popover button to toggle cell borders
+  - style changes: cell only display right and bottom borders, except the leftmost and the topmost cells that display left and top borders.
+
+## 20.3.2
+
+## 20.3.1
+
 ## 20.3.0
 
 ### Minor Changes

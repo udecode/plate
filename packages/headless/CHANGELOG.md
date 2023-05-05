@@ -1,5 +1,37 @@
 # @udecode/plate-headless
 
+## 21.1.0
+
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.1
+
+## 20.7.0
+
+## 20.6.5
+
+## 20.6.3
+
+## 20.6.0
+
+## 20.5.1
+
+### Patch Changes
+
+- [#2307](https://github.com/udecode/plate/pull/2307) by [@12joan](https://github.com/12joan) – Export `@udecode/resizable`
+
+## 20.5.0
+
+## 20.4.1
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.3.1
+
 ## 20.3.0
 
 ## 20.2.0

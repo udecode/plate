@@ -8,11 +8,17 @@ declare global {
   }
 }
 
+type TwitterEmbedOptions = {
+  cards?: 'hidden';
+  theme?: 'dark' | 'light';
+};
+
 export type TweetProps = Readonly<{
   loadingComponent?: JSX.Element | string;
   onError?: (error: string) => void;
   onLoad?: () => void;
   tweetId: string;
+  twitterOptions?: TwitterEmbedOptions;
 }>;
 
 export const Tweet = ({
@@ -20,14 +26,19 @@ export const Tweet = ({
   onError,
   onLoad,
   loadingComponent,
+  twitterOptions = {},
 }: TweetProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
   const previousTweetIDRef = useRef('');
+  const { cards, theme } = twitterOptions;
 
   const createTweet = useCallback(async () => {
     try {
-      await window.twttr.widgets.createTweet(tweetId, containerRef.current);
+      await window.twttr.widgets.createTweet(tweetId, containerRef.current, {
+        cards,
+        theme,
+      });
 
       setIsLoading(false);
 
@@ -39,7 +50,7 @@ export const Tweet = ({
         onError(String(error));
       }
     }
-  }, [onError, onLoad, tweetId]);
+  }, [onError, onLoad, tweetId, cards, theme]);
 
   useEffect(() => {
     if (tweetId !== previousTweetIDRef.current) {
