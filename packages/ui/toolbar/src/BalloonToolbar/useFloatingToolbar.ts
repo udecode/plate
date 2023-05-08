@@ -53,8 +53,8 @@ export const useFloatingToolbar = ({
   useEffect(() => {
     if (
       !selectionExpanded ||
-      !selectionText ||
-      !(editor.id === focusedEditorId || ignoreReadOnly)
+      !selectionText
+      // || !(editor.id === focusedEditorId)
     ) {
       setOpen(false);
     } else if (
