@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import {
   findNode,
-  isText,
   PlateEditor,
   usePlateSelectors,
   Value,
@@ -29,7 +28,7 @@ export const useHooksSuggestion = <
     };
 
     const suggestionEntry = findNode(editor, {
-      match: (n) => isText(n) && n[MARK_SUGGESTION],
+      match: (n) => n[MARK_SUGGESTION],
     });
     if (!suggestionEntry) return resetActiveSuggestion();
 

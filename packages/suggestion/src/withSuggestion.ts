@@ -2,6 +2,7 @@ import {
   findNodePath,
   getNode,
   insertNodes,
+  isBlock,
   nanoid,
   PlateEditor,
   TText,
@@ -34,7 +35,7 @@ export const withSuggestion = <
   const {
     apply,
     normalizeNode,
-    // insertFragment,
+    insertFragment,
     deleteBackward,
     // deleteForward,
     // deleteFragment,
@@ -44,11 +45,14 @@ export const withSuggestion = <
 
   editor.apply = (op) => {
     if (editor.isSuggesting) {
+      console.log(op);
       if (op.type === 'insert_text') {
         const { text, path, offset } = op;
 
         const id = findSuggestionId(editor, { path, offset }) ?? nanoid();
 
+        // const node = getNode(editor, path) as TSuggestionText;
+        // if (node && node.suggestionId !== id) {
         insertNodes<TSuggestionText>(
           editor,
           { text, [MARK_SUGGESTION]: true, [KEY_SUGGESTION_ID]: id },
@@ -57,9 +61,11 @@ export const withSuggestion = <
               path,
               offset,
             },
+            select: true,
           }
         );
         return;
+        // }
       }
       if (op.type === 'insert_node') {
         const { node, path } = op;
@@ -111,6 +117,7 @@ export const withSuggestion = <
           suggestionDeletion: true,
           suggestionId: id,
         });
+        // 💡 set instead of remove -> selection gets wrong
         return;
       }
       if (op.type === 'remove_text') {
@@ -145,7 +152,36 @@ export const withSuggestion = <
           suggestionDeletion: true,
           suggestionId: id,
         });
+        // 💡 set instead of remove -> selection gets wrong
         return;
+      }
+      if (op.type === 'move_node') {
+        const node = getNode(editor, op.path);
+        if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+          // TODO: ?
+          return;
+        }
+      }
+      if (op.type === 'merge_node') {
+        const node = getNode(editor, op.path);
+        if (node && isBlock(editor, node)) {
+          // if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+          // TODO: delete block suggestion
+          return;
+        }
+      }
+      if (op.type === 'split_node') {
+        const node = getNode(editor, op.path);
+        // allow splitting suggestion blocks
+        if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+          // TODO: insert block suggestion
+          return;
+        }
+      }
+      if (op.type === 'set_selection') {
+        if (editor.preventSelection) {
+          return;
+        }
       }
     }
 
@@ -212,6 +248,13 @@ export const withSuggestion = <
     }
 
     deleteBackward(unit);
+  };
+
+  // 🐛 select all -> paste one word
+  editor.insertFragment = (fragment) => {
+    (editor.preventSelection as any) = true;
+    insertFragment(fragment);
+    (editor.preventSelection as any) = false;
   };
 
   // 🧪 without apply method

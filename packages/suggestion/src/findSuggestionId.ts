@@ -6,7 +6,7 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
-import { Location } from 'slate';
+import { Location, Point } from 'slate';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { TSuggestionText } from './types';
 
@@ -22,7 +22,13 @@ export const findSuggestionId = <V extends Value>(
     match: (n) => n[MARK_SUGGESTION],
   });
   if (!entry) {
-    const [start, end] = getEdgePoints(editor, at);
+    let start: Point;
+    let end: Point;
+    try {
+      [start, end] = getEdgePoints(editor, at);
+    } catch (err) {
+      return;
+    }
 
     const nextPoint = getPointAfter(editor, end);
     if (nextPoint) {
