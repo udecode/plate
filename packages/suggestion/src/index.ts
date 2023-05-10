@@ -11,3 +11,6 @@ export * from './hooks/index';
 export * from './store/index';
 export * from './transforms/index';
 export * from './utils/index';
+export { findSuggestionId } from './findSuggestionId';
+export { deleteSuggesting } from './deleteSuggesting';
+export { setSuggestionNodes } from './setSuggestionNodes';

@@ -1,94 +1,24 @@
 import {
-  addRangeMark,
-  collapseSelection,
-  findNode,
-  getEditorString,
-  getNodeEntries,
-  getPointBefore,
-  isExpanded,
-  isInline,
-  moveSelection,
+  findNodePath,
+  getNode,
+  insertNodes,
   nanoid,
   PlateEditor,
-  setNodes,
-  SetNodesOptions,
-  TNodeProps,
+  TText,
   unsetNodes,
   Value,
-  withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { Point, Range } from 'slate';
-import { addSuggestionMark } from './transforms/addSuggestionMark';
+import { cloneDeep } from 'lodash';
 import { getSuggestionId } from './utils/index';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
+import { findSuggestionId } from './findSuggestionId';
+import { setSuggestionNodes } from './setSuggestionNodes';
 import {
   SuggestionEditorProps,
   SuggestionPlugin,
   TSuggestionText,
 } from './types';
-
-export const setSuggestionNodes = <V extends Value = Value>(
-  editor: PlateEditor<V> & SuggestionEditorProps,
-  options?: SetNodesOptions & {
-    suggestionDeletion?: boolean;
-    suggestionId?: string;
-  }
-) => {
-  const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
-
-  if (!Range.isRange(at)) return;
-
-  // TODO: get all inline nodes to be set
-  const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => isInline(editor, n),
-    ...options,
-  });
-  const nodeEntries = [..._nodeEntries];
-
-  withoutNormalizing(editor, () => {
-    const props: TNodeProps<TSuggestionText> = {
-      [MARK_SUGGESTION]: true,
-      [KEY_SUGGESTION_ID]: editor.activeSuggestionId ?? suggestionId,
-    };
-    if (options?.suggestionDeletion) {
-      props.suggestionDeletion = true;
-    }
-
-    addRangeMark(editor, props, {
-      at,
-    });
-
-    nodeEntries.forEach(([, path]) => {
-      // const node = _node as TSuggestionText;
-      // if (!node[KEY_SUGGESTION_ID]) {
-      //   node[KEY_SUGGESTION_ID] = editor.activeSuggestionId ?? nanoid();
-      // }
-      // if (node[MARK_SUGGESTION]) {
-      //   if (node[KEY_SUGGESTION_ID] === props[KEY_SUGGESTION_ID]) {
-      //     return;
-      //   }
-      // }
-
-      setNodes<TSuggestionText>(
-        editor,
-        { ...props },
-        {
-          at: path,
-          match: (n) => {
-            if (!isInline(editor, n)) return false;
-
-            // if (n[MARK_SUGGESTION]) {
-            // }
-
-            return true;
-          },
-          ...options,
-        }
-      );
-    });
-  });
-};
 
 export const withSuggestion = <
   V extends Value = Value,
@@ -102,100 +32,208 @@ export const withSuggestion = <
   const editor = e as EE;
 
   const {
+    apply,
     normalizeNode,
-    insertText,
+    // insertFragment,
     deleteBackward,
     // deleteForward,
-    deleteFragment,
+    // deleteFragment,
   } = editor;
 
   editor.isSuggesting = true;
 
-  editor.insertText = (text) => {
-    // TODO:
+  editor.apply = (op) => {
     if (editor.isSuggesting) {
-      addSuggestionMark(editor);
+      if (op.type === 'insert_text') {
+        const { text, path, offset } = op;
+
+        const id = findSuggestionId(editor, { path, offset }) ?? nanoid();
+
+        insertNodes<TSuggestionText>(
+          editor,
+          { text, [MARK_SUGGESTION]: true, [KEY_SUGGESTION_ID]: id },
+          {
+            at: {
+              path,
+              offset,
+            },
+          }
+        );
+        return;
+      }
+      if (op.type === 'insert_node') {
+        const { node, path } = op;
+
+        const suggestionNode = node as TSuggestionText;
+
+        if (
+          suggestionNode[MARK_SUGGESTION] &&
+          suggestionNode[KEY_SUGGESTION_ID] &&
+          !suggestionNode.suggestionDeletion
+        ) {
+          apply(op);
+          return;
+        }
+
+        if (!suggestionNode[MARK_SUGGESTION]) {
+          // Add suggestion mark
+          suggestionNode[MARK_SUGGESTION] = true;
+        }
+        if (suggestionNode.suggestionDeletion) {
+          // Remove suggestion deletion mark
+          delete suggestionNode.suggestionDeletion;
+        }
+
+        const id = findSuggestionId(editor, path) ?? nanoid();
+        suggestionNode[KEY_SUGGESTION_ID] = id;
+
+        insertNodes(editor, cloneDeep(node) as any, { at: path });
+        return;
+      }
+      if (op.type === 'remove_node') {
+        const { node } = op;
+
+        // additions are safe to remove
+        if (node[MARK_SUGGESTION]) {
+          if (!node.suggestionDeletion) {
+            apply(op);
+          }
+          return;
+        }
+
+        const path = findNodePath(editor, node);
+        if (!path) return;
+
+        const id = findSuggestionId(editor, path) ?? nanoid();
+
+        setSuggestionNodes(editor, {
+          at: path,
+          suggestionDeletion: true,
+          suggestionId: id,
+        });
+        return;
+      }
+      if (op.type === 'remove_text') {
+        const { path, offset, text } = op;
+
+        const from = { path, offset };
+
+        const node = getNode<TText>(editor, path);
+        if (!node) return;
+
+        // additions are safe to remove
+        if (node[MARK_SUGGESTION] && !node.suggestionDeletion) {
+          apply(op);
+          return;
+        }
+
+        const to = {
+          path,
+          offset: offset + text.length,
+        };
+        const id =
+          findSuggestionId(editor, {
+            anchor: from,
+            focus: to,
+          }) ?? nanoid();
+
+        setSuggestionNodes(editor, {
+          at: {
+            anchor: from,
+            focus: to,
+          },
+          suggestionDeletion: true,
+          suggestionId: id,
+        });
+        return;
+      }
     }
 
-    insertText(text);
+    apply(op);
   };
 
-  editor.deleteFragment = (direction) => {
-    const selection = editor.selection!;
+  const { apply: applyNext } = editor;
 
-    if (isExpanded(selection)) {
-      setSuggestionNodes(editor, {
-        suggestionDeletion: true,
-      });
-      collapseSelection(editor, { edge: 'start' });
-      return;
-    }
-
-    deleteFragment(direction);
-  };
+  // 🧪 without apply method
+  // editor.deleteFragment = (direction) => {
+  //   if (editor.isSuggesting) {
+  //     const selection = editor.selection!;
+  //
+  //     if (isExpanded(selection)) {
+  //       withoutNormalizing(editor, () => {
+  //         const [start, end] = getEdgePoints(editor, selection);
+  //
+  //         collapseSelection(editor, { edge: 'end' });
+  //
+  //         deleteSuggesting(editor, end, start, { reverse: true });
+  //       });
+  //
+  //       return;
+  //     }
+  //   }
+  //
+  //   deleteFragment(direction);
+  // };
 
   editor.deleteBackward = (unit) => {
     if (editor.isSuggesting) {
-      const selection = editor.selection!;
-
-      withoutNormalizing(editor, () => {
-        const pointTarget = getPointBefore(editor, selection, { unit });
-        if (!pointTarget) return;
-
-        // delete one character at a time until target point is reached
-        let pointCurrent: Point | undefined;
-        while (true) {
-          pointCurrent = editor.selection?.anchor;
-          if (!pointCurrent) break;
-
-          const str = getEditorString(editor, {
-            anchor: pointTarget,
-            focus: pointCurrent,
-          });
-          if (str.length === 0) break;
-
-          const pointBefore = getPointBefore(editor, pointCurrent);
-          if (!pointBefore) break;
-
-          const at = {
-            anchor: pointBefore,
-            focus: pointCurrent,
-          };
-
-          const entry = findNode<TSuggestionText>(editor, {
-            at,
-            match: (n) => !!n[MARK_SUGGESTION] && !n.suggestionDeletion,
-          });
-          if (entry) {
-            // delete suggestion additions only
-            deleteBackward('character');
-            continue;
-          }
-
-          setSuggestionNodes(editor, {
-            at,
-            suggestionDeletion: true,
-          });
-          moveSelection(editor, {
-            reverse: true,
-            unit: 'character',
-          });
-          // hack to get in the correct path
-          moveSelection(editor, {
-            reverse: true,
-            unit: 'character',
-          });
-          moveSelection(editor, {
-            unit: 'character',
-          });
-        }
-      });
-
-      return;
+      // 🧪 without apply method
+      // if (isSelectionAtBlockStart(editor)) {
+      //   moveSelection(editor, { reverse: true });
+      //   return;
+      // }
+      //
+      // const selection = editor.selection!;
+      // const pointTarget = getPointBefore(editor, selection, {
+      //   unit,
+      // });
+      // if (!pointTarget) return;
+      //
+      // deleteSuggesting(editor, selection.anchor, pointTarget, {
+      //   reverse: true,
+      // });
+      //
+      // return;
+      // 🧐 latest experiment: should we handle selection ourself?
+      // editor.apply = (op) => {
+      //   if (op.type === 'set_selection') {
+      //     return;
+      //   }
+      //
+      //   applyNext(op);
+      // };
+      //
+      // deleteBackward(unit);
+      //
+      // editor.apply = (op) => {
+      //   applyNext(op);
+      // };
+      // return;
     }
 
     deleteBackward(unit);
   };
+
+  // 🧪 without apply method
+  // editor.deleteForward = (unit) => {
+  //   if (editor.isSuggesting) {
+  //     if (isSelectionAtBlockEnd(editor)) {
+  //       moveSelection(editor);
+  //       return;
+  //     }
+  //
+  //     const selection = editor.selection!;
+  //
+  //     const pointTarget = getPointAfter(editor, selection, { unit });
+  //     if (!pointTarget) return;
+  //
+  //     deleteSuggesting(editor, selection.anchor, pointTarget);
+  //
+  //     return;
+  //   }
+  //
+  //   deleteForward(unit);
+  // };
 
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
