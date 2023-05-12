@@ -19,9 +19,11 @@ import { useFocused } from 'slate-react';
 export const useFloatingToolbar = ({
   floatingOptions,
   ignoreReadOnly = false,
+  hideToolbar = false,
 }: {
   floatingOptions?: UseVirtualFloatingOptions;
   ignoreReadOnly?: boolean;
+  hideToolbar?: boolean;
 } = {}): UseVirtualFloatingReturn & {
   open: boolean;
 } => {
@@ -53,8 +55,8 @@ export const useFloatingToolbar = ({
   useEffect(() => {
     if (
       !selectionExpanded ||
-      !selectionText
-      // || !(editor.id === focusedEditorId)
+      !selectionText ||
+      (!(editor.id === focusedEditorId || ignoreReadOnly) && hideToolbar)
     ) {
       setOpen(false);
     } else if (
@@ -68,6 +70,7 @@ export const useFloatingToolbar = ({
     editor.id,
     editor.selection,
     focusedEditorId,
+    hideToolbar,
     ignoreReadOnly,
     selectionExpanded,
     selectionText,

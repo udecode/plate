@@ -25,4 +25,6 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   floatingOptions?: UseVirtualFloatingOptions;
 
   ignoreReadOnly?: boolean;
+
+  hideToolbar?: boolean;
 }
