@@ -13,11 +13,13 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
     portalElement,
     floatingOptions,
     ignoreReadOnly,
+    hideToolbar,
   } = props;
 
   const { refs, style, placement, open } = useFloatingToolbar({
     floatingOptions,
     ignoreReadOnly,
+    hideToolbar,
   });
 
   const styles = getBalloonToolbarStyles({
