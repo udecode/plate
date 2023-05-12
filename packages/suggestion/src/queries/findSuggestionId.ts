@@ -7,8 +7,8 @@ import {
   Value,
 } from '@udecode/plate-common';
 import { Location, Point } from 'slate';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
-import { TSuggestionText } from './types';
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
+import { TSuggestionText } from '../types';
 
 /**
  * Find the suggestion id at the cursor point, the point before and after (if offset = 0).
