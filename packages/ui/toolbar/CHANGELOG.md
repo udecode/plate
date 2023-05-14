@@ -1,5 +1,11 @@
 # @udecode/plate-toolbar
 
+## 21.1.4
+
+### Patch Changes
+
+- [#2393](https://github.com/udecode/plate/pull/2393) by [@bojangles-m](https://github.com/bojangles-m) – New prop to BalloonToolbar `hideToolbar`: Handler to leave Balloon toolbar open or close after use to actionate the button. Default: false
+
 ## 21.1.2
 
 ### Patch Changes
