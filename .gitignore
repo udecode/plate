@@ -122,3 +122,4 @@ config/typedoc/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+.turbo
