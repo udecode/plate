@@ -1,7 +1,6 @@
 import { DropLineDirection } from '@udecode/plate-dnd';
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
-import tw from 'twin.macro';
 import { PlateDraggableProps } from './PlateDraggable';
 
 export interface DraggableStyleProps extends PlateDraggableProps {

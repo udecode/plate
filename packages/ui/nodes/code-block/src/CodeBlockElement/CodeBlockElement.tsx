@@ -12,13 +12,13 @@ import {
 } from '@udecode/plate-common';
 import {
   getRootProps,
-  StyledElementProps,
+  PlateElementProps,
 } from '@udecode/plate-styled-components';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 import { CodeBlockSelectElement } from './CodeBlockSelectElement';
 
 export const CodeBlockElement = <V extends Value>(
-  props: StyledElementProps<V, TCodeBlockElement>
+  props: PlateElementProps<V, TCodeBlockElement>
 ) => {
   const { attributes, children, nodeProps, element, editor } = props;
 

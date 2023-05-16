@@ -2,12 +2,12 @@ import React from 'react';
 import { Value } from '@udecode/plate-common';
 import {
   getRootProps,
-  StyledElementProps,
+  PlateElementProps,
 } from '@udecode/plate-styled-components';
 import { getCodeLineElementStyles } from './CodeLineElement.styles';
 
 export const CodeLineElement = <V extends Value>(
-  props: StyledElementProps<V>
+  props: PlateElementProps<V>
 ) => {
   const { attributes, children, nodeProps } = props;
 

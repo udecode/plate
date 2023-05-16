@@ -1,5 +1,5 @@
 import { TElement, Value } from '@udecode/plate-common';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface HrElementStyleProps<V extends Value>
@@ -13,4 +13,4 @@ export interface HrElementStyles {
 }
 
 export interface HrElementProps<V extends Value>
-  extends StyledElementProps<V, TElement, HrElementStyles> {}
+  extends PlateElementProps<V, TElement, HrElementStyles> {}

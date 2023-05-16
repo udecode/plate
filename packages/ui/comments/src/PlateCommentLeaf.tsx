@@ -10,7 +10,7 @@ import { Value } from '@udecode/plate-common';
 import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
 
 export const PlateCommentLeaf = <V extends Value = Value>(
-  props: StyledLeafProps<V, TCommentText>
+  props: PlateLeafProps<V, TCommentText>
 ) => {
   const { children, nodeProps, leaf } = props;
 
@@ -77,7 +77,7 @@ export const PlateCommentLeaf = <V extends Value = Value>(
   if (!commentCount) return <>{children}</>;
 
   return (
-    <StyledLeaf
+    <PlateLeaf
       {...props}
       nodeProps={{
         onMouseDown: (e: MouseEvent) => {
@@ -92,6 +92,6 @@ export const PlateCommentLeaf = <V extends Value = Value>(
       }}
     >
       {aboveChildren}
-    </StyledLeaf>
+    </PlateLeaf>
   );
 };

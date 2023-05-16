@@ -1,7 +1,8 @@
 import 'examples/src/styles.css';
 import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
-import '../styles/styles.scss';
+import '../styles/globals.css';
+import '../styles/globals.scss';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';

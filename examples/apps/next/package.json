@@ -15,6 +15,9 @@
     "react-pro-sidebar": "^0.7.1",
     "sass": "^1.54.0"
   },
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  },
   "browserslist": {
     "production": [
       ">0.2%",

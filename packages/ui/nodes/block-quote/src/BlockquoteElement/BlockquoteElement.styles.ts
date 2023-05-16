@@ -1,13 +1,13 @@
 import { Value } from '@udecode/plate-common';
 import {
   createStyles,
-  StyledElementProps,
+  PlateElementProps,
 } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
 export const getBlockquoteElementStyles = <V extends Value>(
-  props: StyledElementProps<V>
+  props: PlateElementProps<V>
 ) =>
   createStyles(
     { prefixClassNames: 'BlockquoteElement', ...props },

@@ -1,8 +1,8 @@
 import { Value } from '@udecode/plate-common';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 
 export interface PlaceholderProps<V extends Value>
-  extends StyledElementProps<V> {
+  extends PlateElementProps<V> {
   placeholder: string;
   hideOnBlur?: boolean;
 }

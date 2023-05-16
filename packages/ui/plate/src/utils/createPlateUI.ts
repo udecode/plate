@@ -37,7 +37,7 @@ import {
   PlatePluginComponent,
   withProps,
 } from '@udecode/plate-headless';
-import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
+import { PlateElement, PlateLeaf } from '@udecode/plate-styled-components';
 import { BlockquoteElement } from '@udecode/plate-ui-block-quote';
 import { CodeLineElement, CodeSyntaxLeaf } from '@udecode/plate-ui-code-block';
 import { PlateCommentLeaf } from '@udecode/plate-ui-comments';
@@ -67,7 +67,7 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_CODE_LINE]: CodeLineElement,
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_HR]: HrElement,
-    [ELEMENT_H1]: withProps(StyledElement, {
+    [ELEMENT_H1]: withProps(PlateElement, {
       as: 'h1',
       styles: {
         root: css`
@@ -78,7 +78,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_H2]: withProps(StyledElement, {
+    [ELEMENT_H2]: withProps(PlateElement, {
       as: 'h2',
       styles: {
         root: css`
@@ -89,7 +89,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_H3]: withProps(StyledElement, {
+    [ELEMENT_H3]: withProps(PlateElement, {
       as: 'h3',
       styles: {
         root: css`
@@ -101,7 +101,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_H4]: withProps(StyledElement, {
+    [ELEMENT_H4]: withProps(PlateElement, {
       as: 'h4',
       styles: {
         root: css`
@@ -113,7 +113,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_H5]: withProps(StyledElement, {
+    [ELEMENT_H5]: withProps(PlateElement, {
       as: 'h5',
       styles: {
         root: css`
@@ -125,7 +125,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_H6]: withProps(StyledElement, {
+    [ELEMENT_H6]: withProps(PlateElement, {
       as: 'h6',
       styles: {
         root: css`
@@ -138,12 +138,12 @@ export const createPlateUI = <T extends string = string>(
       },
     }),
     [ELEMENT_IMAGE]: ImageElement,
-    [ELEMENT_LI]: withProps(StyledElement, { as: 'li' }),
+    [ELEMENT_LI]: withProps(PlateElement, { as: 'li' }),
     [ELEMENT_LINK]: LinkElement,
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
     [ELEMENT_MENTION]: MentionElement,
     [ELEMENT_MENTION_INPUT]: MentionInputElement,
-    [ELEMENT_UL]: withProps(StyledElement, {
+    [ELEMENT_UL]: withProps(PlateElement, {
       as: 'ul',
       styles: {
         root: css`
@@ -152,7 +152,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_OL]: withProps(StyledElement, {
+    [ELEMENT_OL]: withProps(PlateElement, {
       as: 'ol',
       styles: {
         root: css`
@@ -161,7 +161,7 @@ export const createPlateUI = <T extends string = string>(
         `,
       },
     }),
-    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
+    [ELEMENT_PARAGRAPH]: withProps(PlateElement, {
       as: 'p',
       styles: {
         root: tw`px-0 py-1 m-0`,
@@ -173,8 +173,8 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_TH]: PlateTableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
     [ELEMENT_TR]: PlateTableRowElement,
-    [MARK_BOLD]: withProps(StyledLeaf, { as: 'strong' }),
-    [MARK_CODE]: withProps(StyledLeaf, {
+    [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
+    [MARK_CODE]: withProps(PlateLeaf, {
       as: 'code',
       styles: {
         root: [
@@ -191,14 +191,14 @@ export const createPlateUI = <T extends string = string>(
         ],
       },
     }),
-    [MARK_HIGHLIGHT]: withProps(StyledLeaf, {
+    [MARK_HIGHLIGHT]: withProps(PlateLeaf, {
       as: 'mark',
       styles: {
         root: tw`bg-[#FEF3B7]`,
       },
     }),
-    [MARK_ITALIC]: withProps(StyledLeaf, { as: 'em' }),
-    [MARK_KBD]: withProps(StyledLeaf, {
+    [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
+    [MARK_KBD]: withProps(PlateLeaf, {
       as: 'kbd',
       styles: {
         root: [
@@ -218,16 +218,16 @@ export const createPlateUI = <T extends string = string>(
         ],
       },
     }),
-    [MARK_SEARCH_HIGHLIGHT]: withProps(StyledLeaf, {
+    [MARK_SEARCH_HIGHLIGHT]: withProps(PlateLeaf, {
       as: 'span',
       styles: {
         root: tw`bg-[#fff59d]`,
       },
     }),
-    [MARK_STRIKETHROUGH]: withProps(StyledLeaf, { as: 's' }),
-    [MARK_SUBSCRIPT]: withProps(StyledLeaf, { as: 'sub' }),
-    [MARK_SUPERSCRIPT]: withProps(StyledLeaf, { as: 'sup' }),
-    [MARK_UNDERLINE]: withProps(StyledLeaf, { as: 'u' }),
+    [MARK_STRIKETHROUGH]: withProps(PlateLeaf, { as: 's' }),
+    [MARK_SUBSCRIPT]: withProps(PlateLeaf, { as: 'sub' }),
+    [MARK_SUPERSCRIPT]: withProps(PlateLeaf, { as: 'sup' }),
+    [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
     [MARK_COMMENT]: PlateCommentLeaf,
   };
 

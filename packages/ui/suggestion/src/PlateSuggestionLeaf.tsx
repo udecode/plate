@@ -1,6 +1,6 @@
 import React from 'react';
 import { Value } from '@udecode/plate-common';
-import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate-styled-components';
 import {
   getSuggestionId,
   TSuggestionText,
@@ -9,7 +9,7 @@ import {
 import tw from 'twin.macro';
 
 export const PlateSuggestionLeaf = <V extends Value = Value>(
-  props: StyledLeafProps<V, TSuggestionText>
+  props: PlateLeafProps<V, TSuggestionText>
 ) => {
   const { children, leaf } = props;
 
@@ -18,7 +18,7 @@ export const PlateSuggestionLeaf = <V extends Value = Value>(
   const isActive = activeSuggestionId === getSuggestionId(leaf);
 
   return (
-    <StyledLeaf
+    <PlateLeaf
       {...props}
       styles={{
         root: [
@@ -29,6 +29,6 @@ export const PlateSuggestionLeaf = <V extends Value = Value>(
       }}
     >
       {children}
-    </StyledLeaf>
+    </PlateLeaf>
   );
 };

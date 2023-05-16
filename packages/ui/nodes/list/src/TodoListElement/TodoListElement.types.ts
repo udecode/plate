@@ -1,6 +1,6 @@
 import { Value } from '@udecode/plate-common';
 import { TTodoListItemElement } from '@udecode/plate-list';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface TodoListElementStyleProps<V extends Value>
@@ -15,7 +15,7 @@ export interface TodoListElementStyles {
   rootChecked?: CSSProp;
 }
 
-export type TodoListElementProps<V extends Value> = StyledElementProps<
+export type TodoListElementProps<V extends Value> = PlateElementProps<
   V,
   TTodoListItemElement,
   TodoListElementStyles

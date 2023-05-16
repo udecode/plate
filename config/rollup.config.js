@@ -1,14 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+import autoprefixer from 'autoprefixer';
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import del from 'rollup-plugin-delete';
 import includePaths from 'rollup-plugin-includepaths';
 import json from 'rollup-plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 import resolve from 'rollup-plugin-node-resolve';
-import external from 'rollup-plugin-peer-deps-external';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import postcss from 'rollup-plugin-postcss';
 import { terser } from 'rollup-plugin-terser';
+import tailwind from 'tailwindcss';
 
 const PACKAGE_ROOT_PATH = process.cwd();
 const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
@@ -38,7 +42,7 @@ const onwarn = (warning) => {
 
 const plugins = [
   // Automatically externalize peerDependencies
-  external(),
+  peerDepsExternal(),
 
   // Let you use relative paths in your import directives
   includePaths(includePathOptions),
@@ -65,6 +69,22 @@ const plugins = [
 
   // Register Node.js builtins for browserify compatibility.
   builtins(),
+
+  del({ targets: './dist/*' }),
+
+  // svgr(),
+  // typescript({
+  //   verbosity: 1,
+  //   tsconfig: './tsconfig.rollup.json',
+  // }),
+  // url({
+  //   include: [
+  //     './fonts/**/*.ttf',
+  //     './fonts/**/*.woff',
+  //     './fonts/**/*.woff2',
+  //     './fonts/**/*.svg',
+  //   ],
+  // }),
 
   // Use Babel to transpile the result, limiting it to the source code.
   babel({
@@ -118,12 +138,32 @@ const plugins = [
     runtimeHelpers: true,
   }),
 
+  postcss({
+    config: {
+      path: '../postcss.config.js',
+    },
+    plugins: [
+      autoprefixer(),
+      tailwind({
+        config: '../tailwind.config.js',
+      }),
+    ],
+  }),
+
   // Register Node.js globals for browserify compatibility.
   globals(),
 
   // Only minify the output in production, since it is very slow. And only
   // for UMD builds, since modules will be bundled by the consumer.
-  isUmd && terser(),
+  isUmd &&
+    terser({
+      compress: true,
+      mangle: true,
+      output: {
+        preamble: '/* eslint-disable */',
+        comments: false,
+      },
+    }),
 ];
 
 export default [

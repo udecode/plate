@@ -12,12 +12,12 @@ import {
   DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 import { getDraggableStyles } from './PlateDraggable.styles';
 import { DraggableStyles, DragHandleProps } from './PlateDraggable.types';
 
 export interface PlateDraggableProps
-  extends StyledElementProps<Value, EElement<Value>, DraggableStyles> {
+  extends PlateElementProps<Value, EElement<Value>, DraggableStyles> {
   /**
    * An override to render the drag handle.
    */

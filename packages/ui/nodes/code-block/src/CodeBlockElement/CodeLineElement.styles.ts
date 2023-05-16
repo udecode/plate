@@ -1,11 +1,11 @@
 import { Value } from '@udecode/plate-common';
 import {
   createStyles,
-  StyledElementProps,
+  PlateElementProps,
 } from '@udecode/plate-styled-components';
 
 export const getCodeLineElementStyles = <V extends Value>(
-  props: StyledElementProps<V>
+  props: PlateElementProps<V>
 ) =>
   createStyles(
     { prefixClassNames: 'CodeLineElement', ...props },

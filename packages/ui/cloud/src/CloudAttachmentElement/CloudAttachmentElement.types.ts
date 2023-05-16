@@ -1,6 +1,6 @@
 import { TCloudAttachmentElement } from '@udecode/plate-cloud';
 import { Value } from '@udecode/plate-common';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 import { CloudStatusBarStyles } from '../StatusBar/StatusBar.types';
 
@@ -11,7 +11,7 @@ export interface CloudAttachmentElementStyleProps<V extends Value>
 }
 
 export interface CloudAttachmentElementProps<V extends Value>
-  extends StyledElementProps<
+  extends PlateElementProps<
     V,
     TCloudAttachmentElement,
     CloudAttachmentElementStyles

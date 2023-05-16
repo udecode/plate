@@ -49,8 +49,7 @@
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.94.0",
-    "styled-components": ">=5.0.0"
+    "slate-react": ">=0.94.0"
   },
   "keywords": [
     "contentEditable",

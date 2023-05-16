@@ -7,7 +7,6 @@ export * from './createComponentAs';
 export * from './createElementAs';
 export * from './createNodeHOC';
 export * from './createNodesHOC';
-export * from './createPlateElementComponent';
 export * from './defaultsDeepToNodes';
 export * from './withProps';
 export * from './withProviders';

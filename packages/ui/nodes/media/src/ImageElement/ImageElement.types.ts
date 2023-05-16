@@ -1,7 +1,7 @@
 import { Value } from '@udecode/plate-common';
 import { PopoverProps } from '@udecode/plate-floating';
 import { ResizableProps, TImageElement } from '@udecode/plate-media';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface ImageElementStyleProps extends ImageElementProps {
@@ -40,7 +40,7 @@ export interface ImageElementPropsCaption {
 }
 
 export interface ImageElementProps
-  extends StyledElementProps<Value, TImageElement, ImageElementStyles>,
+  extends PlateElementProps<Value, TImageElement, ImageElementStyles>,
     Pick<Partial<ResizableProps>, 'align'> {
   resizableProps?: Omit<ResizableProps, 'as'>;
 

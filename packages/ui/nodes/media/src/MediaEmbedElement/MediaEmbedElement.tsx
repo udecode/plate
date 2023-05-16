@@ -17,7 +17,7 @@ import { PlateFloatingMedia } from './PlateFloatingMedia';
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
   const { children, nodeProps, caption = {}, popoverProps = {} } = props;
 
-  const { as, ...rootProps } = props;
+  const { ...rootProps } = props;
 
   const focused = useFocused();
   const selected = useSelected();

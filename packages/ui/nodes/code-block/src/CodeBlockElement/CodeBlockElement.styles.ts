@@ -2,13 +2,13 @@ import { TCodeBlockElement } from '@udecode/plate-code-block';
 import { Value } from '@udecode/plate-common';
 import {
   createStyles,
-  StyledElementProps,
+  PlateElementProps,
 } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
 export const getCodeBlockElementStyles = <V extends Value>(
-  props: StyledElementProps<V, TCodeBlockElement>
+  props: PlateElementProps<V, TCodeBlockElement>
 ) =>
   createStyles(
     { prefixClassNames: 'CodeBlockElement', ...props },

@@ -1,6 +1,6 @@
 import { Value } from '@udecode/plate-common';
 import { TMentionElement } from '@udecode/plate-mention';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { PlateElementProps } from '@udecode/plate-styled-components';
 
 export interface MentionElementStyleProps<V extends Value>
   extends MentionElementProps<V> {
@@ -10,7 +10,7 @@ export interface MentionElementStyleProps<V extends Value>
 
 // renderElement props
 export interface MentionElementProps<V extends Value>
-  extends StyledElementProps<V, TMentionElement> {
+  extends PlateElementProps<V, TMentionElement> {
   /**
    * Prefix rendered before mention
    */

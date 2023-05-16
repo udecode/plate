@@ -1,6 +1,7 @@
-import React, { ReactPortal } from 'react';
+import React, { ReactNode, ReactPortal } from 'react';
 import ReactDOM from 'react-dom';
-import { PortalBodyProps } from './PortalBody.types';
+
+export type PortalBodyProps = { children: ReactNode; element?: Element };
 
 export const PortalBody: ({
   children,
