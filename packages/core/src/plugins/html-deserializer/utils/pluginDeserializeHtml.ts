@@ -6,6 +6,7 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
 import { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
+import { isDefined } from '@udecode/utils';
 
 /**
  * Get a deserializer by type, node names, class names and styles.
@@ -95,7 +96,10 @@ export const pluginDeserializeHtml = <V extends Value>(
               const attributeValues = castArray<string>(attributeValue);
               const elAttribute = el.getAttribute(attributeName);
 
-              if (!elAttribute || !attributeValues.includes(elAttribute))
+              if (
+                !isDefined(elAttribute) ||
+                !attributeValues.includes(elAttribute)
+              )
                 return false;
             }
           }
