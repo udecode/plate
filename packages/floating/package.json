@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl"
+  },
   "dependencies": {
     "@floating-ui/react": "^0.22.0",
     "@radix-ui/react-dropdown-menu": "^2.0.4",

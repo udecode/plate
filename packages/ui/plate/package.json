@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl:below"
+  },
   "dependencies": {
     "@udecode/plate-headless": "21.1.0",
     "@udecode/plate-styled-components": "21.0.0",

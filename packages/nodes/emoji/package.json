@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl"
+  },
   "dependencies": {
     "@emoji-mart/data": "^1.0.8",
     "@udecode/plate-combobox": "21.0.0",

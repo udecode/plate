@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl"
+  },
   "dependencies": {
     "@udecode/plate-common": "21.0.0",
     "raf": "^3.4.1"

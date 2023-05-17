@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl"
+  },
   "dependencies": {
     "@excalidraw/excalidraw": "0.12.0",
     "@udecode/plate-common": "21.0.0",

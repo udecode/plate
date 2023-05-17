@@ -18,6 +18,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "brl": "yarn p:brl"
+  },
   "dependencies": {
     "@udecode/plate-block-quote": "21.0.0",
     "@udecode/plate-common": "21.0.0",
