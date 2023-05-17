@@ -6,19 +6,24 @@ import {
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ToolbarButton } from '../ToolbarButton';
-import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
+import { ToolbarButton, ToolbarButtonProps } from '../ToolbarButton';
+
+export interface BlockToolbarButtonProps extends ToolbarButtonProps {
+  type: string;
+
+  inactiveType?: string;
+}
 
 /**
  * Toolbar button to toggle the type of elements in selection.
  */
-export const BlockToolbarButton = ({
+export function BlockToolbarButton({
   id,
   type,
   inactiveType,
   active: _active,
   ...props
-}: BlockToolbarButtonProps) => {
+}: BlockToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
   const active =
     _active ?? (!!editor?.selection && someNode(editor, { match: { type } }));
@@ -36,4 +41,4 @@ export const BlockToolbarButton = ({
       {...props}
     />
   );
-};
+}

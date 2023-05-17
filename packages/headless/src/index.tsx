@@ -8,7 +8,6 @@ export * from '@udecode/plate-basic-elements';
 export * from '@udecode/plate-basic-marks';
 export * from '@udecode/plate-block-quote';
 export * from '@udecode/plate-break';
-export * from '@udecode/plate-button';
 export * from '@udecode/plate-code-block';
 export * from '@udecode/plate-combobox';
 export * from '@udecode/plate-comments';

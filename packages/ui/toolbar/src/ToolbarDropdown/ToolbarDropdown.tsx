@@ -11,13 +11,13 @@ type ToolbarDropdownProps = {
   onClose?: (ev: MouseEvent) => void;
 };
 
-export const ToolbarDropdown = ({
+export function ToolbarDropdown({
   control,
   children,
   open,
   onOpen,
   onClose,
-}: ToolbarDropdownProps) => {
+}: ToolbarDropdownProps) {
   const { styles, refs } = useDropdownControls({
     open,
     onClose,
@@ -32,7 +32,7 @@ export const ToolbarDropdown = ({
       {open && (
         <div
           ref={refs.setFloating}
-          className={cn(floatingVariants({ type: 'root' }))}
+          className={cn(floatingVariants({ element: 'root' }))}
           style={styles}
         >
           {children}
@@ -40,4 +40,4 @@ export const ToolbarDropdown = ({
       )}
     </>
   );
-};
+}

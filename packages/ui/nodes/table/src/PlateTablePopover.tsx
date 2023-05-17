@@ -49,7 +49,7 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
           </div>
         </div>
       }
-      className={cn(floatingVariants({ type: 'root' }))}
+      className={cn(floatingVariants({ element: 'root' }))}
       {...props}
     >
       {children}

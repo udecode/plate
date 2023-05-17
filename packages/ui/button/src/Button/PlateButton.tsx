@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@udecode/plate-button';
 import { cn, cva, VariantProps } from '@udecode/plate-styled-components';
 
 export const buttonVariants = cva(

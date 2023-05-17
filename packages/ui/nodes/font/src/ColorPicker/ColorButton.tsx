@@ -30,7 +30,7 @@ export const ColorButton = ({
       style={{ backgroundColor: value }}
       className={cn(
         'h-8 w-8 cursor-pointer rounded-full border-2 border-solid border-gray-300',
-        'hover:shadow-[0px 0px 5px 1px #9a9a9a] focus:shadow-[0px 0px 5px 1px #676767]',
+        'hover:shadow-[0px_0px_5px_1px_#9a9a9a] focus:shadow-[0px_0px_5px_1px_#676767]',
         !isBrightColor && 'border-transparent text-white',
         className
       )}

@@ -27,7 +27,7 @@
     "@udecode/slate-react": "21.0.0",
     "@udecode/utils": "19.7.0",
     "@udecode/zustood": "^1.1.1",
-    "clsx": "^1.1.1",
+    "clsx": "^1.2.1",
     "jotai": "^1.7.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.4",

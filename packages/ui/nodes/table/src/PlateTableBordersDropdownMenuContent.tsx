@@ -44,7 +44,7 @@ export const PlateTableBordersDropdownMenuContent = () => {
   return (
     <DropdownMenu.Content
       className={cn(
-        floatingVariants({ type: 'root' }),
+        floatingVariants({ element: 'root' }),
         'min-w-[220px] py-1.5 text-neutral-900'
       )}
       side="right"

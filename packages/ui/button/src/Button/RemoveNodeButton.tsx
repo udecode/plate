@@ -7,13 +7,13 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 import { DeleteIcon } from '../Icon/DeleteIcon';
-import { Button, PlateButtonProps } from './PlateButton';
+import { Button, ButtonProps } from './PlateButton';
 
 export const RemoveNodeButton = ({
   element,
   children,
   ...props
-}: PlateButtonProps & { element: TElement }) => {
+}: ButtonProps & { element: TElement }) => {
   const editor = useEditorRef();
 
   return (

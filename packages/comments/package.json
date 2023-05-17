@@ -23,7 +23,6 @@
     "brl": "yarn p:brl"
   },
   "dependencies": {
-    "@udecode/plate-button": "21.0.0",
     "@udecode/plate-common": "21.0.0"
   },
   "peerDependencies": {

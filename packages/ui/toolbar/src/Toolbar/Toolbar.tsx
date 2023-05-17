@@ -1,24 +1,19 @@
 import React from 'react';
-import { getToolbarStyles } from './Toolbar.styles';
-import { ToolbarProps } from './Toolbar.types';
+import { cva } from '@udecode/plate-styled-components';
 
-export const ToolbarBase = React.forwardRef<HTMLDivElement, ToolbarProps>(
-  (props, ref) => {
-    return <div data-testid="Toolbar" ref={ref} {...props} />;
-  }
+export const toolbarVariants = cva(
+  'box-content flex min-h-[40px] select-none items-center text-[rgb(68,68,68)]'
 );
 
-export const Toolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
-  (props: ToolbarProps, ref) => {
-    const { root } = getToolbarStyles(props);
+export interface ToolbarProps extends React.ComponentPropsWithoutRef<'div'> {}
 
-    return (
-      <ToolbarBase
-        {...props}
-        ref={ref}
-        css={root.css}
-        className={root.className}
-      />
-    );
-  }
+export const Toolbar = React.forwardRef<React.ElementRef<'div'>, ToolbarProps>(
+  ({ className, ...props }: ToolbarProps, ref) => (
+    <div
+      data-testid="Toolbar"
+      ref={ref}
+      className={toolbarVariants({ className })}
+      {...props}
+    />
+  )
 );

@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.0.0",
-    "class-variance-authority": "^0.5.3",
+    "class-variance-authority": "^0.6.0",
     "clsx": "^1.2.1",
     "tailwind-merge": "^1.12.0",
     "tailwind-styled-components": "^2.2.0",

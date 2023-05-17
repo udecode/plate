@@ -1,12 +1,33 @@
-import React from 'react';
+import React, { HTMLProps } from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react';
-import clsx from 'clsx';
-import { getToolbarButtonStyles } from './ToolbarButton.styles';
-import { ToolbarButtonProps } from './ToolbarButton.types';
+import { cn } from '@udecode/plate-styled-components';
 
-export const ToolbarButton = (props: ToolbarButtonProps) => {
+export interface ToolbarButtonProps
+  extends Omit<HTMLProps<HTMLButtonElement>, 'type'> {
+  /**
+   * Is it active.
+   */
+  active?: boolean;
+
+  /**
+   * Icon of the button.
+   */
+  icon: any;
+
+  /**
+   * Tooltip props. If not provided, tooltip is disabled.
+   */
+  tooltip?: TippyProps;
+
+  /**
+   * Handler to use to actionate the button.
+   * @default onClick
+   */
+  actionHandler?: 'onClick' | 'onMouseDown';
+}
+
+export function ToolbarButton(props: ToolbarButtonProps) {
   const {
-    id,
     active: _active,
     icon,
     tooltip,
@@ -26,8 +47,6 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
     ...tooltip,
   };
 
-  const { root, active } = getToolbarButtonStyles(props);
-
   // this can replace onClick by onMouseDown
   buttonProps[actionHandler] = onClick;
 
@@ -36,8 +55,14 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
       data-testid="ToolbarButton"
       type="button"
       aria-label={tooltipProps.content as string}
-      css={root.css}
-      className={clsx(root.className, active?.className, className)}
+      data-state="active"
+      className={cn(
+        'flex cursor-pointer select-none items-center justify-center align-middle',
+        'h-[32px] w-[32px]',
+        'border-none bg-transparent text-current outline-none hover:bg-transparent',
+        '[&_>_svg]:block [&_>_svg]:h-5 [&_>_svg]:w-5',
+        className
+      )}
       {...buttonProps}
     >
       {icon}
@@ -45,4 +70,4 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
   );
 
   return tooltip ? <Tippy {...tooltipProps}>{button}</Tippy> : button;
-};
+}

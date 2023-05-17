@@ -29,7 +29,7 @@ export const PlateCommentMenuButton = () => {
         <div
           className={cn(
             'relative flex flex-col',
-            floatingVariants({ type: 'root' }),
+            floatingVariants({ element: 'root' }),
             'w-[150px]'
           )}
         >
