@@ -1,10 +1,21 @@
 import React from 'react';
-import { EmojiCategoryList, IEmojiFloatingLibrary } from '@udecode/plate-emoji';
-import { getEmojiPickerNavigationStyles } from './EmojiPickerNavigation.styles';
 import {
-  CategoryButtonProps,
-  EmojiPickerNavigationProps,
-} from './EmojiPickerNavigation.types';
+  EmojiCategoryList,
+  IEmojiFloatingLibrary,
+  UseEmojiPickerType,
+} from '@udecode/plate-emoji';
+import { cn } from '@udecode/plate-styled-components';
+
+export type EmojiPickerNavigationProps = Pick<
+  UseEmojiPickerType,
+  'i18n' | 'emojiLibrary' | 'icons' | 'focusedCategory'
+> & {
+  onClick: (id: EmojiCategoryList) => void;
+};
+
+export type CategoryButtonProps = {
+  categoryId: EmojiCategoryList;
+};
 
 const getBarProperty = (
   emojiLibrary: IEmojiFloatingLibrary,
@@ -22,29 +33,27 @@ const getBarProperty = (
   return { width, position };
 };
 
-export const EmojiPickerNavigation = ({
+export function EmojiPickerNavigation({
   i18n,
   icons,
   emojiLibrary,
   focusedCategory,
   onClick,
-  ...props
-}: EmojiPickerNavigationProps) => {
-  const { root, button, selected, bar } = getEmojiPickerNavigationStyles({
-    ...props,
-  });
+}: EmojiPickerNavigationProps) {
   const { width, position } = getBarProperty(emojiLibrary, focusedCategory);
 
-  const CategoryButton = ({ categoryId }: CategoryButtonProps) => {
+  function CategoryButton({ categoryId }: CategoryButtonProps) {
     return (
       <button
         key={categoryId}
         aria-label={i18n.categories[categoryId]}
         title={i18n.categories[categoryId]}
         type="button"
-        css={`
-          ${button?.css} ${categoryId === focusedCategory ? selected?.css : ''}
-        `}
+        className={cn(
+          'flex grow cursor-pointer items-center justify-center border-none bg-transparent fill-current text-sm text-gray-500 hover:text-gray-800',
+          categoryId === focusedCategory &&
+            'pointer-events-none fill-current text-blue-600'
+        )}
         onClick={() => onClick(categoryId)}
       >
         <span style={{ width: '20px', height: '20px' }}>
@@ -52,10 +61,13 @@ export const EmojiPickerNavigation = ({
         </span>
       </button>
     );
-  };
+  }
 
   return (
-    <nav id="emoji-nav" css={root.css}>
+    <nav
+      id="emoji-nav"
+      className="mb-2.5 border-0 border-b border-solid border-b-gray-100 p-3"
+    >
       <div className="relative flex">
         {emojiLibrary
           .getGrid()
@@ -64,7 +76,7 @@ export const EmojiPickerNavigation = ({
             <CategoryButton categoryId={id} key={id} />
           ))}
         <div
-          css={bar?.css}
+          className="absolute -bottom-3 left-0 h-[3px] w-full rounded-t bg-blue-600 opacity-100 transition-transform duration-200"
           style={{
             visibility: `${focusedCategory ? 'visible' : 'hidden'}`,
             width: `${width}%`,
@@ -74,4 +86,4 @@ export const EmojiPickerNavigation = ({
       </div>
     </nav>
   );
-};
+}

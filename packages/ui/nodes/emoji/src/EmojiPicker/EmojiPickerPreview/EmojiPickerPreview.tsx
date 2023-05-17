@@ -1,60 +1,64 @@
 import React from 'react';
-import { getEmojiPickerPreviewStyles } from './EmojiPickerPreview.styles';
-import {
-  EmojiPickerPreviewProps,
-  EmojiPreviewProps,
-  NoEmojiPreviewProps,
-  PickAnEmojiPreviewProps,
-} from './EmojiPickerPreview.types';
+import { UseEmojiPickerType } from '@udecode/plate-emoji';
 
-const EmojiPreview = ({ emoji, ...props }: EmojiPreviewProps) => {
-  const styles = getEmojiPickerPreviewStyles({ ...props });
+export type EmojiPickerPreviewProps = Pick<
+  UseEmojiPickerType,
+  'emoji' | 'hasFound' | 'isSearching' | 'i18n'
+>;
 
+export type EmojiPreviewProps = Pick<UseEmojiPickerType, 'emoji'>;
+
+export type NoEmojiPreviewProps = Pick<UseEmojiPickerType, 'i18n'>;
+export type PickAnEmojiPreviewProps = NoEmojiPreviewProps;
+
+function EmojiPreview({ emoji }: EmojiPreviewProps) {
   return (
-    <div css={styles.root.css}>
-      <div css={styles.emoji?.css}>{emoji?.skins[0].native}</div>
-      <div css={styles.content?.css}>
-        <div css={styles.title?.css}>{emoji?.name}</div>
-        <div css={styles.subtitle?.css}>{`:${emoji?.id}:`}</div>
+    <div className="flex items-center border-t border-gray-100 p-2">
+      <div className="flex items-center justify-center text-3xl">
+        {emoji?.skins[0].native}
+      </div>
+      <div className="overflow-hidden pl-2">
+        <div className="truncate text-sm text-gray-600">{emoji?.name}</div>
+        <div className="truncate text-xs text-gray-400">{`:${emoji?.id}:`}</div>
       </div>
     </div>
   );
-};
+}
 
-const NoEmoji = ({ i18n, ...props }: NoEmojiPreviewProps) => {
-  const styles = getEmojiPickerPreviewStyles({ ...props });
-
+function NoEmoji({ i18n }: NoEmojiPreviewProps) {
   return (
-    <div css={styles.root.css}>
-      <div css={styles.emoji?.css}>😢</div>
-      <div css={styles.content?.css}>
-        <div css={styles.title?.css}>{i18n.searchNoResultsTitle}</div>
-        <div css={styles.subtitle?.css}>{i18n.searchNoResultsSubtitle}</div>
+    <div className="flex items-center border-t border-gray-100 p-2">
+      <div className="flex items-center justify-center text-3xl">😢</div>
+      <div className="overflow-hidden pl-2">
+        <div className="truncate text-sm text-gray-600">
+          {i18n.searchNoResultsTitle}
+        </div>
+        <div className="truncate text-xs text-gray-400">
+          {i18n.searchNoResultsSubtitle}
+        </div>
       </div>
     </div>
   );
-};
+}
 
-const PickAnEmoji = ({ i18n, ...props }: PickAnEmojiPreviewProps) => {
-  const styles = getEmojiPickerPreviewStyles({ ...props });
-
+function PickAnEmoji({ i18n }: PickAnEmojiPreviewProps) {
   return (
-    <div css={styles.root.css}>
-      <div css={styles.emoji?.css}>☝️</div>
-      <div css={styles.content?.css}>
-        <div css={styles.text?.css}>{i18n.pick}</div>
+    <div className="flex items-center border-t border-gray-100 p-2">
+      <div className="flex items-center justify-center text-3xl">☝️</div>
+      <div className="overflow-hidden pl-2">
+        <div className="truncate text-lg text-gray-400">{i18n.pick}</div>
       </div>
     </div>
   );
-};
+}
 
-export const EmojiPickerPreview = ({
+export function EmojiPickerPreview({
   emoji,
   hasFound = true,
   isSearching = false,
   i18n,
   ...props
-}: EmojiPickerPreviewProps) => {
+}: EmojiPickerPreviewProps) {
   const showPickEmoji = !emoji && !(isSearching && !hasFound);
   const showNoEmoji = isSearching && !hasFound;
   const showPreview = emoji;
@@ -66,4 +70,4 @@ export const EmojiPickerPreview = ({
       {showNoEmoji && <NoEmoji i18n={i18n} {...props} />}
     </>
   );
-};
+}

@@ -1,25 +1,25 @@
-import React from 'react';
-import { getEmojiPickerSearchBarStyles } from './EmojiPickerSearchBar.styles';
-import { EmojiPickerSearchBarProps } from './EmojiPickerSearchBar.types';
+import React, { ReactNode } from 'react';
+import { UseEmojiPickerType } from '@udecode/plate-emoji';
 
-export const EmojiPickerSearchBar = ({
+export type EmojiPickerSearchBarProps = {
+  children: ReactNode;
+} & Pick<UseEmojiPickerType, 'i18n' | 'searchValue' | 'setSearch'>;
+
+export function EmojiPickerSearchBar({
   i18n,
   searchValue,
   setSearch,
   children,
-  ...props
-}: EmojiPickerSearchBarProps) => {
-  const styles = getEmojiPickerSearchBarStyles({ ...props });
-
+}: EmojiPickerSearchBarProps) {
   return (
-    <div css={styles.root.css}>
+    <div className="flex items-center px-2">
       <div className="relative flex grow">
         <input
           type="text"
           placeholder={i18n.search}
           autoComplete="off"
           aria-label="Search"
-          css={styles.input?.css}
+          className="block w-full appearance-none rounded-lg border-0 bg-gray-100 px-8 py-2 outline-none"
           onChange={(event) => setSearch(event.target.value)}
           value={searchValue}
         />
@@ -27,4 +27,4 @@ export const EmojiPickerSearchBar = ({
       </div>
     </div>
   );
-};
+}

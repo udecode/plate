@@ -1,30 +1,52 @@
 import React, { memo, useCallback } from 'react';
-import { Emoji, GridRow } from '@udecode/plate-emoji';
-import { getEmojiPickerContentStyles } from './EmojiPickerContent.styles';
-import {
-  EmojiButtonProps,
-  EmojiPickerContentProps,
-  RowOfButtonsProps,
-} from './EmojiPickerContent.types';
+import { Emoji, GridRow, UseEmojiPickerType } from '@udecode/plate-emoji';
+import { cn } from '@udecode/plate-styled-components';
+
+export type EmojiPickerContentProps = Pick<
+  UseEmojiPickerType,
+  | 'i18n'
+  | 'onMouseOver'
+  | 'onSelectEmoji'
+  | 'emojiLibrary'
+  | 'isSearching'
+  | 'searchResult'
+  | 'visibleCategories'
+  | 'refs'
+  | 'settings'
+>;
+
+export type EmojiButtonProps = {
+  index: number;
+  emoji: Emoji;
+  onSelect: (emoji: Emoji) => void;
+  onMouseOver: (emoji?: Emoji) => void;
+};
+
+export type RowOfButtonsProps = Pick<
+  UseEmojiPickerType,
+  'onMouseOver' | 'onSelectEmoji' | 'emojiLibrary'
+> & {
+  row: GridRow;
+};
 
 const Button = memo(
-  ({ index, emoji, onSelect, onMouseOver, ...props }: EmojiButtonProps) => {
-    const { button, buttonBg } = getEmojiPickerContentStyles({ ...props });
-
+  ({ index, emoji, onSelect, onMouseOver }: EmojiButtonProps) => {
     return (
       <button
         type="button"
         aria-label={emoji.skins[0].native}
         tabIndex={-1}
-        css={button?.css}
         data-index={index}
         onClick={() => onSelect(emoji)}
         onMouseEnter={() => onMouseOver(emoji)}
         onMouseLeave={() => onMouseOver(undefined)}
-        className="group"
+        className="group relative flex h-[36px] w-[36px] cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none"
       >
-        <div aria-hidden="true" css={buttonBg!.css} />
-        <span data-emoji-set="native" css={{ position: 'relative' }}>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full bg-[rgba(0,0,0,0.05)] opacity-0 group-hover:opacity-100"
+        />
+        <span data-emoji-set="native" style={{ position: 'relative' }}>
           {emoji.skins[0].native}
         </span>
       </button>
@@ -34,11 +56,7 @@ const Button = memo(
 
 const RowOfButtons = memo(
   ({ row, emojiLibrary, onSelectEmoji, onMouseOver }: RowOfButtonsProps) => (
-    <div
-      key={row.id}
-      data-index={row.id}
-      css={{ display: 'flex', 'flex-direction': 'row' }}
-    >
+    <div key={row.id} data-index={row.id} className="flex">
       {row.elements.map((emojiId, index) => (
         <Button
           key={emojiId}
@@ -52,7 +70,7 @@ const RowOfButtons = memo(
   )
 );
 
-export const EmojiPickerContent = ({
+export function EmojiPickerContent({
   i18n,
   onSelectEmoji,
   onMouseOver,
@@ -62,9 +80,7 @@ export const EmojiPickerContent = ({
   visibleCategories,
   refs,
   settings,
-  ...props
-}: EmojiPickerContentProps) => {
-  const styles = getEmojiPickerContentStyles({ ...props });
+}: EmojiPickerContentProps) {
   const getRowWidth = settings.perLine.value * settings.buttonSize.value;
 
   const isCategoryVisible = useCallback(
@@ -91,9 +107,11 @@ export const EmojiPickerContent = ({
             ref={section.root}
             style={{ width: getRowWidth }}
           >
-            <div css={styles.sticky?.css}>{i18n.categories[categoryId]}</div>
+            <div className="sticky -top-px z-[1] bg-white/90 p-1 backdrop-blur-[4px]">
+              {i18n.categories[categoryId]}
+            </div>
             <div
-              css={styles.category?.css}
+              className="relative flex flex-wrap"
               style={{ height: section.getRows().length * buttonSize.value }}
             >
               {isCategoryVisible(categoryId) &&
@@ -120,14 +138,15 @@ export const EmojiPickerContent = ({
     onSelectEmoji,
     onMouseOver,
     settings,
-    styles,
   ]);
 
   const SearchList = useCallback(() => {
     return (
       <div data-id="search" style={{ width: getRowWidth }}>
-        <div css={styles.sticky?.css}>{i18n.searchResult}</div>
-        <div css={styles.category?.css}>
+        <div className="sticky -top-px z-[1] bg-white/90 p-1 backdrop-blur-[4px]">
+          {i18n.searchResult}
+        </div>
+        <div className="relative flex flex-wrap">
           {searchResult.map((emoji: Emoji, index: number) => (
             <Button
               key={emoji.id}
@@ -147,14 +166,24 @@ export const EmojiPickerContent = ({
     searchResult,
     onSelectEmoji,
     onMouseOver,
-    styles,
   ]);
 
   return (
-    <div css={styles.root.css} data-id="scroll" ref={refs.current.contentRoot}>
-      <div css={styles.content?.css} ref={refs.current.content}>
+    <div
+      className={cn(
+        'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-3',
+        '[&::-webkit-scrollbar]:w-4',
+        '[&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:h-0 [&::-webkit-scrollbar-button]:w-0',
+        ':hover:[&::-webkit-scrollbar-thumb]:bg-[#f3f4f6]',
+        '[&::-webkit-scrollbar-thumb]:min-h-[65px] [&::-webkit-scrollbar-thumb]:rounded-2xl [&::-webkit-scrollbar-thumb]:border-4 [&::-webkit-scrollbar-thumb]:border-white',
+        '[&::-webkit-scrollbar-track]:border-0'
+      )}
+      data-id="scroll"
+      ref={refs.current.contentRoot}
+    >
+      <div ref={refs.current.content} className="h-full">
         {isSearching ? SearchList() : EmojiList()}
       </div>
     </div>
   );
-};
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { UseEmojiPickerType } from '@udecode/plate-emoji';
+import { cn } from '@udecode/plate-styled-components';
 import { EmojiPickerContent } from '../EmojiPickerContent';
 import { EmojiPickerNavigation } from '../EmojiPickerNavigation';
 import { EmojiPickerPreview } from '../EmojiPickerPreview';
@@ -7,9 +8,8 @@ import {
   EmojiPickerSearchAndClear,
   EmojiPickerSearchBar,
 } from '../EmojiPickerSearchBar';
-import { getEmojiPickerStyles } from './EmojiPicker.styles';
 
-export const EmojiPicker = ({
+export function EmojiPicker({
   i18n,
   searchValue,
   setSearch,
@@ -27,12 +27,14 @@ export const EmojiPicker = ({
   visibleCategories,
   refs,
   settings,
-  ...props
-}: UseEmojiPickerType) => {
-  const { root } = getEmojiPickerStyles(props);
-
+}: UseEmojiPickerType) {
   return (
-    <div css={root.css}>
+    <div
+      className={cn(
+        'flex flex-col rounded bg-white',
+        'h-[350px] w-[316px] shadow-[rgb(15_15_15_/_5%)_0_0_0_1px,_rgb(15_15_15_/_10%)_0_3px_6px,_rgb(15_15_15_/_20%)_0_9px_24px]'
+      )}
+    >
       <EmojiPickerNavigation
         i18n={i18n}
         emojiLibrary={emojiLibrary}
@@ -70,4 +72,4 @@ export const EmojiPicker = ({
       />
     </div>
   );
-};
+}
