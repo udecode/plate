@@ -8,6 +8,7 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/typescript',
+    'plugin:tailwindcss/recommended',
     'prettier',
   ],
   parserOptions: {
@@ -31,6 +32,7 @@ module.exports = {
     'jest',
     'simple-import-sort',
     'import',
+    'unused-imports',
     'prettier',
   ],
   settings: {
@@ -44,6 +46,9 @@ module.exports = {
       typescript: {},
     },
     react: { version: 'detect' },
+    tailwindcss: {
+      callees: ['cn', 'cva'],
+    },
   },
   rules: {
     'prettier/prettier': [
@@ -51,6 +56,25 @@ module.exports = {
       {
         trailingComma: 'es5',
         singleQuote: true,
+      },
+    ],
+
+    // Tailwind css classnames order
+    'tailwindcss/classnames-order': 'warn',
+    'tailwindcss/no-custom-classname': 'error',
+
+    'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
+    '@typescript-eslint/no-unused-vars': 'off',
+    // No unused imports
+    'unused-imports/no-unused-imports': 'error',
+    // No unused variables
+    'unused-imports/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
       },
     ],
 
@@ -216,7 +240,6 @@ module.exports = {
     //   2,
     //   { allowTernary: true, allowShortCircuit: true },
     // ],
-    '@typescript-eslint/no-unused-vars': ['warn', { ignoreRestSiblings: true }],
     '@typescript-eslint/no-useless-constructor': 'error',
     '@typescript-eslint/no-var-requires': 'off',
 
@@ -225,7 +248,6 @@ module.exports = {
     'no-shadow': 'off',
     'no-undef': 'off',
     'no-unexpected-multiline': 'off',
-    'no-unused-vars': 'off',
     'no-useless-constructor': 'off',
 
     // new
