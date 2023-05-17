@@ -5,18 +5,18 @@ import {
   RefreshIcon,
   useComment,
 } from '@udecode/plate-comments';
-import { plateButtonCss } from '@udecode/plate-ui-button';
-import tw from 'twin.macro';
+import { cn } from '@udecode/plate-styled-components';
+import { buttonVariants } from '@udecode/plate-ui-button';
 
 export const PlateCommentResolveButton = () => {
   const comment = useComment()!;
 
   return (
-    <CommentResolveButton css={[plateButtonCss, tw`p-1`]}>
+    <CommentResolveButton className={cn(buttonVariants(), 'p-1')}>
       {comment.isResolved ? (
-        <RefreshIcon tw="w-6 h-6 text-gray-500" />
+        <RefreshIcon className="h-6 w-6 text-gray-500" />
       ) : (
-        <CheckIcon tw="w-6 h-6 text-gray-500" />
+        <CheckIcon className="h-6 w-6 text-gray-500" />
       )}
     </CommentResolveButton>
   );

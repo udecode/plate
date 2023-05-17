@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import React, { ButtonHTMLAttributes } from 'react';
 import { nanoid } from '@udecode/plate-common';
 import {
   SCOPE_ACTIVE_COMMENT,
@@ -14,7 +13,7 @@ import {
 
 export const useCommentNewSubmitButton = ({
   ...props
-}: ButtonProps): ButtonProps => {
+}: ButtonHTMLAttributes<HTMLButtonElement>): ButtonHTMLAttributes<HTMLButtonElement> => {
   const onCommentAdd = useCommentsSelectors().onCommentAdd();
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
   const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
@@ -54,8 +53,10 @@ export const useCommentNewSubmitButton = ({
   };
 };
 
-export const CommentNewSubmitButton = (props: ButtonProps) => {
+export const CommentNewSubmitButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
   const htmlProps = useCommentNewSubmitButton(props);
 
-  return <Button {...htmlProps} />;
+  return <button type="button" {...htmlProps} />;
 };

@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { floatingRootCss } from '../styles';
+import { cn } from '@udecode/plate-styled-components';
+import { floatingVariants } from '../styles';
 import { useDropdownControls } from './useDropdownControls';
 
 type ToolbarDropdownProps = {
@@ -29,7 +30,11 @@ export const ToolbarDropdown = ({
       </div>
 
       {open && (
-        <div ref={refs.setFloating} css={floatingRootCss} style={styles}>
+        <div
+          ref={refs.setFloating}
+          className={cn(floatingVariants({ type: 'root' }))}
+          style={styles}
+        >
           {children}
         </div>
       )}

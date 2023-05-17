@@ -1,15 +1,14 @@
 import React, { ReactNode } from 'react';
 import Tippy from '@tippyjs/react';
-import { getColorButtonStyles } from './ColorButton.styles';
+import { cn } from '@udecode/plate-styled-components';
 
 type ColorButtonProps = {
-  name?: string;
   value: string;
   isBrightColor: boolean;
   isSelected: boolean;
   selectedIcon: ReactNode;
   updateColor: (color: string) => void;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const ColorButton = ({
   name,
@@ -18,17 +17,24 @@ export const ColorButton = ({
   isSelected,
   selectedIcon,
   updateColor,
+  className,
+  ...props
 }: ColorButtonProps) => {
-  const styles = getColorButtonStyles({ value, isBrightColor });
-
   const content = (
     <button
       data-testid="ColorButton"
       type="button"
-      aria-label={name}
       name={name}
+      aria-label={name}
       onClick={() => updateColor(value)}
-      css={styles.root.css}
+      style={{ backgroundColor: value }}
+      className={cn(
+        'h-8 w-8 cursor-pointer rounded-full border-2 border-solid border-gray-300',
+        'hover:shadow-[0px 0px 5px 1px #9a9a9a] focus:shadow-[0px 0px 5px 1px #676767]',
+        !isBrightColor && 'border-transparent text-white',
+        className
+      )}
+      {...props}
     >
       {isSelected ? selectedIcon : null}
     </button>

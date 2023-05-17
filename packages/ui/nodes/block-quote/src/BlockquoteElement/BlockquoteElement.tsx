@@ -1,28 +1,23 @@
 import React from 'react';
-import { Value } from '@udecode/plate-common';
 import {
-  getRootProps,
+  cn,
+  PlateElement,
   PlateElementProps,
 } from '@udecode/plate-styled-components';
-import { getBlockquoteElementStyles } from './BlockquoteElement.styles';
 
-export const BlockquoteElement = <V extends Value>(
-  props: PlateElementProps<V>
-) => {
-  const { attributes, children, nodeProps } = props;
-
-  const rootProps = getRootProps(props);
-  const { root } = getBlockquoteElementStyles(props);
-
+export const BlockquoteElement = ({
+  className,
+  ...props
+}: PlateElementProps) => {
   return (
-    <blockquote
-      {...attributes}
-      css={root.css}
-      className={root.className}
-      {...rootProps}
-      {...nodeProps}
-    >
-      {children}
-    </blockquote>
+    <PlateElement
+      as="blockquote"
+      className={cn(
+        'my-2 mx-0 border-l-2 py-2.5 pl-4 pr-5',
+        'border-[#ddd] text-[#aaa]',
+        className
+      )}
+      {...props}
+    />
   );
 };

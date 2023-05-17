@@ -1,5 +1,5 @@
 import React from 'react';
 
 export const FloatingVerticalDivider = () => (
-  <div tw="w-px h-5 bg-gray-200 mx-2" />
+  <div className="mx-2 h-5 w-px bg-gray-200" />
 );

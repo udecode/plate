@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { DropTargetMonitor } from 'react-dnd';
-import { EElement, TEditor, Value } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-common';
 import {
   DraggableBlock,
   DraggableBlockToolbar,
@@ -12,12 +12,12 @@ import {
   DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { PlateElementProps } from '@udecode/plate-styled-components';
-import { getDraggableStyles } from './PlateDraggable.styles';
-import { DraggableStyles, DragHandleProps } from './PlateDraggable.types';
+import { cn, PlateElementProps } from '@udecode/plate-styled-components';
+import { DragHandleProps } from './PlateDraggable.types';
 
-export interface PlateDraggableProps
-  extends PlateElementProps<Value, EElement<Value>, DraggableStyles> {
+export interface PlateDraggableProps extends PlateElementProps {
+  classNameBlockAndGutter?: string;
+
   /**
    * An override to render the drag handle.
    */
@@ -39,64 +39,57 @@ export interface PlateDraggableProps
 }
 
 export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
-  (props, ref) => {
+  ({ classNameBlockAndGutter, ...props }, ref) => {
     const { children, element, onRenderDragHandle } = props;
 
     const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
 
     const { dropLine, isDragging, rootRef, dragRef } = useDraggableState(props);
 
-    const styles = getDraggableStyles({
-      ...props,
-      direction: dropLine,
-      isDragging,
-    });
-
     return (
       <DraggableRoot
-        css={styles.root.css}
-        className={styles.root.className}
+        className={cn(
+          'relative',
+          isDragging && 'opacity-50',
+          'hover:[&_.slate-Draggable-gutterLeft]:opacity-100'
+          // selected && 'bg-[rgb(181, 215, 255)]',
+        )}
         rootRef={rootRef}
         ref={ref}
       >
         <DraggableGutterLeft
-          css={[
-            ...(styles.blockAndGutter?.css ?? []),
-            ...(styles.gutterLeft?.css ?? []),
-          ]}
-          className={styles.gutterLeft?.className}
+          className={cn(
+            'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0',
+            classNameBlockAndGutter
+          )}
         >
-          <DraggableBlockToolbarWrapper
-            css={styles.blockToolbarWrapper?.css}
-            className={styles.blockToolbarWrapper?.className}
-          >
+          <DraggableBlockToolbarWrapper className="flex h-[1.5em]">
             <DraggableBlockToolbar
               dragRef={dragRef}
               element={element}
-              css={styles.blockToolbar?.css}
-              className={styles.blockToolbar?.className}
+              className="pointer-events-auto mr-1 flex items-center"
             >
               <DragHandle
                 element={element}
-                styles={styles.dragHandle?.css}
-                className={styles.dragHandle?.className}
+                className="h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none"
               />
             </DraggableBlockToolbar>
           </DraggableBlockToolbarWrapper>
         </DraggableGutterLeft>
 
         <DraggableBlock
-          css={[
-            ...(styles.blockAndGutter?.css ?? []),
-            ...(styles.block?.css ?? []),
-          ]}
+          className={cn('overflow-auto', classNameBlockAndGutter)}
         >
           {children}
 
           {!!dropLine && (
             <DraggableDropline
-              css={styles.dropLine?.css}
-              className={styles.dropLine?.className}
+              className={cn(
+                'absolute left-0 right-0 h-0.5 opacity-100',
+                'bg-[#B4D5FF]',
+                dropLine === 'top' && '-top-px',
+                dropLine === 'bottom' && '-bottom-px'
+              )}
             />
           )}
         </DraggableBlock>

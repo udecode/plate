@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import React, { ButtonHTMLAttributes } from 'react';
 import { usePlateEditorRef } from '@udecode/plate-common';
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {
@@ -9,7 +8,9 @@ import {
 } from '../stores/comments/CommentsProvider';
 import { unsetCommentNodesById } from '../utils/index';
 
-export const useCommentDeleteButton = (props: ButtonProps): ButtonProps => {
+export const useCommentDeleteButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+): ButtonHTMLAttributes<HTMLButtonElement> => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const onCommentDelete = useCommentsSelectors().onCommentDelete();
   const id = useCommentSelectors().id();
@@ -32,8 +33,10 @@ export const useCommentDeleteButton = (props: ButtonProps): ButtonProps => {
   };
 };
 
-export const CommentDeleteButton = (props: ButtonProps) => {
+export const CommentDeleteButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
   const htmlProps = useCommentDeleteButton(props);
 
-  return <Button {...htmlProps} />;
+  return <button type="button" {...htmlProps} />;
 };

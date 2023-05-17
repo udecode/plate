@@ -2,6 +2,8 @@ import React, { ReactElement, RefAttributes } from 'react';
 import {
   EText,
   PlateRenderLeafProps,
+  Text,
+  TextProps,
   TText,
   Value,
 } from '@udecode/plate-common';
@@ -11,7 +13,7 @@ import { getRootProps } from '../utils/getRootProps';
 export type PlateLeafProps<
   V extends Value = Value,
   N extends TText = EText<V>
-> = PlateRenderLeafProps<V, N> & React.HTMLAttributes<HTMLSpanElement>;
+> = PlateRenderLeafProps<V, N> & TextProps;
 
 /**
  * Headless leaf component.
@@ -23,14 +25,14 @@ const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
     const rootProps = getRootProps(props);
 
     return (
-      <span
+      <Text
         {...attributes}
         {...rootProps}
         {...nodeProps}
         className={cn(rootProps.className, nodeProps?.className, className)}
       >
         {children}
-      </span>
+      </Text>
     );
   }
 ) as (<V extends Value = Value, N extends TText = EText<V>>(

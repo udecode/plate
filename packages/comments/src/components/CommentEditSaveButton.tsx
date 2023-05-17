@@ -1,5 +1,4 @@
-import React, { useCallback } from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import React, { ButtonHTMLAttributes, useCallback } from 'react';
 import {
   useCommentActions,
   useCommentSelectors,
@@ -10,7 +9,9 @@ import {
   useUpdateComment,
 } from '../stores/comments/CommentsProvider';
 
-export const useCommentEditSaveButton = ({ ...props }: ButtonProps) => {
+export const useCommentEditSaveButton = ({
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>): ButtonHTMLAttributes<HTMLButtonElement> => {
   const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const editingValue = useCommentSelectors().editingValue();
   const setEditingValue = useCommentActions().editingValue();
@@ -37,8 +38,10 @@ export const useCommentEditSaveButton = ({ ...props }: ButtonProps) => {
   };
 };
 
-export const CommentEditSaveButton = (props: ButtonProps) => {
+export const CommentEditSaveButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
   const htmlProps = useCommentEditSaveButton(props);
 
-  return <Button {...htmlProps} />;
+  return <button type="button" {...htmlProps} />;
 };

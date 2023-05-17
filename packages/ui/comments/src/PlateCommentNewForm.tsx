@@ -26,10 +26,10 @@ export const PlateCommentNewForm = () => {
 
   return (
     <div css={[commentFormCss]}>
-      <div tw="flex space-x-2 w-full">
+      <div className="flex w-full space-x-2">
         <PlateAvatar userId={myUserId} />
 
-        <div tw="flex flex-col flex-grow space-y-2">
+        <div className="flex flex-grow flex-col space-y-2">
           <PlateCommentNewTextarea ref={textareaRef} />
 
           <div css={commentActionsCss}>

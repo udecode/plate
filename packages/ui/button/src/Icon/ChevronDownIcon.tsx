@@ -6,7 +6,7 @@ export const ChevronDownIcon = (props: StyledIconProps) => (
     viewBox="0 0 24 24"
     focusable="false"
     aria-hidden="true"
-    tw="inline text-center select-none overflow-hidden pointer-events-none max-w-full max-h-full h-full align-middle"
+    className="pointer-events-none inline h-full max-h-full max-w-full select-none overflow-hidden text-center align-middle"
     {...props}
   >
     <path

@@ -139,11 +139,11 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       {/*  > */}
       {/*    <div> */}
       {/*      <PlateButton */}
-      {/*        tw="h-[13px] w-[13px] p-0" */}
+      {/*        className="h-[13px] w-[13px] p-0" */}
       {/*        onClick={() => setOpenDropdown(!openDropdown)} */}
       {/*      > */}
       {/*        <ArrowDropDownCircleIcon */}
-      {/*          tw="block my-0 mx-auto absolute text-gray-300" */}
+      {/*          className="block my-0 mx-auto absolute text-gray-300" */}
       {/*          height={16} */}
       {/*          width={16} */}
       {/*        /> */}

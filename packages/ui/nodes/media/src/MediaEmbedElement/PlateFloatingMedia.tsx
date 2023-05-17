@@ -2,14 +2,15 @@ import React from 'react';
 import { useElement } from '@udecode/plate-common';
 import { LinkIcon } from '@udecode/plate-link';
 import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
-import { plateButtonCss, RemoveNodeButton } from '@udecode/plate-ui-button';
+import { cn } from '@udecode/plate-styled-components';
+import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
 import {
   floatingButtonCss,
   FloatingIconWrapper,
   floatingInputCss,
   FloatingInputWrapper,
-  floatingRootCss,
   floatingRowCss,
+  floatingVariants,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
@@ -18,10 +19,10 @@ export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
   const element = useElement();
 
   return (
-    <div css={floatingRootCss}>
+    <div className={cn(floatingVariants({ type: 'root' }))}>
       {!isEditing ? (
         <div css={floatingRowCss}>
-          <FloatingMedia.EditButton css={plateButtonCss}>
+          <FloatingMedia.EditButton className={buttonVariants()}>
             Edit link
           </FloatingMedia.EditButton>
 
@@ -30,7 +31,7 @@ export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
           <RemoveNodeButton element={element} css={floatingButtonCss} />
         </div>
       ) : (
-        <div tw="flex flex-col w-[330px]">
+        <div className="flex w-[330px] flex-col">
           <FloatingInputWrapper>
             <FloatingIconWrapper>
               <LinkIcon width={18} />

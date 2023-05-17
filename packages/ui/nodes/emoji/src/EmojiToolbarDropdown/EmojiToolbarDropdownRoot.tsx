@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { useDropdownControls } from '@udecode/plate-ui-toolbar';
-import tw from 'twin.macro';
 
 type EmojiToolbarDropdownProps = {
   control: ReactNode;
@@ -29,7 +28,7 @@ export const EmojiToolbarDropdownRoot = ({
       </div>
 
       {open && (
-        <div ref={refs.setFloating} css={tw`!z-20`} style={styles}>
+        <div ref={refs.setFloating} className="!z-20" style={styles}>
           {children}
         </div>
       )}

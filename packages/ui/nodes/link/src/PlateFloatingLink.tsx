@@ -8,14 +8,15 @@ import {
   ShortTextIcon,
   useFloatingLinkSelectors,
 } from '@udecode/plate-link';
-import { plateButtonCss } from '@udecode/plate-ui-button';
+import { cn } from '@udecode/plate-styled-components';
+import { buttonVariants } from '@udecode/plate-ui-button';
 import {
   floatingButtonCss,
   FloatingIconWrapper,
   floatingInputCss,
   FloatingInputWrapper,
-  floatingRootCss,
   floatingRowCss,
+  floatingVariants,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
@@ -25,7 +26,7 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
   if (readOnly) return null;
 
   const input = (
-    <div tw="flex flex-col w-[330px]">
+    <div className="flex w-[330px] flex-col">
       <FloatingInputWrapper>
         <FloatingIconWrapper>
           <LinkIcon width={18} />
@@ -37,7 +38,7 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
         />
       </FloatingInputWrapper>
 
-      <div tw="h-px bg-gray-200" />
+      <div className="h-px bg-gray-200" />
 
       <FloatingInputWrapper>
         <FloatingIconWrapper>
@@ -53,7 +54,7 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
 
   const editContent = !isEditing ? (
     <div css={floatingRowCss}>
-      <FloatingLink.EditButton css={plateButtonCss}>
+      <FloatingLink.EditButton className={buttonVariants()}>
         Edit link
       </FloatingLink.EditButton>
 
@@ -75,11 +76,13 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
 
   return (
     <>
-      <FloatingLink.InsertRoot css={floatingRootCss}>
+      <FloatingLink.InsertRoot
+        className={cn(floatingVariants({ type: 'root' }))}
+      >
         {input}
       </FloatingLink.InsertRoot>
 
-      <FloatingLink.EditRoot css={floatingRootCss}>
+      <FloatingLink.EditRoot className={cn(floatingVariants({ type: 'root' }))}>
         {editContent}
       </FloatingLink.EditRoot>
     </>

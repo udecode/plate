@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
-import { PlateButton } from '@udecode/plate-ui-button';
-import { getColorPickerStyles } from './ColorPicker.styles';
+import { cn } from '@udecode/plate-styled-components';
+import { Button } from '@udecode/plate-ui-button';
 import { Colors } from './Colors';
 import { ColorType } from './ColorType';
 import { CustomColors } from './CustomColors';
@@ -14,7 +14,7 @@ type ColorPickerProps = {
   updateCustomColor: (color: string) => void;
   clearColor: () => void;
   open?: boolean;
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const ColorPickerInternal = ({
   color,
@@ -24,11 +24,15 @@ const ColorPickerInternal = ({
   updateColor,
   updateCustomColor,
   clearColor,
+  className,
+  ...props
 }: ColorPickerProps) => {
-  const styles = getColorPickerStyles();
-
   return (
-    <div data-testid="ColorPicker" css={styles.root.css}>
+    <div
+      data-testid="ColorPicker"
+      className={cn('flex flex-col space-y-4 p-4', className)}
+      {...props}
+    >
       <CustomColors
         color={color}
         colors={colors}
@@ -37,21 +41,21 @@ const ColorPickerInternal = ({
         updateColor={updateColor}
         updateCustomColor={updateCustomColor}
       />
-      <div tw="border border-gray-200 border-solid" />
+      <div className="border border-solid border-gray-200" />
       <Colors
         color={color}
         colors={colors}
         selectedIcon={selectedIcon}
         updateColor={updateColor}
       />
-      <PlateButton
+      <Button
+        className="w-full py-2"
         data-testid="ColorPickerClear"
-        tw="w-full py-2"
         onClick={clearColor}
         disabled={!color}
       >
         Clear
-      </PlateButton>
+      </Button>
     </div>
   );
 };

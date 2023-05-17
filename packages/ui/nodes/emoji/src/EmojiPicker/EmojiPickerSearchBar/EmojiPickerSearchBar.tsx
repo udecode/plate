@@ -1,5 +1,4 @@
 import React from 'react';
-import tw from 'twin.macro';
 import { getEmojiPickerSearchBarStyles } from './EmojiPickerSearchBar.styles';
 import { EmojiPickerSearchBarProps } from './EmojiPickerSearchBar.types';
 
@@ -14,7 +13,7 @@ export const EmojiPickerSearchBar = ({
 
   return (
     <div css={styles.root.css}>
-      <div css={tw`relative flex flex-grow`}>
+      <div className="relative flex grow">
         <input
           type="text"
           placeholder={i18n.search}

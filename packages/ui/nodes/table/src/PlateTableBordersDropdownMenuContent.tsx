@@ -1,5 +1,6 @@
 import React, { SVGProps } from 'react';
 import { DropdownMenu } from '@udecode/plate-floating';
+import { cn } from '@udecode/plate-styled-components';
 import {
   BorderBottomIcon,
   BorderLeftIcon,
@@ -9,9 +10,8 @@ import {
   BorderTopIcon,
   useTableBordersDropdownMenuContentState,
 } from '@udecode/plate-table';
-import { cssMenuItemButton, PlateButton } from '@udecode/plate-ui-button';
-import { floatingRootCss } from '@udecode/plate-ui-toolbar';
-import tw from 'twin.macro';
+import { Button } from '@udecode/plate-ui-button';
+import { floatingVariants } from '@udecode/plate-ui-toolbar';
 
 const CheckIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -28,7 +28,7 @@ const CheckIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const Check = ({ checked }: { checked?: boolean }) =>
-  checked ? <CheckIcon tw="block" /> : <div tw="w-4 h-4" />;
+  checked ? <CheckIcon className="block" /> : <div className="h-4 w-4" />;
 
 export const PlateTableBordersDropdownMenuContent = () => {
   const {
@@ -43,58 +43,61 @@ export const PlateTableBordersDropdownMenuContent = () => {
 
   return (
     <DropdownMenu.Content
-      css={[floatingRootCss, tw`min-w-[220px] py-1.5 text-neutral-900`]}
+      className={cn(
+        floatingVariants({ type: 'root' }),
+        'min-w-[220px] py-1.5 text-neutral-900'
+      )}
       side="right"
       align="start"
       sideOffset={8}
     >
-      <div tw="px-1">
+      <div className="px-1">
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('bottom')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasBottomBorder} />
             <BorderBottomIcon />
             <div>Bottom Border</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('top')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasTopBorder} />
             <BorderTopIcon />
             <div>Top Border</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('left')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasLeftBorder} />
             <BorderLeftIcon />
             <div>Left Border</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('right')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasRightBorder} />
             <BorderRightIcon />
             <div>Right Border</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
       </div>
 
-      <div tw="w-full h-px bg-gray-200 my-1.5" />
+      <div className="my-1.5 h-px w-full bg-gray-200" />
 
-      <div tw="px-1">
+      <div className="px-1">
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('none')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasNoBorders} />
             <BorderNoneIcon />
             <div>No Border</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
         <DropdownMenu.Item onSelect={getOnSelectTableBorder('outer')}>
-          <PlateButton css={cssMenuItemButton}>
+          <Button variant="menu">
             <Check checked={hasOuterBorders} />
             <BorderOuterIcon />
             <div>Outside Borders</div>
-          </PlateButton>
+          </Button>
         </DropdownMenu.Item>
       </div>
     </DropdownMenu.Content>

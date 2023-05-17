@@ -68,7 +68,7 @@ const PlateCommentContent = () => {
         </div>
 
         {isMyComment && (
-          <div tw="flex space-x-1">
+          <div className="flex space-x-1">
             {!isReplyComment ? <PlateCommentResolveButton /> : null}
 
             <PlateCommentMenuButton />
@@ -76,7 +76,7 @@ const PlateCommentContent = () => {
         )}
       </div>
 
-      <div tw="pl-10">
+      <div className="pl-10">
         {editingValue ? (
           <PlateCommentValue />
         ) : (

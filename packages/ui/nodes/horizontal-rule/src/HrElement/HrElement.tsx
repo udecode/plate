@@ -1,33 +1,30 @@
 import React from 'react';
-import { Value } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-styled-components';
+import { TElement, Value } from '@udecode/plate-common';
+import {
+  cn,
+  PlateElement,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
-import { getHrElementStyles } from './HrElement.styles';
-import { HrElementProps } from './HrElement.types';
 
-export const HrElement = <V extends Value>(props: HrElementProps<V>) => {
-  const { attributes, children, nodeProps } = props;
+export const HrElement = (props: PlateElementProps<Value, TElement>) => {
+  const { children, nodeProps } = props;
 
   const selected = useSelected();
   const focused = useFocused();
-  const rootProps = getRootProps(props);
-  const styles = getHrElementStyles({ ...props, selected, focused });
 
   return (
-    <div
-      {...attributes}
-      css={styles.root?.css}
-      className={styles.root?.className}
-      {...rootProps}
-      {...nodeProps}
-    >
+    <PlateElement {...props}>
       <hr
         contentEditable={false}
         {...nodeProps}
-        css={styles.hr?.css}
-        className={styles.hr?.className}
+        className={cn(
+          'my-6 h-0.5 cursor-pointer border-none bg-gray-200 bg-clip-content py-1',
+          'rounded-[1px]',
+          selected && focused && 'bg-blue-500'
+        )}
       />
       {children}
-    </div>
+    </PlateElement>
   );
 };

@@ -1,8 +1,9 @@
-import React from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import React, { ButtonHTMLAttributes } from 'react';
 import { useCommentActions } from '../stores/comment/CommentProvider';
 
-export const useCommentEditCancelButton = (props: ButtonProps): ButtonProps => {
+export const useCommentEditCancelButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+): ButtonHTMLAttributes<HTMLButtonElement> => {
   const setEditingValue = useCommentActions().editingValue();
 
   return {
@@ -13,8 +14,10 @@ export const useCommentEditCancelButton = (props: ButtonProps): ButtonProps => {
   };
 };
 
-export const CommentEditCancelButton = (props: ButtonProps) => {
+export const CommentEditCancelButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
   const htmlProps = useCommentEditCancelButton(props);
 
-  return <Button {...htmlProps} />;
+  return <button type="button" {...htmlProps} />;
 };

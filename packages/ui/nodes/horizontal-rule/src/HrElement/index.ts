@@ -4,4 +4,3 @@
 
 export * from './HrElement.styles';
 export * from './HrElement';
-export * from './HrElement.types';

@@ -45,7 +45,7 @@ export const PlateTableElement = (props: TableElementRootProps) => {
             ))}
           </TableElement.ColGroup>
 
-          <TableElement.TBody css={tw`min-w-full`}>
+          <TableElement.TBody className="min-w-full">
             {children}
           </TableElement.TBody>
         </TableElement.Root>

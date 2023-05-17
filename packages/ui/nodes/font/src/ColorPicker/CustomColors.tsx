@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { PlateButton } from '@udecode/plate-ui-button';
+import { Button } from '@udecode/plate-ui-button';
 import debounce from 'lodash/debounce';
 import { ColorInput } from './ColorInput';
 import { Colors } from './Colors';
@@ -73,7 +73,7 @@ export const CustomColors = ({
           updateCustomColorDebounced(e.target.value);
         }}
       >
-        <PlateButton tw="w-full py-2 mb-4 font-semibold">CUSTOM</PlateButton>
+        <Button className="mb-4 w-full py-2 font-semibold">CUSTOM</Button>
       </ColorInput>
 
       <Colors

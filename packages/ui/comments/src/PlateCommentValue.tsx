@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { CommentEditActions } from '@udecode/plate-comments';
-import { plateButtonCss, primaryButtonCss } from '@udecode/plate-ui-button';
+import { buttonVariants } from '@udecode/plate-ui-button';
 import tw from 'twin.macro';
 import { PlateCommentEditTextarea } from './PlateCommentNewTextarea';
 
@@ -16,15 +16,17 @@ export const PlateCommentValue = () => {
   }, [textareaRef]);
 
   return (
-    <div css={tw`flex flex-col space-y-2`}>
+    <div className="flex flex-col space-y-2">
       <PlateCommentEditTextarea ref={textareaRef} />
 
       <div css={[tw`flex space-x-2`]}>
-        <CommentEditActions.SaveButton css={[primaryButtonCss]}>
+        <CommentEditActions.SaveButton
+          className={buttonVariants({ variant: 'primary' })}
+        >
           Save
         </CommentEditActions.SaveButton>
 
-        <CommentEditActions.CancelButton css={[plateButtonCss]}>
+        <CommentEditActions.CancelButton className={buttonVariants()}>
           Cancel
         </CommentEditActions.CancelButton>
       </div>

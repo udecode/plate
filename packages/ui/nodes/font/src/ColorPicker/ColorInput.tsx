@@ -1,14 +1,14 @@
 import React, { ChangeEvent, useRef } from 'react';
-import { ColorInputProps, getColorInputStyles } from './ColorInput.styles';
+import { cn } from '@udecode/plate-styled-components';
 
 export const ColorInput = ({
   value = '#000000',
   onChange,
   children,
-}: React.PropsWithChildren<ColorInputProps>) => {
+  className,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) => {
   const ref = useRef<HTMLInputElement | null>(null);
-
-  const styles = getColorInputStyles();
 
   function handleClick() {
     // force click action on the input to open color picker
@@ -20,7 +20,7 @@ export const ColorInput = ({
   }
 
   return (
-    <div css={styles.root.css}>
+    <div className={cn('flex flex-col items-center', className)} {...props}>
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
@@ -34,7 +34,7 @@ export const ColorInput = ({
         type="color"
         onChange={handleOnChange}
         value={value}
-        css={styles.input?.css}
+        className="h-0 w-0 overflow-hidden border-0 p-0"
       />
     </div>
   );

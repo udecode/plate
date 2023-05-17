@@ -5,14 +5,10 @@ import {
   ElementPopover,
   PopoverProps,
 } from '@udecode/plate-floating';
+import { cn } from '@udecode/plate-styled-components';
 import { BorderAllIcon, TTableElement } from '@udecode/plate-table';
-import {
-  cssMenuItemButton,
-  PlateButton,
-  RemoveNodeButton,
-} from '@udecode/plate-ui-button';
-import { floatingRootCss } from '@udecode/plate-ui-toolbar';
-import tw from 'twin.macro';
+import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
+import { floatingVariants } from '@udecode/plate-ui-toolbar';
 import { PlateTableBordersDropdownMenuContent } from './PlateTableBordersDropdownMenuContent';
 
 export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
@@ -21,17 +17,17 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
   return (
     <ElementPopover
       content={
-        <div css={tw`min-w-[140px] px-1 py-1.5`}>
+        <div className="min-w-[140px] px-1 py-1.5">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <PlateButton
+              <button
                 type="button"
-                tw="justify-start w-full"
+                className="w-full justify-start"
                 aria-label="Borders"
               >
                 <BorderAllIcon />
                 <div>Borders</div>
-              </PlateButton>
+              </button>
             </DropdownMenu.Trigger>
 
             <DropdownMenu.Portal>
@@ -42,7 +38,10 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
           <div>
             <RemoveNodeButton
               element={element}
-              css={[cssMenuItemButton, tw`justify-start w-40`]}
+              className={cn(
+                buttonVariants({ variant: 'menu' }),
+                'w-40 justify-start'
+              )}
               contentEditable={false}
             >
               <div>Delete</div>
@@ -50,7 +49,7 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
           </div>
         </div>
       }
-      css={floatingRootCss}
+      className={cn(floatingVariants({ type: 'root' }))}
       {...props}
     >
       {children}

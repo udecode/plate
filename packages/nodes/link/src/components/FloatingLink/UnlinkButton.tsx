@@ -1,9 +1,7 @@
-import { useCallback } from 'react';
-import { Button } from '@udecode/plate-button';
+import React, { useCallback } from 'react';
 import {
   AsProps,
   createComponentAs,
-  createElementAs,
   focusEditor,
   HTMLPropsAs,
   useEditorRef,
@@ -27,5 +25,5 @@ export const useUnlinkButton = (
 export const UnlinkButton = createComponentAs<AsProps<'button'>>((props) => {
   const htmlProps = useUnlinkButton(props);
 
-  return createElementAs(Button, htmlProps);
+  return <button type="button" {...htmlProps} />;
 });

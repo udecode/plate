@@ -1,5 +1,7 @@
-import React, { HTMLAttributes, ReactElement, RefAttributes } from 'react';
+import React, { ReactElement, RefAttributes } from 'react';
 import {
+  Box,
+  BoxProps,
   EElement,
   PlateRenderElementProps,
   TElement,
@@ -11,7 +13,7 @@ import { getRootProps } from '../utils/getRootProps';
 export type PlateElementProps<
   V extends Value = Value,
   N extends TElement = EElement<V>
-> = PlateRenderElementProps<V, N> & HTMLAttributes<HTMLElement>;
+> = PlateRenderElementProps<V, N> & BoxProps;
 
 /**
  * Headless element component.
@@ -23,7 +25,8 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
     const rootProps = getRootProps(props);
 
     return (
-      <span
+      <Box
+        as="div"
         {...attributes}
         {...rootProps}
         {...nodeProps}
@@ -35,10 +38,10 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
         )}
       >
         {children}
-      </span>
+      </Box>
     );
   }
-) as (<V extends Value = Value, N extends EElement<V> = EElement<V>>(
+) as (<V extends Value = Value, N extends TElement = EElement<V>>(
   props: PlateElementProps<V, N> & RefAttributes<HTMLDivElement>
 ) => ReactElement) & { displayName?: string };
 PlateElement.displayName = 'PlateElement';

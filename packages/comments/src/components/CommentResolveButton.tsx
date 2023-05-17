@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import React, { ButtonHTMLAttributes } from 'react';
 import { useComment } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,
@@ -9,7 +8,7 @@ import {
 
 export const useCommentResolveButton = ({
   ...props
-}: ButtonProps): ButtonProps => {
+}: ButtonHTMLAttributes<HTMLButtonElement>): ButtonHTMLAttributes<HTMLButtonElement> => {
   const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
@@ -40,8 +39,10 @@ export const useCommentResolveButton = ({
   };
 };
 
-export const CommentResolveButton = (props: ButtonProps) => {
+export const CommentResolveButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
   const htmlProps = useCommentResolveButton(props);
 
-  return <Button {...htmlProps} />;
+  return <button type="button" {...htmlProps} />;
 };

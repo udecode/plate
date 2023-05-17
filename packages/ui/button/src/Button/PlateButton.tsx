@@ -1,54 +1,41 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import { Button } from '@udecode/plate-button';
-import { HTMLPropsAs } from '@udecode/plate-common';
-import { css, CSSProp } from 'styled-components';
-import tw from 'twin.macro';
+import { cn, cva, VariantProps } from '@udecode/plate-styled-components';
 
-export interface PlateButtonProps extends HTMLPropsAs<'button'> {
-  size?: number | string;
-  px?: number | string;
-  py?: number | string;
-}
-
-export const plateButtonCss = [
-  tw`relative inline-flex justify-center items-center text-center max-w-full p-0 box-border space-x-2`,
-  tw`border-0 font-medium cursor-pointer focus:!outline-none`,
-  tw`bg-white hover:bg-gray-100 active:bg-gray-200`,
-  tw`px-2.5 py-0 min-w-[28px] min-h-[28px]`,
-  css`
-    font-family: inherit;
-    font-size: 14px;
-    border-radius: 3px;
-
-    color: inherit;
-
-    :active {
-      color: inherit;
-    }
-
-    :visited {
-      color: inherit;
-    }
-
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-  `,
-];
-
-export const cssMenuItemButton: CSSProp = [
-  plateButtonCss,
-  tw`w-full justify-start`,
-];
-
-export const primaryButtonCss = [
-  plateButtonCss,
-  tw`bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 active:text-white`,
-];
-
-export const PlateButton = forwardRef<HTMLButtonElement, PlateButtonProps>(
-  ({ size, px, py, css: _css, ...props }, ref) => (
-    <Button type="button" ref={ref} css={plateButtonCss} {...props} />
-  )
+export const buttonVariants = cva(
+  cn(
+    'relative box-border inline-flex max-w-full cursor-pointer items-center justify-center space-x-2 border-0 bg-white p-0 px-2.5 text-center font-medium',
+    'min-h-[28px] min-w-[28px] rounded-[3px] font-[inherit] text-[14px] text-inherit',
+    'visited:text-inherit hover:bg-gray-100 focus:!outline-none active:bg-gray-200 active:text-inherit',
+    '[&_svg]:h-4 [&_svg]:w-4'
+  ),
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 active:text-white',
+        menu: 'w-full justify-start',
+      },
+    },
+  }
 );
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, ...props }, ref) => {
+    return (
+      <button
+        type="button"
+        className={buttonVariants({ variant, className })}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';
+
+export { Button };
