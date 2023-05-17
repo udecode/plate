@@ -32,7 +32,7 @@ describe('when element is p and validNodeName is P', () => {
 describe('when element is p, validAttribute', () => {
   it('returns p type with an existing attribute', () => {
     const element = document.createElement('p');
-    element.setAttribute('tabIndex', '0');
+    element.setAttribute('title', '');
 
     expect(
       pluginDeserializeHtml(
@@ -44,7 +44,7 @@ describe('when element is p, validAttribute', () => {
             getNode: node,
             rules: [
               {
-                validAttribute: { tabIndex: '0' },
+                validAttribute: { title: '' },
               },
             ],
           },
@@ -67,7 +67,7 @@ describe('when element is p, validAttribute', () => {
             getNode: node,
             rules: [
               {
-                validAttribute: { tabIndex: '0' },
+                validAttribute: { title: '' },
               },
             ],
           },
