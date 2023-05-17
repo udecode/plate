@@ -1,12 +1,11 @@
 import { Value } from '@udecode/slate';
-import { AnyObject } from '@udecode/utils';
+import { AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray';
 import { Nullable } from '../../../types';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
 import { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
-import { isDefined } from '@udecode/utils';
 
 /**
  * Get a deserializer by type, node names, class names and styles.
