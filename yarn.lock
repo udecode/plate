@@ -13091,6 +13091,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-unused-imports@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "eslint-plugin-unused-imports@npm:2.0.0"
+  dependencies:
+    eslint-rule-composer: "npm:^0.3.0"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^5.0.0
+    eslint: ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: 7323f65e4fbd1f3eb3f83ffdcee066ec1016134909ef5ed2789bdcd64e64f9ddc0f7cf74b32745bf8d349e86f0972462f34a4f890fb1711c909649bca346146c
+  languageName: node
+  linkType: hard
+
 "eslint-rule-composer@npm:^0.3.0":
   version: 0.3.0
   resolution: "eslint-rule-composer@npm:0.3.0"
@@ -24212,6 +24227,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^4.5.0"
     eslint-plugin-simple-import-sort: "npm:7.0.0"
     eslint-plugin-tailwindcss: "npm:^3.11.0"
+    eslint-plugin-unused-imports: "npm:^2.0.0"
     jest: "npm:^26.6.3"
     lerna: "npm:^4.0.0"
     patch-package: "npm:^6.4.7"
