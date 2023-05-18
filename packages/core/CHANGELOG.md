@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 21.1.5
+
+### Patch Changes
+
+- [#2400](https://github.com/udecode/plate/pull/2400) by [@joephela](https://github.com/joephela) – Fix/2399 deserialize validAttribute nullcheck
+
 ## 21.0.0
 
 ## 20.7.2

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-suggestion",
-  "version": "21.1.4",
+  "version": "21.1.5",
   "description": "Suggestion UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,11 +19,11 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.0.0",
-    "@udecode/plate-styled-components": "21.0.0",
-    "@udecode/plate-suggestion": "21.0.0",
-    "@udecode/plate-ui-button": "21.0.0",
-    "@udecode/plate-ui-toolbar": "21.1.4"
+    "@udecode/plate-common": "21.1.5",
+    "@udecode/plate-styled-components": "21.1.5",
+    "@udecode/plate-suggestion": "21.1.5",
+    "@udecode/plate-ui-button": "21.1.5",
+    "@udecode/plate-ui-toolbar": "21.1.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,5 +1,7 @@
 # @udecode/plate-selection
 
+## 21.1.5
+
 ## 21.1.3
 
 ### Patch Changes

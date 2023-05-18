@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-marks",
-  "version": "21.0.0",
+  "version": "21.1.5",
   "description": "Basic marks plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -18,7 +18,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.0.0"
+    "@udecode/plate-common": "21.1.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
