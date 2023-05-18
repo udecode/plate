@@ -1,4 +1,0 @@
-packages:
-  - examples
-  - examples/apps/*
-  - packages/**
