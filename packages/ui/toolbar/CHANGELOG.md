@@ -1,5 +1,7 @@
 # @udecode/plate-toolbar
 
+## 21.1.5
+
 ## 21.1.4
 
 ### Patch Changes
