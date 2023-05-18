@@ -26,7 +26,6 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
 
     return (
       <Box
-        as="div"
         {...attributes}
         {...rootProps}
         {...nodeProps}

@@ -13,24 +13,31 @@ import {
 import { Button } from '@udecode/plate-ui-button';
 import { floatingVariants } from '@udecode/plate-ui-toolbar';
 
-const CheckIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    focusable="false"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path fill="none" d="M0 0h24v24H0z" />
-    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-  </svg>
-);
+function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      focusable="false"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path fill="none" d="M0 0h24v24H0z" />
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    </svg>
+  );
+}
 
-const Check = ({ checked }: { checked?: boolean }) =>
-  checked ? <CheckIcon className="block" /> : <div className="h-4 w-4" />;
+function Check({ checked }: { checked?: boolean }) {
+  return checked ? (
+    <CheckIcon className="block" />
+  ) : (
+    <div className="h-4 w-4" />
+  );
+}
 
-export const PlateTableBordersDropdownMenuContent = () => {
+export function PlateTableBordersDropdownMenuContent() {
   const {
     getOnSelectTableBorder,
     hasOuterBorders,
@@ -102,4 +109,4 @@ export const PlateTableBordersDropdownMenuContent = () => {
       </div>
     </DropdownMenu.Content>
   );
-};
+}

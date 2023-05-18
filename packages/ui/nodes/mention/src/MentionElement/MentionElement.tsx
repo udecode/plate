@@ -1,44 +1,50 @@
 import React from 'react';
 import { getHandler, Value } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-styled-components';
+import { TMentionElement } from '@udecode/plate-mention';
+import {
+  cn,
+  PlateElement,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
-import { getMentionElementStyles } from './MentionElement.styles';
-import { MentionElementProps } from './MentionElement.types';
 
-export const MentionElement = <V extends Value>(
-  props: MentionElementProps<V>
-) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    element,
-    prefix,
-    onClick,
-    renderLabel,
-  } = props;
+export interface MentionElementProps
+  extends PlateElementProps<Value, TMentionElement> {
+  /**
+   * Prefix rendered before mention
+   */
+  prefix?: string;
+  onClick?: (mentionNode: any) => void;
+  renderLabel?: (mentionable: TMentionElement) => string;
+}
 
-  const rootProps = getRootProps(props);
+export function MentionElement({
+  prefix,
+  renderLabel,
+  className,
+  onClick,
+  ...props
+}: MentionElementProps) {
+  const { children, element } = props;
 
   const selected = useSelected();
   const focused = useFocused();
 
-  const styles = getMentionElementStyles({ ...props, selected, focused });
-
   return (
-    <span
-      {...attributes}
+    <PlateElement
+      className={cn(
+        'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-0.5 align-baseline text-[0.9em]',
+        selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',
+        className
+      )}
       data-slate-value={element.value}
-      className={styles.root.className}
-      css={styles.root.css}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
-      {...rootProps}
-      {...nodeProps}
+      {...props}
     >
       {prefix}
       {renderLabel ? renderLabel(element) : element.value}
       {children}
-    </span>
+    </PlateElement>
   );
-};
+}

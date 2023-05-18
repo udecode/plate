@@ -2,6 +2,8 @@ import React, { useCallback, useEffect } from 'react';
 import {
   comboboxActions,
   comboboxSelectors,
+  ComboboxState,
+  ComboboxStoreById,
   Data,
   getComboboxStoreById,
   NoData,
@@ -11,6 +13,7 @@ import {
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
 import {
+  RenderFunction,
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
@@ -21,11 +24,41 @@ import {
   shift,
   useVirtualFloating,
 } from '@udecode/plate-floating';
-import { PortalBody } from '@udecode/plate-styled-components';
-import { getComboboxStyles } from './Combobox.styles';
-import { ComboboxProps } from './Combobox.types';
+import { cn, cva, PortalBody } from '@udecode/plate-styled-components';
 
-const ComboboxContent = <TData extends Data = NoData>(
+const comboboxItemStyle = cva(
+  'flex min-h-[36px] cursor-pointer select-none items-center rounded-none px-2 text-[14px] text-[rgb(32,31,30)]'
+);
+
+export interface ComboboxItemProps<TData> {
+  item: TComboboxItem<TData>;
+  search: string;
+}
+
+export interface ComboboxProps<TData = NoData>
+  extends Partial<Pick<ComboboxState<TData>, 'items' | 'floatingOptions'>>,
+    ComboboxStateById<TData> {
+  /**
+   * Render this component when the combobox is open (useful to inject hooks).
+   */
+  component?: RenderFunction<{ store: ComboboxStoreById }>;
+
+  /**
+   * Whether to hide the combobox.
+   * @default !items.length
+   */
+  disabled?: boolean;
+
+  /**
+   * Render combobox item.
+   * @default text
+   */
+  onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
+
+  portalElement?: Element;
+}
+
+function ComboboxContent<TData extends Data = NoData>(
   props: Omit<
     ComboboxProps<TData>,
     | 'id'
@@ -37,7 +70,7 @@ const ComboboxContent = <TData extends Data = NoData>(
     | 'filter'
     | 'sort'
   >
-) => {
+) {
   const { component: Component, items, portalElement, onRenderItem } = props;
 
   const targetRange = useComboboxSelectors.targetRange();
@@ -91,18 +124,15 @@ const ComboboxContent = <TData extends Data = NoData>(
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
-  const { root, item: styleItem, highlightedItem } = getComboboxStyles(
-    props as any
-  );
-
   return (
     <PortalBody element={portalElement}>
       <ul
         {...menuProps}
         ref={refs.setFloating}
         style={style}
-        css={root.css}
-        className={root.className}
+        className={cn(
+          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-b-[2px] bg-white p-0 shadow-[rgba(0,0,0,0.133)_0_3.2px_7.2px_0,rgba(0,0,0,0.11)_0_0.6px_1.8px_0]'
+        )}
       >
         {Component ? Component({ store: activeComboboxStore }) : null}
 
@@ -116,9 +146,16 @@ const ComboboxContent = <TData extends Data = NoData>(
           return (
             <div
               key={item.key}
-              css={!highlighted ? styleItem?.css : highlightedItem?.css}
               className={
-                !highlighted ? styleItem?.className : highlightedItem?.className
+                !highlighted
+                  ? cn(
+                      comboboxItemStyle(),
+                      'bg-transparent hover:bg-[rgb(243,242,241)]'
+                    )
+                  : cn(
+                      comboboxItemStyle,
+                      'bg-[rgb(237,235,233)] hover:bg-[rgb(237,235,233)]'
+                    )
               }
               {...combobox.getItemProps({
                 item,
@@ -140,13 +177,13 @@ const ComboboxContent = <TData extends Data = NoData>(
       </ul>
     </PortalBody>
   );
-};
+}
 
 /**
  * Register the combobox id, trigger, onSelectItem
  * Renders the combobox if active.
  */
-export const Combobox = <TData extends Data = NoData>({
+export function Combobox<TData extends Data = NoData>({
   id,
   trigger,
   searchPattern,
@@ -158,7 +195,7 @@ export const Combobox = <TData extends Data = NoData>({
   floatingOptions,
   disabled: _disabled,
   ...props
-}: ComboboxProps<TData>) => {
+}: ComboboxProps<TData>) {
   const storeItems = useComboboxSelectors.items();
   const disabled = _disabled ?? (!storeItems.length && !props.items?.length);
 
@@ -206,4 +243,4 @@ export const Combobox = <TData extends Data = NoData>({
   }
 
   return <ComboboxContent {...props} />;
-};
+}

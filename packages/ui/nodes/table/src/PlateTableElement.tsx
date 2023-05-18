@@ -1,37 +1,30 @@
 import React from 'react';
+import { cn } from '@udecode/plate-styled-components';
 import {
   TableElement,
   TableElementRootProps,
   useTableElementState,
 } from '@udecode/plate-table';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
 import { PlateTablePopover } from './PlateTablePopover';
 
-export const PlateTableElement = (props: TableElementRootProps) => {
-  const { as, children, ...rootProps } = props;
-
-  const {
-    colSizes,
-    isSelectingCell,
-    minColumnWidth,
-    marginLeft,
-  } = useTableElementState();
+export function PlateTableElement({
+  className,
+  children,
+  ...props
+}: TableElementRootProps) {
+  const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
+    useTableElementState();
 
   return (
     <PlateTablePopover>
       <TableElement.Wrapper style={{ paddingLeft: marginLeft }}>
         <TableElement.Root
-          css={[
-            tw`table table-fixed w-full h-px my-4 ml-px mr-0 border-collapse`,
-            isSelectingCell &&
-              css`
-                *::selection {
-                  background: none;
-                }
-              `,
-          ]}
-          {...rootProps}
+          className={cn(
+            'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
+            isSelectingCell && '[&_*::selection]:bg-none',
+            className
+          )}
+          {...props}
         >
           <TableElement.ColGroup>
             {colSizes.map((width, index) => (
@@ -52,4 +45,4 @@ export const PlateTableElement = (props: TableElementRootProps) => {
       </TableElement.Wrapper>
     </PlateTablePopover>
   );
-};
+}

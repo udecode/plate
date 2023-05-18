@@ -1,16 +1,13 @@
 import React from 'react';
 import { RenderFunction, UnknownObject } from '@udecode/plate-common';
-import { StyledProps } from '@udecode/plate-styled-components';
-import { CSSProp } from 'styled-components';
+import { ClassNames, cn } from '@udecode/plate-styled-components';
 import { CursorData, CursorOverlayState, SelectionRect } from '../types';
-import { getCursorOverlayStyles } from './CursorOverlay.styles';
 
-export interface CursorProps<
-  TCursorData extends UnknownObject = UnknownObject
-> extends CursorOverlayState<TCursorData>,
-    StyledProps<{
-      caret: CSSProp;
-      selectionRect: CSSProp;
+export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
+  extends CursorOverlayState<TCursorData>,
+    ClassNames<{
+      caret: string;
+      selectionRect: string;
     }> {
   /**
    * Whether to disable the caret.
@@ -41,7 +38,7 @@ export interface CursorProps<
   >;
 }
 
-export const Cursor = ({
+export function Cursor({
   data,
   selectionRects,
   caretPosition,
@@ -49,13 +46,11 @@ export const Cursor = ({
   disableSelection,
   onRenderCaret: Caret,
   onRenderSelectionRect: Rect,
-  ...props
-}: CursorProps<CursorData>) => {
+  classNames,
+}: CursorProps<CursorData>) {
   if (!data) {
     return null;
   }
-
-  const { caret, selectionRect } = getCursorOverlayStyles(props);
 
   const { style, selectionStyle = style } = data;
 
@@ -68,8 +63,10 @@ export const Cursor = ({
           ) : (
             <div
               key={i}
-              className={selectionRect?.className}
-              css={selectionRect?.css}
+              className={cn(
+                'pointer-events-none absolute z-10 opacity-[0.3]',
+                classNames?.selectionRect
+              )}
               style={{
                 ...selectionStyle,
                 ...position,
@@ -83,11 +80,13 @@ export const Cursor = ({
           <Caret data={data} caretPosition={caretPosition} />
         ) : (
           <div
-            className={caret?.className}
-            css={caret?.css}
+            className={cn(
+              'pointer-events-none absolute z-10 w-0.5',
+              classNames?.caret
+            )}
             style={{ ...caretPosition, ...style }}
           />
         ))}
     </>
   );
-};
+}

@@ -1,98 +1,17 @@
 import React from 'react';
+import { cn } from '@udecode/plate-styled-components';
 import {
-  BorderStylesDefault,
   TableCellElement,
   TableCellElementRootProps,
   useTableCellElementState,
 } from '@udecode/plate-table';
-import { css, CSSProp } from 'styled-components';
-import tw from 'twin.macro';
 
 export interface PlateTableCellElementProps extends TableCellElementRootProps {
   hideBorder?: boolean;
   isHeader?: boolean;
 }
 
-export const getCssTableCellRoot = ({
-  hideBorder,
-  isHeader,
-  selected,
-  borders,
-}: {
-  hideBorder?: boolean;
-  isHeader?: boolean;
-  selected?: boolean;
-  borders?: BorderStylesDefault;
-} = {}): CSSProp => [
-  tw`relative p-0 overflow-visible bg-white border-none`,
-  hideBorder && tw`before:border-none`,
-  !hideBorder && [
-    tw`before:content-[''] before:box-border before:absolute before:select-none`,
-    borders && [
-      borders.bottom &&
-        css`
-          ::before {
-            border-bottom: ${borders.bottom.size}px ${borders.bottom.style}
-              ${borders.bottom.color};
-          }
-        `,
-      borders.right &&
-        css`
-          ::before {
-            border-right: ${borders.right.size}px ${borders.right.style}
-              ${borders.right.color};
-          }
-        `,
-      borders.left &&
-        css`
-          ::before {
-            border-left: ${borders.left.size}px ${borders.left.style}
-              ${borders.left.color};
-          }
-        `,
-      borders.top &&
-        css`
-          ::before {
-            border-top: ${borders.top.size}px ${borders.top.style}
-              ${borders.top.color};
-          }
-        `,
-    ],
-  ],
-  isHeader && tw`text-left`,
-  isHeader &&
-    css`
-      ::before {
-        background-color: rgb(244, 245, 247);
-      }
-
-      > * {
-        margin: 0;
-      }
-    `,
-  tw`before:w-full before:h-full`,
-  selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
-];
-
-export const cssTableCellContent: CSSProp = [
-  tw`relative h-full px-3 py-2 z-20 box-border`,
-];
-
-export const cssTableCellResizable: CSSProp = [
-  tw`absolute w-full h-full top-0 select-none`,
-];
-
-export const getCssTableCellHandle = ({ side }: { side: 'left' | 'right' }) => [
-  tw`absolute z-30 w-1 bg-blue-500`,
-  css`
-    top: -12px;
-    ${side}: -1.5px;
-
-    height: calc(100% + 12px);
-  `,
-];
-
-export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
+export function PlateTableCellElement(props: PlateTableCellElementProps) {
   const { children, hideBorder, isHeader, ...rootProps } = props;
 
   const {
@@ -103,7 +22,7 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
     hovered,
     hoveredLeft,
     rowSize,
-    borders,
+    // borders,
   } = useTableCellElementState();
 
   // const [openDropdown, setOpenDropdown] = useState(false);
@@ -111,7 +30,27 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
   return (
     <TableCellElement.Root
       asAlias={isHeader ? 'th' : 'td'}
-      css={getCssTableCellRoot({ borders, hideBorder, isHeader, selected })}
+      className={cn(
+        'relative overflow-visible border-none bg-white p-0',
+        hideBorder && 'before:border-none',
+        // !hideBorder && [
+        //   "before:absolute before:box-border before:select-none before:content-['']",
+        //   borders && [
+        //     borders.bottom &&
+        //       `before:border-b-[${borders.bottom.size}px] before:border-b-[${borders.bottom.style}] before:border-b-[${borders.bottom.color}]`,
+        //     borders.right &&
+        //       `before:border-r-[${borders.right.size}px] before:border-r-[${borders.right.style}] before:border-r-[${borders.right.color}]`,
+        //     borders.left &&
+        //       `before:border-l-[${borders.left.size}px] before:border-l-[${borders.left.style}] before:border-l-[${borders.left.color}]`,
+        //     borders.top &&
+        //       `before:border-t-[${borders.top.size}px] before:border-t-[${borders.top.style}] before:border-t-[${borders.top.color}]`,
+        //   ],
+        // ],
+        isHeader && 'text-left',
+        isHeader && 'before:bg-[rgb(244,245,247)] [&_>_*]:m-0',
+        'before:h-full before:w-full',
+        selected && 'before:z-10 before:border-blue-500 before:bg-blue-50'
+      )}
       {...rootProps}
     >
       {/* <div css={[tw`absolute top-0 right-2 z-30`]} contentEditable={false}> */}
@@ -153,7 +92,7 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
       {/* </div> */}
 
       <TableCellElement.Content
-        css={cssTableCellContent}
+        className="relative z-20 box-border h-full px-3 py-2"
         style={{
           minHeight: rowSize,
         }}
@@ -161,10 +100,7 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
         {children}
       </TableCellElement.Content>
 
-      <TableCellElement.ResizableWrapper
-        css={cssTableCellResizable}
-        className="group"
-      >
+      <TableCellElement.ResizableWrapper className="group absolute top-0 h-full w-full select-none">
         <TableCellElement.Resizable
           colIndex={colIndex}
           rowIndex={rowIndex}
@@ -173,16 +109,22 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
 
         {!readOnly && hovered && (
           <TableCellElement.Handle
-            css={getCssTableCellHandle({ side: 'right' })}
+            className={cn(
+              'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+              'right-[-1.5px]'
+            )}
           />
         )}
 
         {!readOnly && hoveredLeft && (
           <TableCellElement.Handle
-            css={getCssTableCellHandle({ side: 'left' })}
+            className={cn(
+              'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+              'left-[-1.5px]'
+            )}
           />
         )}
       </TableCellElement.ResizableWrapper>
     </TableCellElement.Root>
   );
-};
+}

@@ -4,39 +4,24 @@ import {
   AvatarImage,
   useUserById,
 } from '@udecode/plate-comments';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
 
-export const avatarRootCss = css`
-  ${tw`font-normal text-left text-black text-sm cursor-default whitespace-nowrap w-8 h-8 object-cover left-0 block relative rounded-full`};
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  user-select: text;
-  aspect-ratio: auto 32 / 32;
-`;
-
-export const avatarImageCss = css`
-  ${tw`rounded-full font-normal text-left text-black text-sm cursor-default whitespace-nowrap h-8 w-8`}
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  user-select: text;
-`;
-
-export const avatarAccountCircleCss = css`
-  ${tw`font-normal text-left text-gray-500 text-sm cursor-default whitespace-nowrap h-8 w-8`};
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  user-select: text;
-`;
-
-export const PlateAvatar = ({ userId }: { userId: string | null }) => {
+export function PlateAvatar({ userId }: { userId: string | null }) {
   const user = useUserById(userId);
   if (!user) return null;
 
   return (
-    <div css={avatarRootCss}>
+    <div className="relative left-0 block aspect-[auto_32_/_32] h-8 w-8 cursor-default select-text whitespace-nowrap rounded-full object-cover text-left text-sm font-normal text-black [-webkit-tap-highlight-color:rgba(0,0,0,0)]">
       {user.avatarUrl ? (
-        <AvatarImage css={avatarImageCss} userId={userId!} />
+        <AvatarImage
+          className="h-8 w-8 cursor-default select-text whitespace-nowrap rounded-full text-left text-sm font-normal text-black [-webkit-tap-highlight-color:rgba(0,0,0,0)]"
+          userId={userId!}
+        />
       ) : (
-        <AccountCircleIcon css={avatarAccountCircleCss} viewBox="0 0 24 24" />
+        <AccountCircleIcon
+          className="h-8 w-8 cursor-default select-text whitespace-nowrap text-left text-sm font-normal text-gray-500 [-webkit-tap-highlight-color:rgba(0,0,0,0)]"
+          viewBox="0 0 24 24"
+        />
       )}
     </div>
   );
-};
+}

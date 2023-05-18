@@ -5,28 +5,34 @@ import {
   CommentNewTextarea,
   CommentNewTextareaProps,
 } from '@udecode/plate-comments';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
+import { cva } from '@udecode/plate-styled-components';
 
-export const commentTextareaCss = css`
-  ${tw`text-gray-800 leading-5 h-10 rounded box-border text-sm p-2 block m-0 overflow-x-hidden overflow-y-hidden resize-none w-full cursor-text`};
-  border: 1px solid #dadce0;
-  min-height: 36px;
-  outline-width: 0;
-  text-align: start;
-  word-wrap: break-word;
-`;
+const commentTextareaStyle = cva(
+  'm-0 box-border block h-10 min-h-[36px] w-full cursor-text resize-none overflow-hidden break-words rounded border-[1px] border-solid border-[#dadce0] p-2 text-start text-sm leading-5 text-gray-800 outline-0'
+);
 
 export const PlateCommentNewTextarea = forwardRef<
   HTMLTextAreaElement,
   CommentNewTextareaProps
->((props: CommentNewTextareaProps, ref) => {
-  return <CommentNewTextarea {...props} ref={ref} css={commentTextareaCss} />;
+>(({ className, ...props }: CommentNewTextareaProps, ref) => {
+  return (
+    <CommentNewTextarea
+      ref={ref}
+      className={commentTextareaStyle({ className })}
+      {...props}
+    />
+  );
 });
 
 export const PlateCommentEditTextarea = forwardRef<
   HTMLTextAreaElement,
   CommentEditTextareaProps
 >((props: CommentEditTextareaProps, ref) => {
-  return <CommentEditTextarea {...props} ref={ref} css={commentTextareaCss} />;
+  return (
+    <CommentEditTextarea
+      {...props}
+      ref={ref}
+      className={commentTextareaStyle({ className })}
+    />
+  );
 });

@@ -1,45 +1,34 @@
 import React from 'react';
 import { findNodePath, setNodes, Value } from '@udecode/plate-common';
 import { TTodoListItemElement } from '@udecode/plate-list';
-import { getRootProps } from '@udecode/plate-styled-components';
-import clsx from 'clsx';
+import {
+  cn,
+  PlateElement,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
 import { useReadOnly } from 'slate-react';
-import { getTodoListElementStyles } from './TodoListElement.styles';
-import { TodoListElementProps } from './TodoListElement.types';
 
-export const TodoListElement = <V extends Value>(
-  props: TodoListElementProps<V>
-) => {
-  const { attributes, children, nodeProps, element, editor } = props;
+export type TodoListElementProps = PlateElementProps<
+  Value,
+  TTodoListItemElement
+>;
 
-  const rootProps = getRootProps(props);
+export function TodoListElement({ className, ...props }: TodoListElementProps) {
+  const { children, element, editor } = props;
 
   const readOnly = useReadOnly();
 
   const { checked } = element;
 
-  const styles = getTodoListElementStyles({ ...props, checked });
-
   return (
-    <div
-      {...attributes}
-      css={styles.root.css}
-      {...rootProps}
-      className={clsx(
-        styles.root.className,
-        styles.rootChecked?.className,
-        rootProps?.className
-      )}
-    >
+    <PlateElement className={cn('flex flex-row py-1', className)} {...props}>
       <div
         contentEditable={false}
-        css={styles.checkboxWrapper?.css}
-        className={styles.checkboxWrapper?.className}
+        className="mr-1.5 flex select-none items-center justify-center"
       >
         <input
           data-testid="TodoListElementCheckbox"
-          css={styles.checkbox?.css}
-          className={styles.checkbox?.className}
+          className="m-0 h-4 w-4"
           type="checkbox"
           checked={!!checked}
           onChange={(e) => {
@@ -55,17 +44,18 @@ export const TodoListElement = <V extends Value>(
               }
             );
           }}
-          {...nodeProps}
         />
       </div>
       <span
-        css={styles.text?.css}
-        className={styles.text?.className}
+        className={cn(
+          'flex-1 focus:outline-none',
+          checked && 'line-through opacity-[0.666]'
+        )}
         contentEditable={!readOnly}
         suppressContentEditableWarning
       >
         {children}
       </span>
-    </div>
+    </PlateElement>
   );
-};
+}

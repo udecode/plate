@@ -1,14 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
+import {
+  ExcalidrawImperativeAPI,
+  ExcalidrawProps,
+  LibraryItems,
+} from '@excalidraw/excalidraw/types/types';
 import { Value } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-styled-components';
-import { TExcalidrawProps } from '../../types';
-import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
-import { ExcalidrawElementProps } from './ExcalidrawElement.types';
+import {
+  getRootProps,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
+import { TExcalidrawElement, TExcalidrawProps } from '../../types';
 
-export const ExcalidrawElement = <V extends Value>(
-  props: ExcalidrawElementProps<V>
-) => {
+export interface ExcalidrawElementProps
+  extends PlateElementProps<Value, TExcalidrawElement> {
+  scrollToContent?: boolean;
+
+  libraryItems?: LibraryItems;
+
+  excalidrawProps?: ExcalidrawProps;
+}
+
+export function ExcalidrawElement(props: ExcalidrawElementProps) {
   const {
     attributes,
     children,
@@ -28,7 +40,6 @@ export const ExcalidrawElement = <V extends Value>(
     );
   });
 
-  const styles = getExcalidrawElementStyles(props);
   const _excalidrawRef = useRef<ExcalidrawImperativeAPI>(null);
 
   // const editor = useEditorRef();
@@ -55,10 +66,7 @@ export const ExcalidrawElement = <V extends Value>(
   return (
     <div {...attributes} {...rootProps}>
       <div contentEditable={false}>
-        <div
-          css={styles.excalidrawWrapper?.css}
-          className={styles.excalidrawWrapper?.className}
-        >
+        <div className="h-[600px]">
           {Excalidraw && (
             <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />
           )}
@@ -67,7 +75,7 @@ export const ExcalidrawElement = <V extends Value>(
       {children}
     </div>
   );
-};
+}
 
 // const ActionButtons = () => (
 //   <div className="button-wrapper">

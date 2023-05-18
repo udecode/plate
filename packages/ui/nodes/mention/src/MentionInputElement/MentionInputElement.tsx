@@ -1,38 +1,41 @@
 import React from 'react';
 import { getHandler, Value } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-styled-components';
+import { TMentionElement } from '@udecode/plate-mention';
+import {
+  cn,
+  PlateElement,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
-import { getMentionInputElementStyles } from './MentionInputElement.styles';
-import { MentionInputElementProps } from './MentionInputElement.types';
 
-export const MentionInputElement = <V extends Value>(
-  props: MentionInputElementProps<V>
-) => {
-  const { attributes, children, nodeProps, element, as, onClick } = props;
+export interface MentionInputElementProps
+  extends PlateElementProps<Value, TMentionElement> {
+  onClick?: (mentionNode: any) => void;
+}
 
-  const rootProps = getRootProps(props);
+export function MentionInputElement({
+  className,
+  onClick,
+  ...props
+}: MentionInputElementProps) {
+  const { children, element } = props;
 
   const selected = useSelected();
   const focused = useFocused();
 
-  const styles = getMentionInputElementStyles({
-    ...props,
-    selected,
-    focused,
-  });
-
   return (
-    <span
-      {...attributes}
-      as={as}
+    <PlateElement
+      as="span"
       data-slate-value={element.value}
-      className={styles.root.className}
-      css={styles.root.css}
+      className={cn(
+        'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-2 align-baseline text-[0.9em]',
+        selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',
+        className
+      )}
       onClick={getHandler(onClick, element)}
-      {...rootProps}
-      {...nodeProps}
+      {...props}
     >
       {children}
-    </span>
+    </PlateElement>
   );
-};
+}

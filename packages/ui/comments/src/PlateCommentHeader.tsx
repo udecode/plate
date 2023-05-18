@@ -4,37 +4,11 @@ import {
   useComment,
   useCommentsSelectors,
 } from '@udecode/plate-comments';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
+import { cn } from '@udecode/plate-styled-components';
 import { PlateAvatar } from './PlateAvatar';
 import { PlateCommentResolveButton } from './PlateCommentResolveButton';
 
-export const userHeaderRootCss = css`
-  ${tw`flex flex-row items-center p-3 rounded-t-lg`};
-  border-bottom: 1px solid rgb(218, 220, 224);
-`;
-
-export const userHeaderAvatarContainerCss = css`
-  ${tw`mr-2 bg-white w-8 h-8 flex-none rounded-full`};
-`;
-
-export const userHeaderAssignedToContainerCss = css`
-  ${tw`flex-auto`}
-`;
-
-export const userHeaderAssignedToTextCss = css`
-  ${tw`text-xs`};
-`;
-
-export const commentUserCss = css`
-  ${tw`text-sm leading-5 font-medium`};
-`;
-
-export const userHeaderActionsCss = css`
-  ${tw`flex-none`};
-`;
-
-export const PlateCommentHeader = () => {
+export function PlateCommentHeader() {
   const comment = useComment()!;
 
   const myUserId = useCommentsSelectors().myUserId();
@@ -42,27 +16,26 @@ export const PlateCommentHeader = () => {
 
   return (
     <div
-      css={[
-        userHeaderRootCss,
-        css`
-          color: ${isMyUser ? 'white' : 'rgb(60, 64, 67)'};
-          background-color: ${isMyUser ? '#1a73e8' : '#e8f0fe'};
-        `,
-      ]}
+      className={cn(
+        'flex flex-row items-center rounded-t-lg border-b border-b-[rgb(218,220,224)] p-3',
+        isMyUser
+          ? 'bg-[#1a73e8] text-white'
+          : 'bg-[#e8f0fe] text-[rgb(60,64,67)]'
+      )}
     >
-      <div css={userHeaderAvatarContainerCss}>
+      <div className="mr-2 h-8 w-8 flex-none rounded-full bg-white">
         <PlateAvatar userId={comment.userId} />
       </div>
 
-      <div css={userHeaderAssignedToContainerCss}>
-        <div css={userHeaderAssignedToTextCss}>Author</div>
+      <div className="flex-auto">
+        <div className="text-xs">Author</div>
 
-        <CommentUserName css={commentUserCss} />
+        <CommentUserName className="text-sm font-medium leading-5" />
       </div>
 
-      <div css={userHeaderActionsCss}>
+      <div className="flex-none">
         <PlateCommentResolveButton />
       </div>
     </div>
   );
-};
+}

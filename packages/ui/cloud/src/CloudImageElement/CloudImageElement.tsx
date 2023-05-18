@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { TCloudImageElement, useUpload } from '@udecode/plate-cloud';
 import { findNodePath, setNodes, Value } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-styled-components';
+import {
+  cn,
+  PlateElement,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { StatusBar } from '../StatusBar';
-import { getCloudImageElementStyles } from './CloudImageElement.styles';
-import { CloudImageElementProps } from './CloudImageElement.types';
 import { generateSrcAndSrcSet } from './generateSrcAndSrcSet';
 import { ResizeControls } from './ResizeControls';
 
-export const CloudImageElement = <V extends Value>(
-  props: CloudImageElementProps<V>
-) => {
-  const { attributes, children, editor, element, nodeProps } = props;
+export interface CloudImageElementProps
+  extends PlateElementProps<Value, TCloudImageElement> {}
+
+export function CloudImageElement({
+  className,
+  ...props
+}: CloudImageElementProps) {
+  const { children, editor, element } = props;
 
   const upload = useUpload(element.url);
 
@@ -57,12 +63,6 @@ export const CloudImageElement = <V extends Value>(
 
   const selected = useSelected();
   const focused = useFocused();
-  const rootProps = getRootProps(props);
-  const styles = getCloudImageElementStyles({
-    ...props,
-    selected,
-    focused,
-  });
 
   const { src, srcSet } = generateSrcAndSrcSet({
     url: upload.status !== 'not-found' ? upload.url : undefined,
@@ -71,12 +71,10 @@ export const CloudImageElement = <V extends Value>(
   });
 
   return (
-    <div
-      css={styles.root.css}
-      {...attributes}
-      {...rootProps}
-      {...nodeProps}
+    <PlateElement
+      className={cn('relative my-4', className)}
       draggable
+      {...props}
     >
       <span
         contentEditable={false}
@@ -111,7 +109,10 @@ export const CloudImageElement = <V extends Value>(
       >
         {src !== '' ? (
           <img
-            css={styles.img?.css}
+            className={cn(
+              'block rounded-lg',
+              focused && selected && 'shadow-[0_0_1px_3px_#60a5fa]'
+            )}
             src={src}
             srcSet={srcSet}
             width={size.width}
@@ -119,13 +120,11 @@ export const CloudImageElement = <V extends Value>(
             alt=""
           />
         ) : (
-          /**
-           * TODO:
-           * We might want to make a custom `styles` for the placeholder to
-           * allow customization  of the background color for example.
-           */
           <div
-            css={styles.img?.css}
+            className={cn(
+              'block rounded-lg',
+              focused && selected && 'shadow-[0_0_1px_3px_#60a5fa]'
+            )}
             style={{
               width: size.width,
               height: size.height,
@@ -133,19 +132,14 @@ export const CloudImageElement = <V extends Value>(
             }}
           />
         )}
-        <div css={styles.statusBarContainer?.css}>
-          <StatusBar
-            upload={upload}
-            progressBarTrackCss={styles.progressBarTrack?.css}
-            progressBarBarCss={styles.progressBarBar?.css}
-            failBarCss={styles.failBar?.css}
-          />
+        <div className="absolute inset-x-2 top-[50%] -mt-2">
+          <StatusBar upload={upload} />
         </div>
         {selected && focused && (
           <ResizeControls element={element} size={size} setSize={setSize} />
         )}
       </span>
       {children}
-    </div>
+    </PlateElement>
   );
-};
+}

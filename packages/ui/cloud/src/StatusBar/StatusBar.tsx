@@ -1,16 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { Upload, UploadProgress } from '@udecode/plate-cloud';
-import { CSSProp } from 'styled-components';
+import { cn } from '@udecode/plate-styled-components';
 
 export function ProgressBar({
-  progressBarTrackCss,
-  progressBarBarCss,
   upload,
+  className,
+  ...props
 }: {
-  progressBarTrackCss?: CSSProp;
-  progressBarBarCss?: CSSProp;
   upload: UploadProgress;
-}) {
+} & HTMLAttributes<HTMLDivElement>) {
   const [width, setWidth] = useState<null | number>(null);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -34,15 +32,15 @@ export function ProgressBar({
       : (upload.sentBytes / upload.totalBytes) * (width - 16) + 16;
 
   return (
-    <div ref={ref} css={progressBarTrackCss}>
+    <div
+      ref={ref}
+      className={cn('h-4 rounded-lg bg-gray-100 shadow-md', className)}
+      {...props}
+    >
       <div
-        css={progressBarBarCss}
+        className="h-4 rounded-lg bg-blue-500 duration-100"
         style={{
-          //   background: 'DodgerBlue',
           width: progressWidth,
-          //   transition: 'width 0.1s',
-          //   height: 16,
-          //   borderRadius: 8,
         }}
       />
     </div>
@@ -50,63 +48,29 @@ export function ProgressBar({
 }
 
 export function FailBar({
-  failBarCss,
-  children,
-}: {
-  failBarCss?: CSSProp;
-  children: React.ReactNode;
-}) {
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      css={failBarCss}
-      style={
-        {
-          // height: 16,
-          // fontFamily: 'sans-serif',
-          // fontSize: '75%',
-          // fontWeight: 'bold',
-          // lineHeight: '16px',
-          // color: 'rgba(255, 255, 255, 0.9)',
-          // background: 'FireBrick',
-          // textAlign: 'center',
-          // textTransform: 'uppercase',
-          // borderRadius: 8,
-          // boxShadow: '0 0 1px 0px rgba(0,0,0,1)',
-        }
-      }
-    >
-      {children}
-    </div>
+      className={cn(
+        'h-4 rounded-lg border bg-red-700 text-center text-xs font-bold uppercase leading-tight text-white shadow-md',
+        className
+      )}
+      {...props}
+    />
   );
 }
 
-export function StatusBar(props: {
-  progressBarTrackCss?: CSSProp;
-  progressBarBarCss?: CSSProp;
-  failBarCss?: CSSProp;
-  upload: Upload;
-  children?: JSX.Element;
-}) {
-  const {
-    progressBarTrackCss,
-    progressBarBarCss,
-    failBarCss,
-    upload,
-    children,
-  } = props;
+export function StatusBar(props: { upload: Upload; children?: JSX.Element }) {
+  const { upload, children } = props;
   switch (upload.status) {
     case 'progress':
-      return (
-        <ProgressBar
-          progressBarTrackCss={progressBarTrackCss}
-          progressBarBarCss={progressBarBarCss}
-          upload={upload}
-        />
-      );
+      return <ProgressBar upload={upload} />;
     case 'error':
-      return <FailBar failBarCss={failBarCss}>Upload Failed</FailBar>;
+      return <FailBar>Upload Failed</FailBar>;
     case 'not-found':
-      return <FailBar failBarCss={failBarCss}>Uploading...</FailBar>;
+      return <FailBar>Uploading...</FailBar>;
     case 'success':
       return children || null;
     default:

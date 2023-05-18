@@ -11,10 +11,7 @@ import { ELEMENT_EXCALIDRAW, insertExcalidraw } from '../../index';
 
 export interface ExcalidrawToolbarButtonProps extends ToolbarButtonProps {}
 
-export const ExcalidrawToolbarButton = ({
-  id,
-  ...props
-}: ToolbarButtonProps) => {
+export function ExcalidrawToolbarButton({ id, ...props }: ToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const type = getPluginType(editor, ELEMENT_EXCALIDRAW);
@@ -35,4 +32,4 @@ export const ExcalidrawToolbarButton = ({
       {...props}
     />
   );
-};
+}

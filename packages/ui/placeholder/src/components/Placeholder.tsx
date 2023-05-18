@@ -7,8 +7,8 @@ import {
   usePlateEditorState,
   Value,
 } from '@udecode/plate-common';
+import { cn } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
-import { getPlaceholderStyles } from './Placeholder.styles';
 import { PlaceholderProps } from './Placeholder.types';
 
 export const Placeholder = <V extends Value>(props: PlaceholderProps<V>) => {
@@ -36,7 +36,10 @@ export const Placeholder = <V extends Value>(props: PlaceholderProps<V>) => {
       className: child.props.className,
       nodeProps: {
         ...nodeProps,
-        styles: getPlaceholderStyles({ enabled, ...props }),
+        className: cn(
+          enabled &&
+            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]'
+        ),
         placeholder,
       },
     });

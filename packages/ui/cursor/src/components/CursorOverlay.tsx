@@ -16,10 +16,7 @@ export interface CursorOverlayProps<
     | 'disableSelection'
     | 'onRenderCaret'
     | 'onRenderSelectionRect'
-    | 'as'
     | 'classNames'
-    | 'prefixClassNames'
-    | 'styles'
   > {
   /**
    * Cursor states to use for calculating the overlay positions, by key.
@@ -44,27 +41,21 @@ export interface CursorOverlayProps<
   onRenderCursor?: RenderFunction<CursorProps>;
 }
 
-export const CursorOverlayContent = <
+export function CursorOverlayContent<
   TCursorData extends UnknownObject = UnknownObject
 >({
-  as,
   classNames,
-  prefixClassNames,
-  styles,
   onRenderCursor: CursorComponent = Cursor,
   onRenderSelectionRect,
   onRenderCaret,
   ...props
-}: CursorOverlayProps<TCursorData>) => {
+}: CursorOverlayProps<TCursorData>) {
   const { disableCaret, disableSelection } = props;
 
   const { cursors } = useCursorOverlayPositions(props);
 
   const cursorProps = {
-    as,
     classNames,
-    prefixClassNames,
-    styles,
     onRenderSelectionRect,
     onRenderCaret,
     disableCaret,
@@ -78,16 +69,14 @@ export const CursorOverlayContent = <
       ))}
     </>
   );
-};
+}
 
-export const CursorOverlay = <
+export function CursorOverlay<
   TCursorData extends UnknownObject = UnknownObject
->(
-  props: CursorOverlayProps<TCursorData>
-) => {
+>(props: CursorOverlayProps<TCursorData>) {
   const isRendered = usePlateSelectors().isRendered();
 
   if (!isRendered) return null;
 
   return <CursorOverlayContent {...props} />;
-};
+}

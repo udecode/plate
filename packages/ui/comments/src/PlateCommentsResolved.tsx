@@ -1,41 +1,20 @@
 import React from 'react';
 import { useCommentsResolved } from '@udecode/plate-comments';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
 import { PlateComment } from './PlateComment';
 
-export const resolvedCommentsRootCss = css`
-  ${tw`w-[500px]`}
-`;
-
-export const resolvedCommentsHeaderCss = css`
-  ${tw`p-4 flex-none font-medium text-base mt-0 mb-0`};
-  border-bottom: 1px solid rgb(218, 220, 224);
-`;
-
-export const resolvedCommentsBodyCss = css`
-  ${tw`p-4 overflow-y-auto flex-auto`};
-
-  & > * {
-    ${tw`mb-4`};
-  }
-
-  & > *:last-child {
-    ${tw`mb-0`};
-  }
-`;
-
-export const PlateCommentsResolved = () => {
+export function PlateCommentsResolved() {
   const resolvedComments = useCommentsResolved();
 
   return (
-    <div css={resolvedCommentsRootCss}>
-      <h2 css={resolvedCommentsHeaderCss}>Resolved comments</h2>
-      <div css={resolvedCommentsBodyCss}>
+    <div className="w-[500px]">
+      <h2 className="my-0 flex-none border-b border-b-[rgb(218,220,224)] p-4 text-base font-medium">
+        Resolved comments
+      </h2>
+      <div className="flex-auto overflow-y-auto p-4 [&_>_*]:mb-4 [&_>_*]:last:mb-0">
         {resolvedComments.map((comment) => (
           <PlateComment key={comment.id} commentId={comment.id} />
         ))}
       </div>
     </div>
   );
-};
+}
