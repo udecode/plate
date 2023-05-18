@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-combobox",
-  "version": "21.0.0",
+  "version": "21.1.5",
   "description": "Combobox for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -23,8 +23,8 @@
     "brl": "yarn p:brl"
   },
   "dependencies": {
-    "@udecode/plate-common": "21.0.0",
-    "@udecode/plate-floating": "21.0.0",
+    "@udecode/plate-common": "21.1.5",
+    "@udecode/plate-floating": "21.1.5",
     "downshift": "^6.1.7"
   },
   "peerDependencies": {
