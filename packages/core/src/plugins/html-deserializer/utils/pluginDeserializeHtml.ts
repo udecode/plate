@@ -1,5 +1,5 @@
 import { Value } from '@udecode/slate';
-import { AnyObject } from '@udecode/utils';
+import { AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray';
 import { Nullable } from '../../../types';
 import { PlateEditor } from '../../../types/PlateEditor';
@@ -95,7 +95,10 @@ export const pluginDeserializeHtml = <V extends Value>(
               const attributeValues = castArray<string>(attributeValue);
               const elAttribute = el.getAttribute(attributeName);
 
-              if (!elAttribute || !attributeValues.includes(elAttribute))
+              if (
+                !isDefined(elAttribute) ||
+                !attributeValues.includes(elAttribute)
+              )
                 return false;
             }
           }

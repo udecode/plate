@@ -29,6 +29,55 @@ describe('when element is p and validNodeName is P', () => {
   });
 });
 
+describe('when element is p, validAttribute', () => {
+  it('returns p type with an existing attribute', () => {
+    const element = document.createElement('p');
+    element.setAttribute('title', '');
+
+    expect(
+      pluginDeserializeHtml(
+        createPlateEditor(),
+        mockPlugin({
+          type: ELEMENT_PARAGRAPH,
+          deserializeHtml: {
+            isElement: true,
+            getNode: node,
+            rules: [
+              {
+                validAttribute: { title: '' },
+              },
+            ],
+          },
+        }),
+        { element }
+      )?.node
+    ).toEqual(node());
+  });
+
+  it('doesnt return p type with an unset attribute', () => {
+    const element = document.createElement('p');
+
+    expect(
+      pluginDeserializeHtml(
+        createPlateEditor(),
+        mockPlugin({
+          type: ELEMENT_PARAGRAPH,
+          deserializeHtml: {
+            isElement: true,
+            getNode: node,
+            rules: [
+              {
+                validAttribute: { title: '' },
+              },
+            ],
+          },
+        }),
+        { element }
+      )?.node
+    ).not.toEqual(node());
+  });
+});
+
 describe('when element is p with color and rule style is different', () => {
   it('should not be p type', () => {
     const element = document.createElement('p');
