@@ -21,7 +21,7 @@ type EmojiToolbarDropdownProps = {
   closeOnSelect?: boolean;
 } & ToolbarButtonProps;
 
-export const EmojiToolbarDropdown = ({
+export function EmojiToolbarDropdown({
   id,
   icon,
   EmojiPickerComponent = EmojiPicker,
@@ -29,9 +29,9 @@ export const EmojiToolbarDropdown = ({
   settings = EmojiSettings,
   closeOnSelect = true,
   ...rest
-}: EmojiToolbarDropdownProps) => {
-  id = useEventPlateId(id);
-  const editor = usePlateEditorState(id);
+}: EmojiToolbarDropdownProps) {
+  const editorId = useEventPlateId(id);
+  const editor = usePlateEditorState(editorId);
   const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
   const emojiFloatingIndexSearchRef = useRef<EmojiFloatingIndexSearch>();
 
@@ -75,4 +75,4 @@ export const EmojiToolbarDropdown = ({
       />
     </EmojiToolbarDropdownRoot>
   );
-};
+}

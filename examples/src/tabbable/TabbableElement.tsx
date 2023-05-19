@@ -1,5 +1,7 @@
 import React, { CSSProperties } from 'react';
+import { PlateElementProps } from '@udecode/plate';
 import { useFocused, useSelected } from 'slate-react';
+import { MyValue } from '../typescript/plateTypes';
 
 const boxStyle: CSSProperties = {
   padding: '8px',
@@ -16,16 +18,17 @@ const selectedBoxStyle: CSSProperties = {
   border: '2px solid blue',
 };
 
-export const TabbableElement = ({
+export function TabbableElement({
   attributes,
   children,
-}: PlateRenderElementProps<MyValue, TElement>) => {
-  const selected = useSelected() & useFocused();
+}: PlateElementProps<MyValue>) {
+  const selected = useSelected();
+  const focused = useFocused();
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
     <div {...attributes} contentEditable={false}>
-      <div style={selected ? selectedBoxStyle : unselectedBoxStyle}>
+      <div style={selected && focused ? selectedBoxStyle : unselectedBoxStyle}>
         <p>This is a void element.</p>
         <button type="button">Button 1</button>{' '}
         <button type="button">Button 2</button>
@@ -33,4 +36,4 @@ export const TabbableElement = ({
       {children}
     </div>
   );
-};
+}

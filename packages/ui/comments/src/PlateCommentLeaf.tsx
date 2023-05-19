@@ -7,11 +7,9 @@ import {
   useCommentsSelectors,
 } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-common';
-import { StyledLeaf, StyledLeafProps } from '@udecode/plate-styled-components';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate-styled-components';
 
-export const PlateCommentLeaf = <V extends Value = Value>(
-  props: PlateLeafProps<V, TCommentText>
-) => {
+export function PlateCommentLeaf(props: PlateLeafProps<Value, TCommentText>) {
   const { children, nodeProps, leaf } = props;
 
   const [commentIds, setCommentIds] = useState<string[]>([]);
@@ -94,4 +92,4 @@ export const PlateCommentLeaf = <V extends Value = Value>(
       {aboveChildren}
     </PlateLeaf>
   );
-};
+}

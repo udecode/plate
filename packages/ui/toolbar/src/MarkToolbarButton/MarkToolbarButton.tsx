@@ -3,22 +3,30 @@ import {
   focusEditor,
   isMarkActive,
   toggleMark,
+  ToggleMarkPlugin,
   useEventPlateId,
   usePlateEditorState,
-  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
-import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
-import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+} from '../ToolbarButton/ToolbarButton';
+
+export interface MarkToolbarButtonProps
+  extends ToolbarButtonProps,
+    Pick<WithPlatePlugin, 'type'>,
+    Pick<ToggleMarkPlugin, 'clear'> {}
 
 /**
  * Toolbar button to toggle the mark of the leaves in selection.
  */
-export const MarkToolbarButton = <V extends Value>({
+export function MarkToolbarButton({
   id,
   type,
   clear,
   ...props
-}: MarkToolbarButtonProps<V>) => {
+}: MarkToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   return (
@@ -34,4 +42,4 @@ export const MarkToolbarButton = <V extends Value>({
       {...props}
     />
   );
-};
+}

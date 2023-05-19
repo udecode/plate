@@ -1,6 +1,11 @@
 import { createRef, RefObject } from 'react';
 import { EmojiCategoryList } from '../../types';
-import { AGridSection, Grid } from '../Grid';
+import { AGridSection, Grid, IGrid } from '../Grid';
+
+export type EmojiFloatingGridType = IGrid<
+  RefObject<HTMLDivElement>,
+  EmojiCategoryList
+>;
 
 export class EmojiFloatingGrid extends Grid<
   RefObject<HTMLDivElement>,

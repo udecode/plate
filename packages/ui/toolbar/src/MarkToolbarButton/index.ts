@@ -3,4 +3,3 @@
  */
 
 export * from './MarkToolbarButton';
-export * from './MarkToolbarButton.types';

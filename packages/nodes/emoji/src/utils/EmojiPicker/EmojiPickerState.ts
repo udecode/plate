@@ -1,9 +1,25 @@
 import { Dispatch, Reducer, useReducer } from 'react';
-import { EmojiCategory } from '../../types';
-import {
-  EmojiPickerStateDispatch,
-  EmojiPickerStateProps,
-} from './EmojiPickerState.types';
+import { EmojiCategory, EmojiCategoryList } from '../../types';
+import { Emoji } from '../EmojiLibrary';
+
+export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
+
+export type EmojiPickerStateProps = {
+  isOpen: boolean;
+  searchValue: string;
+  hasFound: boolean;
+  isSearching: boolean;
+  searchResult: Emoji[];
+  visibleCategories: MapEmojiCategoryList;
+  emoji?: Emoji;
+  focusedCategory?: EmojiCategoryList;
+  frequentEmoji?: string;
+};
+
+export type EmojiPickerStateDispatch = {
+  type: string;
+  payload?: Partial<EmojiPickerStateProps>;
+};
 
 const initialState: EmojiPickerStateProps = {
   isOpen: false,

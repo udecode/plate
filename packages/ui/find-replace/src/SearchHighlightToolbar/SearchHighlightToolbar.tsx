@@ -6,42 +6,44 @@ export interface SearchHighlightToolbarProps {
   setSearch: any;
 }
 
-export const SearchHighlightToolbar = ({
+export function SearchHighlightToolbar({
   icon: Icon,
   setSearch,
-}: SearchHighlightToolbarProps) => (
-  <HeadingToolbar styles={{ root: { height: '38px' } }}>
-    <div
-      style={{
-        position: 'relative',
-        paddingBottom: '10px',
-        marginBottom: '10px',
-      }}
-    >
-      <Icon
-        size={18}
+}: SearchHighlightToolbarProps) {
+  return (
+    <HeadingToolbar className="h-[38px]">
+      <div
         style={{
-          position: 'absolute',
-          top: '0.5em',
-          left: '0.5em',
-          color: '#ccc',
+          position: 'relative',
+          paddingBottom: '10px',
+          marginBottom: '10px',
         }}
-      />
-      <input
-        data-testid="ToolbarSearchHighlightInput"
-        type="search"
-        placeholder="Search the text..."
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          boxSizing: 'border-box',
-          fontSize: '0.85em',
-          width: '100%',
-          padding: '0.5em',
-          paddingLeft: '2em',
-          border: '2px solid #ddd',
-          background: '#fafafa',
-        }}
-      />
-    </div>
-  </HeadingToolbar>
-);
+      >
+        <Icon
+          size={18}
+          style={{
+            position: 'absolute',
+            top: '0.5em',
+            left: '0.5em',
+            color: '#ccc',
+          }}
+        />
+        <input
+          data-testid="ToolbarSearchHighlightInput"
+          type="search"
+          placeholder="Search the text..."
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            boxSizing: 'border-box',
+            fontSize: '0.85em',
+            width: '100%',
+            padding: '0.5em',
+            paddingLeft: '2em',
+            border: '2px solid #ddd',
+            background: '#fafafa',
+          }}
+        />
+      </div>
+    </HeadingToolbar>
+  );
+}

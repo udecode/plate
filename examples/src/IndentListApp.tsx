@@ -35,7 +35,7 @@ const plugins = createMyPlugins(
       component: withProps(StyledElement, {
         as: 'div',
         styles: {
-          root: {
+          rootVariants: {
             margin: 0,
             padding: '4px 0',
           },
@@ -57,7 +57,7 @@ const plugins = createMyPlugins(
   }
 );
 
-const ToolbarButtons = () => {
+function ToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -83,18 +83,20 @@ const ToolbarButtons = () => {
       <IndentToolbarButtons />
     </>
   );
-};
+}
 
-export default () => (
-  <PlateProvider<MyValue>
-    plugins={plugins}
-    initialValue={indentListValue}
-    normalizeInitialValue
-  >
-    <Toolbar>
-      <ToolbarButtons />
-    </Toolbar>
+export default function () {
+  return (
+    <PlateProvider<MyValue>
+      plugins={plugins}
+      initialValue={indentListValue}
+      normalizeInitialValue
+    >
+      <Toolbar>
+        <ToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

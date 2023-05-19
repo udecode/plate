@@ -5,7 +5,7 @@ import {
   EmojiCategoryList,
   EmojiSettingsType,
 } from '../../types';
-import { EmojiFloatingGridType } from './EmojiFloatingGrid.types';
+import { EmojiFloatingGridType } from './EmojiFloatingGrid';
 import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 import {
   IEmojiFloatingLibrary,
@@ -16,7 +16,8 @@ import { EmojiLibrary } from './EmojiLibrary.types';
 
 export class EmojiFloatingLibrary
   extends EmojiInlineLibrary
-  implements IEmojiFloatingLibrary {
+  implements IEmojiFloatingLibrary
+{
   private static instance?: EmojiFloatingLibrary;
 
   private categories: EmojiCategoryList[] = defaultCategories;

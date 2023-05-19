@@ -11,7 +11,7 @@ import {
   useTableBordersDropdownMenuContentState,
 } from '@udecode/plate-table';
 import { Button } from '@udecode/plate-ui-button';
-import { floatingVariants } from '@udecode/plate-ui-toolbar';
+import { floatingStyles } from '@udecode/plate-ui-toolbar';
 
 function CheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -51,7 +51,7 @@ export function PlateTableBordersDropdownMenuContent() {
   return (
     <DropdownMenu.Content
       className={cn(
-        floatingVariants({ element: 'root' }),
+        floatingStyles.rootVariants(),
         'min-w-[220px] py-1.5 text-neutral-900'
       )}
       side="right"

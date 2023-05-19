@@ -3,7 +3,5 @@
  */
 
 export * from './AttachFileIcon';
-export * from './CloudAttachmentElement.styles';
 export * from './CloudAttachmentElement';
-export * from './CloudAttachmentElement.types';
 export * from './CloudDownloadIcon';

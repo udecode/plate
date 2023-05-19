@@ -1,6 +1,15 @@
-import { createStyles } from '@udecode/plate';
+import { createStyles, StyledProps } from '@udecode/plate';
 import { CSSProp } from 'styled-components';
-import { PreviewLeafStyleProps } from './PreviewLeaf.types';
+
+export interface PreviewLeafStyleProps extends StyledProps {
+  bold?: boolean;
+  italic?: boolean;
+  title?: boolean;
+  list?: boolean;
+  hr?: boolean;
+  blockquote?: boolean;
+  code?: boolean;
+}
 
 export const getPreviewLeafStyles = (props: PreviewLeafStyleProps) => {
   const { title, list, italic, hr, code, bold, blockquote } = props;
@@ -59,7 +68,7 @@ export const getPreviewLeafStyles = (props: PreviewLeafStyleProps) => {
   return createStyles(
     { prefixClassNames: 'PreviewLeaf', ...props },
     {
-      root: [rootStyle],
+      rootVariants: [rootStyle],
     }
   );
 };

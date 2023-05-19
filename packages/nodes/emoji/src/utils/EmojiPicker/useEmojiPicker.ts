@@ -1,17 +1,62 @@
-import { createRef, useCallback, useEffect, useRef } from 'react';
+import {
+  createRef,
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
+import { PlateEditor } from '@udecode/plate-common';
 import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
-import { EmojiCategoryList } from '../../types';
-import { Emoji } from '../EmojiLibrary';
+import {
+  EmojiCategoryList,
+  EmojiIconList,
+  EmojiSettingsType,
+  i18nProps,
+} from '../../types';
+import { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary';
 import {
   observeCategories,
   SetFocusedAndVisibleSectionsType,
 } from '../EmojiObserver';
-import { EmojiPickerState } from './EmojiPickerState';
-import {
-  UseEmojiPickerProps,
-  UseEmojiPickerType,
-} from './useEmojiPicker.types';
+import { AIndexSearch } from '../IndexSearch';
+import { EmojiPickerState, MapEmojiCategoryList } from './EmojiPickerState';
+
+export type MutableRefs = MutableRefObject<{
+  contentRoot: RefObject<HTMLDivElement> | undefined;
+  content: RefObject<HTMLDivElement> | undefined;
+}>;
+
+export type UseEmojiPickerProps = {
+  closeOnSelect: boolean;
+  editor: PlateEditor;
+  emojiLibrary: IEmojiFloatingLibrary;
+  indexSearch: AIndexSearch<Emoji>;
+};
+
+export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
+  isOpen: boolean;
+  onToggle: () => void;
+  i18n: i18nProps;
+  searchValue: string;
+  setSearch: (value: string) => void;
+  clearSearch: () => void;
+  isSearching: boolean;
+  hasFound: boolean;
+  searchResult: Emoji[];
+  onMouseOver: (emoji?: Emoji) => void;
+  onSelectEmoji: (emoji: Emoji) => void;
+  emojiLibrary: IEmojiFloatingLibrary;
+  icons: EmojiIconList<T>;
+  handleCategoryClick: (id: EmojiCategoryList) => void;
+  visibleCategories: MapEmojiCategoryList;
+  refs: MutableRefs;
+  settings: EmojiSettingsType;
+  focusedCategory?: EmojiCategoryList;
+  emoji?: Emoji;
+  styles?: any;
+};
 
 export const useEmojiPicker = ({
   editor,
@@ -31,18 +76,19 @@ export const useEmojiPicker = ({
     });
   }, [dispatch, state.isOpen]);
 
-  const setFocusedAndVisibleSections = useCallback<SetFocusedAndVisibleSectionsType>(
-    (visibleSections, categoryId) => {
-      dispatch({
-        type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
-        payload: {
-          focusedCategory: categoryId,
-          visibleCategories: visibleSections,
-        },
-      });
-    },
-    [dispatch]
-  );
+  const setFocusedAndVisibleSections =
+    useCallback<SetFocusedAndVisibleSectionsType>(
+      (visibleSections, categoryId) => {
+        dispatch({
+          type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
+          payload: {
+            focusedCategory: categoryId,
+            visibleCategories: visibleSections,
+          },
+        });
+      },
+      [dispatch]
+    );
 
   const handleSearchInput = useCallback(
     (input: string) => {
@@ -145,7 +191,8 @@ export const useEmojiPicker = ({
       };
 
       if (refs.current.contentRoot.current) {
-        refs.current.contentRoot.current.scrollTop = getSectionPositionToScrollIntoView();
+        refs.current.contentRoot.current.scrollTop =
+          getSectionPositionToScrollIntoView();
       }
     },
     [dispatch, emojiLibrary]

@@ -24,7 +24,7 @@ export function CodeBlockElement({
   const { children, element, editor } = props;
   const { lang } = element;
 
-  const { syntax } = getPluginOptions<CodeBlockPlugin, V>(
+  const { syntax } = getPluginOptions<CodeBlockPlugin>(
     editor,
     ELEMENT_CODE_BLOCK
   );

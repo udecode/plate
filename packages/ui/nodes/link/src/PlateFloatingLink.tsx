@@ -8,39 +8,38 @@ import {
   ShortTextIcon,
   useFloatingLinkSelectors,
 } from '@udecode/plate-link';
-import { cn } from '@udecode/plate-styled-components';
 import { buttonVariants } from '@udecode/plate-ui-button';
 import {
-  floatingVariants,
+  floatingStyles,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
-export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
+export function PlateFloatingLink({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();
 
   if (readOnly) return null;
 
   const input = (
     <div className="flex w-[330px] flex-col">
-      <div className={floatingVariants({ element: 'inputWrapper' })}>
-        <div className={floatingVariants({ element: 'iconWrapper' })}>
+      <div className={floatingStyles.inputWrapperVariants()}>
+        <div className={floatingStyles.iconWrapperVariants()}>
           <LinkIcon width={18} />
         </div>
 
         <FloatingLink.UrlInput
-          className={floatingVariants({ element: 'input' })}
+          className={floatingStyles.inputVariants()}
           placeholder="Paste link"
         />
       </div>
 
       <div className="h-px bg-gray-200" />
 
-      <div className={floatingVariants({ element: 'inputWrapper' })}>
-        <div className={floatingVariants({ element: 'iconWrapper' })}>
+      <div className={floatingStyles.inputWrapperVariants()}>
+        <div className={floatingStyles.iconWrapperVariants()}>
           <ShortTextIcon width={18} />
         </div>
         <FloatingLink.TextInput
-          className={floatingVariants({ element: 'input' })}
+          className={floatingStyles.inputVariants()}
           placeholder="Text to display"
         />
       </div>
@@ -48,24 +47,20 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
   );
 
   const editContent = !isEditing ? (
-    <div className={cn(floatingVariants({ element: 'row' }))}>
+    <div className={floatingStyles.rowVariants()}>
       <FloatingLink.EditButton className={buttonVariants()}>
         Edit link
       </FloatingLink.EditButton>
 
       <FloatingVerticalDivider />
 
-      <FloatingLink.OpenLinkButton
-        className={floatingVariants({ element: 'button' })}
-      >
+      <FloatingLink.OpenLinkButton className={floatingStyles.buttonVariants()}>
         <LaunchIcon width={18} />
       </FloatingLink.OpenLinkButton>
 
       <FloatingVerticalDivider />
 
-      <FloatingLink.UnlinkButton
-        className={floatingVariants({ element: 'button' })}
-      >
+      <FloatingLink.UnlinkButton className={floatingStyles.buttonVariants()}>
         <LinkOffIcon width={18} />
       </FloatingLink.UnlinkButton>
     </div>
@@ -75,17 +70,13 @@ export const PlateFloatingLink = ({ readOnly }: TEditableProps) => {
 
   return (
     <>
-      <FloatingLink.InsertRoot
-        className={cn(floatingVariants({ element: 'root' }))}
-      >
+      <FloatingLink.InsertRoot className={floatingStyles.rootVariants()}>
         {input}
       </FloatingLink.InsertRoot>
 
-      <FloatingLink.EditRoot
-        className={cn(floatingVariants({ element: 'root' }))}
-      >
+      <FloatingLink.EditRoot className={floatingStyles.rootVariants()}>
         {editContent}
       </FloatingLink.EditRoot>
     </>
   );
-};
+}

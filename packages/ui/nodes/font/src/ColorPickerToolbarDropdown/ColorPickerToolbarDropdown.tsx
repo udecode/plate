@@ -29,7 +29,7 @@ type ColorPickerToolbarDropdownProps = {
   closeOnSelect?: boolean;
 };
 
-export const ColorPickerToolbarDropdown = ({
+export function ColorPickerToolbarDropdown({
   id,
   pluginKey,
   icon,
@@ -38,10 +38,10 @@ export const ColorPickerToolbarDropdown = ({
   customColors = DEFAULT_CUSTOM_COLORS,
   closeOnSelect = true,
   ...rest
-}: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
-  id = useEventPlateId(id);
-  const editor = usePlateEditorState(id);
-  const editorRef = usePlateEditorRef(id);
+}: ColorPickerToolbarDropdownProps & ToolbarButtonProps) {
+  const editorId = useEventPlateId(id);
+  const editor = usePlateEditorState(editorId);
+  const editorRef = usePlateEditorRef(editorId);
 
   const [open, setOpen] = useState(false);
 
@@ -121,4 +121,4 @@ export const ColorPickerToolbarDropdown = ({
       />
     </ToolbarDropdown>
   );
-};
+}

@@ -1,11 +1,12 @@
 import emojiMartData from '@emoji-mart/data';
-import { THash } from './EmojiInlineLibrary.types';
 import {
   Emoji,
   EmojiLibrary,
   Emojis,
   IEmojiLibrary,
 } from './EmojiLibrary.types';
+
+export type THash = Record<string, string>;
 
 export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _hash: THash = {};

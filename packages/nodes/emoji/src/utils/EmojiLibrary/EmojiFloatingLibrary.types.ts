@@ -1,5 +1,5 @@
 import { EmojiCategoryList } from '../../types';
-import { EmojiFloatingGridType } from './EmojiFloatingGrid.types';
+import { EmojiFloatingGridType } from './EmojiFloatingGrid';
 import { IEmojiLibrary } from './EmojiLibrary.types';
 
 export type FrequentEmojis = Record<string, number>;

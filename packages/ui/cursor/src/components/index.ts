@@ -3,5 +3,4 @@
  */
 
 export * from './Cursor';
-export * from './CursorOverlay.styles';
 export * from './CursorOverlay';

@@ -3,7 +3,7 @@
  */
 
 export * from './FloatingVerticalDivider';
-export * from './styles';
+export * from './floatingStyles';
 export * from './BalloonToolbar/index';
 export * from './BlockToolbarButton/index';
 export * from './HeadingToolbar/index';

@@ -3,4 +3,3 @@
  */
 
 export * from './BlockToolbarButton';
-export * from './BlockToolbarButton.types';

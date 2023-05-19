@@ -20,7 +20,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "yarn p:build",
-    "brl": "yarn p:brl"
+    "brl": "yarn p:brl",
+    "typecheck": "yarn p:typecheck"
   },
   "peerDependencies": {
     "slate": ">=0.94.0",

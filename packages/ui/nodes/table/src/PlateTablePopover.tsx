@@ -8,10 +8,10 @@ import {
 import { cn } from '@udecode/plate-styled-components';
 import { BorderAllIcon, TTableElement } from '@udecode/plate-table';
 import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
-import { floatingVariants } from '@udecode/plate-ui-toolbar';
+import { floatingStyles } from '@udecode/plate-ui-toolbar';
 import { PlateTableBordersDropdownMenuContent } from './PlateTableBordersDropdownMenuContent';
 
-export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
+export function PlateTablePopover({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
 
   return (
@@ -49,10 +49,10 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
           </div>
         </div>
       }
-      className={cn(floatingVariants({ element: 'root' }))}
+      className={floatingStyles.rootVariants()}
       {...props}
     >
       {children}
     </ElementPopover>
   );
-};
+}

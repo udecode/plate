@@ -1,13 +1,18 @@
 import React from 'react';
-import { Value } from '@udecode/plate-common';
-import { Link, TLinkElement } from '@udecode/plate-link';
-import { PlateElementProps } from '@udecode/plate-styled-components';
-import { getLinkElementStyles } from './LinkElement.styles';
+import { Link, LinkRootProps } from '@udecode/plate-link';
+import { cn } from '@udecode/plate-styled-components';
 
-export const LinkElement = (props: PlateElementProps<Value, TLinkElement>) => {
-  const { as, ...rootProps } = props;
-
-  const { root } = getLinkElementStyles(props);
-
-  return <Link.Root {...rootProps} css={root.css} />;
-};
+export function LinkElement({ className, ...props }: LinkRootProps) {
+  return (
+    <Link.Root
+      className={cn(
+        'text-[#0078d4] no-underline',
+        'hover:text-[#004578] hover:underline',
+        'visited:hover:text-[#004578] visited:hover:underline',
+        'visited:text-[#0078d4]',
+        className
+      )}
+      {...props}
+    />
+  );
+}

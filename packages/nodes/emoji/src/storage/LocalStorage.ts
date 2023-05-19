@@ -1,5 +1,7 @@
-import { ILocalStorage } from './LocalStorage.types';
-
+export interface ILocalStorage<T> {
+  get: () => T;
+  set: (value: T) => void;
+}
 export class LocalStorage<T> implements ILocalStorage<T> {
   constructor(protected key: string, protected defaultValue: T) {}
 

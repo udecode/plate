@@ -13,8 +13,8 @@ export interface BlockSelectionPlugin {
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
 }
 
-export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlugin>(
-  {
+export const createBlockSelectionPlugin =
+  createPluginFactory<BlockSelectionPlugin>({
     key: KEY_BLOCK_SELECTION,
     options: {
       query: {
@@ -22,12 +22,14 @@ export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlug
       },
     },
     inject: {
-      aboveComponent: () => ({ element, children }) =>
-        BlockSelectable({
-          element,
-          children,
-          selectedColor: 'rgb(219 234 254)',
-        }),
+      aboveComponent:
+        () =>
+        ({ element, children }) =>
+          BlockSelectable({
+            element,
+            children,
+            selectedColor: 'rgb(219 234 254)',
+          }),
     },
     handlers: {
       onChange: onChangeBlockSelection,
@@ -42,5 +44,4 @@ export const createBlockSelectionPlugin = createPluginFactory<BlockSelectionPlug
         {children}
       </BlockSelectionArea>
     ),
-  }
-);
+  });

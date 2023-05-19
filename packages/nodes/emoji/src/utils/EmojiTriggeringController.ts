@@ -1,9 +1,19 @@
 import { EMOJI_TRIGGERING_CONTROLLER_OPTIONS } from '../constants';
-import {
-  EmojiTriggeringControllerOptions,
-  IEmojiTriggeringController,
-} from './EmojiTriggeringController.types';
 
+export type EmojiTriggeringControllerOptions = {
+  limitTriggeringChars: number;
+  maxTextToSearch: number;
+};
+
+export interface IEmojiTriggeringController {
+  isTriggering: boolean;
+  hasTriggeringMark: boolean;
+  getText: () => string;
+  setText: (text: string) => void;
+  reset: () => void;
+  getOptions: () => EmojiTriggeringControllerOptions;
+  getTextSize: () => number;
+}
 export class EmojiTriggeringController implements IEmojiTriggeringController {
   protected text = '';
   protected pos: any;

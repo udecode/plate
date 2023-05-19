@@ -5,13 +5,16 @@ import {
   isCollapsed,
   isElementEmpty,
   usePlateEditorState,
-  Value,
 } from '@udecode/plate-common';
-import { cn } from '@udecode/plate-styled-components';
+import { cn, PlateElementProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
-import { PlaceholderProps } from './Placeholder.types';
 
-export const Placeholder = <V extends Value>(props: PlaceholderProps<V>) => {
+export interface PlaceholderProps extends PlateElementProps {
+  placeholder: string;
+  hideOnBlur?: boolean;
+}
+
+export const Placeholder = (props: PlaceholderProps) => {
   const {
     children,
     element,

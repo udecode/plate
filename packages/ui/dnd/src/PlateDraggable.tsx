@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { DropTargetMonitor } from 'react-dnd';
-import { TEditor } from '@udecode/plate-common';
+import { TEditor, TElement } from '@udecode/plate-common';
 import {
   DraggableBlock,
   DraggableBlockToolbar,
@@ -12,12 +12,66 @@ import {
   DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { cn, PlateElementProps } from '@udecode/plate-styled-components';
-import { DragHandleProps } from './PlateDraggable.types';
+import {
+  ClassNames,
+  cn,
+  PlateElementProps,
+} from '@udecode/plate-styled-components';
+import { CSSProp } from 'styled-components';
 
-export interface PlateDraggableProps extends PlateElementProps {
-  classNameBlockAndGutter?: string;
+export interface DragHandleProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  element: TElement;
+  styles?: CSSProp;
+}
 
+export interface PlateDraggableProps
+  extends PlateElementProps,
+    ClassNames<{
+      /**
+       * Block and gutter.
+       */
+      blockAndGutter: string;
+
+      /**
+       * Block.
+       */
+      block: string;
+
+      /**
+       * Gutter at the left side of the editor.
+       * It has the height of the block
+       */
+      gutterLeft: string;
+
+      /**
+       * Block toolbar wrapper in the gutter left.
+       * It has the height of a line of the block.
+       */
+      blockToolbarWrapper: string;
+
+      /**
+       * Block toolbar in the gutter.
+       */
+      blockToolbar: string;
+
+      blockWrapper: string;
+
+      /**
+       * Button to dnd the block, in the block toolbar.
+       */
+      dragHandle: string;
+
+      /**
+       * Icon of the drag button, in the drag icon.
+       */
+      dragIcon: string;
+
+      /**
+       * Show a dropline above or below the block when dragging a block.
+       */
+      dropLine: string;
+    }> {
   /**
    * An override to render the drag handle.
    */
@@ -39,7 +93,7 @@ export interface PlateDraggableProps extends PlateElementProps {
 }
 
 export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
-  ({ classNameBlockAndGutter, ...props }, ref) => {
+  ({ className, classNames = {}, ...props }, ref) => {
     const { children, element, onRenderDragHandle } = props;
 
     const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
@@ -51,7 +105,8 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
         className={cn(
           'relative',
           isDragging && 'opacity-50',
-          'hover:[&_.slate-Draggable-gutterLeft]:opacity-100'
+          'hover:[&_.slate-Draggable-gutterLeft]:opacity-100',
+          className
           // selected && 'bg-[rgb(181, 215, 255)]',
         )}
         rootRef={rootRef}
@@ -60,35 +115,44 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
         <DraggableGutterLeft
           className={cn(
             'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0',
-            classNameBlockAndGutter
+            classNames.gutterLeft
           )}
         >
-          <DraggableBlockToolbarWrapper className="flex h-[1.5em]">
+          <DraggableBlockToolbarWrapper
+            className={cn('flex h-[1.5em]', classNames.blockToolbarWrapper)}
+          >
             <DraggableBlockToolbar
               dragRef={dragRef}
               element={element}
-              className="pointer-events-auto mr-1 flex items-center"
+              className={cn(
+                'pointer-events-auto mr-1 flex items-center',
+                classNames.blockToolbar
+              )}
             >
               <DragHandle
                 element={element}
-                className="h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none"
+                className={cn(
+                  'h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none',
+                  classNames.dragHandle
+                )}
               />
             </DraggableBlockToolbar>
           </DraggableBlockToolbarWrapper>
         </DraggableGutterLeft>
 
         <DraggableBlock
-          className={cn('overflow-auto', classNameBlockAndGutter)}
+          className={cn('overflow-auto', classNames.blockWrapper)}
         >
           {children}
 
           {!!dropLine && (
             <DraggableDropline
               className={cn(
-                'absolute left-0 right-0 h-0.5 opacity-100',
+                'absolute inset-x-0 h-0.5 opacity-100',
                 'bg-[#B4D5FF]',
                 dropLine === 'top' && '-top-px',
-                dropLine === 'bottom' && '-bottom-px'
+                dropLine === 'bottom' && '-bottom-px',
+                classNames.dropLine
               )}
             />
           )}

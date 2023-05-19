@@ -4,7 +4,6 @@
 
 export * from './EmojiObserver';
 export * from './EmojiTriggeringController';
-export * from './EmojiTriggeringController.types';
 export * from './EmojiLibrary/index';
 export * from './EmojiPicker/index';
 export * from './Grid/index';

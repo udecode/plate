@@ -5,18 +5,18 @@ import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
 import { cn } from '@udecode/plate-styled-components';
 import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
 import {
-  floatingVariants,
+  floatingStyles,
   FloatingVerticalDivider,
 } from '@udecode/plate-ui-toolbar';
 
-export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
+export function PlateFloatingMedia({ pluginKey }: { pluginKey?: string }) {
   const isEditing = useFloatingMediaSelectors().isEditing();
   const element = useElement();
 
   return (
-    <div className={cn(floatingVariants({ element: 'root' }))}>
+    <div className={floatingStyles.rootVariants()}>
       {!isEditing ? (
-        <div className={cn(floatingVariants({ element: 'row' }))}>
+        <div className={cn(floatingStyles.rowVariants())}>
           <FloatingMedia.EditButton className={buttonVariants()}>
             Edit link
           </FloatingMedia.EditButton>
@@ -25,18 +25,18 @@ export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
 
           <RemoveNodeButton
             element={element}
-            className={floatingVariants({ element: 'button' })}
+            className={floatingStyles.buttonVariants()}
           />
         </div>
       ) : (
         <div className="flex w-[330px] flex-col">
-          <div className={floatingVariants({ element: 'inputWrapper' })}>
-            <div className={floatingVariants({ element: 'iconWrapper' })}>
+          <div className={floatingStyles.inputVariants()}>
+            <div className={floatingStyles.iconWrapperVariants()}>
               <LinkIcon width={18} />
             </div>
 
             <FloatingMedia.UrlInput
-              className={floatingVariants({ element: 'input' })}
+              className={floatingStyles.inputVariants()}
               placeholder="Paste the embed link..."
               pluginKey={pluginKey}
             />
@@ -45,4 +45,4 @@ export const PlateFloatingMedia = ({ pluginKey }: { pluginKey?: string }) => {
       )}
     </div>
   );
-};
+}

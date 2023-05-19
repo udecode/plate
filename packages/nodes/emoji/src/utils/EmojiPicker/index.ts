@@ -3,6 +3,4 @@
  */
 
 export * from './EmojiPickerState';
-export * from './EmojiPickerState.types';
 export * from './useEmojiPicker';
-export * from './useEmojiPicker.types';

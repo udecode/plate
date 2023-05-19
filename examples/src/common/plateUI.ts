@@ -21,7 +21,7 @@ export const plateUI = createPlateUI({
   [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
     // as: 'p',
     styles: {
-      root: {
+      rootVariants: {
         margin: 0,
         padding: '4px 0',
       },

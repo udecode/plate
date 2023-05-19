@@ -3,6 +3,7 @@ import {
   comboboxActions,
   comboboxSelectors,
   ComboboxState,
+  ComboboxStateById,
   ComboboxStoreById,
   Data,
   getComboboxStoreById,
@@ -26,7 +27,7 @@ import {
 } from '@udecode/plate-floating';
 import { cn, cva, PortalBody } from '@udecode/plate-styled-components';
 
-const comboboxItemStyle = cva(
+const comboboxItemVariants = cva(
   'flex min-h-[36px] cursor-pointer select-none items-center rounded-none px-2 text-[14px] text-[rgb(32,31,30)]'
 );
 
@@ -149,11 +150,11 @@ function ComboboxContent<TData extends Data = NoData>(
               className={
                 !highlighted
                   ? cn(
-                      comboboxItemStyle(),
+                      comboboxItemVariants(),
                       'bg-transparent hover:bg-[rgb(243,242,241)]'
                     )
                   : cn(
-                      comboboxItemStyle,
+                      comboboxItemVariants,
                       'bg-[rgb(237,235,233)] hover:bg-[rgb(237,235,233)]'
                     )
               }

@@ -8,9 +8,9 @@ import {
 } from '@udecode/plate-comments';
 import { cn } from '@udecode/plate-styled-components';
 import { Button, buttonVariants } from '@udecode/plate-ui-button';
-import { floatingVariants, ToolbarDropdown } from '@udecode/plate-ui-toolbar';
+import { floatingStyles, ToolbarDropdown } from '@udecode/plate-ui-toolbar';
 
-export const PlateCommentMenuButton = () => {
+export function PlateCommentMenuButton() {
   const isMenuOpen = useCommentSelectors().isMenuOpen();
   const setIsMenuOpen = useCommentActions().isMenuOpen();
 
@@ -29,7 +29,7 @@ export const PlateCommentMenuButton = () => {
         <div
           className={cn(
             'relative flex flex-col',
-            floatingVariants({ element: 'root' }),
+            floatingStyles.rootVariants(),
             'w-[150px]'
           )}
         >
@@ -48,4 +48,4 @@ export const PlateCommentMenuButton = () => {
       </ToolbarDropdown>
     </div>
   );
-};
+}
