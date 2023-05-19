@@ -38,9 +38,11 @@ export const insertFragmentCodeBlock = <V extends Value>(
       fragment.flatMap((node) => {
         const element = node as TElement;
 
-        return (element.type === codeBlockType
-          ? extractCodeLinesFromCodeBlock(element)
-          : convertNodeToCodeLine(element)) as EElement<V>;
+        return (
+          element.type === codeBlockType
+            ? extractCodeLinesFromCodeBlock(element)
+            : convertNodeToCodeLine(element)
+        ) as EElement<V>;
       })
     );
   };

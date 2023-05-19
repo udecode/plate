@@ -8,7 +8,7 @@ export const withTHistory = <
   EE extends E = E & THistoryEditor<V>
 >(
   editor: E
-) => (withHistory(editor as any) as any) as EE;
+) => withHistory(editor as any) as any as EE;
 
 /**
  * @see {@link withHistory}

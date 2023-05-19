@@ -4,8 +4,11 @@ export const withHOC = <T,>(
   HOC: FunctionComponent<any>,
   Component: FunctionComponent<T>,
   hocProps?: any
-): FunctionComponent<T> => (props: T) => (
-  <HOC {...hocProps}>
-    <Component {...props} />
-  </HOC>
-);
+): FunctionComponent<T> =>
+  function hoc(props: T) {
+    return (
+      <HOC {...hocProps}>
+        <Component {...props} />
+      </HOC>
+    );
+  };

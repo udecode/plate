@@ -11,7 +11,7 @@ export const withImageEmbed = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<ImagePlugin, V, E>
 ) => {
   const { insertData } = editor;

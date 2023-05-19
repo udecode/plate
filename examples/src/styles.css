@@ -34,19 +34,6 @@ td {
   border: 1px solid #4f90f2;
 }
 
-.drag-button {
-  overflow: hidden;
-  padding: 0;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  border-style: none;
-  cursor: pointer;
-  outline: 0;
-
-  min-width: 18px;
-  min-height: 18px;
-}
-
 .MuiSvgIcon-root {
   font-size: 18px !important;
 }

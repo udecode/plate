@@ -8,7 +8,7 @@ import {
 import { cn } from '@udecode/plate-styled-components';
 import { buttonVariants } from '@udecode/plate-ui-button';
 
-export const PlateCommentResolveButton = () => {
+export function PlateCommentResolveButton() {
   const comment = useComment()!;
 
   return (
@@ -20,4 +20,4 @@ export const PlateCommentResolveButton = () => {
       )}
     </CommentResolveButton>
   );
-};
+}

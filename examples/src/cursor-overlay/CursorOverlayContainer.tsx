@@ -2,13 +2,13 @@ import React from 'react';
 import { CursorOverlay, CursorOverlayProps } from '@udecode/plate';
 import { cursorStore } from './cursorStore';
 
-export const CursorOverlayContainer = ({
+export function CursorOverlayContainer({
   cursors,
   ...props
-}: CursorOverlayProps) => {
+}: CursorOverlayProps) {
   const dynamicCursors = cursorStore.use.cursors();
 
   const allCursors = { ...cursors, ...dynamicCursors };
 
   return <CursorOverlay {...props} cursors={allCursors} />;
-};
+}

@@ -21,12 +21,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
-    <Toolbar>
-      <LinkToolbarButton icon={<Link />} />
-    </Toolbar>
+export default function LinkApp() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
+      <Toolbar>
+        <LinkToolbarButton icon={<Link />} />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

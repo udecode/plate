@@ -23,7 +23,7 @@ export const pipeRenderLeaf = <V extends Value>(
     }
   });
 
-  return (nodeProps) => {
+  return function render(nodeProps) {
     const props = pipeInjectProps(editor, nodeProps) as PlateRenderLeafProps<V>;
 
     renderLeafs.forEach((renderLeaf) => {

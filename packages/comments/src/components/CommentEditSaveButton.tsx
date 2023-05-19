@@ -38,10 +38,10 @@ export const useCommentEditSaveButton = ({
   };
 };
 
-export const CommentEditSaveButton = (
+export function CommentEditSaveButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentEditSaveButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

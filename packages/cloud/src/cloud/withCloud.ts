@@ -14,14 +14,10 @@ export const withCloud = <
   e: E,
   plugin: WithPlatePlugin<CloudPlugin, V, E>
 ) => {
-  const editor = (e as unknown) as EE;
+  const editor = e as unknown as EE;
 
-  const {
-    apiKey,
-    authToken,
-    apiOrigin,
-    uploadStoreInitialValue,
-  } = plugin.options;
+  const { apiKey, authToken, apiOrigin, uploadStoreInitialValue } =
+    plugin.options;
 
   let client: Client;
   try {

@@ -10,10 +10,10 @@ import { ELEMENT_DEFAULT } from '../constants';
 import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from './getPluginType';
 
-const isInlineNode = <V extends Value>(
-  editor: Pick<TEditor<V>, 'isInline'>
-) => (node: EDescendant<V>) =>
-  isText(node) || (isElement(node) && editor.isInline(node));
+const isInlineNode =
+  <V extends Value>(editor: Pick<TEditor<V>, 'isInline'>) =>
+  (node: EDescendant<V>) =>
+    isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({
   type,

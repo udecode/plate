@@ -13,7 +13,7 @@ export const withInsertTextTable = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   const { insertText } = editor;

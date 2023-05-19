@@ -36,7 +36,9 @@ export const getSiblingListStyleType = <V extends Value = Value>(
     ...options,
   });
 
-  return (siblings.length
-    ? siblings[0][0][KEY_LIST_STYLE_TYPE]
-    : entry[0][KEY_LIST_STYLE_TYPE]) as ListStyleType;
+  return (
+    siblings.length
+      ? siblings[0][0][KEY_LIST_STYLE_TYPE]
+      : entry[0][KEY_LIST_STYLE_TYPE]
+  ) as ListStyleType;
 };

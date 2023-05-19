@@ -10,11 +10,11 @@ import {
   ToolbarButtonProps,
 } from '@udecode/plate-ui-toolbar';
 
-export const ListToolbarButton = ({
+export function ListToolbarButton({
   id,
   type = ELEMENT_UL,
   ...props
-}: ToolbarButtonProps & { type?: string }) => {
+}: ToolbarButtonProps & { type?: string }) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const res = !!editor?.selection && getListItemEntry(editor);
@@ -33,4 +33,4 @@ export const ListToolbarButton = ({
       {...props}
     />
   );
-};
+}

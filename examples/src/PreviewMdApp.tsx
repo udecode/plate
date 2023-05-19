@@ -14,13 +14,15 @@ const plugins = createMyPlugins([...basicNodesPlugins, createPreviewPlugin()], {
 
 const _editableProps = {
   ...editableProps,
-  renderLeaf: PreviewLeaf as any,
+  renderLeaf: PreviewLeaf,
 };
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={_editableProps}
-    plugins={plugins}
-    initialValue={previewMdValue}
-  />
-);
+export default function PreviewMdApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={_editableProps}
+      plugins={plugins}
+      initialValue={previewMdValue}
+    />
+  );
+}

@@ -33,10 +33,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={basicElementsValue}
-  />
-);
+export default function ResetNodeApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={basicElementsValue}
+    />
+  );
+}

@@ -20,14 +20,14 @@ type CustomColorsProps = {
   updateCustomColor: (color: string) => void;
 };
 
-export const CustomColors = ({
+export function CustomColors({
   color,
   colors,
   customColors,
   selectedIcon,
   updateColor,
   updateCustomColor,
-}: CustomColorsProps) => {
+}: CustomColorsProps) {
   const [customColor, setCustomColor] = useState<string>();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateCustomColorDebounced = useCallback(
@@ -84,4 +84,4 @@ export const CustomColors = ({
       />
     </div>
   );
-};
+}

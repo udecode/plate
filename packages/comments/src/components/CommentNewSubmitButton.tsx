@@ -53,10 +53,10 @@ export const useCommentNewSubmitButton = ({
   };
 };
 
-export const CommentNewSubmitButton = (
+export function CommentNewSubmitButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentNewSubmitButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

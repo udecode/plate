@@ -8,13 +8,14 @@ const initialValue = [
     type: 'p',
     children: [
       {
-        text:
-          'This is editable plain text with react and history plugins, just like a <textarea>!',
+        text: 'This is editable plain text with react and history plugins, just like a <textarea>!',
       },
     ],
   } as MyParagraphElement,
 ];
 
-export default () => (
-  <Plate<MyValue> editableProps={editableProps} initialValue={initialValue} />
-);
+export default function BasicEditorValueApp() {
+  return (
+    <Plate<MyValue> editableProps={editableProps} initialValue={initialValue} />
+  );
+}

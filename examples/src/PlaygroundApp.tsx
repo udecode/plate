@@ -99,7 +99,7 @@ const styles: Record<string, CSSProperties> = {
   container: { position: 'relative' },
 };
 
-const App = () => {
+function App() {
   const containerRef = useRef(null);
 
   const plugins = useMemo(
@@ -150,7 +150,7 @@ const App = () => {
           createComboboxPlugin(),
           createMentionPlugin(),
           createCommentsPlugin(),
-          createDeserializeMdPlugin(),
+          createDeserializeMdPlugin() as MyPlatePlugin,
           createDeserializeCsvPlugin(),
           createDeserializeDocxPlugin(),
           createJuicePlugin() as MyPlatePlugin,
@@ -186,6 +186,6 @@ const App = () => {
       </PlateProvider>
     </DndProvider>
   );
-};
+}
 
 export default App;

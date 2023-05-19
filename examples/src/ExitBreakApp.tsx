@@ -33,10 +33,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={exitBreakValue}
-  />
-);
+export default function ExitBreakApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={exitBreakValue}
+    />
+  );
+}

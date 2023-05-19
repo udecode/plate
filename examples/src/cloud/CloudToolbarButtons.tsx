@@ -11,7 +11,7 @@ const buttonStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-export const CloudToolbarButtons = () => {
+export function CloudToolbarButtons() {
   const editor = useMyPlateEditorRef(useEventPlateId()) as PlateCloudEditor;
   const getSaveValue = () => {
     console.info('editor.children', editor.children);
@@ -43,4 +43,4 @@ export const CloudToolbarButtons = () => {
       </span>
     </>
   );
-};
+}

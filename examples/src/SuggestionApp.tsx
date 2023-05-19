@@ -25,7 +25,7 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => {
+export default function SuggestionApp() {
   return (
     <PlateProvider plugins={plugins} initialValue={suggestionValue}>
       <MySuggestionProvider>
@@ -37,4 +37,4 @@ export default () => {
       </MySuggestionProvider>
     </PlateProvider>
   );
-};
+}

@@ -20,7 +20,14 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "yarn p:build",
-    "brl": "yarn p:brl:below"
+    "brl": "yarn p:brl:below",
+    "clean": "yarn p:clean",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
     "@udecode/plate-headless": "21.1.5",

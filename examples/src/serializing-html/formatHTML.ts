@@ -1,4 +1,4 @@
-/* eslint-disable prefer-template */
+/* eslint-disable prefer-template, prefer-regex-literals */
 export const formatHTML = (html: string) => {
   let indent = `
 `;

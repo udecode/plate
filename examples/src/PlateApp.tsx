@@ -4,7 +4,7 @@ import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
-const Buttons = ({ disabled, setDisabled }: any) => {
+function Buttons({ disabled, setDisabled }: any) {
   const resetPlateEditor = useResetPlateEditor();
 
   return (
@@ -29,9 +29,9 @@ const Buttons = ({ disabled, setDisabled }: any) => {
       </button>
     </>
   );
-};
+}
 
-export default () => {
+export default function PlateApp() {
   const [disabled, setDisabled] = useState(false);
 
   return (
@@ -43,4 +43,4 @@ export default () => {
       {!disabled && <Plate<MyValue> editableProps={editableProps} />}
     </PlateProvider>
   );
-};
+}

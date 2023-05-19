@@ -11,7 +11,7 @@ import { plateUI } from './common/plateUI';
 import { findReplaceValue } from './find-replace/findReplaceValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
-export default () => {
+export default function FindReplaceApp() {
   const [search, setSearch] = useState('');
 
   const plugins = useMemo(
@@ -39,4 +39,4 @@ export default () => {
       />
     </>
   );
-};
+}

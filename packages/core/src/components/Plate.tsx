@@ -15,7 +15,7 @@ export interface PlateProps<
   editableProps?: TEditableProps<V>;
 }
 
-export const Plate = <
+export function Plate<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
@@ -25,7 +25,7 @@ export const Plate = <
   renderEditable,
   editableProps,
   ...props
-}: PlateProps<V, E>) => {
+}: PlateProps<V, E>) {
   const { id = PLATE_SCOPE } = props;
 
   const providerId = usePlateSelectors(id).id();
@@ -49,4 +49,4 @@ export const Plate = <
   ) : (
     <PlateProvider {...props}>{editable}</PlateProvider>
   );
-};
+}

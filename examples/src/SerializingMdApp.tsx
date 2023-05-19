@@ -12,7 +12,11 @@ import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { linkPlugin } from './link/linkPlugin';
 import { deserializeMdValue } from './serializing-md/deserializeMdValue';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
+import {
+  createMyPlugins,
+  MyPlatePlugin,
+  MyValue,
+} from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
@@ -21,17 +25,19 @@ const plugins = createMyPlugins(
     createLinkPlugin(linkPlugin),
     createListPlugin(),
     createTablePlugin(),
-    createDeserializeMdPlugin(),
+    createDeserializeMdPlugin() as MyPlatePlugin,
   ],
   {
     components: plateUI,
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={deserializeMdValue}
-  />
-);
+export default function SerializingMdApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={deserializeMdValue}
+    />
+  );
+}

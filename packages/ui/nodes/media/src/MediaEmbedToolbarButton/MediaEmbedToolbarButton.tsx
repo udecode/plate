@@ -14,11 +14,11 @@ export interface MediaEmbedToolbarButtonProps extends ToolbarButtonProps {
   getEmbedUrl?: () => Promise<string>;
 }
 
-export const MediaEmbedToolbarButton = ({
+export function MediaEmbedToolbarButton({
   id,
   getEmbedUrl,
   ...props
-}: MediaEmbedToolbarButtonProps) => {
+}: MediaEmbedToolbarButtonProps) {
   const editor = usePlateEditorRef(useEventPlateId(id));
 
   return (
@@ -42,4 +42,4 @@ export const MediaEmbedToolbarButton = ({
       {...props}
     />
   );
-};
+}

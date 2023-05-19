@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export const IFrame = ({ children, ...props }: any) => {
+export function IFrame({ children, ...props }: any) {
   const [contentRef, setContentRef] = useState<any>(null);
   const mountNode =
     contentRef &&
@@ -14,4 +14,4 @@ export const IFrame = ({ children, ...props }: any) => {
       {mountNode && createPortal(React.Children.only(children), mountNode)}
     </iframe>
   );
-};
+}

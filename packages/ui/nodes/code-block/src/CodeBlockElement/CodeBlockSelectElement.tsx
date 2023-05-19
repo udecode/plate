@@ -7,9 +7,8 @@ import {
 } from '@udecode/plate-code-block';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { CSSProp } from 'styled-components';
 
-export const CodeBlockSelectElement = ({
+export function CodeBlockSelectElement({
   lang,
   onChange,
   ...props
@@ -17,8 +16,7 @@ export const CodeBlockSelectElement = ({
   lang?: string;
   onChange: Function;
   className?: string;
-  css?: CSSProp;
-}) => {
+}) {
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
 
@@ -57,4 +55,4 @@ export const CodeBlockSelectElement = ({
       ))}
     </select>
   );
-};
+}

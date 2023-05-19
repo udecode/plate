@@ -104,8 +104,8 @@ export const useBlockSelectionArea = (
   };
 };
 
-export const BlockSelectionArea = (props: BlockSelectionAreaProps) => {
+export function BlockSelectionArea(props: BlockSelectionAreaProps) {
   const componentProps = useBlockSelectionArea(props);
 
   return <SelectionArea {...componentProps} />;
-};
+}

@@ -20,23 +20,15 @@ import {
 } from '@udecode/plate';
 import { withPlateDraggables } from '@udecode/plate-ui-dnd';
 
-const styles = {
-  grabber: { fontSize: 12 },
-  grabberText: { color: 'rgba(255, 255, 255, 0.45)' },
-  dragButton: {
-    width: 18,
-    height: 18,
-    color: 'rgba(55, 53, 47, 0.3)',
-  },
-};
-
-const GrabberTooltipContent = () => (
-  <div style={styles.grabber}>
-    <div>
-      Drag <span style={styles.grabberText}>to move</span>
+function GrabberTooltipContent() {
+  return (
+    <div className="text-[12px]">
+      <div>
+        Drag <span className="text-[rgba(255,255,255,0.45)]">to move</span>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export const grabberTooltipProps: TippyProps = {
   content: <GrabberTooltipContent />,
@@ -77,8 +69,11 @@ export const withStyledDraggables = (components: any) => {
         onRenderDragHandle: () => {
           return (
             <Tippy {...grabberTooltipProps}>
-              <button type="button" className="drag-button">
-                <DragIndicator style={styles.dragButton} />
+              <button
+                type="button"
+                className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none"
+              >
+                <DragIndicator className="h-[18px] w-[18px] text-[rgba(55,53,47,0.3)]" />
               </button>
             </Tippy>
           );
@@ -88,86 +83,60 @@ export const withStyledDraggables = (components: any) => {
     {
       key: ELEMENT_H1,
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '2em 0 4px',
-            fontSize: '1.875em',
-          },
-          blockToolbarWrapper: {
-            height: '1.3em',
-          },
+        classNames: {
+          gutterLeft: 'pt-[2em] px-0 pb-1 text-[1.875em]',
+          blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
       key: ELEMENT_H2,
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '1.4em 0 1px',
-            fontSize: '1.5em',
-          },
-          blockToolbarWrapper: {
-            height: '1.3em',
-          },
+        classNames: {
+          gutterLeft: 'pt-[1.4em] px-0 pb-1 text-[1.5em]',
+          blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
       key: ELEMENT_H3,
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '1em 0 1px',
-            fontSize: '1.25em',
-          },
-          blockToolbarWrapper: {
-            height: '1.3em',
-          },
+        classNames: {
+          gutterLeft: 'pt-[1em] px-0 pb-1 text-[1.25em]',
+          blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
       keys: [ELEMENT_H4, ELEMENT_H5, ELEMENT_H6],
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '0.75em 0 0',
-            fontSize: '1.1em',
-          },
-          blockToolbarWrapper: {
-            height: '1.3em',
-          },
+        classNames: {
+          gutterLeft: 'pt-[0.75em] px-0 pb-0 text-[1.1em]',
+          blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
       keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '4px 0 0',
-          },
+        classNames: {
+          gutterLeft: 'pt-1 px-0 pb-0',
         },
       },
     },
     {
       key: ELEMENT_BLOCKQUOTE,
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '18px 0 0',
-          },
+        classNames: {
+          gutterLeft: 'pt-[18px] px-0 pb-0',
         },
       },
     },
     {
       key: ELEMENT_CODE_BLOCK,
       draggableProps: {
-        styles: {
-          gutterLeft: {
-            padding: '12px 0 0',
-          },
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
         },
       },
     },

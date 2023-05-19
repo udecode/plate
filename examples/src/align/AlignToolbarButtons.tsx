@@ -9,7 +9,7 @@ const tooltip = (content: string) => ({
   content,
 });
 
-export const AlignToolbarButtons = () => {
+export function AlignToolbarButtons() {
   return (
     <>
       <AlignToolbarButton
@@ -34,4 +34,4 @@ export const AlignToolbarButtons = () => {
       />
     </>
   );
-};
+}

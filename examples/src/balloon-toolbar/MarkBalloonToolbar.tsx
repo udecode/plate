@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
@@ -24,11 +24,10 @@ export const markTooltip: TippyProps = {
   placement: 'top',
 };
 
-export const MarkBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'children'>) => {
-  const {
-    children,
-    ...balloonToolbarProps
-  } = props;
+export function MarkBalloonToolbar(
+  props: WithPartial<BalloonToolbarProps, 'children'>
+) {
+  const { children, ...balloonToolbarProps } = props;
 
   const editor = useMyPlateEditorRef();
 
@@ -65,4 +64,4 @@ export const MarkBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'chil
       {children}
     </BalloonToolbar>
   );
-};
+}

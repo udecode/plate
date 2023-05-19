@@ -41,7 +41,7 @@ export const removeMark = <V extends Value>(
 
   if (selection) {
     if (Range.isRange(selection) && Range.isExpanded(selection)) {
-      unsetNodes(editor, (key as any) as string, {
+      unsetNodes(editor, key as any as string, {
         at: selection,
         match: isText,
         split: true,

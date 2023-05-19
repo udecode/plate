@@ -51,10 +51,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={deserializeDocxValue}
-  />
-);
+export default function SerializingDocxApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={deserializeDocxValue}
+    />
+  );
+}

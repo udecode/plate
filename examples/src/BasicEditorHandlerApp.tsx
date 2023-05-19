@@ -4,7 +4,7 @@ import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
-export default () => {
+export default function BasicEditorHandlerApp() {
   const [debugValue, setDebugValue] = useState<MyValue | null>(null);
 
   return (
@@ -19,4 +19,4 @@ export default () => {
       value: {JSON.stringify(debugValue)}
     </Plate>
   );
-};
+}

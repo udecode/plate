@@ -6,6 +6,7 @@ import {
 
 export type TableCellElementResizableWrapperProps = HTMLPropsAs<'div'>;
 
-export const TableCellElementResizableWrapper = createComponentAs<TableCellElementResizableWrapperProps>(
-  (props) => createElementAs('div', { contentEditable: false, ...props })
-);
+export const TableCellElementResizableWrapper =
+  createComponentAs<TableCellElementResizableWrapperProps>((props) =>
+    createElementAs('div', { contentEditable: false, ...props })
+  );

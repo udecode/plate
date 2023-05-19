@@ -11,7 +11,6 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   mockPlugin,
-  PlateEditor,
 } from '@udecode/plate-common';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list/src/index';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';

@@ -13,7 +13,7 @@ const tooltip = (content: string) => ({
   content,
 });
 
-export const ListToolbarButtons = () => {
+export function ListToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -30,4 +30,4 @@ export const ListToolbarButtons = () => {
       />
     </>
   );
-};
+}

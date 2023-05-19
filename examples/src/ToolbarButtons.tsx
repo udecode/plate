@@ -27,7 +27,7 @@ import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { ListToolbarButtons } from './list/ListToolbarButtons';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
 
-export const ToolbarButtons = () => {
+export function ToolbarButtons() {
   const colorTooltip: TippyProps = { content: 'Text Color' };
   const bgTooltip: TippyProps = { content: 'Background Color' };
   const emojiTooltip: TippyProps = { content: 'Emoji' };
@@ -68,4 +68,4 @@ export const ToolbarButtons = () => {
       <ExcalidrawElementToolbarButton />
     </>
   );
-};
+}

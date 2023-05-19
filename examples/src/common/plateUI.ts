@@ -5,7 +5,7 @@ import {
   ELEMENT_MEDIA_EMBED,
   ELEMENT_PARAGRAPH,
   MediaEmbedElement,
-  StyledElement,
+  PlateElement,
   withProps,
 } from '@udecode/plate';
 
@@ -18,14 +18,7 @@ export const plateUI = createPlateUI({
     },
   }),
   [ELEMENT_CODE_BLOCK]: CodeBlockElement,
-  [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
-    // as: 'p',
-    styles: {
-      rootVariants: {
-        margin: 0,
-        padding: '4px 0',
-      },
-    },
-    prefixClassNames: 'p',
+  [ELEMENT_PARAGRAPH]: withProps(PlateElement, {
+    className: 'm-0 py-1 px-0',
   }),
 });

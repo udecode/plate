@@ -24,8 +24,7 @@ export const uploadStoreInitialValue: any = {
   },
   '#d': {
     status: 'success',
-    url:
-      'https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt',
+    url: 'https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt',
   },
   '#e': {
     status: 'error',

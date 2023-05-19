@@ -12,8 +12,8 @@ export const useMediaEmbedTweet = ({
   };
 };
 
-export const MediaEmbedTweet = (props: EmbedUrlData) => {
+export function MediaEmbedTweet(props: EmbedUrlData) {
   const htmlProps = useMediaEmbedTweet(props);
 
   return <Tweet {...htmlProps} />;
-};
+}

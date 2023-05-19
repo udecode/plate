@@ -68,24 +68,26 @@ const create = (key: string) => {
   };
 };
 
-const createComposing = (key: string) => (
-  editor: TReactEditor,
-  event: KeyboardEvent,
-  {
-    composing,
-  }: {
-    /**
-     * Ignore the event if composing.
-     */
-    composing?: boolean;
-  } = {}
-) => {
-  if (!create(key)(event)) return false;
+const createComposing =
+  (key: string) =>
+  (
+    editor: TReactEditor,
+    event: KeyboardEvent,
+    {
+      composing,
+    }: {
+      /**
+       * Ignore the event if composing.
+       */
+      composing?: boolean;
+    } = {}
+  ) => {
+    if (!create(key)(event)) return false;
 
-  if (!!composing !== isComposing(editor)) return false;
+    if (!!composing !== isComposing(editor)) return false;
 
-  return true;
-};
+    return true;
+  };
 
 export const Hotkeys = {
   isBold: create('bold'),

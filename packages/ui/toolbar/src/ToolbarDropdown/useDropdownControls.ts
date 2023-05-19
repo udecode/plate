@@ -6,26 +6,26 @@ type useDropdownControlsProps = {
   onClose?: (ev: MouseEvent) => void;
 };
 
-const closeAllExceptSelectedOneListener = ({
-  open,
-  onClose,
-  refs,
-}: useDropdownControlsProps & { refs: ExtendedRefs<HTMLElement> }) => (
-  ev: MouseEvent
-) => {
-  if (open) {
-    const target = ev.target as HTMLElement;
-    // TS2339: Property 'contains' does not exist on type 'ReferenceType'
-    if ((refs.reference.current as any)?.contains(target)) {
-      return;
-    }
-    if (refs.floating.current?.contains(target)) {
-      return;
-    }
+const closeAllExceptSelectedOneListener =
+  ({
+    open,
+    onClose,
+    refs,
+  }: useDropdownControlsProps & { refs: ExtendedRefs<HTMLElement> }) =>
+  (ev: MouseEvent) => {
+    if (open) {
+      const target = ev.target as HTMLElement;
+      // TS2339: Property 'contains' does not exist on type 'ReferenceType'
+      if ((refs.reference.current as any)?.contains(target)) {
+        return;
+      }
+      if (refs.floating.current?.contains(target)) {
+        return;
+      }
 
-    onClose?.(ev);
-  }
-};
+      onClose?.(ev);
+    }
+  };
 
 export const useDropdownControls = ({
   open,

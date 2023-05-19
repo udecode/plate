@@ -75,11 +75,8 @@ export const insertTableColumn = <V extends Value>(
   }
   const currentRowIndex = cellPath[cellPath.length - 2];
 
-  const {
-    newCellChildren,
-    initialTableWidth,
-    minColumnWidth,
-  } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { newCellChildren, initialTableWidth, minColumnWidth } =
+    getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell

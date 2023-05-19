@@ -49,10 +49,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={horizontalRuleValue}
-  />
-);
+export default function HorizontalRuleApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={horizontalRuleValue}
+    />
+  );
+}

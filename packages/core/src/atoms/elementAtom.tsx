@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { TElement } from '@udecode/slate';
+// eslint-disable-next-line import/no-unresolved
 import { Scope } from 'jotai/core/atom';
 import { JotaiProvider, JotaiProviderProps } from '../libs';
 import { createAtomStore } from './createAtomStore';
@@ -8,7 +9,7 @@ export const SCOPE_ELEMENT = 'element';
 
 export const { elementStore, useElementStore } = createAtomStore(
   {
-    element: (null as unknown) as TElement,
+    element: null as unknown as TElement,
   },
   { name: 'element' as const }
 );
@@ -36,27 +37,29 @@ export const ElementProviderChild = ({
 /**
  * Global and scoped provider above element.
  */
-export const ElementProvider = ({
+export function ElementProvider({
   element,
   scope,
   children,
   ...props
 }: JotaiProviderProps & {
   element: TElement;
-}) => (
-  <JotaiProvider
-    initialValues={[[elementStore.atom.element, element]]}
-    scope={SCOPE_ELEMENT}
-    {...props}
-  >
+}) {
+  return (
     <JotaiProvider
       initialValues={[[elementStore.atom.element, element]]}
-      scope={scope}
+      scope={SCOPE_ELEMENT}
       {...props}
     >
-      <ElementProviderChild element={element} scope={scope!}>
-        {children}
-      </ElementProviderChild>
+      <JotaiProvider
+        initialValues={[[elementStore.atom.element, element]]}
+        scope={scope}
+        {...props}
+      >
+        <ElementProviderChild element={element} scope={scope!}>
+          {children}
+        </ElementProviderChild>
+      </JotaiProvider>
     </JotaiProvider>
-  </JotaiProvider>
-);
+  );
+}

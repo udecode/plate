@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const HighlightToolbarButton = () => {
+export function HighlightToolbarButton() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -16,4 +16,4 @@ export const HighlightToolbarButton = () => {
       icon={<Highlight />}
     />
   );
-};
+}

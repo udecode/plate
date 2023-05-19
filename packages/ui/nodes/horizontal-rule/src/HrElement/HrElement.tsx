@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 
-export const HrElement = (props: PlateElementProps<Value, TElement>) => {
+export function HrElement(props: PlateElementProps<Value, TElement>) {
   const { children, nodeProps } = props;
 
   const selected = useSelected();
@@ -27,4 +27,4 @@ export const HrElement = (props: PlateElementProps<Value, TElement>) => {
       {children}
     </PlateElement>
   );
-};
+}

@@ -9,11 +9,11 @@ import {
 import { DeleteIcon } from '../Icon/DeleteIcon';
 import { Button, ButtonProps } from './PlateButton';
 
-export const RemoveNodeButton = ({
+export function RemoveNodeButton({
   element,
   children,
   ...props
-}: ButtonProps & { element: TElement }) => {
+}: ButtonProps & { element: TElement }) {
   const editor = useEditorRef();
 
   return (
@@ -31,4 +31,4 @@ export const RemoveNodeButton = ({
       {children}
     </Button>
   );
-};
+}

@@ -74,10 +74,10 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
   }
 );
 
-export const SuggestionProvider = ({
+export function SuggestionProvider({
   children,
   ...props
-}: Partial<SuggestionStoreState> & { children: ReactNode }) => {
+}: Partial<SuggestionStoreState> & { children: ReactNode }) {
   return (
     <JotaiProvider
       initialValues={getJotaiProviderInitialValues(suggestionStore, props)}
@@ -86,7 +86,7 @@ export const SuggestionProvider = ({
       {children}
     </JotaiProvider>
   );
-};
+}
 
 export const useSuggestionStates = () => useSuggestionStore().use;
 export const useSuggestionSelectors = () => useSuggestionStore().get;

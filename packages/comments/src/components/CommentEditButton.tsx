@@ -20,10 +20,10 @@ export const useCommentEditButton = (
   };
 };
 
-export const CommentEditButton = (
+export function CommentEditButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentEditButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

@@ -14,9 +14,8 @@ import {
   GetTableGridByRangeOptions,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions<
-  V extends Value = Value
-> = GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
+export type GetTableGridAboveOptions<V extends Value = Value> =
+  GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
 
 /**
  * Get sub table above anchor and focus.

@@ -29,32 +29,34 @@ import { isDocxList } from '../docx-cleaner/utils/isDocxList';
 
 export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
 
-const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
-  const node: any = { type };
+const getListNode =
+  (type: string): DeserializeHtml['getNode'] =>
+  (element) => {
+    const node: any = { type };
 
-  if (isDocxList(element)) {
-    node[KEY_INDENT] = getDocxListIndent(element);
+    if (isDocxList(element)) {
+      node[KEY_INDENT] = getDocxListIndent(element);
 
-    const text = element.textContent ?? '';
+      const text = element.textContent ?? '';
 
-    node[KEY_LIST_STYLE_TYPE] =
-      getTextListStyleType(text) ?? ListStyleType.Disc;
+      node[KEY_LIST_STYLE_TYPE] =
+        getTextListStyleType(text) ?? ListStyleType.Disc;
 
-    element.innerHTML = getDocxListContentHtml(element);
-  } else {
-    const indent = getDocxIndent(element);
-    if (indent) {
-      node[KEY_INDENT] = indent;
+      element.innerHTML = getDocxListContentHtml(element);
+    } else {
+      const indent = getDocxIndent(element);
+      if (indent) {
+        node[KEY_INDENT] = indent;
+      }
+
+      const textIndent = getDocxTextIndent(element);
+      if (textIndent) {
+        node[KEY_TEXT_INDENT] = textIndent;
+      }
     }
 
-    const textIndent = getDocxTextIndent(element);
-    if (textIndent) {
-      node[KEY_TEXT_INDENT] = textIndent;
-    }
-  }
-
-  return node;
-};
+    return node;
+  };
 
 const KEYS = [
   ELEMENT_PARAGRAPH,

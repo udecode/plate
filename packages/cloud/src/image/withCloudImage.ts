@@ -22,18 +22,14 @@ export const withCloudImage = <
   plugin: WithPlatePlugin<CloudImagePlugin, V, E>
 ) => {
   const editor = $editor as E & PlateCloudEditor<V>;
-  const {
-    maxInitialWidth,
-    maxInitialHeight,
-    minResizeWidth,
-    maxResizeWidth,
-  } = {
-    maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
-    maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
-    minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
-    maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
-    ...plugin.options,
-  };
+  const { maxInitialWidth, maxInitialHeight, minResizeWidth, maxResizeWidth } =
+    {
+      maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
+      maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
+      minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
+      maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
+      ...plugin.options,
+    };
 
   editor.cloudImage = {
     maxInitialWidth,

@@ -10,21 +10,23 @@ import { sidebarItems } from '../config/sidebarItems';
 import { Footer } from './Footer';
 import { Item } from './Item';
 
-export const Sidebar = () => (
-  <ProSidebar>
-    <SidebarHeader>Plate Examples</SidebarHeader>
+export function Sidebar() {
+  return (
+    <ProSidebar>
+      <SidebarHeader>Plate Examples</SidebarHeader>
 
-    <SidebarContent>
-      <Menu iconShape="square">
-        <Item href="/">Playground</Item>
-        {sidebarItems.map((item) => (
-          <Item key={item} href={`/${item}`}>
-            {capitalCase(item)}
-          </Item>
-        ))}
-      </Menu>
-    </SidebarContent>
+      <SidebarContent>
+        <Menu iconShape="square">
+          <Item href="/">Playground</Item>
+          {sidebarItems.map((item) => (
+            <Item key={item} href={`/${item}`}>
+              {capitalCase(item)}
+            </Item>
+          ))}
+        </Menu>
+      </SidebarContent>
 
-    <Footer />
-  </ProSidebar>
-);
+      <Footer />
+    </ProSidebar>
+  );
+}

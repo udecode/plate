@@ -20,10 +20,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={editableVoidsValue}
-  />
-);
+export default function EditableVoidsApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={editableVoidsValue}
+    />
+  );
+}

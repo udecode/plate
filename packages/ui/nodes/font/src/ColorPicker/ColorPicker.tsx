@@ -16,7 +16,7 @@ type ColorPickerProps = {
   open?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-const ColorPickerInternal = ({
+function ColorPickerInternal({
   color,
   colors,
   customColors,
@@ -26,7 +26,7 @@ const ColorPickerInternal = ({
   clearColor,
   className,
   ...props
-}: ColorPickerProps) => {
+}: ColorPickerProps) {
   return (
     <div
       data-testid="ColorPicker"
@@ -58,7 +58,7 @@ const ColorPickerInternal = ({
       </Button>
     </div>
   );
-};
+}
 
 export const ColorPicker = React.memo(
   ColorPickerInternal,

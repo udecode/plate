@@ -21,6 +21,11 @@
   "scripts": {
     "build": "yarn p:build",
     "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
   "keywords": [

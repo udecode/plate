@@ -34,10 +34,10 @@ const styles: Record<string, CSSProperties> = {
   editor: { padding: '20px', border: '2px solid #ddd' },
 };
 
-export const EditableVoidElement = ({
+export function EditableVoidElement({
   attributes,
   children,
-}: PlateRenderElementProps<MyValue, TElement>) => {
+}: PlateRenderElementProps<MyValue, TElement>) {
   const [inputValue, setInputValue] = useState('');
 
   return (
@@ -82,4 +82,4 @@ export const EditableVoidElement = ({
       {children}
     </div>
   );
-};
+}

@@ -12,16 +12,24 @@
     "brl": {
       "outputs": []
     },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
     "lint": {
+      "dependsOn": ["build"],
       "outputs": []
     },
     "lint:fix": {
+      "dependsOn": ["build"],
       "cache": false
     },
     "test": {
+      "dependsOn": ["build"],
       "outputs": []
     },
     "test:watch": {
+      "dependsOn": ["build"],
       "cache": false,
       "persistent": true
     },

@@ -14,7 +14,7 @@ export const withComments = <
   E extends PlateEditor<V> = PlateEditor<V>
 >(
   editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<CommentsPlugin, V, E>
 ) => {
   const { normalizeNode, insertBreak } = editor;

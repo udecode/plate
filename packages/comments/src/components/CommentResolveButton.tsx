@@ -39,10 +39,10 @@ export const useCommentResolveButton = ({
   };
 };
 
-export const CommentResolveButton = (
+export function CommentResolveButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentResolveButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

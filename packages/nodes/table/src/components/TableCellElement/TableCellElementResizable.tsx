@@ -63,10 +63,8 @@ export const useTableCellElementResizableProps = ({
     ELEMENT_TABLE
   );
 
-  const [
-    hoveredColIndex,
-    setHoveredColIndex,
-  ] = useTableStore().use.hoveredColIndex();
+  const [hoveredColIndex, setHoveredColIndex] =
+    useTableStore().use.hoveredColIndex();
 
   const colSizesWithoutOverrides = useTableColSizes(tableElement, {
     disableOverrides: true,
@@ -244,19 +242,16 @@ export const useTableCellElementResizableProps = ({
   };
 };
 
-export const TableCellElementResizable = createComponentAs<TableCellElementResizableProps>(
-  (props) => {
+export const TableCellElementResizable =
+  createComponentAs<TableCellElementResizableProps>((props) => {
     const editor = usePlateEditorRef();
     const { disableMarginLeft } = getPluginOptions<TablePlugin>(
       editor,
       ELEMENT_TABLE
     );
     const { readOnly, colIndex } = props;
-    const {
-      rightProps,
-      bottomProps,
-      leftProps,
-    } = useTableCellElementResizableProps(props);
+    const { rightProps, bottomProps, leftProps } =
+      useTableCellElementResizableProps(props);
 
     const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
@@ -269,5 +264,4 @@ export const TableCellElementResizable = createComponentAs<TableCellElementResiz
         </>
       )
     );
-  }
-);
+  });

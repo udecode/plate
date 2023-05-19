@@ -17,12 +17,12 @@ export interface TableToolbarButtonProps<V extends Value>
   transform: (editor: PlateEditor<V>, options: { header?: boolean }) => void;
 }
 
-export const TableToolbarButton = <V extends Value>({
+export function TableToolbarButton<V extends Value>({
   id,
   transform,
   header,
   ...props
-}: TableToolbarButtonProps<V>) => {
+}: TableToolbarButtonProps<V>) {
   const editor = usePlateEditorState<V>(useEventPlateId(id));
   const type = getPluginType(editor, ELEMENT_TABLE);
   const active = !!editor?.selection && someNode(editor, { match: { type } });
@@ -41,4 +41,4 @@ export const TableToolbarButton = <V extends Value>({
       {...props}
     />
   );
-};
+}

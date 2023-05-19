@@ -13,14 +13,10 @@ import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
 import { TabbableEntry } from './types';
 
-export const TabbableEffects = () => {
+export function TabbableEffects() {
   const editor = useEditorState();
-  const {
-    query,
-    globalEventListener,
-    insertTabbableEntries,
-    isTabbable,
-  } = getPluginOptions(editor, KEY_TABBABLE);
+  const { query, globalEventListener, insertTabbableEntries, isTabbable } =
+    getPluginOptions(editor, KEY_TABBABLE);
 
   useEffect(() => {
     const editorDOMNode = toDOMNode(editor, editor);
@@ -125,4 +121,4 @@ export const TabbableEffects = () => {
   }, [editor, globalEventListener, isTabbable, insertTabbableEntries, query]);
 
   return null;
-};
+}

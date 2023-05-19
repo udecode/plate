@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-comments';
 import { PlateComment } from './PlateComment';
 
-export const PlateCommentReplies = () => {
+export function PlateCommentReplies() {
   const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);
 
   return (
@@ -15,4 +15,4 @@ export const PlateCommentReplies = () => {
       ))}
     </>
   );
-};
+}

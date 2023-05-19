@@ -27,16 +27,18 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue>
-    plugins={plugins}
-    initialValue={emojiValue}
-    onChange={(e) => console.info(e)}
-  >
-    <Toolbar>
-      <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
-    </Toolbar>
+export default function EmojiApp() {
+  return (
+    <PlateProvider<MyValue>
+      plugins={plugins}
+      initialValue={emojiValue}
+      onChange={(e) => console.info(e)}
+    >
+      <Toolbar>
+        <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

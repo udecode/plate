@@ -16,7 +16,7 @@ export const overridePluginsByKey = <
 >(
   plugin: PlatePlugin<NoInfer<P>, V, E>,
   overrideByKey: OverrideByKey<V, E> = {},
-  nested?: boolean
+  nested = false
 ): PlatePlugin<NoInfer<P>, V, E> => {
   if (overrideByKey[plugin.key]) {
     const {

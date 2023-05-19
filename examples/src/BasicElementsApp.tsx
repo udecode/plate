@@ -29,12 +29,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={basicElementsValue} plugins={plugins}>
-    <Toolbar>
-      <BasicElementToolbarButtons />
-    </Toolbar>
+export default function BasicElementsApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={basicElementsValue} plugins={plugins}>
+      <Toolbar>
+        <BasicElementToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

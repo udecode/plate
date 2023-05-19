@@ -8,8 +8,8 @@ import { deserializeMd } from './utils';
 
 export const KEY_DESERIALIZE_MD = 'deserializeMd';
 
-export const createDeserializeMdPlugin = createPluginFactory<DeserializeMdPlugin>(
-  {
+export const createDeserializeMdPlugin =
+  createPluginFactory<DeserializeMdPlugin>({
     key: KEY_DESERIALIZE_MD,
     then: (editor) => ({
       editor: {
@@ -36,5 +36,4 @@ export const createDeserializeMdPlugin = createPluginFactory<DeserializeMdPlugin
       elementRules: remarkDefaultElementRules,
       textRules: remarkDefaultTextRules,
     },
-  }
-);
+  });

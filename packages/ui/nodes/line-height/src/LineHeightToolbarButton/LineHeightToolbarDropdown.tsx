@@ -14,10 +14,10 @@ import {
   ToolbarDropdown,
 } from '@udecode/plate-ui-toolbar';
 
-export const LineHeightToolbarDropdown = ({
+export function LineHeightToolbarDropdown({
   id,
   ...props
-}: ToolbarButtonProps) => {
+}: ToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const [open, setOpen] = React.useState(false);
@@ -70,4 +70,4 @@ export const LineHeightToolbarDropdown = ({
         ))}
     </ToolbarDropdown>
   );
-};
+}

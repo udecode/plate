@@ -4,8 +4,6 @@ import {
   PlateTableCellElementProps,
 } from './PlateTableCellElement';
 
-export const PlateTableCellHeaderElement = (
-  props: PlateTableCellElementProps
-) => {
+export function PlateTableCellHeaderElement(props: PlateTableCellElementProps) {
   return <PlateTableCellElement {...props} isHeader />;
-};
+}

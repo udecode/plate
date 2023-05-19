@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AutoformatRule,
   createPlateEditor,
@@ -78,7 +79,6 @@ import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,
 // } from '@udecode/plate-ui-excalidraw';
-import { CSSProperties } from 'styled-components';
 
 /**
  * Text
@@ -100,11 +100,11 @@ export interface RichText extends TText, TCommentText {
   code?: boolean;
   kbd?: boolean;
   subscript?: boolean;
-  backgroundColor?: CSSProperties['backgroundColor'];
-  fontFamily?: CSSProperties['fontFamily'];
-  color?: CSSProperties['color'];
-  fontSize?: CSSProperties['fontSize'];
-  fontWeight?: CSSProperties['fontWeight'];
+  backgroundColor?: React.CSSProperties['backgroundColor'];
+  fontFamily?: React.CSSProperties['fontFamily'];
+  color?: React.CSSProperties['color'];
+  fontSize?: React.CSSProperties['fontSize'];
+  fontWeight?: React.CSSProperties['fontWeight'];
 }
 
 /**
@@ -148,11 +148,11 @@ export interface MyIndentListProps extends MyIndentProps {
 }
 
 export interface MyLineHeightProps {
-  lineHeight?: CSSProperties['lineHeight'];
+  lineHeight?: React.CSSProperties['lineHeight'];
 }
 
 export interface MyAlignProps {
-  align?: CSSProperties['textAlign'];
+  align?: React.CSSProperties['textAlign'];
 }
 
 export interface MyBlockElement

@@ -30,12 +30,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <DndProvider backend={HTML5Backend}>
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={initialValue}
-    />
-  </DndProvider>
-);
+export default function DndApp() {
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Plate<MyValue>
+        editableProps={editableProps}
+        plugins={plugins}
+        initialValue={initialValue}
+      />
+    </DndProvider>
+  );
+}

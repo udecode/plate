@@ -61,7 +61,7 @@ export const deserializeCsv = <V extends Value>(
     if (
       !isValidCsv(
         csv.data as Record<string, string>[][],
-        (csv.errors as unknown) as Record<string, string>[][],
+        csv.errors as unknown as Record<string, string>[][],
         errorTolerance!
       )
     )

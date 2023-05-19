@@ -8,8 +8,8 @@ export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
  * Enables support for deserializing content
  * from CSV format to Slate format.
  */
-export const createDeserializeCsvPlugin = createPluginFactory<DeserializeCsvPlugin>(
-  {
+export const createDeserializeCsvPlugin =
+  createPluginFactory<DeserializeCsvPlugin>({
     key: KEY_DESERIALIZE_CSV,
     options: {
       errorTolerance: 0.25,
@@ -25,5 +25,4 @@ export const createDeserializeCsvPlugin = createPluginFactory<DeserializeCsvPlug
         },
       },
     }),
-  }
-);
+  });

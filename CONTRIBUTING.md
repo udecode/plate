@@ -179,8 +179,6 @@ yarn g:lint --fix
 This command will list all the suites and options for running tests.
 
 ```sh
-yarn g:build # only once
-
 yarn g:test
 ```
 

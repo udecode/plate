@@ -40,12 +40,12 @@ const useOverrideSizeFactory = (
 // jotai supports setting with functions, but createAtomStore doesn't know that
 export const useOverrideColSize = () => {
   const setColSizeOverrides = useTableStore().set.colSizeOverrides();
-  return useOverrideSizeFactory((setColSizeOverrides as unknown) as any);
+  return useOverrideSizeFactory(setColSizeOverrides as unknown as any);
 };
 
 export const useOverrideRowSize = () => {
   const setRowSizeOverrides = useTableStore().set.rowSizeOverrides();
-  return useOverrideSizeFactory((setRowSizeOverrides as unknown) as any);
+  return useOverrideSizeFactory(setRowSizeOverrides as unknown as any);
 };
 
 export const useOverrideMarginLeft = () =>

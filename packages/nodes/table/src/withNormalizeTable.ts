@@ -53,9 +53,9 @@ export const withNormalizeTable = <
 
         if (initialTableWidth) {
           const tableNode = node as TTableElement;
-          const colCount = (tableNode.children[0]?.children as
-            | TElement[]
-            | undefined)?.length;
+          const colCount = (
+            tableNode.children[0]?.children as TElement[] | undefined
+          )?.length;
           if (colCount) {
             const colSizes: number[] = [];
 

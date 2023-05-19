@@ -15,10 +15,8 @@ export const getCommentPosition = <V extends Value>(
   const editorDOMNode = toDOMNode(editor, editor);
   if (!editorDOMNode) return;
 
-  const {
-    x: editorX,
-    width: editorWidth,
-  } = editorDOMNode.getBoundingClientRect();
+  const { x: editorX, width: editorWidth } =
+    editorDOMNode.getBoundingClientRect();
 
   const sidebarWidth = 418;
   const padding = 16;

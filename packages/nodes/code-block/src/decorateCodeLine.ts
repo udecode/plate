@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
+/* eslint-disable unused-imports/no-unused-imports,unused-imports/no-unused-vars,simple-import-sort/imports */
 import {
   DecorateEntry,
   getNodeString,

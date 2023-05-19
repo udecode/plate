@@ -75,10 +75,9 @@ export const useFloatingMediaUrlInput = ({
   );
 };
 
-export const FloatingMediaUrlInput = createComponentAs<FloatingMediaUrlInputProps>(
-  (props) => {
+export const FloatingMediaUrlInput =
+  createComponentAs<FloatingMediaUrlInputProps>((props) => {
     const htmlProps = useFloatingMediaUrlInput(props);
 
     return createElementAs('input', htmlProps);
-  }
-);
+  });

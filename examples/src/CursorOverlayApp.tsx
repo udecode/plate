@@ -11,7 +11,7 @@ const styles: Record<string, CSSProperties> = {
   wrapper: { position: 'relative' },
 };
 
-export default () => {
+export default function CursorOverlayApp() {
   const ref = useRef(null);
 
   return (
@@ -25,4 +25,4 @@ export default () => {
       </Plate>
     </div>
   );
-};
+}

@@ -7,9 +7,9 @@ import { getSelectionRects } from '../queries/getSelectionRects';
 import { CursorState, SelectionRect } from '../types';
 import { useRefreshOnResize } from './useRefreshOnResize';
 
-export const FROZEN_EMPTY_ARRAY = (Object.freeze(
+export const FROZEN_EMPTY_ARRAY = Object.freeze(
   []
-) as unknown) as SelectionRect[];
+) as unknown as SelectionRect[];
 
 export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   containerRef,

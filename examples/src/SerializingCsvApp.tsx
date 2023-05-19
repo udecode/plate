@@ -47,10 +47,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={deserializeCsvValue}
-  />
-);
+export default function SerializingCsvApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={deserializeCsvValue}
+    />
+  );
+}

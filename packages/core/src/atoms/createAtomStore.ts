@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
+// eslint-disable-next-line import/no-unresolved
 import { Atom, Scope, SetAtom } from 'jotai/core/atom';
 
 export type GetRecord<O> = {
@@ -32,16 +33,13 @@ export type AtomStoreApi<T, N extends string = ''> = {
       >
     ) => AtomStoreApi<T & ET, EN extends string ? EN : N>;
   };
-} &
-  {
-    [key in keyof Record<UseNameStore<N>, {}>]: (
-      scope?: Scope
-    ) => {
-      get: GetRecord<T>;
-      set: SetRecord<T>;
-      use: UseRecord<T>;
-    };
+} & {
+  [key in keyof Record<UseNameStore<N>, {}>]: (scope?: Scope) => {
+    get: GetRecord<T>;
+    set: SetRecord<T>;
+    use: UseRecord<T>;
   };
+};
 
 const capitalizeFirstLetter = (str = '') =>
   str.length ? str[0].toUpperCase() + str.slice(1) : '';

@@ -23,8 +23,8 @@ export const KEY_TRAILING_BLOCK = 'trailingBlock';
 /**
  * @see {@link withTrailingBlock}
  */
-export const createTrailingBlockPlugin = createPluginFactory<TrailingBlockPlugin>(
-  {
+export const createTrailingBlockPlugin =
+  createPluginFactory<TrailingBlockPlugin>({
     key: KEY_TRAILING_BLOCK,
     withOverrides: withTrailingBlock,
     options: {
@@ -33,5 +33,4 @@ export const createTrailingBlockPlugin = createPluginFactory<TrailingBlockPlugin
     then: (editor) => ({
       type: getPluginType(editor, ELEMENT_DEFAULT),
     }),
-  }
-);
+  });

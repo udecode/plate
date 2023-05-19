@@ -19,9 +19,8 @@ export const findTabDestination = <V extends Value = Value>(
 ): TabDestination | null => {
   if (activeTabbableEntry) {
     // Find the next tabbable entry after the active one
-    const activeTabbableEntryIndex = tabbableEntries.indexOf(
-      activeTabbableEntry
-    );
+    const activeTabbableEntryIndex =
+      tabbableEntries.indexOf(activeTabbableEntry);
     const nextTabbableEntryIndex =
       activeTabbableEntryIndex + (direction === 'forward' ? 1 : -1);
     const nextTabbableEntry = tabbableEntries[nextTabbableEntryIndex];

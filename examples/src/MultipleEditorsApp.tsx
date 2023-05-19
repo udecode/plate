@@ -17,38 +17,42 @@ const styles = {
   },
 };
 
-const Editor = (props: PlateProps<MyValue>) => (
-  <Plate {...props}>
-    <MarkBalloonToolbar />
-  </Plate>
-);
+function Editor(props: PlateProps<MyValue>) {
+  return (
+    <Plate {...props}>
+      <MarkBalloonToolbar />
+    </Plate>
+  );
+}
 
-export default () => (
-  <PlateProvider<MyValue>
-    plugins={basicNodesPlugins}
-    initialValue={basicElementsValue}
-  >
+export default function MultipleEditorsApp() {
+  return (
     <PlateProvider<MyValue>
-      id="marks"
       plugins={basicNodesPlugins}
-      initialValue={basicMarksValue}
+      initialValue={basicElementsValue}
     >
       <PlateProvider<MyValue>
-        id="image"
-        plugins={imagePlugins}
-        initialValue={imageValue}
+        id="marks"
+        plugins={basicNodesPlugins}
+        initialValue={basicMarksValue}
       >
-        <Toolbar>
-          <BasicElementToolbarButtons />
-          <BasicMarkToolbarButtons />
-        </Toolbar>
+        <PlateProvider<MyValue>
+          id="image"
+          plugins={imagePlugins}
+          initialValue={imageValue}
+        >
+          <Toolbar>
+            <BasicElementToolbarButtons />
+            <BasicMarkToolbarButtons />
+          </Toolbar>
 
-        <div style={styles.wrapper}>
-          <Editor />
-          <Editor id="marks" />
-          <Editor id="image" />
-        </div>
+          <div style={styles.wrapper}>
+            <Editor />
+            <Editor id="marks" />
+            <Editor id="image" />
+          </div>
+        </PlateProvider>
       </PlateProvider>
     </PlateProvider>
-  </PlateProvider>
-);
+  );
+}

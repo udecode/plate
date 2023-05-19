@@ -19,7 +19,7 @@ import {
   useMyPlateEditorRef,
 } from './typescript/plateTypes';
 
-const KbdToolbarButton = () => {
+function KbdToolbarButton() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -28,18 +28,20 @@ const KbdToolbarButton = () => {
       icon={<Keyboard />}
     />
   );
-};
+}
 
 const plugins = createMyPlugins([...basicNodesPlugins, createKbdPlugin()], {
   components: plateUI,
 });
 
-export default () => (
-  <PlateProvider<MyValue> plugins={plugins} initialValue={kbdValue}>
-    <Toolbar>
-      <KbdToolbarButton />
-    </Toolbar>
+export default function KbdApp() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={kbdValue}>
+      <Toolbar>
+        <KbdToolbarButton />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

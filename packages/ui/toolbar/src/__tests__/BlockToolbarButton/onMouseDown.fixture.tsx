@@ -5,14 +5,14 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const input = ((
+export const input = (
   <editor>
     <hp>
       test
       <cursor />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 export const output = (
   <editor>

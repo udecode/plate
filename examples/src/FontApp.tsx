@@ -47,31 +47,35 @@ const plugins = createMyPlugins(
   }
 );
 
-const CopyContent = () => (
-  <div style={styles.copyWrapper}>
-    <span style={styles.copy}>Copy Me in the editor</span>
-  </div>
-);
+function CopyContent() {
+  return (
+    <div style={styles.copyWrapper}>
+      <span style={styles.copy}>Copy Me in the editor</span>
+    </div>
+  );
+}
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
-    <Toolbar>
-      <ColorPickerToolbarDropdown
-        pluginKey={MARK_COLOR}
-        icon={<FormatColorText />}
-        selectedIcon={<Check />}
-        tooltip={tooltips.color}
-      />
-      <ColorPickerToolbarDropdown
-        pluginKey={MARK_BG_COLOR}
-        icon={<FontDownload />}
-        selectedIcon={<Check />}
-        tooltip={tooltips.bg}
-      />
-    </Toolbar>
+export default function FontApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
+      <Toolbar>
+        <ColorPickerToolbarDropdown
+          pluginKey={MARK_COLOR}
+          icon={<FormatColorText />}
+          selectedIcon={<Check />}
+          tooltip={tooltips.color}
+        />
+        <ColorPickerToolbarDropdown
+          pluginKey={MARK_BG_COLOR}
+          icon={<FontDownload />}
+          selectedIcon={<Check />}
+          tooltip={tooltips.bg}
+        />
+      </Toolbar>
 
-    <CopyContent />
+      <CopyContent />
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

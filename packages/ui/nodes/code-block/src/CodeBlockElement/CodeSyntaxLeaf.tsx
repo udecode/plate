@@ -1,12 +1,15 @@
 import React from 'react';
-import { PlatePluginComponent } from '@udecode/plate-common';
+import { PlateLeafProps } from '@udecode/plate-styled-components';
 
-export const CodeSyntaxLeaf: PlatePluginComponent = ({
-  attributes,
-  children,
-  leaf,
-}) => (
-  <span {...attributes}>
-    <span className={`prism-token token ${leaf.tokenType}`}>{children}</span>
-  </span>
-);
+export function CodeSyntaxLeaf({ attributes, children, leaf }: PlateLeafProps) {
+  return (
+    <span {...attributes}>
+      <span
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        className={`prism-token token ${leaf.tokenType}`}
+      >
+        {children}
+      </span>
+    </span>
+  );
+}

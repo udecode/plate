@@ -26,7 +26,7 @@ export interface SelectionAreaProps
   ) => SelectionOptions['boundaries'];
 }
 
-export const SelectionArea = ({
+export function SelectionArea({
   onBeforeStart,
   onStart,
   onMove,
@@ -42,7 +42,7 @@ export const SelectionArea = ({
   features,
   getBoundaries = (boundaries) => boundaries,
   ...props
-}: SelectionAreaProps) => {
+}: SelectionAreaProps) {
   const ref = createRef<HTMLDivElement>();
 
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -78,4 +78,4 @@ export const SelectionArea = ({
       {children}
     </div>
   );
-};
+}

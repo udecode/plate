@@ -2,7 +2,7 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 
-export const DefaultLeaf = <V extends Value>({
+export function DefaultLeaf<V extends Value>({
   attributes,
   children,
   text,
@@ -10,8 +10,10 @@ export const DefaultLeaf = <V extends Value>({
   editor,
   nodeProps,
   ...props
-}: PlateRenderLeafProps<V>) => (
-  <span {...attributes} {...props}>
-    {children}
-  </span>
-);
+}: PlateRenderLeafProps<V>) {
+  return (
+    <span {...attributes} {...props}>
+      {children}
+    </span>
+  );
+}

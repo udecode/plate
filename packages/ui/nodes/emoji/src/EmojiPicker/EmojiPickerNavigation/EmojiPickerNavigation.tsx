@@ -13,10 +13,6 @@ export type EmojiPickerNavigationProps = Pick<
   onClick: (id: EmojiCategoryList) => void;
 };
 
-export type CategoryButtonProps = {
-  categoryId: EmojiCategoryList;
-};
-
 const getBarProperty = (
   emojiLibrary: IEmojiFloatingLibrary,
   focusedCategory?: EmojiCategoryList
@@ -42,27 +38,6 @@ export function EmojiPickerNavigation({
 }: EmojiPickerNavigationProps) {
   const { width, position } = getBarProperty(emojiLibrary, focusedCategory);
 
-  function CategoryButton({ categoryId }: CategoryButtonProps) {
-    return (
-      <button
-        key={categoryId}
-        aria-label={i18n.categories[categoryId]}
-        title={i18n.categories[categoryId]}
-        type="button"
-        className={cn(
-          'flex grow cursor-pointer items-center justify-center border-none bg-transparent fill-current text-sm text-gray-500 hover:text-gray-800',
-          categoryId === focusedCategory &&
-            'pointer-events-none fill-current text-blue-600'
-        )}
-        onClick={() => onClick(categoryId)}
-      >
-        <span style={{ width: '20px', height: '20px' }}>
-          {icons.categories[categoryId].outline}
-        </span>
-      </button>
-    );
-  }
-
   return (
     <nav
       id="emoji-nav"
@@ -73,7 +48,22 @@ export function EmojiPickerNavigation({
           .getGrid()
           .sections()
           .map(({ id }) => (
-            <CategoryButton categoryId={id} key={id} />
+            <button
+              key={id}
+              aria-label={i18n.categories[id]}
+              title={i18n.categories[id]}
+              type="button"
+              className={cn(
+                'flex grow cursor-pointer items-center justify-center border-none bg-transparent fill-current text-sm text-gray-500 hover:text-gray-800',
+                id === focusedCategory &&
+                  'pointer-events-none fill-current text-blue-600'
+              )}
+              onClick={() => onClick(id)}
+            >
+              <span style={{ width: '20px', height: '20px' }}>
+                {icons.categories[id].outline}
+              </span>
+            </button>
           ))}
         <div
           className="absolute -bottom-3 left-0 h-[3px] w-full rounded-t bg-blue-600 opacity-100 transition-transform duration-200"

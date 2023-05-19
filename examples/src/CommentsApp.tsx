@@ -25,7 +25,7 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => {
+export default function CommentsApp() {
   return (
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
       <MyCommentsProvider>
@@ -37,4 +37,4 @@ export default () => {
       </MyCommentsProvider>
     </PlateProvider>
   );
-};
+}

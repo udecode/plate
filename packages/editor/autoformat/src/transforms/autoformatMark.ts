@@ -37,11 +37,8 @@ export const autoformatMark = <V extends Value>(
     const matched = getMatchPoints(editor, { start, end });
     if (!matched) continue;
 
-    const {
-      afterStartMatchPoint,
-      beforeEndMatchPoint,
-      beforeStartMatchPoint,
-    } = matched;
+    const { afterStartMatchPoint, beforeEndMatchPoint, beforeStartMatchPoint } =
+      matched;
 
     const matchRange = {
       anchor: afterStartMatchPoint,

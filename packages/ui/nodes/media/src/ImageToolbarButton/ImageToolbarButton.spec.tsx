@@ -1,8 +1,8 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { usePlateEditorRef } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-core/src/components/Plate';
 import { createImagePlugin } from '@udecode/plate-media';
-import { Plate } from '../../../../../core/src/components/Plate';
 import { ImageToolbarButton } from './ImageToolbarButton';
 import { input1, input2, output2 } from './ImageToolbarButton.fixtures';
 
@@ -55,7 +55,7 @@ describe('ImageToolbarButton', () => {
       const element = getByTestId('ToolbarButton');
       fireEvent.click(element);
 
-      expect(getImageUrlMock).toBeCalledTimes(1);
+      expect(getImageUrlMock).toHaveBeenCalledTimes(1);
     });
   });
 

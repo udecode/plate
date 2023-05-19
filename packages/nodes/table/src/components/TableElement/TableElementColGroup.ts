@@ -16,10 +16,9 @@ export const useTableElementColGroupProps = ({
   };
 };
 
-export const TableElementColGroup = createComponentAs<TableElementColGroupProps>(
-  (props) => {
+export const TableElementColGroup =
+  createComponentAs<TableElementColGroupProps>((props) => {
     const htmlProps = useTableElementColGroupProps(props);
 
     return createElementAs('colgroup', htmlProps);
-  }
-);
+  });

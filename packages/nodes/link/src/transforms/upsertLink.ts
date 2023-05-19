@@ -23,18 +23,17 @@ import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
-export type UpsertLinkOptions<
-  V extends Value = Value
-> = CreateLinkNodeOptions & {
-  /**
-   * If true, insert text when selection is in url.
-   */
-  insertTextInLink?: boolean;
-  insertNodesOptions?: InsertNodesOptions<V>;
-  unwrapNodesOptions?: UnwrapNodesOptions<V>;
-  wrapNodesOptions?: WrapNodesOptions<V>;
-  skipValidation?: boolean;
-};
+export type UpsertLinkOptions<V extends Value = Value> =
+  CreateLinkNodeOptions & {
+    /**
+     * If true, insert text when selection is in url.
+     */
+    insertTextInLink?: boolean;
+    insertNodesOptions?: InsertNodesOptions<V>;
+    unwrapNodesOptions?: UnwrapNodesOptions<V>;
+    wrapNodesOptions?: WrapNodesOptions<V>;
+    skipValidation?: boolean;
+  };
 
 /**
  * If selection in a link or is not url:

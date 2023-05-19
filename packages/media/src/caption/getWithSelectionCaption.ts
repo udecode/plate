@@ -25,51 +25,50 @@ import { captionGlobalStore } from './captionGlobalStore';
  * - If focus is in table, anchor in a block before: set focus to end of table
  * - If focus is in table, anchor in a block after: set focus to the point before start of table
  */
-export const getWithSelectionCaption = (pluginKey: string) => <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->(
-  editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  plugin: WithPlatePlugin<ImagePlugin, V, E>
-) => {
-  const { apply } = editor;
+export const getWithSelectionCaption =
+  (pluginKey: string) =>
+  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
+    editor: E,
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    plugin: WithPlatePlugin<ImagePlugin, V, E>
+  ) => {
+    const { apply } = editor;
 
-  editor.apply = (operation) => {
-    if (operation.type === 'set_selection') {
-      const newSelection = {
-        ...editor.selection,
-        ...operation.newProperties,
-      } as Range | null;
+    editor.apply = (operation) => {
+      if (operation.type === 'set_selection') {
+        const newSelection = {
+          ...editor.selection,
+          ...operation.newProperties,
+        } as Range | null;
 
-      if (
-        editor.currentKeyboardEvent &&
-        isHotkey('up', editor.currentKeyboardEvent)
-      ) {
-        if (newSelection && isCollapsed(newSelection)) {
-          const entry = getAboveNode<TMediaElement>(editor, {
-            at: newSelection,
-            match: { type: getPluginType(editor, pluginKey) },
-          });
+        if (
+          editor.currentKeyboardEvent &&
+          isHotkey('up', editor.currentKeyboardEvent)
+        ) {
+          if (newSelection && isCollapsed(newSelection)) {
+            const entry = getAboveNode<TMediaElement>(editor, {
+              at: newSelection,
+              match: { type: getPluginType(editor, pluginKey) },
+            });
 
-          if (entry) {
-            const [node] = entry;
+            if (entry) {
+              const [node] = entry;
 
-            if (
-              node.caption &&
-              getNodeString({ children: node.caption } as any).length
-            ) {
-              setTimeout(() => {
-                captionGlobalStore.set.focusEndCaptionPath(entry[1]);
-              }, 0);
+              if (
+                node.caption &&
+                getNodeString({ children: node.caption } as any).length
+              ) {
+                setTimeout(() => {
+                  captionGlobalStore.set.focusEndCaptionPath(entry[1]);
+                }, 0);
+              }
             }
           }
         }
       }
-    }
 
-    apply(operation);
+      apply(operation);
+    };
+
+    return editor;
   };
-
-  return editor;
-};

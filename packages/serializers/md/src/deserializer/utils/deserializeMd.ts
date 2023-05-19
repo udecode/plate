@@ -20,11 +20,11 @@ export const deserializeMd = <V extends Value>(
 
   const tree: any = unified()
     .use(markdown)
-    .use(remarkPlugin, ({
+    .use(remarkPlugin, {
       editor,
       elementRules,
       textRules,
-    } as unknown) as RemarkPluginOptions<V>)
+    } as unknown as RemarkPluginOptions<V>)
     .processSync(data);
 
   return tree.result;

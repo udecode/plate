@@ -22,7 +22,7 @@ export const pipeRenderElement = <V extends Value>(
     }
   });
 
-  return (nodeProps) => {
+  return function render(nodeProps) {
     const props = pipeInjectProps<V>(editor, nodeProps);
 
     let element;

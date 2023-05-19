@@ -12,7 +12,8 @@ interface IIndexSearch<R> {
 }
 
 export abstract class AIndexSearch<RData = IndexSearchReturnData>
-  implements IIndexSearch<RData> {
+  implements IIndexSearch<RData>
+{
   protected result: string[] = [];
   protected scores = {};
   protected maxResult = EMOJI_MAX_SEARCH_RESULT;

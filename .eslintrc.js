@@ -198,6 +198,7 @@ module.exports = {
     'no-unused-expressions': 'off',
 
     'prefer-promise-reject-errors': 'off',
+    'prefer-regex-literals': 'off',
 
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',

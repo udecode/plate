@@ -55,13 +55,13 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <>
+export default function CloudApp() {
+  return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
       <Toolbar>
         <CloudToolbarButtons />
       </Toolbar>
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>
-  </>
-);
+  );
+}

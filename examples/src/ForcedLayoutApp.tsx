@@ -27,10 +27,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={forcedLayoutValue}
-  />
-);
+export default function ForcedLayoutApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={forcedLayoutValue}
+    />
+  );
+}

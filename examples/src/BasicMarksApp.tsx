@@ -15,12 +15,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={basicMarksValue} plugins={plugins}>
-    <Toolbar>
-      <BasicMarkToolbarButtons />
-    </Toolbar>
+export default function BasicMarksApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={basicMarksValue} plugins={plugins}>
+      <Toolbar>
+        <BasicMarkToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

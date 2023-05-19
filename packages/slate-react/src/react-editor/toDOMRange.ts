@@ -1,6 +1,6 @@
+import { Value } from '@udecode/slate/dist';
 import { Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { Value } from '../../../slate';
 import { TReactEditor } from '../types/TReactEditor';
 
 /**

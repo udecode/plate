@@ -13,7 +13,7 @@ jsx;
 
 describe('findTabDestination', () => {
   const editor = createPlateUIEditor({
-    editor: ((
+    editor: (
       <editor>
         <hp>Line 1</hp>
         <element type="my-void" void>
@@ -30,7 +30,7 @@ describe('findTabDestination', () => {
         </element>
         <hp>Line 4</hp>
       </editor>
-    ) as any) as PlateEditor,
+    ) as any as PlateEditor,
   });
 
   const voidPath1 = [1];

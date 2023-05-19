@@ -40,10 +40,12 @@ const plugins = createPlugins<MyValue>(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    initialValue={[...basicElementsValue, ...basicMarksValue]}
-    plugins={plugins}
-  />
-);
+export default function BasicPluginsComponentsApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      initialValue={[...basicElementsValue, ...basicMarksValue]}
+      plugins={plugins}
+    />
+  );
+}

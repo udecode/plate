@@ -5,4 +5,6 @@ const editableProps: TEditableProps = {
   placeholder: 'Type...',
 };
 
-export default () => <Plate editableProps={editableProps} />;
+export default function BasicEditorDefaultApp() {
+  return <Plate editableProps={editableProps} />;
+}

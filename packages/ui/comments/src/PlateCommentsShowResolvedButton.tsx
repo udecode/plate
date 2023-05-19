@@ -12,16 +12,11 @@ type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps & {
   retrieveUser: () => Promise<void>;
 };
 
-export const PlateCommentsShowResolvedButton = (
+export function PlateCommentsShowResolvedButton(
   props: PlateCommentsShowResolvedButtonProps
-) => {
-  const {
-    id,
-    fetchContacts,
-    renderContainer,
-    retrieveUser,
-    ...otherProps
-  } = props;
+) {
+  const { id, fetchContacts, renderContainer, retrieveUser, ...otherProps } =
+    props;
 
   const editor = usePlateEditorRef(useEventPlateId(id));
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
@@ -46,4 +41,4 @@ export const PlateCommentsShowResolvedButton = (
       />
     </div>
   );
-};
+}

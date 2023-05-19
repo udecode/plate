@@ -15,11 +15,11 @@ export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
 
-export const LinkToolbarButton = ({
+export function LinkToolbarButton({
   id,
   getLinkUrl,
   ...props
-}: LinkToolbarButtonProps) => {
+}: LinkToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const type = getPluginType(editor, ELEMENT_LINK);
@@ -38,4 +38,4 @@ export const LinkToolbarButton = ({
       {...props}
     />
   );
-};
+}

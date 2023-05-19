@@ -23,7 +23,7 @@ const tooltip = (content: string) => ({
   content,
 });
 
-export const BasicMarkToolbarButtons = () => {
+export function BasicMarkToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -67,4 +67,4 @@ export const BasicMarkToolbarButtons = () => {
       />
     </>
   );
-};
+}

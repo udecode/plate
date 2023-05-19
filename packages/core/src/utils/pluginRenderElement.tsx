@@ -15,52 +15,53 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 export const pluginRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
   { key, type, component: _component, props }: PlatePlugin<{}, V>
-): RenderElement => (nodeProps) => {
-  const { element, children: _children } = nodeProps;
+): RenderElement =>
+  function render(nodeProps) {
+    const { element, children: _children } = nodeProps;
 
-  if (element.type === type) {
-    const Element = _component ?? DefaultElement;
+    if (element.type === type) {
+      const Element = _component ?? DefaultElement;
 
-    const injectAboveComponents = editor.plugins.flatMap(
-      (o) => o.inject?.aboveComponent ?? []
-    );
-    const injectBelowComponents = editor.plugins.flatMap(
-      (o) => o.inject?.belowComponent ?? []
-    );
+      const injectAboveComponents = editor.plugins.flatMap(
+        (o) => o.inject?.aboveComponent ?? []
+      );
+      const injectBelowComponents = editor.plugins.flatMap(
+        (o) => o.inject?.belowComponent ?? []
+      );
 
-    nodeProps = getRenderNodeProps({
-      attributes: element.attributes as any,
-      nodeProps: nodeProps as any,
-      props,
-      type: type!,
-    }) as any;
+      nodeProps = getRenderNodeProps({
+        attributes: element.attributes as any,
+        nodeProps: nodeProps as any,
+        props,
+        type: type!,
+      }) as any;
 
-    let children = _children;
+      let children = _children;
 
-    injectBelowComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key } as any);
+      injectBelowComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, key } as any);
 
-      if (hoc) {
-        children = hoc({ ...nodeProps, children } as any);
-      }
-    });
+        if (hoc) {
+          children = hoc({ ...nodeProps, children } as any);
+        }
+      });
 
-    let component: JSX.Element | null = (
-      <Element {...nodeProps}>{children}</Element>
-    );
+      let component: JSX.Element | null = (
+        <Element {...nodeProps}>{children}</Element>
+      );
 
-    injectAboveComponents.forEach((withHOC) => {
-      const hoc = withHOC({ ...nodeProps, key } as any);
+      injectAboveComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, key } as any);
 
-      if (hoc) {
-        component = hoc({ ...nodeProps, children: component } as any);
-      }
-    });
+        if (hoc) {
+          component = hoc({ ...nodeProps, children: component } as any);
+        }
+      });
 
-    return (
-      <ElementProvider element={element} scope={key}>
-        {component}
-      </ElementProvider>
-    );
-  }
-};
+      return (
+        <ElementProvider element={element} scope={key}>
+          {component}
+        </ElementProvider>
+      );
+    }
+  };

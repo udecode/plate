@@ -20,10 +20,12 @@ const plugins: MyPlatePlugin[] = [
   }),
 ];
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    initialValue={excalidrawValue}
-    plugins={plugins}
-  />
-);
+export default function ExcalidrawApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      initialValue={excalidrawValue}
+      plugins={plugins}
+    />
+  );
+}

@@ -1,7 +1,6 @@
 import 'examples/src/styles.css';
 import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
-import '../styles/globals.css';
 import '../styles/globals.scss';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
@@ -14,7 +13,10 @@ export default function MyApp({ Component, pageProps }: any) {
   const router = useRouter();
 
   return (
-    <div className="app">
+    <div
+      // eslint-disable-next-line tailwindcss/no-custom-classname
+      className="app"
+    >
       <Sidebar />
 
       <div style={{ position: 'relative', width: '100%' }}>

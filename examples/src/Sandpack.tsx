@@ -13,13 +13,15 @@ const customSetup: SandpackSetup = {
   environment: 'create-react-app-typescript',
 };
 
-export const Sandpack = ({ code }: any) => (
-  <DefaultSandpack
-    theme="dark"
-    template="react-ts"
-    // options={}
-    // files={}
-    customSetup={customSetup}
-    // environment="create-react-app-typescript"
-  />
-);
+export function Sandpack({}: any) {
+  return (
+    <DefaultSandpack
+      theme="dark"
+      template="react-ts"
+      // options={}
+      // files={}
+      customSetup={customSetup}
+      // environment="create-react-app-typescript"
+    />
+  );
+}

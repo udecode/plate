@@ -3,19 +3,15 @@ import { useEditorRef } from '../hooks';
 import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 
-export const EditorRefPluginEffect = ({
-  plugin,
-}: {
-  plugin: WithPlatePlugin;
-}) => {
+export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
   const editor = useEditorRef();
 
   plugin.useHooks?.(editor, plugin);
 
   return null;
-};
+}
 
-export const EditorRefEffect = ({ id }: { id?: PlateId }) => {
+export function EditorRefEffect({ id }: { id?: PlateId }) {
   const setIsRendered = usePlateActions(id).isRendered();
   const plugins = usePlateSelectors(id).plugins();
 
@@ -34,4 +30,4 @@ export const EditorRefEffect = ({ id }: { id?: PlateId }) => {
       ))}
     </>
   );
-};
+}

@@ -142,13 +142,8 @@ export const useResizable = ({
 
 export const Resizable = createComponentAs<ResizableProps>(
   ({ children, ...props }) => {
-    const {
-      wrapperProps,
-      resizableProps,
-      handleLeft,
-      handleRight,
-      restProps,
-    } = useResizable(props);
+    const { wrapperProps, resizableProps, handleLeft, handleRight, restProps } =
+      useResizable(props);
 
     return (
       <div {...wrapperProps}>

@@ -21,6 +21,11 @@
   "scripts": {
     "build": "yarn p:build",
     "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
@@ -29,7 +34,7 @@
     "@udecode/utils": "19.7.0",
     "@udecode/zustood": "^1.1.1",
     "clsx": "^1.2.1",
-    "jotai": "^1.7.2",
+    "jotai": "1.7.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.4",
     "react-hotkeys-hook": "^4.3.7",

@@ -10,17 +10,17 @@ type ColorsProps = {
   updateColor: (color: string) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export const Colors = ({
+export function Colors({
   color,
   colors,
   selectedIcon,
   updateColor,
   className,
   ...props
-}: ColorsProps) => {
+}: ColorsProps) {
   return (
     <div
-      className={cn('grid-cols-[repeat(10, 1fr)] grid gap-1', className)}
+      className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
       {...props}
     >
       {colors.map(({ name, value, isBrightColor }) => (
@@ -36,4 +36,4 @@ export const Colors = ({
       ))}
     </div>
   );
-};
+}

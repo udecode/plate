@@ -16,13 +16,13 @@ import {
   ToolbarButtonProps,
 } from '@udecode/plate-ui-toolbar';
 
-export const CodeBlockToolbarButton = <V extends Value>({
+export function CodeBlockToolbarButton<V extends Value>({
   id,
   options,
   ...props
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions<V>;
-}) => {
+}) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   return (
@@ -43,4 +43,4 @@ export const CodeBlockToolbarButton = <V extends Value>({
       {...props}
     />
   );
-};
+}

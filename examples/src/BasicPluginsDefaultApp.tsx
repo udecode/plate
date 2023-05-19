@@ -29,10 +29,12 @@ const plugins: MyPlatePlugin[] = [
   createCodePlugin(),
 ];
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    initialValue={[...basicElementsValue, ...basicMarksValue]}
-    plugins={plugins}
-  />
-);
+export default function BasicPluginsDefaultApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      initialValue={[...basicElementsValue, ...basicMarksValue]}
+      plugins={plugins}
+    />
+  );
+}

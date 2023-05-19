@@ -7,7 +7,8 @@ import {
 } from './Grid.types';
 
 export abstract class AGridSection<R extends Unknown, T = SectionId>
-  implements IGridSection<R, T> {
+  implements IGridSection<R, T>
+{
   protected rows: GridRows = [];
   protected _root!: R;
   protected _rowsNum = 0;

@@ -28,10 +28,9 @@ export const useDraggableBlockToolbarProps = ({
   };
 };
 
-export const DraggableBlockToolbar = createComponentAs<DraggableBlockToolbarProps>(
-  (props) => {
+export const DraggableBlockToolbar =
+  createComponentAs<DraggableBlockToolbarProps>((props) => {
     const htmlProps = useDraggableBlockToolbarProps(props);
 
     return createElementAs('div', htmlProps);
-  }
-);
+  });

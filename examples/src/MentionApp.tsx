@@ -49,15 +49,20 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={mentionValue}
-    onChange={(e) => console.info(e)}
-  >
-    <MentionCombobox items={MENTIONABLES} />
-    <MentionCombobox items={MENTIONABLES} pluginKey="#" />
-    <MentionCombobox items={[MENTIONABLES[0], MENTIONABLES[1]]} pluginKey="/" />
-  </Plate>
-);
+export default function MentionApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={mentionValue}
+      onChange={(e) => console.info(e)}
+    >
+      <MentionCombobox items={MENTIONABLES} />
+      <MentionCombobox items={MENTIONABLES} pluginKey="#" />
+      <MentionCombobox
+        items={[MENTIONABLES[0], MENTIONABLES[1]]}
+        pluginKey="/"
+      />
+    </Plate>
+  );
+}

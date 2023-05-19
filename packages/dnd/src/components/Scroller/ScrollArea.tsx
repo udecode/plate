@@ -27,7 +27,7 @@ export interface ScrollAreaProps {
   scrollAreaProps?: HTMLAttributes<HTMLDivElement>;
 }
 
-export const ScrollArea = ({
+export function ScrollArea({
   placement,
   enabled = true,
   height = 100,
@@ -36,7 +36,7 @@ export const ScrollArea = ({
   strengthMultiplier = 25,
   containerRef,
   scrollAreaProps,
-}: ScrollAreaProps) => {
+}: ScrollAreaProps) {
   const ref = useRef<HTMLDivElement>();
 
   const scaleYRef = useRef(0);
@@ -144,4 +144,4 @@ export const ScrollArea = ({
       {...scrollAreaProps}
     />
   );
-};
+}

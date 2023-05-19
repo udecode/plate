@@ -21,9 +21,8 @@ export const useCommentLinkDialogCopyLink = ({
   };
 };
 
-export const CommentLinkDialogCopyLink = createComponentAs<CommentLinkDialogCopyLinkProps>(
-  (props) => {
+export const CommentLinkDialogCopyLink =
+  createComponentAs<CommentLinkDialogCopyLinkProps>((props) => {
     const htmlProps = useCommentLinkDialogCopyLink(props);
     return createElementAs('div', htmlProps);
-  }
-);
+  });

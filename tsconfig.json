@@ -22,6 +22,5 @@
     "target": "es2017",
     "outDir": "dist"
   },
-  "files": ["scripts/types/twin.d.ts"],
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

@@ -9,13 +9,13 @@ type EmojiToolbarDropdownProps = {
   onClose?: (ev: MouseEvent) => void;
 };
 
-export const EmojiToolbarDropdownRoot = ({
+export function EmojiToolbarDropdownRoot({
   control,
   children,
   open,
   onOpen,
   onClose,
-}: EmojiToolbarDropdownProps) => {
+}: EmojiToolbarDropdownProps) {
   const { styles, refs } = useDropdownControls({
     open,
     onClose,
@@ -34,4 +34,4 @@ export const EmojiToolbarDropdownRoot = ({
       )}
     </>
   );
-};
+}

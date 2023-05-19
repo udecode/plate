@@ -6,11 +6,11 @@ export type ScrollerProps = Omit<ScrollAreaProps, 'placement'>;
  * Set up an edge scroller at the top of the page for scrolling up.
  * One at the bottom for scrolling down.
  */
-export const Scroller = (props: ScrollerProps) => {
+export function Scroller(props: ScrollerProps) {
   return (
     <>
       <ScrollArea placement="top" {...props} />
       <ScrollArea placement="bottom" {...props} />
     </>
   );
-};
+}

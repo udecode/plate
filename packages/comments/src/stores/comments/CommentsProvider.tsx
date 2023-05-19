@@ -84,10 +84,10 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
   }
 );
 
-export const CommentsProvider = ({
+export function CommentsProvider({
   children,
   ...props
-}: Partial<CommentsStoreState> & { children: ReactNode }) => {
+}: Partial<CommentsStoreState> & { children: ReactNode }) {
   return (
     <JotaiProvider
       initialValues={getJotaiProviderInitialValues(commentsStore, props)}
@@ -96,7 +96,7 @@ export const CommentsProvider = ({
       {children}
     </JotaiProvider>
   );
-};
+}
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;

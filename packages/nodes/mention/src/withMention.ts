@@ -101,7 +101,7 @@ export const withMention = <
     if (
       !editor.selection ||
       text !== trigger ||
-      (query && !query<V, E>(editor)) ||
+      (query && !query(editor as PlateEditor)) ||
       isSelectionInMentionInput(editor)
     ) {
       return _insertText(text);

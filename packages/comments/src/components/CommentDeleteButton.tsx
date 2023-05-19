@@ -33,10 +33,10 @@ export const useCommentDeleteButton = (
   };
 };
 
-export const CommentDeleteButton = (
+export function CommentDeleteButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentDeleteButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

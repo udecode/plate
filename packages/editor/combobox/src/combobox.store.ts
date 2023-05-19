@@ -117,7 +117,7 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
 
       set.state((draft) => {
         draft.byId[state.id] = createComboboxStore(
-          (state as unknown) as ComboboxStateById
+          state as unknown as ComboboxStateById
         );
       });
     },

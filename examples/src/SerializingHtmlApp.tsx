@@ -42,21 +42,23 @@ const plugins = createMyPlugins(
   }
 );
 
-const Serialized = () => {
+function Serialized() {
   const editor = usePlateEditorState();
   const html = serializeHtml(editor, {
     nodes: editor.children,
   });
 
   return <HighlightHTML code={html} />;
-};
+}
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={deserializeHtmlValue}
-  >
-    <Serialized />
-  </Plate>
-);
+export default function SerializingHtmlApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={deserializeHtmlValue}
+    >
+      <Serialized />
+    </Plate>
+  );
+}

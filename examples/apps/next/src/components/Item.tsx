@@ -3,13 +3,13 @@ import { MenuItem } from 'react-pro-sidebar';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-export const Item = ({
+export function Item({
   href,
   children,
 }: {
   href: string;
   children: ReactNode;
-}) => {
+}) {
   const { route } = useRouter();
 
   return (
@@ -17,4 +17,4 @@ export const Item = ({
       <Link href={href}>{children}</Link>
     </MenuItem>
   );
-};
+}

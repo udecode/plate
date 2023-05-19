@@ -19,16 +19,18 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <>
-    <Toolbar>
-      <BasicElementToolbarButtons />
-    </Toolbar>
+export default function PlaceholderApp() {
+  return (
+    <>
+      <Toolbar>
+        <BasicElementToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={placeholderValue}
-    />
-  </>
-);
+      <Plate<MyValue>
+        editableProps={editableProps}
+        plugins={plugins}
+        initialValue={placeholderValue}
+      />
+    </>
+  );
+}

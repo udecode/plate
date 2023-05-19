@@ -43,12 +43,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
-    <Toolbar>
-      <AlignToolbarButtons />
-    </Toolbar>
+export default function AlignmentApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
+      <Toolbar>
+        <AlignToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

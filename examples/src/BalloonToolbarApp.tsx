@@ -6,12 +6,14 @@ import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { MyValue } from './typescript/plateTypes';
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={basicNodesPlugins}
-    initialValue={balloonToolbarValue}
-  >
-    <MarkBalloonToolbar />
-  </Plate>
-);
+export default function BalloonToolbarApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={basicNodesPlugins}
+      initialValue={balloonToolbarValue}
+    >
+      <MarkBalloonToolbar />
+    </Plate>
+  );
+}

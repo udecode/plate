@@ -15,12 +15,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={highlightValue} plugins={plugins}>
-    <Toolbar>
-      <HighlightToolbarButton />
-    </Toolbar>
+export default function HighlightApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={highlightValue} plugins={plugins}>
+      <Toolbar>
+        <HighlightToolbarButton />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

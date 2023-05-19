@@ -10,7 +10,7 @@ type ColorButtonProps = {
   updateColor: (color: string) => void;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export const ColorButton = ({
+export function ColorButton({
   name,
   value,
   isBrightColor,
@@ -19,7 +19,7 @@ export const ColorButton = ({
   updateColor,
   className,
   ...props
-}: ColorButtonProps) => {
+}: ColorButtonProps) {
   const content = (
     <button
       data-testid="ColorButton"
@@ -41,4 +41,4 @@ export const ColorButton = ({
   );
 
   return name ? <Tippy content={name}>{content}</Tippy> : content;
-};
+}

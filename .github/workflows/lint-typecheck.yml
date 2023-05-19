@@ -88,11 +88,11 @@ jobs:
 
       # Lint packages that have changed (--include & --since)
       - name: Lint
-        run: yarn g:lint-changed
+        run: yarn g:lint
 
       # Typecheck packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:typecheck-changed
+        run: yarn g:typecheck
 
   notify:
     name: Discord Notification

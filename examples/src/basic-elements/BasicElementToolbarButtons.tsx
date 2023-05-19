@@ -25,7 +25,7 @@ import { useMyPlateEditorRef } from '../typescript/plateTypes';
 const tooltip = (content: string) => ({
   content,
 });
-export const BasicElementToolbarButtons = () => {
+export function BasicElementToolbarButtons() {
   const editor = useMyPlateEditorRef(useEventPlateId());
 
   return (
@@ -68,4 +68,4 @@ export const BasicElementToolbarButtons = () => {
       <CodeBlockToolbarButton icon={<CodeBlock />} />
     </>
   );
-};
+}

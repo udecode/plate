@@ -36,10 +36,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    initialValue={autoformatValue}
-    plugins={plugins}
-  />
-);
+export default function AutoformatApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      initialValue={autoformatValue}
+      plugins={plugins}
+    />
+  );
+}

@@ -31,9 +31,8 @@ export const useFloatingToolbar = ({
   const editor = usePlateEditorState();
   const focused = useFocused();
 
-  const [waitForCollapsedSelection, setWaitForCollapsedSelection] = useState(
-    false
-  );
+  const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
+    useState(false);
 
   const [open, setOpen] = useState(false);
 

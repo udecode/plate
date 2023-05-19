@@ -53,7 +53,7 @@ export interface ImageElementProps
   ignoreReadOnly?: boolean;
 }
 
-export const ImageElement = ({ className, ...props }: ImageElementProps) => {
+export function ImageElement({ className, ...props }: ImageElementProps) {
   const {
     children,
     nodeProps,
@@ -149,4 +149,4 @@ export const ImageElement = ({ className, ...props }: ImageElementProps) => {
       </Media.Root>
     </ElementPopover>
   );
-};
+}

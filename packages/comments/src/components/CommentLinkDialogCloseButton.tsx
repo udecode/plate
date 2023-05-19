@@ -17,9 +17,8 @@ export const useCommentLinkDialogCloseButton = ({
   };
 };
 
-export const CommentLinkDialogCloseButton = createComponentAs<CommentLinkDialogCloseButtonProps>(
-  (props) => {
+export const CommentLinkDialogCloseButton =
+  createComponentAs<CommentLinkDialogCloseButtonProps>((props) => {
     const htmlProps = useCommentLinkDialogCloseButton(props);
     return createElementAs('div', htmlProps);
-  }
-);
+  });

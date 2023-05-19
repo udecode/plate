@@ -13,11 +13,11 @@ export interface MentionComboboxProps<TData extends Data = NoData>
   pluginKey?: string;
 }
 
-export const MentionCombobox = <TData extends Data = NoData>({
+export function MentionCombobox<TData extends Data = NoData>({
   pluginKey = ELEMENT_MENTION,
   id = pluginKey,
   ...props
-}: MentionComboboxProps<TData>) => {
+}: MentionComboboxProps<TData>) {
   const editor = usePlateEditorRef();
 
   const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
@@ -33,4 +33,4 @@ export const MentionCombobox = <TData extends Data = NoData>({
       {...props}
     />
   );
-};
+}

@@ -1,5 +1,5 @@
-import { TNodeProps } from '@udecode/plate'
-import { TExcalidrawElement } from '@udecode/plate-ui-excalidraw'
+import { TNodeProps } from '@udecode/plate';
+import { TExcalidrawElement } from '@udecode/plate-ui-excalidraw';
 
 export const initialDataExcalidraw: TNodeProps<TExcalidrawElement> = {
   data: {
@@ -49,4 +49,4 @@ export const initialDataExcalidraw: TNodeProps<TExcalidrawElement> = {
     ],
     state: { viewBackgroundColor: '#AFEEEE', currentItemFontFamily: 1 },
   },
-}
+};

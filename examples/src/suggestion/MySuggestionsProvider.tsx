@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { SuggestionProvider } from '@udecode/plate';
 import { suggestionsData, usersData } from './constants';
 
-export const MySuggestionProvider = ({ children }: { children: ReactNode }) => {
+export function MySuggestionProvider({ children }: { children: ReactNode }) {
   return (
     <SuggestionProvider
       suggestions={suggestionsData}
@@ -12,4 +12,4 @@ export const MySuggestionProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </SuggestionProvider>
   );
-};
+}

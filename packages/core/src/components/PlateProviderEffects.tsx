@@ -10,14 +10,11 @@ export interface PlateProviderEffectsProps<
   children: ReactNode;
 }
 
-export const PlateProviderEffects = <
+export function PlateProviderEffects<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
->({
-  children,
-  ...props
-}: PlateProviderEffectsProps<V, E>) => {
+>({ children, ...props }: PlateProviderEffectsProps<V, E>) {
   usePlateEffects<V, E>(props);
 
   return <>{children}</>;
-};
+}

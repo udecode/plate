@@ -10,18 +10,17 @@ import {
 
 export const mentionOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
-) => (editor: PlateEditor<V>) => KeyboardEventHandler = (options) => (
-  editor
-) => (event) => {
-  if (isHotkey('escape', event)) {
-    const currentMentionInput = findMentionInput(editor)!;
-    if (currentMentionInput) {
-      event.preventDefault();
-      removeMentionInput(editor, currentMentionInput[1]);
-      return true;
+) => (editor: PlateEditor<V>) => KeyboardEventHandler =
+  (options) => (editor) => (event) => {
+    if (isHotkey('escape', event)) {
+      const currentMentionInput = findMentionInput(editor)!;
+      if (currentMentionInput) {
+        event.preventDefault();
+        removeMentionInput(editor, currentMentionInput[1]);
+        return true;
+      }
+      return false;
     }
-    return false;
-  }
 
-  return moveSelectionByOffset(editor, options)(event);
-};
+    return moveSelectionByOffset(editor, options)(event);
+  };

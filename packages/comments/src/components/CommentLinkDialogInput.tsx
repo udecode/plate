@@ -18,9 +18,8 @@ export const useCommentLinkDialogInput = ({
   };
 };
 
-export const CommentLinkDialogInput = createComponentAs<CommentLinkDialogInputProps>(
-  (props) => {
+export const CommentLinkDialogInput =
+  createComponentAs<CommentLinkDialogInputProps>((props) => {
     const htmlProps = useCommentLinkDialogInput(props);
     return createElementAs('input', htmlProps);
-  }
-);
+  });

@@ -1,8 +1,8 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { usePlateEditorRef } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-core/src/components/Plate';
 import { createMediaEmbedPlugin } from '@udecode/plate-media';
-import { Plate } from '../../../../../core/src/components/Plate';
 import { MediaEmbedToolbarButton } from './MediaEmbedToolbarButton';
 import { input1, input2, output2 } from './MediaEmbedToolbarButton.fixtures';
 
@@ -30,7 +30,7 @@ describe('MediaEmbedToolbarButton', () => {
       const element = getByTestId('ToolbarButton');
       fireEvent.click(element);
 
-      expect(getEmbedUrlMock).toBeCalledTimes(1);
+      expect(getEmbedUrlMock).toHaveBeenCalledTimes(1);
     });
   });
 

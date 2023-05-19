@@ -30,10 +30,9 @@ export const useTableCellElementRootProps = (
   return { colSpan: element.colSpan, ...useElementProps(props) };
 };
 
-export const TableCellElementRoot = createComponentAs<TableCellElementRootProps>(
-  (props) => {
+export const TableCellElementRoot =
+  createComponentAs<TableCellElementRootProps>((props) => {
     const htmlProps = useTableCellElementRootProps(props);
 
     return createElementAs('td', htmlProps);
-  }
-);
+  });

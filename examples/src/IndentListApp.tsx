@@ -10,8 +10,8 @@ import {
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
   Plate,
+  PlateElement,
   PlateProvider,
-  StyledElement,
   toggleIndentList,
   ToolbarButton,
   withProps,
@@ -32,14 +32,9 @@ const plugins = createMyPlugins(
   [
     createHeadingPlugin(),
     createParagraphPlugin({
-      component: withProps(StyledElement, {
+      component: withProps(PlateElement, {
         as: 'div',
-        styles: {
-          rootVariants: {
-            margin: 0,
-            padding: '4px 0',
-          },
-        },
+        className: 'm-0 py-1 px-0',
       }),
     }),
     createIndentListPlugin(indentListPlugin),
@@ -85,7 +80,7 @@ function ToolbarButtons() {
   );
 }
 
-export default function () {
+export default function IndentListApp() {
   return (
     <PlateProvider<MyValue>
       plugins={plugins}

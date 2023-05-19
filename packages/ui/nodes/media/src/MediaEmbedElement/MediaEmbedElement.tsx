@@ -34,10 +34,10 @@ export interface MediaEmbedElementProps
   popoverProps?: PopoverProps;
 }
 
-export const MediaEmbedElement = ({
+export function MediaEmbedElement({
   className,
   ...props
-}: MediaEmbedElementProps) => {
+}: MediaEmbedElementProps) {
   const { children, nodeProps, caption = {}, popoverProps = {} } = props;
 
   const focused = useFocused();
@@ -57,7 +57,7 @@ export const MediaEmbedElement = ({
           className={cn(
             'group relative m-0 w-full',
             provider === 'twitter' &&
-              '[&_.twitter-tweet]: [&_.twitter-tweet]:!my-0 [&_.twitter-tweet]:!mx-auto [&_.twitter-tweet]:p-0.5',
+              '[&_.twitter-tweet]: [&_.twitter-tweet]:!mx-auto [&_.twitter-tweet]:!my-0 [&_.twitter-tweet]:p-0.5',
             provider === 'twitter' &&
               !readOnly &&
               selected &&
@@ -111,7 +111,7 @@ export const MediaEmbedElement = ({
             >
               <MediaEmbed
                 className={cn(
-                  'absolute top-0 left-0 h-full w-full',
+                  'absolute left-0 top-0 h-full w-full',
                   'rounded-[3px] shadow-[0_0_1px_rgb(59,130,249)]'
                 )}
                 {...nodeProps}
@@ -137,4 +137,4 @@ export const MediaEmbedElement = ({
       </Media.Root>
     </ElementPopover>
   );
-};
+}

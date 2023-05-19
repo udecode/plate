@@ -147,9 +147,8 @@ export const pluginDeserializeHtml = <V extends Value>(
 
     for (const elementAttributeName of elementAttributeNames) {
       if (attributeNames.includes(elementAttributeName)) {
-        elementAttributes[elementAttributeName] = el.getAttribute(
-          elementAttributeName
-        );
+        elementAttributes[elementAttributeName] =
+          el.getAttribute(elementAttributeName);
       }
     }
 

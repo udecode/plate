@@ -10,4 +10,4 @@ import { PlateEditor } from '../types/PlateEditor';
 export const useEditorState = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
->() => (useSlate() as unknown) as E;
+>() => useSlate() as unknown as E;

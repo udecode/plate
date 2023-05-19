@@ -19,37 +19,39 @@ const tooltip = (content: string) => ({
   content,
 });
 
-export const TableToolbarButtons = () => (
-  <>
-    <TableToolbarButton
-      tooltip={tooltip('Table')}
-      icon={<BorderAll />}
-      transform={insertTable}
-    />
-    <TableToolbarButton
-      tooltip={tooltip('Remove Table')}
-      icon={<BorderClear />}
-      transform={deleteTable}
-    />
-    <TableToolbarButton
-      tooltip={tooltip('Table Row')}
-      icon={<BorderBottom />}
-      transform={insertTableRow}
-    />
-    <TableToolbarButton
-      tooltip={tooltip('Remove Table Row')}
-      icon={<BorderTop />}
-      transform={deleteRow}
-    />
-    <TableToolbarButton
-      tooltip={tooltip('Table Column')}
-      icon={<BorderLeft />}
-      transform={insertTableColumn}
-    />
-    <TableToolbarButton
-      tooltip={tooltip('Remove Table Column')}
-      icon={<BorderRight />}
-      transform={deleteColumn}
-    />
-  </>
-);
+export function TableToolbarButtons() {
+  return (
+    <>
+      <TableToolbarButton
+        tooltip={tooltip('Table')}
+        icon={<BorderAll />}
+        transform={insertTable}
+      />
+      <TableToolbarButton
+        tooltip={tooltip('Remove Table')}
+        icon={<BorderClear />}
+        transform={deleteTable}
+      />
+      <TableToolbarButton
+        tooltip={tooltip('Table Row')}
+        icon={<BorderBottom />}
+        transform={insertTableRow}
+      />
+      <TableToolbarButton
+        tooltip={tooltip('Remove Table Row')}
+        icon={<BorderTop />}
+        transform={deleteRow}
+      />
+      <TableToolbarButton
+        tooltip={tooltip('Table Column')}
+        icon={<BorderLeft />}
+        transform={insertTableColumn}
+      />
+      <TableToolbarButton
+        tooltip={tooltip('Remove Table Column')}
+        icon={<BorderRight />}
+        transform={deleteColumn}
+      />
+    </>
+  );
+}

@@ -33,12 +33,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
-    <Toolbar>
-      <TableToolbarButtons />
-    </Toolbar>
+export default function TableApp() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
+      <Toolbar>
+        <TableToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

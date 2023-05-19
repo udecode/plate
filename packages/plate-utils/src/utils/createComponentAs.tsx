@@ -24,5 +24,5 @@ export const createComponentAs = <O extends AsProps>(
   const Role = (props: Props<O>, ref: React.Ref<any>) =>
     render({ ref, ...props });
 
-  return (forwardRef(Role as any) as unknown) as Component<O>;
+  return forwardRef(Role as any) as unknown as Component<O>;
 };

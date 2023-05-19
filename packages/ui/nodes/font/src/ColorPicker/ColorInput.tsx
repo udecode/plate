@@ -1,13 +1,13 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { cn } from '@udecode/plate-styled-components';
 
-export const ColorInput = ({
+export function ColorInput({
   value = '#000000',
   onChange,
   children,
   className,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) => {
+}: React.InputHTMLAttributes<HTMLInputElement>) {
   const ref = useRef<HTMLInputElement | null>(null);
 
   function handleClick() {
@@ -38,4 +38,4 @@ export const ColorInput = ({
       />
     </div>
   );
-};
+}

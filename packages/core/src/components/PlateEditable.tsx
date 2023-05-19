@@ -36,13 +36,13 @@ export interface PlateEditableProps<V extends Value = Value>
   extends Omit<TEditableProps<V>, 'id'>,
     PlateEditableExtendedProps {}
 
-export const PlateEditable = <V extends Value = Value>({
+export function PlateEditable<V extends Value = Value>({
   children,
   renderEditable,
   editableRef,
   firstChildren,
   ...props
-}: PlateEditableProps<V>) => {
+}: PlateEditableProps<V>) {
   const { id } = props;
 
   const editor = useEditorRef();
@@ -104,4 +104,4 @@ export const PlateEditable = <V extends Value = Value>({
   });
 
   return aboveEditable;
-};
+}

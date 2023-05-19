@@ -21,12 +21,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <IFrame>
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={iframeValue}
-    />
-  </IFrame>
-);
+export default function IframeApp() {
+  return (
+    <IFrame>
+      <Plate<MyValue>
+        editableProps={editableProps}
+        plugins={plugins}
+        initialValue={iframeValue}
+      />
+    </IFrame>
+  );
+}

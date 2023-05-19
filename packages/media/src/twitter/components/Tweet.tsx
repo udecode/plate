@@ -21,13 +21,13 @@ export type TweetProps = Readonly<{
   twitterOptions?: TwitterEmbedOptions;
 }>;
 
-export const Tweet = ({
+export function Tweet({
   tweetId,
   onError,
   onLoad,
   loadingComponent,
   twitterOptions = {},
-}: TweetProps) => {
+}: TweetProps) {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
   const previousTweetIDRef = useRef('');
@@ -80,4 +80,4 @@ export const Tweet = ({
       <div key={tweetId} ref={containerRef} />
     </>
   );
-};
+}

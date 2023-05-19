@@ -14,10 +14,10 @@ export const useCommentEditCancelButton = (
   };
 };
 
-export const CommentEditCancelButton = (
+export function CommentEditCancelButton(
   props: ButtonHTMLAttributes<HTMLButtonElement>
-) => {
+) {
   const htmlProps = useCommentEditCancelButton(props);
 
   return <button type="button" {...htmlProps} />;
-};
+}

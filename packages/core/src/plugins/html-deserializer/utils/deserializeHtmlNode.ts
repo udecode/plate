@@ -11,28 +11,28 @@ import { isHtmlElement } from './isHtmlElement';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHtmlNode = <V extends Value>(
-  editor: PlateEditor<V>
-) => (
-  node: HTMLElement | ChildNode
-): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
-  const textNode = htmlTextNodeToString(node);
-  if (textNode) return textNode;
+export const deserializeHtmlNode =
+  <V extends Value>(editor: PlateEditor<V>) =>
+  (
+    node: HTMLElement | ChildNode
+  ): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
+    const textNode = htmlTextNodeToString(node);
+    if (textNode) return textNode;
 
-  if (!isHtmlElement(node)) return null;
+    if (!isHtmlElement(node)) return null;
 
-  // break line
-  const breakLine = htmlBrToNewLine(node);
-  if (breakLine) return breakLine;
+    // break line
+    const breakLine = htmlBrToNewLine(node);
+    if (breakLine) return breakLine;
 
-  // body
-  const fragment = htmlBodyToFragment(editor, node);
-  if (fragment) return fragment;
+    // body
+    const fragment = htmlBodyToFragment(editor, node);
+    if (fragment) return fragment;
 
-  // element
-  const element = htmlElementToElement(editor, node);
-  if (element) return element;
+    // element
+    const element = htmlElementToElement(editor, node);
+    if (element) return element;
 
-  // leaf
-  return htmlElementToLeaf(editor, node);
-};
+    // leaf
+    return htmlElementToLeaf(editor, node);
+  };

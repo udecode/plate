@@ -8,7 +8,7 @@ const tooltip = (content: string) => ({
   content,
 });
 
-export const IndentToolbarButtons = () => {
+export function IndentToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -36,4 +36,4 @@ export const IndentToolbarButtons = () => {
       />
     </>
   );
-};
+}

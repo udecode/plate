@@ -4,12 +4,11 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { styled } from '@stitches/react';
 import { CommentEdit } from '@styled-icons/boxicons-regular/CommentEdit';
 import { ModeEdit } from '@styled-icons/material';
-import { ChevronDownIcon, PlateButton } from '@udecode/plate';
+import { Button, ChevronDownIcon, cn } from '@udecode/plate';
 import {
   useSetIsSuggesting,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
-import tw from 'twin.macro';
 
 const DropdownMenuContent = styled(DropdownMenu.Content, {
   zIndex: 1001,
@@ -43,20 +42,20 @@ const DropdownMenuRadioItem = styled(DropdownMenu.RadioItem, {
   },
 });
 
-export const PlateSuggestionToolbarDropdown = () => {
+export function PlateSuggestionToolbarDropdown() {
   const setIsSuggesting = useSetIsSuggesting();
   const isSuggesting = useSuggestionSelectors().isSuggesting();
 
   const EditIcon = (
-    <div tw="flex items-center">
-      <ModeEdit tw="h-5 w-5 mr-1" />
+    <div className="flex items-center">
+      <ModeEdit className="mr-1 h-5 w-5" />
       Editing
     </div>
   );
 
   const SuggestingIcon = (
-    <div tw="flex items-center">
-      <CommentEdit tw="h-5 w-5 mr-1" />
+    <div className="flex items-center">
+      <CommentEdit className="mr-1 h-5 w-5" />
       Suggesting
     </div>
   );
@@ -65,12 +64,12 @@ export const PlateSuggestionToolbarDropdown = () => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <div>
-          <PlateButton tw="min-w-[140px] flex justify-between items-center text-blue-500 bg-blue-50">
+          <Button className="flex min-w-[140px] items-center justify-between bg-blue-50 text-blue-500">
             {isSuggesting ? SuggestingIcon : EditIcon}
             <div>
-              <ChevronDownIcon tw="h-4 w-4" />
+              <ChevronDownIcon className="h-4 w-4" />
             </div>
-          </PlateButton>
+          </Button>
         </div>
       </DropdownMenu.Trigger>
 
@@ -87,10 +86,12 @@ export const PlateSuggestionToolbarDropdown = () => {
             }}
           >
             <DropdownMenuRadioItem value="editing">
-              <div css={[!isSuggesting && tw`text-blue-500`]}>{EditIcon}</div>
+              <div className={cn(!isSuggesting && 'text-blue-500')}>
+                {EditIcon}
+              </div>
             </DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="suggesting">
-              <div css={[isSuggesting && tw`text-blue-500`]}>
+              <div className={cn(isSuggesting && 'text-blue-500')}>
                 {SuggestingIcon}
               </div>
             </DropdownMenuRadioItem>
@@ -99,4 +100,4 @@ export const PlateSuggestionToolbarDropdown = () => {
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-};
+}

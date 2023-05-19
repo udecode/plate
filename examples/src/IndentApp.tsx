@@ -16,12 +16,14 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <PlateProvider<MyValue> initialValue={indentValue} plugins={plugins}>
-    <Toolbar>
-      <IndentToolbarButtons />
-    </Toolbar>
+export default function IndentApp() {
+  return (
+    <PlateProvider<MyValue> initialValue={indentValue} plugins={plugins}>
+      <Toolbar>
+        <IndentToolbarButtons />
+      </Toolbar>
 
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-);
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}

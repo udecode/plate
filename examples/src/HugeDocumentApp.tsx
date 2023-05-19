@@ -15,24 +15,26 @@ import { MyValue } from './typescript/plateTypes';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 
-const WithPlate = () => (
-  <Plate
-    editableProps={editableProps}
-    initialValue={initialValue}
-    plugins={basicNodesPlugins}
-  />
-);
+function WithPlate() {
+  return (
+    <Plate
+      editableProps={editableProps}
+      initialValue={initialValue}
+      plugins={basicNodesPlugins}
+    />
+  );
+}
 
-const Element = ({ attributes, children, element }: RenderElementProps) => {
+function Element({ attributes, children, element }: RenderElementProps) {
   switch ((element as TElement).type) {
     case 'h1':
       return <h1 {...attributes}>{children}</h1>;
     default:
       return <p {...attributes}>{children}</p>;
   }
-};
+}
 
-const WithoutPlate = () => {
+function WithoutPlate() {
   const [value, setValue] = useState(initialValue);
   const renderElement = useCallback((p) => <Element {...p} />, []);
   const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);
@@ -46,11 +48,13 @@ const WithoutPlate = () => {
       <Editable renderElement={renderElement} {...(editableProps as any)} />
     </Slate>
   );
-};
+}
 
-export default () => (
-  <div className="flex">
-    <WithPlate />
-    <WithoutPlate />
-  </div>
-);
+export default function HugeDocumentApp() {
+  return (
+    <div className="flex">
+      <WithPlate />
+      <WithoutPlate />
+    </div>
+  );
+}

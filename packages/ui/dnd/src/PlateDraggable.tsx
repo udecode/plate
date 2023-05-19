@@ -17,12 +17,10 @@ import {
   cn,
   PlateElementProps,
 } from '@udecode/plate-styled-components';
-import { CSSProp } from 'styled-components';
 
 export interface DragHandleProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   element: TElement;
-  styles?: CSSProp;
 }
 
 export interface PlateDraggableProps

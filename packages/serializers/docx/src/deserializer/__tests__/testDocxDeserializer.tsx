@@ -1,28 +1,28 @@
 /** @jsx jsx */
 import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/createBasicElementsPlugin';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
 import {
   createPlateEditor,
   OverrideByKey,
   PlatePlugin,
 } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
-import { jsx } from '@udecode/plate-test-utils';
-import { alignPlugin } from 'examples/src/align/alignPlugin';
-import { lineHeightPlugin } from 'examples/src/line-height/lineHeightPlugin';
-import { createBasicElementsPlugin } from '../../../../../nodes/basic-elements/src/createBasicElementsPlugin';
-import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
-} from '../../../../../nodes/heading/src/constants';
-import { createHorizontalRulePlugin } from '../../../../../nodes/horizontal-rule/src/createHorizontalRulePlugin';
-import { createIndentPlugin } from '../../../../../nodes/indent/src/createIndentPlugin';
-import { createLineHeightPlugin } from '../../../../../nodes/line-height/src/createLineHeightPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
-import { createJuicePlugin } from '../../../../juice/src/createJuicePlugin';
+} from '@udecode/plate-heading/src/constants';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule/src/createHorizontalRulePlugin';
+import { createIndentPlugin } from '@udecode/plate-indent/src/createIndentPlugin';
+import { createJuicePlugin } from '@udecode/plate-juice/src/createJuicePlugin';
+import { createLineHeightPlugin } from '@udecode/plate-line-height/src/createLineHeightPlugin';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createImagePlugin } from '@udecode/plate-media';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
+import { jsx } from '@udecode/plate-test-utils';
+import { alignPlugin } from 'examples/src/align/alignPlugin';
+import { lineHeightPlugin } from 'examples/src/line-height/lineHeightPlugin';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
 

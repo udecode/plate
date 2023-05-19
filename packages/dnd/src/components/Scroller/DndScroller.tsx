@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { dndStore } from '../../dndStore';
 import { Scroller, ScrollerProps } from './Scroller';
 
-export const DndScroller = (props: Partial<ScrollerProps>) => {
+export function DndScroller(props: Partial<ScrollerProps>) {
   const isDragging = dndStore.use.isDragging();
   const [show, setShow] = React.useState(false);
 
@@ -17,4 +17,4 @@ export const DndScroller = (props: Partial<ScrollerProps>) => {
   }, [isDragging, show]);
 
   return <Scroller enabled={isDragging && show} {...props} />;
-};
+}

@@ -11,7 +11,9 @@ import {
   markTooltip,
 } from '../balloon-toolbar/MarkBalloonToolbar';
 
-export const CommentBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'children'>) => {
+export function CommentBalloonToolbar(
+  props: WithPartial<BalloonToolbarProps, 'children'>
+) {
   const commentTooltip: TippyProps = {
     content: 'Comment (⌘+⇧+M)',
     ...markTooltip,
@@ -26,4 +28,4 @@ export const CommentBalloonToolbar = (props: WithPartial<BalloonToolbarProps, 'c
       />
     </MarkBalloonToolbar>
   );
-};
+}

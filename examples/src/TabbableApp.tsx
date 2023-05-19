@@ -39,14 +39,16 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <>
-    <button type="button">Button before editor</button>
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={tabbableValue}
-    />
-    <button type="button">Button after editor</button>
-  </>
-);
+export default function TabbableApp() {
+  return (
+    <>
+      <button type="button">Button before editor</button>
+      <Plate<MyValue>
+        editableProps={editableProps}
+        plugins={plugins}
+        initialValue={tabbableValue}
+      />
+      <button type="button">Button after editor</button>
+    </>
+  );
+}

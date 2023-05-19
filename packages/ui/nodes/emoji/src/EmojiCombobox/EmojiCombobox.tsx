@@ -28,11 +28,11 @@ export const useEmojiCombobox = (pluginKey: string) => {
   };
 };
 
-export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
+export function EmojiCombobox<TData extends EmojiItemData = EmojiItemData>({
   pluginKey = KEY_EMOJI,
   id = pluginKey,
   ...props
-}: TEmojiCombobox<TData>) => {
+}: TEmojiCombobox<TData>) {
   const { trigger, onSelectItem } = useEmojiCombobox(pluginKey);
 
   return (
@@ -45,4 +45,4 @@ export const EmojiCombobox = <TData extends EmojiItemData = EmojiItemData>({
       {...props}
     />
   );
-};
+}

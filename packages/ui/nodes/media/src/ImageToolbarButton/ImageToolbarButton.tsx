@@ -14,11 +14,11 @@ export interface ImageToolbarButtonProps extends ToolbarButtonProps {
   getImageUrl?: () => Promise<string>;
 }
 
-export const ImageToolbarButton = ({
+export function ImageToolbarButton({
   id,
   getImageUrl,
   ...props
-}: ImageToolbarButtonProps) => {
+}: ImageToolbarButtonProps) {
   const editor = usePlateEditorRef(useEventPlateId(id));
 
   return (
@@ -42,4 +42,4 @@ export const ImageToolbarButton = ({
       {...props}
     />
   );
-};
+}

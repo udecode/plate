@@ -20,12 +20,12 @@ export interface PopoverProps extends HTMLPropsAs<'div'> {
 /**
  * Popover displayed over children, rendering `content`
  */
-export const Popover = ({
+export function Popover({
   floatingOptions,
   children,
   content,
   ...props
-}: PopoverProps) => {
+}: PopoverProps) {
   const { x, y, refs, strategy } = useFloating({
     middleware: [
       offset(12),
@@ -62,4 +62,4 @@ export const Popover = ({
         })}
     </>
   );
-};
+}

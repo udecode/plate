@@ -14,10 +14,12 @@ const plugins = createMyPlugins(
   }
 );
 
-export default () => (
-  <Plate<MyValue>
-    editableProps={editableProps}
-    plugins={plugins}
-    initialValue={basicNodesValue}
-  />
-);
+export default function BlockSelectionApp() {
+  return (
+    <Plate<MyValue>
+      editableProps={editableProps}
+      plugins={plugins}
+      initialValue={basicNodesValue}
+    />
+  );
+}

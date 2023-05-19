@@ -20,7 +20,7 @@ const COMMAND_BLOCK_ADD_PARAGRAPH = {
   keybinding: '⌘⏎',
 };
 
-const SlashCommandComboboxEffect = () => {
+function SlashCommandComboboxEffect() {
   const search = useComboboxSelectors.text();
 
   useEffect(() => {
@@ -45,18 +45,18 @@ const SlashCommandComboboxEffect = () => {
   }, [search]);
 
   return null;
-};
+}
 
-const SlashCommandComboboxItem = ({ item }: ComboboxItemProps<{}>) => {
+function SlashCommandComboboxItem({ item }: ComboboxItemProps<{}>) {
   const data = item.data as any;
 
   return (
     <div className="inline-flex w-full p-2">
       <div className="flex w-full justify-between">
-        <div className="flex-column">
+        <div className="flex-col">
           <div className="text-sm">{item.text}</div>
           {isDefined(data.description) && (
-            <div className="mt-0.5 text-xs text-neutralSecondary">
+            <div className="mt-0.5 text-xs text-muted-foreground">
               {data.description}
             </div>
           )}
@@ -69,15 +69,17 @@ const SlashCommandComboboxItem = ({ item }: ComboboxItemProps<{}>) => {
       </div>
     </div>
   );
-};
+}
 
-const SlashCommandCombobox = () => (
-  <Combobox
-    id={COMBOBOX_KEY_SLASH_COMMAND}
-    component={SlashCommandComboboxEffect}
-    trigger={COMBOBOX_TRIGGER_SLASH_COMMAND}
-    onRenderItem={SlashCommandComboboxItem}
-    // onSelectItem={useSlashCommandOnSelectItem()}
-    onSelectItem={() => {}}
-  />
-);
+function SlashCommandCombobox() {
+  return (
+    <Combobox
+      id={COMBOBOX_KEY_SLASH_COMMAND}
+      component={SlashCommandComboboxEffect}
+      trigger={COMBOBOX_TRIGGER_SLASH_COMMAND}
+      onRenderItem={SlashCommandComboboxItem}
+      // onSelectItem={useSlashCommandOnSelectItem()}
+      onSelectItem={() => {}}
+    />
+  );
+}

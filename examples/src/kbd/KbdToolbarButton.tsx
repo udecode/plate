@@ -3,7 +3,7 @@ import { Keyboard } from '@styled-icons/material/Keyboard';
 import { getPluginType, MARK_KBD, MarkToolbarButton } from '@udecode/plate';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
-export const KbdToolbarButton = () => {
+export function KbdToolbarButton() {
   const editor = useMyPlateEditorRef();
 
   return (
@@ -12,4 +12,4 @@ export const KbdToolbarButton = () => {
       icon={<Keyboard />}
     />
   );
-};
+}

@@ -8,9 +8,8 @@ export interface RemoveEmptyNodesPlugin {
 /**
  * @see {@link withRemoveEmptyNodes}
  */
-export const createRemoveEmptyNodesPlugin = createPluginFactory<RemoveEmptyNodesPlugin>(
-  {
+export const createRemoveEmptyNodesPlugin =
+  createPluginFactory<RemoveEmptyNodesPlugin>({
     key: 'removeEmptyNodes',
     withOverrides: withRemoveEmptyNodes,
-  }
-);
+  });
