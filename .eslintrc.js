@@ -71,6 +71,7 @@ module.exports = {
     'unused-imports/no-unused-vars': [
       'warn',
       {
+        ignoreRestSiblings: true,
         vars: 'all',
         varsIgnorePattern: '^_',
         args: 'after-used',
@@ -217,6 +218,7 @@ module.exports = {
     'react/no-unused-prop-types': 'off',
     'react/prop-types': 'off',
     'react/require-default-props': 'off',
+    'react/jsx-no-useless-fragment': ['warn', { allowExpressions: true }],
 
     'react-hooks/exhaustive-deps': [
       'warn',
