@@ -1679,7 +1679,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.4, @babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.14.0, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.15.3, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.4, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.9.2":
   version: 7.18.6
   resolution: "@babel/runtime@npm:7.18.6"
   dependencies:
@@ -2383,22 +2383,6 @@ __metadata:
   version: 1.0.8
   resolution: "@emoji-mart/data@npm:1.0.8"
   checksum: cb00536fd664b81f6f6850616b42a5e51412bdc7a3b05b154a4260b3b0444b2dfddf92fdc507bfc4f559bbe51b79a732b19bf96a1723d5e17cee3e57044e6fe8
-  languageName: node
-  linkType: hard
-
-"@emotion/is-prop-valid@npm:^0.8.7":
-  version: 0.8.8
-  resolution: "@emotion/is-prop-valid@npm:0.8.8"
-  dependencies:
-    "@emotion/memoize": "npm:0.7.4"
-  checksum: 2709fd849da334055e4bb29724647af73209a3e7f274ff3ad24d55e244747ade89daf4526bf541837559adb271f70ad26c60d311f51c4bdcc8728e6b14eb3d18
-  languageName: node
-  linkType: hard
-
-"@emotion/memoize@npm:0.7.4":
-  version: 0.7.4
-  resolution: "@emotion/memoize@npm:0.7.4"
-  checksum: 6ea6add503898a3ffa90d549c7d841ba31652a37fd12c1517574d7aebcfa7735583489ff0678e28626e33c34f701cb1e9ced71dd4684cb8d43efc054f11bcaff
   languageName: node
   linkType: hard
 
@@ -5243,106 +5227,6 @@ __metadata:
   version: 1.2.8
   resolution: "@stitches/core@npm:1.2.8"
   checksum: 397a5648969b71581307723bd5b5732264c7bcb580c3354424cd6f6a81bf469b3cb3af526b1513d3cc3aa28d1b626cc5acf11927de1de5d3f06a2583105a31c1
-  languageName: node
-  linkType: hard
-
-"@stitches/react@npm:1.2.8":
-  version: 1.2.8
-  resolution: "@stitches/react@npm:1.2.8"
-  peerDependencies:
-    react: ">= 16.3.0"
-  checksum: 234e307b9e00710bdc1d2004b36682ca6c08f59399d650bd56f752d51bdb8a46c569aa6809430913a79df84330bedfa0dd467623153320d7d4ecdcaa66627719
-  languageName: node
-  linkType: hard
-
-"@styled-icons/boxicons-regular@npm:10.23.0":
-  version: 10.23.0
-  resolution: "@styled-icons/boxicons-regular@npm:10.23.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.5"
-    "@styled-icons/styled-icon": "npm:^10.6.0"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 67940302db0d0d0b7609834f746d9b6afa3501af79669a12da819c3a09eb462e936b19c1e7a09ea933819d7051f79529763c14291c4d614710c4aef0deeee705
-  languageName: node
-  linkType: hard
-
-"@styled-icons/boxicons-regular@npm:^10.38.0":
-  version: 10.38.0
-  resolution: "@styled-icons/boxicons-regular@npm:10.38.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.15.3"
-    "@styled-icons/styled-icon": "npm:^10.6.3"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 97fb2ac52772a66a856df7450e4f59db34774d0ec4b96d8c2f259bd05197584d628b01a861a60d46b13d1dc3fc7d9fc9d188083e111db54c6fd723359be113c8
-  languageName: node
-  linkType: hard
-
-"@styled-icons/foundation@npm:10.28.0":
-  version: 10.28.0
-  resolution: "@styled-icons/foundation@npm:10.28.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.13"
-    "@styled-icons/styled-icon": "npm:^10.6.0"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 1e2c30614afe9c0f507868c6bd5f80dc756bb953deb742c128d40c86bc71f661db32f3d4a5560f862f3a047759bf2474fa5003d6ed150864c92e1caee8685b38
-  languageName: node
-  linkType: hard
-
-"@styled-icons/foundation@npm:^10.34.0":
-  version: 10.34.0
-  resolution: "@styled-icons/foundation@npm:10.34.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.14.0"
-    "@styled-icons/styled-icon": "npm:^10.6.3"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 8d393f9e739c18ac73351876f89a413b5ff36f286b6eb0d0828470e571d8062d88e022a0b198b14815b7c2e64b9816b5f62113350b0051a6adc7599927f79e33
-  languageName: node
-  linkType: hard
-
-"@styled-icons/material@npm:10.28.0":
-  version: 10.28.0
-  resolution: "@styled-icons/material@npm:10.28.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.13"
-    "@styled-icons/styled-icon": "npm:^10.6.0"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 762a049b04d25ac2023925c8387d3d7397991714d6092eaf8b08d7eed984aec10f68fc01e3d05884308cb69c367828e2cb3a67ff3c4094def293ac66d59fab7a
-  languageName: node
-  linkType: hard
-
-"@styled-icons/material@npm:^10.34.0":
-  version: 10.34.0
-  resolution: "@styled-icons/material@npm:10.34.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.14.0"
-    "@styled-icons/styled-icon": "npm:^10.6.3"
-  peerDependencies:
-    react: "*"
-    styled-components: "*"
-  checksum: 6d7cf571df9e3da5dce86c2a615340b28e59fc6f4a8db9372fd9833d42f44c97fe4cd36cd5a8f4483bcc473b98da21f4f6b8387eeaa208e2dafbd9d6a19d0928
-  languageName: node
-  linkType: hard
-
-"@styled-icons/styled-icon@npm:^10.6.0, @styled-icons/styled-icon@npm:^10.6.3":
-  version: 10.6.3
-  resolution: "@styled-icons/styled-icon@npm:10.6.3"
-  dependencies:
-    "@babel/runtime": "npm:^7.10.5"
-    "@emotion/is-prop-valid": "npm:^0.8.7"
-  peerDependencies:
-    react: "*"
-    styled-components: ">=4.1.0 <6"
-  checksum: 24507e54f456fed3e99692b8693ee505bb82a3e4d6f79791ccb593b1c962fc91f5643d8b8afef1b6c292a583bf71fed23f188e54f138103f5610f8c2bd05ce21
   languageName: node
   linkType: hard
 
@@ -14052,10 +13936,6 @@ __metadata:
     "@radix-ui/colors": "npm:0.1.8"
     "@radix-ui/react-dropdown-menu": "npm:2.0.2"
     "@radix-ui/react-select": "npm:1.2.0"
-    "@stitches/react": "npm:1.2.8"
-    "@styled-icons/boxicons-regular": "npm:10.23.0"
-    "@styled-icons/foundation": "npm:10.28.0"
-    "@styled-icons/material": "npm:10.28.0"
     "@tippyjs/react": "npm:4.2.5"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-cloud": "workspace:^"
@@ -25766,9 +25646,6 @@ __metadata:
     "@changesets/types": "npm:^5.0.0"
     "@playwright/test": "npm:1.31.2"
     "@react-hook/merged-ref": "npm:^1.3.2"
-    "@styled-icons/boxicons-regular": "npm:^10.38.0"
-    "@styled-icons/foundation": "npm:^10.34.0"
-    "@styled-icons/material": "npm:^10.34.0"
     "@tailwindcss/typography": "npm:^0.5.9"
     "@testing-library/jest-dom": "npm:^5.16.4"
     "@testing-library/react": "npm:^11.2.7"
