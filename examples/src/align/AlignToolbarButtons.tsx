@@ -1,9 +1,6 @@
 import React from 'react';
-import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
-import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
-import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
-import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { AlignToolbarButton } from '@udecode/plate';
+import { Icons } from '../common/icons';
 
 const tooltip = (content: string) => ({
   content,
@@ -15,22 +12,22 @@ export function AlignToolbarButtons() {
       <AlignToolbarButton
         tooltip={tooltip('Align Left')}
         value="left"
-        icon={<FormatAlignLeft />}
+        icon={<Icons.alignLeft />}
       />
       <AlignToolbarButton
         tooltip={tooltip('Align Center')}
         value="center"
-        icon={<FormatAlignCenter />}
+        icon={<Icons.alignCenter />}
       />
       <AlignToolbarButton
         tooltip={tooltip('Align Right')}
         value="right"
-        icon={<FormatAlignRight />}
+        icon={<Icons.alignRight />}
       />
       <AlignToolbarButton
         tooltip={tooltip('Align Justify')}
         value="justify"
-        icon={<FormatAlignJustify />}
+        icon={<Icons.alignJustify />}
       />
     </>
   );

@@ -1,7 +1,4 @@
 import React, { CSSProperties } from 'react';
-import { Check } from '@styled-icons/material/Check';
-import { FontDownload } from '@styled-icons/material/FontDownload';
-import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import {
   ColorPickerToolbarDropdown,
   createFontBackgroundColorPlugin,
@@ -14,6 +11,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { fontValue } from './font/fontValue';
 import { Toolbar } from './toolbar/Toolbar';
@@ -61,14 +59,14 @@ export default function FontApp() {
       <Toolbar>
         <ColorPickerToolbarDropdown
           pluginKey={MARK_COLOR}
-          icon={<FormatColorText />}
-          selectedIcon={<Check />}
+          icon={<Icons.color />}
+          selectedIcon={<Icons.check />}
           tooltip={tooltips.color}
         />
         <ColorPickerToolbarDropdown
           pluginKey={MARK_BG_COLOR}
-          icon={<FontDownload />}
-          selectedIcon={<Check />}
+          icon={<Icons.bg />}
+          selectedIcon={<Icons.check />}
           tooltip={tooltips.bg}
         />
       </Toolbar>

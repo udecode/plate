@@ -1,5 +1,4 @@
 import React from 'react';
-import { EmojiEmotions } from '@styled-icons/material/EmojiEmotions';
 import {
   createComboboxPlugin,
   createEmojiPlugin,
@@ -10,6 +9,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { emojiPlugin } from './emoji/emojiPlugin';
 import { emojiValue } from './emoji/emojiValue';
@@ -35,7 +35,7 @@ export default function EmojiApp() {
       onChange={(e) => console.info(e)}
     >
       <Toolbar>
-        <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<EmojiEmotions />} />
+        <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<Icons.emoji />} />
       </Toolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

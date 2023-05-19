@@ -1,11 +1,4 @@
 import React from 'react';
-import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
-import { Subscript } from '@styled-icons/foundation/Subscript';
-import { Superscript } from '@styled-icons/foundation/Superscript';
-import { FormatBold } from '@styled-icons/material/FormatBold';
-import { FormatItalic } from '@styled-icons/material/FormatItalic';
-import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
-import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import {
   getPluginType,
   MARK_BOLD,
@@ -17,6 +10,7 @@ import {
   MARK_UNDERLINE,
   MarkToolbarButton,
 } from '@udecode/plate';
+import { Icons } from '../common/icons';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 const tooltip = (content: string) => ({
@@ -31,39 +25,39 @@ export function BasicMarkToolbarButtons() {
       <MarkToolbarButton
         tooltip={tooltip('Bold (⌘+B)')}
         type={getPluginType(editor, MARK_BOLD)}
-        icon={<FormatBold />}
+        icon={<Icons.bold />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Italic (⌘+I)')}
         type={getPluginType(editor, MARK_ITALIC)}
-        icon={<FormatItalic />}
+        icon={<Icons.italic />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Underline (⌘+U)')}
         type={getPluginType(editor, MARK_UNDERLINE)}
-        icon={<FormatUnderlined />}
+        icon={<Icons.underline />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Strikethrough (⌘+⇧+M)')}
         type={getPluginType(editor, MARK_STRIKETHROUGH)}
-        icon={<FormatStrikethrough />}
+        icon={<Icons.strikethrough />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Code (⌘+E)')}
         type={getPluginType(editor, MARK_CODE)}
-        icon={<CodeAlt />}
+        icon={<Icons.code />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Superscript (⌘+,)')}
         type={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
-        icon={<Superscript />}
+        icon={<Icons.superscript />}
       />
       <MarkToolbarButton
         tooltip={tooltip('Subscript (⌘+.)')}
         type={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
-        icon={<Subscript />}
+        icon={<Icons.subscript />}
       />
     </>
   );

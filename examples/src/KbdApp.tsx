@@ -1,5 +1,4 @@
 import React from 'react';
-import { Keyboard } from '@styled-icons/material/Keyboard';
 import {
   createKbdPlugin,
   getPluginType,
@@ -10,6 +9,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { kbdValue } from './kbd/kbdValue';
 import { Toolbar } from './toolbar/Toolbar';
@@ -25,7 +25,7 @@ function KbdToolbarButton() {
   return (
     <MarkToolbarButton
       type={getPluginType(editor, MARK_KBD)}
-      icon={<Keyboard />}
+      icon={<Icons.kbd />}
     />
   );
 }

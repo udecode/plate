@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from '@styled-icons/material/Link';
 import {
   createLinkPlugin,
   LinkToolbarButton,
@@ -8,6 +7,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { linkPlugin } from './link/linkPlugin';
 import { linkValue } from './link/linkValue';
@@ -25,7 +25,7 @@ export default function LinkApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
       <Toolbar>
-        <LinkToolbarButton icon={<Link />} />
+        <LinkToolbarButton icon={<Icons.link />} />
       </Toolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

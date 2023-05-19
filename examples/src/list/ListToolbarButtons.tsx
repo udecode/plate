@@ -1,12 +1,11 @@
 import React from 'react';
-import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
-import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
 import {
   ELEMENT_OL,
   ELEMENT_UL,
   getPluginType,
   ListToolbarButton,
 } from '@udecode/plate';
+import { Icons } from '../common/icons';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 const tooltip = (content: string) => ({
@@ -21,12 +20,12 @@ export function ListToolbarButtons() {
       <ListToolbarButton
         tooltip={tooltip('Bullet List')}
         type={getPluginType(editor, ELEMENT_UL)}
-        icon={<FormatListBulleted />}
+        icon={<Icons.ul />}
       />
       <ListToolbarButton
         tooltip={tooltip('Ordered List')}
         type={getPluginType(editor, ELEMENT_OL)}
-        icon={<FormatListNumbered />}
+        icon={<Icons.ol />}
       />
     </>
   );

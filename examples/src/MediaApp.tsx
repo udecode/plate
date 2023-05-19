@@ -1,6 +1,4 @@
 import React from 'react';
-import { Image } from '@styled-icons/material/Image';
-import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import {
   createImagePlugin,
   createMediaEmbedPlugin,
@@ -14,6 +12,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { mediaValue } from './media/mediaValue';
 import { Toolbar } from './toolbar/Toolbar';
@@ -41,8 +40,8 @@ export default function MediaApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={mediaValue}>
       <Toolbar>
-        <ImageToolbarButton icon={<Image />} />
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+        <ImageToolbarButton icon={<Icons.image />} />
+        <MediaEmbedToolbarButton icon={<Icons.embed />} />
       </Toolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

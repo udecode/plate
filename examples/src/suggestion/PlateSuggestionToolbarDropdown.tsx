@@ -1,46 +1,15 @@
 import React from 'react';
-import { gray } from '@radix-ui/colors';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { styled } from '@stitches/react';
-import { CommentEdit } from '@styled-icons/boxicons-regular/CommentEdit';
-import { ModeEdit } from '@styled-icons/material';
-import { Button, ChevronDownIcon, cn } from '@udecode/plate';
+import { Button, ChevronDownIcon, cn, cva } from '@udecode/plate';
 import {
   useSetIsSuggesting,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
+import { Edit2, Lightbulb } from 'lucide-react';
 
-const DropdownMenuContent = styled(DropdownMenu.Content, {
-  zIndex: 1001,
-  minWidth: 220,
-  backgroundColor: 'white',
-  borderRadius: 6,
-  padding: '5px 0',
-  boxShadow:
-    '0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)',
-});
-
-const DropdownMenuRadioItem = styled(DropdownMenu.RadioItem, {
-  all: 'unset',
-  fontSize: 13,
-  lineHeight: 1,
-  borderRadius: 3,
-  display: 'flex',
-  alignItems: 'center',
-  height: 25,
-  padding: '4px 10px',
-  position: 'relative',
-  userSelect: 'none',
-  cursor: 'pointer',
-
-  '&[data-disabled]': {
-    pointerEvents: 'none',
-  },
-
-  '&[data-highlighted]': {
-    backgroundColor: gray.gray2,
-  },
-});
+const radioItemVariants = cva(
+  '&[data-disabled]:pointer-events-none &[data-highlighted]:bg-gray-200 relative flex h-[25px] cursor-pointer select-none items-center rounded-[3px] px-2.5 py-1 text-[13px] leading-[1] [all:unset]'
+);
 
 export function PlateSuggestionToolbarDropdown() {
   const setIsSuggesting = useSetIsSuggesting();
@@ -48,14 +17,14 @@ export function PlateSuggestionToolbarDropdown() {
 
   const EditIcon = (
     <div className="flex items-center">
-      <ModeEdit className="mr-1 h-5 w-5" />
+      <Edit2 className="mr-1 h-5 w-5" />
       Editing
     </div>
   );
 
   const SuggestingIcon = (
     <div className="flex items-center">
-      <CommentEdit className="mr-1 h-5 w-5" />
+      <Lightbulb className="mr-1 h-5 w-5" />
       Suggesting
     </div>
   );
@@ -74,7 +43,10 @@ export function PlateSuggestionToolbarDropdown() {
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenuContent align="start">
+        <DropdownMenu.Content
+          align="start"
+          className="z-[1001] min-w-[220px] rounded-[6px] bg-white px-0 py-[5px] shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)]"
+        >
           <DropdownMenu.RadioGroup
             value="editing"
             onValueChange={(value) => {
@@ -85,18 +57,24 @@ export function PlateSuggestionToolbarDropdown() {
               }
             }}
           >
-            <DropdownMenuRadioItem value="editing">
+            <DropdownMenu.RadioItem
+              value="editing"
+              className={radioItemVariants()}
+            >
               <div className={cn(!isSuggesting && 'text-blue-500')}>
                 {EditIcon}
               </div>
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="suggesting">
+            </DropdownMenu.RadioItem>
+            <DropdownMenu.RadioItem
+              value="suggesting"
+              className={radioItemVariants()}
+            >
               <div className={cn(isSuggesting && 'text-blue-500')}>
                 {SuggestingIcon}
               </div>
-            </DropdownMenuRadioItem>
+            </DropdownMenu.RadioItem>
           </DropdownMenu.RadioGroup>
-        </DropdownMenuContent>
+        </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );

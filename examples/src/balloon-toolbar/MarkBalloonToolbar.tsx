@@ -1,7 +1,4 @@
 import React from 'react';
-import { FormatBold } from '@styled-icons/material/FormatBold';
-import { FormatItalic } from '@styled-icons/material/FormatItalic';
-import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import { TippyProps } from '@tippyjs/react';
 import {
   BalloonToolbar,
@@ -13,6 +10,7 @@ import {
   MarkToolbarButton,
   WithPartial,
 } from '@udecode/plate';
+import { Icons } from '../common/icons';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export const markTooltip: TippyProps = {
@@ -45,19 +43,19 @@ export function MarkBalloonToolbar(
     <BalloonToolbar theme={theme} arrow={arrow} {...balloonToolbarProps}>
       <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
-        icon={<FormatBold />}
+        icon={<Icons.bold />}
         tooltip={boldTooltip}
         actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_ITALIC)}
-        icon={<FormatItalic />}
+        icon={<Icons.italic />}
         tooltip={italicTooltip}
         actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_UNDERLINE)}
-        icon={<FormatUnderlined />}
+        icon={<Icons.underline />}
         tooltip={underlineTooltip}
         actionHandler="onMouseDown"
       />

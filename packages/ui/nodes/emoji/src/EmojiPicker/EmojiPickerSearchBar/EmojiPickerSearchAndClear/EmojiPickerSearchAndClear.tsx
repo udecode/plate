@@ -1,8 +1,7 @@
 import React from 'react';
-import { Clear } from '@styled-icons/material/Clear';
-import { Search } from '@styled-icons/material/Search';
 import { UseEmojiPickerType } from '@udecode/plate-emoji';
 import { cn } from '@udecode/plate-styled-components';
+import { Icons } from 'examples/src/common/icons';
 
 export type EmojiPickerSearchAndClearProps = Pick<
   UseEmojiPickerType,
@@ -21,7 +20,7 @@ export function EmojiPickerSearchAndClear({
           'absolute left-2 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2'
         )}
       >
-        <Search />
+        <Icons.search />
       </span>
       {searchValue && (
         <button
@@ -33,12 +32,7 @@ export function EmojiPickerSearchAndClear({
           )}
           onClick={clearSearch}
         >
-          <Clear
-            css={{
-              width: '100%',
-              height: ' 100%',
-            }}
-          />
+          <Icons.clear className="h-full w-full" />
         </button>
       )}
     </>

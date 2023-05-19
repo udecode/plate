@@ -66,7 +66,7 @@ module.exports = {
     'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
     '@typescript-eslint/no-unused-vars': 'off',
     // No unused imports
-    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-imports': 'warn',
     // No unused variables
     'unused-imports/no-unused-vars': [
       'warn',
@@ -220,6 +220,7 @@ module.exports = {
     'react/prop-types': 'off',
     'react/require-default-props': 'off',
     'react/jsx-no-useless-fragment': ['warn', { allowExpressions: true }],
+    'react/jsx-pascal-case': 'off',
 
     'react-hooks/exhaustive-deps': [
       'warn',

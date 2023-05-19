@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { Search } from '@styled-icons/material/Search';
 import {
   createFindReplacePlugin,
   Plate,
@@ -7,6 +6,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { findReplaceValue } from './find-replace/findReplaceValue';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
@@ -30,7 +30,7 @@ export default function FindReplaceApp() {
 
   return (
     <>
-      <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
+      <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
       <Plate<MyValue>
         editableProps={editableProps}

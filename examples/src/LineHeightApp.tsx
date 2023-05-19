@@ -1,5 +1,4 @@
 import React from 'react';
-import { LineWeight } from '@styled-icons/material/LineWeight';
 import {
   createLineHeightPlugin,
   LineHeightToolbarDropdown,
@@ -8,6 +7,7 @@ import {
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { lineHeightPlugin } from './line-height/lineHeightPlugin';
 import { lineHeightValue } from './line-height/lineHeightValue';
@@ -25,7 +25,7 @@ export default function LineHeightApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={lineHeightValue}>
       <Toolbar>
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
+        <LineHeightToolbarDropdown icon={<Icons.lineHeight />} />
       </Toolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

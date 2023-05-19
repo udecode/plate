@@ -1,5 +1,4 @@
 import React from 'react';
-import { Chat } from '@styled-icons/material/Chat';
 import { TippyProps } from '@tippyjs/react';
 import {
   BalloonToolbarProps,
@@ -10,6 +9,7 @@ import {
   MarkBalloonToolbar,
   markTooltip,
 } from '../balloon-toolbar/MarkBalloonToolbar';
+import { Icons } from '../common/icons';
 
 export function CommentBalloonToolbar(
   props: WithPartial<BalloonToolbarProps, 'children'>
@@ -22,7 +22,7 @@ export function CommentBalloonToolbar(
   return (
     <MarkBalloonToolbar {...props}>
       <PlateCommentToolbarButton
-        icon={<Chat />}
+        icon={<Icons.comment />}
         tooltip={commentTooltip}
         actionHandler="onMouseDown"
       />

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Keyboard } from '@styled-icons/material/Keyboard';
 import { getPluginType, MARK_KBD, MarkToolbarButton } from '@udecode/plate';
+import { Icons } from '../common/icons';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 export function KbdToolbarButton() {
@@ -9,7 +9,7 @@ export function KbdToolbarButton() {
   return (
     <MarkToolbarButton
       type={getPluginType(editor, MARK_KBD)}
-      icon={<Keyboard />}
+      icon={<Icons.kbd />}
     />
   );
 }

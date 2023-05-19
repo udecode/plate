@@ -1,7 +1,6 @@
 import React from 'react';
-import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease';
-import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
 import { focusEditor, indent, outdent, ToolbarButton } from '@udecode/plate';
+import { Icons } from '../common/icons';
 import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 const tooltip = (content: string) => ({
@@ -22,7 +21,7 @@ export function IndentToolbarButtons() {
 
           focusEditor(editor);
         }}
-        icon={<FormatIndentDecrease />}
+        icon={<Icons.outdent />}
       />
       <ToolbarButton
         tooltip={tooltip('Indent')}
@@ -32,7 +31,7 @@ export function IndentToolbarButtons() {
           indent(editor);
           focusEditor(editor);
         }}
-        icon={<FormatIndentIncrease />}
+        icon={<Icons.indent />}
       />
     </>
   );

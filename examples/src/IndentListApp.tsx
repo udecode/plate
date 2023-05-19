@@ -1,6 +1,4 @@
 import React from 'react';
-import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
-import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
 import {
   createHeadingPlugin,
   createIndentListPlugin,
@@ -17,6 +15,7 @@ import {
   withProps,
 } from '@udecode/plate';
 import { editableProps } from './common/editableProps';
+import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { indentListPlugin } from './indent-list/indentListPlugin';
@@ -64,7 +63,7 @@ function ToolbarButtons() {
             listStyleType: 'disc',
           });
         }}
-        icon={<FormatListBulleted />}
+        icon={<Icons.ul />}
       />
       <ToolbarButton
         onMouseDown={(e) => {
@@ -73,7 +72,7 @@ function ToolbarButtons() {
             listStyleType: 'decimal',
           });
         }}
-        icon={<FormatListNumbered />}
+        icon={<Icons.ol />}
       />
       <IndentToolbarButtons />
     </>

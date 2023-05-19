@@ -22,7 +22,6 @@
     "build": "yarn p:build",
     "brl": "yarn p:brl:below",
     "clean": "yarn p:clean",
-    "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
     "test": "yarn p:test",

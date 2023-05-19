@@ -1,5 +1,4 @@
 import React from 'react';
-import { DragIndicator } from '@styled-icons/material/DragIndicator';
 import Tippy, { TippyProps } from '@tippyjs/react';
 import {
   ELEMENT_BLOCKQUOTE,
@@ -19,6 +18,7 @@ import {
   ELEMENT_UL,
 } from '@udecode/plate';
 import { withPlateDraggables } from '@udecode/plate-ui-dnd';
+import { Icons } from '../common/icons';
 
 function GrabberTooltipContent() {
   return (
@@ -73,7 +73,7 @@ export const withStyledDraggables = (components: any) => {
                 type="button"
                 className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none"
               >
-                <DragIndicator className="h-[18px] w-[18px] text-[rgba(55,53,47,0.3)]" />
+                <Icons.dragHandle className="h-[18px] w-[18px] text-[rgba(55,53,47,0.3)]" />
               </button>
             </Tippy>
           );

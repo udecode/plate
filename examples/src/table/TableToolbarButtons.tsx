@@ -1,10 +1,4 @@
 import React from 'react';
-import { BorderAll } from '@styled-icons/material/BorderAll';
-import { BorderBottom } from '@styled-icons/material/BorderBottom';
-import { BorderClear } from '@styled-icons/material/BorderClear';
-import { BorderLeft } from '@styled-icons/material/BorderLeft';
-import { BorderRight } from '@styled-icons/material/BorderRight';
-import { BorderTop } from '@styled-icons/material/BorderTop';
 import {
   deleteColumn,
   deleteRow,
@@ -14,6 +8,7 @@ import {
   insertTableRow,
   TableToolbarButton,
 } from '@udecode/plate';
+import { Icons } from '../common/icons';
 
 const tooltip = (content: string) => ({
   content,
@@ -24,32 +19,32 @@ export function TableToolbarButtons() {
     <>
       <TableToolbarButton
         tooltip={tooltip('Table')}
-        icon={<BorderAll />}
+        icon={<Icons.borderAll />}
         transform={insertTable}
       />
       <TableToolbarButton
         tooltip={tooltip('Remove Table')}
-        icon={<BorderClear />}
+        icon={<Icons.borderNone />}
         transform={deleteTable}
       />
       <TableToolbarButton
         tooltip={tooltip('Table Row')}
-        icon={<BorderBottom />}
+        icon={<Icons.borderBottom />}
         transform={insertTableRow}
       />
       <TableToolbarButton
         tooltip={tooltip('Remove Table Row')}
-        icon={<BorderTop />}
+        icon={<Icons.borderTop />}
         transform={deleteRow}
       />
       <TableToolbarButton
         tooltip={tooltip('Table Column')}
-        icon={<BorderLeft />}
+        icon={<Icons.borderLeft />}
         transform={insertTableColumn}
       />
       <TableToolbarButton
         tooltip={tooltip('Remove Table Column')}
-        icon={<BorderRight />}
+        icon={<Icons.borderRight />}
         transform={deleteColumn}
       />
     </>
