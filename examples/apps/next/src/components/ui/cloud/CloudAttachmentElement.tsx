@@ -8,9 +8,9 @@ import {
 } from '@udecode/plate-common';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
-import { StatusBar } from '../StatusBar';
 import { AttachFileIcon } from './AttachFileIcon';
 import { CloudDownloadIcon } from './CloudDownloadIcon';
+import { StatusBar } from './StatusBar';
 
 export interface CloudAttachmentElementProps
   extends PlateElementProps<Value, TCloudAttachmentElement> {}
