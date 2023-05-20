@@ -17,7 +17,7 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_UL,
 } from '@udecode/plate';
-import { withPlateDraggables } from '@udecode/plate-ui-dnd';
+import { withPlateDraggables } from 'examples-next/src/components/ui/dnd/withPlateDraggable';
 import { Icons } from '../common/icons';
 
 function GrabberTooltipContent() {

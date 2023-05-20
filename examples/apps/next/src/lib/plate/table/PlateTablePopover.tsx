@@ -7,8 +7,9 @@ import {
 } from '@udecode/plate-floating';
 import { BorderAllIcon, TTableElement } from '@udecode/plate-table';
 import { cn } from '@udecode/plate-tailwind';
-import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
-import { floatingStyles } from '@udecode/plate-ui-toolbar';
+import { buttonVariants } from '../button/PlateButton';
+import { RemoveNodeButton } from '../button/RemoveNodeButton';
+import { floatingStyles } from '../toolbar/floatingStyles';
 import { PlateTableBordersDropdownMenuContent } from './PlateTableBordersDropdownMenuContent';
 
 export function PlateTablePopover({ children, ...props }: PopoverProps) {

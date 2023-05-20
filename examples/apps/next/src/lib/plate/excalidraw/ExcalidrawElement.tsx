@@ -5,11 +5,11 @@ import {
   LibraryItems,
 } from '@excalidraw/excalidraw/types/types';
 import { Value } from '@udecode/plate-common';
-import { getRootProps, PlateElementProps } from '@udecode/plate-tailwind';
 import {
   TExcalidrawElement,
   TExcalidrawProps,
-} from '../../../../../../../packages/ui/nodes/excalidraw/src/types';
+} from '@udecode/plate-excalidraw';
+import { PlateElementProps } from '@udecode/plate-tailwind';
 
 export interface ExcalidrawElementProps
   extends PlateElementProps<Value, TExcalidrawElement> {
