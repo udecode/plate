@@ -4,5 +4,4 @@
 
 export * from './createExcalidrawPlugin';
 export * from './types';
-export * from './components/index';
-export * from './transforms';
+export * from './transforms/index';

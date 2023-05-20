@@ -29,12 +29,7 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
         {...attributes}
         {...rootProps}
         {...nodeProps}
-        className={cn(
-          rootProps.className,
-          nodeProps?.className,
-          className,
-          'bg-red-400'
-        )}
+        className={cn(nodeProps?.className, className, 'bg-red-400')}
       >
         {children}
       </Box>

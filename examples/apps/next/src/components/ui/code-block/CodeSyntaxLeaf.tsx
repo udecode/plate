@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlateLeafProps } from '@udecode/plate-styled-components';
+import { PlateLeafProps } from '@udecode/plate-tailwind';
 
 export function CodeSyntaxLeaf({ attributes, children, leaf }: PlateLeafProps) {
   return (

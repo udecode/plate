@@ -3,4 +3,5 @@
  */
 
 export * from './Box';
+export * from './PortalBody';
 export * from './Text';

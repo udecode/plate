@@ -1,11 +1,7 @@
 import React from 'react';
 import { getHandler, Value } from '@udecode/plate-common';
 import { TMentionElement } from '@udecode/plate-mention';
-import {
-  cn,
-  PlateElement,
-  PlateElementProps,
-} from '@udecode/plate-styled-components';
+import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
 export interface MentionElementProps

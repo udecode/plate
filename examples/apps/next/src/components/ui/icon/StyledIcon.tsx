@@ -1,5 +1,5 @@
 import React, { forwardRef, PropsWithoutRef, ReactNode, SVGProps } from 'react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export interface IconProps extends PropsWithoutRef<SVGProps<SVGSVGElement>> {
   title?: ReactNode;

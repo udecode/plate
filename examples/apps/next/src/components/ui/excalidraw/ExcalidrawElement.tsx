@@ -5,10 +5,7 @@ import {
   LibraryItems,
 } from '@excalidraw/excalidraw/types/types';
 import { Value } from '@udecode/plate-common';
-import {
-  getRootProps,
-  PlateElementProps,
-} from '@udecode/plate-styled-components';
+import { getRootProps, PlateElementProps } from '@udecode/plate-tailwind';
 import {
   TExcalidrawElement,
   TExcalidrawProps,

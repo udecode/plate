@@ -1,6 +1,6 @@
 import React from 'react';
 import { UseEmojiPickerType } from '@udecode/plate-emoji';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { Icons } from 'examples/src/common/icons';
 
 export type EmojiPickerSearchAndClearProps = Pick<

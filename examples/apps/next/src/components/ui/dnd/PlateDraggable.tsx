@@ -12,7 +12,7 @@ import {
   DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { cn, PlateElementProps } from '@udecode/plate-styled-components';
+import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 
 export interface DragHandleProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {

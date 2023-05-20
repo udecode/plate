@@ -25,7 +25,7 @@ import {
   shift,
   useVirtualFloating,
 } from '@udecode/plate-floating';
-import { cn, cva, PortalBody } from '@udecode/plate-styled-components';
+import { cn, cva, PortalBody } from '@udecode/plate-tailwind';
 
 const comboboxItemVariants = cva(
   'flex min-h-[36px] cursor-pointer select-none items-center rounded-none px-2 text-[14px] text-[rgb(32,31,30)]'

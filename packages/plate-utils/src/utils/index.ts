@@ -8,5 +8,6 @@ export * from './createElementAs';
 export * from './createNodeHOC';
 export * from './createNodesHOC';
 export * from './defaultsDeepToNodes';
+export * from './getRootProps';
 export * from './withProps';
 export * from './withProviders';

@@ -4,7 +4,7 @@ import {
   IEmojiFloatingLibrary,
   UseEmojiPickerType,
 } from '@udecode/plate-emoji';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export type EmojiPickerNavigationProps = Pick<
   UseEmojiPickerType,

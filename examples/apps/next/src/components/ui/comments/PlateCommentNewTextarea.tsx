@@ -5,7 +5,7 @@ import {
   CommentNewTextarea,
   CommentNewTextareaProps,
 } from '@udecode/plate-comments';
-import { cva } from '@udecode/plate-styled-components';
+import { cva } from '@udecode/plate-tailwind';
 
 const commentTextareaVariants = cva(
   'm-0 box-border block h-10 min-h-[36px] w-full cursor-text resize-none overflow-hidden break-words rounded border-[1px] border-solid border-[#dadce0] p-2 text-start text-sm leading-5 text-gray-800 outline-0'

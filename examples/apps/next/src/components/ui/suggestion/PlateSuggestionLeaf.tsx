@@ -1,15 +1,11 @@
 import React from 'react';
 import { Value } from '@udecode/plate-common';
 import {
-  cn,
-  PlateLeaf,
-  PlateLeafProps,
-} from '@udecode/plate-styled-components';
-import {
   getSuggestionId,
   TSuggestionText,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
+import { cn, PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
 
 export function PlateSuggestionLeaf<V extends Value = Value>({
   className,

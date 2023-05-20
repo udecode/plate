@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@udecode/plate-styled-components/src/utils/utils';
+import { cn } from '@udecode/plate-tailwind/src/utils/utils';
 
 const Divider = React.forwardRef<
   HTMLDivElement,

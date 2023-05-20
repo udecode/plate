@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, cva, VariantProps } from '@udecode/plate-styled-components';
+import { cn, cva, VariantProps } from '@udecode/plate-tailwind';
 
 export const buttonVariants = cva(
   cn(

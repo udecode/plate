@@ -5,7 +5,7 @@ import {
   RefreshIcon,
   useComment,
 } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { buttonVariants } from '@udecode/plate-ui-button';
 
 export function PlateCommentResolveButton() {

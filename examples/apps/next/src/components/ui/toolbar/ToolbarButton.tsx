@@ -1,6 +1,6 @@
 import React, { HTMLProps } from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export interface ToolbarButtonProps
   extends Omit<HTMLProps<HTMLButtonElement>, 'type'> {

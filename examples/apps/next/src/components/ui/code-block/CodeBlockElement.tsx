@@ -10,11 +10,7 @@ import {
   setNodes,
   Value,
 } from '@udecode/plate-common';
-import {
-  cn,
-  PlateElement,
-  PlateElementProps,
-} from '@udecode/plate-styled-components';
+import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { CodeBlockSelectElement } from './CodeBlockSelectElement';
 
 export function CodeBlockElement({

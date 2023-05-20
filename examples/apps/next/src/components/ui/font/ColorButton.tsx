@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import Tippy from '@tippyjs/react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 type ColorButtonProps = {
   value: string;

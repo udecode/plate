@@ -7,7 +7,7 @@ import {
   useCommentsSelectors,
 } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-common';
-import { PlateLeaf, PlateLeafProps } from '@udecode/plate-styled-components';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
 
 export function PlateCommentLeaf(props: PlateLeafProps<Value, TCommentText>) {
   const { children, nodeProps, leaf } = props;

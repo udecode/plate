@@ -1,6 +1,5 @@
 import React, { SVGProps } from 'react';
 import { DropdownMenu } from '@udecode/plate-floating';
-import { cn } from '@udecode/plate-styled-components';
 import {
   BorderBottomIcon,
   BorderLeftIcon,
@@ -10,6 +9,7 @@ import {
   BorderTopIcon,
   useTableBordersDropdownMenuContentState,
 } from '@udecode/plate-table';
+import { cn } from '@udecode/plate-tailwind';
 import { Button } from '@udecode/plate-ui-button';
 import { floatingStyles } from '@udecode/plate-ui-toolbar';
 

@@ -9,7 +9,7 @@ import {
   TMediaEmbedElement,
   useMediaStore,
 } from '@udecode/plate-media';
-import { cn, PlateElementProps } from '@udecode/plate-styled-components';
+import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { mediaFloatingOptions } from './mediaFloatingOptions';
 import { PlateFloatingMedia } from './PlateFloatingMedia';

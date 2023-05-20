@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, LinkRootProps } from '@udecode/plate-link';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export function LinkElement({ className, ...props }: LinkRootProps) {
   return (

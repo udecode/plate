@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
-import { cn, PortalBody } from '@udecode/plate-styled-components';
+import { cn, PortalBody } from '@udecode/plate-tailwind';
 import { Toolbar, ToolbarProps } from './Toolbar';
 import { useFloatingToolbar } from './useFloatingToolbar';
 

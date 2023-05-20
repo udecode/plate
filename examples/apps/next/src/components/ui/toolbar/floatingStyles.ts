@@ -1,4 +1,4 @@
-import { cn, cva } from '@udecode/plate-styled-components';
+import { cn, cva } from '@udecode/plate-tailwind';
 import { buttonVariants } from '@udecode/plate-ui-button';
 
 export const floatingStyles = {

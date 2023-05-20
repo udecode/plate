@@ -9,7 +9,7 @@ import {
   ResizableProps,
   TImageElement,
 } from '@udecode/plate-media';
-import { cn, PlateElementProps } from '@udecode/plate-styled-components';
+import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { PlateFloatingMedia } from '../../../../../../../packages/ui/nodes/media/src/MediaEmbedElement';
 import { mediaFloatingOptions } from './mediaFloatingOptions';

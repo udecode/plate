@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useRef } from 'react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export function ColorInput({
   value = '#000000',

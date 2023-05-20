@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { Toolbar, ToolbarProps } from './Toolbar';
 
 export const HeadingToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(

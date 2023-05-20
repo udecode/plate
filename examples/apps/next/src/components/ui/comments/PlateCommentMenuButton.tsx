@@ -6,7 +6,7 @@ import {
   useCommentActions,
   useCommentSelectors,
 } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { Button, buttonVariants } from '@udecode/plate-ui-button';
 import { floatingStyles, ToolbarDropdown } from '@udecode/plate-ui-toolbar';
 

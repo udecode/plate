@@ -1,5 +1,5 @@
 import React from 'react';
-import { cva } from '@udecode/plate-styled-components';
+import { cva } from '@udecode/plate-tailwind';
 
 export const toolbarVariants = cva(
   'box-content flex min-h-[40px] select-none items-center text-[rgb(68,68,68)]'

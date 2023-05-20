@@ -1,10 +1,18 @@
-import { AnyObject, EElement, Value } from '@udecode/plate-common';
-import { PlateElementProps } from '@udecode/plate-styled-components/src/components/PlateElement';
-import { PlateLeafProps } from '@udecode/plate-styled-components/src/components/PlateLeaf';
-
-export const getRootProps = <V extends Value = Value>(
-  props: PlateElementProps<V, EElement<V>> | PlateLeafProps<V> | AnyObject
-) => {
+/**
+ * Get Plate component root props.
+ */
+export const getRootProps = <T>(
+  props: T
+): Omit<
+  T,
+  | 'editor'
+  | 'attributes'
+  | 'children'
+  | 'nodeProps'
+  | 'element'
+  | 'leaf'
+  | 'text'
+> => {
   const {
     editor,
     attributes,
@@ -14,7 +22,7 @@ export const getRootProps = <V extends Value = Value>(
     leaf,
     text,
     ...rootProps
-  } = props as PlateElementProps<V, EElement<V>> & PlateLeafProps<V>;
+  } = props as any;
 
   return rootProps;
 };

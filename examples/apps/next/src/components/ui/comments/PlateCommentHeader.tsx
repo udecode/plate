@@ -4,7 +4,7 @@ import {
   useComment,
   useCommentsSelectors,
 } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { PlateAvatar } from './PlateAvatar';
 import { PlateCommentResolveButton } from './PlateCommentResolveButton';
 

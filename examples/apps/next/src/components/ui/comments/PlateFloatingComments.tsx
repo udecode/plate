@@ -3,7 +3,7 @@ import {
   CommentsPositioner,
   useFloatingCommentsState,
 } from '@udecode/plate-comments';
-import { PortalBody } from '@udecode/plate-styled-components';
+import { PortalBody } from '@udecode/plate-tailwind';
 import { PlateFloatingCommentsContent } from './PlateFloatingCommentsContent';
 
 export function PlateFloatingComments() {

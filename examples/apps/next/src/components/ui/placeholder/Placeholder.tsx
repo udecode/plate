@@ -6,7 +6,7 @@ import {
   isElementEmpty,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { cn, PlateElementProps } from '@udecode/plate-styled-components';
+import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
 export interface PlaceholderProps extends PlateElementProps {

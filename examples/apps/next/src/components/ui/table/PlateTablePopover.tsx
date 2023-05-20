@@ -5,8 +5,8 @@ import {
   ElementPopover,
   PopoverProps,
 } from '@udecode/plate-floating';
-import { cn } from '@udecode/plate-styled-components';
 import { BorderAllIcon, TTableElement } from '@udecode/plate-table';
+import { cn } from '@udecode/plate-tailwind';
 import { buttonVariants, RemoveNodeButton } from '@udecode/plate-ui-button';
 import { floatingStyles } from '@udecode/plate-ui-toolbar';
 import { PlateTableBordersDropdownMenuContent } from './PlateTableBordersDropdownMenuContent';

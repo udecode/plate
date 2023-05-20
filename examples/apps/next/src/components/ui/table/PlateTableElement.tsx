@@ -1,10 +1,10 @@
 import React from 'react';
-import { cn } from '@udecode/plate-styled-components';
 import {
   TableElement,
   TableElementRootProps,
   useTableElementState,
 } from '@udecode/plate-table';
+import { cn } from '@udecode/plate-tailwind';
 import { PlateTablePopover } from './PlateTablePopover';
 
 export function PlateTableElement({

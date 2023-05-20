@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 import { ColorButton } from './ColorButton';
 import { ColorType } from './ColorType';
 

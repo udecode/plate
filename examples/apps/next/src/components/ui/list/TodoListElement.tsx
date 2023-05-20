@@ -1,11 +1,7 @@
 import React from 'react';
 import { findNodePath, setNodes, Value } from '@udecode/plate-common';
 import { TTodoListItemElement } from '@udecode/plate-list';
-import {
-  cn,
-  PlateElement,
-  PlateElementProps,
-} from '@udecode/plate-styled-components';
+import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useReadOnly } from 'slate-react';
 
 export type TodoListElementProps = PlateElementProps<

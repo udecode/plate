@@ -1,6 +1,6 @@
 import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { Upload, UploadProgress } from '@udecode/plate-cloud';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export function ProgressBar({
   upload,

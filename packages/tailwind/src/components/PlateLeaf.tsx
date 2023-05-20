@@ -1,14 +1,14 @@
 import React, { ReactElement, RefAttributes } from 'react';
 import {
   EText,
+  getRootProps,
   PlateRenderLeafProps,
   Text,
   TextProps,
   TText,
   Value,
 } from '@udecode/plate-common';
-import { getRootProps } from '@udecode/plate-utils/src/utils/getRootProps';
-import { cn } from '../utils';
+import { cn } from '../cn';
 
 export type PlateLeafProps<
   V extends Value = Value,
@@ -29,7 +29,7 @@ const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
         {...attributes}
         {...rootProps}
         {...nodeProps}
-        className={cn(rootProps.className, nodeProps?.className, className)}
+        className={cn(nodeProps?.className, className)}
       >
         {children}
       </Text>

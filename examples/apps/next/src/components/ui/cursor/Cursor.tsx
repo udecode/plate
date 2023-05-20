@@ -1,6 +1,6 @@
 import React from 'react';
 import { CursorData, CursorProps } from '@udecode/plate-cursor/src/types';
-import { cn } from '@udecode/plate-styled-components';
+import { cn } from '@udecode/plate-tailwind';
 
 export function Cursor({
   data,

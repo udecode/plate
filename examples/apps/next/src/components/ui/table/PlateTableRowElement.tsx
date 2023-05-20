@@ -1,9 +1,9 @@
 import React from 'react';
-import { cn } from '@udecode/plate-styled-components';
 import {
   TableRowElement,
   TableRowElementRootProps,
 } from '@udecode/plate-table';
+import { cn } from '@udecode/plate-tailwind';
 
 export interface PlateTableRowElementProps extends TableRowElementRootProps {
   hideBorder?: boolean;
