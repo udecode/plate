@@ -3,7 +3,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   AutoformatPlugin,
-  CodeBlockElement,
   createAlignPlugin,
   createAutoformatPlugin,
   createBlockquotePlugin,
@@ -34,7 +33,6 @@ import {
   createNodeIdPlugin,
   createNormalizeTypesPlugin,
   createParagraphPlugin,
-  createPlateUI,
   createResetNodePlugin,
   createSelectOnBackspacePlugin,
   createSoftBreakPlugin,
@@ -46,19 +44,26 @@ import {
   createTrailingBlockPlugin,
   createUnderlinePlugin,
   ELEMENT_CODE_BLOCK,
-  MentionCombobox,
   Plate,
-  PlateFloatingComments,
   PlateProvider,
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
-  ExcalidrawElement,
-} from '@udecode/plate-ui-excalidraw';
+} from '@udecode/plate-excalidraw';
+import { createJuicePlugin } from '@udecode/plate-juice';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+import { CodeBlockElement } from 'examples-next/src/components/ui/code-block/CodeBlockElement';
+import { PlateFloatingComments } from 'examples-next/src/components/ui/comments/PlateFloatingComments';
+import { MentionCombobox } from 'examples-next/src/components/ui/mention/MentionCombobox';
+import { createPlateUI } from 'examples-next/src/lib/createPlateUI';
+import {
+  createMyPlugins,
+  MyEditor,
+  MyPlatePlugin,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { alignPlugin } from './align/alignPlugin';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
 import { CommentBalloonToolbar } from './comments/CommentBalloonToolbar';
@@ -79,12 +84,6 @@ import { selectOnBackspacePlugin } from './select-on-backspace/selectOnBackspace
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { Toolbar } from './toolbar/Toolbar';
 import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';
-import {
-  createMyPlugins,
-  MyEditor,
-  MyPlatePlugin,
-  MyValue,
-} from './typescript/plateTypes';
 import { playgroundValue } from './playgroundValue';
 import { ToolbarButtons } from './ToolbarButtons';
 

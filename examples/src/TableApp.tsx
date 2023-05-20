@@ -6,6 +6,10 @@ import {
   Plate,
   PlateProvider,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -14,7 +18,6 @@ import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { TableToolbarButtons } from './table/TableToolbarButtons';
 import { tableValue } from './table/tableValue';
 import { Toolbar } from './toolbar/Toolbar';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

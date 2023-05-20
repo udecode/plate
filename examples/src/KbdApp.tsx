@@ -7,17 +7,17 @@ import {
   Plate,
   PlateProvider,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+  useMyPlateEditorRef,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { kbdValue } from './kbd/kbdValue';
 import { Toolbar } from './toolbar/Toolbar';
-import {
-  createMyPlugins,
-  MyValue,
-  useMyPlateEditorRef,
-} from './typescript/plateTypes';
 
 function KbdToolbarButton() {
   const editor = useMyPlateEditorRef();

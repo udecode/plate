@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Plate, TElement } from '@udecode/plate';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -11,7 +12,6 @@ import {
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createHugeDocumentValue } from './huge-document/createHugeDocumentValue';
-import { MyValue } from './typescript/plateTypes';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 

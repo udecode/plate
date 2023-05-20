@@ -7,11 +7,14 @@ import {
   Plate,
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { withStyledDraggables } from './dnd/withStyledDraggables';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 // set drag handle next to each block
 const components = withStyledDraggables(plateUI);

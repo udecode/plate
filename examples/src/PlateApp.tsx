@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plate, PlateProvider, useResetPlateEditor } from '@udecode/plate';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { plainTextValue } from './basic-editor/plainTextValue';
 import { editableProps } from './common/editableProps';
-import { MyValue } from './typescript/plateTypes';
 
 function Buttons({ disabled, setDisabled }: any) {
   const resetPlateEditor = useResetPlateEditor();

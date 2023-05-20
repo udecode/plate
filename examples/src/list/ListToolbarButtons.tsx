@@ -5,8 +5,8 @@ import {
   getPluginType,
   ListToolbarButton,
 } from '@udecode/plate';
+import { useMyPlateEditorRef } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { Icons } from '../common/icons';
-import { useMyPlateEditorRef } from '../typescript/plateTypes';
 
 const tooltip = (content: string) => ({
   content,

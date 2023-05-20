@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
-import { MyEditor, MyValue } from './typescript/plateTypes';
+import {
+  MyEditor,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 
 export default function TypescriptApp() {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define

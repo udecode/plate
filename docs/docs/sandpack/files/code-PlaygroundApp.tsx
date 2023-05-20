@@ -58,7 +58,7 @@ import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-} from '@udecode/plate-ui-excalidraw';
+} from '@udecode/plate-excalidraw';
 import { alignPlugin } from './align/alignPlugin';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
 import { CommentBalloonToolbar } from './comments/CommentBalloonToolbar';

@@ -13,7 +13,11 @@ import {
   serializeHtml,
   usePlateEditorState,
 } from '@udecode/plate';
-import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
+import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
@@ -21,7 +25,6 @@ import { linkPlugin } from './link/linkPlugin';
 import { deserializeHtmlValue } from './serializing-html/deserializeHtmlValue';
 import { HighlightHTML } from './serializing-html/HighlightHTML';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

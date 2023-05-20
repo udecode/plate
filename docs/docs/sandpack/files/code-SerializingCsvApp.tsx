@@ -12,7 +12,7 @@ import {
   createTodoListPlugin,
   Plate,
 } from '@udecode/plate';
-import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
+import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';

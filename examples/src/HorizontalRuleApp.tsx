@@ -10,12 +10,16 @@ import {
   Plate,
   setNodes,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyEditor,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { preFormat } from './autoformat/autoformatUtils';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { horizontalRuleValue } from './horizontal-rule/horizontalRuleValue';
-import { createMyPlugins, MyEditor, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

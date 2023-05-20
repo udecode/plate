@@ -1,8 +1,5 @@
-import {
-  ELEMENT_H1,
-  ELEMENT_PARAGRAPH,
-  withPlaceholders,
-} from '@udecode/plate';
+import { ELEMENT_H1, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { withPlaceholders } from 'examples-next/src/components/ui/placeholder/Placeholder';
 
 export const withStyledPlaceHolders = (components: any) =>
   withPlaceholders(components, [

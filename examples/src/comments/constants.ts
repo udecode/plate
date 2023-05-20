@@ -1,5 +1,5 @@
 import { TComment } from '@udecode/plate';
-import { MyValue } from '../typescript/plateTypes';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 
 export const usersData = {
   1: {

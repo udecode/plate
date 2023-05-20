@@ -14,6 +14,11 @@ import {
   ToolbarButton,
   withProps,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+  useMyPlateEditorRef,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { editableProps } from './common/editableProps';
 import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
@@ -21,11 +26,6 @@ import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
 import { indentListPlugin } from './indent-list/indentListPlugin';
 import { indentListValue } from './indent-list/indentListValue';
 import { Toolbar } from './toolbar/Toolbar';
-import {
-  createMyPlugins,
-  MyValue,
-  useMyPlateEditorRef,
-} from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

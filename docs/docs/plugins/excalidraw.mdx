@@ -22,6 +22,7 @@ Explore the full range of capabilities offered by the Excalidraw tool by trying 
 
 
 
+
 import { ExcalidrawSandpack } from "./ExcalidrawSandpack";
 
 <ExcalidrawSandpack />
@@ -34,14 +35,14 @@ Follow these steps to integrate the excalidraw plugin into your Plate editor:
 1. Install the required packages:
 
 ```bash npm2yarn
-npm install @udecode/plate-ui-excalidraw
+npm install @udecode/plate-excalidraw
 ```
 
 2. Import the plugin and include it in your plugin list:
 
 ```tsx
 import { createSelectOnBackspacePlugin } from '@udecode/plate';
-import { createExcalidrawPlugin, ExcalidrawElement, ELEMENT_EXCALIDRAW } from '@udecode/plate-ui-excalidraw';
+import { createExcalidrawPlugin, ExcalidrawElement, ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 
 const plugins = createPlugins([
   // ...basicNodesPlugins,

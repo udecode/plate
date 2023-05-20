@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { MarkBalloonToolbar } from './balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
@@ -9,7 +10,6 @@ import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { imagePlugins } from './media/imagePlugins';
 import { imageValue } from './media/mediaValue';
 import { Toolbar } from './toolbar/Toolbar';
-import { MyValue } from './typescript/plateTypes';
 
 const styles = {
   wrapper: {

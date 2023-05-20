@@ -11,10 +11,13 @@ import {
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
+import {
+  MyPlatePlugin,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { editableProps } from './common/editableProps';
-import { MyPlatePlugin, MyValue } from './typescript/plateTypes';
 
 const plugins: MyPlatePlugin[] = [
   createParagraphPlugin(),

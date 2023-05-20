@@ -7,13 +7,16 @@ import {
   findNode,
   Plate,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { createTabbableElementPlugin } from './tabbable/createTabbableElementPlugin';
 import { TabbableElement } from './tabbable/TabbableElement';
 import { tabbableValue } from './tabbable/tabbableValue';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

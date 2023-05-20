@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plate } from '@udecode/plate';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { createMultiEditorsValue } from './multiple-editors/createMultiEditorsValue';
-import { MyValue } from './typescript/plateTypes';
 
 const initialValues = createMultiEditorsValue();
 

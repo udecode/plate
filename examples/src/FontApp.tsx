@@ -9,13 +9,16 @@ import {
   Plate,
   PlateProvider,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { Icons } from './common/icons';
 import { plateUI } from './common/plateUI';
 import { fontValue } from './font/fontValue';
 import { Toolbar } from './toolbar/Toolbar';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const styles: Record<string, CSSProperties> = {
   copyWrapper: {

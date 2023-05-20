@@ -11,11 +11,11 @@ import {
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
+import { MyValue } from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicMarksValue } from './basic-marks/basicMarksValue';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
-import { MyValue } from './typescript/plateTypes';
 
 // try to remove a few plugins!
 const plugins = createPlugins<MyValue>(

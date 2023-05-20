@@ -8,6 +8,10 @@ import {
   createTrailingBlockPlugin,
   Plate,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicElementsValue } from './basic-elements/basicElementsValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
@@ -16,7 +20,6 @@ import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
 import { trailingBlockPlugin } from './trailing-block/trailingBlockPlugin';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

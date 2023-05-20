@@ -11,13 +11,16 @@ import {
   Plate,
   PlateProvider,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { AlignToolbarButtons } from './align/AlignToolbarButtons';
 import { alignValue } from './align/alignValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';
 import { Toolbar } from './toolbar/Toolbar';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

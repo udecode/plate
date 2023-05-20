@@ -7,7 +7,7 @@ import {
   ELEMENT_H6,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
-import { MyPlatePlugin } from '../typescript/plateTypes';
+import { MyPlatePlugin } from 'examples-next/src/lib/plate/typescript/plateTypes';
 
 export const lineHeightPlugin: Partial<MyPlatePlugin> = {
   inject: {

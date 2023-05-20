@@ -4,11 +4,14 @@ import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-} from '@udecode/plate-ui-excalidraw';
+} from '@udecode/plate-excalidraw';
+import {
+  MyPlatePlugin,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { excalidrawValue } from './excalidraw/excalidrawValue';
-import { MyPlatePlugin, MyValue } from './typescript/plateTypes';
 
 const plugins: MyPlatePlugin[] = [
   ...basicNodesPlugins,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEventPlateId } from '@udecode/plate';
 import { PlateCloudEditor } from '@udecode/plate-cloud';
-import { useMyPlateEditorRef } from '../typescript/plateTypes';
+import { useMyPlateEditorRef } from 'examples-next/src/lib/plate/typescript/plateTypes';
 
 const buttonStyle: React.CSSProperties = {
   marginRight: 4,

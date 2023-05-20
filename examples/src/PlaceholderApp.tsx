@@ -1,5 +1,9 @@
 import React from 'react';
 import { createExitBreakPlugin, Plate } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { BasicElementToolbarButtons } from './basic-elements/BasicElementToolbarButtons';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
@@ -8,7 +12,6 @@ import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { placeholderValue } from './placeholder/placeholderValue';
 import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
 import { Toolbar } from './toolbar/Toolbar';
-import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const components = withStyledPlaceHolders(plateUI);
 

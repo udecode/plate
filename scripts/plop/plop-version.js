@@ -1,5 +1,5 @@
 const packageJsonPlate = require('@udecode/plate/package.json');
-const packageJsonExcalidraw = require('@udecode/plate-ui-excalidraw/package.json');
+const packageJsonExcalidraw = require('@udecode/plate-excalidraw/package.json');
 const packageJsonTestUtils = require('@udecode/plate-test-utils/package.json');
 const packageJsonJuice = require('@udecode/plate-juice/package.json');
 const packageJsonSelection = require('@udecode/plate-selection/package.json');

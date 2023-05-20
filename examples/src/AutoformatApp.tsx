@@ -9,6 +9,11 @@ import {
   createSoftBreakPlugin,
   Plate,
 } from '@udecode/plate';
+import {
+  createMyPlugins,
+  MyEditor,
+  MyValue,
+} from 'examples-next/src/lib/plate/typescript/plateTypes';
 import { autoformatPlugin } from './autoformat/autoformatPlugin';
 import { autoformatValue } from './autoformat/autoformatValue';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
@@ -17,7 +22,6 @@ import { plateUI } from './common/plateUI';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { resetBlockTypePlugin } from './reset-node/resetBlockTypePlugin';
 import { softBreakPlugin } from './soft-break/softBreakPlugin';
-import { createMyPlugins, MyEditor, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
