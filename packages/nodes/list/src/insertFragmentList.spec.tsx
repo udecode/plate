@@ -2,7 +2,7 @@
 
 import { PlateEditor, TDescendant } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createListPlugin } from './createListPlugin';
 
 jsx;
@@ -21,7 +21,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 describe('when pasting ul > 2 li fragment', () => {
   describe('when selection in li', () => {
     it('should insert lis next to the lowest li', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -40,9 +40,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -53,9 +53,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -77,13 +77,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert nested lis next to the lowest li, without the leading empty lis', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -102,9 +102,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -117,9 +117,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -143,13 +143,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert nested lis with selected lic being an empty node and with nested lis', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -172,9 +172,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -187,9 +187,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -213,13 +213,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert nested lis with selected lic being an empty node', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -237,9 +237,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -252,9 +252,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -275,13 +275,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert lis with missing lics due to copying lis at different levels', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -300,9 +300,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -317,9 +317,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -341,13 +341,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert a single li as text', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -364,9 +364,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -374,9 +374,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -393,13 +393,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert a paragraph and a list', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -416,9 +416,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hp>three</hp>
           <hul>
@@ -427,9 +427,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -449,13 +449,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert multiple paragraphs', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -472,16 +472,16 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hp>three</hp>
           <hp>four</hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -501,14 +501,14 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     // Auto-correct generates a Paragraph node (in Chromium)
     it('should insert autocorrect-inserted paragraph inside a list', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -526,15 +526,15 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hp>three</hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -551,13 +551,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert simple text inside a list with selection across multiple list items', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -575,15 +575,15 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus path={[0, 1, 0, 0]} offset={3} />
           </selection>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hp>three</hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -597,13 +597,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert nested lis with selected lic being an empty node after selection removed', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -621,9 +621,9 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus path={[0, 1, 0, 0]} offset={3} />
           </selection>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -636,9 +636,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -654,13 +654,13 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should insert nested lis with selection across multiple lics', () => {
-      const input = ((
+      const input = (
         <editor>
           <hul>
             <hli>
@@ -678,9 +678,9 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus path={[0, 1, 0, 0]} offset={5} />
           </selection>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -696,9 +696,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hul>
             <hli>
@@ -720,7 +720,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -728,16 +728,16 @@ describe('when pasting ul > 2 li fragment', () => {
 
   describe('when selection not in li', () => {
     it('should paste the list', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             one
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -745,9 +745,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hp>
             one
@@ -759,22 +759,22 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
 
     it('should paste the list with multiple lis', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             one
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -785,9 +785,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hp>
             one
@@ -802,7 +802,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -810,16 +810,16 @@ describe('when pasting ul > 2 li fragment', () => {
 
   describe('when pasted lis not contain lic', () => {
     it('should normalize li children', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             P
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hul>
             <hli>
@@ -835,9 +835,9 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hp>
             P
@@ -857,7 +857,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });

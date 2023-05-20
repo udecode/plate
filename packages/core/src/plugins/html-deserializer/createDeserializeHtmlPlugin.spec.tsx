@@ -1,11 +1,11 @@
 /** @jsx jsx */
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createMediaEmbedPlugin } from '../../../../media/src/media-embed/createMediaEmbedPlugin';
-import { createBoldPlugin } from '../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createHeadingPlugin } from '../../../../nodes/heading/src/createHeadingPlugin';
-import { createLinkPlugin } from '../../../../nodes/link/src/createLinkPlugin';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 
@@ -32,14 +32,14 @@ describe('when inserting html', () => {
 
   describe('when inserting h1 inside p (not empty)', () => {
     it('should just insert h1 text inside p', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             test
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const expected = (
         <editor>
@@ -65,13 +65,13 @@ describe('when inserting html', () => {
 
   describe('when inserting h1 inside an empty p', () => {
     it('should set p type to h1 and insert h1 text', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const expected = (
         <editor>
@@ -96,13 +96,13 @@ describe('when inserting html', () => {
   });
 
   describe('when inserting a text node surrounded by elements', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           <cursor />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const expected = (
       <editor>
@@ -133,14 +133,14 @@ describe('when inserting html', () => {
 });
 
 describe('when inserting empty html', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
@@ -171,14 +171,14 @@ describe('when inserting empty html', () => {
 });
 
 describe('when inserting an iframe without src', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -211,14 +211,14 @@ describe('when inserting an iframe without src', () => {
 });
 
 describe('when inserting link with href', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -257,14 +257,14 @@ describe('when inserting link with href', () => {
 });
 
 describe('when inserting plain text', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   const data = {
     getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),

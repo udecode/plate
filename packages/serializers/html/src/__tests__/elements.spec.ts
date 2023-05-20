@@ -1,6 +1,7 @@
 import { createParagraphPlugin } from '@udecode/plate';
 import { createAlignPlugin } from '@udecode/plate-alignment/src/index';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/index';
+import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/index';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createListPlugin } from '@udecode/plate-list/src/index';
@@ -16,8 +17,7 @@ import {
   TableElement,
   TableRowElement,
 } from '@udecode/plate-table/src/index';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 it('serialize list to html', () => {
@@ -165,8 +165,7 @@ it('serialize image to html', () => {
         nodes: [
           {
             type: 'img',
-            url:
-              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+            url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
             children: [],
           },
         ],

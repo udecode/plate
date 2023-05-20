@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { insertCodeLine } from './insertCodeLine';
 
@@ -10,7 +10,7 @@ jsx;
 
 describe('insert code line', () => {
   it('should insert code line below selected line', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -19,9 +19,9 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hcodeblock>
           <hcodeline>line 1</hcodeline>
@@ -32,7 +32,7 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

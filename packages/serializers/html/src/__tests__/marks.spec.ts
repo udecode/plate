@@ -1,8 +1,8 @@
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
+import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 const plugins = [

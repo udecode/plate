@@ -26,14 +26,11 @@ import { createResetNodePlugin } from '@udecode/plate-reset-node/src/createReset
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select/src/createSelectOnBackspacePlugin';
 import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block/src/createTrailingBlockPlugin';
-import { createPlateUI } from '@udecode/plate-ui/src/utils/createPlateUI';
 import { SearchHighlightToolbar } from '@udecode/plate-ui-find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
-import { LinkToolbarButton } from '@udecode/plate-ui-link/src/LinkToolbarButton/LinkToolbarButton';
 import { ImageToolbarButton } from '@udecode/plate-ui-media/src/index';
-import { MediaEmbedToolbarButton } from '@udecode/plate-ui-media/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
 import { MentionCombobox } from '@udecode/plate-ui-mention/src/MentionCombobox/MentionCombobox';
-import { HeadingToolbar } from '@udecode/plate-ui-toolbar/src/HeadingToolbar/HeadingToolbar';
+import { createPlateUI } from 'examples/apps/next/src/createPlateUI';
 import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
 import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
@@ -51,6 +48,9 @@ import { selectOnBackspacePlugin } from 'examples/src/select-on-backspace/select
 import { softBreakPlugin } from 'examples/src/soft-break/softBreakPlugin';
 import { TableToolbarButtons } from 'examples/src/table/TableToolbarButtons';
 import { trailingBlockPlugin } from 'examples/src/trailing-block/trailingBlockPlugin';
+import { LinkToolbarButton } from 'packages/ui/nodes/link/src/LinkElement/LinkToolbarButton';
+import { MediaEmbedToolbarButton } from 'packages/ui/nodes/media/src/ImageElement/MediaEmbedToolbarButton';
+import { HeadingToolbar } from 'packages/ui/toolbar/src/BalloonToolbar/HeadingToolbar';
 
 function PlateContainer() {
   const [search, setSearch] = useState();

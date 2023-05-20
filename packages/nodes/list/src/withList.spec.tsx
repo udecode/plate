@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { PlateEditor, PlatePlugin } from '@udecode/plate-common';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
-import { createLinkPlugin } from '../../link/src/createLinkPlugin';
-import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createListPlugin, ELEMENT_UL } from './createListPlugin';
 import { ListPlugin } from './types';
 
@@ -60,7 +60,7 @@ describe('withList', () => {
   describe('normalizeList', () => {
     describe('when there is no lic in li', () => {
       it('should insert lic', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -70,9 +70,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -83,7 +83,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -91,7 +91,7 @@ describe('withList', () => {
 
     describe('when li > p > children', () => {
       it('should be li > lic > children', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -102,9 +102,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -112,7 +112,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -120,7 +120,7 @@ describe('withList', () => {
 
     describe('when li > lic > p > children', () => {
       it('should be li > lic > children', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -133,9 +133,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -143,7 +143,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -151,7 +151,7 @@ describe('withList', () => {
 
     describe('when li > lic > block > block > children', () => {
       it('should be li > lic > children', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -166,9 +166,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -176,7 +176,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -184,7 +184,7 @@ describe('withList', () => {
 
     describe('when li > lic > many block > block > children', () => {
       it('should be li > lic > children merged', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -202,9 +202,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -212,7 +212,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -220,7 +220,7 @@ describe('withList', () => {
 
     describe('when li > block, with block in validLiChildrenTypes', () => {
       it('should keep the block untouched', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -236,9 +236,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -251,7 +251,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testInsertText(input, expected, {
           options: {
@@ -265,7 +265,7 @@ describe('withList', () => {
   describe('when deleteBackward at block start', () => {
     describe('when at first li', () => {
       it('should be unindent li children and unwrap the list', () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>test</hp>
             <hul>
@@ -282,9 +282,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hp>test</hp>
             <hp>hello</hp>
@@ -294,7 +294,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -302,7 +302,7 @@ describe('withList', () => {
 
     describe('when at nested li without li children', () => {
       it('should delete the li and merge the text nodes to the previous li', () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>test</hp>
             <hul>
@@ -319,9 +319,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hp>test</hp>
             <hul>
@@ -330,7 +330,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -338,7 +338,7 @@ describe('withList', () => {
 
     describe('when the list is not nested and li is not the first child', () => {
       it('should move li up', () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>test</hp>
             <hul>
@@ -353,9 +353,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hp>test</hp>
             <hul>
@@ -365,7 +365,7 @@ describe('withList', () => {
             </hul>
             <hp>world</hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -454,7 +454,7 @@ describe('withList', () => {
 
     describe('when deleteForward at block end', () => {
       it('should merge the next element when last child', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -465,9 +465,9 @@ describe('withList', () => {
             </hul>
             <hp>level 2</hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -479,13 +479,13 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteForward(input, expected);
       });
 
       it('should merge next sibling li', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -498,9 +498,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -512,13 +512,13 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteForward(input, expected);
       });
 
       it('should merge next li and shift one level up', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -541,9 +541,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -559,13 +559,13 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteForward(input, expected);
       });
 
       it('should shift all nested lists one level up', () => {
-        const input = ((
+        const input = (
           <editor>
             <hul>
               <hli>
@@ -596,9 +596,9 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const expected = ((
+        const expected = (
           <editor>
             <hul>
               <hli>
@@ -626,7 +626,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         testDeleteForward(input, expected);
       });

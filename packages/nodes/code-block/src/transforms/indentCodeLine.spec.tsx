@@ -6,7 +6,7 @@ import {
   TElementEntry,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
 
@@ -15,7 +15,7 @@ jsx;
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {
     it('should indent', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -25,9 +25,9 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -37,7 +37,7 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -56,7 +56,7 @@ describe('indent code line', () => {
   describe('when the selection is collapsed', () => {
     describe('when there are only whitespace characters left of the cursor', () => {
       it('should indent', () => {
-        const input = ((
+        const input = (
           <editor>
             <hcodeblock>
               <hcodeline>
@@ -66,9 +66,9 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hcodeblock>
               <hcodeline>
@@ -78,7 +78,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateUIEditor({
           editor: input,
@@ -96,7 +96,7 @@ describe('indent code line', () => {
 
     describe('when there are non-whitespace characters left of the cursor', () => {
       it('should insert 2 spaces at the cursor', () => {
-        const input = ((
+        const input = (
           <editor>
             <hcodeblock>
               <hcodeline>
@@ -106,9 +106,9 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hcodeblock>
               <hcodeline>
@@ -118,7 +118,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateUIEditor({
           editor: input,

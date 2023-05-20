@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
 
@@ -10,7 +10,7 @@ jsx;
 
 describe('toggle on', () => {
   it('should turn a p to a code block', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           line 1
@@ -18,9 +18,9 @@ describe('toggle on', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -30,7 +30,7 @@ describe('toggle on', () => {
         </hcodeblock>
         <hp>line 2</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -43,7 +43,7 @@ describe('toggle on', () => {
   });
 
   it('should turn a p with a selection to code block', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           Planetas <anchor />
@@ -51,9 +51,9 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -63,7 +63,7 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -76,7 +76,7 @@ describe('toggle on', () => {
   });
 
   it('should turn multiple p to a code block', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           line <anchor />1
@@ -87,9 +87,9 @@ describe('toggle on', () => {
           line 3
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -102,7 +102,7 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

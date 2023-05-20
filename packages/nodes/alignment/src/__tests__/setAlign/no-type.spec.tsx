@@ -2,27 +2,27 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createAlignPlugin } from '../../createAlignPlugin';
 import { setAlign } from '../../transforms/setAlign';
 
 jsx;
 
 describe('when type (h1) is not in types', () => {
-  const input = ((
+  const input = (
     <editor>
       <hh1>
         test
         <cursor />
       </hh1>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
-  const output = ((
+  const output = (
     <editor>
       <hh1>test</hh1>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should not align', () => {
     const editor = createPlateUIEditor({

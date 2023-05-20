@@ -1,12 +1,8 @@
 /** @jsx jsx */
 
-import {
-  getNodeEntry,
-  PlateEditor,
-  TElementEntry,
-} from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 
 jsx;
@@ -14,7 +10,7 @@ jsx;
 describe('insert break', () => {
   describe('when cursor is inside code line', () => {
     it('should insert a new code line with same indentation', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -24,9 +20,9 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>{'    '}before</hcodeline>
@@ -37,7 +33,7 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,

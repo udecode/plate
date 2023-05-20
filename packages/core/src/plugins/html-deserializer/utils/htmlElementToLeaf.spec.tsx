@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
-import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 

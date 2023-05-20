@@ -2,13 +2,13 @@
 
 import { findNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 jsx;
 
 describe('when there is toListItem sublist', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul id="1">
         <hli id="11">
@@ -35,9 +35,9 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
-  const output = ((
+  const output = (
     <editor>
       <hul id="1">
         <hli id="11">
@@ -62,7 +62,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should', () => {
     const editor = createPlateUIEditor({
@@ -84,7 +84,7 @@ describe('when there is toListItem sublist', () => {
 });
 
 describe('when there is no list in toListItem', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul id="1">
         <hli id="11">
@@ -103,9 +103,9 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
-  const output = ((
+  const output = (
     <editor>
       <hul id="1">
         <hli id="11">
@@ -124,7 +124,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should', () => {
     const editor = createPlateUIEditor({

@@ -2,10 +2,10 @@ import React from 'react';
 import { createBoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks/src/index';
 import { createPlateEditor } from '@udecode/plate-core';
+import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { PlatePlugin } from '@udecode/plate-core/src/types/plugin/PlatePlugin';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 const plugins = [
@@ -22,8 +22,7 @@ it('custom serialize image to html', () => {
         nodes: [
           {
             type: 'img',
-            url:
-              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+            url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
             children: [],
           },
         ],
@@ -59,8 +58,9 @@ it('custom serialize bold to html', () => {
 });
 
 describe('multiple custom leaf serializers', () => {
-  const Bold = ({ children }: any): JSX.Element =>
-    React.createElement('b', {}, children);
+  function Bold({ children }: any): JSX.Element {
+    return React.createElement('b', {}, children);
+  }
 
   const normalizeHTML = (html: string): string =>
     new DOMParser().parseFromString(html, 'text/html').body.innerHTML;

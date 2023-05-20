@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createListPlugin } from '../createListPlugin';
 import { unwrapList } from './unwrapList';
 
@@ -10,7 +10,7 @@ jsx;
 
 describe('li list unwrapping', () => {
   it('should unwrap a nested list ul > single li', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -29,15 +29,15 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>1</hp>
         <hp>11</hp>
         <hp>12</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -50,7 +50,7 @@ describe('li list unwrapping', () => {
   });
 
   it('should unwrap a nested list ul > single li, collapsed selection', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -63,9 +63,9 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>1</hp>
         <hul>
@@ -76,7 +76,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -89,7 +89,7 @@ describe('li list unwrapping', () => {
   });
 
   it('should unwrap a nested list ul > multiple li', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -110,15 +110,15 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>1</hp>
         <hp>11</hp>
         <hp>2</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -131,7 +131,7 @@ describe('li list unwrapping', () => {
   });
 
   it('should unwrap a nested list ul > multiple li, collapsed selection', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -149,9 +149,9 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>1</hp>
         <hul>
@@ -166,7 +166,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

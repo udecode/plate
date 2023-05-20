@@ -44,6 +44,10 @@ import { AnyObject } from '@udecode/utils';
 //   | T
 //   | (string & { [key in symbol]: never });
 
+export type ClassNames<T> = {
+  classNames?: Partial<T>;
+};
+
 /**
  * Render prop type.
  * @template P Props

@@ -1,6 +1,6 @@
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { deserializeHtml } from '../../../../core/src/plugins/html-deserializer/utils/deserializeHtml';
-import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { deserializeHtml } from '@udecode/plate-core/src/plugins/html-deserializer/utils/deserializeHtml';
+import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 it('serializes with edge case where input is non-rich text', () => {

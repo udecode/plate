@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
 
@@ -10,15 +10,15 @@ jsx;
 
 describe('insert empty code block', () => {
   it('should insert empty code block on selected empty line', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           <cursor />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -26,7 +26,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -41,16 +41,16 @@ describe('insert empty code block', () => {
   });
 
   it('should insert empty code block below selected non-empty line', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           test
           <cursor />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>test</hp>
         <hcodeblock>
@@ -59,7 +59,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -74,7 +74,7 @@ describe('insert empty code block', () => {
   });
 
   it('should insert empty code block below expanded selection', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>line 1</hp>
         <hp>
@@ -86,9 +86,9 @@ describe('insert empty code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>line 1</hp>
         <hp>line 2</hp>
@@ -101,7 +101,7 @@ describe('insert empty code block', () => {
         </hcodeblock>
         <hp>line 5</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

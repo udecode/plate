@@ -3,7 +3,7 @@ import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicP
 import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 it('serialize complex example list with paragraphs to html', () => {

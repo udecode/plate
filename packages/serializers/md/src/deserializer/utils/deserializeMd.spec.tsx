@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 // import { PlateEditor } from '@udecode/plate-common';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule/src/src';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_HR } from '../../../../../nodes/horizontal-rule/src';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createDeserializeMdPlugin } from '../createDeserializeMdPlugin';
 import { deserializeMd } from './deserializeMd';
 

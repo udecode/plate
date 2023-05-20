@@ -2,14 +2,14 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createListPlugin } from './createListPlugin';
 
 jsx;
 
 describe('li > lic * 2 with selection at second child start', () => {
   it('should merge the children', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -21,9 +21,9 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const expected = ((
+    const expected = (
       <editor>
         <hul>
           <hli>
@@ -31,7 +31,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -46,7 +46,7 @@ describe('li > lic * 2 with selection at second child start', () => {
 
 describe('li with selection at start', () => {
   it('should remove the list item', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -60,9 +60,9 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const expected = ((
+    const expected = (
       <editor>
         <hp>one</hp>
         <hul>
@@ -71,7 +71,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

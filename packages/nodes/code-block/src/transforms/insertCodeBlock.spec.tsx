@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
 
@@ -11,7 +11,7 @@ jsx;
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
     it('should turn line to code block', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>line 1</hp>
           <hp>
@@ -20,9 +20,9 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>line 1</hp>
           <hcodeblock>
@@ -33,7 +33,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -48,7 +48,7 @@ describe('insert code block', () => {
 
   describe('when selection is not at start of block', () => {
     it('should split line at selection and turn latter line to code block', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>line 1</hp>
           <hp>
@@ -57,9 +57,9 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>line 1</hp>
           <hp>before </hp>
@@ -71,7 +71,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -86,7 +86,7 @@ describe('insert code block', () => {
 
   describe('when selection is expanded', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>line 1</hp>
           <hp>
@@ -97,9 +97,9 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>line 1</hp>
           <hp>
@@ -110,7 +110,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,

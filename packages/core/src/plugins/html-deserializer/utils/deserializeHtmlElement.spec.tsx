@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createImagePlugin } from '../../../../../media/src/image/createImagePlugin';
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createLinkPlugin } from '../../../../../nodes/link/src/createLinkPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;

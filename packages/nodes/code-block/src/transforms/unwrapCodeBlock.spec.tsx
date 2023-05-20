@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
@@ -10,7 +10,7 @@ jsx;
 
 describe('unwrap code block', () => {
   it('should turn a code block to multiple p', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -21,9 +21,9 @@ describe('unwrap code block', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>
           <htext>line 1</htext>
@@ -31,7 +31,7 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -44,7 +44,7 @@ describe('unwrap code block', () => {
   });
 
   it('should turn multiple code blocks to multiple p', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>line 1</hcodeline>
@@ -62,9 +62,9 @@ describe('unwrap code block', () => {
           <hcodeline>line 5</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hp>line 1</hp>
         <hp>
@@ -78,7 +78,7 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -92,7 +92,7 @@ describe('unwrap code block', () => {
 
   describe('when not inside code block', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             <htext>line 1</htext>
@@ -104,9 +104,9 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>
             <htext>line 1</htext>
@@ -120,7 +120,7 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,

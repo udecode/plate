@@ -1,7 +1,7 @@
+import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import { htmlStringToDOMNode } from '../../../../core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 const plugins = [

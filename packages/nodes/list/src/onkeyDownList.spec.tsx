@@ -1,15 +1,9 @@
 /** @jsx jsx */
 
-import {
-  getPlugin,
-  HotkeyPlugin,
-  Hotkeys,
-  PlateEditor,
-} from '@udecode/plate-common';
+import { getPlugin, HotkeyPlugin, PlateEditor } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
-import * as isHotkey from 'is-hotkey';
+import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;

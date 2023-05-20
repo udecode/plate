@@ -2,15 +2,13 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
-import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsx;
 
 describe('isCodeBlockEmpty', () => {
   it('should be false when not in a code block', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           <htext />
@@ -22,13 +20,13 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     expect(isCodeBlockEmpty(input)).toBe(false);
   });
 
   it('should be false when in a code block with multiple lines', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -40,13 +38,13 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     expect(isCodeBlockEmpty(input)).toBe(false);
   });
 
   it('should be false when in a non-empty code line', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -55,13 +53,13 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     expect(isCodeBlockEmpty(input)).toBe(false);
   });
 
   it('should be true when in an empty code line', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -70,7 +68,7 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     expect(isCodeBlockEmpty(input)).toBe(true);
   });

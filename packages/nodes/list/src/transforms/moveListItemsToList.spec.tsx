@@ -2,12 +2,12 @@
 
 import { findNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hul id="1">
       <hli>
@@ -28,9 +28,9 @@ const input = ((
       </hli>
     </hul>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
-const output = ((
+const output = (
   <editor>
     <hul id="1">
       <hli>
@@ -49,7 +49,7 @@ const output = ((
       </hli>
     </hul>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 it('should', () => {
   const editor = createPlateUIEditor({

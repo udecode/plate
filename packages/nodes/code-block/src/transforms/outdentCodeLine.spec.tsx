@@ -6,7 +6,7 @@ import {
   TElementEntry,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
@@ -15,21 +15,21 @@ jsx;
 describe('outdent code line', () => {
   describe('when line is indented', () => {
     it('should outdent line', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>{'    '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>{'  '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -47,21 +47,21 @@ describe('outdent code line', () => {
 
   describe('when line is not indented', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
