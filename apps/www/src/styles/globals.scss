@@ -60,6 +60,15 @@ td {
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
+.pro-sidebar,
+.sidebar-btn {
+  color: inherit !important;
+}
+
+.pro-sidebar-inner {
+  background: white !important;
+}
+
 .pro-sidebar-layout {
   border-right: 2px solid #eee;
 }
