@@ -14,6 +14,7 @@ module.exports = {
   '@udecode/plate-comments': 'comments',
   '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
+  '@udecode/plate-cursor': 'cursor',
   '@udecode/plate-dnd': 'dnd',
   '@udecode/plate-emoji': 'nodes/emoji',
   '@udecode/plate-serializer-csv': 'serializers/csv',

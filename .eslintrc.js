@@ -5,11 +5,10 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:mdx/recommended',
     'plugin:promise/recommended',
-    'plugin:prettier/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/typescript',
     'plugin:tailwindcss/recommended',
-    'prettier',
+    './config/eslint/bases/prettier.cjs',
   ],
   parserOptions: {
     parser: '@typescript-eslint/parser',
@@ -51,14 +50,6 @@ module.exports = {
     },
   },
   rules: {
-    'prettier/prettier': [
-      1,
-      {
-        trailingComma: 'es5',
-        singleQuote: true,
-      },
-    ],
-
     // Tailwind css classnames order
     'tailwindcss/classnames-order': 'warn',
     'tailwindcss/no-custom-classname': 'error',
@@ -204,6 +195,7 @@ module.exports = {
     'promise/always-return': 'off',
     'promise/no-callback-in-promise': 'off',
 
+    'react/no-unknown-property': 'off',
     'react/button-has-type': [
       'error',
       {
@@ -271,18 +263,6 @@ module.exports = {
   },
   overrides: [
     {
-      files: [
-        'server/**/*.js',
-        'getCodeBlockDecorate.ts',
-        'getCodeLineDecorate.ts',
-      ],
-      env: { node: true },
-      rules: {
-        'simple-import-sort/imports': 'off',
-        'import/order': ['error', { 'newlines-between': 'never' }],
-      },
-    },
-    {
       files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
       env: {
         jest: true,
@@ -296,13 +276,6 @@ module.exports = {
             paths: [],
           },
         ],
-      },
-    },
-    {
-      files: '**/*.stories.tsx',
-      rules: {
-        // just for showing the code in addon-docs
-        'react-hooks/rules-of-hooks': 'off',
       },
     },
     {

@@ -1,56 +1,60 @@
-import React, { useState } from 'react';
-import { render } from '@testing-library/react';
-import { createAlignPlugin } from '@udecode/plate-alignment/src/createAlignPlugin';
-import { createAutoformatPlugin } from '@udecode/plate-autoformat/src/createAutoformatPlugin';
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
-import { createExitBreakPlugin } from '@udecode/plate-break/src/exit-break/createExitBreakPlugin';
-import { createSoftBreakPlugin } from '@udecode/plate-break/src/soft-break/createSoftBreakPlugin';
-import { Plate } from '@udecode/plate-core/src/index';
+import { render } from "@testing-library/react";
+import { createAlignPlugin } from "@udecode/plate-alignment/src/createAlignPlugin";
+import { createAutoformatPlugin } from "@udecode/plate-autoformat/src/createAutoformatPlugin";
+import { createBasicMarksPlugin } from "@udecode/plate-basic-marks/src/createBasicMarksPlugin";
+import { createBlockquotePlugin } from "@udecode/plate-block-quote/src/createBlockquotePlugin";
+import { createExitBreakPlugin } from "@udecode/plate-break/src/exit-break/createExitBreakPlugin";
+import { createSoftBreakPlugin } from "@udecode/plate-break/src/soft-break/createSoftBreakPlugin";
+import { Plate } from "@udecode/plate-core/src/index";
 import {
   createBasicElementsPlugin,
   createFindReplacePlugin,
   createHeadingPlugin,
-  createPlugins,
-} from '@udecode/plate-headless';
-import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
-import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
-import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
-import { createTodoListPlugin } from '@udecode/plate-list/src/todo-list/createTodoListPlugin';
-import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
-import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
-import { createMentionPlugin } from '@udecode/plate-mention/src/createMentionPlugin';
-import { createNodeIdPlugin } from '@udecode/plate-node-id/src/createNodeIdPlugin';
-import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers/src/createNormalizeTypesPlugin';
-import { createResetNodePlugin } from '@udecode/plate-reset-node/src/createResetNodePlugin';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select/src/createSelectOnBackspacePlugin';
-import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
-import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block/src/createTrailingBlockPlugin';
-import { SearchHighlightToolbar } from '@udecode/plate-ui-find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
-import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
-import { ImageToolbarButton } from '@udecode/plate-ui-media/src/index';
-import { MentionCombobox } from '@udecode/plate-ui-mention/src/MentionCombobox/MentionCombobox';
-import { createPlateUI } from 'examples/apps/next/src/createPlateUI';
-import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
-import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
-import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
-import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
-import { BasicMarkToolbarButtons } from 'examples/src/basic-marks/BasicMarkToolbarButtons';
-import { editableProps } from 'examples/src/common/editableProps';
-import { Icons } from 'examples/src/common/icons';
-import { exitBreakPlugin } from 'examples/src/exit-break/exitBreakPlugin';
-import { forcedLayoutPlugin } from 'examples/src/forced-layout/forcedLayoutPlugin';
-import { IndentToolbarButtons } from 'examples/src/indent/IndentToolbarButtons';
-import { ListToolbarButtons } from 'examples/src/list/ListToolbarButtons';
-import { playgroundValue } from 'examples/src/playgroundValue';
-import { resetBlockTypePlugin } from 'examples/src/reset-node/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from 'examples/src/select-on-backspace/selectOnBackspacePlugin';
-import { softBreakPlugin } from 'examples/src/soft-break/softBreakPlugin';
-import { TableToolbarButtons } from 'examples/src/table/TableToolbarButtons';
-import { trailingBlockPlugin } from 'examples/src/trailing-block/trailingBlockPlugin';
-import { LinkToolbarButton } from 'packages/ui/nodes/link/src/LinkElement/LinkToolbarButton';
-import { MediaEmbedToolbarButton } from 'packages/ui/nodes/media/src/ImageElement/MediaEmbedToolbarButton';
-import { HeadingToolbar } from 'packages/ui/toolbar/src/BalloonToolbar/HeadingToolbar';
+  createPlugins
+} from "@udecode/plate-headless";
+import { createHighlightPlugin } from "@udecode/plate-highlight/src/createHighlightPlugin";
+import { createLinkPlugin } from "@udecode/plate-link/src/createLinkPlugin";
+import { createListPlugin } from "@udecode/plate-list/src/createListPlugin";
+import { createTodoListPlugin } from "@udecode/plate-list/src/todo-list/createTodoListPlugin";
+import { createImagePlugin } from "@udecode/plate-media/src/image/createImagePlugin";
+import { createMediaEmbedPlugin } from "@udecode/plate-media/src/media-embed/createMediaEmbedPlugin";
+import { createMentionPlugin } from "@udecode/plate-mention/src/createMentionPlugin";
+import { createNodeIdPlugin } from "@udecode/plate-node-id/src/createNodeIdPlugin";
+import { createNormalizeTypesPlugin } from "@udecode/plate-normalizers/src/createNormalizeTypesPlugin";
+import { createResetNodePlugin } from "@udecode/plate-reset-node/src/createResetNodePlugin";
+import { createSelectOnBackspacePlugin } from "@udecode/plate-select/src/createSelectOnBackspacePlugin";
+import { createTablePlugin } from "@udecode/plate-table/src/createTablePlugin";
+import { createTrailingBlockPlugin } from "@udecode/plate-trailing-block/src/createTrailingBlockPlugin";
+import {
+  SearchHighlightToolbar
+} from "@udecode/plate-ui-find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar";
+import {
+  LineHeightToolbarDropdown
+} from "@udecode/plate-ui-line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown";
+import { ImageToolbarButton } from "@udecode/plate-ui-media/src/index";
+import { MentionCombobox } from "@udecode/plate-ui-mention/src/MentionCombobox/MentionCombobox";
+import { createPlateUI } from "examples/apps/next/src/createPlateUI";
+import { ListToolbarButtons } from "examples/apps/next/src/lib/plate/list/ListToolbarButtons";
+import { TableToolbarButtons } from "examples/apps/next/src/lib/plate/table/TableToolbarButtons";
+import { AlignToolbarButtons } from "examples/src/align/AlignToolbarButtons";
+import { autoformatPlugin } from "examples/src/autoformat/autoformatPlugin";
+import { MarkBalloonToolbar } from "examples/src/balloon-toolbar/MarkBalloonToolbar";
+import { BasicElementToolbarButtons } from "examples/src/basic-elements/BasicElementToolbarButtons";
+import { BasicMarkToolbarButtons } from "examples/src/basic-marks/BasicMarkToolbarButtons";
+import { editableProps } from "examples/src/common/editableProps";
+import { Icons } from "examples/src/common/icons";
+import { exitBreakPlugin } from "examples/src/exit-break/exitBreakPlugin";
+import { forcedLayoutPlugin } from "examples/src/forced-layout/forcedLayoutPlugin";
+import { IndentToolbarButtons } from "examples/src/indent/IndentToolbarButtons";
+import { playgroundValue } from "examples/apps/next/src/components/playgroundValue";
+import { resetBlockTypePlugin } from "examples/src/reset-node/resetBlockTypePlugin";
+import { selectOnBackspacePlugin } from "examples/src/select-on-backspace/selectOnBackspacePlugin";
+import { softBreakPlugin } from "examples/src/soft-break/softBreakPlugin";
+import { trailingBlockPlugin } from "examples/src/trailing-block/trailingBlockPlugin";
+import { LinkToolbarButton } from "packages/ui/nodes/link/src/LinkElement/LinkToolbarButton";
+import { MediaEmbedToolbarButton } from "packages/ui/nodes/media/src/ImageElement/MediaEmbedToolbarButton";
+import { HeadingToolbar } from "packages/ui/toolbar/src/BalloonToolbar/HeadingToolbar";
+import React, { useState } from "react";
 
 function PlateContainer() {
   const [search, setSearch] = useState();
