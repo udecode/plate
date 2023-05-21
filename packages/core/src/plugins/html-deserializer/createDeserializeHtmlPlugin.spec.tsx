@@ -5,7 +5,7 @@ import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 

@@ -20,7 +20,10 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2017",
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@/plate/*": ["./apps/www/src/lib/plate/*"]
+    }
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

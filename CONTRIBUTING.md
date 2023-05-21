@@ -99,9 +99,9 @@ yarn g:build
 #### How to: Create an example
 
 - Did you create a new package?
-    - edit `/config/aliases-plate.js`
+    - edit `/config/aliases.js`
         - add `'@udecode/plate-x': <package path from /packages>'` to watch file changes
-- Create an example app in `/examples/src`
+- Create an example app in `/apps/www/src`
 - Once you've finished the example app:
   - go back to the root of the repository
   - run `yarn gen:code` to generate the sandpack files
@@ -191,7 +191,7 @@ serially in the current process.
 #### Run Playwright tests
 
 We use Playwright for running end-to-end (e2e) tests in headless browsers.
-The React app for these tests use can be found in `/examples/apps/e2e-examples`.
+The React app for these tests use can be found in `/apps/e2e-examples`.
 
 Install Playwright's browsers and dependencies:
 

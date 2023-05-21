@@ -35,14 +35,20 @@ module.exports = {
     'prettier',
   ],
   settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
     'import/resolver': {
       node: {
         moduleDirectory: ['node_modules'],
         typescript: {
           alwaysTryTypes: true,
         },
+        project: ['tsconfig.json', 'apps/*/tsconfig.json'],
       },
-      typescript: {},
+      typescript: {
+        project: ['tsconfig.json', 'apps/*/tsconfig.json'],
+      },
     },
     react: { version: 'detect' },
     tailwindcss: {
@@ -86,12 +92,13 @@ module.exports = {
       },
     ],
     'import/no-cycle': 'off',
+    'import/no-named-as-default': 'off',
     'import/no-dynamic-require': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-named-as-default-member': 'off',
     'import/no-unresolved': [
       'error',
-      { ignore: ['^@theme', '^@docusaurus', '^@generated'] },
+      { ignore: ['^@theme', '^@docusaurus', '^@generated', '^@/plate'] },
     ],
     'import/prefer-default-export': 'off', // Allow single Named-export
     'import/order': ['off', { 'newlines-between': 'always' }],
@@ -262,6 +269,33 @@ module.exports = {
     'no-constant-condition': 'off',
   },
   overrides: [
+    {
+      files: ['apps/www/src/**/*'],
+      extends: [
+        'plugin:@next/next/core-web-vitals',
+        './config/eslint/bases/prettier.cjs',
+      ],
+    },
+    {
+      files: ['apps/www/src/**/*', '**/*.spec.*'],
+      extends: [
+        'plugin:@dword-design/import-alias/recommended',
+        './config/eslint/bases/prettier.cjs',
+      ],
+      rules: {
+        '@dword-design/import-alias/prefer-alias': [
+          'warn',
+          {
+            alias: {
+              '@/plate': './apps/www/src/lib/plate',
+              '@/components': './apps/www/src/components',
+              '@/styles': './apps/www/src/styles',
+              '@/lib': './apps/www/src/lib',
+            },
+          },
+        ],
+      },
+    },
     {
       files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
       env: {

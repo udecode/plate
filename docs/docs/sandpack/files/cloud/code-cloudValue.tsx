@@ -28,7 +28,7 @@ export const cloudValue: any = (
     <hh3>Local Setup</hh3>
     <hp>
       If you are running the examples locally, get a free Portive API Key from
-      https://portive.com/, add a file at \`/examples/apps/next/.env.local\` with
+      https://portive.com/, add a file at \`/apps/www/.env.local\` with
       one line in it like \`PORTIVE_API_KEY=PRTV_xxxx_xxxx\` substituting your API
       key for \`PRTV_xxxx_xxxx\`.
     </hp>

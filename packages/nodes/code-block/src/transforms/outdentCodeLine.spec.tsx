@@ -6,7 +6,7 @@ import {
   TElementEntry,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '../createCodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 

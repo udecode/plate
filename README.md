@@ -51,9 +51,8 @@ For more information on `@udecode/plate`, please refer to the following document
   - [Quick start](https://plate.udecode.io/docs/installation)
   - [Guides](https://plate.udecode.io/docs/Plate)
   - [Playground](https://plate.udecode.io/docs/playground)
-- [Examples](examples)
-  - [NextJS](examples/apps/next)
-  - [CRA](examples/apps/cra)
+- [Examples](apps)
+  - [NextJS](apps/www)
 
 Note that the documentation is a work in progress and will be updated regularly as the project evolve.
 

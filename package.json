@@ -45,8 +45,7 @@
   },
   "workspaces": [
     "packages/**",
-    "examples",
-    "examples/apps/**"
+    "apps/**"
   ],
   "resolutions": {
     "@types/react": "17.0.47",

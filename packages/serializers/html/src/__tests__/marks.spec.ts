@@ -2,7 +2,7 @@ import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBas
 import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
-import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 const plugins = [

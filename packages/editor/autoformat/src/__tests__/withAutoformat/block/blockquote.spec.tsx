@@ -2,9 +2,10 @@
 
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
 import { withAutoformat } from '../../../withAutoformat';
+
+import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 
 jsx;
 

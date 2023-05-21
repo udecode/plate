@@ -6,7 +6,7 @@ import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlu
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;

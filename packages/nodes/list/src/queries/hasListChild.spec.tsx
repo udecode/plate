@@ -2,7 +2,7 @@
 
 import { findNode } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { hasListChild } from './hasListChild';
 
 jsx;

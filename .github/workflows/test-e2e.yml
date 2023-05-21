@@ -19,7 +19,7 @@ on:
       - 'scripts'
       - 'patches'
       - 'playwright/**'
-      - 'examples/apps/e2e-examples/**'
+      - 'apps/e2e-examples/**'
   pull_request:
     types:
       - opened
@@ -39,7 +39,7 @@ on:
       - 'scripts'
       - 'patches'
       - 'playwright/**'
-      - 'examples/apps/e2e-examples/**'
+      - 'apps/e2e-examples/**'
 
 jobs:
   test-e2e:

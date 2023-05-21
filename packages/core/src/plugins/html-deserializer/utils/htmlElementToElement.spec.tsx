@@ -3,7 +3,7 @@
 
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 

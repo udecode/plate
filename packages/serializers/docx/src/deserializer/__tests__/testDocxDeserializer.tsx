@@ -1,22 +1,31 @@
 /** @jsx jsx */
-import { createAlignPlugin } from "@udecode/plate-alignment";
-import { createBasicElementsPlugin } from "@udecode/plate-basic-elements/src/createBasicElementsPlugin";
-import { createBasicMarksPlugin } from "@udecode/plate-basic-marks/src/createBasicMarksPlugin";
-import { createPlateEditor, OverrideByKey, PlatePlugin } from "@udecode/plate-common";
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from "@udecode/plate-heading/src/constants";
-import { createHorizontalRulePlugin } from "@udecode/plate-horizontal-rule/src/createHorizontalRulePlugin";
-import { createIndentPlugin } from "@udecode/plate-indent/src/createIndentPlugin";
-import { createJuicePlugin } from "@udecode/plate-juice/src/createJuicePlugin";
-import { createLineHeightPlugin } from "@udecode/plate-line-height/src/createLineHeightPlugin";
-import { createLinkPlugin } from "@udecode/plate-link";
-import { createImagePlugin } from "@udecode/plate-media";
-import { ELEMENT_PARAGRAPH } from "@udecode/plate-paragraph/src/createParagraphPlugin";
-import { createTablePlugin } from "@udecode/plate-table/src/createTablePlugin";
-import { jsx } from "@udecode/plate-test-utils";
-import { lineHeightPlugin } from "examples/apps/next/src/lib/plate/line-height/lineHeightPlugin";
-import { alignPlugin } from "examples/src/align/alignPlugin";
-import { readTestFile } from "../../__tests__/readTestFile";
-import { createDeserializeDocxPlugin } from "../createDeserializeDocxPlugin";
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/createBasicElementsPlugin';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
+import {
+  createPlateEditor,
+  OverrideByKey,
+  PlatePlugin,
+} from '@udecode/plate-common';
+import {
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+} from '@udecode/plate-heading/src/constants';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule/src/createHorizontalRulePlugin';
+import { createIndentPlugin } from '@udecode/plate-indent/src/createIndentPlugin';
+import { createJuicePlugin } from '@udecode/plate-juice/src/createJuicePlugin';
+import { createLineHeightPlugin } from '@udecode/plate-line-height/src/createLineHeightPlugin';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createImagePlugin } from '@udecode/plate-media';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
+import { jsx } from '@udecode/plate-test-utils';
+import { readTestFile } from '../../__tests__/readTestFile';
+import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
+
+import { alignPlugin } from '@/plate/align/alignPlugin';
+import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 
 jsx;
 

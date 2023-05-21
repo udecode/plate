@@ -3,7 +3,7 @@
 // import { PlateEditor } from '@udecode/plate-common';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule/src/src';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'examples/apps/next/src/lib/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { createDeserializeMdPlugin } from '../createDeserializeMdPlugin';
 import { deserializeMd } from './deserializeMd';
 

@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
 import { mockPlugin } from '@udecode/plate-common';
+import { ELEMENT_H1 } from '@udecode/plate-heading/src/constants';
 import { jsx } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'examples/src/autoformat/autoformatPlugin';
+import { autoformatPlugin } from 'apps/www/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../../examples/src/autoformat/autoformatUtils';
-import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
+import { preFormat } from '../../../../../../../apps/www/src/autoformat/autoformatUtils';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;

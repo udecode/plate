@@ -17,7 +17,7 @@ import {
   TableElement,
   TableRowElement,
 } from '@udecode/plate-table/src/index';
-import { createPlateUIEditor } from 'examples/apps/next/src/createPlateUIEditor';
+import { createPlateUIEditor } from 'apps/www/src/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 it('serialize list to html', () => {
