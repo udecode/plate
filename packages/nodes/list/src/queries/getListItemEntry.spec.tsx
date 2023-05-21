@@ -7,7 +7,7 @@ import { getListItemEntry } from './getListItemEntry';
 jsx;
 
 describe('when the cursor is in a list item paragraph', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -18,7 +18,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   const listNode = (
     <hul>
@@ -51,7 +51,7 @@ describe('when the cursor is in a list item paragraph', () => {
 });
 
 describe('when the cursor is in a nested list item paragraph', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -67,7 +67,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   const listNode = (
     <hul>
@@ -100,7 +100,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
 });
 
 describe('when the selection range includes root list item', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -121,7 +121,7 @@ describe('when the selection range includes root list item', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   const listNode = (
     <hul>
@@ -166,7 +166,7 @@ describe('when the selection range includes root list item', () => {
 });
 
 describe('when the cursor is not in a list item', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -177,7 +177,7 @@ describe('when the cursor is not in a list item', () => {
         2<cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should be', () => {
     const res = getListItemEntry(input);

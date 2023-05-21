@@ -7,10 +7,11 @@ import {
 import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils/src/plate/onKeyDownToggleMark';
-import { createPlateUIEditor } from 'apps/www/src/createPlateUIEditor';
 import * as isHotkey from 'is-hotkey';
-import { ToggleMarkPlugin } from '../../../types/plugin/ToggleMarkPlugin';
-import { getPlugin } from '../../getPlugin';
+
+import { ToggleMarkPlugin } from '@/core/src/types/plugin/ToggleMarkPlugin';
+import { getPlugin } from '@/core/src/utils/getPlugin';
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

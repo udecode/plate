@@ -3,8 +3,9 @@
 import { getPlugin, HotkeyPlugin, PlateEditor } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/createPlateUIEditor';
 import { onKeyDownList } from './onKeyDownList';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 /*

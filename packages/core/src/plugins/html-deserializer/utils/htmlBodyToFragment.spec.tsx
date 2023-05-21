@@ -2,9 +2,10 @@
 
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
+
+import { createPlateEditor } from '@/core/src/utils/createPlateEditor';
 
 jsx;
 

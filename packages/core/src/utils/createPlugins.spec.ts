@@ -1,10 +1,11 @@
 import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { createTEditor } from '../../../slate/src/createTEditor';
-import { withPlate } from '../plugins/withPlate';
+import { createTEditor } from '@udecode/slate/src/createTEditor';
 import { createPlugins } from './createPlugins';
 import { getPlugin } from './getPlugin';
+
+import { withPlate } from '@/core/src/plugins/withPlate';
 
 describe('createPlugins', () => {
   describe('when using components', () => {

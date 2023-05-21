@@ -5,9 +5,10 @@ import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlatePlugin } from '../../types/plugin/PlatePlugin';
+
+import { PlateEditor } from '@/core/src/types/PlateEditor';
+import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

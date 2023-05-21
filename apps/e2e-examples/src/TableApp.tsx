@@ -1,12 +1,9 @@
-import {
-  createPlateUI,
-  createPlugins,
-  createTablePlugin,
-  Plate,
-} from '@udecode/plate';
+import { createPlugins, createTablePlugin, Plate } from '@udecode/plate';
 import { useVariant } from './useVariant';
 
-export const TableApp = () => {
+import { createPlateUI } from '@/lib/createPlateUI';
+
+export function TableApp() {
   const {
     initialTableWidth,
     colSizes,
@@ -89,4 +86,4 @@ export const TableApp = () => {
       editableProps={{ readOnly }}
     />
   );
-};
+}

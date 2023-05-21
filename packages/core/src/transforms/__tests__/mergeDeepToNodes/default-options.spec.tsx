@@ -1,17 +1,18 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { TNode } from '../../../../../slate/src/interfaces/node/TNode';
-import { PlateEditor } from '../../../types/PlateEditor';
-import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
+import { TNode } from '@udecode/slate/src/interfaces/node/TNode';
+
+import { PlateEditor } from '@/core/src/types/PlateEditor';
+import { mergeDeepToNodes } from '@/core/src/utils/mergeDeepToNodes';
 
 jsx;
 
-const editor = ((
+const editor = (
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const props = { a: 1 };
 

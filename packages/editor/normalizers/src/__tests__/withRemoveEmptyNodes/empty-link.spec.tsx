@@ -2,12 +2,13 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../../../../nodes/link/src/createLinkPlugin';
-import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
+
+import { createRemoveEmptyNodesPlugin } from '@/editor/normalizers/src/createRemoveEmptyNodesPlugin';
+import { ELEMENT_LINK } from '@/nodes/link/src/createLinkPlugin';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       <ha url="http://google.com">
@@ -16,7 +17,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = (
   <editor>

@@ -1,5 +1,6 @@
-import { readTestFile } from '../__tests__/readTestFile';
 import { cleanDocx } from './cleanDocx';
+
+import { readTestFile } from '@/serializers/docx/src/__tests__/readTestFile';
 
 describe('cleanDocx', () => {
   const MOCK_RTF = 'Whatever, RTF is only needed to process images';

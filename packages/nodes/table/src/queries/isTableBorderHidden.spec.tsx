@@ -2,33 +2,11 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
-jsx;
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
-const createInitialEditor = () => (
-  <editor>
-    <htable>
-      <htr>
-        <htd>
-          <hp>11</hp>
-        </htd>
-        <htd>
-          <hp>12</hp>
-        </htd>
-      </htr>
-      <htr>
-        <htd>
-          <hp>21</hp>
-        </htd>
-        <htd>
-          <hp>22</hp>
-        </htd>
-      </htr>
-    </htable>
-  </editor>
-);
+jsx;
 
 const createTablePluginWithOptions = () => createTablePlugin();
 
@@ -40,7 +18,7 @@ const createEditorInstance = (input: any) => {
 };
 
 describe('isTableBorderHidden', () => {
-  const input = ((
+  const input = (
     <editor>
       <htable>
         <htr>
@@ -70,7 +48,7 @@ describe('isTableBorderHidden', () => {
         </htr>
       </htable>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should return true if left border is hidden', () => {
     const editor = createEditorInstance(input);

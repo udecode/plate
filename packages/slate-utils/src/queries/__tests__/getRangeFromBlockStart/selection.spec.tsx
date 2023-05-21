@@ -1,12 +1,13 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { getRangeFromBlockStart } from '../../index';
+
+import { getRangeFromBlockStart } from '@/slate-utils/src/queries/index';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       te
@@ -14,7 +15,7 @@ const input = ((
       st
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output: ReturnType<typeof getRangeFromBlockStart> = {
   anchor: { path: [0, 0], offset: 0 },

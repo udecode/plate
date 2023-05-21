@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../core/src/types/PlateEditor';
 import { findNode } from './findNode';
 
 jsx;
 
 describe('when the cursor is in a list item paragraph', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -18,9 +18,9 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
-  const listNode = (
+  const _listNode = (
     <hul>
       <hli>
         <hp>
@@ -31,7 +31,7 @@ describe('when the cursor is in a list item paragraph', () => {
     </hul>
   ) as any;
 
-  const listItemNode = (
+  const _listItemNode = (
     <hli>
       <hp>
         1
@@ -48,7 +48,7 @@ describe('when the cursor is in a list item paragraph', () => {
 });
 
 describe('when the cursor is not in a list item and a path is provided instead', () => {
-  const input = ((
+  const input = (
     <editor>
       <hul>
         <hli>
@@ -59,9 +59,9 @@ describe('when the cursor is not in a list item and a path is provided instead',
         2<cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
-  const listNode = (
+  const _listNode = (
     <hul>
       <hli>
         <hp>
@@ -72,7 +72,7 @@ describe('when the cursor is not in a list item and a path is provided instead',
     </hul>
   ) as any;
 
-  const listItemNode = (
+  const _listItemNode = (
     <hli>
       <hp>
         1

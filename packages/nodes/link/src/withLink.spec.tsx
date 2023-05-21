@@ -322,8 +322,6 @@ describe('withLink', () => {
           </editor>
         ) as any;
 
-        const text = ' ';
-
         const output = (
           <editor>
             <hp>

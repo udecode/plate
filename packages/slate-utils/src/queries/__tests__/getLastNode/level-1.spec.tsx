@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { getLastNodeByLevel } from '../../index';
+
+import { getLastNodeByLevel } from '@/slate-utils/src/queries/index';
 
 jsx;
 

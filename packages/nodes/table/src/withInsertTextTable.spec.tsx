@@ -10,7 +10,7 @@ describe('withInsertTextTable', () => {
   // https://github.com/udecode/editor-protocol/issues/65
   describe('cell child is a text', () => {
     it('should wrap the children into a p', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -35,9 +35,9 @@ describe('withInsertTextTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -60,7 +60,7 @@ describe('withInsertTextTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

@@ -22,7 +22,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 describe('pasting a code block', () => {
   describe('when selection outside of code block', () => {
     it('should paste the code block', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -33,9 +33,9 @@ describe('pasting a code block', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hcodeblock>
             <hcodeline>
@@ -43,9 +43,9 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -58,7 +58,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -66,7 +66,7 @@ describe('pasting a code block', () => {
 
   describe('when selection inside of code block', () => {
     it('should insert code lines as a fragment', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -78,18 +78,18 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hcodeblock>
             <hcodeline>world</hcodeline>
             <hcodeline>!</hcodeline>
           </hcodeblock>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const expected = ((
+      const expected = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -99,7 +99,7 @@ describe('pasting a code block', () => {
             <hcodeline>!</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -108,7 +108,7 @@ describe('pasting a code block', () => {
 
 describe('pasting non-code block elements', () => {
   it('should extract text and insert as code lines', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -120,16 +120,16 @@ describe('pasting non-code block elements', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const fragment = ((
+    const fragment = (
       <fragment>
         <hp>world</hp>
         <hp>!</hp>
       </fragment>
-    ) as any) as TDescendant[];
+    ) as any as TDescendant[];
 
-    const expected = ((
+    const expected = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -139,7 +139,7 @@ describe('pasting non-code block elements', () => {
           <hcodeline>!</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     editorTest(input, fragment, expected);
   });

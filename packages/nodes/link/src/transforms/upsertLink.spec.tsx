@@ -2,8 +2,12 @@
 
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
 import { upsertLink } from './upsertLink';
+
+import {
+  createLinkPlugin,
+  LinkPlugin,
+} from '@/nodes/link/src/createLinkPlugin';
 
 jsx;
 

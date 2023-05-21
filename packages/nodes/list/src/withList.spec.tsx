@@ -4,9 +4,10 @@ import { PlateEditor, PlatePlugin } from '@udecode/plate-common';
 import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { createListPlugin, ELEMENT_UL } from './createListPlugin';
 import { ListPlugin } from './types';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

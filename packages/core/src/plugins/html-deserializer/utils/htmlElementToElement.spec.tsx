@@ -3,9 +3,10 @@
 
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

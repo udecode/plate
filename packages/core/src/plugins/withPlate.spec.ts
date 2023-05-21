@@ -1,8 +1,6 @@
-import { createHeadingPlugin } from '../../../nodes/heading/src/createHeadingPlugin';
-import { createParagraphPlugin } from '../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTEditor } from '../../../slate/src/createTEditor';
-import { PlatePlugin } from '../types/plugin/PlatePlugin';
-import { getPlugin } from '../utils/getPlugin';
+import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTEditor } from '@udecode/slate/src/createTEditor';
 import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';
@@ -12,6 +10,9 @@ import { KEY_INSERT_DATA } from './createInsertDataPlugin';
 import { KEY_NODE_FACTORY } from './createNodeFactoryPlugin';
 import { KEY_PREV_SELECTION } from './createPrevSelectionPlugin';
 import { withPlate } from './withPlate';
+
+import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
+import { getPlugin } from '@/core/src/utils/getPlugin';
 
 const coreKeys = [
   'react',

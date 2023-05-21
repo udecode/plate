@@ -5,8 +5,9 @@ import { createPlateEditor } from '@udecode/plate-core';
 import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { PlatePlugin } from '@udecode/plate-core/src/types/plugin/PlatePlugin';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
-import { createPlateUIEditor } from 'apps/www/src/createPlateUIEditor';
-import { serializeHtml } from '../serializeHtml';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [
   createImagePlugin({

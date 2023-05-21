@@ -2,15 +2,16 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { deleteColumn } from './deleteColumn';
+
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
 jsx;
 
 describe('deleteColumn', () => {
   describe('when 2x2', () => {
     it('should delete column', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -34,9 +35,9 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -51,7 +52,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -66,7 +67,7 @@ describe('deleteColumn', () => {
 
   describe('when first row has 2 cells, second row has 1 cell, focus 12', () => {
     it('should delete cell 12', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -87,9 +88,9 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -104,7 +105,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -119,7 +120,7 @@ describe('deleteColumn', () => {
 
   describe('when first row has 2 cells, second row has 1 cell, focus 11', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -140,9 +141,9 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -157,7 +158,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -172,7 +173,7 @@ describe('deleteColumn', () => {
 
   describe('when first row has 2 cells, second row has 1 cell, focus 21', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -193,9 +194,9 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -216,7 +217,7 @@ describe('deleteColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

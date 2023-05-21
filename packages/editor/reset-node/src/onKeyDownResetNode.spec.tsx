@@ -1,23 +1,25 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/index';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { ELEMENT_LI } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { jsx } from '@udecode/plate-test-utils';
+import * as isHotkey from 'is-hotkey';
+import { onKeyDownResetNode } from './onKeyDownResetNode';
+
+import { mockPlugin } from '@/core/src/index';
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 import {
-  ELEMENT_CODE_BLOCK,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
-} from '@udecode/plate-code-block/src/index';
+} from '@/nodes/code-block/src/index';
+import { unwrapList } from '@/nodes/list/src/index';
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-  mockPlugin,
-} from '@udecode/plate-common';
-import { ELEMENT_LI, unwrapList } from '@udecode/plate-list/src/index';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/index';
-import * as isHotkey from 'is-hotkey';
-import { onKeyDownResetNode } from './onKeyDownResetNode';
+} from '@/slate-utils/src/index';
 
 jsx;
 

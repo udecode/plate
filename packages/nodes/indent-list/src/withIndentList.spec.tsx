@@ -10,7 +10,7 @@ jsx;
 describe('normalizeIndentList', () => {
   describe('when listStyleType without indent', () => {
     it('should remove listStyleType and listStart props', async () => {
-      const input = ((
+      const input = (
         <editor>
           <hp indent={1} listStyleType="decimal">
             1
@@ -22,9 +22,9 @@ describe('normalizeIndentList', () => {
             1
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp indent={1} listStyleType="decimal">
             1
@@ -33,7 +33,7 @@ describe('normalizeIndentList', () => {
             1
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

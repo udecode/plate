@@ -14,7 +14,7 @@ describe('withNormalizeTable', () => {
   // https://github.com/udecode/editor-protocol/issues/65
   describe('cell child is a text', () => {
     it('should wrap the children into a p', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -26,9 +26,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -42,7 +42,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -58,7 +58,7 @@ describe('withNormalizeTable', () => {
 
   describe('initialTableWidth is defined and colSizes is not defined', () => {
     it('should set colSizes', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -89,9 +89,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable colSizes={[30, 30, 30]}>
             <htr>
@@ -122,7 +122,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -144,7 +144,7 @@ describe('withNormalizeTable', () => {
 
   describe('initialTableWidth is defined and colSizes is partially defined', () => {
     it('should set colSizes', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable colSizes={[0, 40, 0]}>
             <htr>
@@ -175,9 +175,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable colSizes={[30, 40, 30]}>
             <htr>
@@ -208,7 +208,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -230,7 +230,7 @@ describe('withNormalizeTable', () => {
 
   describe('initialTableWidth is defined and colSizes is fully defined', () => {
     it('should do nothing', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable colSizes={[40, 40, 40]}>
             <htr>
@@ -261,9 +261,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable colSizes={[40, 40, 40]}>
             <htr>
@@ -294,7 +294,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -317,7 +317,7 @@ describe('withNormalizeTable', () => {
   // https://github.com/udecode/editor-protocol/issues/76
   describe('table in a table', () => {
     it('should unwrap the nested table, tr, td', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -337,9 +337,9 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -351,7 +351,7 @@ describe('withNormalizeTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

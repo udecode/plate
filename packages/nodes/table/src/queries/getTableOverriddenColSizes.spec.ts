@@ -1,11 +1,12 @@
-import { TTableElement } from '../types';
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
+
+import { TTableElement } from '@/nodes/table/src/types';
 
 const makeTableElement = (
   columnCount: number,
   colSizes?: number[]
 ): TTableElement =>
-  (({
+  ({
     children: [
       {
         type: 'tr',
@@ -13,7 +14,7 @@ const makeTableElement = (
       },
     ],
     colSizes,
-  } as unknown) as TTableElement);
+  } as unknown as TTableElement);
 
 describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is not defined', () => {
@@ -21,9 +22,7 @@ describe('getTableOverriddenColSizes', () => {
       const tableElement = makeTableElement(3);
       const overrides: Map<number, number> = new Map();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        0,
-        0,
-        0,
+        0, 0, 0,
       ]);
     });
 
@@ -34,9 +33,7 @@ describe('getTableOverriddenColSizes', () => {
         [2, 200],
       ]);
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        100,
-        0,
-        200,
+        100, 0, 200,
       ]);
     });
   });
@@ -46,9 +43,7 @@ describe('getTableOverriddenColSizes', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
       const overrides: Map<number, number> = new Map();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        100,
-        200,
-        300,
+        100, 200, 300,
       ]);
     });
 
@@ -59,9 +54,7 @@ describe('getTableOverriddenColSizes', () => {
         [2, 2000],
       ]);
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        1000,
-        200,
-        2000,
+        1000, 200, 2000,
       ]);
     });
   });

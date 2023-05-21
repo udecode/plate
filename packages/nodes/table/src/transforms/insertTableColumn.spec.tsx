@@ -1,14 +1,10 @@
 /** @jsx jsx */
 
-import {
-  createPlateEditor,
-  PlateEditor,
-  TEditor,
-  Value,
-} from '@udecode/plate-common';
+import { createPlateEditor, TEditor, Value } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { insertTableColumn } from './insertTableColumn';
+
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
 jsx;
 
@@ -23,7 +19,7 @@ const makeTableWithCols = ({
   cursorPath,
   colSizes,
 }: MakeTableWithColsOptions) =>
-  ((
+  (
     <editor>
       <htable colSizes={colSizes}>
         {rowCols.map((row, rowIndex) => (
@@ -42,7 +38,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown) as TEditor<Value>;
+  ) as unknown as TEditor<Value>;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {

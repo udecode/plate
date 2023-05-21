@@ -23,9 +23,10 @@ import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/cre
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

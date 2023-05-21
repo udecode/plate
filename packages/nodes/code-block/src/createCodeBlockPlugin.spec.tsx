@@ -11,7 +11,7 @@ jsx;
 describe('code block deserialization', () => {
   describe('when selection in code line', () => {
     it('should disable all deserializers except the ast serializer', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -20,15 +20,15 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -59,21 +59,21 @@ describe('code block deserialization', () => {
 
   describe('when selection outside of code line', () => {
     it('should not affect deserialization', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -91,7 +91,7 @@ describe('code block deserialization', () => {
 
   describe('deleting lines after the codeblock', () => {
     it('it should normalized inserted nodes into code lines', () => {
-      const input = ((
+      const input = (
         <editor>
           <hcodeblock>
             <hcodeline>Line 1</hcodeline>
@@ -101,9 +101,9 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hcodeblock>
             <hcodeline>
@@ -113,7 +113,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,

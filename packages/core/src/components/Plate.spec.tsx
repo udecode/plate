@@ -1,11 +1,12 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { isBlock } from '@udecode/slate/src/interfaces/editor/isBlock';
+import { setNodes } from '@udecode/slate/src/interfaces/transforms/setNodes';
 import { isEqual, memoize } from 'lodash';
-import { isBlock } from '../../../slate/src/interfaces/editor/isBlock';
-import { setNodes } from '../../../slate/src/interfaces/transforms/setNodes';
-import { PlatePlugin } from '../types';
-import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate } from './Plate';
+
+import { PlatePlugin } from '@/core/src/types';
+import { createPlateEditor } from '@/core/src/utils/createPlateEditor';
 
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {
@@ -86,7 +87,7 @@ describe('Plate', () => {
         />
       );
 
-      expect(fn).not.toBeCalled();
+      expect(fn).not.toHaveBeenCalled();
 
       expect(editor.children).not.toStrictEqual([
         { children: [{ text: '' }], path: [0] },
@@ -111,7 +112,7 @@ describe('Plate', () => {
 
       expect(() =>
         render(<Plate editor={editor} initialValue={[{}] as any} />)
-      ).not.toThrowError();
+      ).not.toThrow();
     });
   });
 
@@ -132,7 +133,7 @@ describe('Plate', () => {
 
       expect(() =>
         render(<Plate editor={editor} initialValue={[{}] as any} />)
-      ).toThrowError();
+      ).toThrow();
     });
   });
 
@@ -163,7 +164,7 @@ describe('Plate', () => {
             initialValue={[{ type: 'a', children: [{ text: '' }] }] as any}
           />
         )
-      ).not.toThrowError();
+      ).not.toThrow();
     });
   });
 });

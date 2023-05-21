@@ -3,26 +3,27 @@
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
-import { createIndentListPlugin } from '../createIndentListPlugin';
+
+import { createIndentListPlugin } from '@/nodes/indent-list/src/createIndentListPlugin';
 
 jsx;
 
 describe('normalizeIndentList', () => {
   describe('when listStyleType without indent', () => {
     it('should remove listStyleType and listStart props', async () => {
-      const input = ((
+      const input = (
         <editor>
           <hp listStyleType="disc" listStart={1}>
             1
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>1</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

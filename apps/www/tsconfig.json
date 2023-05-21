@@ -16,7 +16,6 @@
     "incremental": true,
     "baseUrl": "src",
     "paths": {
-      "@udecode/plate": ["../../packages/plate/index"],
       "@/*": ["./*"],
       "@/plate/*": ["./lib/plate/*"]
     },

@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { normalizeEditor, PlateEditor, Value } from '@udecode/plate-common';
+import { normalizeEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createListPlugin } from '../createListPlugin';
+
+import { createListPlugin } from '@/nodes/list/src/createListPlugin';
 
 jsx;
 
@@ -20,7 +21,7 @@ const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
 
 describe('merge lists', () => {
   it('should not merge lists with different type', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -33,9 +34,9 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -48,13 +49,13 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     testNormalize(input, output);
   });
 
   it('should merge the next list if it has the same type', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -67,9 +68,9 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -80,13 +81,13 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     testNormalize(input, output);
   });
 
   it('should merge the previous list if it has the same type', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -99,9 +100,9 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -112,7 +113,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     testNormalize(input, output);
   });
@@ -120,19 +121,19 @@ describe('merge lists', () => {
 
 describe('clean up lists', () => {
   it('should remove list without list items', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul />
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((<editor />) as any) as PlateEditor;
+    const output = (<editor />) as any as PlateEditor;
 
     testNormalize(input, output);
   });
 
   it('should only allow li to be child of ul', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hp>bad</hp>
@@ -142,9 +143,9 @@ describe('clean up lists', () => {
           <hp>bad</hp>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -158,7 +159,7 @@ describe('clean up lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     testNormalize(input, output);
   });

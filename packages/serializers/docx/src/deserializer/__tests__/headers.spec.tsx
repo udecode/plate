@@ -1,11 +1,12 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createFontBackgroundColorPlugin } from '../../../../../nodes/font/src/createFontBackgroundColorPlugin';
-import { createFontColorPlugin } from '../../../../../nodes/font/src/createFontColorPlugin';
-import { createFontFamilyPlugin } from '../../../../../nodes/font/src/createFontFamilyPlugin';
-import { createFontSizePlugin } from '../../../../../nodes/font/src/createFontSizePlugin';
-import { createFontWeightPlugin } from '../../../../../nodes/font/src/createFontWeightPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
+
+import { createFontBackgroundColorPlugin } from '@/nodes/font/src/createFontBackgroundColorPlugin';
+import { createFontColorPlugin } from '@/nodes/font/src/createFontColorPlugin';
+import { createFontFamilyPlugin } from '@/nodes/font/src/createFontFamilyPlugin';
+import { createFontSizePlugin } from '@/nodes/font/src/createFontSizePlugin';
+import { createFontWeightPlugin } from '@/nodes/font/src/createFontWeightPlugin';
 
 jsx;
 

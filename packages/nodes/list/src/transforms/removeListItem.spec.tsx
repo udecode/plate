@@ -6,7 +6,7 @@ import { removeListItem } from './removeListItem';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hul id="1">
       <hli id="11">
@@ -44,9 +44,9 @@ const input = ((
       </hli>
     </hul>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
-const output = ((
+const output = (
   <editor>
     <hul id="1">
       <hli id="11">
@@ -82,7 +82,7 @@ const output = ((
       </hli>
     </hul>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 it('should', () => {
   const editor = input;

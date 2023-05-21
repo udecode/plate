@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
 // import { PlateEditor } from '@udecode/plate-common';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule/src/src';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
-import { createDeserializeMdPlugin } from '../createDeserializeMdPlugin';
 import { deserializeMd } from './deserializeMd';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { ELEMENT_HR } from '@/plate/dist';
+import { createDeserializeMdPlugin } from '@/serializers/md/src/deserializer/createDeserializeMdPlugin';
 
 jsx;
 

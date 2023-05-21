@@ -22,7 +22,9 @@
     "target": "es2017",
     "outDir": "dist",
     "paths": {
-      "@/plate/*": ["./apps/www/src/lib/plate/*"]
+      "@/plate/*": ["./apps/www/src/lib/plate/*"],
+      "@/lib/*": ["./apps/www/src/lib/*"],
+      "@/*": ["./packages/*"]
     }
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]

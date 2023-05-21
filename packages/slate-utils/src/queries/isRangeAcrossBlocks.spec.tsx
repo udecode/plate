@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui';
-import { PlateEditor } from '../../../core/src/types/PlateEditor';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 jsx;
@@ -11,7 +10,7 @@ jsx;
 describe('when selection is in the same block', () => {
   describe('when one text', () => {
     it('should be false', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             Secundus, <anchor />
@@ -19,7 +18,7 @@ describe('when selection is in the same block', () => {
             de noster , lotus acipenser.
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -31,7 +30,7 @@ describe('when selection is in the same block', () => {
 
   describe('when focus is inline element', () => {
     it('should be false', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             Secundus, <anchor />
@@ -43,7 +42,7 @@ describe('when selection is in the same block', () => {
             , lotus acipenser.
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateUIEditor({
         editor: input,

@@ -5,7 +5,7 @@ it('should be', () => {
 
   getHandler(cb)();
 
-  expect(cb).toBeCalled();
+  expect(cb).toHaveBeenCalled();
 });
 
 it('should be', () => {

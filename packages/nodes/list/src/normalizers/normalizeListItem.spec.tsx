@@ -3,13 +3,14 @@
 import { createPlateUIEditor } from '@udecode/plate/src';
 import { getNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createListPlugin } from '../createListPlugin';
+
+import { createListPlugin } from '@/nodes/list/src/createListPlugin';
 
 jsx;
 
 describe('clean up list items', () => {
   it('should move children up from sublis if their parent has no lic', () => {
-    const input = ((
+    const input = (
       <editor>
         <hul>
           <hli>
@@ -21,9 +22,9 @@ describe('clean up list items', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
-    const output = ((
+    const output = (
       <editor>
         <hul>
           <hli>
@@ -31,7 +32,7 @@ describe('clean up list items', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const editor = createPlateUIEditor({
       editor: input,

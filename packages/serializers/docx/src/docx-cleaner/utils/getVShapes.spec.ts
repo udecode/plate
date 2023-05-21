@@ -1,5 +1,6 @@
-import { readTestFile } from '../../__tests__/readTestFile';
 import { getVShapes } from './getVShapes';
+
+import { readTestFile } from '@/serializers/docx/src/__tests__/readTestFile';
 
 const parser = new DOMParser();
 

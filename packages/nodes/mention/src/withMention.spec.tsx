@@ -19,7 +19,6 @@ import {
 import { Range } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
-import { withMention } from './withMention';
 
 jsx;
 

@@ -6,33 +6,11 @@ import {
   TElement,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { getTopTableCell } from './getTopTableCell';
 
-jsx;
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
-const createInitialEditor = () => (
-  <editor>
-    <htable>
-      <htr>
-        <htd>
-          <hp>11</hp>
-        </htd>
-        <htd>
-          <hp>12</hp>
-        </htd>
-      </htr>
-      <htr>
-        <htd>
-          <hp>21</hp>
-        </htd>
-        <htd>
-          <hp>22</hp>
-        </htd>
-      </htr>
-    </htable>
-  </editor>
-);
+jsx;
 
 const createTablePluginWithOptions = () => createTablePlugin();
 
@@ -44,7 +22,7 @@ const createEditorInstance = (input: any) => {
 };
 
 describe('getTopTableCell', () => {
-  const input = ((
+  const input = (
     <editor>
       <htable>
         <htr>
@@ -68,7 +46,7 @@ describe('getTopTableCell', () => {
         </htr>
       </htable>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   it('should return the cell above the current cell', () => {
     const editor = createEditorInstance(input);

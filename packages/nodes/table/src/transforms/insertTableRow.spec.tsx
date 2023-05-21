@@ -2,15 +2,16 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { insertTableRow } from './insertTableRow';
+
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
 jsx;
 
 describe('insertTableRow', () => {
   describe('when inserting a table row', () => {
     it('should insert a tr with empty cells', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -34,9 +35,9 @@ describe('insertTableRow', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -69,7 +70,7 @@ describe('insertTableRow', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -89,7 +90,7 @@ describe('insertTableRow', () => {
 
   describe('when inserting a table row at specific path', () => {
     it('should insert a tr with empty cells', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -113,9 +114,9 @@ describe('insertTableRow', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -148,7 +149,7 @@ describe('insertTableRow', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

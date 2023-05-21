@@ -2,8 +2,9 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { createEditorWithMentions } from '../__tests__/createEditorWithMentions';
 import { mentionOnKeyDownHandler } from './mentionOnKeyDownHandler';
+
+import { createEditorWithMentions } from '@/nodes/mention/src/__tests__/createEditorWithMentions';
 
 jsx;
 
@@ -21,8 +22,6 @@ describe('mentionOnKeyDownHandler', () => {
       </hp>,
       { pluginOptions: { trigger } }
     );
-
-    const plugin = editor.pluginsByKey.mention;
 
     jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 

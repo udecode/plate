@@ -11,7 +11,7 @@ describe('withGetFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/19
   describe('when copying cells 11-21', () => {
     it('should copy a table 2x1 with 11-21 cells', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -30,7 +30,7 @@ describe('withGetFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       let editor = createPlateEditor({
         editor: input,
@@ -60,7 +60,7 @@ describe('withGetFragmentTable', () => {
         </fragment>
       );
 
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -68,7 +68,7 @@ describe('withGetFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       let editor = createPlateEditor({
         editor: input,

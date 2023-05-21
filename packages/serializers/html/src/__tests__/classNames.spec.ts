@@ -4,7 +4,8 @@ import {
   createPlateUIEditor,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
-import { serializeHtml } from '../serializeHtml';
+
+import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize with slate className', () => {
   const editor = createPlateUIEditor({

@@ -14,7 +14,7 @@ jsx;
 describe('getTableGridByRange', () => {
   describe('when selection is in cell 1', () => {
     it('should be [cell 1]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -24,15 +24,15 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>1</htd>
           </htr>
         </htable>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
       const editor = createPlateEditor({
         editor: input,
@@ -46,7 +46,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 12 to 22', () => {
     it('should be [12, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -65,9 +65,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>12</htd>
@@ -76,7 +76,7 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -90,7 +90,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 21 to 22', () => {
     it('should be [21, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -109,16 +109,16 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>21</htd>
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -132,7 +132,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 21 to 11', () => {
     it('should be [11, 21]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -152,9 +152,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>11</htd>
@@ -163,7 +163,7 @@ describe('getTableGridByRange', () => {
             <htd>21</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -177,7 +177,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 11 to cell 22', () => {
     it('should be [11, 12, 21, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -196,9 +196,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>11</htd>
@@ -209,7 +209,7 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -223,7 +223,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 22 to cell 11', () => {
     it('should be [11, 12, 21, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -242,9 +242,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>11</htd>
@@ -255,7 +255,7 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -269,7 +269,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 12 to cell 21', () => {
     it('should be [11, 12, 21, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -288,9 +288,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>11</htd>
@@ -301,7 +301,7 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,
@@ -315,7 +315,7 @@ describe('getTableGridByRange', () => {
 
   describe('when selection is from cell 12 to cell 21', () => {
     it('should be [11, 12, 21, 22]', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -334,9 +334,9 @@ describe('getTableGridByRange', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <htable>
           <htr>
             <htd>11</htd>
@@ -347,7 +347,7 @@ describe('getTableGridByRange', () => {
             <htd>22</htd>
           </htr>
         </htable>
-      ) as any) as TElement;
+      ) as any as TElement;
 
       const editor = createPlateEditor({
         editor: input,

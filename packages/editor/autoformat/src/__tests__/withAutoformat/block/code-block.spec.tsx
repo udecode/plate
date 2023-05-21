@@ -13,12 +13,15 @@ import {
   PlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'apps/www/src/autoformat/autoformatPlugin';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../../apps/www/src/autoformat/autoformatUtils';
-import { AutoformatPlugin } from '../../../types';
-import { withAutoformat } from '../../../withAutoformat';
+
+import {
+  AutoformatPlugin,
+  withAutoformat,
+} from '@/editor/autoformat/src/index';
+import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
+import { preFormat } from '@/plate/autoformat/autoformatUtils';
 
 jsx;
 

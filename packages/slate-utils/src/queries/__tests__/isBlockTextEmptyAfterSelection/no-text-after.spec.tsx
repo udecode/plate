@@ -1,14 +1,15 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
+import { createPlateEditor } from '@udecode/plate-core/src/utils/createPlateEditor';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { createPlateEditor } from '../../../../../core/src/utils/createPlateEditor';
-import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
+
+import { isBlockTextEmptyAfterSelection } from '@/slate-utils/src/queries/isBlockTextEmptyAfterSelection';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       <htext>first</htext>
@@ -18,7 +19,7 @@ const input = ((
       </ha>
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = true;
 

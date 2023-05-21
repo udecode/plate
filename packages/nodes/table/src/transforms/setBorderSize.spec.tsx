@@ -2,8 +2,9 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../createTablePlugin';
 import { setBorderSize } from './setBorderSize';
+
+import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
 
 jsx;
 
@@ -12,29 +13,6 @@ jsx;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createInitialEditor = () => (
-    <editor>
-      <htable>
-        <htr>
-          <htd>
-            <hp>11</hp>
-          </htd>
-          <htd>
-            <hp>12</hp>
-          </htd>
-        </htr>
-        <htr>
-          <htd>
-            <hp>21</hp>
-          </htd>
-          <htd>
-            <hp>22</hp>
-          </htd>
-        </htr>
-      </htable>
-    </editor>
-  );
-
   const createTablePluginWithOptions = () => createTablePlugin();
 
   const createEditorInstance = (input: any) => {
@@ -46,7 +24,7 @@ describe('setBorderSize', () => {
 
   describe('when in cell 11', () => {
     it('should set border top', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -70,9 +48,9 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -96,7 +74,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'top' });
@@ -105,7 +83,7 @@ describe('setBorderSize', () => {
     });
 
     it('should set border left', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -129,9 +107,9 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -155,7 +133,7 @@ describe('setBorderSize', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'left' });
@@ -165,7 +143,7 @@ describe('setBorderSize', () => {
 
     describe('when in cell 21', () => {
       it('should set border left', () => {
-        const input = ((
+        const input = (
           <editor>
             <htable>
               <htr>
@@ -189,9 +167,9 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <htable>
               <htr>
@@ -215,7 +193,7 @@ describe('setBorderSize', () => {
               </htr>
             </htable>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createEditorInstance(input);
         setBorderSize(editor, 3, { border: 'left' });
@@ -227,7 +205,7 @@ describe('setBorderSize', () => {
         // ... other tests in this describe block
 
         it('should set border bottom on cell 11', () => {
-          const input = ((
+          const input = (
             <editor>
               <htable>
                 <htr>
@@ -251,9 +229,9 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
-          const output = ((
+          const output = (
             <editor>
               <htable>
                 <htr>
@@ -277,7 +255,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 2, { border: 'top' });
@@ -288,7 +266,7 @@ describe('setBorderSize', () => {
 
       describe('when in cell 12', () => {
         it('should set border right', () => {
-          const input = ((
+          const input = (
             <editor>
               <htable>
                 <htr>
@@ -312,9 +290,9 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
-          const output = ((
+          const output = (
             <editor>
               <htable>
                 <htr>
@@ -338,7 +316,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 1, { border: 'right' });
@@ -348,7 +326,7 @@ describe('setBorderSize', () => {
 
         describe('set border left', () => {
           it('should set border right on cell 11', () => {
-            const input = ((
+            const input = (
               <editor>
                 <htable>
                   <htr>
@@ -372,9 +350,9 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any) as PlateEditor;
+            ) as any as PlateEditor;
 
-            const output = ((
+            const output = (
               <editor>
                 <htable>
                   <htr>
@@ -398,7 +376,7 @@ describe('setBorderSize', () => {
                   </htr>
                 </htable>
               </editor>
-            ) as any) as PlateEditor;
+            ) as any as PlateEditor;
 
             const editor = createEditorInstance(input);
             setBorderSize(editor, 2, { border: 'left' });
@@ -410,7 +388,7 @@ describe('setBorderSize', () => {
 
       describe('when in cell 22', () => {
         it('should set border bottom', () => {
-          const input = ((
+          const input = (
             <editor>
               <htable>
                 <htr>
@@ -434,9 +412,9 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
-          const output = ((
+          const output = (
             <editor>
               <htable>
                 <htr>
@@ -460,7 +438,7 @@ describe('setBorderSize', () => {
                 </htr>
               </htable>
             </editor>
-          ) as any) as PlateEditor;
+          ) as any as PlateEditor;
 
           const editor = createEditorInstance(input);
           setBorderSize(editor, 4, { border: 'bottom' });

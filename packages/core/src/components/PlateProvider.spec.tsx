@@ -1,8 +1,13 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { PLATE_SCOPE, usePlateEditorRef, usePlateSelectors } from '../stores';
-import { createPlateEditor } from '../utils';
 import { PlateProvider } from './PlateProvider';
+
+import {
+  PLATE_SCOPE,
+  usePlateEditorRef,
+  usePlateSelectors,
+} from '@/core/src/stores';
+import { createPlateEditor } from '@/core/src/utils';
 
 describe('PlateProvider', () => {
   describe('usePlateEditorRef()', () => {

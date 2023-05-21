@@ -9,8 +9,9 @@ import {
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { AutoformatPlugin } from '../../../types';
-import { withAutoformat } from '../../../withAutoformat';
+
+import { AutoformatPlugin } from '@/editor/autoformat/src/types';
+import { withAutoformat } from '@/editor/autoformat/src/withAutoformat';
 
 jsx;
 

@@ -1,7 +1,8 @@
 import { createPlateEditor } from '@udecode/plate-common';
-import { createLinkPlugin } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
 import { getLinkAttributes } from './getLinkAttributes';
+
+import { createLinkPlugin } from '@/nodes/link/src/createLinkPlugin';
+import { TLinkElement } from '@/nodes/link/src/types';
 
 const baseLink = {
   type: 'a',

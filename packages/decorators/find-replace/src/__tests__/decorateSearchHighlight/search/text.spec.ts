@@ -1,8 +1,9 @@
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
+
 import {
   createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
-} from '../../../createFindReplacePlugin';
+} from '@/decorators/find-replace/src/createFindReplacePlugin';
 
 it('should be', () => {
   const editor = createPlateEditor({

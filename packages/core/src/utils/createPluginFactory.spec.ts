@@ -69,7 +69,7 @@ describe('createPluginFactory', () => {
         plugins: [
           createLinkPlugin({
             deserializeHtml: {
-              getNode: (el) => ({ test: true }),
+              getNode: () => ({ test: true }),
               withoutChildren: true,
             },
           }),

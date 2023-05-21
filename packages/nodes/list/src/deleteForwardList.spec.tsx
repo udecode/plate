@@ -2,8 +2,9 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from 'apps/www/src/lib/createPlateUIEditor';
 import { createListPlugin } from './createListPlugin';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

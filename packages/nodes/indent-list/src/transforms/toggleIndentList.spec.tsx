@@ -3,30 +3,31 @@
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
-import { indentListPluginPage } from '../__tests__/indentListPluginPage';
-import { createIndentListPlugin } from '../createIndentListPlugin';
 import { toggleIndentList } from './toggleIndentList';
+
+import { indentListPluginPage } from '@/nodes/indent-list/src/__tests__/indentListPluginPage';
+import { createIndentListPlugin } from '@/nodes/indent-list/src/createIndentListPlugin';
 
 jsx;
 
 describe('toggleIndentList', () => {
   describe('when listStyleType is not defined', () => {
     it('should set listStyleType', async () => {
-      const input = ((
+      const input = (
         <editor>
           <hp indent={3}>
             1<cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp indent={4} listStyleType="disc">
             1<cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -40,21 +41,21 @@ describe('toggleIndentList', () => {
 
     describe('when indent is not set', () => {
       it('should set indent 1', async () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>
               1<cursor />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hp indent={1} listStyleType="disc">
               1<cursor />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -70,21 +71,21 @@ describe('toggleIndentList', () => {
 
   describe('when listStyleType is defined', () => {
     it('should unset listStyleType', async () => {
-      const input = ((
+      const input = (
         <editor>
           <hp indent={1} listStyleType="disc">
             1<cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>
             1<cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -99,7 +100,7 @@ describe('toggleIndentList', () => {
 
   describe('when there is sibling items', () => {
     it('should set listStyleType on', async () => {
-      const input = ((
+      const input = (
         <editor>
           <hp indent={2} listStyleType="disc">
             21
@@ -130,9 +131,9 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp indent={2} listStyleType="disc">
             21
@@ -163,7 +164,7 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -179,7 +180,7 @@ describe('toggleIndentList', () => {
   describe('when selection is expanded', () => {
     describe('when blocks have no listStyleType', () => {
       it('should set listStyleType', async () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>
               1
@@ -191,9 +192,9 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hp indent={1} listStyleType="disc">
               1
@@ -207,7 +208,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -222,7 +223,7 @@ describe('toggleIndentList', () => {
 
     describe('when blocks have (different) listStyleType except one block without', () => {
       it('should set listStyleType', async () => {
-        const input = ((
+        const input = (
           <editor>
             <hp indent={1} listStyleType="disc">
               1
@@ -234,9 +235,9 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hp indent={1} listStyleType="decimal">
               1
@@ -250,7 +251,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -265,7 +266,7 @@ describe('toggleIndentList', () => {
 
     describe('when blocks have eq listStyleType', () => {
       it('should outdent', async () => {
-        const input = ((
+        const input = (
           <editor>
             <hp indent={1} listStyleType="disc">
               1
@@ -279,9 +280,9 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <hp>
               1
@@ -293,7 +294,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -308,7 +309,7 @@ describe('toggleIndentList', () => {
 
     describe('when across pages', () => {
       it('should toggle', async () => {
-        const input = ((
+        const input = (
           <editor>
             <element>
               <hp indent={1} listStyleType="disc">
@@ -322,9 +323,9 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
-        const output = ((
+        const output = (
           <editor>
             <element>
               <hp indent={1} listStyleType="decimal">
@@ -338,7 +339,7 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

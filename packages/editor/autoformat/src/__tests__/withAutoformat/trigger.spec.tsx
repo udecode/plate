@@ -2,15 +2,16 @@
 
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { MARK_BOLD } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { MARK_ITALIC } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
-import { MARK_UNDERLINE } from '../../../../../nodes/basic-marks/src/createUnderlinePlugin';
+
 import {
   createAutoformatPlugin,
   KEY_AUTOFORMAT,
-} from '../../createAutoformatPlugin';
-import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
-import { AutoformatPlugin } from '../../types';
+} from '@/editor/autoformat/src/createAutoformatPlugin';
+import { onKeyDownAutoformat } from '@/editor/autoformat/src/onKeyDownAutoformat';
+import { AutoformatPlugin } from '@/editor/autoformat/src/types';
+import { MARK_BOLD } from '@/nodes/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '@/nodes/basic-marks/src/createItalicPlugin';
+import { MARK_UNDERLINE } from '@/nodes/basic-marks/src/createUnderlinePlugin';
 
 jsx;
 

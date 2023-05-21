@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const a = ((
+export const a = (
   <editor>
     <htable>
       <htr>
@@ -18,7 +18,7 @@ export const a = ((
       </htr>
     </htable>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 export const tableInput = Object.freeze([
   {

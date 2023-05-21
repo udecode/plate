@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';
+
+import { onKeyDownSingleLine } from '@/editor/break/src/single-line/onKeyDownSingleLine';
 
 jsx;
 

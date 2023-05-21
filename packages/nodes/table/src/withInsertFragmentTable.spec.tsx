@@ -7,7 +7,6 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createTablePlugin } from './createTablePlugin';
-import { withInsertFragmentTable } from './withInsertFragmentTable';
 
 jsx;
 
@@ -15,7 +14,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/13
   describe('when inserting table 2x1 into cell 11', () => {
     it('first table column should be replaced by the inserted table column', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -39,9 +38,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -56,9 +55,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -79,7 +78,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -95,7 +94,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/14
   describe('when inserting table 1x2 into cell 11', () => {
     it('first table row should be replaced by the inserted table row', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -117,9 +116,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -132,9 +131,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -155,7 +154,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -171,7 +170,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/24
   describe('Insert a table when selecting table cells', () => {
     it('replace these cells', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -194,9 +193,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -209,9 +208,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -236,7 +235,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -253,7 +252,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/20
   describe('when inserting table 2x1 into cell 12', () => {
     it('second table column should be replaced by the inserted table column', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -277,9 +276,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -294,9 +293,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -321,7 +320,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -339,7 +338,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/32
   describe('when insert table 2x2 into cell 22', () => {
     it('should expand the table', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -363,9 +362,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -386,9 +385,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -436,7 +435,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -457,7 +456,7 @@ describe('withInsertFragmentTable', () => {
 
   describe('when insert table 2x2 into cell 22 with disableExpandOnInsert', () => {
     it('should not expand the table', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -481,9 +480,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -504,9 +503,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -531,7 +530,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -556,7 +555,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/63
   describe('when inserting table cells with multiple p', () => {
     it('should paste', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -573,9 +572,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <htable>
             <htr>
@@ -589,9 +588,9 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -605,7 +604,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -621,7 +620,7 @@ describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/64
   describe('when inserting blocks inside a table', () => {
     it('should insert the blocks without removing the cells', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -640,16 +639,16 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const fragment = ((
+      const fragment = (
         <fragment>
           <hp>o11a</hp>
           <hp>o11b</hp>
         </fragment>
-      ) as any) as TElement[];
+      ) as any as TElement[];
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -664,7 +663,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

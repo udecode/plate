@@ -3,8 +3,9 @@
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_CODE_BLOCK } from '../../../../../../nodes/code-block/src/constants';
-import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
+
+import { onKeyDownSoftBreak } from '@/editor/break/src/soft-break/onKeyDownSoftBreak';
+import { ELEMENT_CODE_BLOCK } from '@/nodes/code-block/src/constants';
 
 jsx;
 

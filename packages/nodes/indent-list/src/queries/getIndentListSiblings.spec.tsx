@@ -14,7 +14,7 @@ jsx;
 describe('getIndentListSiblings', () => {
   describe('listStyleType is not defined', () => {
     it('should be empty', async () => {
-      const input = ((
+      const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
             1
@@ -26,9 +26,9 @@ describe('getIndentListSiblings', () => {
             1
           </hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const editor = ((<editor>{input}</editor>) as any) as PlateEditor;
+      const editor = (<editor>{input}</editor>) as any as PlateEditor;
 
       const entry = getBlockAbove<TElement>(editor);
 
@@ -40,7 +40,7 @@ describe('getIndentListSiblings', () => {
 
   describe('listStyleType is defined', () => {
     it('should get nodes', async () => {
-      const input = ((
+      const input = (
         <fragment>
           <hp indent={2} listStyleType="disc">
             21
@@ -71,9 +71,9 @@ describe('getIndentListSiblings', () => {
             21
           </hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const output = ((
+      const output = (
         <fragment>
           <hp indent={2} listStyleType="disc">
             21
@@ -86,9 +86,9 @@ describe('getIndentListSiblings', () => {
             23
           </hp>
         </fragment>
-      ) as any) as TDescendant[];
+      ) as any as TDescendant[];
 
-      const editor = ((<editor>{input}</editor>) as any) as PlateEditor;
+      const editor = (<editor>{input}</editor>) as any as PlateEditor;
 
       const entry = getBlockAbove<TElement>(editor);
 

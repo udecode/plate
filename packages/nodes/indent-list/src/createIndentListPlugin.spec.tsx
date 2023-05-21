@@ -1,26 +1,23 @@
 /** @jsx jsx */
 import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/index';
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/index';
-import { createPlateEditor } from '@udecode/plate-common';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-} from '@udecode/plate-heading/src/index';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule/src/index';
-import { createIndentPlugin } from '@udecode/plate-indent/src/index';
-import { createJuicePlugin } from '@udecode/plate-juice/src/index';
-import { createLineHeightPlugin } from '@udecode/plate-line-height/src/index';
-import { createLinkPlugin } from '@udecode/plate-link';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { createIndentPlugin } from '@udecode/plate-indent';
+import { createJuicePlugin } from '@udecode/plate-juice';
 import { createImagePlugin } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/index';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx/src/index';
-import { createTablePlugin } from '@udecode/plate-table/src/index';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { createTablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
-import { alignPlugin } from 'apps/www/src/align/alignPlugin';
-import { lineHeightPlugin } from 'apps/www/src/lib/plate/line-height/lineHeightPlugin';
 import { createIndentListPlugin } from './createIndentListPlugin';
+
+import { createPlateEditor } from '@/core/src/index';
+import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
+import { createHorizontalRulePlugin } from '@/nodes/horizontal-rule/src/index';
+import { createLineHeightPlugin } from '@/nodes/line-height/src/index';
+import { createLinkPlugin } from '@/nodes/link/src/index';
+import { alignPlugin } from '@/plate/align/alignPlugin';
+import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
+import { createDeserializeDocxPlugin } from '@/serializers/docx/src/index';
 
 jsx;
 

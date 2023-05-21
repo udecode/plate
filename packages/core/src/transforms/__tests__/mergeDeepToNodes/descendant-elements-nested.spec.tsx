@@ -4,7 +4,8 @@ import { ELEMENT_LI } from '@udecode/plate-list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
-import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
+
+import { mergeDeepToNodes } from '@/core/src/utils/mergeDeepToNodes';
 
 jsx;
 

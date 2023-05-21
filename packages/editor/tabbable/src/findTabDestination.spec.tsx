@@ -2,12 +2,13 @@
 
 import { getNode, PlateEditor, TNode } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/index';
 import {
   findTabDestination,
   FindTabDestinationOptions,
 } from './findTabDestination';
 import { TabbableEntry } from './types';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

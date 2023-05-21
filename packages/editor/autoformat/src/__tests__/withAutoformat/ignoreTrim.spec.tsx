@@ -3,9 +3,10 @@
 import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'apps/www/src/autoformat/autoformatPlugin';
 import { withReact } from 'slate-react';
-import { withAutoformat } from '../../withAutoformat';
+
+import { withAutoformat } from '@/editor/autoformat/src/withAutoformat';
+import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 
 jsx;
 

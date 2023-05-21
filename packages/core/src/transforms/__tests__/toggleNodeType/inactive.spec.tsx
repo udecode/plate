@@ -2,20 +2,20 @@
 
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '@udecode/slate';
-import { PlateEditor } from '../../../types/PlateEditor';
-import { toggleNodeType } from '../../toggleNodeType';
+
+import { toggleNodeType } from '@/core/src/transforms/toggleNodeType';
+import { PlateEditor } from '@/core/src/types/PlateEditor';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       test
       <cursor />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = (
   <editor>

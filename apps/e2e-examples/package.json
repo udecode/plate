@@ -6,10 +6,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "yarn build && yarn preview"
-  },
-  "dependencies": {
-    "examples": "link:../www/src"
+    "start": "yarn build && yarn preview",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

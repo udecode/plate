@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/index';
 import { createResetNodePlugin } from './createResetNodePlugin';
+
+import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 
 jsx;
 

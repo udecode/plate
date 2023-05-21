@@ -23,7 +23,7 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
 
 describe('when pasting text into a code block', () => {
   it('should paste only the fragment', () => {
-    const input = ((
+    const input = (
       <editor>
         <hcodeblock>
           <hcodeline>
@@ -32,7 +32,7 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const fragment = createDataTransfer(
       new Map([
@@ -44,14 +44,14 @@ describe('when pasting text into a code block', () => {
       ])
     );
 
-    const expected = ((
+    const expected = (
       <editor>
         <hcodeblock>
           <hcodeline>const a = "b";</hcodeline>
           <hcodeline>const c = "d";</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     editorTest(input, fragment, expected);
   });

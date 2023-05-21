@@ -10,7 +10,7 @@ describe('withDeleteTable', () => {
   // https://github.com/udecode/editor-protocol/issues/22
   describe('Delete backward after a table', () => {
     it('should select the last cell', () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -26,9 +26,9 @@ describe('withDeleteTable', () => {
             <cursor />a
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -45,7 +45,7 @@ describe('withDeleteTable', () => {
           </htable>
           <hp>a</hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       let editor = createPlateEditor({
         editor: input,
@@ -63,7 +63,7 @@ describe('withDeleteTable', () => {
   // https://github.com/udecode/editor-protocol/issues/23
   describe('Delete forward before a table', () => {
     it('should select its first cell', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             a
@@ -80,9 +80,9 @@ describe('withDeleteTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <hp>a</hp>
           <htable>
@@ -99,7 +99,7 @@ describe('withDeleteTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       let editor = createPlateEditor({
         editor: input,
@@ -121,7 +121,7 @@ describe('withDeleteTable', () => {
     let output: any;
 
     beforeEach(() => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -144,9 +144,9 @@ describe('withDeleteTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      output = ((
+      output = (
         <editor>
           <htable>
             <htr>
@@ -173,7 +173,7 @@ describe('withDeleteTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       editor = createPlateEditor({
         editor: input,

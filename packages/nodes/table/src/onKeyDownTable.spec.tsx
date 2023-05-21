@@ -3,8 +3,9 @@
 import React from 'react';
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateTestEditor } from '../../../core/src/utils/__tests__/createPlateTestEditor';
 import { createTablePlugin } from './createTablePlugin';
+
+import { createPlateTestEditor } from '@/core/src/utils/__tests__/createPlateTestEditor';
 
 jsx;
 
@@ -277,7 +278,7 @@ describe('onKeyDownTable', () => {
   // https://github.com/udecode/editor-protocol/issues/30
   describe('when shift+down in a cell', () => {
     it('should add cell below to selection', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -301,9 +302,9 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -326,7 +327,7 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
@@ -342,7 +343,7 @@ describe('onKeyDownTable', () => {
   // https://github.com/udecode/editor-protocol/issues/31
   describe('when shift+up in a cell', () => {
     it('should add cell above to selection', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -366,9 +367,9 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -391,7 +392,7 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
@@ -407,7 +408,7 @@ describe('onKeyDownTable', () => {
   // https://github.com/udecode/editor-protocol/issues/15
   describe('when shift+right in a cell', () => {
     it('should add cell right to selection', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -428,9 +429,9 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -451,7 +452,7 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
@@ -467,7 +468,7 @@ describe('onKeyDownTable', () => {
   // https://github.com/udecode/editor-protocol/issues/17
   describe('when shift+left in a cell', () => {
     it('should add cell left to selection', async () => {
-      const input = ((
+      const input = (
         <editor>
           <htable>
             <htr>
@@ -488,9 +489,9 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
-      const output = ((
+      const output = (
         <editor>
           <htable>
             <htr>
@@ -511,7 +512,7 @@ describe('onKeyDownTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,

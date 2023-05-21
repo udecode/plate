@@ -1,8 +1,9 @@
-import { MARK_BOLD } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateEditor } from '../../../utils/createPlateEditor';
-import { mockPlugin } from '../../../utils/mockPlugin';
+import { MARK_BOLD } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
+
+import { createPlateEditor } from '@/core/src/utils/createPlateEditor';
+import { mockPlugin } from '@/core/src/utils/mockPlugin';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });
 

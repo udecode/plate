@@ -44,11 +44,8 @@ module.exports = {
         typescript: {
           alwaysTryTypes: true,
         },
-        project: ['tsconfig.json', 'apps/*/tsconfig.json'],
       },
-      typescript: {
-        project: ['tsconfig.json', 'apps/*/tsconfig.json'],
-      },
+      typescript: {},
     },
     react: { version: 'detect' },
     tailwindcss: {
@@ -98,7 +95,15 @@ module.exports = {
     'import/no-named-as-default-member': 'off',
     'import/no-unresolved': [
       'error',
-      { ignore: ['^@theme', '^@docusaurus', '^@generated', '^@/plate'] },
+      {
+        ignore: [
+          '^@theme',
+          '^@docusaurus',
+          '^@generated',
+          '^@/plate',
+          '^@/lib',
+        ],
+      },
     ],
     'import/prefer-default-export': 'off', // Allow single Named-export
     'import/order': ['off', { 'newlines-between': 'always' }],
@@ -253,6 +258,8 @@ module.exports = {
     'no-unexpected-multiline': 'off',
     'no-useless-constructor': 'off',
 
+    'default-param-last': 'off',
+
     // new
     'jest/no-commented-out-tests': 'off',
     'no-use-before-define': 'off',
@@ -275,14 +282,8 @@ module.exports = {
         'plugin:@next/next/core-web-vitals',
         './config/eslint/bases/prettier.cjs',
       ],
-    },
-    {
-      files: ['apps/www/src/**/*', '**/*.spec.*'],
-      extends: [
-        'plugin:@dword-design/import-alias/recommended',
-        './config/eslint/bases/prettier.cjs',
-      ],
       rules: {
+        'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [
           'warn',
           {
@@ -291,6 +292,28 @@ module.exports = {
               '@/components': './apps/www/src/components',
               '@/styles': './apps/www/src/styles',
               '@/lib': './apps/www/src/lib',
+            },
+          },
+        ],
+      },
+    },
+    {
+      files: ['**/*.spec.*'],
+      extends: [
+        'plugin:@dword-design/import-alias/recommended',
+        './config/eslint/bases/prettier.cjs',
+      ],
+      rules: {
+        'import/no-relative-packages': 'off',
+        '@dword-design/import-alias/prefer-alias': [
+          'warn',
+          {
+            alias: {
+              '@/plate': './apps/www/src/lib/plate',
+              '@/components': './apps/www/src/components',
+              '@/styles': './apps/www/src/styles',
+              '@/lib': './apps/www/src/lib',
+              '@': './packages',
             },
           },
         ],

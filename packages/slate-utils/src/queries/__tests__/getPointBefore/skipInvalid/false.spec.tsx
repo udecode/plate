@@ -1,19 +1,20 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../../core/src/types/PlateEditor';
-import { getPointBeforeLocation } from '../../../getPointBeforeLocation';
+
+import { getPointBeforeLocation } from '@/slate-utils/src/queries/getPointBeforeLocation';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       test http://google.com
       <cursor />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = undefined;
 
