@@ -9,7 +9,10 @@ import {
 import { Value } from '@udecode/plate-common';
 import { PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
 
-export function PlateCommentLeaf(props: PlateLeafProps<Value, TCommentText>) {
+export function PlateCommentLeaf({
+  className,
+  ...props
+}: PlateLeafProps<Value, TCommentText>) {
   const { children, nodeProps, leaf } = props;
 
   const [commentIds, setCommentIds] = useState<string[]>([]);

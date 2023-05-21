@@ -3,7 +3,10 @@ import { TElement, Value } from '@udecode/plate-common';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
-export function HrElement(props: PlateElementProps<Value, TElement>) {
+export function HrElement({
+  className,
+  ...props
+}: PlateElementProps<Value, TElement>) {
   const { children, nodeProps } = props;
 
   const selected = useSelected();

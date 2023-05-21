@@ -1,5 +1,9 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { UnknownObject, useEditorRef } from '@udecode/plate-common';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  UnknownObject,
+  useEditorRef,
+  useIsomorphicLayoutEffect,
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 import { CursorOverlayProps } from '../components/CursorOverlay';
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';
@@ -82,7 +86,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 
   // Update selection rects after paint
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     updateSelectionRects();
   });
 

@@ -1,11 +1,6 @@
-import {
-  CSSProperties,
-  MutableRefObject,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { CSSProperties, MutableRefObject, useRef, useState } from 'react';
 import { ClientRectObject } from '@floating-ui/core';
+import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 import { createVirtualElement } from '../createVirtualElement';
 import {
   autoUpdate,
@@ -61,15 +56,15 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
 
   const { refs, middlewareData, strategy, x, y, update } = floatingResult;
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
   }, [getBoundingClientRect, update]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     refs.setReference(virtualElementRef.current);
   }, [refs]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!middlewareData?.hide) return;
 
     const { referenceHidden } = middlewareData.hide;

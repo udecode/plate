@@ -1,7 +1,8 @@
-import React, { forwardRef, useLayoutEffect, useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import ReactTextareaAutosize, {
   TextareaAutosizeProps,
 } from 'react-textarea-autosize';
+import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
 /**
  * `<textarea />` component for React which grows with content.
@@ -14,7 +15,7 @@ export const TextareaAutosize = forwardRef<
 >((props, ref) => {
   const [isRerendered, setIsRerendered] = useState(false);
 
-  useLayoutEffect(() => setIsRerendered(true), []);
+  useIsomorphicLayoutEffect(() => setIsRerendered(true), []);
 
   return isRerendered ? <ReactTextareaAutosize {...props} ref={ref} /> : null;
 });

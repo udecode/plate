@@ -35,9 +35,12 @@ const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
       </Text>
     );
   }
-) as (<V extends Value = Value, N extends TText = EText<V>>(
-  props: PlateLeafProps<V, N> & RefAttributes<HTMLSpanElement>
-) => ReactElement) & { displayName?: string };
+) as (<V extends Value = Value, N extends TText = EText<V>>({
+  className,
+  ...props
+}: PlateLeafProps<V, N> & RefAttributes<HTMLSpanElement>) => ReactElement) & {
+  displayName?: string;
+};
 PlateLeaf.displayName = 'PlateLeaf';
 
 export { PlateLeaf };

@@ -2,7 +2,14 @@ import React from 'react';
 import { cva } from '@udecode/plate-tailwind';
 
 export const toolbarVariants = cva(
-  'box-content flex min-h-[40px] select-none items-center text-[rgb(68,68,68)]'
+  'box-content flex min-h-[40px] select-none items-center text-[rgb(68,68,68)]',
+  {
+    variants: {
+      a: {
+        true: '',
+      },
+    },
+  }
 );
 
 export interface ToolbarProps extends React.ComponentPropsWithoutRef<'div'> {}

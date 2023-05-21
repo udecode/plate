@@ -1,6 +1,12 @@
+const {
+  getDefaultIgnorePatterns,
+} = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
+
 module.exports = {
   extends: [
     'airbnb',
+    'next/core-web-vitals',
+    'turbo',
     'plugin:cypress/recommended',
     'plugin:jest/recommended',
     'plugin:mdx/recommended',
@@ -13,6 +19,7 @@ module.exports = {
   parserOptions: {
     parser: '@typescript-eslint/parser',
   },
+  ignorePatterns: [...getDefaultIgnorePatterns(), '.next', '.out'],
   env: {
     browser: true,
     'cypress/globals': true,
@@ -50,12 +57,18 @@ module.exports = {
     react: { version: 'detect' },
     tailwindcss: {
       callees: ['cn', 'cva'],
+      config: 'tailwind.config.cjs',
+    },
+    next: {
+      rootDir: ['apps/www'],
     },
   },
   rules: {
     // Tailwind css classnames order
     'tailwindcss/classnames-order': 'warn',
     'tailwindcss/no-custom-classname': 'error',
+
+    '@next/next/no-html-link-for-pages': 'off',
 
     'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
     '@typescript-eslint/no-unused-vars': 'off',
@@ -278,10 +291,6 @@ module.exports = {
   overrides: [
     {
       files: ['apps/www/src/**/*'],
-      extends: [
-        'plugin:@next/next/core-web-vitals',
-        './config/eslint/bases/prettier.cjs',
-      ],
       rules: {
         'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [

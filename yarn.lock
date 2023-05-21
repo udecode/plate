@@ -10457,6 +10457,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-config-turbo@npm:^1.9.8":
+  version: 1.9.8
+  resolution: "eslint-config-turbo@npm:1.9.8"
+  dependencies:
+    eslint-plugin-turbo: "npm:1.9.8"
+  peerDependencies:
+    eslint: ">6.6.0"
+  checksum: 386ab09f78a62e0526916bd4475c853f841403e94d19cadfc8bc3a2f70fe1080bfd169406ba166f4e1481aa1028a714f8aa95efc33126269db45f9c85276e9cc
+  languageName: node
+  linkType: hard
+
 "eslint-import-resolver-node@npm:^0.3.6":
   version: 0.3.6
   resolution: "eslint-import-resolver-node@npm:0.3.6"
@@ -10737,6 +10748,15 @@ __metadata:
   peerDependencies:
     tailwindcss: ^3.3.2
   checksum: fa69dcbdb667ed6e55fca33f12e71945fb0af4936c1bda47163299ef9ae8707352eaf18bc97576299a82dce59f34d966528c4eb90f67fdfe05a54dabc3d2c3d6
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-turbo@npm:1.9.8":
+  version: 1.9.8
+  resolution: "eslint-plugin-turbo@npm:1.9.8"
+  peerDependencies:
+    eslint: ">6.6.0"
+  checksum: 575962b6be211ab4db294b2ce30bf443f61d5f76fb2d0e2bd89720bf0d9f87301e5b56267cdb515ab6472d11b410275e6e9931a2e3504b0dda9214debbd20f57
   languageName: node
   linkType: hard
 
@@ -20098,7 +20118,9 @@ __metadata:
     dotenv: "npm:^16.0.1"
     eslint: "npm:8.40.0"
     eslint-config-airbnb: "npm:19.0.4"
+    eslint-config-next: "npm:^13.4.3"
     eslint-config-prettier: "npm:^8.8.0"
+    eslint-config-turbo: "npm:^1.9.8"
     eslint-import-resolver-typescript: "npm:^3.5.5"
     eslint-plugin-babel: "npm:5.3.1"
     eslint-plugin-chai-friendly: "npm:^0.7.2"
@@ -23417,7 +23439,6 @@ __metadata:
     "@udecode/plate-test-utils": "workspace:^"
     autoprefixer: "npm:^10.4.14"
     change-case: "npm:^4.1.2"
-    eslint-config-next: "npm:^13.4.3"
     lucide-react: "npm:^0.220.0"
     next: "npm:^12.1.6"
     postcss: "npm:^8.4.23"
