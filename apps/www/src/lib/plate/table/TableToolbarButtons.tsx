@@ -7,9 +7,9 @@ import {
   insertTableColumn,
   insertTableRow,
 } from '@udecode/plate';
+import { TableToolbarButton } from './TableToolbarButton';
 
-import { Icons } from '@/plate/common/icons';
-import { TableToolbarButton } from '@/plate/table/TableToolbarButton';
+import { Icons } from '@/components/icons';
 
 const tooltip = (content: string) => ({
   content,

@@ -19,7 +19,7 @@ import {
 } from '@udecode/plate';
 import { withPlateDraggables } from './withPlateDraggable';
 
-import { Icons } from '@/plate/common/icons';
+import { Icons } from '@/components/icons';
 
 function GrabberTooltipContent() {
   return (

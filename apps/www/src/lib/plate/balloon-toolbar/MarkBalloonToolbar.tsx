@@ -8,7 +8,7 @@ import {
   WithPartial,
 } from '@udecode/plate';
 
-import { Icons } from '@/plate/common/icons';
+import { Icons } from '@/components/icons';
 import {
   BalloonToolbar,
   BalloonToolbarProps,

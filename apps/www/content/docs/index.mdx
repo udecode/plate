@@ -1,0 +1,77 @@
+---
+title: Introduction
+description: Rich-text editor plugin system for Slate & React.
+---
+
+[Slate](https://github.com/ianstormtaylor/slate) is a low-level editor
+framework that helps you deal with difficult parts when building an
+editor, such as events handlers, elements, formatting, commands,
+rendering, serializing, normalizing, etc.
+
+While you are trying to build your own editors, it still needs a lot of
+skills to make something similar to [Quill](https://quilljs.com/) or
+[ProseMirror](https://prosemirror.net/). This repository allows you to
+build your editor right away with **minimal** slate knowledge.
+
+`@udecode/plate` is built on top of slate to handle plugins and
+state management for an optimal development experience. This repository
+comes with a lot of plugins as elements, marks, serializers,
+normalizers, queries, transforms, components and so on.
+
+- 🏎 Simple Start
+
+>  You only need one component to get started: `<Plate>`
+
+- 💅 Headless
+
+> Plugins are headless. It's unstyled by default. Start from Plate UI and plug-in your own components using a single function.
+
+- 👻 State Management
+
+> [jotai](https://github.com/pmndrs/jotai) store is internally used to ease state management.
+
+- 🔌 50+ Packages
+
+> We enforce separation of concerns by packaging each feature for build size and versioning.
+
+- 🛠 Extensible
+
+> All plugins accept extensible options and if you need to fork a plugin, all its functions are exported.
+
+## FAQ
+
+<Accordion type="multiple" collapsible>
+
+<AccordionItem value="faq-2">
+<AccordionTrigger>
+Which frameworks are supported?
+</AccordionTrigger>
+<AccordionContent>
+
+You can use any framework that supports React. Next.js, Astro, Remix, Gatsby etc.
+
+</AccordionContent>
+</AccordionItem>
+
+<AccordionItem value="faq-3">
+	<AccordionTrigger>
+	Can I use this in my project?
+	</AccordionTrigger>
+	<AccordionContent>
+Yes. Free to use for personal and commercial projects. No attribution required.
+
+Sharing your editor app [here](https://github.com/udecode/plate/issues/818) is appreciated!
+
+    </AccordionContent>
+
+</AccordionItem>
+
+</Accordion>
+
+## Credits
+
+- [shadcn/ui](https://ui.shadcn.com/) - For the UI, the docs and the CLI.
+- [Radix UI](https://radix-ui.com) - For the primitives.
+- [Vercel](https://vercel.com) - For hosting.
+- [Shu Ding](https://shud.in) - The typography style is adapted from his work on Nextra.
+- [cmdk](https://cmdk.paco.me) - For the `<Command />` component.

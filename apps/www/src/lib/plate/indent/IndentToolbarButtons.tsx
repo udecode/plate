@@ -1,7 +1,7 @@
 import React from 'react';
 import { focusEditor, indent, outdent } from '@udecode/plate';
 
-import { Icons } from '@/plate/common/icons';
+import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/plate/toolbar/ToolbarButton';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 

@@ -1,0 +1,139 @@
+---
+title: Installation
+description: How to install dependencies and structure your app.
+---
+
+<Steps>
+
+### Add dependencies
+
+Add the following dependencies to your project:
+
+```bash
+npm install @udecode/plate
+  
+# required peer deps
+npm install slate slate-react slate-history slate-hyperscript react react-dom
+```
+  
+Alternatively you can install only the packages you need.
+```bash
+# core
+npm install @udecode/plate-common
+
+# required peer deps
+npm install slate slate-react slate-history slate-hyperscript react react-dom
+
+# plugins
+npm install @udecode/plate-basic-elements
+# npm install @udecode/plate-...
+
+# if using @udecode/plate-serializer-docx
+npm install @udecode/plate-juice
+
+# if using @udecode/plate-dnd
+npm install react-dnd react-dnd-html5-backend
+```
+  
+### Basic Editor
+  
+Kick off with a minimal editor setup leveraging `Plate` and `editableProps`.
+
+```tsx showLineNumbers {2,4-6,10}
+import React from 'react';
+import { Plate } from '@udecode/plate';
+
+const editableProps = {
+  placeholder: 'Type...',
+};
+  
+export default function BasicEditor() {
+  return (
+    <Plate editableProps={editableProps} />
+  );
+}
+```
+
+Simple and straightforward. Try it out:
+
+<ComponentPreview>
+  <BasicEditorDefaultApp />
+</ComponentPreview>
+  
+### Initializing Editor's Value
+
+Let's specify the initial content of the editor: a single paragraph.
+
+```tsx showLineNumbers {3-12,18}
+// ...
+
+const initialValue = [
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'This is editable plain text with react and history plugins, just like a <textarea>!',
+      },
+    ],
+  },
+];
+
+export default function BasicEditor() {
+  return (
+    <Plate 
+      editableProps={editableProps} 
+      initialValue={initialValue} 
+    />
+  );
+}
+```
+
+<ComponentPreview>
+  <BasicEditorValueApp />
+</ComponentPreview>
+
+### Implementing Change Handler
+
+At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The `onChange` prop will serve this purpose.
+
+```tsx showLineNumbers {8-10}
+// ...
+
+export default function BasicEditor() {
+  return (
+    <Plate 
+      editableProps={editableProps}
+      initialValue={initialValue}
+      onChange={(newValue) => {
+        // save newValue...
+      }}
+    />
+  );
+}
+```
+
+<ComponentPreview>
+  <BasicEditorHandlerApp />
+</ComponentPreview>
+
+### Plugins
+
+Let's try out the basic element and basic mark plugins.
+
+<Callout>
+**Note**: Plate uses the `type` property to allow a plugin to render a node by type.
+</Callout>
+
+<ComponentPreview>
+  <BasicPluginsDefaultApp />
+</ComponentPreview>
+
+The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a `div` and the default leaf component is a `span`.
+
+<Callout>
+**Note**: Even if no plugins are explicitly added to Plate, core plugins such as `react` and `history` are automatically incorporated. To disable these, use the `disableCorePlugins` prop.
+</Callout>
+
+</Steps>
+
+Now, we are all set to bring plugins into play!

@@ -7,6 +7,11 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "NEXT_PUBLIC_APP_URL",
+        "COMPONENTS_BASE_URL",
+        "npm_config_user_agent"
+      ],
       "outputs": ["dist/**", ".next/**"]
     },
     "brl": {

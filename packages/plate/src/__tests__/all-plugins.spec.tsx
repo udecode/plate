@@ -22,8 +22,9 @@ import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { playgroundValue } from 'www/src/components/playgroundValue';
 
+import { playgroundValue } from '@/components/examples/playgroundValue';
+import { Icons } from '@/components/icons';
 import { createPlugins, Plate } from '@/core/src/index';
 import { createPlateUI } from '@/lib/createPlateUI';
 import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
@@ -35,7 +36,6 @@ import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
 import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from '@/plate/basic-marks/BasicMarkToolbarButtons';
 import { editableProps } from '@/plate/common/editableProps';
-import { Icons } from '@/plate/common/icons';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { SearchHighlightToolbar } from '@/plate/find-replace/SearchHighlightToolbar';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';

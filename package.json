@@ -49,10 +49,6 @@
     "apps/**"
   ],
   "resolutions": {
-    "@types/react": "17.0.47",
-    "@types/react-dom": "17.0.17",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
     "terser": "4.8.0"
   },
   "devDependencies": {
@@ -85,8 +81,8 @@
     "@types/node": "^17.0.31",
     "@types/prismjs": "^1.26.0",
     "@types/raf": "^3.4.0",
-    "@types/react": "17.0.47",
-    "@types/react-dom": "17.0.17",
+    "@types/react": "18.0.32",
+    "@types/react-dom": "18.0.11",
     "@types/scriptjs": "0.0.2",
     "@types/styled-components": "5.1.9",
     "@types/validator": "^13.7.2",
@@ -134,13 +130,12 @@
     "plop": "3.1.1",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
-    "react": "17.0.2",
+    "react": "^18.2.0",
     "react-dnd": "^15.1.2",
     "react-dnd-html5-backend": "^15.1.3",
     "react-dnd-test-backend": "^15.1.2",
-    "react-dom": "17.0.2",
+    "react-dom": "^18.2.0",
     "react-is": "17.0.2",
-    "react-router-dom": "6.9.0",
     "react-test-renderer": "17.0.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.72.1",

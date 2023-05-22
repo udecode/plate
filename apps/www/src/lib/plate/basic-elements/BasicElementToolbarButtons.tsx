@@ -11,8 +11,8 @@ import {
   useEventPlateId,
 } from '@udecode/plate';
 
+import { Icons } from '@/components/icons';
 import { CodeBlockToolbarButton } from '@/plate/code-block/CodeBlockToolbarButton';
-import { Icons } from '@/plate/common/icons';
 import { BlockToolbarButton } from '@/plate/toolbar/BlockToolbarButton';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 

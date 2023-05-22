@@ -1,7 +1,9 @@
+'use client';
+
 import React, { ReactNode } from 'react';
 import { MenuItem } from 'react-pro-sidebar';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
 
 export function Item({
   href,
@@ -10,10 +12,10 @@ export function Item({
   href: string;
   children: ReactNode;
 }) {
-  const { route } = useRouter();
+  const path = usePathname();
 
   return (
-    <MenuItem active={route === href}>
+    <MenuItem active={path === href}>
       <Link href={href}>{children}</Link>
     </MenuItem>
   );

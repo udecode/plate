@@ -16,18 +16,29 @@ const headingVariants = cva('', {
       h5: 'mx-0 mb-0 mt-[0.75em] text-[1.1em] font-medium leading-[1.3] text-[#666666]',
       h6: 'mx-0 mb-0 mt-[0.75em] text-[1.1em] font-medium leading-[1.3] text-[#666666]',
     },
+    isFirstBlock: {
+      true: 'mt-0',
+      false: '',
+    },
   },
 });
 
 export function HeadingElement({
   className,
   variant = 'h1',
+  isFirstBlock,
   ...props
 }: PlateElementProps & VariantProps<typeof headingVariants>) {
+  const { element, editor } = props;
+
   return (
     <PlateElement
       as={variant}
-      className={headingVariants({ variant, className })}
+      className={headingVariants({
+        variant,
+        className,
+        isFirstBlock: element === editor.children[0],
+      })}
       {...props}
     />
   );

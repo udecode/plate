@@ -3,11 +3,11 @@ import { TippyProps } from '@tippyjs/react';
 import { WithPartial } from '@udecode/plate';
 import { PlateCommentToolbarButton } from './PlateCommentToolbarButton';
 
+import { Icons } from '@/components/icons';
 import {
   MarkBalloonToolbar,
   markTooltip,
 } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
-import { Icons } from '@/plate/common/icons';
 import { BalloonToolbarProps } from '@/plate/toolbar/BalloonToolbar';
 
 export function CommentBalloonToolbar(

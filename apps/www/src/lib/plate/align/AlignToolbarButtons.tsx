@@ -1,7 +1,7 @@
 import React from 'react';
 
+import { Icons } from '@/components/icons';
 import { AlignToolbarButton } from '@/plate/alignment/AlignToolbarButton';
-import { Icons } from '@/plate/common/icons';
 
 const tooltip = (content: string) => ({
   content,

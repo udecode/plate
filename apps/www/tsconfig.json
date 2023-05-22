@@ -17,7 +17,8 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["./*"],
-      "@/plate/*": ["./lib/plate/*"]
+      "@/plate/*": ["./lib/plate/*"],
+      "contentlayer/generated": ["../.contentlayer/generated"]
     },
     "plugins": [
       {
@@ -33,7 +34,8 @@
     "src/**/*.tsx",
     "src/**/*.cjs",
     "src/**/*.mjs",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".contentlayer/generated"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "./scripts/build-components.ts"]
 }

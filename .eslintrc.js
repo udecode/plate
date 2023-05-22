@@ -88,6 +88,7 @@ module.exports = {
 
     'class-methods-use-this': 'off',
     'consistent-return': 'off',
+    'func-names': 'off',
 
     // https://github.com/benmosher/eslint-plugin-import/issues/1558
     'import/extensions': [
@@ -99,6 +100,7 @@ module.exports = {
         js: 'never',
         jsx: 'never',
         json: 'always',
+        scss: 'always',
       },
     ],
     'import/no-cycle': 'off',
@@ -109,13 +111,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: [
-          '^@theme',
-          '^@docusaurus',
-          '^@generated',
-          '^@/plate',
-          '^@/lib',
-        ],
+        ignore: ['^@theme', '^@docusaurus', '^@generated', '^@/plate'],
       },
     ],
     'import/prefer-default-export': 'off', // Allow single Named-export
@@ -349,7 +345,7 @@ module.exports = {
       rules: {
         'prettier/prettier': 'off',
         'simple-import-sort/imports': 'off',
-        'import/order': ['error', { 'newlines-between': 'never' }],
+        'import/order': 'off',
       },
     },
   ],

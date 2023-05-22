@@ -2,7 +2,7 @@ import React from 'react';
 import { ELEMENT_OL, ELEMENT_UL, getPluginType } from '@udecode/plate';
 import { ListToolbarButton } from './ListToolbarButton';
 
-import { Icons } from '@/plate/common/icons';
+import { Icons } from '@/components/icons';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
 const tooltip = (content: string) => ({

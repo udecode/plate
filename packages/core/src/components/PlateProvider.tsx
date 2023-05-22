@@ -1,3 +1,5 @@
+'use client';
+
 import React, { FC, useMemo } from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 import { JotaiProvider } from '../libs/jotai';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { getPluginType, MARK_HIGHLIGHT } from '@udecode/plate';
 
-import { Icons } from '@/plate/common/icons';
+import { Icons } from '@/components/icons';
 import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
