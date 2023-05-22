@@ -122,3 +122,4 @@ config/typedoc/
 /playwright-report/
 /playwright/.cache/
 .turbo
+.contentlayer
