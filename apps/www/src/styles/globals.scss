@@ -87,8 +87,11 @@
     line-height: 1.4;
 
     width: 100%;
+    max-width: 900px;
 
-    padding: 50px 87px 50px;
+    margin: 0 auto;
+    padding: 50px 96px 20vh;
+
     position: relative;
 
     strong {

@@ -44,6 +44,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/installation',
           items: [],
         },
+        {
+          title: 'Playground',
+          href: '/playground',
+          items: [],
+        },
       ],
     },
     {
