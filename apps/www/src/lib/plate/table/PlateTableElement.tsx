@@ -5,7 +5,7 @@ import {
   useTableElementState,
 } from '@udecode/plate-table';
 import { cn } from '@udecode/plate-tailwind';
-import { PlateTablePopover } from './PlateTablePopover';
+import { TableDropdownMenu } from './TableDropdownMenu';
 
 export function PlateTableElement({
   className,
@@ -16,7 +16,7 @@ export function PlateTableElement({
     useTableElementState();
 
   return (
-    <PlateTablePopover>
+    <TableDropdownMenu>
       <TableElement.Wrapper style={{ paddingLeft: marginLeft }}>
         <TableElement.Root
           className={cn(
@@ -43,6 +43,6 @@ export function PlateTableElement({
           </TableElement.TBody>
         </TableElement.Root>
       </TableElement.Wrapper>
-    </PlateTablePopover>
+    </TableDropdownMenu>
   );
 }

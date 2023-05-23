@@ -8,8 +8,8 @@ export const HeadingToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
       <Toolbar
         ref={ref}
         className={cn(
-          'relative -mx-5 mb-5 mt-0 flex-wrap border-b-2 pt-px',
-          'border-[#eee] px-[18px] pb-[17px]',
+          'sticky left-0 top-[57px] z-40 w-full flex-wrap overflow-hidden border-b-2 bg-background p-1',
+          'border-[#eee]',
           '[&_.slate-ToolbarButton-active]:text-[#06c] [&_.slate-ToolbarButton]:hover:text-[#06c]',
           className
         )}

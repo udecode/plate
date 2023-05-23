@@ -6,9 +6,9 @@ import {
   TElement,
   useEditorRef,
 } from '@udecode/plate-common';
-import { Button, ButtonProps } from './PlateButton';
 
-import { DeleteIcon } from '@/plate/icon/DeleteIcon';
+import { Icons } from '@/components/icons';
+import { Button, ButtonProps } from '@/components/ui/button';
 
 export function RemoveNodeButton({
   element,
@@ -19,6 +19,7 @@ export function RemoveNodeButton({
 
   return (
     <Button
+      variant="menu"
       onClick={() => {
         const path = findNodePath(editor, element);
 
@@ -28,7 +29,7 @@ export function RemoveNodeButton({
       }}
       {...props}
     >
-      <DeleteIcon />
+      <Icons.delete className="mr-2 h-4 w-4" />
       {children}
     </Button>
   );

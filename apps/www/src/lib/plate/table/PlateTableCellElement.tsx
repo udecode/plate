@@ -11,7 +11,10 @@ export interface PlateTableCellElementProps extends TableCellElementRootProps {
   isHeader?: boolean;
 }
 
-export function PlateTableCellElement(props: PlateTableCellElementProps) {
+export function PlateTableCellElement({
+  className,
+  ...props
+}: PlateTableCellElementProps) {
   const { children, hideBorder, isHeader, ...rootProps } = props;
 
   const {
@@ -22,7 +25,7 @@ export function PlateTableCellElement(props: PlateTableCellElementProps) {
     hovered,
     hoveredLeft,
     rowSize,
-    // borders,
+    borders,
   } = useTableCellElementState();
 
   // const [openDropdown, setOpenDropdown] = useState(false);
@@ -33,23 +36,26 @@ export function PlateTableCellElement(props: PlateTableCellElementProps) {
       className={cn(
         'relative overflow-visible border-none bg-white p-0',
         hideBorder && 'before:border-none',
-        // !hideBorder && [
-        //   "before:absolute before:box-border before:select-none before:content-['']",
-        //   borders && [
-        //     borders.bottom &&
-        //       `before:border-b-[${borders.bottom.size}px] before:border-b-[${borders.bottom.style}] before:border-b-[${borders.bottom.color}]`,
-        //     borders.right &&
-        //       `before:border-r-[${borders.right.size}px] before:border-r-[${borders.right.style}] before:border-r-[${borders.right.color}]`,
-        //     borders.left &&
-        //       `before:border-l-[${borders.left.size}px] before:border-l-[${borders.left.style}] before:border-l-[${borders.left.color}]`,
-        //     borders.top &&
-        //       `before:border-t-[${borders.top.size}px] before:border-t-[${borders.top.style}] before:border-t-[${borders.top.color}]`,
-        //   ],
-        // ],
-        isHeader && 'text-left',
-        isHeader && 'before:bg-[rgb(244,245,247)] [&_>_*]:m-0',
-        'before:h-full before:w-full',
-        selected && 'before:z-10 before:border-blue-500 before:bg-blue-50'
+        !hideBorder &&
+          cn(
+            isHeader && 'text-left',
+            isHeader && 'before:bg-[rgb(244,245,247)] [&_>_*]:m-0',
+            'before:h-full before:w-full',
+            selected && 'before:z-10 before:border-blue-500 before:bg-blue-50',
+            "before:absolute before:box-border before:select-none before:content-['']",
+            borders &&
+              cn(
+                borders.bottom?.size &&
+                  `before:border-b before:border-b-[rgb(209_213_219)]`,
+                borders.right?.size &&
+                  `before:border-r before:border-r-[rgb(209_213_219)]`,
+                borders.left?.size &&
+                  `before:border-l before:border-l-[rgb(209_213_219)]`,
+                borders.top?.size &&
+                  `before:border-t before:border-t-[rgb(209_213_219)]`
+              )
+          ),
+        className
       )}
       {...rootProps}
     >

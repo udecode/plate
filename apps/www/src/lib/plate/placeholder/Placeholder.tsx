@@ -1,9 +1,12 @@
 import React from 'react';
+import { queryNode } from '@udecode/plate';
 import {
   createNodeHOC,
   createNodesHOC,
+  findNodePath,
   isCollapsed,
   isElementEmpty,
+  QueryNodeOptions,
   usePlateEditorState,
 } from '@udecode/plate-common';
 import { cn, PlateElementProps } from '@udecode/plate-tailwind';
@@ -12,6 +15,7 @@ import { useFocused, useSelected } from 'slate-react';
 export interface PlaceholderProps extends PlateElementProps {
   placeholder: string;
   hideOnBlur?: boolean;
+  query?: QueryNodeOptions;
 }
 
 export const Placeholder = (props: PlaceholderProps) => {
@@ -20,6 +24,7 @@ export const Placeholder = (props: PlaceholderProps) => {
     element,
     placeholder,
     hideOnBlur = true,
+    query,
     nodeProps,
   } = props;
 
@@ -31,6 +36,7 @@ export const Placeholder = (props: PlaceholderProps) => {
 
   const enabled =
     isEmptyBlock &&
+    (!query || queryNode([element, findNodePath(editor, element)!], query)) &&
     (!hideOnBlur ||
       (isCollapsed(editor.selection) && hideOnBlur && focused && selected));
 

@@ -7,6 +7,9 @@ export const withStyledPlaceHolders = (components: any) =>
       key: ELEMENT_PARAGRAPH,
       placeholder: 'Type a paragraph',
       hideOnBlur: true,
+      query: {
+        maxLevel: 1,
+      },
     },
     {
       key: ELEMENT_H1,

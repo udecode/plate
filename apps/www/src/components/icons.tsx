@@ -185,6 +185,7 @@ export const Icons = {
   ),
 
   // plate
+  delete: Trash,
   ul: List,
   ol: ListOrdered,
   color: Baseline,

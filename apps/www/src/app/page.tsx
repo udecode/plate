@@ -67,7 +67,7 @@ export default function IndexPage() {
       {/*  /> */}
       {/* </section> */}
       <section className="">
-        <div className="overflow-hidden rounded-lg border bg-background shadow-xl">
+        <div className="border bg-background shadow-xl">
           <PlaygroundPage />
         </div>
       </section>

@@ -18,9 +18,10 @@ export function HrElement({
         contentEditable={false}
         {...nodeProps}
         className={cn(
-          'my-6 h-0.5 cursor-pointer border-none bg-gray-200 bg-clip-content py-1',
+          'my-6 box-content h-0.5 cursor-pointer border-none bg-gray-200 bg-clip-content py-1',
           'rounded-[1px]',
-          selected && focused && 'bg-blue-500'
+          selected && focused && 'bg-blue-500',
+          className
         )}
       />
       {children}

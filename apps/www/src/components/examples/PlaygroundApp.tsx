@@ -28,6 +28,7 @@ import {
   createIndentPlugin,
   createItalicPlugin,
   createKbdPlugin,
+  createLineHeightPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
@@ -75,6 +76,7 @@ import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';
 import { indentPlugin } from '@/plate/indent/indentPlugin';
+import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 import { linkPlugin } from '@/plate/link/linkPlugin';
 import { MENTIONABLES } from '@/plate/mention/mentionables';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
@@ -133,6 +135,7 @@ function App() {
           createFontColorPlugin(),
           createFontBackgroundColorPlugin(),
           createFontSizePlugin(),
+          createLineHeightPlugin(lineHeightPlugin),
           createKbdPlugin(),
           createNodeIdPlugin(),
           createBlockSelectionPlugin(),

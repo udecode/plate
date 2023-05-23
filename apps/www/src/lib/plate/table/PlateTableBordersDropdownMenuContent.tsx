@@ -1,5 +1,5 @@
-import React, { SVGProps } from 'react';
-import { DropdownMenu } from '@udecode/plate-floating';
+import React, { forwardRef, SVGProps } from 'react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import {
   BorderBottomIcon,
   BorderLeftIcon,
@@ -11,8 +11,12 @@ import {
 } from '@udecode/plate-table';
 import { cn } from '@udecode/plate-tailwind';
 
-import { Button } from '@/plate/button/PlateButton';
-import { floatingStyles } from '@/plate/toolbar/floatingStyles';
+import { Icons } from '@/components/icons';
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 
 function CheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -38,7 +42,10 @@ function Check({ checked }: { checked?: boolean }) {
   );
 }
 
-export function PlateTableBordersDropdownMenuContent() {
+export const PlateTableBordersDropdownMenuContent = forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+>((props, ref) => {
   const {
     getOnSelectTableBorder,
     hasOuterBorders,
@@ -50,64 +57,47 @@ export function PlateTableBordersDropdownMenuContent() {
   } = useTableBordersDropdownMenuContentState();
 
   return (
-    <DropdownMenu.Content
-      className={cn(
-        floatingStyles.rootVariants(),
-        'min-w-[220px] py-1.5 text-neutral-900'
-      )}
+    <DropdownMenuContent
+      ref={ref}
+      className={cn('min-w-[220px]')}
       side="right"
       align="start"
-      sideOffset={8}
+      sideOffset={0}
+      {...props}
     >
-      <div className="px-1">
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('bottom')}>
-          <Button variant="menu">
-            <Check checked={hasBottomBorder} />
-            <BorderBottomIcon />
-            <div>Bottom Border</div>
-          </Button>
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('top')}>
-          <Button variant="menu">
-            <Check checked={hasTopBorder} />
-            <BorderTopIcon />
-            <div>Top Border</div>
-          </Button>
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('left')}>
-          <Button variant="menu">
-            <Check checked={hasLeftBorder} />
-            <BorderLeftIcon />
-            <div>Left Border</div>
-          </Button>
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('right')}>
-          <Button variant="menu">
-            <Check checked={hasRightBorder} />
-            <BorderRightIcon />
-            <div>Right Border</div>
-          </Button>
-        </DropdownMenu.Item>
-      </div>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('bottom')}>
+        <Icons.check checked={hasBottomBorder} />
+        <BorderBottomIcon />
+        <div>Bottom Border</div>
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('top')}>
+        <Icons.check checked={hasTopBorder} />
+        <BorderTopIcon />
+        <div>Top Border</div>
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('left')}>
+        <Icons.check checked={hasLeftBorder} />
+        <BorderLeftIcon />
+        <div>Left Border</div>
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('right')}>
+        <Icons.check checked={hasRightBorder} />
+        <BorderRightIcon />
+        <div>Right Border</div>
+      </DropdownMenuItem>
 
-      <div className="my-1.5 h-px w-full bg-gray-200" />
+      <Separator />
 
-      <div className="px-1">
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('none')}>
-          <Button variant="menu">
-            <Check checked={hasNoBorders} />
-            <BorderNoneIcon />
-            <div>No Border</div>
-          </Button>
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onSelect={getOnSelectTableBorder('outer')}>
-          <Button variant="menu">
-            <Check checked={hasOuterBorders} />
-            <BorderOuterIcon />
-            <div>Outside Borders</div>
-          </Button>
-        </DropdownMenu.Item>
-      </div>
-    </DropdownMenu.Content>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('none')}>
+        <Icons.check checked={hasNoBorders} />
+        <BorderNoneIcon />
+        <div>No Border</div>
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={getOnSelectTableBorder('outer')}>
+        <Icons.check checked={hasOuterBorders} />
+        <BorderOuterIcon />
+        <div>Outside Borders</div>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
   );
-}
+});

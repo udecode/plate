@@ -9,8 +9,8 @@ import {
 const listVariants = cva('m-0 ps-6', {
   variants: {
     variant: {
-      ul: '',
-      ol: '',
+      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',
+      ol: 'list-decimal',
     },
   },
 });

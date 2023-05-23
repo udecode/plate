@@ -84,15 +84,15 @@
       BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
       sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', Segoe UI Symbol,
       'Noto Color Emoji';
-    line-height: 1.5;
+    line-height: 1.4;
 
     width: 100%;
 
     padding: 50px 87px 50px;
     position: relative;
 
-    td {
-      border: 1px solid;
+    strong {
+      font-weight: bold;
     }
 
     .slate-HeadingToolbar {
