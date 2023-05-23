@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 
+import { Separator } from '@/components/ui/separator';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
 import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
@@ -11,12 +12,6 @@ import { imagePlugins } from '@/plate/media/imagePlugins';
 import { imageValue } from '@/plate/media/mediaValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { MyValue } from '@/plate/typescript/plateTypes';
-
-const styles = {
-  wrapper: {
-    display: 'flex',
-  },
-};
 
 function Editor(props: PlateProps<MyValue>) {
   return (
@@ -47,9 +42,11 @@ export default function MultipleEditorsApp() {
             <BasicMarkToolbarButtons />
           </HeadingToolbar>
 
-          <div style={styles.wrapper}>
+          <div>
             <Editor />
+            <Separator />
             <Editor id="marks" />
+            <Separator />
             <Editor id="image" />
           </div>
         </PlateProvider>

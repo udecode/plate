@@ -1,0 +1,104 @@
+---
+title: Store
+description: Plate Store API
+---
+
+`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
+
+<Callout className="my-4">
+**Note**: To use the store hooks in a component, it needs to be rendered inside `PlateProvider` or `Plate`.
+</Callout>
+
+# Plate Store
+
+Plate Store is a jotai store that implements the following [state](#state):
+
+## State
+
+### [`decorate`](/docs/plate#editable-decorate)
+### [`editableProps`](/docs/plate#editable-editableprops)
+### [`editor`](/docs/plate#editor)
+
+### `isRendered`
+
+`boolean`
+
+- Whether `Editable` is rendered so slate DOM is resolvable.
+
+### `keyEditor`
+
+- A random key updated on each editor change.
+
+### `keySelection`
+
+- A random key updated on each `editor.selection` change.
+
+### [`onChange`](/docs/plate#slate-onchange)
+### [`plugins`](/docs/plate#plugins)
+### [`renderElement`](/docs/plate#editable-renderelement)
+### [`renderLeaf`](/docs/plate#editable-renderleaf)
+### [`value`](/docs/plate#value)
+
+## Selectors
+
+- Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+- Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+
+## Actions
+
+- Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
+- Example: `const setValue = usePlateActions(id).value()`.
+- It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
+
+## Actions
+
+- Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+- Example: `const [value, setValue] = usePlateStates(id).value()`.
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+
+
+### `useRedecorate()`
+
+- Redecorate the editor.
+
+### `useResetPlateEditor()`
+
+- Set a new editor with plate.
+
+
+# Event Editor Store
+
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
+This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+
+One of the core plugins of [Plate](Plate) will store the following events.
+
+## State
+
+### `focus`
+
+- the last focused editor id
+
+### `blur`
+
+- the last blurred editor id (sets `focus` to `null`)
+
+### `last`
+
+- the last defined editor id
+
+## Hooks
+
+### `useEventEditorSelectors`
+
+- Hook selectors
+- Example: `useEventEditorSelectors().focus()` will get the last focused editor id.
+- See [zustood hooks](https://github.com/udecode/zustood#hooks) 
+
+### `useEventPlateId`
+
+- Get the context plate id if called in a `PlateProvider`.
+- If not defined, it returns the last event editor id: focus, blur or last.
+- If not defined, `PLATE_SCOPE` is returned.
+

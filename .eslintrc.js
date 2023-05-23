@@ -272,7 +272,7 @@ module.exports = {
     // new
     'jest/no-commented-out-tests': 'off',
     'no-use-before-define': 'off',
-    '@typescript-eslint/no-use-before-define': ['error'],
+    '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     'max-classes-per-file': 'off',

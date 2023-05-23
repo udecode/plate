@@ -1,0 +1,160 @@
+---
+title: Plugins
+description: How to create a plugin.
+---
+
+[PlatePlugin API](/docs/api/plate-plugin).
+
+Plate plugins are objects passed to `Plate` [plugins](plate#plugins) prop.
+
+## Creating Plugins
+
+### Plugin Factory
+
+Let's create a plugin factory with `createPluginFactory`:
+- first param is the default plugin.
+- the only required property of the default plugin is `key`.
+- the naming convention is `create...Plugin`
+- returns a plugin factory:
+  - first param `override` can be used to (deeply) override the default plugin.
+  - second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
+  - returns a plugin of type `PlatePlugin`
+
+```ts
+const createParagraphPlugin = createPluginFactory({
+  key: ELEMENT_PARAGRAPH,
+})
+
+// -> { key: ELEMENT_PARAGRAPH } 
+const paragraphPlugin = createParagraphPlugin()
+
+// -> { key: 'p', type: 'paragraph' } 
+const paragraphPlugin = createParagraphPlugin({ key: 'p', type: 'paragraph' })
+```
+
+### Element
+
+- To render a block element, use `isElement: true`.
+- To customize the rendered component, use `component`.
+- To enable block toggling with a hotkey, use `handlers.onKeyDown: onKeyDownToggleElement`
+- To define the hotkey, use `options.hotkey`.
+  - Note that `options` type is set to `HotkeyPlugin`
+
+```ts
+const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
+  key: ELEMENT_PARAGRAPH,
+  isElement: true,
+  component: ParagraphElement,
+  handlers: {
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    hotkey: ['mod+opt+0', 'mod+shift+0'],
+  },
+})
+```
+
+### Inline & Void
+
+- To set the element as an inline element, use `isInline: true`.
+- To set the element as a void element, use `isVoid: true`.
+
+```ts
+const createTagPlugin = createPluginFactory({
+  key: ELEMENT_TAG,
+  isElement: true,
+  isInline: true,
+  isVoid: true,
+})
+```
+
+### Leaf
+
+- To render a leaf, use `isLeaf: true`.
+- To customize the rendered component, use `component`.
+- To enable mark toggling with a hotkey, use `handlers.onKeyDown: onKeyDownToggleMark`
+- To define the hotkey, use `options.hotkey`.
+- To clear a mark when toggling, use `options.clear`.
+
+```ts
+const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
+  key: MARK_SUBSCRIPT,
+  isLeaf: true,
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  options: {
+    hotkey: 'mod+.',
+    clear: MARK_SUBSCRIPT,
+  },
+});
+```
+
+### With Overrides
+
+- To override the editor methods, use `withOverrides`.
+
+```ts
+// Example
+const createReactPlugin = {
+  withOverrides: withTReact
+};
+```
+
+### Deserialize HTML
+
+- To customize HTML deserializer for this node, use `deserializeHtml`.
+
+```ts
+// Example
+const createBoldPlugin = {
+  // ...
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['STRONG', 'B'] },
+      {
+       validStyle: {
+         fontWeight: ['600', '700', 'bold'],
+       },
+      },
+    ],
+  }
+};
+```
+
+### Inject Props
+
+- To inject props to the component, use `inject.props`.
+
+```ts
+// Example
+const createAlignPlugin = createPluginFactory({
+  key: KEY_ALIGN,
+  
+  // Note that we're using `then` to access to the editor.
+  then: (editor) => ({
+    inject: {
+      props: {
+        nodeKey: KEY_ALIGN,
+        defaultNodeValue: 'left',
+        styleKey: 'textAlign',
+        validNodeValues: ['left', 'center', 'right', 'justify'],
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+      },
+    },
+  }),
+});
+```
+
+### Others
+
+See the following API for other use cases like:
+- `editor.insertData`: used by the deserializer plugins.
+- `decorate`: used by find & replace plugin.
+- `inject.aboveComponent`
+- `inject.belowComponent`: used by the indent list plugin.
+- `inject.pluginsByKey`: used by the list plugin.
+- `plugins`: used by the heading plugin.
+- `props`
+- `serializeHtml`
+

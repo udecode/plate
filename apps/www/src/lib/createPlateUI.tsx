@@ -1,6 +1,7 @@
 import {
   DefaultPlatePluginKey,
   ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
   ELEMENT_H1,
@@ -40,6 +41,7 @@ import {
 } from '@udecode/plate';
 import { PlateElement, PlateLeaf } from '@udecode/plate-tailwind';
 import { BlockquoteElement } from './plate/block-quote/BlockquoteElement';
+import { CodeBlockElement } from './plate/code-block/CodeBlockElement';
 import { CodeLineElement } from './plate/code-block/CodeLineElement';
 import { CodeSyntaxLeaf } from './plate/code-block/CodeSyntaxLeaf';
 import { PlateCommentLeaf } from './plate/comments/PlateCommentLeaf';
@@ -69,7 +71,7 @@ export const createPlateUI = <T extends string = string>(
 ) => {
   const components = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-    // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
+    [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_HR]: HrElement,

@@ -30,7 +30,6 @@ export function CodeBlockSelectElement({
   return (
     <select
       value={value}
-      style={{ float: 'right' }}
       onClick={(e) => {
         e.stopPropagation();
       }}

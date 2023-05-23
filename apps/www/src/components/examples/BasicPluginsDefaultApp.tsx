@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   createBlockquotePlugin,
   createBoldPlugin,
@@ -11,9 +11,8 @@ import {
   createUnderlinePlugin,
   Plate,
 } from '@udecode/plate';
+import { basicEditorValue } from './BasicPluginsComponentsApp';
 
-import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
-import { basicMarksValue } from '@/plate/basic-marks/basicMarksValue';
 import { editableProps } from '@/plate/common/editableProps';
 import { MyPlatePlugin, MyValue } from '@/plate/typescript/plateTypes';
 
@@ -31,11 +30,21 @@ const plugins: MyPlatePlugin[] = [
 ];
 
 export default function BasicPluginsDefaultApp() {
+  const [debugValue, setDebugValue] = useState<MyValue | null>(null);
+
   return (
     <Plate<MyValue>
       editableProps={editableProps}
-      initialValue={[...basicElementsValue, ...basicMarksValue]}
+      initialValue={basicEditorValue}
       plugins={plugins}
-    />
+      onChange={(newValue) => {
+        setDebugValue(newValue);
+        // save newValue...
+      }}
+    >
+      debug value:
+      <br />
+      {JSON.stringify(debugValue)}
+    </Plate>
   );
 }

@@ -81,7 +81,7 @@ export function ComponentExample({
               'items-end': align === 'end',
             })}
           >
-            {Example}
+            <div>{Example}</div>
           </div>
         </TabsContent>
         <TabsContent value="code">
