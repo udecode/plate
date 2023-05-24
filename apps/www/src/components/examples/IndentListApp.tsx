@@ -21,7 +21,7 @@ import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { indentListPlugin } from '@/plate/indent-list/indentListPlugin';
 import { indentListValue } from '@/plate/indent-list/indentListValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { ToolbarButton } from '@/plate/toolbar/ToolbarButton';
+import { ToolbarButtonOld } from '@/plate/toolbar/ToolbarButtonOld';
 import {
   createMyPlugins,
   MyValue,
@@ -57,7 +57,7 @@ function ToolbarButtons() {
 
   return (
     <>
-      <ToolbarButton
+      <ToolbarButtonOld
         onMouseDown={(e) => {
           e.preventDefault();
           toggleIndentList(editor, {
@@ -66,7 +66,7 @@ function ToolbarButtons() {
         }}
         icon={<Icons.ul />}
       />
-      <ToolbarButton
+      <ToolbarButtonOld
         onMouseDown={(e) => {
           e.preventDefault();
           toggleIndentList(editor, {

@@ -7,7 +7,7 @@ import {
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 
 import { BlockToolbarButton } from '@/plate/toolbar/BlockToolbarButton';
-import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButton';
+import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
 
 export function ListToolbarButton({
   id,

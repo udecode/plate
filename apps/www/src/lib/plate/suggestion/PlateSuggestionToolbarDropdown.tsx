@@ -7,7 +7,7 @@ import {
 import { cn, cva } from '@udecode/plate-tailwind';
 import { Edit2, Lightbulb } from 'lucide-react';
 
-import { Button } from '@/plate/button/PlateButton';
+import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from '@/plate/icon/ChevronDownIcon';
 
 const radioItemVariants = cva(

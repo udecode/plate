@@ -8,9 +8,9 @@ import {
 import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   /**
@@ -30,7 +30,7 @@ export function LinkToolbarButton({
   const isLink = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       tooltip={{ content: 'Link' }}
       active={isLink}
       onClick={(e) => {

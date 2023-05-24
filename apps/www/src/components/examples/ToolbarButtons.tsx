@@ -2,10 +2,12 @@ import React from 'react';
 import { TippyProps } from '@tippyjs/react';
 import { KEY_EMOJI, MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate';
 
-import { Icons } from '@/components/icons';
+import { Icons, iconVariants } from '@/components/icons';
+import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { AlignToolbarButtons } from '@/plate/align/AlignToolbarButtons';
 import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
 import { BasicMarkToolbarButtons } from '@/plate/basic-marks/BasicMarkToolbarButtons';
+import { PlateCommentToolbarButton } from '@/plate/comments/PlateCommentToolbarButton';
 import { EmojiToolbarDropdown } from '@/plate/emoji/EmojiToolbarDropdown';
 import { ExcalidrawElementToolbarButton } from '@/plate/excalidraw/ExcalidrawElementToolbarButton';
 import { ColorPickerToolbarDropdown } from '@/plate/font/ColorPickerToolbarDropdown';
@@ -26,36 +28,54 @@ export function ToolbarButtons() {
   return (
     <>
       <BasicElementToolbarButtons />
-      <ListToolbarButtons />
-      <IndentToolbarButtons />
+
+      <ToolbarSeparator />
+
       <BasicMarkToolbarButtons />
+
+      <ToolbarSeparator />
+
+      <LineHeightToolbarDropdown
+        tooltip={lineHeightTooltip}
+        icon={<Icons.lineHeight />}
+      />
+
       <ColorPickerToolbarDropdown
         pluginKey={MARK_COLOR}
-        icon={<Icons.color />}
-        selectedIcon={<Icons.check />}
+        icon={<Icons.color className={iconVariants({ variant: 'toolbar' })} />}
         tooltip={colorTooltip}
       />
       <ColorPickerToolbarDropdown
         pluginKey={MARK_BG_COLOR}
-        icon={<Icons.bg />}
-        selectedIcon={<Icons.check />}
+        icon={<Icons.bg className={iconVariants({ variant: 'toolbar' })} />}
         tooltip={bgTooltip}
       />
+
+      <ToolbarSeparator />
+
+      <AlignToolbarButtons />
+
+      <ToolbarSeparator />
+
+      <ListToolbarButtons />
+      <IndentToolbarButtons />
+
+      <ToolbarSeparator />
+
+      <LinkToolbarButton icon={<Icons.link />} />
+      <ImageToolbarButton icon={<Icons.image />} />
+      <MediaEmbedToolbarButton icon={<Icons.embed />} />
+      <ExcalidrawElementToolbarButton />
+      <TableToolbarButtons />
       <EmojiToolbarDropdown
         tooltip={emojiTooltip}
         pluginKey={KEY_EMOJI}
         icon={<Icons.emoji />}
       />
-      <LineHeightToolbarDropdown
-        tooltip={lineHeightTooltip}
-        icon={<Icons.lineHeight />}
-      />
-      <AlignToolbarButtons />
-      <LinkToolbarButton icon={<Icons.link />} />
-      <ImageToolbarButton icon={<Icons.image />} />
-      <MediaEmbedToolbarButton icon={<Icons.embed />} />
-      <TableToolbarButtons />
-      <ExcalidrawElementToolbarButton />
+
+      <ToolbarSeparator />
+
+      <PlateCommentToolbarButton icon={<Icons.comment />} />
     </>
   );
 }

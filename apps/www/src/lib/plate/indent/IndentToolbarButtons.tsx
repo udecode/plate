@@ -2,7 +2,7 @@ import React from 'react';
 import { focusEditor, indent, outdent } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { ToolbarButton } from '@/plate/toolbar/ToolbarButton';
+import { ToolbarButtonOld } from '@/plate/toolbar/ToolbarButtonOld';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
 const tooltip = (content: string) => ({
@@ -14,7 +14,7 @@ export function IndentToolbarButtons() {
 
   return (
     <>
-      <ToolbarButton
+      <ToolbarButtonOld
         tooltip={tooltip('Outdent')}
         onClick={(e) => {
           e.preventDefault();
@@ -25,7 +25,7 @@ export function IndentToolbarButtons() {
         }}
         icon={<Icons.outdent />}
       />
-      <ToolbarButton
+      <ToolbarButtonOld
         tooltip={tooltip('Indent')}
         onClick={(e) => {
           e.preventDefault();

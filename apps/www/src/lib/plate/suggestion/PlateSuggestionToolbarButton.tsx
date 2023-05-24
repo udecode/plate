@@ -2,12 +2,12 @@ import React from 'react';
 import { useSuggestingButton } from '@udecode/plate-suggestion';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export function PlateSuggestionToolbarButton(props: ToolbarButtonProps) {
   const buttonProps = useSuggestingButton(props as any);
 
-  return <ToolbarButton {...(buttonProps as any)} />;
+  return <ToolbarButtonOld {...(buttonProps as any)} />;
 }

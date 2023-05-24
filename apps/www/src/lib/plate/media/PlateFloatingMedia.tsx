@@ -4,7 +4,7 @@ import { LinkIcon } from '@udecode/plate-link';
 import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
 import { cn } from '@udecode/plate-tailwind';
 
-import { buttonVariants } from '@/plate/button/PlateButton';
+import { buttonVariants } from '@/components/ui/button';
 import { RemoveNodeButton } from '@/plate/button/RemoveNodeButton';
 import { floatingStyles } from '@/plate/toolbar/floatingStyles';
 import { FloatingVerticalDivider } from '@/plate/toolbar/FloatingVerticalDivider';
@@ -17,7 +17,9 @@ export function PlateFloatingMedia({ pluginKey }: { pluginKey?: string }) {
     <div className={floatingStyles.rootVariants()}>
       {!isEditing ? (
         <div className={cn(floatingStyles.rowVariants())}>
-          <FloatingMedia.EditButton className={buttonVariants()}>
+          <FloatingMedia.EditButton
+            className={buttonVariants({ variant: 'ghost' })}
+          >
             Edit link
           </FloatingMedia.EditButton>
 

@@ -3,7 +3,6 @@ import {
   focusEditor,
   getMark,
   getPluginType,
-  isMarkActive,
   removeMark,
   select,
   setMarks,
@@ -16,15 +15,16 @@ import { ColorType } from './ColorType';
 import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
 
 import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
-import { ToolbarDropdown } from '@/plate/toolbar/ToolbarDropdown';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ToolbarButton } from '@/components/ui/toolbar';
+import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
 
 type ColorPickerToolbarDropdownProps = {
   pluginKey: string;
   icon: ReactNode;
-  selectedIcon: ReactNode;
   colors?: ColorType[];
   customColors?: ColorType[];
   closeOnSelect?: boolean;
@@ -34,11 +34,9 @@ export function ColorPickerToolbarDropdown({
   id,
   pluginKey,
   icon,
-  selectedIcon,
   colors = DEFAULT_COLORS,
   customColors = DEFAULT_CUSTOM_COLORS,
   closeOnSelect = true,
-  ...rest
 }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) {
   const editorId = useEventPlateId(id);
   const editor = usePlateEditorState(editorId);
@@ -52,9 +50,12 @@ export function ColorPickerToolbarDropdown({
 
   const [selectedColor, setSelectedColor] = useState<string>();
 
-  const onToggle = useCallback(() => {
-    setOpen(!open);
-  }, [open, setOpen]);
+  const onToggle = useCallback(
+    (value = !open) => {
+      setOpen(value);
+    },
+    [open, setOpen]
+  );
 
   const updateColor = useCallback(
     (value: string) => {
@@ -98,28 +99,21 @@ export function ColorPickerToolbarDropdown({
   }, [color, editor?.selection]);
 
   return (
-    <ToolbarDropdown
-      control={
-        <ToolbarButton
-          active={!!editor?.selection && isMarkActive(editor, type)}
-          icon={icon}
-          {...rest}
+    <DropdownMenu open={open} modal={false} onOpenChange={onToggle}>
+      <ToolbarButton asChild>
+        <DropdownMenuTrigger>{icon}</DropdownMenuTrigger>
+      </ToolbarButton>
+
+      <DropdownMenuContent>
+        <ColorPicker
+          color={selectedColor || color}
+          colors={colors}
+          customColors={customColors}
+          updateColor={updateColorAndClose}
+          updateCustomColor={updateColor}
+          clearColor={clearColor}
         />
-      }
-      open={open}
-      onOpen={onToggle}
-      onClose={onToggle}
-    >
-      <ColorPicker
-        color={selectedColor || color}
-        colors={colors}
-        customColors={customColors}
-        selectedIcon={selectedIcon}
-        updateColor={updateColorAndClose}
-        updateCustomColor={updateColor}
-        clearColor={clearColor}
-        open={open}
-      />
-    </ToolbarDropdown>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

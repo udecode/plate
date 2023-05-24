@@ -10,9 +10,9 @@ import {
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 import { ToolbarDropdown } from '@/plate/toolbar/ToolbarDropdown';
 
 export function LineHeightToolbarDropdown({
@@ -45,7 +45,7 @@ export function LineHeightToolbarDropdown({
   return (
     <ToolbarDropdown
       control={
-        <ToolbarButton
+        <ToolbarButtonOld
           active={
             isCollapsed(editor?.selection) &&
             someNode(editor!, {

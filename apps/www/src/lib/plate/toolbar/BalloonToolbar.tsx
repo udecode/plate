@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { PortalBody } from '@udecode/plate-common';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { cn } from '@udecode/plate-tailwind';
-import { Toolbar, ToolbarProps } from './Toolbar';
+import { ToolbarOld, ToolbarProps } from './ToolbarOld';
 import { useFloatingToolbar } from './useFloatingToolbar';
 
 export interface BalloonToolbarProps extends ToolbarProps {
@@ -53,7 +53,7 @@ export function BalloonToolbar(props: BalloonToolbarProps) {
 
   return (
     <PortalBody element={portalElement}>
-      <Toolbar
+      <ToolbarOld
         className={cn(
           'absolute whitespace-nowrap border border-r-4 opacity-100 ',
           'z-[500] transition-[opacity_.2s_ease-in-out]',
@@ -82,7 +82,7 @@ export function BalloonToolbar(props: BalloonToolbarProps) {
         style={style}
       >
         {children}
-      </Toolbar>
+      </ToolbarOld>
     </PortalBody>
   );
 }

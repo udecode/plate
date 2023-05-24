@@ -6,7 +6,7 @@ import { basicMarksValue } from '@/plate/basic-marks/basicMarksValue';
 import { BasicMarkToolbarButtons } from '@/plate/basic-marks/BasicMarkToolbarButtons';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
-import { Toolbar } from '@/plate/toolbar/Toolbar';
+import { ToolbarOld } from '@/plate/toolbar/ToolbarOld';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -19,9 +19,9 @@ const plugins = createMyPlugins(
 export default function BasicMarksApp() {
   return (
     <PlateProvider<MyValue> initialValue={basicMarksValue} plugins={plugins}>
-      <Toolbar>
+      <ToolbarOld>
         <BasicMarkToolbarButtons />
-      </Toolbar>
+      </ToolbarOld>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate-common';
 
 import { BlockToolbarButton } from '@/plate/toolbar/BlockToolbarButton';
-import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButton';
+import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
 
 export function CodeBlockToolbarButton<V extends Value>({
   id,

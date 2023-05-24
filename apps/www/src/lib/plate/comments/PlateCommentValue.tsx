@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { CommentEditActions } from '@udecode/plate-comments';
 import { PlateCommentEditTextarea } from './PlateCommentNewTextarea';
 
-import { buttonVariants } from '@/plate/button/PlateButton';
+import { buttonVariants } from '@/components/ui/button';
 
 export function PlateCommentValue() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -21,7 +21,7 @@ export function PlateCommentValue() {
 
       <div className="flex space-x-2">
         <CommentEditActions.SaveButton
-          className={buttonVariants({ variant: 'primary' })}
+          className={buttonVariants({ variant: 'ghost' })}
         >
           Save
         </CommentEditActions.SaveButton>

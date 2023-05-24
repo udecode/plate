@@ -66,7 +66,7 @@ export default function IndexPage() {
       {/*    className="hidden dark:block" */}
       {/*  /> */}
       {/* </section> */}
-      <section className="">
+      <section className="relative">
         <div className="border bg-background shadow-xl">
           <PlaygroundPage />
         </div>

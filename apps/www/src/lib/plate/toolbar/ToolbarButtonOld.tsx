@@ -26,7 +26,7 @@ export interface ToolbarButtonProps
   actionHandler?: 'onClick' | 'onMouseDown';
 }
 
-export function ToolbarButton(props: ToolbarButtonProps) {
+export function ToolbarButtonOld(props: ToolbarButtonProps) {
   const {
     active: _active,
     icon,

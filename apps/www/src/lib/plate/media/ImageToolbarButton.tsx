@@ -7,9 +7,9 @@ import {
 import { insertImage } from '@udecode/plate-media';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export interface ImageToolbarButtonProps extends ToolbarButtonProps {
   /**
@@ -26,7 +26,7 @@ export function ImageToolbarButton({
   const editor = usePlateEditorRef(useEventPlateId(id));
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       tooltip={{ content: 'Image' }}
       onClick={async (e) => {
         e.preventDefault();

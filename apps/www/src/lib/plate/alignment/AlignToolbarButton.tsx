@@ -9,9 +9,9 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export interface AlignToolbarButtonProps extends ToolbarButtonProps {
   value: Alignment;
@@ -31,7 +31,7 @@ export function AlignToolbarButton({
     someNode(editor!, { match: { [pluginKey]: value } });
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       active={active}
       onClick={(e) => {
         e.preventDefault();

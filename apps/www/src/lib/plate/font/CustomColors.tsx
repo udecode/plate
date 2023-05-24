@@ -1,22 +1,15 @@
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
 import { ColorInput } from './ColorInput';
 import { Colors } from './Colors';
 import { ColorType } from './ColorType';
 
-import { Button } from '@/plate/button/PlateButton';
+import { Button } from '@/components/ui/button';
 
 type CustomColorsProps = {
   color?: string;
   colors: ColorType[];
   customColors: ColorType[];
-  selectedIcon: ReactNode;
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
 };
@@ -25,7 +18,6 @@ export function CustomColors({
   color,
   colors,
   customColors,
-  selectedIcon,
   updateColor,
   updateCustomColor,
 }: CustomColorsProps) {
@@ -74,15 +66,12 @@ export function CustomColors({
           updateCustomColorDebounced(e.target.value);
         }}
       >
-        <Button className="mb-4 w-full py-2 font-semibold">CUSTOM</Button>
+        <Button variant="outline" className="mb-4 w-full">
+          CUSTOM
+        </Button>
       </ColorInput>
 
-      <Colors
-        color={color}
-        colors={computedColors}
-        selectedIcon={selectedIcon}
-        updateColor={updateColor}
-      />
+      <Colors color={color} colors={computedColors} updateColor={updateColor} />
     </div>
   );
 }

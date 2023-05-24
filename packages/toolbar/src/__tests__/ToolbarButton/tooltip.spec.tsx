@@ -1,11 +1,11 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { ToolbarButton } from '@/plate/toolbar/ToolbarButton';
+import { ToolbarButtonOld } from '@/plate/toolbar/ToolbarButtonOld';
 
 it('should render', () => {
   const { getByTestId } = render(
-    <ToolbarButton
+    <ToolbarButtonOld
       data-testid="ToolbarButton"
       icon={null}
       active

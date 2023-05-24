@@ -1,4 +1,5 @@
 import React from 'react';
+import { cva } from 'class-variance-authority';
 import {
   type Icon as LucideIcon,
   AlertTriangle,
@@ -308,3 +309,16 @@ export const Icons = {
     </svg>
   ),
 };
+
+export const iconVariants = cva('', {
+  variants: {
+    variant: {
+      toolbar: 'h-5 w-5',
+    },
+    size: {
+      sm: 'mr-2 h-4 w-4',
+      md: 'mr-2 h-6 w-6',
+    },
+  },
+  defaultVariants: {},
+});

@@ -11,9 +11,9 @@ import {
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export interface TableToolbarButtonProps<V extends Value>
   extends ToolbarButtonProps {
@@ -32,7 +32,7 @@ export function TableToolbarButton<V extends Value>({
   const active = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       active={active}
       onClick={(e) => {
         e.preventDefault();

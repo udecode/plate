@@ -7,9 +7,9 @@ import {
 import { insertMediaEmbed } from '@udecode/plate-media';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 export interface MediaEmbedToolbarButtonProps extends ToolbarButtonProps {
   /**
@@ -26,7 +26,7 @@ export function MediaEmbedToolbarButton({
   const editor = usePlateEditorRef(useEventPlateId(id));
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       tooltip={{ content: 'Embed' }}
       onClick={async (e) => {
         e.preventDefault();

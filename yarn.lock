@@ -5472,7 +5472,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-separator@npm:^1.0.1":
+"@radix-ui/react-separator@npm:1.0.2, @radix-ui/react-separator@npm:^1.0.1":
   version: 1.0.2
   resolution: "@radix-ui/react-separator@npm:1.0.2"
   dependencies:
@@ -5595,7 +5595,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-toggle-group@npm:^1.0.1":
+"@radix-ui/react-toggle-group@npm:1.0.3, @radix-ui/react-toggle-group@npm:^1.0.1":
   version: 1.0.3
   resolution: "@radix-ui/react-toggle-group@npm:1.0.3"
   dependencies:
@@ -5626,6 +5626,25 @@ __metadata:
     react: ^16.8 || ^17.0 || ^18.0
     react-dom: ^16.8 || ^17.0 || ^18.0
   checksum: b5a09405fb481870abaad7a413e2ca50c35b44b76575ac7d5513cfbefab3c6a31fe541bff1b03e5835a0b1a148cc139cbeddc8c06eb6c3d5d49c179e1364d43d
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toolbar@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@radix-ui/react-toolbar@npm:1.0.3"
+  dependencies:
+    "@babel/runtime": "npm:^7.13.10"
+    "@radix-ui/primitive": "npm:1.0.0"
+    "@radix-ui/react-context": "npm:1.0.0"
+    "@radix-ui/react-direction": "npm:1.0.0"
+    "@radix-ui/react-primitive": "npm:1.0.2"
+    "@radix-ui/react-roving-focus": "npm:1.0.3"
+    "@radix-ui/react-separator": "npm:1.0.2"
+    "@radix-ui/react-toggle-group": "npm:1.0.3"
+  peerDependencies:
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+  checksum: 45214de6d77ddb41c5f4711df9f6e666a0e576069e937ec73568c5bbebe1470b158ddc6a4eafc6871bc41f0297b78b5a4cd11d7512aae4c0cd243934382b5df5
   languageName: node
   linkType: hard
 
@@ -26081,6 +26100,7 @@ __metadata:
     "@radix-ui/react-toast": "npm:^1.1.2"
     "@radix-ui/react-toggle": "npm:^1.0.1"
     "@radix-ui/react-toggle-group": "npm:^1.0.1"
+    "@radix-ui/react-toolbar": "npm:^1.0.3"
     "@radix-ui/react-tooltip": "npm:^1.0.3"
     "@tippyjs/react": "npm:4.2.5"
     "@types/react-color": "npm:^3.0.6"

@@ -14,9 +14,9 @@ import { EmojiToolbarDropdownRoot } from './EmojiToolbarDropdownRoot';
 import { emojiCategoryIcons, emojiSearchIcons } from './icons';
 
 import {
-  ToolbarButton,
+  ToolbarButtonOld,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButton';
+} from '@/plate/toolbar/ToolbarButtonOld';
 
 type EmojiToolbarDropdownProps = {
   pluginKey: string;
@@ -62,7 +62,7 @@ export function EmojiToolbarDropdown({
 
   return (
     <EmojiToolbarDropdownRoot
-      control={<ToolbarButton active={isOpen} icon={icon} {...rest} />}
+      control={<ToolbarButtonOld active={isOpen} icon={icon} {...rest} />}
       open={isOpen}
       onOpen={onToggle}
       onClose={onToggle}

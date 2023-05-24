@@ -6,7 +6,7 @@ import {
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ToolbarButton, ToolbarButtonProps } from './ToolbarButton';
+import { ToolbarButtonOld, ToolbarButtonProps } from './ToolbarButtonOld';
 
 export interface BlockToolbarButtonProps extends ToolbarButtonProps {
   type: string;
@@ -29,7 +29,7 @@ export function BlockToolbarButton({
     _active ?? (!!editor?.selection && someNode(editor, { match: { type } }));
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       active={active}
       onClick={(e) => {
         e.preventDefault();

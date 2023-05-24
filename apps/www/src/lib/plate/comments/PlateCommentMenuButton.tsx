@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-comments';
 import { cn } from '@udecode/plate-tailwind';
 
-import { Button, buttonVariants } from '@/plate/button/PlateButton';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { floatingStyles } from '@/plate/toolbar/floatingStyles';
 import { ToolbarDropdown } from '@/plate/toolbar/ToolbarDropdown';
 
@@ -36,13 +36,19 @@ export function PlateCommentMenuButton() {
           )}
         >
           <CommentEditButton
-            className={cn(buttonVariants(), 'justify-start px-4 py-2')}
+            className={cn(
+              buttonVariants({ variant: 'ghost' }),
+              'justify-start px-4 py-2'
+            )}
           >
             Edit comment
           </CommentEditButton>
 
           <CommentDeleteButton
-            className={cn(buttonVariants(), 'justify-start px-4 py-2')}
+            className={cn(
+              buttonVariants({ variant: 'ghost' }),
+              'justify-start px-4 py-2'
+            )}
           >
             Delete comment
           </CommentDeleteButton>

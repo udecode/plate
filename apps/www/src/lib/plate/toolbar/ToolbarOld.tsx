@@ -14,13 +14,14 @@ export const toolbarVariants = cva(
 
 export interface ToolbarProps extends React.ComponentPropsWithoutRef<'div'> {}
 
-export const Toolbar = React.forwardRef<React.ElementRef<'div'>, ToolbarProps>(
-  ({ className, ...props }: ToolbarProps, ref) => (
-    <div
-      data-testid="Toolbar"
-      ref={ref}
-      className={toolbarVariants({ className })}
-      {...props}
-    />
-  )
-);
+export const ToolbarOld = React.forwardRef<
+  React.ElementRef<'div'>,
+  ToolbarProps
+>(({ className, ...props }: ToolbarProps, ref) => (
+  <div
+    data-testid="Toolbar"
+    ref={ref}
+    className={toolbarVariants({ className })}
+    {...props}
+  />
+));

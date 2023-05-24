@@ -61,13 +61,11 @@ export default function FontApp() {
         <ColorPickerToolbarDropdown
           pluginKey={MARK_COLOR}
           icon={<Icons.color />}
-          selectedIcon={<Icons.check />}
           tooltip={tooltips.color}
         />
         <ColorPickerToolbarDropdown
           pluginKey={MARK_BG_COLOR}
           icon={<Icons.bg />}
-          selectedIcon={<Icons.check />}
           tooltip={tooltips.bg}
         />
       </HeadingToolbar>

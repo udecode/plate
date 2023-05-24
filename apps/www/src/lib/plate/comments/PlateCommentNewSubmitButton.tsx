@@ -1,12 +1,8 @@
 import React from 'react';
 import { CommentNewSubmitButton } from '@udecode/plate-comments';
 
-import { buttonVariants } from '@/plate/button/PlateButton';
+import { buttonVariants } from '@/components/ui/button';
 
 export function PlateCommentNewSubmitButton() {
-  return (
-    <CommentNewSubmitButton
-      className={buttonVariants({ variant: 'primary' })}
-    />
-  );
+  return <CommentNewSubmitButton className={buttonVariants()} />;
 }

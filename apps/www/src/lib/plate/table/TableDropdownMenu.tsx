@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { TTableElement } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
-import { PlateTableBordersDropdownMenuContent } from './PlateTableBordersDropdownMenuContent';
+import { TableBordersDropdownMenuContent } from './TableBordersDropdownMenuContent';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ export function TableDropdownMenu({ children, ...props }: DropdownMenuProps) {
           </DropdownMenuTrigger>
 
           <DropdownMenuPortal>
-            <PlateTableBordersDropdownMenuContent />
+            <TableBordersDropdownMenuContent />
           </DropdownMenuPortal>
         </DropdownMenu>
 

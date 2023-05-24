@@ -8,7 +8,7 @@ import {
   usePlateEditorState,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { ToolbarButton, ToolbarButtonProps } from './ToolbarButton';
+import { ToolbarButtonOld, ToolbarButtonProps } from './ToolbarButtonOld';
 
 export interface MarkToolbarButtonProps
   extends ToolbarButtonProps,
@@ -27,7 +27,7 @@ export function MarkToolbarButton({
   const editor = usePlateEditorState(useEventPlateId(id));
 
   return (
-    <ToolbarButton
+    <ToolbarButtonOld
       active={!!editor?.selection && isMarkActive(editor, type!)}
       onClick={(e) => {
         e.preventDefault();

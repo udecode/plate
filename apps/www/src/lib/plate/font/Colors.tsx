@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { cn } from '@udecode/plate-tailwind';
 import { ColorButton } from './ColorButton';
 import { ColorType } from './ColorType';
@@ -6,14 +6,12 @@ import { ColorType } from './ColorType';
 type ColorsProps = {
   color?: string;
   colors: ColorType[];
-  selectedIcon: ReactNode;
   updateColor: (color: string) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function Colors({
   color,
   colors,
-  selectedIcon,
   updateColor,
   className,
   ...props
@@ -30,7 +28,6 @@ export function Colors({
           value={value}
           isBrightColor={isBrightColor}
           isSelected={color === value}
-          selectedIcon={selectedIcon}
           updateColor={updateColor}
         />
       ))}

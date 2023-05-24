@@ -9,7 +9,7 @@ import {
   useFloatingLinkSelectors,
 } from '@udecode/plate-link';
 
-import { buttonVariants } from '@/plate/button/PlateButton';
+import { buttonVariants } from '@/components/ui/button';
 import { floatingStyles } from '@/plate/toolbar/floatingStyles';
 import { FloatingVerticalDivider } from '@/plate/toolbar/FloatingVerticalDivider';
 
@@ -47,7 +47,7 @@ export function PlateFloatingLink({ readOnly }: TEditableProps) {
 
   const editContent = !isEditing ? (
     <div className={floatingStyles.rowVariants()}>
-      <FloatingLink.EditButton className={buttonVariants()}>
+      <FloatingLink.EditButton className={buttonVariants({ variant: 'ghost' })}>
         Edit link
       </FloatingLink.EditButton>
 

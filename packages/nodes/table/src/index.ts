@@ -15,7 +15,6 @@ export * from './withSelectionTable';
 export * from './withSetFragmentDataTable';
 export * from './withTable';
 export * from './components/index';
-export * from './icons/index';
 export * from './queries/index';
 export * from './stores/index';
 export * from './transforms/index';
