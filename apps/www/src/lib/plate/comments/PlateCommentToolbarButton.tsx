@@ -2,12 +2,12 @@ import React from 'react';
 import { useCommentAddButton } from '@udecode/plate-comments';
 
 import {
-  ToolbarButtonOld,
+  ToolbarButton,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButtonOld';
+} from '@/components/ui/toolbar-button';
 
 export function PlateCommentToolbarButton(props: ToolbarButtonProps) {
   const buttonProps = useCommentAddButton(props as any);
 
-  return <ToolbarButtonOld {...(buttonProps as any)} />;
+  return <ToolbarButton {...(buttonProps as any)} />;
 }

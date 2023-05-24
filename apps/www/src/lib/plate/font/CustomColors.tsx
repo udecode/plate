@@ -4,7 +4,8 @@ import { ColorInput } from './ColorInput';
 import { Colors } from './Colors';
 import { ColorType } from './ColorType';
 
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type CustomColorsProps = {
   color?: string;
@@ -58,7 +59,7 @@ export function CustomColors({
   );
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <ColorInput
         value={value}
         onChange={(e) => {
@@ -66,9 +67,17 @@ export function CustomColors({
           updateCustomColorDebounced(e.target.value);
         }}
       >
-        <Button variant="outline" className="mb-4 w-full">
+        <DropdownMenuItem
+          className={buttonVariants({
+            variant: 'outline',
+            isMenu: true,
+          })}
+          onSelect={(e) => {
+            e.preventDefault();
+          }}
+        >
           CUSTOM
-        </Button>
+        </DropdownMenuItem>
       </ColorInput>
 
       <Colors color={color} colors={computedColors} updateColor={updateColor} />

@@ -13,7 +13,7 @@ import { Icons } from '@/components/icons';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
-import { ColorPickerToolbarDropdown } from '@/plate/font/ColorPickerToolbarDropdown';
+import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';
 import { fontValue } from '@/plate/font/fontValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
@@ -27,11 +27,6 @@ const styles: Record<string, CSSProperties> = {
   copy: {
     color: '#f92672',
   },
-};
-
-const tooltips = {
-  color: { content: 'Text color' },
-  bg: { content: 'Highlight color' },
 };
 
 const plugins = createMyPlugins(
@@ -58,16 +53,12 @@ export default function FontApp() {
   return (
     <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
       <HeadingToolbar>
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_COLOR}
-          icon={<Icons.color />}
-          tooltip={tooltips.color}
-        />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_BG_COLOR}
-          icon={<Icons.bg />}
-          tooltip={tooltips.bg}
-        />
+        <ColorDropdownMenu pluginKey={MARK_COLOR} tooltip="Text color">
+          <Icons.color />
+        </ColorDropdownMenu>
+        <ColorDropdownMenu pluginKey={MARK_BG_COLOR} tooltip="Highlight color">
+          <Icons.bg />
+        </ColorDropdownMenu>
       </HeadingToolbar>
 
       <CopyContent />

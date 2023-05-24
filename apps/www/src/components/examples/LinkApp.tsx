@@ -22,7 +22,9 @@ export default function LinkApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
       <HeadingToolbar>
-        <LinkToolbarButton icon={<Icons.link />} />
+        <LinkToolbarButton>
+          <Icons.link />
+        </LinkToolbarButton>
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

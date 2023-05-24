@@ -41,8 +41,12 @@ export default function MediaApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={mediaValue}>
       <HeadingToolbar>
-        <ImageToolbarButton icon={<Icons.image />} />
-        <MediaEmbedToolbarButton icon={<Icons.embed />} />
+        <ImageToolbarButton>
+          <Icons.image />
+        </ImageToolbarButton>
+        <MediaEmbedToolbarButton>
+          <Icons.embed />
+        </MediaEmbedToolbarButton>
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

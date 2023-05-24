@@ -11,43 +11,30 @@ import { TableToolbarButton } from './TableToolbarButton';
 
 import { Icons } from '@/components/icons';
 
-const tooltip = (content: string) => ({
-  content,
-});
-
 export function TableToolbarButtons() {
   return (
     <>
+      <TableToolbarButton tooltip="Table" transform={insertTable}>
+        <Icons.borderAll />
+      </TableToolbarButton>
+      <TableToolbarButton tooltip="Remove Table" transform={deleteTable}>
+        <Icons.borderNone />
+      </TableToolbarButton>
+      <TableToolbarButton tooltip="Table Row" transform={insertTableRow}>
+        <Icons.borderBottom />
+      </TableToolbarButton>
+      <TableToolbarButton tooltip="Remove Table Row" transform={deleteRow}>
+        <Icons.borderTop />
+      </TableToolbarButton>
+      <TableToolbarButton tooltip="Table Column" transform={insertTableColumn}>
+        <Icons.borderLeft />
+      </TableToolbarButton>
       <TableToolbarButton
-        tooltip={tooltip('Table')}
-        icon={<Icons.borderAll />}
-        transform={insertTable}
-      />
-      <TableToolbarButton
-        tooltip={tooltip('Remove Table')}
-        icon={<Icons.borderNone />}
-        transform={deleteTable}
-      />
-      <TableToolbarButton
-        tooltip={tooltip('Table Row')}
-        icon={<Icons.borderBottom />}
-        transform={insertTableRow}
-      />
-      <TableToolbarButton
-        tooltip={tooltip('Remove Table Row')}
-        icon={<Icons.borderTop />}
-        transform={deleteRow}
-      />
-      <TableToolbarButton
-        tooltip={tooltip('Table Column')}
-        icon={<Icons.borderLeft />}
-        transform={insertTableColumn}
-      />
-      <TableToolbarButton
-        tooltip={tooltip('Remove Table Column')}
-        icon={<Icons.borderRight />}
+        tooltip="Remove Table Column"
         transform={deleteColumn}
-      />
+      >
+        <Icons.borderRight />
+      </TableToolbarButton>
     </>
   );
 }

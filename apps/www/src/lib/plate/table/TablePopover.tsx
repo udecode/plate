@@ -34,7 +34,7 @@ export function TablePopover({ children, ...props }: PopoverProps) {
       <PopoverContent className="z-30 flex w-[220px] flex-col gap-1 p-1">
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="menu">
+            <Button variant="ghost" isMenu>
               <Icons.borderAll className="mr-2 h-4 w-4" />
               Borders
             </Button>
@@ -46,9 +46,10 @@ export function TablePopover({ children, ...props }: PopoverProps) {
         </DropdownMenu>
 
         <RemoveNodeButton
-          element={element}
-          variant="menu"
           contentEditable={false}
+          element={element}
+          variant="ghost"
+          isMenu
         >
           <div>Delete</div>
         </RemoveNodeButton>

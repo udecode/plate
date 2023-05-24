@@ -32,36 +32,26 @@ export function MarkBalloonToolbar(
 
   const editor = useMyPlateEditorRef();
 
-  const arrow = false;
-  const theme = 'dark';
-
-  const boldTooltip: TippyProps = { content: 'Bold (⌘+B)', ...markTooltip };
-  const italicTooltip: TippyProps = { content: 'Italic (⌘+I)', ...markTooltip };
-  const underlineTooltip: TippyProps = {
-    content: 'Underline (⌘+U)',
-    ...markTooltip,
-  };
-
   return (
-    <BalloonToolbar theme={theme} arrow={arrow} {...balloonToolbarProps}>
+    <BalloonToolbar {...balloonToolbarProps}>
       <MarkToolbarButton
-        type={getPluginType(editor, MARK_BOLD)}
-        icon={<Icons.bold />}
-        tooltip={boldTooltip}
-        actionHandler="onMouseDown"
-      />
+        nodeType={getPluginType(editor, MARK_BOLD)}
+        tooltip="Bold (⌘+B)"
+      >
+        <Icons.bold />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        type={getPluginType(editor, MARK_ITALIC)}
-        icon={<Icons.italic />}
-        tooltip={italicTooltip}
-        actionHandler="onMouseDown"
-      />
+        nodeType={getPluginType(editor, MARK_ITALIC)}
+        tooltip="Italic (⌘+I)"
+      >
+        <Icons.italic />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        type={getPluginType(editor, MARK_UNDERLINE)}
-        icon={<Icons.underline />}
-        tooltip={underlineTooltip}
-        actionHandler="onMouseDown"
-      />
+        nodeType={getPluginType(editor, MARK_UNDERLINE)}
+        tooltip="Underline (⌘+U)"
+      >
+        <Icons.underline />
+      </MarkToolbarButton>
       {children}
     </BalloonToolbar>
   );

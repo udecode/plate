@@ -4,7 +4,9 @@ import { Colors } from './Colors';
 import { ColorType } from './ColorType';
 import { CustomColors } from './CustomColors';
 
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 
 type ColorPickerProps = {
   color?: string;
@@ -26,7 +28,7 @@ export function ColorPickerContent({
   ...props
 }: ColorPickerProps) {
   return (
-    <div className={cn('flex flex-col space-y-4 p-4', className)} {...props}>
+    <div className={cn('flex flex-col gap-4 p-4', className)} {...props}>
       <CustomColors
         color={color}
         colors={colors}
@@ -34,12 +36,20 @@ export function ColorPickerContent({
         updateColor={updateColor}
         updateCustomColor={updateCustomColor}
       />
-      <div className="border border-solid border-gray-200" />
+
+      <Separator />
+
       <Colors color={color} colors={colors} updateColor={updateColor} />
       {color && (
-        <Button variant="outline" className="w-full" onClick={clearColor}>
+        <DropdownMenuItem
+          className={buttonVariants({
+            variant: 'outline',
+            isMenu: true,
+          })}
+          onClick={clearColor}
+        >
           Clear
-        </Button>
+        </DropdownMenuItem>
       )}
     </div>
   );

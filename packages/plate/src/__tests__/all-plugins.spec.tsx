@@ -30,7 +30,7 @@ import { createPlateUI } from '@/lib/createPlateUI';
 import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
 import { createLinkPlugin } from '@/nodes/link/src/index';
 import { createMentionPlugin } from '@/nodes/mention/src/index';
-import { AlignToolbarButtons } from '@/plate/align/AlignToolbarButtons';
+import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
 import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
 import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
@@ -100,7 +100,7 @@ function PlateContainer() {
         <ListToolbarButtons />
         <IndentToolbarButtons />
         <BasicMarkToolbarButtons />
-        <AlignToolbarButtons />
+        <AlignDropdownMenu />
         <LineHeightToolbarDropdown icon={<Icons.lineHeight />} />
         <LinkToolbarButton icon={<Icons.link />} />
         <ImageToolbarButton icon={<Icons.image />} />

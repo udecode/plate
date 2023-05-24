@@ -5,25 +5,23 @@ import { ListToolbarButton } from './ListToolbarButton';
 import { Icons } from '@/components/icons';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
-const tooltip = (content: string) => ({
-  content,
-});
-
 export function ListToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
     <>
       <ListToolbarButton
-        tooltip={tooltip('Bullet List')}
-        type={getPluginType(editor, ELEMENT_UL)}
-        icon={<Icons.ul />}
-      />
+        tooltip="Bullet List"
+        nodeType={getPluginType(editor, ELEMENT_UL)}
+      >
+        <Icons.ul />
+      </ListToolbarButton>
       <ListToolbarButton
-        tooltip={tooltip('Ordered List')}
-        type={getPluginType(editor, ELEMENT_OL)}
-        icon={<Icons.ol />}
-      />
+        tooltip="Ordered List"
+        nodeType={getPluginType(editor, ELEMENT_OL)}
+      >
+        <Icons.ol />
+      </ListToolbarButton>
     </>
   );
 }

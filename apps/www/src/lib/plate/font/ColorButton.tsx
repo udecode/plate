@@ -1,16 +1,19 @@
 import React from 'react';
+import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import Tippy from '@tippyjs/react';
 import { cn } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type ColorButtonProps = {
   value: string;
   isBrightColor: boolean;
   isSelected: boolean;
   updateColor: (color: string) => void;
-} & ButtonProps;
+  name?: string;
+} & DropdownMenuItemProps;
 
 export function ColorButton({
   name,
@@ -22,20 +25,25 @@ export function ColorButton({
   ...props
 }: ColorButtonProps) {
   const content = (
-    <Button
-      name={name}
-      aria-label={name}
-      style={{ backgroundColor: value }}
+    <DropdownMenuItem
       className={cn(
+        buttonVariants({
+          variant: 'outline',
+          isMenu: true,
+        }),
         'h-6 w-6 border border-solid border-muted p-0',
         !isBrightColor && 'border-transparent text-white',
         className
       )}
-      onClick={() => updateColor(value)}
+      style={{ backgroundColor: value }}
+      onSelect={(e) => {
+        e.preventDefault();
+        updateColor(value);
+      }}
       {...props}
     >
       {isSelected ? <Icons.check /> : null}
-    </Button>
+    </DropdownMenuItem>
   );
 
   return name ? <Tippy content={name}>{content}</Tippy> : content;

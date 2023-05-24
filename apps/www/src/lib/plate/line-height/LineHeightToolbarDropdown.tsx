@@ -2,17 +2,15 @@ import React, { useCallback } from 'react';
 import {
   focusEditor,
   getPluginInjectProps,
-  isCollapsed,
-  someNode,
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 
 import {
-  ToolbarButtonOld,
+  ToolbarButton,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButtonOld';
+} from '@/components/ui/toolbar-button';
 import { ToolbarDropdown } from '@/plate/toolbar/ToolbarDropdown';
 
 export function LineHeightToolbarDropdown({
@@ -44,17 +42,7 @@ export function LineHeightToolbarDropdown({
 
   return (
     <ToolbarDropdown
-      control={
-        <ToolbarButtonOld
-          active={
-            isCollapsed(editor?.selection) &&
-            someNode(editor!, {
-              match: (n) => n[KEY_LINE_HEIGHT] !== undefined,
-            })
-          }
-          {...props}
-        />
-      }
+      control={<ToolbarButton pressed={open} {...props} />}
       open={open}
       onOpen={onToggle}
       onClose={onToggle}

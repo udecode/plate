@@ -6,11 +6,14 @@ import {
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ToolbarButtonOld, ToolbarButtonProps } from './ToolbarButtonOld';
+
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+} from '@/components/ui/toolbar-button';
 
 export interface BlockToolbarButtonProps extends ToolbarButtonProps {
-  type: string;
-
+  nodeType: string;
   inactiveType?: string;
 }
 
@@ -19,23 +22,24 @@ export interface BlockToolbarButtonProps extends ToolbarButtonProps {
  */
 export function BlockToolbarButton({
   id,
-  type,
+  nodeType,
   inactiveType,
-  active: _active,
+  pressed: _pressed,
   ...props
 }: BlockToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
-  const active =
-    _active ?? (!!editor?.selection && someNode(editor, { match: { type } }));
+  const pressed =
+    _pressed ??
+    (!!editor?.selection && someNode(editor, { match: { type: nodeType } }));
 
   return (
-    <ToolbarButtonOld
-      active={active}
+    <ToolbarButton
+      pressed={pressed}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        toggleNodeType(editor, { activeType: type, inactiveType });
+        toggleNodeType(editor, { activeType: nodeType, inactiveType });
         focusEditor(editor);
       }}
       {...props}

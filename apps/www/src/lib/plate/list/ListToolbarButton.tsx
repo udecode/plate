@@ -6,27 +6,29 @@ import {
 } from '@udecode/plate-common';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 
-import { BlockToolbarButton } from '@/plate/toolbar/BlockToolbarButton';
-import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
+import {
+  BlockToolbarButton,
+  BlockToolbarButtonProps,
+} from '@/plate/toolbar/BlockToolbarButton';
 
 export function ListToolbarButton({
   id,
-  type = ELEMENT_UL,
+  nodeType = ELEMENT_UL,
   ...props
-}: ToolbarButtonProps & { type?: string }) {
+}: BlockToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const res = !!editor?.selection && getListItemEntry(editor);
 
   return (
     <BlockToolbarButton
-      active={!!res && res.list[0].type === type}
-      type={type}
+      pressed={!!res && res.list[0].type === nodeType}
+      nodeType={nodeType}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        toggleList(editor, { type });
+        toggleList(editor, { type: nodeType });
         focusEditor(editor);
       }}
       {...props}

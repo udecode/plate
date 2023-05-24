@@ -6,9 +6,9 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  ToolbarButtonOld,
+  ToolbarButton,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButtonOld';
+} from '@/components/ui/toolbar-button';
 
 type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps & {
   fetchContacts: () => Promise<void>;
@@ -30,9 +30,9 @@ export function PlateCommentsShowResolvedButton(
 
   return (
     <div>
-      <ToolbarButtonOld
+      <ToolbarButton
         aria-label="Show resolved comments"
-        active={isActive}
+        pressed={isActive}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

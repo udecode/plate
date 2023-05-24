@@ -15,13 +15,13 @@ import {
 import { PlateElement } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
+import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
 import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { indentListPlugin } from '@/plate/indent-list/indentListPlugin';
 import { indentListValue } from '@/plate/indent-list/indentListValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { ToolbarButtonOld } from '@/plate/toolbar/ToolbarButtonOld';
 import {
   createMyPlugins,
   MyValue,
@@ -57,24 +57,26 @@ function ToolbarButtons() {
 
   return (
     <>
-      <ToolbarButtonOld
+      <ToolbarButton
         onMouseDown={(e) => {
           e.preventDefault();
           toggleIndentList(editor, {
             listStyleType: 'disc',
           });
         }}
-        icon={<Icons.ul />}
-      />
-      <ToolbarButtonOld
+      >
+        <Icons.ul />
+      </ToolbarButton>
+      <ToolbarButton
         onMouseDown={(e) => {
           e.preventDefault();
           toggleIndentList(editor, {
             listStyleType: 'decimal',
           });
         }}
-        icon={<Icons.ol />}
-      />
+      >
+        <Icons.ol />
+      </ToolbarButton>
       <IndentToolbarButtons />
     </>
   );

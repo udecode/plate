@@ -9,9 +9,8 @@ export function HighlightToolbarButton() {
   const editor = useMyPlateEditorRef();
 
   return (
-    <MarkToolbarButton
-      type={getPluginType(editor, MARK_HIGHLIGHT)}
-      icon={<Icons.highlight />}
-    />
+    <MarkToolbarButton nodeType={getPluginType(editor, MARK_HIGHLIGHT)}>
+      <Icons.highlight />
+    </MarkToolbarButton>
   );
 }

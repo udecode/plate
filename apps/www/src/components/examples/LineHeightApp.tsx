@@ -22,7 +22,9 @@ export default function LineHeightApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={lineHeightValue}>
       <HeadingToolbar>
-        <LineHeightToolbarDropdown icon={<Icons.lineHeight />} />
+        <LineHeightToolbarDropdown>
+          <Icons.lineHeight />
+        </LineHeightToolbarDropdown>
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

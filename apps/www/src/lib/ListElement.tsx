@@ -5,6 +5,7 @@ import {
   PlateElementProps,
   VariantProps,
 } from '@udecode/plate-tailwind';
+import { cn } from './utils';
 
 const listVariants = cva('m-0 ps-6', {
   variants: {
@@ -23,7 +24,7 @@ export function ListElement({
   return (
     <PlateElement
       as={variant}
-      className={listVariants({ variant, className })}
+      className={cn(listVariants({ variant }), className)}
       {...props}
     />
   );

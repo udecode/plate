@@ -10,7 +10,11 @@ export function Providers({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <DndProvider backend={HTML5Backend}>
-        <TooltipProvider disableHoverableContent delayDuration={0}>
+        <TooltipProvider
+          disableHoverableContent
+          delayDuration={500}
+          skipDelayDuration={0}
+        >
           {children}
         </TooltipProvider>
       </DndProvider>

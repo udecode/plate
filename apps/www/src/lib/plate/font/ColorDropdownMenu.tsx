@@ -1,4 +1,5 @@
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   focusEditor,
   getMark,
@@ -19,30 +20,30 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ToolbarButton } from '@/components/ui/toolbar';
-import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
+import { ToolbarButton } from '@/components/ui/toolbar-button';
 
-type ColorPickerToolbarDropdownProps = {
+type ColorDropdownMenuProps = {
+  id?: string;
   pluginKey: string;
-  icon: ReactNode;
   colors?: ColorType[];
   customColors?: ColorType[];
   closeOnSelect?: boolean;
-};
+  tooltip?: string;
+} & DropdownMenuProps;
 
-export function ColorPickerToolbarDropdown({
+export function ColorDropdownMenu({
   id,
   pluginKey,
-  icon,
+  tooltip,
+  children,
   colors = DEFAULT_COLORS,
   customColors = DEFAULT_CUSTOM_COLORS,
   closeOnSelect = true,
-}: ColorPickerToolbarDropdownProps & ToolbarButtonProps) {
+  ...props
+}: ColorDropdownMenuProps) {
   const editorId = useEventPlateId(id);
   const editor = usePlateEditorState(editorId);
   const editorRef = usePlateEditorRef(editorId);
-
-  const [open, setOpen] = useState(false);
 
   const type = getPluginType(editorRef, pluginKey);
 
@@ -50,6 +51,7 @@ export function ColorPickerToolbarDropdown({
 
   const [selectedColor, setSelectedColor] = useState<string>();
 
+  const [open, setOpen] = useState(false);
   const onToggle = useCallback(
     (value = !open) => {
       setOpen(value);
@@ -99,12 +101,14 @@ export function ColorPickerToolbarDropdown({
   }, [color, editor?.selection]);
 
   return (
-    <DropdownMenu open={open} modal={false} onOpenChange={onToggle}>
-      <ToolbarButton asChild>
-        <DropdownMenuTrigger>{icon}</DropdownMenuTrigger>
-      </ToolbarButton>
+    <DropdownMenu open={open} modal={false} onOpenChange={onToggle} {...props}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton pressed={open} tooltip={tooltip}>
+          {children}
+        </ToolbarButton>
+      </DropdownMenuTrigger>
 
-      <DropdownMenuContent>
+      <DropdownMenuContent align="start">
         <ColorPicker
           color={selectedColor || color}
           colors={colors}

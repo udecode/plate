@@ -14,26 +14,26 @@ import { EmojiToolbarDropdownRoot } from './EmojiToolbarDropdownRoot';
 import { emojiCategoryIcons, emojiSearchIcons } from './icons';
 
 import {
-  ToolbarButtonOld,
+  ToolbarButton,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButtonOld';
+} from '@/components/ui/toolbar-button';
 
-type EmojiToolbarDropdownProps = {
+type EmojiDropdownMenuProps = {
   pluginKey: string;
   settings?: EmojiSettingsType;
   EmojiPickerComponent?: (props: UseEmojiPickerType) => JSX.Element;
   closeOnSelect?: boolean;
 } & ToolbarButtonProps;
 
-export function EmojiToolbarDropdown({
+export function EmojiDropdownMenu({
   id,
-  icon,
   EmojiPickerComponent = EmojiPicker,
   pluginKey,
+  children,
   settings = EmojiSettings,
   closeOnSelect = true,
-  ...rest
-}: EmojiToolbarDropdownProps) {
+  ...props
+}: EmojiDropdownMenuProps) {
   const editorId = useEventPlateId(id);
   const editor = usePlateEditorState(editorId);
   const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
@@ -62,7 +62,11 @@ export function EmojiToolbarDropdown({
 
   return (
     <EmojiToolbarDropdownRoot
-      control={<ToolbarButtonOld active={isOpen} icon={icon} {...rest} />}
+      control={
+        <ToolbarButton pressed={isOpen} {...props}>
+          {children}
+        </ToolbarButton>
+      }
       open={isOpen}
       onOpen={onToggle}
       onClose={onToggle}

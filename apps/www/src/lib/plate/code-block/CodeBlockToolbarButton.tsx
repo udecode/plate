@@ -12,8 +12,8 @@ import {
   Value,
 } from '@udecode/plate-common';
 
+import { ToolbarButtonProps } from '@/components/ui/toolbar-button';
 import { BlockToolbarButton } from '@/plate/toolbar/BlockToolbarButton';
-import { ToolbarButtonProps } from '@/plate/toolbar/ToolbarButtonOld';
 
 export function CodeBlockToolbarButton<V extends Value>({
   id,
@@ -26,8 +26,8 @@ export function CodeBlockToolbarButton<V extends Value>({
 
   return (
     <BlockToolbarButton
-      tooltip={{ content: 'Code Block' }}
-      type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
+      tooltip="Code Block"
+      nodeType={getPluginType(editor, ELEMENT_CODE_BLOCK)}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();

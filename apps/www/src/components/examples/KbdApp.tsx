@@ -24,10 +24,9 @@ function KbdToolbarButton() {
   const editor = useMyPlateEditorRef();
 
   return (
-    <MarkToolbarButton
-      type={getPluginType(editor, MARK_KBD)}
-      icon={<Icons.kbd />}
-    />
+    <MarkToolbarButton nodeType={getPluginType(editor, MARK_KBD)}>
+      <Icons.kbd />
+    </MarkToolbarButton>
   );
 }
 

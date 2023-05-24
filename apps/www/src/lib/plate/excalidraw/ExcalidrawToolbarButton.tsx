@@ -12,11 +12,9 @@ import {
 } from '@udecode/plate-excalidraw';
 
 import {
-  ToolbarButtonOld,
+  ToolbarButton,
   ToolbarButtonProps,
-} from '@/plate/toolbar/ToolbarButtonOld';
-
-export interface ExcalidrawToolbarButtonProps extends ToolbarButtonProps {}
+} from '@/components/ui/toolbar-button';
 
 export function ExcalidrawToolbarButton({ id, ...props }: ToolbarButtonProps) {
   const editor = usePlateEditorState(useEventPlateId(id));
@@ -26,9 +24,9 @@ export function ExcalidrawToolbarButton({ id, ...props }: ToolbarButtonProps) {
     !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
-    <ToolbarButtonOld
-      tooltip={{ content: 'Excalidraw' }}
-      active={isExcalidraw}
+    <ToolbarButton
+      tooltip="Excalidraw"
+      pressed={isExcalidraw}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();

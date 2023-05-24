@@ -14,52 +14,55 @@ import { Icons } from '@/components/icons';
 import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
-const tooltip = (content: string) => ({
-  content,
-});
-
 export function BasicMarkToolbarButtons() {
   const editor = useMyPlateEditorRef();
 
   return (
     <>
       <MarkToolbarButton
-        tooltip={tooltip('Bold (⌘+B)')}
-        type={getPluginType(editor, MARK_BOLD)}
-        icon={<Icons.bold />}
-      />
+        tooltip="Bold (⌘+B)"
+        nodeType={getPluginType(editor, MARK_BOLD)}
+      >
+        <Icons.bold />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Italic (⌘+I)')}
-        type={getPluginType(editor, MARK_ITALIC)}
-        icon={<Icons.italic />}
-      />
+        tooltip="Italic (⌘+I)"
+        nodeType={getPluginType(editor, MARK_ITALIC)}
+      >
+        <Icons.italic />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Underline (⌘+U)')}
-        type={getPluginType(editor, MARK_UNDERLINE)}
-        icon={<Icons.underline />}
-      />
+        tooltip="Underline (⌘+U)"
+        nodeType={getPluginType(editor, MARK_UNDERLINE)}
+      >
+        <Icons.underline />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Strikethrough (⌘+⇧+M)')}
-        type={getPluginType(editor, MARK_STRIKETHROUGH)}
-        icon={<Icons.strikethrough />}
-      />
+        tooltip="Strikethrough (⌘+⇧+M)"
+        nodeType={getPluginType(editor, MARK_STRIKETHROUGH)}
+      >
+        <Icons.strikethrough />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Code (⌘+E)')}
-        type={getPluginType(editor, MARK_CODE)}
-        icon={<Icons.code />}
-      />
+        tooltip="Code (⌘+E)"
+        nodeType={getPluginType(editor, MARK_CODE)}
+      >
+        <Icons.code />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Superscript (⌘+,)')}
-        type={getPluginType(editor, MARK_SUPERSCRIPT)}
+        tooltip="Superscript (⌘+,)"
+        nodeType={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
-        icon={<Icons.superscript />}
-      />
+      >
+        <Icons.superscript />
+      </MarkToolbarButton>
       <MarkToolbarButton
-        tooltip={tooltip('Subscript (⌘+.)')}
-        type={getPluginType(editor, MARK_SUBSCRIPT)}
+        tooltip="Subscript (⌘+.)"
+        nodeType={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
-        icon={<Icons.subscript />}
-      />
+      >
+        <Icons.subscript />
+      </MarkToolbarButton>
     </>
   );
 }

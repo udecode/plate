@@ -11,8 +11,8 @@ import { Icons } from '@/components/icons';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
+import { EmojiDropdownMenu } from '@/plate/emoji/EmojiDropdownMenu';
 import { emojiPlugin } from '@/plate/emoji/emojiPlugin';
-import { EmojiToolbarDropdown } from '@/plate/emoji/EmojiToolbarDropdown';
 import { emojiValue } from '@/plate/emoji/emojiValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
@@ -36,7 +36,9 @@ export default function EmojiApp() {
       onChange={(e) => console.info(e)}
     >
       <HeadingToolbar>
-        <EmojiToolbarDropdown pluginKey={KEY_EMOJI} icon={<Icons.emoji />} />
+        <EmojiDropdownMenu pluginKey={KEY_EMOJI}>
+          <Icons.emoji />
+        </EmojiDropdownMenu>
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

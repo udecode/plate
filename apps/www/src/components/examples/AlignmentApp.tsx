@@ -14,7 +14,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { AlignToolbarButtons } from '@/plate/align/AlignToolbarButtons';
+import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
 import { alignValue } from '@/plate/align/alignValue';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/common/editableProps';
@@ -50,7 +50,7 @@ export default function AlignmentApp() {
   return (
     <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
       <HeadingToolbar>
-        <AlignToolbarButtons />
+        <AlignDropdownMenu />
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
