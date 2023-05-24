@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Popover,
   PopoverProps,
@@ -26,7 +26,8 @@ import {
   findNodePath,
   focusEditor,
   usePlateEditorState,
-  getNodeEntries,
+  getSuggestionNodeEntries,
+  getSuggestionDescription,
   toDOMNode,
 } from '@udecode/plate';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
@@ -93,6 +94,81 @@ const PlateSuggestionLeaf = <V extends Value = Value>(
   );
 };
 
+interface PlateFloatingSuggestionsContentProps {
+  popoverProps?: {
+    contentProps?: Partial<PopoverContentProps>;
+    closeProps?: Partial<PopoverCloseProps>;
+  };
+}
+
+const PlateFloatingSuggestionsContent = ({
+  popoverProps: {
+    contentProps = {},
+    closeProps = {},
+  } = {},
+}: PlateFloatingSuggestionsContentProps) => {
+  const editor = usePlateEditorState();
+  const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
+
+  const description = useMemo(() => getSuggestionDescription(editor, activeSuggestionId!), [editor.children, activeSuggestionId]);
+
+  return (
+    <PopoverContent
+      sideOffset={4}
+      onOpenAutoFocus={(event) => event.preventDefault()}
+      onCloseAutoFocus={() => focusEditor(editor)}
+      className="bg-white shadow-md rounded-lg p-4 border"
+      {...contentProps}
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          {/* Avatar */}
+          <div className="w-10 aspect-square rounded-full bg-gray-300" />
+
+          {/* Info */}
+          <div className="grow">
+            <div className="font-medium text-sm">Ada Lovelace</div>
+            <div className="text-slate-500 text-xs font-medium">3 minutes ago</div>
+          </div>
+
+          {/* Minimise button */}
+          <PopoverClose
+            className="-ml-2 p-1 aspect-square self-start translate-x-2 -translate-y-2 inline-flex justify-center items-center rounded-md transition-colors hover:bg-slate-100 text-xs"
+            {...closeProps}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+          </PopoverClose>
+        </div>
+
+        {description && (
+          <p className="max-w-sm text-sm break-words">
+            {description.type === 'replacement' ? (
+              <>
+                Replace <span className="font-medium">{description.deletedText}</span> with <span className="font-medium">{description.insertedText}</span>
+              </>
+            ) : (
+              <>
+                {description.type === 'insertion' ? 'Insert' : 'Remove'} <span className="font-medium">{description.insertedText || description.deletedText}</span>
+              </>
+            )}
+          </p>
+        )}
+
+        {/* Buttons */}
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" className="inline-flex justify-center items-center rounded-md font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </button>
+
+          <button type="button" className="inline-flex justify-center items-center rounded-md text-sm font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+    </PopoverContent>
+  );
+};
+
 interface PlateFloatingSuggestionsProps {
   popoverProps?: {
     rootProps?: Partial<PopoverProps>;
@@ -113,7 +189,6 @@ const PlateFloatingSuggestions = ({
   } = {},
 }: PlateFloatingSuggestionsProps) => {
   const editor = usePlateEditorState();
-
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
 
   // TODO: Refactor into useOverrideableState helper
@@ -144,10 +219,9 @@ const PlateFloatingSuggestions = ({
         virtualRef={{
           current: {
             getBoundingClientRect: () => {
-              const suggestionRects = Array.from(getNodeEntries<TSuggestionText>(editor, {
-                at: [],
-                match: (n) => n.suggestionId === activeSuggestionId,
-              })).map(([node]) => toDOMNode(editor, node)!.getBoundingClientRect());
+              const suggestionRects = Array.from(
+                getSuggestionNodeEntries(editor, activeSuggestionId!)
+              ).map(([node]) => toDOMNode(editor, node)!.getBoundingClientRect());
 
               const top = Math.min(...suggestionRects.map((r) => r.top));
               const bottom = Math.max(...suggestionRects.map((r) => r.bottom));
@@ -165,49 +239,12 @@ const PlateFloatingSuggestions = ({
       />
 
       <PopoverPortal {...portalProps}>
-        <PopoverContent
-          sideOffset={4}
-          onOpenAutoFocus={(event) => event.preventDefault()}
-          onCloseAutoFocus={() => focusEditor(editor)}
-          className="bg-white shadow-md rounded-lg p-4 border"
-          {...contentProps}
-        >
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              {/* Avatar */}
-              <div className="w-10 aspect-square rounded-full bg-gray-300" />
-
-              {/* Info */}
-              <div className="grow">
-                <div className="font-medium text-sm">Ada Lovelace</div>
-                <div className="text-slate-500 text-xs font-medium">3 minutes ago</div>
-              </div>
-
-              {/* Minimise button */}
-              <PopoverClose
-                className="-ml-2 p-1 aspect-square self-start translate-x-2 -translate-y-2 inline-flex justify-center items-center rounded-md transition-colors hover:bg-slate-100 text-xs"
-                {...closeProps}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-              </PopoverClose>
-            </div>
-
-            <p className="max-w-sm text-sm">
-              {/*text.suggestionDeletion ? 'Remove' : 'Insert'} &ldquo;{text.text}&rdquo;*/}
-            </p>
-
-            {/* Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" className="inline-flex justify-center items-center rounded-md font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </button>
-
-              <button type="button" className="inline-flex justify-center items-center rounded-md text-sm font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-              </button>
-            </div>
-          </div>
-        </PopoverContent>
+        <PlateFloatingSuggestionsContent
+          popoverProps={{
+            contentProps,
+            closeProps,
+          }}
+        />
       </PopoverPortal>
     </Popover>
   );
