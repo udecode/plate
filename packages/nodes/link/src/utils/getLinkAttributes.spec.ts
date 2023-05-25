@@ -10,7 +10,15 @@ const baseLink = {
 
 describe('getLinkAttributes', () => {
   const editor = createPlateEditor({
-    plugins: [createLinkPlugin()],
+    plugins: [
+      createLinkPlugin({
+        options: {
+          defaultLinkAttributes: {
+            rel: 'noopener noreferrer',
+          },
+        },
+      }),
+    ],
   });
 
   describe('when url is valid', () => {
@@ -20,10 +28,11 @@ describe('getLinkAttributes', () => {
       target: '_self',
     };
 
-    it('should return href and target', () => {
+    it('should include href, target and default attributes', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: 'https://example.com/',
         target: '_self',
+        rel: 'noopener noreferrer',
       });
     });
   });
@@ -40,6 +49,7 @@ describe('getLinkAttributes', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: undefined,
         target: '_self',
+        rel: 'noopener noreferrer',
       });
     });
   });
@@ -54,6 +64,7 @@ describe('getLinkAttributes', () => {
       const linkAttributes = getLinkAttributes(editor, link);
       expect(linkAttributes).toEqual({
         href: 'https://example.com/',
+        rel: 'noopener noreferrer',
       });
       expect(linkAttributes).not.toHaveProperty('target');
     });

@@ -79,6 +79,12 @@ interface LinkPlugin {
   allowedSchemes?: string[];
 
   /**
+   * Default HTML attributes for link elements.
+   * @default {}
+   */
+  defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
+
+  /**
    * Callback to validate an url.
    * @default isUrl
    */
