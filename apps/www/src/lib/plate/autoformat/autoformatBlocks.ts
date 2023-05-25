@@ -9,7 +9,6 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_HR,
-  getPluginType,
   insertEmptyCodeBlock,
   insertNodes,
   setNodes,
@@ -69,7 +68,7 @@ export const autoformatBlocks: MyAutoformatRule[] = [
     preFormat,
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
-        defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+        defaultType: ELEMENT_DEFAULT,
         insertNodesOptions: { select: true },
       });
     },

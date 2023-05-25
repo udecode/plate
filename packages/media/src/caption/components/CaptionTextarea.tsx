@@ -76,7 +76,7 @@ export const useCaptionTextarea = (
   useCaptionTextareaFocus(textareaRef);
 
   const onChange: TextareaAutosizeProps['onChange'] = useCallback(
-    (e) => {
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
 
       // local state

@@ -7,7 +7,6 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
-import { Path, Range } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
 
@@ -20,20 +19,18 @@ export const insertEmptyCodeBlock = <V extends Value>(
   {
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
-    level = 0,
-  }: CodeBlockInsertOptions<V>
+  }: CodeBlockInsertOptions<V> = {}
 ) => {
   if (!editor.selection) return;
 
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
-    const selectionPath = Range.end(editor.selection).path;
-    const insertPath = Path.next(selectionPath.slice(0, level + 1));
     insertElements(
       editor,
       { type: defaultType, children: [{ text: '' }] },
       {
-        at: insertPath,
         select: true,
+        nextBlock: true,
+        ...insertNodesOptions,
       }
     );
   }

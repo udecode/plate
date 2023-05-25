@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { HTMLAttributes, ReactNode, useMemo } from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -62,9 +62,13 @@ export const useBlockSelectable = ({
   element,
   selectedColor,
   ...props
-}: BlockSelectableProps): HTMLPropsAs<'div'> => {
+}: BlockSelectableProps): HTMLAttributes<HTMLDivElement> => {
   const id = element.id as string | undefined;
   const isSelected = useBlockSelectionSelectors().isSelected(id);
+
+  const data = {
+    'data-key': id,
+  };
 
   return {
     className: isSelected
@@ -75,8 +79,8 @@ export const useBlockSelectable = ({
           backgroundColor: selectedColor,
         }
       : undefined,
-    'data-key': id,
     key: id,
+    ...data,
     ...props,
   };
 };

@@ -12,7 +12,7 @@ import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import { TableToolbarButtons } from '@/plate/table/TableToolbarButtons';
+import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';
 import { tableValue } from '@/plate/table/tableValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
@@ -38,7 +38,7 @@ export default function TableApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
       <HeadingToolbar>
-        <TableToolbarButtons />
+        <TableDropdownMenu />
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

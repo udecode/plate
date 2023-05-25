@@ -1,16 +1,15 @@
-import React, { useCallback } from 'react';
+import React, { HTMLAttributes, useCallback } from 'react';
 import {
   AsProps,
   createComponentAs,
   focusEditor,
-  HTMLPropsAs,
   useEditorRef,
 } from '@udecode/plate-common';
 import { unwrapLink } from '../../transforms/index';
 
 export const useUnlinkButton = (
-  props: HTMLPropsAs<'button'>
-): HTMLPropsAs<'button'> => {
+  props: HTMLAttributes<HTMLButtonElement>
+): HTMLAttributes<HTMLButtonElement> => {
   const editor = useEditorRef();
 
   return {
@@ -23,7 +22,7 @@ export const useUnlinkButton = (
 };
 
 export const UnlinkButton = createComponentAs<AsProps<'button'>>((props) => {
-  const htmlProps = useUnlinkButton(props);
+  const htmlProps = useUnlinkButton(props as any);
 
   return <button type="button" {...htmlProps} />;
 });

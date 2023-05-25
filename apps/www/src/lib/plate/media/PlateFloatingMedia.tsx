@@ -4,14 +4,16 @@ import { LinkIcon } from '@udecode/plate-link';
 import { FloatingMedia, useFloatingMediaSelectors } from '@udecode/plate-media';
 import { cn } from '@udecode/plate-tailwind';
 
-import { buttonVariants } from '@/components/ui/button';
-import { RemoveNodeButton } from '@/plate/button/RemoveNodeButton';
+import { Icons } from '@/components/icons';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { useRemoveNodeButtonProps } from '@/plate/common/useRemoveNodeButtonProps';
 import { floatingStyles } from '@/plate/toolbar/floatingStyles';
 import { FloatingVerticalDivider } from '@/plate/toolbar/FloatingVerticalDivider';
 
 export function PlateFloatingMedia({ pluginKey }: { pluginKey?: string }) {
   const isEditing = useFloatingMediaSelectors().isEditing();
   const element = useElement();
+  const removeNodeButtonProps = useRemoveNodeButtonProps({ element });
 
   return (
     <div className={floatingStyles.rootVariants()}>
@@ -25,10 +27,12 @@ export function PlateFloatingMedia({ pluginKey }: { pluginKey?: string }) {
 
           <FloatingVerticalDivider />
 
-          <RemoveNodeButton
-            element={element}
+          <Button
             className={floatingStyles.buttonVariants()}
-          />
+            {...removeNodeButtonProps}
+          >
+            <Icons.delete className="mr-2 h-4 w-4" />
+          </Button>
         </div>
       ) : (
         <div className="flex w-[330px] flex-col">

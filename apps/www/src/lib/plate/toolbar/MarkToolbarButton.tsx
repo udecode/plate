@@ -23,9 +23,9 @@ export interface MarkToolbarButtonProps extends ToolbarButtonProps {
 export function MarkToolbarButton({
   id,
   clear,
+  nodeType,
   ...props
 }: MarkToolbarButtonProps) {
-  const { nodeType } = props;
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const pressed = !!editor?.selection && isMarkActive(editor, nodeType);

@@ -1,62 +1,86 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
-  focusEditor,
   getPluginInjectProps,
-  useEventPlateId,
-  usePlateEditorState,
-} from '@udecode/plate-common';
-import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
-
+  isBlock,
+  KEY_LINE_HEIGHT,
+  TElement,
+} from '@udecode/plate';
 import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@/components/ui/toolbar-button';
-import { ToolbarDropdown } from '@/plate/toolbar/ToolbarDropdown';
+  findNode,
+  focusEditor,
+  isCollapsed,
+  useEventPlateId,
+} from '@udecode/plate-common';
+import { setLineHeight } from '@udecode/plate-line-height';
 
-export function LineHeightToolbarDropdown({
-  id,
-  ...props
-}: ToolbarButtonProps) {
-  const editor = usePlateEditorState(useEventPlateId(id));
+import { Icons } from '@/components/icons';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
-  const [open, setOpen] = React.useState(false);
+export function LineHeightToolbarDropdown(props: DropdownMenuProps) {
+  const editor = useMyPlateEditorState(useEventPlateId());
 
-  const { validNodeValues } = getPluginInjectProps(editor, KEY_LINE_HEIGHT);
+  const { validNodeValues: values = [], defaultNodeValue } =
+    getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
-  const onToggle = useCallback(() => {
-    setOpen(!open);
-  }, [open, setOpen]);
+  let value: string = defaultNodeValue;
+  if (isCollapsed(editor?.selection)) {
+    const entry = findNode<TElement>(editor!, {
+      match: (n) => isBlock(editor, n),
+    });
+    if (entry) {
+      value =
+        values.find((item) => item === entry[0][KEY_LINE_HEIGHT]) ??
+        defaultNodeValue;
+    }
+  }
 
-  const selectHandler = useCallback(
-    (lineHeight) => {
-      if (editor) {
-        focusEditor(editor);
-
-        setLineHeight(editor, {
-          value: lineHeight,
-        });
-      }
+  const [open, setOpen] = useState(false);
+  const onToggle = useCallback(
+    (_value = !open) => {
+      setOpen(_value);
     },
-    [editor]
+    [open]
   );
 
   return (
-    <ToolbarDropdown
-      control={<ToolbarButton pressed={open} {...props} />}
-      open={open}
-      onOpen={onToggle}
-      onClose={onToggle}
-    >
-      {validNodeValues &&
-        validNodeValues.map((lineHeight) => (
-          <div
-            style={{ cursor: 'pointer' }}
-            key={lineHeight}
-            onClick={() => selectHandler(lineHeight)}
-          >
-            {lineHeight}
-          </div>
-        ))}
-    </ToolbarDropdown>
+    <DropdownMenu open={open} modal={false} onOpenChange={onToggle} {...props}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton pressed={open} tooltip="Line height" isDropdown>
+          <Icons.lineHeight />
+        </ToolbarButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start" className="min-w-0">
+        <DropdownMenuRadioGroup
+          className="flex flex-col gap-0.5"
+          value={value}
+          onValueChange={(newValue) => {
+            setLineHeight(editor, {
+              value: Number(newValue),
+            });
+            focusEditor(editor);
+          }}
+        >
+          {values.map((_value) => (
+            <DropdownMenuRadioItem
+              key={_value}
+              value={_value}
+              className="min-w-[180px]"
+            >
+              {_value}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

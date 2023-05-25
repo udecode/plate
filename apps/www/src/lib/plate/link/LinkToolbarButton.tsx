@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  getPluginType,
   someNode,
   useEventPlateId,
   usePlateEditorState,
@@ -12,21 +11,10 @@ import {
   ToolbarButtonProps,
 } from '@/components/ui/toolbar-button';
 
-export interface LinkToolbarButtonProps extends ToolbarButtonProps {
-  /**
-   * Default onClick is getting the link url by calling this promise before inserting the image.
-   */
-  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
-}
+export function LinkToolbarButton(props: ToolbarButtonProps) {
+  const editor = usePlateEditorState(useEventPlateId());
 
-export function LinkToolbarButton({
-  id,
-  getLinkUrl,
-  ...props
-}: LinkToolbarButtonProps) {
-  const editor = usePlateEditorState(useEventPlateId(id));
-
-  const type = getPluginType(editor, ELEMENT_LINK);
+  const type = ELEMENT_LINK;
   const isLink = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (

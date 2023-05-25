@@ -5,6 +5,7 @@ import docs__indexMdx from './docs__index.mdx.json' assert { type: 'json' }
 import docs__installationMdx from './docs__installation.mdx.json' assert { type: 'json' }
 import docs__multipleEditorsMdx from './docs__multiple-editors.mdx.json' assert { type: 'json' }
 import docs__plateMdx from './docs__plate.mdx.json' assert { type: 'json' }
+import docs__playgroundMdx from './docs__playground.mdx.json' assert { type: 'json' }
 import docs__pluginsMdx from './docs__plugins.mdx.json' assert { type: 'json' }
 import docs__stylingMdx from './docs__styling.mdx.json' assert { type: 'json' }
 import docs__typescriptMdx from './docs__typescript.mdx.json' assert { type: 'json' }
@@ -14,4 +15,4 @@ import docs__components__indexMdx from './docs__components__index.mdx.json' asse
 import docs__components__installationMdx from './docs__components__installation.mdx.json' assert { type: 'json' }
 import docs__components__plateUiMdx from './docs__components__plate-ui.mdx.json' assert { type: 'json' }
 
-export const allDocs = [docs__cloudMdx, docs__indexMdx, docs__installationMdx, docs__multipleEditorsMdx, docs__plateMdx, docs__pluginsMdx, docs__stylingMdx, docs__typescriptMdx, docs__api__platePluginMdx, docs__api__storeMdx, docs__components__indexMdx, docs__components__installationMdx, docs__components__plateUiMdx]
+export const allDocs = [docs__cloudMdx, docs__indexMdx, docs__installationMdx, docs__multipleEditorsMdx, docs__plateMdx, docs__playgroundMdx, docs__pluginsMdx, docs__stylingMdx, docs__typescriptMdx, docs__api__platePluginMdx, docs__api__storeMdx, docs__components__indexMdx, docs__components__installationMdx, docs__components__plateUiMdx]

@@ -9,12 +9,9 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { Icons } from '@/components/icons';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
-import { ImageToolbarButton } from '@/plate/media/ImageToolbarButton';
-import { MediaEmbedToolbarButton } from '@/plate/media/MediaEmbedToolbarButton';
 import { mediaValue } from '@/plate/media/mediaValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
@@ -41,12 +38,12 @@ export default function MediaApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={mediaValue}>
       <HeadingToolbar>
-        <ImageToolbarButton>
-          <Icons.image />
-        </ImageToolbarButton>
-        <MediaEmbedToolbarButton>
-          <Icons.embed />
-        </MediaEmbedToolbarButton>
+        {/* <ImageToolbarButton> */}
+        {/*  <Icons.image /> */}
+        {/* </ImageToolbarButton> */}
+        {/* <MediaEmbedToolbarButton> */}
+        {/*  <Icons.embed /> */}
+        {/* </MediaEmbedToolbarButton> */}
       </HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />

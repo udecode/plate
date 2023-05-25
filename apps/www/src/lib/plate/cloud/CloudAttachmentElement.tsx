@@ -9,8 +9,11 @@ import {
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 import { AttachFileIcon } from './AttachFileIcon';
-import { CloudDownloadIcon } from './CloudDownloadIcon';
 import { StatusBar } from './StatusBar';
+
+import { Icons } from '@/components/icons';
+
+// !HEADLESS
 
 export interface CloudAttachmentElementProps
   extends PlateElementProps<Value, TCloudAttachmentElement> {}
@@ -55,20 +58,22 @@ export function CloudAttachmentElement({
   return (
     <PlateElement
       className={cn(
-        'relative my-4 flex h-10 max-w-sm items-center gap-2 rounded-lg border border-solid border-gray-200 bg-white p-4',
+        'relative my-4 flex h-10 max-w-sm items-center gap-2 rounded-lg border border-border bg-background p-4',
         focused && selected && 'border-blue-400 shadow-[0_0_1px_3px_#60a5fa]',
         className
       )}
       draggable
       {...props}
     >
-      <div className="shrink-0 text-gray-400" contentEditable={false}>
+      <div className="shrink-0 text-muted-foreground" contentEditable={false}>
         <AttachFileIcon width={24} height={24} />
       </div>
       <div className="grow" contentEditable={false}>
         <div className="text-base">{element.filename}</div>
         <StatusBar upload={upload}>
-          <div className="text-sm text-gray-500">{element.bytes} bytes</div>
+          <div className="text-sm text-muted-foreground">
+            {element.bytes} bytes
+          </div>
         </StatusBar>
       </div>
       <div
@@ -77,8 +82,8 @@ export function CloudAttachmentElement({
       >
         {upload.status === 'success' && (
           <a href={element.url} target="_blank" rel="noreferrer">
-            <CloudDownloadIcon
-              className="cursor-pointer text-gray-400 hover:text-blue-500"
+            <Icons.downloadCloud
+              className="cursor-pointer text-muted-foreground hover:text-foreground"
               width={24}
               height={24}
             />

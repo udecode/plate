@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCommentsResolved } from '@udecode/plate-comments';
-import { PlateComment } from './PlateComment';
+import { CommentItem } from './CommentItem';
 
 export function PlateCommentsResolved() {
   const resolvedComments = useCommentsResolved();
@@ -12,7 +12,7 @@ export function PlateCommentsResolved() {
       </h2>
       <div className="flex-auto overflow-y-auto p-4 [&_>_*]:mb-4 [&_>_*]:last:mb-0">
         {resolvedComments.map((comment) => (
-          <PlateComment key={comment.id} commentId={comment.id} />
+          <CommentItem key={comment.id} commentId={comment.id} />
         ))}
       </div>
     </div>

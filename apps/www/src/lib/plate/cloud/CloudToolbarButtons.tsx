@@ -4,6 +4,8 @@ import { PlateCloudEditor } from '@udecode/plate-cloud';
 
 import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
 
+// !HEADLESS
+
 const buttonStyle: React.CSSProperties = {
   marginRight: 4,
   background: '#f0f0f0',

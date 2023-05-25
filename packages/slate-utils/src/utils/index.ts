@@ -4,4 +4,3 @@
 
 export * from './createDocumentNode';
 export * from './createNode';
-export * from './useIsomorphicLayoutEffect';

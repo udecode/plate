@@ -63,7 +63,7 @@ export function EmojiDropdownMenu({
   return (
     <EmojiToolbarDropdownRoot
       control={
-        <ToolbarButton pressed={isOpen} {...props}>
+        <ToolbarButton pressed={isOpen} isDropdown {...props}>
           {children}
         </ToolbarButton>
       }

@@ -2,23 +2,17 @@ import React from 'react';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 
 import { Separator } from '@/components/ui/separator';
-import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
 import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
-import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
 import { basicMarksValue } from '@/plate/basic-marks/basicMarksValue';
-import { BasicMarkToolbarButtons } from '@/plate/basic-marks/BasicMarkToolbarButtons';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { imagePlugins } from '@/plate/media/imagePlugins';
 import { imageValue } from '@/plate/media/mediaValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
+import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
 import { MyValue } from '@/plate/typescript/plateTypes';
 
 function Editor(props: PlateProps<MyValue>) {
-  return (
-    <Plate {...props}>
-      <MarkBalloonToolbar />
-    </Plate>
-  );
+  return <Plate {...props}>{/* <MarkBalloonToolbar /> */}</Plate>;
 }
 
 export default function MultipleEditorsApp() {
@@ -38,8 +32,7 @@ export default function MultipleEditorsApp() {
           initialValue={imageValue}
         >
           <HeadingToolbar>
-            <BasicElementToolbarButtons />
-            <BasicMarkToolbarButtons />
+            <TurnIntoDropdownMenu />
           </HeadingToolbar>
 
           <div>

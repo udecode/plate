@@ -8,6 +8,8 @@ import {
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
+// !HEADLESS
+
 export function CodeBlockSelectElement({
   lang,
   onChange,

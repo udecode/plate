@@ -34,7 +34,7 @@ export function PlateTableCellElement({
     <TableCellElement.Root
       asAlias={isHeader ? 'th' : 'td'}
       className={cn(
-        'relative overflow-visible border-none bg-white p-0',
+        'relative overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
         !hideBorder &&
           cn(

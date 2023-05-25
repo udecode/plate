@@ -1,6 +1,7 @@
 import {
   getParentNode,
   insertNodes,
+  InsertNodesOptions,
   PlateEditor,
   PlatePluginKey,
   TNodeProps,
@@ -14,7 +15,8 @@ export const insertExcalidraw = <V extends Value>(
   {
     key = ELEMENT_EXCALIDRAW,
     ...props
-  }: TNodeProps<TExcalidrawElement> & PlatePluginKey = {}
+  }: TNodeProps<TExcalidrawElement> & PlatePluginKey = {},
+  options: InsertNodesOptions<V> = {}
 ): void => {
   if (!editor.selection) return;
 
@@ -30,6 +32,6 @@ export const insertExcalidraw = <V extends Value>(
       children: [{ text: '' }],
       ...props,
     },
-    { at: path }
+    { at: path, nextBlock: true, ...(options as any) }
   );
 };

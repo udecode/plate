@@ -17,6 +17,5 @@ export interface TCodeBlockElement extends TElement {
 
 export interface CodeBlockInsertOptions<V extends Value = Value> {
   defaultType?: string;
-  level?: number;
   insertNodesOptions?: Omit<InsertNodesOptions<V>, 'match'>;
 }

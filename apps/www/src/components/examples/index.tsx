@@ -20,6 +20,7 @@ import ExitBreakApp from './ExitBreakApp';
 import FindReplaceApp from './FindReplaceApp';
 import FontApp from './FontApp';
 import ForcedLayoutApp from './ForcedLayoutApp';
+import { HeadingToolbarButtons } from './HeadingToolbarButtons';
 import HighlightApp from './HighlightApp';
 import HorizontalRuleApp from './HorizontalRuleApp';
 import HugeDocumentApp from './HugeDocumentApp';
@@ -49,7 +50,6 @@ import SoftBreakApp from './SoftBreakApp';
 import SuggestionApp from './SuggestionApp';
 import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
-import { ToolbarButtons } from './ToolbarButtons';
 import TypescriptApp from './TypescriptApp';
 
 export const examples = {
@@ -104,6 +104,6 @@ export const examples = {
   SuggestionApp,
   TabbableApp,
   TableApp,
-  ToolbarButtons,
+  ToolbarButtons: HeadingToolbarButtons,
   TypescriptApp,
 };

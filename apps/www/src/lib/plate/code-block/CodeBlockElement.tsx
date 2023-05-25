@@ -16,6 +16,8 @@ import {
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { CodeBlockSelectElement } from './CodeBlockSelectElement';
 
+// !HEADLESS
+
 const CodeBlockElement = forwardRef<
   HTMLDivElement,
   PlateElementProps<Value, TCodeBlockElement>

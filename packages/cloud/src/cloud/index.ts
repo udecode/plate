@@ -4,6 +4,7 @@
 
 export * from './createCloudPlugin';
 export * from './finishUploads';
+export * from './generateSrcAndSrcSet';
 export * from './getInProgressUploads';
 export * from './getSaveValue';
 export * from './handlers';

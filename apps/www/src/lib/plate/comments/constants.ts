@@ -5,12 +5,13 @@ import { MyValue } from '@/plate/typescript/plateTypes';
 export const usersData = {
   1: {
     id: '1',
-    name: 'Foo',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
+    name: 'zbeyens',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
   },
   2: {
     id: '2',
-    name: 'Bar',
+    name: '12joan',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
   },
 };
 

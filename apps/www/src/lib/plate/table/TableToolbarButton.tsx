@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   focusEditor,
-  getPluginType,
   PlateEditor,
   someNode,
   useEventPlateId,
@@ -28,7 +27,7 @@ export function TableToolbarButton<V extends Value>({
   ...props
 }: TableToolbarButtonProps<V>) {
   const editor = usePlateEditorState<V>(useEventPlateId(id));
-  const type = getPluginType(editor, ELEMENT_TABLE);
+  const type = ELEMENT_TABLE;
   const active = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (

@@ -3,7 +3,6 @@ import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   focusEditor,
   getMark,
-  getPluginType,
   removeMark,
   select,
   setMarks,
@@ -45,7 +44,7 @@ export function ColorDropdownMenu({
   const editor = usePlateEditorState(editorId);
   const editorRef = usePlateEditorRef(editorId);
 
-  const type = getPluginType(editorRef, pluginKey);
+  const type = pluginKey;
 
   const color = editorRef && (getMark(editorRef, type) as string);
 

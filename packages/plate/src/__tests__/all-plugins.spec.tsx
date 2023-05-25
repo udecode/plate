@@ -33,24 +33,20 @@ import { createMentionPlugin } from '@/nodes/mention/src/index';
 import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
 import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
-import { BasicElementToolbarButtons } from '@/plate/basic-elements/BasicElementToolbarButtons';
-import { BasicMarkToolbarButtons } from '@/plate/basic-marks/BasicMarkToolbarButtons';
 import { editableProps } from '@/plate/common/editableProps';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { SearchHighlightToolbar } from '@/plate/find-replace/SearchHighlightToolbar';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';
 import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
-import { LineHeightToolbarDropdown } from '@/plate/line-height/LineHeightToolbarDropdown';
 import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
 import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
-import { ImageToolbarButton } from '@/plate/media/ImageToolbarButton';
-import { MediaEmbedToolbarButton } from '@/plate/media/MediaEmbedToolbarButton';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
 import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import { TableToolbarButtons } from '@/plate/table/TableToolbarButtons';
+import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
+import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
 import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 
 function PlateContainer() {
@@ -96,16 +92,12 @@ function PlateContainer() {
     >
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
       <HeadingToolbar>
-        <BasicElementToolbarButtons />
+        <TurnIntoDropdownMenu />
         <ListToolbarButtons />
         <IndentToolbarButtons />
-        <BasicMarkToolbarButtons />
         <AlignDropdownMenu />
-        <LineHeightToolbarDropdown icon={<Icons.lineHeight />} />
         <LinkToolbarButton icon={<Icons.link />} />
-        <ImageToolbarButton icon={<Icons.image />} />
-        <MediaEmbedToolbarButton icon={<Icons.embed />} />
-        <TableToolbarButtons />
+        <TableDropdownMenu />
       </HeadingToolbar>
 
       <MarkBalloonToolbar />

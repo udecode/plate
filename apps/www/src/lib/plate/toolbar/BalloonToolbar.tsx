@@ -2,10 +2,9 @@ import React, { ReactNode } from 'react';
 import { PortalBody } from '@udecode/plate-common';
 import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { cn } from '@udecode/plate-tailwind';
-import { ToolbarProps } from './ToolbarOld';
 import { useFloatingToolbar } from './useFloatingToolbar';
 
-import { Toolbar } from '@/components/ui/toolbar';
+import { Toolbar, ToolbarProps } from '@/components/ui/toolbar';
 
 export interface BalloonToolbarProps extends ToolbarProps {
   children: ReactNode;
@@ -19,15 +18,14 @@ export interface BalloonToolbarProps extends ToolbarProps {
   hideToolbar?: boolean;
 }
 
-export function BalloonToolbar(props: BalloonToolbarProps) {
-  const {
-    children,
-    portalElement,
-    floatingOptions,
-    ignoreReadOnly,
-    hideToolbar,
-  } = props;
-
+export function BalloonToolbar({
+  portalElement,
+  floatingOptions,
+  ignoreReadOnly,
+  hideToolbar,
+  children,
+  ...props
+}: BalloonToolbarProps) {
   const { refs, style, open } = useFloatingToolbar({
     floatingOptions,
     ignoreReadOnly,
@@ -44,6 +42,7 @@ export function BalloonToolbar(props: BalloonToolbarProps) {
         )}
         ref={refs.setFloating}
         style={style}
+        {...props}
       >
         {children}
       </Toolbar>

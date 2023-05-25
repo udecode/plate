@@ -19,7 +19,7 @@ function EmojiPreview({ emoji }: EmojiPreviewProps) {
       </div>
       <div className="overflow-hidden pl-2">
         <div className="truncate text-sm text-gray-600">{emoji?.name}</div>
-        <div className="truncate text-xs text-gray-400">{`:${emoji?.id}:`}</div>
+        <div className="truncate text-xs text-muted-foreground">{`:${emoji?.id}:`}</div>
       </div>
     </div>
   );
@@ -33,7 +33,7 @@ function NoEmoji({ i18n }: NoEmojiPreviewProps) {
         <div className="truncate text-sm text-gray-600">
           {i18n.searchNoResultsTitle}
         </div>
-        <div className="truncate text-xs text-gray-400">
+        <div className="truncate text-xs text-muted-foreground">
           {i18n.searchNoResultsSubtitle}
         </div>
       </div>
@@ -46,7 +46,9 @@ function PickAnEmoji({ i18n }: PickAnEmojiPreviewProps) {
     <div className="flex items-center border-t border-gray-100 p-2">
       <div className="flex items-center justify-center text-3xl">☝️</div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate text-lg text-gray-400">{i18n.pick}</div>
+        <div className="truncate text-lg text-muted-foreground">
+          {i18n.pick}
+        </div>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ export class EmojiFloatingLibrary
   private constructor(
     protected settings: EmojiSettingsType,
     protected localStorage: IFrequentEmojiStorage,
-    protected library: EmojiLibrary = emojiMartData
+    protected library: EmojiLibrary = emojiMartData as any
   ) {
     super(library);
 
@@ -46,7 +46,7 @@ export class EmojiFloatingLibrary
   public static getInstance(
     settings: EmojiSettingsType,
     localStorage: IFrequentEmojiStorage,
-    library: EmojiLibrary = emojiMartData
+    library: EmojiLibrary = emojiMartData as any
   ) {
     if (!EmojiFloatingLibrary.instance) {
       EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ELEMENT_OL, ELEMENT_UL, getPluginType } from '@udecode/plate';
+import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate';
 import { ListToolbarButton } from './ListToolbarButton';
 
 import { Icons } from '@/components/icons';
@@ -10,16 +10,10 @@ export function ListToolbarButtons() {
 
   return (
     <>
-      <ListToolbarButton
-        tooltip="Bullet List"
-        nodeType={getPluginType(editor, ELEMENT_UL)}
-      >
+      <ListToolbarButton tooltip="Bullet List" nodeType={ELEMENT_UL}>
         <Icons.ul />
       </ListToolbarButton>
-      <ListToolbarButton
-        tooltip="Ordered List"
-        nodeType={getPluginType(editor, ELEMENT_OL)}
-      >
+      <ListToolbarButton tooltip="Ordered List" nodeType={ELEMENT_OL}>
         <Icons.ol />
       </ListToolbarButton>
     </>

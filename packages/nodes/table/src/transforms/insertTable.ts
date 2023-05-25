@@ -3,6 +3,7 @@ import {
   getPluginType,
   getStartPoint,
   insertNodes,
+  InsertNodesOptions,
   PlateEditor,
   selectEditor,
   someNode,
@@ -22,7 +23,8 @@ import {
  */
 export const insertTable = <V extends Value>(
   editor: PlateEditor<V>,
-  { rowCount = 2, colCount = 2, header }: GetEmptyTableNodeOptions
+  { rowCount = 2, colCount = 2, header }: GetEmptyTableNodeOptions = {},
+  options: InsertNodesOptions<V> = {}
 ) => {
   withoutNormalizing(editor, () => {
     if (
@@ -32,7 +34,11 @@ export const insertTable = <V extends Value>(
     ) {
       insertNodes<TTableElement>(
         editor,
-        getEmptyTableNode(editor, { header, rowCount, colCount })
+        getEmptyTableNode(editor, { header, rowCount, colCount }),
+        {
+          nextBlock: true,
+          ...(options as any),
+        }
       );
 
       if (editor.selection) {

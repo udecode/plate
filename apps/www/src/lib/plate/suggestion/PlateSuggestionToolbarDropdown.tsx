@@ -48,7 +48,7 @@ export function PlateSuggestionToolbarDropdown() {
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="start"
-          className="z-[1001] min-w-[220px] rounded-[6px] bg-white px-0 py-[5px] shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)]"
+          className="z-[1001] min-w-[220px] rounded-[6px] bg-background px-0 py-[5px] shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)]"
         >
           <DropdownMenu.RadioGroup
             value="editing"

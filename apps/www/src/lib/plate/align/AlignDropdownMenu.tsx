@@ -95,7 +95,7 @@ export function AlignDropdownMenu({
           }}
         >
           {items.map(({ value: itemValue, icon: Icon }) => (
-            <DropdownMenuRadioItem key={itemValue} value={itemValue}>
+            <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>
               <Icon className={iconVariants({ variant: 'toolbar' })} />
             </DropdownMenuRadioItem>
           ))}

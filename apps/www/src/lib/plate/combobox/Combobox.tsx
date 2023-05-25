@@ -28,6 +28,8 @@ import {
 } from '@udecode/plate-floating';
 import { cn, cva } from '@udecode/plate-tailwind';
 
+// !HEADLESS
+
 const comboboxItemVariants = cva(
   'flex min-h-[36px] cursor-pointer select-none items-center rounded-none px-2 text-[14px] text-[rgb(32,31,30)]'
 );
@@ -133,7 +135,7 @@ function ComboboxContent<TData extends Data = NoData>(
         ref={refs.setFloating}
         style={style}
         className={cn(
-          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-b-[2px] bg-white p-0 shadow-[rgba(0,0,0,0.133)_0_3.2px_7.2px_0,rgba(0,0,0,0.11)_0_0.6px_1.8px_0]'
+          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-b-[2px] bg-background p-0 shadow-[rgba(0,0,0,0.133)_0_3.2px_7.2px_0,rgba(0,0,0,0.11)_0_0.6px_1.8px_0]'
         )}
       >
         {Component ? Component({ store: activeComboboxStore }) : null}

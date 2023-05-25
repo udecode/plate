@@ -8,6 +8,8 @@ import {
 import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 import { ImageSize, SetImageSize } from './types';
 
+// !HEADLESS: use resize package
+
 /**
  * The resize label that shows the width/height of the image
  */

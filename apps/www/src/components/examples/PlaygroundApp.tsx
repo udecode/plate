@@ -57,16 +57,15 @@ import {
 } from '@udecode/plate-excalidraw';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+import { HeadingToolbarButtons } from './HeadingToolbarButtons';
 import { playgroundValue } from './playgroundValue';
-import { ToolbarButtons } from './ToolbarButtons';
 
 import { createPlateUI } from '@/lib/createPlateUI';
 import { alignPlugin } from '@/plate/align/alignPlugin';
 import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
-import { CommentBalloonToolbar } from '@/plate/comments/CommentBalloonToolbar';
+import { FloatingComments } from '@/plate/comments/FloatingComments';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
-import { PlateFloatingComments } from '@/plate/comments/PlateFloatingComments';
 import { editableProps } from '@/plate/common/editableProps';
 import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
 import { dragOverCursorPlugin } from '@/plate/cursor-overlay/dragOverCursorPlugin';
@@ -84,6 +83,8 @@ import { withStyledPlaceHolders } from '@/plate/placeholder/withStyledPlaceHolde
 import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
+import { BalloonToolbar } from '@/plate/toolbar/BalloonToolbar';
+import { BalloonToolbarButtons } from '@/plate/toolbar/BalloonToolbarButtons';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 import {
@@ -173,13 +174,15 @@ function App() {
     <DndProvider backend={HTML5Backend}>
       <PlateProvider<MyValue> initialValue={playgroundValue} plugins={plugins}>
         <HeadingToolbar>
-          <ToolbarButtons />
+          <HeadingToolbarButtons />
         </HeadingToolbar>
 
         <MyCommentsProvider>
           <div ref={containerRef} style={styles.container}>
             <Plate editableProps={editableProps}>
-              <CommentBalloonToolbar />
+              <BalloonToolbar>
+                <BalloonToolbarButtons />
+              </BalloonToolbar>
 
               <MentionCombobox items={MENTIONABLES} />
 
@@ -187,7 +190,7 @@ function App() {
             </Plate>
           </div>
 
-          <PlateFloatingComments />
+          <FloatingComments />
         </MyCommentsProvider>
       </PlateProvider>
     </DndProvider>

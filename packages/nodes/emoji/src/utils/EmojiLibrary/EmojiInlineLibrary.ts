@@ -13,7 +13,7 @@ export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _keys: string[] = [];
   protected _emojis: Emojis;
 
-  constructor(library: EmojiLibrary = emojiMartData) {
+  constructor(library: EmojiLibrary = emojiMartData as any) {
     this._emojis = library.emojis;
     this.init();
   }

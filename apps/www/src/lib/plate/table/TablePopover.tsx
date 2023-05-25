@@ -18,10 +18,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent } from '@/components/ui/popover';
-import { RemoveNodeButton } from '@/plate/button/RemoveNodeButton';
+import { useRemoveNodeButtonProps } from '@/plate/common/useRemoveNodeButtonProps';
 
 export function TablePopover({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
+  const removeNodeButtonProps = useRemoveNodeButtonProps({ element });
 
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -48,14 +49,15 @@ export function TablePopover({ children, ...props }: PopoverProps) {
           </DropdownMenuPortal>
         </DropdownMenu>
 
-        <RemoveNodeButton
+        <Button
           contentEditable={false}
-          element={element}
           variant="ghost"
           isMenu
+          {...removeNodeButtonProps}
         >
-          <div>Delete</div>
-        </RemoveNodeButton>
+          <Icons.delete className="mr-2 h-4 w-4" />
+          Delete
+        </Button>
       </PopoverContent>
     </Popover>
   );

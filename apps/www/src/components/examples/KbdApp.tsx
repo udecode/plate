@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   createKbdPlugin,
-  getPluginType,
   MARK_KBD,
   Plate,
   PlateProvider,
@@ -14,17 +13,11 @@ import { plateUI } from '@/plate/common/plateUI';
 import { kbdValue } from '@/plate/kbd/kbdValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';
-import {
-  createMyPlugins,
-  MyValue,
-  useMyPlateEditorRef,
-} from '@/plate/typescript/plateTypes';
+import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 function KbdToolbarButton() {
-  const editor = useMyPlateEditorRef();
-
   return (
-    <MarkToolbarButton nodeType={getPluginType(editor, MARK_KBD)}>
+    <MarkToolbarButton nodeType={MARK_KBD}>
       <Icons.kbd />
     </MarkToolbarButton>
   );

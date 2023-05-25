@@ -83,7 +83,7 @@ export function PlateCommentLeaf({
     <PlateLeaf
       {...props}
       nodeProps={{
-        onMouseDown: (e: MouseEvent) => {
+        onClick: (e: MouseEvent) => {
           e.stopPropagation();
           setActiveCommentId(lastCommentId);
         },

@@ -11,6 +11,7 @@
     "docs:start": "cd docs && yarn && yarn start",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
+    "g:build:watch": "turbo --filter \"./packages/**\" build:watch --concurrency 100",
     "g:changeset": "changeset",
     "g:clean": "turbo --filter \"./packages/**\" clean",
     "gen:code": "rimraf docs/docs/sandpack/files && yarn plop --plopfile scripts/plop/plopfile.js sandpack",
@@ -34,7 +35,7 @@
     "p:brl": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l all -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:brl:below": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l below -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:build": "cd $INIT_CWD && yarn p:rollup && tsc",
-    "p:build:w": "cd $INIT_CWD && yarn p:rollup -w",
+    "p:build:watch": "cd $INIT_CWD && yarn p:rollup -w",
     "p:clean": "cd $INIT_CWD && rimraf dist && jest --clear-cache",
     "p:lint": "eslint $INIT_CWD/src --ext .ts,.tsx --color",
     "p:lint:fix": "eslint $INIT_CWD/src --ext .ts,.tsx --color --fix",
@@ -46,7 +47,7 @@
   },
   "workspaces": [
     "packages/**",
-    "apps/**"
+    "apps/*"
   ],
   "resolutions": {
     "terser": "4.8.0"
@@ -93,6 +94,7 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.5",
+    "babel-plugin-dynamic-import-node": "^2.3.3",
     "babel-plugin-import": "^1.13.5",
     "babel-plugin-inline-json-import": "^0.3.2",
     "babel-plugin-macros": "3.1.0",
