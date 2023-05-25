@@ -31,7 +31,10 @@ export function TablePopover({ children, ...props }: PopoverProps) {
   return (
     <Popover open={open} {...props}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
-      <PopoverContent className="z-30 flex w-[220px] flex-col gap-1 p-1">
+      <PopoverContent
+        className="z-30 flex w-[220px] flex-col gap-1 p-1"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" isMenu>

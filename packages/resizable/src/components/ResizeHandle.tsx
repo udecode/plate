@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 import { ResizeDirection, ResizeEvent } from '../types';
 
-export type ResizeHandleProps = HTMLPropsAs<'div'> & {
+export type ResizeHandleProps = Omit<HTMLPropsAs<'div'>, 'onResize'> & {
   direction: ResizeDirection;
   width?: number;
   startMargin?: number;

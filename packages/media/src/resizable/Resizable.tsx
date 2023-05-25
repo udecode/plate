@@ -147,7 +147,7 @@ export const Resizable = createComponentAs<ResizableProps>(
 
     return (
       <div {...wrapperProps}>
-        <div {...resizableProps} {...restProps}>
+        <div {...(resizableProps as any)} {...restProps}>
           {handleLeft}
           {children}
           {handleRight}
