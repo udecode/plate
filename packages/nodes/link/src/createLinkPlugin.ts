@@ -1,3 +1,4 @@
+import { AnchorHTMLAttributes } from 'react';
 import {
   createPluginFactory,
   isUrl,
@@ -36,6 +37,12 @@ export interface LinkPlugin {
   allowedSchemes?: string[];
 
   /**
+   * Default HTML attributes for link elements.
+   * @default {}
+   */
+  defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
+
+  /**
    * Callback to validate an url.
    * @default isUrl
    */
@@ -64,6 +71,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   withOverrides: withLink,
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    defaultLinkAttributes: {},
     isUrl,
     rangeBeforeOptions: {
       matchString: ' ',
