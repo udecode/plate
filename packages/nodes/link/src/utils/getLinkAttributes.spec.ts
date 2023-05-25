@@ -50,11 +50,12 @@ describe('getLinkAttributes', () => {
       url: 'https://example.com/',
     };
 
-    it('target should be undefiend', () => {
-      expect(getLinkAttributes(editor, link)).toEqual({
+    it('target should not be included', () => {
+      const linkAttributes = getLinkAttributes(editor, link);
+      expect(linkAttributes).toEqual({
         href: 'https://example.com/',
-        target: undefined,
       });
+      expect(linkAttributes).not.toHaveProperty('target');
     });
   });
 });

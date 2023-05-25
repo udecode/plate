@@ -17,7 +17,15 @@ export const getLinkAttributes = <V extends Value>(
   );
 
   const href = sanitizeUrl(link.url, { allowedSchemes }) || undefined;
-  const { target } = link;
 
-  return { href, target };
+  const attributes: {
+    href?: string;
+    target?: string;
+  } = { href };
+
+  if ('target' in link) {
+    attributes.target = link.target;
+  }
+
+  return attributes;
 };
