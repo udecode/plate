@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, forwardRef } from 'react';
 import {
   Popover,
   PopoverProps,
@@ -65,8 +65,8 @@ const PlateSuggestionLeaf = <V extends Value = Value>(
   }: StyledLeafProps<V, TSuggestionText>
 ) => {
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
-
   const isActive = activeSuggestionId === getSuggestionId(text);
+  const isDeletion = Boolean(text.suggestionDeletion);
 
   const blockAbove = getBlockAbove(editor, {
     at: findNodePath(editor, text),
@@ -76,8 +76,10 @@ const PlateSuggestionLeaf = <V extends Value = Value>(
 
   const [hue] = useState(() => Math.floor(Math.random() * 360));
 
+  const Element = isDeletion ? 'del' : 'span';
+
   return (
-    <span
+    <Element
       {...attributes}
       {...nodeProps}
       className={suggestionLeafVariants({
@@ -90,7 +92,7 @@ const PlateSuggestionLeaf = <V extends Value = Value>(
       }}
     >
       {children}
-    </span>
+    </Element>
   );
 };
 
@@ -101,12 +103,15 @@ interface PlateFloatingSuggestionsContentProps {
   };
 }
 
-const PlateFloatingSuggestionsContent = ({
+const PlateFloatingSuggestionsContent = forwardRef<
+  HTMLDivElement,
+  PlateFloatingSuggestionsContentProps
+>(({
   popoverProps: {
     contentProps = {},
     closeProps = {},
   } = {},
-}: PlateFloatingSuggestionsContentProps) => {
+}, ref) => {
   const editor = usePlateEditorState();
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
 
@@ -114,6 +119,7 @@ const PlateFloatingSuggestionsContent = ({
 
   return (
     <PopoverContent
+      ref={ref}
       sideOffset={4}
       onOpenAutoFocus={(event) => event.preventDefault()}
       onCloseAutoFocus={() => focusEditor(editor)}
@@ -134,40 +140,56 @@ const PlateFloatingSuggestionsContent = ({
           {/* Minimise button */}
           <PopoverClose
             className="-ml-2 p-1 aspect-square self-start translate-x-2 -translate-y-2 inline-flex justify-center items-center rounded-md transition-colors hover:bg-slate-100 text-xs"
+            aria-label="Close"
             {...closeProps}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
           </PopoverClose>
         </div>
 
         {description && (
-          <p className="max-w-sm text-sm break-words">
-            {description.type === 'replacement' ? (
-              <>
-                Replace <span className="font-medium">{description.deletedText}</span> with <span className="font-medium">{description.insertedText}</span>
-              </>
-            ) : (
-              <>
-                {description.type === 'insertion' ? 'Insert' : 'Remove'} <span className="font-medium">{description.insertedText || description.deletedText}</span>
-              </>
-            )}
+          <p className="max-w-sm text-sm break-words whitespace-pre-wrap">
+            {{
+              replacement: () => <>
+                Replace{' '}
+                <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
+                  {description.deletedText}
+                </del>{' '}
+                with{' '}
+                <span className="font-medium bg-green-100 text-green-800 p-0.5">
+                  {description.insertedText}
+                </span>
+              </>,
+              insertion: () => <>
+                Insert{' '}
+                <span className="font-medium bg-green-100 text-green-800 p-0.5">
+                  {description.insertedText!.replace(/\n/g, '↵')}
+                </span>
+              </>,
+              deletion: () => <>
+                Remove{' '}
+                <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
+                  {description.deletedText!.replace(/\n/g, '↵')}
+                </del>
+              </>,
+            }[description.type]()}
           </p>
         )}
 
         {/* Buttons */}
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" className="inline-flex justify-center items-center rounded-md font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <button aria-label="Accept" type="button" className="inline-flex justify-center items-center rounded-md font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
+            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
 
-          <button type="button" className="inline-flex justify-center items-center rounded-md text-sm font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+          <button aria-label="Reject" type="button" className="inline-flex justify-center items-center rounded-md text-sm font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
+            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
           </button>
         </div>
       </div>
     </PopoverContent>
   );
-};
+});
 
 interface PlateFloatingSuggestionsProps {
   popoverProps?: {

@@ -8,12 +8,10 @@ import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 export type TSuggestionInsertionDescription = {
   type: 'insertion';
   insertedText: string;
-  deletedText: undefined;
 };
 
 export type TSuggestionDeletionDescription = {
   type: 'deletion';
-  insertedText: undefined;
   deletedText: string;
 };
 
@@ -53,14 +51,12 @@ export const getSuggestionDescription = <V extends Value = Value>(
     return {
       type: 'insertion',
       insertedText,
-      deletedText: undefined,
     };
   }
 
   if (deletions.length > 0) {
     return {
       type: 'deletion',
-      insertedText: undefined,
       deletedText,
     };
   }
