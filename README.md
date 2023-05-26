@@ -16,11 +16,12 @@ Plate
 </div>
 </p>
 
-Plate is divided into three key projects:
+Plate is divided into four key projects:
 
 1. **Core**: At the heart of Plate lies our advanced plugin system, meticulously crafted for `slate-react`. It's our guiding principle to prioritize a separation of concerns, ensuring a clean, clutter-free environment for your project development.
-2. **Plugins**: We provide an extensive suite of plugin packages, aimed at optimizing editor behaviors, hooks, serialization, and normalization, among other functionalities. The real magic? They're **100% unstyled**. You have the creative freedom to style it as you envision, ensuring your project remains as unique as you are.
-3. **Components**: Accessibility and customization are central to our mission. That's why we offer Plate CLI-generated components, serving as the building blocks of your own customized component library. Design it your way, make it accessible for all.
+2. **Plugins**: We provide an extensive suite of plugin packages, aimed at optimizing editor behaviors, hooks, serialization, and normalization, among other functionalities.
+3. **Primitives**: Besides the headless plugins, we also provide primitive components built on top of [Radix UI](https://www.radix-ui.com/). These are **unstyled**, accessible components for building high-quality design systems. 
+4. **Components**: Recognizing the appeal of a visually pleasing start, we offer Plate CLI-generated components, built on top of [shadcn/ui](https://ui.shadcn.com/). Use this as a reference to build your own component library. 
 
 ## Documentation
 

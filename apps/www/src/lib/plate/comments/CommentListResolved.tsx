@@ -2,7 +2,9 @@ import React from 'react';
 import { useCommentsResolved } from '@udecode/plate-comments';
 import { CommentItem } from './CommentItem';
 
-export function PlateCommentsResolved() {
+// !HEADLESS
+
+export function CommentListResolved() {
   const resolvedComments = useCommentsResolved();
 
   return (

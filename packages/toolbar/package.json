@@ -30,7 +30,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@tippyjs/react": "^4.2.6",
     "@udecode/plate-common": "21.1.5",
     "@udecode/plate-floating": "21.1.5",
     "react-use": "^17.3.2"

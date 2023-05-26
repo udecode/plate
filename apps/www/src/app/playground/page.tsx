@@ -1,3 +1,3 @@
-import App from '@/components/examples/PlaygroundApp';
+import { PlaygroundDemo } from '@/components/examples/PlaygroundDemo';
 
-export default App;
+export default PlaygroundDemo;

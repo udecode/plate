@@ -7,10 +7,10 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
+import { CommentLeaf } from '@/plate/comments/CommentLeaf';
 import { commentsValue } from '@/plate/comments/constants';
-import { FloatingComments } from '@/plate/comments/FloatingComments';
+import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
-import { PlateCommentLeaf } from '@/plate/comments/PlateCommentLeaf';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
 import { BalloonToolbarButtons } from '@/plate/toolbar/BalloonToolbarButtons';
@@ -21,7 +21,7 @@ const plugins = createMyPlugins(
   {
     components: {
       ...plateUI,
-      [MARK_COMMENT]: PlateCommentLeaf,
+      [MARK_COMMENT]: CommentLeaf,
     },
   }
 );
@@ -34,7 +34,7 @@ export default function CommentsApp() {
           <BalloonToolbarButtons />
         </Plate>
 
-        <FloatingComments />
+        <FloatingCommentList />
       </MyCommentsProvider>
     </PlateProvider>
   );

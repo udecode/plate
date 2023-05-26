@@ -11,8 +11,8 @@ import {
 } from '@udecode/plate-media';
 import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import { FloatingMedia } from './FloatingMedia';
 import { mediaFloatingOptions } from './mediaFloatingOptions';
-import { PlateFloatingMedia } from './PlateFloatingMedia';
 
 export interface ImageElementPropsCaption {
   disabled?: boolean;
@@ -70,7 +70,7 @@ export function ImageElement({ className, ...props }: ImageElementProps) {
 
   return (
     <ElementPopover
-      content={<PlateFloatingMedia pluginKey={ELEMENT_IMAGE} />}
+      content={!readOnly ? <FloatingMedia pluginKey={ELEMENT_IMAGE} /> : null}
       floatingOptions={mediaFloatingOptions}
       {...popoverProps}
     >

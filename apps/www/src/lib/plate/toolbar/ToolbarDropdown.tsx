@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
-import { floatingStyles } from './floatingStyles';
 import { useDropdownControls } from './useDropdownControls';
+
+import { popoverVariants } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 type ToolbarDropdownProps = {
   control: ReactNode;
@@ -31,7 +33,7 @@ export function ToolbarDropdown({
       {open && (
         <div
           ref={refs.setFloating}
-          className={floatingStyles.rootVariants()}
+          className={cn(popoverVariants(), 'w-auto p-0')}
           style={styles}
         >
           {children}

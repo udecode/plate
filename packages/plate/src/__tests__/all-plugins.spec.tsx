@@ -23,7 +23,6 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { playgroundValue } from '@/components/examples/playgroundValue';
 import { Icons } from '@/components/icons';
 import { createPlugins, Plate } from '@/core/src/index';
 import { createPlateUI } from '@/lib/createPlateUI';
@@ -41,6 +40,7 @@ import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
 import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
+import { playgroundValue } from '@/plate/playground/playgroundValue';
 import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';

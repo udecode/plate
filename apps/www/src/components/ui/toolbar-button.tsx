@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { isDefined } from '@udecode/plate-common';
 import { VariantProps } from 'class-variance-authority';
 import { ToggleProps, toggleVariants } from './toggle';
 import { ToolbarToggleGroup } from './toolbar';
@@ -42,7 +41,7 @@ const ToolbarButton = React.forwardRef<
   ) => {
     let content: JSX.Element;
 
-    if (!isDefined(pressed)) {
+    if (typeof pressed !== 'boolean') {
       content = (
         <ToolbarPrimitive.Button
           ref={ref}

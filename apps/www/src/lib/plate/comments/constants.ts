@@ -25,7 +25,9 @@ export const commentsData: Record<string, TComment> = {
   2: {
     id: '2',
     userId: '1',
-    value: [{ type: 'p', children: [{ text: 'What?' }] }],
+    value: [
+      { type: 'p', children: [{ text: 'Can you review this one @12joan?' }] },
+    ],
     createdAt: 1663453729191,
   },
   3: {
@@ -38,16 +40,14 @@ export const commentsData: Record<string, TComment> = {
   4: {
     id: '4',
     userId: '2',
-    value: [
-      { type: 'p', children: [{ text: "This is a reply I can't edit." }] },
-    ],
+    value: [{ type: 'p', children: [{ text: 'LGTM.' }] }],
     parentId: '2',
     createdAt: 1663453740181,
   },
   5: {
     id: '4',
     userId: '1',
-    value: [{ type: 'p', children: [{ text: 'This is a reply I can edit.' }] }],
+    value: [{ type: 'p', children: [{ text: 'Thanks!' }] }],
     parentId: '2',
     createdAt: 1663453740182,
   },
@@ -74,12 +74,12 @@ export const commentsValue: MyValue = [
         comment: true,
         comment_2: true,
       },
-      { text: 'amet' },
-      {
-        text: 'paragraph',
-        comment: true,
-        comment_3: true,
-      },
+      // { text: 'amet' },
+      // {
+      //   text: 'paragraph',
+      //   comment: true,
+      //   comment_3: true,
+      // },
       {
         text: ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
       },

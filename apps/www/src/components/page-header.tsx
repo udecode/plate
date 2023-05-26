@@ -45,7 +45,6 @@ function PageHeaderDescription({
         'max-w-[750px] text-lg text-muted-foreground sm:text-xl',
         className
       )}
-      ratio={0.6}
       {...props}
     />
   );

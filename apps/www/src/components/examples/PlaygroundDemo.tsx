@@ -1,8 +1,6 @@
 'use client';
 
-import React, { CSSProperties, useMemo, useRef } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React, { useMemo, useRef } from 'react';
 import {
   AutoformatPlugin,
   createAlignPlugin,
@@ -57,14 +55,12 @@ import {
 } from '@udecode/plate-excalidraw';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
-import { HeadingToolbarButtons } from './HeadingToolbarButtons';
-import { playgroundValue } from './playgroundValue';
 
 import { createPlateUI } from '@/lib/createPlateUI';
 import { alignPlugin } from '@/plate/align/alignPlugin';
 import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
-import { FloatingComments } from '@/plate/comments/FloatingComments';
+import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
 import { editableProps } from '@/plate/common/editableProps';
 import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
@@ -74,12 +70,14 @@ import { emojiPlugin } from '@/plate/emoji/emojiPlugin';
 import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';
+import { HeadingToolbarButtons } from '@/plate/HeadingToolbarButtons';
 import { indentPlugin } from '@/plate/indent/indentPlugin';
 import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 import { linkPlugin } from '@/plate/link/linkPlugin';
 import { MENTIONABLES } from '@/plate/mention/mentionables';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
 import { withStyledPlaceHolders } from '@/plate/placeholder/withStyledPlaceHolders';
+import { playgroundValue } from '@/plate/playground/playgroundValue';
 import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
@@ -101,11 +99,7 @@ let components = createPlateUI({
 });
 components = withStyledPlaceHolders(components);
 
-const styles: Record<string, CSSProperties> = {
-  container: { position: 'relative' },
-};
-
-function App() {
+export function PlaygroundDemo() {
   const containerRef = useRef(null);
 
   const plugins = useMemo(
@@ -171,30 +165,26 @@ function App() {
   );
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <PlateProvider<MyValue> initialValue={playgroundValue} plugins={plugins}>
-        <HeadingToolbar>
-          <HeadingToolbarButtons />
-        </HeadingToolbar>
+    <PlateProvider<MyValue> initialValue={playgroundValue} plugins={plugins}>
+      <HeadingToolbar>
+        <HeadingToolbarButtons />
+      </HeadingToolbar>
 
-        <MyCommentsProvider>
-          <div ref={containerRef} style={styles.container}>
-            <Plate editableProps={editableProps}>
-              <BalloonToolbar>
-                <BalloonToolbarButtons />
-              </BalloonToolbar>
+      <MyCommentsProvider>
+        <div ref={containerRef} className="relative">
+          <Plate editableProps={editableProps}>
+            <BalloonToolbar>
+              <BalloonToolbarButtons />
+            </BalloonToolbar>
 
-              <MentionCombobox items={MENTIONABLES} />
+            <MentionCombobox items={MENTIONABLES} />
 
-              <CursorOverlayContainer containerRef={containerRef} />
-            </Plate>
-          </div>
+            <CursorOverlayContainer containerRef={containerRef} />
+          </Plate>
+        </div>
 
-          <FloatingComments />
-        </MyCommentsProvider>
-      </PlateProvider>
-    </DndProvider>
+        <FloatingCommentList />
+      </MyCommentsProvider>
+    </PlateProvider>
   );
 }
-
-export default App;

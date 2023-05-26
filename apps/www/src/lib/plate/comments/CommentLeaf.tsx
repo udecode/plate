@@ -11,7 +11,7 @@ import {
 import { Value } from '@udecode/plate-common';
 import { PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
 
-export function PlateCommentLeaf({
+export function CommentLeaf({
   className,
   ...props
 }: PlateLeafProps<Value, TCommentText>) {

@@ -4,9 +4,9 @@ import {
   useFloatingCommentsState,
 } from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-common';
-import { FloatingCommentsContent } from './FloatingCommentsContent';
+import { FloatingCommentListContent } from './FloatingCommentListContent';
 
-export function FloatingComments() {
+export function FloatingCommentList() {
   const { loaded, activeCommentId } = useFloatingCommentsState();
 
   if (!loaded || !activeCommentId) return null;
@@ -14,7 +14,7 @@ export function FloatingComments() {
   return (
     <PortalBody>
       <CommentsPositioner className="absolute z-10 w-[418px] pb-4">
-        <FloatingCommentsContent />
+        <FloatingCommentListContent />
       </CommentsPositioner>
     </PortalBody>
   );

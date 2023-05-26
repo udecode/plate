@@ -44,7 +44,7 @@ import { BlockquoteElement } from './plate/block-quote/BlockquoteElement';
 import { CodeBlockElement } from './plate/code-block/CodeBlockElement';
 import { CodeLineElement } from './plate/code-block/CodeLineElement';
 import { CodeSyntaxLeaf } from './plate/code-block/CodeSyntaxLeaf';
-import { PlateCommentLeaf } from './plate/comments/PlateCommentLeaf';
+import { CommentLeaf } from './plate/comments/CommentLeaf';
 import { HrElement } from './plate/horizontal-rule/HrElement';
 import { LinkElement } from './plate/link/LinkElement';
 import { TodoListElement } from './plate/list/TodoListElement';
@@ -105,7 +105,7 @@ export const createPlateUI = <T extends string = string>(
     [MARK_SUBSCRIPT]: withProps(PlateLeaf, { as: 'sub' }),
     [MARK_SUPERSCRIPT]: withProps(PlateLeaf, { as: 'sup' }),
     [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
-    [MARK_COMMENT]: PlateCommentLeaf,
+    [MARK_COMMENT]: CommentLeaf,
   };
 
   if (overrideByKey) {

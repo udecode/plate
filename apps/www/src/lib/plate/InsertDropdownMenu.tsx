@@ -183,7 +183,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
         className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
       >
         {items.map(({ items: nestedItems, label }, index) => (
-          <>
+          <React.Fragment key={label}>
             {index !== 0 && <DropdownMenuSeparator />}
 
             <DropdownMenuLabel>{label}</DropdownMenuLabel>
@@ -229,7 +229,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                 </DropdownMenuItem>
               )
             )}
-          </>
+          </React.Fragment>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

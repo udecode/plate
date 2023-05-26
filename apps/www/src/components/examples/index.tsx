@@ -20,7 +20,6 @@ import ExitBreakApp from './ExitBreakApp';
 import FindReplaceApp from './FindReplaceApp';
 import FontApp from './FontApp';
 import ForcedLayoutApp from './ForcedLayoutApp';
-import { HeadingToolbarButtons } from './HeadingToolbarButtons';
 import HighlightApp from './HighlightApp';
 import HorizontalRuleApp from './HorizontalRuleApp';
 import HugeDocumentApp from './HugeDocumentApp';
@@ -37,8 +36,7 @@ import MultiEditorsApp from './MultiEditorsApp';
 import MultipleEditorsApp from './MultipleEditorsApp';
 import PlaceholderApp from './PlaceholderApp';
 import PlateApp from './PlateApp';
-import PlaygroundApp from './PlaygroundApp';
-import { playgroundValue } from './playgroundValue';
+import { PlaygroundDemo } from './PlaygroundDemo';
 import PreviewMdApp from './PreviewMdApp';
 import ResetNodeApp from './ResetNodeApp';
 import SerializingCsvApp from './SerializingCsvApp';
@@ -51,6 +49,9 @@ import SuggestionApp from './SuggestionApp';
 import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
+
+import { HeadingToolbarButtons } from '@/plate/HeadingToolbarButtons';
+import { playgroundValue } from '@/plate/playground/playgroundValue';
 
 export const examples = {
   AlignmentApp,
@@ -91,7 +92,7 @@ export const examples = {
   MultipleEditorsApp,
   PlaceholderApp,
   PlateApp,
-  PlaygroundApp,
+  PlaygroundApp: PlaygroundDemo,
   playgroundValue,
   PreviewMdApp,
   ResetNodeApp,

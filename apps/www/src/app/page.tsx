@@ -3,7 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-import PlaygroundPage from '@/components/examples/PlaygroundApp';
+import { PlaygroundDemo } from '@/components/examples/PlaygroundDemo';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
@@ -22,7 +22,8 @@ export default function IndexPage() {
       <StyleSwitcher />
       <PageHeader>
         <Link
-          href="/docs/forms/react-hook-form"
+          // TODO:
+          href="/docs"
           className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
         >
           🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Plate is
@@ -31,8 +32,8 @@ export default function IndexPage() {
         </Link>
         <PageHeaderHeading>Build your rich-text editor.</PageHeaderHeading>
         <PageHeaderDescription>
-          Plugin system & unstyled components. CLI for styled components.
-          Accessible. Customizable. Open Source.
+          Plugin system & primitive component library. <br />
+          CLI for styled components. Customizable. Open Source.
         </PageHeaderDescription>
         <div className="flex w-full items-center space-x-4 pb-8 pt-4 md:pb-10">
           <Link href="/docs" className={cn(buttonVariants())}>
@@ -68,7 +69,7 @@ export default function IndexPage() {
       {/* </section> */}
       <section className="relative">
         <div className="border bg-background shadow-xl">
-          <PlaygroundPage />
+          <PlaygroundDemo />
         </div>
       </section>
     </div>

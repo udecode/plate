@@ -10,13 +10,15 @@ import {
   ToolbarButtonProps,
 } from '@/components/ui/toolbar-button';
 
+// !HEADLESS
+
 type PlateCommentsShowResolvedButtonProps = ToolbarButtonProps & {
   fetchContacts: () => Promise<void>;
   renderContainer: (props: any) => JSX.Element;
   retrieveUser: () => Promise<void>;
 };
 
-export function PlateCommentsShowResolvedButton(
+export function CommentListShowResolvedButton(
   props: PlateCommentsShowResolvedButtonProps
 ) {
   const { id, fetchContacts, renderContainer, retrieveUser, ...otherProps } =

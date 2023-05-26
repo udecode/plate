@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { VariantProps } from '@udecode/plate-tailwind';
-import { cva } from 'class-variance-authority';
+import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 

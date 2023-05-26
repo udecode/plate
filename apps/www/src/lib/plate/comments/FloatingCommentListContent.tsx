@@ -15,7 +15,9 @@ export type FloatingCommentsContentProps = {
   disableForm?: boolean;
 };
 
-export function FloatingCommentsContent(props: FloatingCommentsContentProps) {
+export function FloatingCommentListContent(
+  props: FloatingCommentsContentProps
+) {
   const { disableForm } = props;
 
   const { ref, activeCommentId, hasNoComment, myUserId } =

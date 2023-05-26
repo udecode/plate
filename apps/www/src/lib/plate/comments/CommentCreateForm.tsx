@@ -1,26 +1,30 @@
-import React, { useRef } from 'react';
-import { useCommentsSelectors } from '@udecode/plate-comments';
+import React from 'react';
+import {
+  CommentNewSubmitButton,
+  CommentNewTextarea,
+  useCommentsSelectors,
+} from '@udecode/plate-comments';
+import { cn } from '@udecode/plate-tailwind';
 import { CommentAvatar } from './CommentAvatar';
-import { CommentNewSubmitButton } from './CommentNewSubmitButton';
-import { PlateCommentNewTextarea } from './PlateCommentNewTextarea';
+
+import { buttonVariants } from '@/components/ui/button';
+import { inputVariants } from '@/components/ui/input';
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();
 
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
   return (
-    <div className="relative block cursor-default whitespace-normal bg-background text-left text-sm font-normal text-black outline-none">
-      <div className="flex w-full space-x-2">
-        <CommentAvatar userId={myUserId} />
+    <div className="flex w-full space-x-2">
+      <CommentAvatar userId={myUserId} />
 
-        <div className="flex grow flex-col space-y-2">
-          <PlateCommentNewTextarea ref={textareaRef} />
+      <div className="flex grow flex-col items-end gap-2">
+        <CommentNewTextarea className={inputVariants()} />
 
-          <div className="block select-text whitespace-normal text-left text-sm font-normal text-black [-webkit-tap-highlight-color:rgba(0,0,0,0)] [zoom:1]">
-            <CommentNewSubmitButton />
-          </div>
-        </div>
+        <CommentNewSubmitButton
+          className={cn(buttonVariants({ size: 'sm' }), 'w-[90px]')}
+        >
+          Comment
+        </CommentNewSubmitButton>
       </div>
     </div>
   );

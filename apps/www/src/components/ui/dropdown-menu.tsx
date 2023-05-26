@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { VariantProps } from '@udecode/plate-tailwind';
-import { cva } from 'class-variance-authority';
+import { cva, VariantProps } from 'class-variance-authority';
 import { Check, ChevronRight } from 'lucide-react';
 
 import { Icons } from '@/components/icons';
