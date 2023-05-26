@@ -8,8 +8,6 @@ import {
   PopoverPortalProps,
   PopoverContent,
   PopoverContentProps,
-  PopoverClose,
-  PopoverCloseProps,
 } from '@radix-ui/react-popover';
 import { cva } from 'class-variance-authority';
 import {
@@ -96,22 +94,10 @@ const PlateSuggestionLeaf = <V extends Value = Value>(
   );
 };
 
-interface PlateFloatingSuggestionsContentProps {
-  popoverProps?: {
-    contentProps?: Partial<PopoverContentProps>;
-    closeProps?: Partial<PopoverCloseProps>;
-  };
-}
-
 const PlateFloatingSuggestionsContent = forwardRef<
   HTMLDivElement,
-  PlateFloatingSuggestionsContentProps
->(({
-  popoverProps: {
-    contentProps = {},
-    closeProps = {},
-  } = {},
-}, ref) => {
+  Partial<PopoverContentProps>
+>((props, ref) => {
   const editor = usePlateEditorState();
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
 
@@ -123,69 +109,76 @@ const PlateFloatingSuggestionsContent = forwardRef<
       sideOffset={4}
       onOpenAutoFocus={(event) => event.preventDefault()}
       onCloseAutoFocus={() => focusEditor(editor)}
-      className="bg-white shadow-md rounded-lg p-4 border"
-      {...contentProps}
+      className="bg-white shadow-md rounded-lg border max-w-full w-72"
+      {...props}
     >
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          {/* Avatar */}
-          <div className="w-10 aspect-square rounded-full bg-gray-300" />
+      <div className="divide-y">
+        {Array(4).fill(null).map((_, i) => (
+          <div key={i} className="p-4 space-y-2">
+            <div className="flex items-start gap-2">
+              {/* Avatar */}
+              <div className="w-10 aspect-square rounded-full bg-gray-300 shrink-0 " />
 
-          {/* Info */}
-          <div className="grow">
-            <div className="font-medium text-sm">Ada Lovelace</div>
-            <div className="text-slate-500 text-xs font-medium">3 minutes ago</div>
+              {/* Info */}
+              <div className="grow">
+                <div className="font-medium text-sm break-all">Ada Lovelace</div>
+                <div className="text-slate-500 text-xs font-medium">3 minutes ago</div>
+              </div>
+
+              {/* Buttons */}
+              <div className="shrink-0">
+                <button
+                  aria-label="Accept"
+                  type="button"
+                  // TODO: Refactor into button group component
+                  className="inline-flex justify-center items-center first:rounded-s-md last:rounded-e-md text-sm relative focus-visible:z-10 font-medium py-1 px-2 transition-colors border-y border-s last:border-e hover:bg-slate-100"
+                >
+                  {/* TODO: Refactor out icons */}
+                  <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+
+                <button
+                  aria-label="Reject"
+                  type="button"
+                  // TODO: Refactor into button group component
+                  className="inline-flex justify-center items-center first:rounded-s-md last:rounded-e-md text-sm relative focus-visible:z-10 font-medium py-1 px-2 transition-colors border-y border-s last:border-e hover:bg-slate-100"
+                >
+                  {/* TODO: Refactor out icons */}
+                  <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+                </button>
+              </div>
+            </div>
+
+            {description && (
+              <p className="max-w-sm text-sm break-words whitespace-pre-wrap">
+                {{
+                  replacement: () => <>
+                    Replace{' '}
+                    <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
+                      {description.deletedText}
+                    </del>{' '}
+                    with{' '}
+                    <span className="font-medium bg-green-100 text-green-800 p-0.5">
+                      {description.insertedText}
+                    </span>
+                  </>,
+                  insertion: () => <>
+                    Insert{' '}
+                    <span className="font-medium bg-green-100 text-green-800 p-0.5">
+                      {description.insertedText!.replace(/\n/g, '↵')}
+                    </span>
+                  </>,
+                  deletion: () => <>
+                    Remove{' '}
+                    <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
+                      {description.deletedText!.replace(/\n/g, '↵')}
+                    </del>
+                  </>,
+                }[description.type]()}
+              </p>
+            )}
           </div>
-
-          {/* Minimise button */}
-          <PopoverClose
-            className="-ml-2 p-1 aspect-square self-start translate-x-2 -translate-y-2 inline-flex justify-center items-center rounded-md transition-colors hover:bg-slate-100 text-xs"
-            aria-label="Close"
-            {...closeProps}
-          >
-            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-          </PopoverClose>
-        </div>
-
-        {description && (
-          <p className="max-w-sm text-sm break-words whitespace-pre-wrap">
-            {{
-              replacement: () => <>
-                Replace{' '}
-                <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
-                  {description.deletedText}
-                </del>{' '}
-                with{' '}
-                <span className="font-medium bg-green-100 text-green-800 p-0.5">
-                  {description.insertedText}
-                </span>
-              </>,
-              insertion: () => <>
-                Insert{' '}
-                <span className="font-medium bg-green-100 text-green-800 p-0.5">
-                  {description.insertedText!.replace(/\n/g, '↵')}
-                </span>
-              </>,
-              deletion: () => <>
-                Remove{' '}
-                <del className="font-medium bg-red-100 text-red-800 no-underline p-0.5">
-                  {description.deletedText!.replace(/\n/g, '↵')}
-                </del>
-              </>,
-            }[description.type]()}
-          </p>
-        )}
-
-        {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          <button aria-label="Accept" type="button" className="inline-flex justify-center items-center rounded-md font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </button>
-
-          <button aria-label="Reject" type="button" className="inline-flex justify-center items-center rounded-md text-sm font-medium py-2 px-4 transition-colors border hover:bg-slate-100">
-            <svg aria-hidden xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-          </button>
-        </div>
+        ))}
       </div>
     </PopoverContent>
   );
@@ -197,7 +190,6 @@ interface PlateFloatingSuggestionsProps {
     anchorProps?: Partial<PopoverAnchorProps>;
     portalProps?: Partial<PopoverPortalProps>;
     contentProps?: Partial<PopoverContentProps>;
-    closeProps?: Partial<PopoverCloseProps>;
   };
 }
 
@@ -207,7 +199,6 @@ const PlateFloatingSuggestions = ({
     anchorProps = {},
     portalProps = {},
     contentProps = {},
-    closeProps = {},
   } = {},
 }: PlateFloatingSuggestionsProps) => {
   const editor = usePlateEditorState();
@@ -216,17 +207,6 @@ const PlateFloatingSuggestions = ({
   // TODO: Refactor into useOverrideableState helper
   const [isOpen, setIsOpen] = useState(activeSuggestionId !== null);
   useEffect(() => setIsOpen(activeSuggestionId !== null), [activeSuggestionId]);
-
-  // Close when text changes
-  // TODO: Refactor into useEffectAfterFirst helper
-  // const isFirstRef = useRef(true);
-  // useEffect(() => {
-  //   if (isFirstRef.current) {
-  //     isFirstRef.current = false;
-  //     return;
-  //   }
-  //   setIsOpen(false);
-  // }, [text.text]);
 
   return (
     <Popover
@@ -261,12 +241,7 @@ const PlateFloatingSuggestions = ({
       />
 
       <PopoverPortal {...portalProps}>
-        <PlateFloatingSuggestionsContent
-          popoverProps={{
-            contentProps,
-            closeProps,
-          }}
-        />
+        <PlateFloatingSuggestionsContent {...contentProps} />
       </PopoverPortal>
     </Popover>
   );
