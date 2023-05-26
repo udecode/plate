@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plate, PlateProvider } from '@udecode/plate';
 
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { suggestionValue } from '@/plate/suggestion/constants';
 import { MySuggestionProvider } from '@/plate/suggestion/MySuggestionsProvider';
 import { PlateSuggestionToolbarDropdown } from '@/plate/suggestion/PlateSuggestionToolbarDropdown';

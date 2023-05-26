@@ -2,8 +2,8 @@ import React from 'react';
 import { Plate } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { createPreviewPlugin } from '@/plate/preview-markdown/createPreviewPlugin';
 import { PreviewLeaf } from '@/plate/preview-markdown/PreviewLeaf';
 import { previewMdValue } from '@/plate/preview-markdown/previewMdValue';

@@ -13,8 +13,8 @@ import {
 
 import { preFormat } from '@/plate/autoformat/autoformatUtils';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { horizontalRuleValue } from '@/plate/horizontal-rule/horizontalRuleValue';
 import {
   createMyPlugins,

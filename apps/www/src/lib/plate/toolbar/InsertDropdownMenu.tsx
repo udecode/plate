@@ -23,7 +23,7 @@ import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { focusEditor } from '@udecode/plate-common';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { triggerFloatingLink } from '@udecode/plate-link';
-import { ELEMENT_UL, toggleList } from '@udecode/plate-list';
+import { ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 
 import { Icons } from '@/components/icons';
@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { toggleListDemo } from '@/plate/demo/toggleListDemo';
 import { insertMedia } from '@/plate/media/insertMedia';
 import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
@@ -188,31 +189,27 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
 
             <DropdownMenuLabel>{label}</DropdownMenuLabel>
             {nestedItems.map(
-              ({ value: pluginKey, label: itemLabel, icon: Icon }) => (
+              ({ value: type, label: itemLabel, icon: Icon }) => (
                 <DropdownMenuItem
-                  key={pluginKey}
+                  key={type}
                   className="min-w-[180px]"
                   onSelect={async () => {
-                    const type = pluginKey;
-
                     if (type === ELEMENT_CODE_BLOCK) {
                       insertEmptyCodeBlock(editor);
-                    } else if (pluginKey === ELEMENT_IMAGE) {
+                    } else if (type === ELEMENT_IMAGE) {
                       await insertMedia(editor, { type: 'image' });
-                    } else if (pluginKey === ELEMENT_MEDIA_EMBED) {
+                    } else if (type === ELEMENT_MEDIA_EMBED) {
                       await insertMedia(editor, { type: 'embed' });
-                    } else if (
-                      pluginKey === ELEMENT_UL ||
-                      pluginKey === ELEMENT_OL
-                    ) {
+                    } else if (type === ELEMENT_UL || type === ELEMENT_OL) {
                       insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
                         select: true,
                         nextBlock: true,
                       });
-                      toggleList(editor, { type: pluginKey });
-                    } else if (pluginKey === ELEMENT_TABLE) {
+
+                      toggleListDemo(editor as any, type);
+                    } else if (type === ELEMENT_TABLE) {
                       insertTable(editor);
-                    } else if (pluginKey === ELEMENT_LINK) {
+                    } else if (type === ELEMENT_LINK) {
                       triggerFloatingLink(editor, { focused: true });
                     } else {
                       insertEmptyElement(editor, type, {

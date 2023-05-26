@@ -9,8 +9,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { linkPlugin } from '@/plate/link/linkPlugin';
 import { deserializeMdValue } from '@/plate/serializing-md/deserializeMdValue';
 import {

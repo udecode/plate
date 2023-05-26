@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate';
 
 import { basicMarksPlugins } from '@/plate/basic-marks/basicMarksPlugins';
-import { plateUI } from '@/plate/common/plateUI';
+import { plateUI } from '@/plate/demo/plateUI';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { createMyPlugins } from '@/plate/typescript/plateTypes';
 

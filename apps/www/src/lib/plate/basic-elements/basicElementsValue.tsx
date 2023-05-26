@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
-import { mapNodeId } from '@/plate/common/mapNodeId';
+import { mapNodeId } from '@/plate/demo/mapNodeId';
 
 jsx;
 

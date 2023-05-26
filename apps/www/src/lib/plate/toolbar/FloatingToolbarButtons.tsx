@@ -8,6 +8,7 @@ import {
   usePlateReadOnly,
 } from '@udecode/plate';
 import { MarkToolbarButton } from './MarkToolbarButton';
+import { MoreDropdownMenu } from './MoreDropdownMenu';
 import { TurnIntoDropdownMenu } from './TurnIntoDropdownMenu';
 
 import { Icons } from '@/components/icons';
@@ -57,6 +58,8 @@ export function FloatingToolbarButtons() {
       <CommentToolbarButton tooltip="Comment (⌘+⇧+M)">
         <Icons.commentAdd />
       </CommentToolbarButton>
+
+      <MoreDropdownMenu />
     </>
   );
 }

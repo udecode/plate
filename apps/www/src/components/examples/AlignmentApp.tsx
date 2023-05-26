@@ -17,8 +17,8 @@ import {
 import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
 import { alignValue } from '@/plate/align/alignValue';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 

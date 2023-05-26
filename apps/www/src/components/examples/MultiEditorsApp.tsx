@@ -2,7 +2,7 @@ import React from 'react';
 import { Plate } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { createMultiEditorsValue } from '@/plate/multiple-editors/createMultiEditorsValue';
 import { MyValue } from '@/plate/typescript/plateTypes';
 

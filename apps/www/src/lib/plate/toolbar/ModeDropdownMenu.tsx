@@ -18,24 +18,6 @@ import {
 import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
-const items = [
-  {
-    label: 'Editing',
-    tooltip: 'Editing',
-    icon: Icons.editing,
-  },
-  {
-    label: 'Suggesting',
-    tooltip: 'Suggesting',
-    icon: Icons.suggesting,
-  },
-  {
-    label: 'Viewing',
-    tooltip: 'Viewing',
-    icon: Icons.viewing,
-  },
-];
-
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());
   const setReadOnly = usePlateStore().set.readOnly();

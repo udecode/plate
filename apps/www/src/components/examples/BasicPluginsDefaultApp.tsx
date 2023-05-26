@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate';
 import { basicEditorValue } from './BasicPluginsComponentsApp';
 
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { MyPlatePlugin, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins: MyPlatePlugin[] = [

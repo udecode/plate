@@ -22,7 +22,7 @@ import {
   isCollapsed,
   toggleNodeType,
 } from '@udecode/plate-common';
-import { ELEMENT_UL, toggleList } from '@udecode/plate-list';
+import { ELEMENT_UL } from '@udecode/plate-list';
 
 import { Icons } from '@/components/icons';
 import {
@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { toggleListDemo } from '@/plate/demo/toggleListDemo';
 import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
 const items = [
@@ -145,7 +146,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           value={value}
           onValueChange={(type) => {
             if (type === ELEMENT_UL || type === ELEMENT_OL) {
-              toggleList(editor, { type });
+              toggleListDemo(editor as any, type);
             } else {
               unwrapList(editor);
               toggleNodeType(editor, { activeType: type });

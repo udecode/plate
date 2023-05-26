@@ -7,8 +7,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { singleLineValue } from '@/plate/single-line/singleLineValue';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 

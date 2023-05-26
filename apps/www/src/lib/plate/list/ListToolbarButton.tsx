@@ -4,8 +4,9 @@ import {
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
+import { ELEMENT_UL, getListItemEntry } from '@udecode/plate-list';
 
+import { toggleListDemo } from '@/plate/demo/toggleListDemo';
 import {
   BlockToolbarButton,
   BlockToolbarButtonProps,
@@ -28,7 +29,7 @@ export function ListToolbarButton({
         e.preventDefault();
         e.stopPropagation();
 
-        toggleList(editor, { type: nodeType });
+        toggleListDemo(editor, nodeType);
         focusEditor(editor);
       }}
       {...props}

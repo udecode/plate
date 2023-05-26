@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-excalidraw';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
 import { excalidrawValue } from '@/plate/excalidraw/excalidrawValue';
 import { MyPlatePlugin, MyValue } from '@/plate/typescript/plateTypes';

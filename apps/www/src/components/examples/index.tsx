@@ -50,8 +50,8 @@ import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
-import { HeadingToolbarButtons } from '@/plate/HeadingToolbarButtons';
 import { playgroundValue } from '@/plate/playground/playgroundValue';
+import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
 
 export const examples = {
   AlignmentApp,

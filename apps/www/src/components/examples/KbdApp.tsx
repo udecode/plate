@@ -8,8 +8,8 @@ import {
 
 import { Icons } from '@/components/icons';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { kbdValue } from '@/plate/kbd/kbdValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';

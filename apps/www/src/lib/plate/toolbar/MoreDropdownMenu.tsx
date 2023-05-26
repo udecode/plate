@@ -6,7 +6,6 @@ import {
   useEventPlateId,
 } from '@udecode/plate';
 import { focusEditor, toggleMark } from '@udecode/plate-common';
-import { useMyPlateEditorState } from './typescript/plateTypes';
 
 import { Icons } from '@/components/icons';
 import {
@@ -16,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());

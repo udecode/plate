@@ -8,8 +8,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
 import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';

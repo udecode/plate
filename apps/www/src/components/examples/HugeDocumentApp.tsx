@@ -10,7 +10,7 @@ import {
 } from 'slate-react';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { createHugeDocumentValue } from '@/plate/huge-document/createHugeDocumentValue';
 import { MyValue } from '@/plate/typescript/plateTypes';
 

@@ -1,6 +1,6 @@
 import { basicElementsPlugins } from '@/plate/basic-elements/basicElementsPlugins';
 import { basicMarksPlugins } from '@/plate/basic-marks/basicMarksPlugins';
-import { plateUI } from '@/plate/common/plateUI';
+import { plateUI } from '@/plate/demo/plateUI';
 import { createMyPlugins } from '@/plate/typescript/plateTypes';
 
 export const basicNodesPlugins = createMyPlugins(

@@ -20,8 +20,8 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 
 import { alignPlugin } from '@/plate/align/alignPlugin';
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { indentPlugin } from '@/plate/indent/indentPlugin';
 import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 import { deserializeDocxValue } from '@/plate/serializing-docx/deserializeDocxValue';

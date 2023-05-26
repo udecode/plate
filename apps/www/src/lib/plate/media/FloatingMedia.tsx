@@ -11,7 +11,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { inputVariants } from '@/components/ui/input';
 import { popoverVariants } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { useRemoveNodeButtonProps } from '@/plate/common/useRemoveNodeButtonProps';
+import { useRemoveNodeButtonProps } from '@/lib/@/useRemoveNodeButtonProps';
 
 export function FloatingMedia({ pluginKey }: { pluginKey?: string }) {
   const isEditing = useFloatingMediaSelectors().isEditing();

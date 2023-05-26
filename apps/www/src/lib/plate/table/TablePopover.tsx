@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent } from '@/components/ui/popover';
-import { useRemoveNodeButtonProps } from '@/plate/common/useRemoveNodeButtonProps';
+import { useRemoveNodeButtonProps } from '@/lib/@/useRemoveNodeButtonProps';
 
 export function TablePopover({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();

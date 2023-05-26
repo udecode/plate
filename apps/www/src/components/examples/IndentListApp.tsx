@@ -16,8 +16,8 @@ import { PlateElement } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { indentListPlugin } from '@/plate/indent-list/indentListPlugin';
 import { indentListValue } from '@/plate/indent-list/indentListValue';

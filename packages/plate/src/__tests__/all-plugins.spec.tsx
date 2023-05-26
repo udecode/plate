@@ -32,7 +32,7 @@ import { createMentionPlugin } from '@/nodes/mention/src/index';
 import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
 import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { SearchHighlightToolbar } from '@/plate/find-replace/SearchHighlightToolbar';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';

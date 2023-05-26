@@ -9,8 +9,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { createTabbableElementPlugin } from '@/plate/tabbable/createTabbableElementPlugin';
 import { TabbableElement } from '@/plate/tabbable/TabbableElement';
 import { tabbableValue } from '@/plate/tabbable/tabbableValue';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plate } from '@udecode/plate';
 
-import { editableProps } from '@/plate/common/editableProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { MyValue } from '@/plate/typescript/plateTypes';
 
 export default function BasicEditorHandlerApp() {

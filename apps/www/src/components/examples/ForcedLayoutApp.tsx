@@ -7,8 +7,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { forcedLayoutValue } from '@/plate/forced-layout/forcedLayoutValue';
 import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';

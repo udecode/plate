@@ -4,8 +4,8 @@ import { createBasicMarksPlugin, Plate, PlateProvider } from '@udecode/plate';
 import { Toolbar } from '@/components/ui/toolbar';
 import { basicElementsPlugins } from '@/plate/basic-elements/basicElementsPlugins';
 import { basicMarksValue } from '@/plate/basic-marks/basicMarksValue';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(

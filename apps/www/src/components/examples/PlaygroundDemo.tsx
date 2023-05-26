@@ -23,12 +23,12 @@ import {
   createHighlightPlugin,
   createHorizontalRulePlugin,
   createImagePlugin,
+  createIndentListPlugin,
   createIndentPlugin,
   createItalicPlugin,
   createKbdPlugin,
   createLineHeightPlugin,
   createLinkPlugin,
-  createListPlugin,
   createMediaEmbedPlugin,
   createMentionPlugin,
   createNodeIdPlugin,
@@ -62,15 +62,14 @@ import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
 import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
-import { editableProps } from '@/plate/common/editableProps';
 import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
 import { dragOverCursorPlugin } from '@/plate/cursor-overlay/dragOverCursorPlugin';
+import { editableProps } from '@/plate/demo/editableProps';
 import { withStyledDraggables } from '@/plate/dnd/withStyledDraggables';
 import { emojiPlugin } from '@/plate/emoji/emojiPlugin';
 import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
 import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';
-import { HeadingToolbarButtons } from '@/plate/HeadingToolbarButtons';
 import { indentPlugin } from '@/plate/indent/indentPlugin';
 import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 import { linkPlugin } from '@/plate/link/linkPlugin';
@@ -84,6 +83,7 @@ import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
 import { FloatingToolbar } from '@/plate/toolbar/FloatingToolbar';
 import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
+import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
 import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 import {
   createMyPlugins,
@@ -113,7 +113,8 @@ export function PlaygroundDemo() {
           createImagePlugin(),
           createHorizontalRulePlugin(),
           createLinkPlugin(linkPlugin),
-          createListPlugin(),
+          // createListPlugin(),
+          createIndentListPlugin(),
           createTablePlugin(),
           createMediaEmbedPlugin(),
           createExcalidrawPlugin() as MyPlatePlugin,
@@ -165,7 +166,11 @@ export function PlaygroundDemo() {
   );
 
   return (
-    <PlateProvider<MyValue> initialValue={playgroundValue} plugins={plugins}>
+    <PlateProvider<MyValue>
+      initialValue={playgroundValue}
+      plugins={plugins}
+      normalizeInitialValue
+    >
       <HeadingToolbar>
         <HeadingToolbarButtons />
       </HeadingToolbar>

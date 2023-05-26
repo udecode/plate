@@ -9,8 +9,8 @@ import {
 import { createDndPlugin } from '@udecode/plate-dnd';
 
 import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { withStyledDraggables } from '@/plate/dnd/withStyledDraggables';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 

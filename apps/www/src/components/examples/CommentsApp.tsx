@@ -11,8 +11,8 @@ import { CommentLeaf } from '@/plate/comments/CommentLeaf';
 import { commentsValue } from '@/plate/comments/constants';
 import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 

@@ -6,12 +6,11 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 
-import { ButtonProps } from '@/components/ui/button';
-
 export const useRemoveNodeButtonProps = ({
   element,
-  ...props
-}: ButtonProps & { element: TElement }) => {
+}: {
+  element: TElement;
+}) => {
   const editor = useEditorRef();
 
   return {
@@ -22,6 +21,5 @@ export const useRemoveNodeButtonProps = ({
 
       focusEditor(editor, editor.selection!);
     },
-    ...props,
   };
 };

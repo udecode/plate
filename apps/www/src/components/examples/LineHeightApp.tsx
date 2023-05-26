@@ -2,8 +2,8 @@ import React from 'react';
 import { createLineHeightPlugin, Plate, PlateProvider } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
 import { LineHeightToolbarDropdown } from '@/plate/line-height/LineHeightToolbarDropdown';
 import { lineHeightValue } from '@/plate/line-height/lineHeightValue';

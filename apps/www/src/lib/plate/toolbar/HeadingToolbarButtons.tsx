@@ -11,25 +11,25 @@ import {
   usePlateReadOnly,
 } from '@udecode/plate';
 import { focusEditor, usePlateEditorRef } from '@udecode/plate-common';
-import { AlignDropdownMenu } from './align/AlignDropdownMenu';
-import { CommentToolbarButton } from './comments/CommentToolbarButton';
-import { EmojiDropdownMenu } from './emoji/EmojiDropdownMenu';
-import { ColorDropdownMenu } from './font/ColorDropdownMenu';
-import { IndentToolbarButtons } from './indent/IndentToolbarButtons';
-import { LineHeightToolbarDropdown } from './line-height/LineHeightToolbarDropdown';
-import { LinkToolbarButton } from './link/LinkToolbarButton';
-import { ListToolbarButtons } from './list/ListToolbarButtons';
-import { insertMedia } from './media/insertMedia';
-import { TableDropdownMenu } from './table/TableDropdownMenu';
-import { MarkToolbarButton } from './toolbar/MarkToolbarButton';
-import { TurnIntoDropdownMenu } from './toolbar/TurnIntoDropdownMenu';
 import { InsertDropdownMenu } from './InsertDropdownMenu';
+import { MarkToolbarButton } from './MarkToolbarButton';
 import { ModeDropdownMenu } from './ModeDropdownMenu';
 import { MoreDropdownMenu } from './MoreDropdownMenu';
+import { TurnIntoDropdownMenu } from './TurnIntoDropdownMenu';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
+import { CommentToolbarButton } from '@/plate/comments/CommentToolbarButton';
+import { EmojiDropdownMenu } from '@/plate/emoji/EmojiDropdownMenu';
+import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';
+import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
+import { LineHeightToolbarDropdown } from '@/plate/line-height/LineHeightToolbarDropdown';
+import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
+import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
+import { insertMedia } from '@/plate/media/insertMedia';
+import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';
 
 export function HeadingToolbarButtons() {
   const editor = usePlateEditorRef();

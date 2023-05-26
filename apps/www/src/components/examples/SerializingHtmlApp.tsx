@@ -16,8 +16,8 @@ import {
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { linkPlugin } from '@/plate/link/linkPlugin';
 import { deserializeHtmlValue } from '@/plate/serializing-html/deserializeHtmlValue';
 import { HighlightHTML } from '@/plate/serializing-html/HighlightHTML';

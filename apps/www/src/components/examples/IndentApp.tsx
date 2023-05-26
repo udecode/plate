@@ -2,8 +2,8 @@ import React from 'react';
 import { createIndentPlugin, Plate, PlateProvider } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { indentPlugin } from '@/plate/indent/indentPlugin';
 import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { indentValue } from '@/plate/indent/indentValue';

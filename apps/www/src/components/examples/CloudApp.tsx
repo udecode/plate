@@ -14,8 +14,8 @@ import { CloudImageElement } from '@/plate/cloud/CloudImageElement';
 import { CloudToolbarButtons } from '@/plate/cloud/CloudToolbarButtons';
 import { cloudValue } from '@/plate/cloud/cloudValue';
 import { uploadStoreInitialValue } from '@/plate/cloud/uploadStoreInitialValue';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 

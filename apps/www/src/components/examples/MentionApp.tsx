@@ -8,8 +8,8 @@ import {
 } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { editableProps } from '@/plate/common/editableProps';
-import { plateUI } from '@/plate/common/plateUI';
+import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
 import { MENTIONABLES } from '@/plate/mention/mentionables';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
 import { MentionElement } from '@/plate/mention/MentionElement';
