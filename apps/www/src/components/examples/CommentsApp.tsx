@@ -13,7 +13,7 @@ import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
 import { editableProps } from '@/plate/common/editableProps';
 import { plateUI } from '@/plate/common/plateUI';
-import { BalloonToolbarButtons } from '@/plate/toolbar/BalloonToolbarButtons';
+import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
 import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
@@ -31,7 +31,7 @@ export default function CommentsApp() {
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
       <MyCommentsProvider>
         <Plate<MyValue> editableProps={editableProps}>
-          <BalloonToolbarButtons />
+          <FloatingToolbarButtons />
         </Plate>
 
         <FloatingCommentList />

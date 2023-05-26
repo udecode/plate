@@ -1,6 +1,5 @@
 import AlignmentApp from './AlignmentApp';
 import AutoformatApp from './AutoformatApp';
-import BalloonToolbarApp from './BalloonToolbarApp';
 import BasicEditorDefaultApp from './BasicEditorDefaultApp';
 import BasicEditorHandlerApp from './BasicEditorHandlerApp';
 import BasicEditorValueApp from './BasicEditorValueApp';
@@ -18,6 +17,7 @@ import EmojiApp from './EmojiApp';
 import ExcalidrawApp from './ExcalidrawApp';
 import ExitBreakApp from './ExitBreakApp';
 import FindReplaceApp from './FindReplaceApp';
+import FloatingToolbarApp from './FloatingToolbarApp';
 import FontApp from './FontApp';
 import ForcedLayoutApp from './ForcedLayoutApp';
 import HighlightApp from './HighlightApp';
@@ -56,7 +56,7 @@ import { playgroundValue } from '@/plate/playground/playgroundValue';
 export const examples = {
   AlignmentApp,
   AutoformatApp,
-  BalloonToolbarApp,
+  FloatingToolbarApp,
   BasicEditorDefaultApp,
   BasicEditorHandlerApp,
   BasicEditorValueApp,

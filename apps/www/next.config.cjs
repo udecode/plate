@@ -30,13 +30,6 @@ const config = {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
 
-  webpack(cfg) {
-    cfg.resolve.alias = {
-      ...cfg.resolve.alias,
-      ...alias,
-    };
-    return cfg;
-  },
   // redirects() {
   //   return [
   //     {

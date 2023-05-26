@@ -7,15 +7,15 @@ import {
   MARK_UNDERLINE,
   usePlateReadOnly,
 } from '@udecode/plate';
+import { MarkToolbarButton } from './MarkToolbarButton';
+import { TurnIntoDropdownMenu } from './TurnIntoDropdownMenu';
 
 import { Icons } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { CommentToolbarButton } from '@/plate/comments/CommentToolbarButton';
 import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
-import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';
-import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
 
-export function BalloonToolbarButtons() {
+export function FloatingToolbarButtons() {
   const readOnly = usePlateReadOnly();
 
   return (

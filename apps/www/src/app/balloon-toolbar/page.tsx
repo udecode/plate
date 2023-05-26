@@ -1,3 +1,3 @@
-import App from '@/components/examples/BalloonToolbarApp';
+import App from '@/components/examples/FloatingToolbarApp';
 
 export default App;

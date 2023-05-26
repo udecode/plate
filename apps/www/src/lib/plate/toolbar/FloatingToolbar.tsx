@@ -6,7 +6,7 @@ import { useFloatingToolbar } from './useFloatingToolbar';
 
 import { Toolbar, ToolbarProps } from '@/components/ui/toolbar';
 
-export interface BalloonToolbarProps extends ToolbarProps {
+export interface FloatingToolbarProps extends ToolbarProps {
   children: ReactNode;
 
   portalElement?: Element;
@@ -18,14 +18,14 @@ export interface BalloonToolbarProps extends ToolbarProps {
   hideToolbar?: boolean;
 }
 
-export function BalloonToolbar({
+export function FloatingToolbar({
   portalElement,
   floatingOptions,
   ignoreReadOnly,
   hideToolbar,
   children,
   ...props
-}: BalloonToolbarProps) {
+}: FloatingToolbarProps) {
   const { refs, style, open } = useFloatingToolbar({
     floatingOptions,
     ignoreReadOnly,

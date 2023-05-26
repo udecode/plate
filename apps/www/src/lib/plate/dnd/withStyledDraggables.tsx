@@ -1,5 +1,4 @@
 import React from 'react';
-import Tippy, { TippyProps } from '@tippyjs/react';
 import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
@@ -20,27 +19,11 @@ import {
 import { withPlateDraggables } from './withPlateDraggable';
 
 import { Icons } from '@/components/icons';
-
-function GrabberTooltipContent() {
-  return (
-    <div className="text-[12px]">
-      <div>
-        Drag <span className="text-[rgba(255,255,255,0.45)]">to move</span>
-      </div>
-    </div>
-  );
-}
-
-export const grabberTooltipProps: TippyProps = {
-  content: <GrabberTooltipContent />,
-  placement: 'bottom',
-  arrow: false,
-  offset: [0, 0],
-  delay: [300, 0],
-  duration: [0, 0],
-  hideOnClick: true,
-  theme: 'small',
-};
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export const withStyledDraggables = (components: any) => {
   return withPlateDraggables(components, [
@@ -69,14 +52,13 @@ export const withStyledDraggables = (components: any) => {
       draggableProps: {
         onRenderDragHandle: () => {
           return (
-            <Tippy {...grabberTooltipProps}>
-              <button
-                type="button"
-                className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none"
-              >
-                <Icons.dragHandle className="h-[18px] w-[18px] text-[rgba(55,53,47,0.3)]" />
-              </button>
-            </Tippy>
+            <Tooltip>
+              <TooltipTrigger>
+                {/* className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none" */}
+                <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>Drag to move</TooltipContent>
+            </Tooltip>
           );
         },
       },

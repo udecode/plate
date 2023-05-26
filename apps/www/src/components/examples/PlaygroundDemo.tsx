@@ -81,8 +81,8 @@ import { playgroundValue } from '@/plate/playground/playgroundValue';
 import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import { BalloonToolbar } from '@/plate/toolbar/BalloonToolbar';
-import { BalloonToolbarButtons } from '@/plate/toolbar/BalloonToolbarButtons';
+import { FloatingToolbar } from '@/plate/toolbar/FloatingToolbar';
+import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 import {
@@ -173,9 +173,9 @@ export function PlaygroundDemo() {
       <MyCommentsProvider>
         <div ref={containerRef} className="relative">
           <Plate editableProps={editableProps}>
-            <BalloonToolbar>
-              <BalloonToolbarButtons />
-            </BalloonToolbar>
+            <FloatingToolbar>
+              <FloatingToolbarButtons />
+            </FloatingToolbar>
 
             <MentionCombobox items={MENTIONABLES} />
 

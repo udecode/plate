@@ -4,7 +4,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const balloonToolbarValue: any = (
+export const floatingToolbarValue: any = (
   <fragment>
     <hp>
       This example shows how you can make a hovering menu appear above your
@@ -15,9 +15,6 @@ export const balloonToolbarValue: any = (
       Try it out yourself! Just{' '}
       <htext bold>select any piece of text and the menu will appear</htext>.
     </hp>
-    <hp>
-      You can enable and customize the tooltip on each toolbar button. Check
-      Tippy.js documentation for more info!
-    </hp>
+    <hp>You can enable and customize the tooltip on each toolbar button.</hp>
   </fragment>
 );

@@ -12,7 +12,7 @@ import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
 import { MyValue } from '@/plate/typescript/plateTypes';
 
 function Editor(props: PlateProps<MyValue>) {
-  return <Plate {...props}>{/* <MarkBalloonToolbar /> */}</Plate>;
+  return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;
 }
 
 export default function MultipleEditorsApp() {

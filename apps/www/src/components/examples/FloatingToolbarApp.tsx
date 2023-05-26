@@ -3,17 +3,17 @@ import { Plate } from '@udecode/plate';
 
 import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/common/editableProps';
-import { balloonToolbarValue } from '@/plate/toolbar/balloonToolbarValue';
+import { floatingToolbarValue } from '@/plate/toolbar/floatingToolbarValue';
 import { MyValue } from '@/plate/typescript/plateTypes';
 
-export default function BalloonToolbarApp() {
+export default function FloatingToolbarApp() {
   return (
     <Plate<MyValue>
       editableProps={editableProps}
       plugins={basicNodesPlugins}
-      initialValue={balloonToolbarValue}
+      initialValue={floatingToolbarValue}
     >
-      {/* <MarkBalloonToolbar /> */}
+      {/* <MarkFloatingToolbar /> */}
     </Plate>
   );
 }

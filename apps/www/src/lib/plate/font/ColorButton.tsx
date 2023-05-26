@@ -1,11 +1,15 @@
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
-import Tippy from '@tippyjs/react';
 import { cn } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type ColorButtonProps = {
   value: string;
@@ -46,5 +50,12 @@ export function ColorButton({
     </DropdownMenuItem>
   );
 
-  return name ? <Tippy content={name}>{content}</Tippy> : content;
+  return name ? (
+    <Tooltip>
+      <TooltipTrigger>{content}</TooltipTrigger>
+      <TooltipContent>{name}</TooltipContent>
+    </Tooltip>
+  ) : (
+    content
+  );
 }

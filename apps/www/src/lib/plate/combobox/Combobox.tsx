@@ -28,6 +28,8 @@ import {
 } from '@udecode/plate-floating';
 import { cn, cva } from '@udecode/plate-tailwind';
 
+import { ScrollArea } from '@/components/ui/scroll-area';
+
 // !HEADLESS
 
 const comboboxItemVariants = cva(
@@ -130,7 +132,7 @@ function ComboboxContent<TData extends Data = NoData>(
 
   return (
     <PortalBody element={portalElement}>
-      <ul
+      <ScrollArea
         {...menuProps}
         ref={refs.setFloating}
         style={style}
@@ -150,17 +152,11 @@ function ComboboxContent<TData extends Data = NoData>(
           return (
             <div
               key={item.key}
-              className={
-                !highlighted
-                  ? cn(
-                      comboboxItemVariants(),
-                      'bg-transparent hover:bg-[rgb(243,242,241)]'
-                    )
-                  : cn(
-                      comboboxItemVariants,
-                      'bg-[rgb(237,235,233)] hover:bg-[rgb(237,235,233)]'
-                    )
-              }
+              data-highlighted={highlighted}
+              className={cn(
+                'relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors',
+                'hover:bg-accent hover:text-accent-foreground data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground'
+              )}
               {...combobox.getItemProps({
                 item,
                 index,
@@ -178,7 +174,7 @@ function ComboboxContent<TData extends Data = NoData>(
             </div>
           );
         })}
-      </ul>
+      </ScrollArea>
     </PortalBody>
   );
 }

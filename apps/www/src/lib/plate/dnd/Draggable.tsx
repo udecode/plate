@@ -86,7 +86,7 @@ export interface PlateDraggableProps
   ) => boolean;
 }
 
-export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
+export const Draggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
   ({ className, classNames = {}, ...props }, ref) => {
     const { children, element, onRenderDragHandle } = props;
 
@@ -99,7 +99,7 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
         className={cn(
           'relative',
           isDragging && 'opacity-50',
-          'hover:[&_.slate-Draggable-gutterLeft]:opacity-100',
+          'group',
           className
           // selected && 'bg-[rgb(181, 215, 255)]',
         )}
@@ -108,7 +108,7 @@ export const PlateDraggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
       >
         <DraggableGutterLeft
           className={cn(
-            'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0',
+            'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
             classNames.gutterLeft
           )}
         >

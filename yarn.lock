@@ -4154,7 +4154,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.4.0, @popperjs/core@npm:^2.9.0":
+"@popperjs/core@npm:^2.4.0":
   version: 2.11.7
   resolution: "@popperjs/core@npm:2.11.7"
   checksum: 6d9dfd4ce852e6c6d6f4d27ae955d29869bc6f511fefcf1b80881029b072fe663d70f7fc7959ad6f3e6ad1a686d1141658a46e1d44c15d88c12f14907a2c352a
@@ -5514,30 +5514,6 @@ __metadata:
   dependencies:
     ts-node: "npm:^10.9.1"
   checksum: f6342a7c10d1862e9d2f79920421661f407689f4e8dedccee33fb729006043c85332522d1138feab76dfb1f85dd63309c0891a800b02e01852964a731e61d6eb
-  languageName: node
-  linkType: hard
-
-"@tippyjs/react@npm:4.2.5":
-  version: 4.2.5
-  resolution: "@tippyjs/react@npm:4.2.5"
-  dependencies:
-    tippy.js: "npm:^6.3.1"
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 0074e128c42734198c6d170ed687a005508f094976912b4aac15b1bf4f221d0de90662b4804296a67caa8e5cf86c7b84563cbbd3d473d69e108e13de3d8c8240
-  languageName: node
-  linkType: hard
-
-"@tippyjs/react@npm:^4.2.6":
-  version: 4.2.6
-  resolution: "@tippyjs/react@npm:4.2.6"
-  dependencies:
-    tippy.js: "npm:^6.3.1"
-  peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: dd240c8bc7f7cf62400010d3366aa8128d8454cde8f1715b66beca60e59d24db962c7c11a1fdb3d6ac16cfc7f9126121c9e335cfea7229098078c4fc22feed8c
   languageName: node
   linkType: hard
 
@@ -7015,7 +6991,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-toolbar@workspace:packages/toolbar"
   dependencies:
-    "@tippyjs/react": "npm:^4.2.6"
     "@udecode/plate-common": "npm:21.1.5"
     "@udecode/plate-floating": "npm:21.1.5"
     react-use: "npm:^17.3.2"
@@ -23235,15 +23210,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tippy.js@npm:^6.3.1":
-  version: 6.3.7
-  resolution: "tippy.js@npm:6.3.7"
-  dependencies:
-    "@popperjs/core": "npm:^2.9.0"
-  checksum: b76da158f992f8889b9f05607d065ff1263d8aa3d0e2048a66d183ba35284b43ee9dd3c9be24afdc5854e4561830f44dc4836366fce6abf2f55738b029560776
-  languageName: node
-  linkType: hard
-
 "title-case@npm:^3.0.3":
   version: 3.0.3
   resolution: "title-case@npm:3.0.3"
@@ -25018,7 +24984,6 @@ __metadata:
     "@radix-ui/react-toggle-group": "npm:^1.0.1"
     "@radix-ui/react-toolbar": "npm:^1.0.3"
     "@radix-ui/react-tooltip": "npm:^1.0.3"
-    "@tippyjs/react": "npm:4.2.5"
     "@types/react-color": "npm:^3.0.6"
     "@udecode/plate": "npm:*"
     "@udecode/plate-cloud": "workspace:^"

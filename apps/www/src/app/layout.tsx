@@ -1,5 +1,3 @@
-import 'tippy.js/animations/scale.css';
-import 'tippy.js/dist/tippy.css';
 import '@/styles/globals.scss';
 import React from 'react';
 import { Metadata } from 'next';
