@@ -9,10 +9,10 @@ import {
   withReact,
 } from 'slate-react';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createHugeDocumentValue } from '@/plate/huge-document/createHugeDocumentValue';
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 

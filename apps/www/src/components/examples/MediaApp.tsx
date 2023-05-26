@@ -9,12 +9,12 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { mediaValue } from '@/plate/media/mediaValue';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { mediaValue } from '@/plate/demo/values/mediaValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

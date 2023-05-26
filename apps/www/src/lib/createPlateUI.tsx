@@ -52,10 +52,10 @@ import { ImageElement } from './plate/media/ImageElement';
 import { MediaEmbedElement } from './plate/media/MediaEmbedElement';
 import { MentionElement } from './plate/mention/MentionElement';
 import { MentionInputElement } from './plate/mention/MentionInputElement';
-import { PlateTableCellElement } from './plate/table/PlateTableCellElement';
-import { PlateTableCellHeaderElement } from './plate/table/PlateTableCellHeaderElement';
-import { PlateTableElement } from './plate/table/PlateTableElement';
-import { PlateTableRowElement } from './plate/table/PlateTableRowElement';
+import { TableCellElement } from './plate/table/TableCellElement';
+import { TableCellHeaderElement } from './plate/table/TableCellHeaderElement';
+import { TableElement } from './plate/table/TableElement';
+import { TableRowElement } from './plate/table/TableRowElement';
 import { CodeLeaf } from './codeLeaf';
 import { HeadingElement } from './HeadingElement';
 import { HighlightLeaf } from './highlightLeaf';
@@ -90,11 +90,11 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
     [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
     [ELEMENT_PARAGRAPH]: ParagraphElement,
-    [ELEMENT_TABLE]: PlateTableElement,
-    [ELEMENT_TD]: PlateTableCellElement,
-    [ELEMENT_TH]: PlateTableCellHeaderElement,
+    [ELEMENT_TABLE]: TableElement,
+    [ELEMENT_TD]: TableCellElement,
+    [ELEMENT_TH]: TableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
-    [ELEMENT_TR]: PlateTableRowElement,
+    [ELEMENT_TR]: TableRowElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,

@@ -14,7 +14,7 @@ import {
 import { basicEditorValue } from './BasicPluginsComponentsApp';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyPlatePlugin, MyValue } from '@/plate/typescript/plateTypes';
+import { MyPlatePlugin, MyValue } from '@/plate/demo/plate.types';
 
 const plugins: MyPlatePlugin[] = [
   createParagraphPlugin(),

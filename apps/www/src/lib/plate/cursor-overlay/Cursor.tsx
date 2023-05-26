@@ -8,8 +8,6 @@ export function Cursor({
   caretPosition,
   disableCaret,
   disableSelection,
-  onRenderCaret: Caret,
-  onRenderSelectionRect: Rect,
   classNames,
 }: CursorProps<CursorData>) {
   if (!data) {
@@ -21,36 +19,28 @@ export function Cursor({
   return (
     <>
       {!disableSelection &&
-        selectionRects.map((position, i) =>
-          Rect ? (
-            <Rect key={i} data={data} selectionRect={position} />
-          ) : (
-            <div
-              key={i}
-              className={cn(
-                'pointer-events-none absolute z-10 opacity-[0.3]',
-                classNames?.selectionRect
-              )}
-              style={{
-                ...selectionStyle,
-                ...position,
-              }}
-            />
-          )
-        )}
-      {!disableCaret &&
-        caretPosition &&
-        (Caret ? (
-          <Caret data={data} caretPosition={caretPosition} />
-        ) : (
+        selectionRects.map((position, i) => (
           <div
+            key={i}
             className={cn(
-              'pointer-events-none absolute z-10 w-0.5',
-              classNames?.caret
+              'pointer-events-none absolute z-10 opacity-[0.3]',
+              classNames?.selectionRect
             )}
-            style={{ ...caretPosition, ...style }}
+            style={{
+              ...selectionStyle,
+              ...position,
+            }}
           />
         ))}
+      {!disableCaret && caretPosition && (
+        <div
+          className={cn(
+            'pointer-events-none absolute z-10 w-0.5',
+            classNames?.caret
+          )}
+          style={{ ...caretPosition, ...style }}
+        />
+      )}
     </>
   );
 }

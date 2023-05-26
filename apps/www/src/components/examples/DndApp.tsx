@@ -8,14 +8,14 @@ import {
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
 
-import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { withStyledDraggables } from '@/plate/dnd/withStyledDraggables';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
+import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
+import { withDraggables } from '@/plate/dnd/withDraggables';
 
 // set drag handle next to each block
-const components = withStyledDraggables(plateUI);
+const components = withDraggables(plateUI);
 
 // set id to each block
 const initialValue = basicElementsValue;

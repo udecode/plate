@@ -2,11 +2,11 @@ import React from 'react';
 import { createNodeIdPlugin, Plate } from '@udecode/plate';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
-import { basicNodesValue } from '@/plate/basic-nodes/basicNodesValue';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { basicNodesValue } from '@/plate/demo/values/basicNodesValue';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createNodeIdPlugin(), createBlockSelectionPlugin()],

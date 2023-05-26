@@ -8,14 +8,14 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
+import { emojiValue } from '@/plate/demo/values/emojiValue';
 import { EmojiDropdownMenu } from '@/plate/emoji/EmojiDropdownMenu';
-import { emojiPlugin } from '@/plate/emoji/emojiPlugin';
-import { emojiValue } from '@/plate/emoji/emojiValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

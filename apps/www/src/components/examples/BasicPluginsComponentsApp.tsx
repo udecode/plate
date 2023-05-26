@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate';
 
 import { createPlateUI } from '@/lib/createPlateUI';
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
 
 const plugins = createPlugins<MyValue>(
   [

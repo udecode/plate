@@ -1,11 +1,11 @@
 import React from 'react';
 import { cn } from '@udecode/plate-tailwind';
 import { ColorButton } from './ColorButton';
-import { ColorType } from './ColorType';
+import { TColor } from './TColor';
 
 type ColorsProps = {
   color?: string;
-  colors: ColorType[];
+  colors: TColor[];
   updateColor: (color: string) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 

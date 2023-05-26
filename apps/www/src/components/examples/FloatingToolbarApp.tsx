@@ -1,10 +1,10 @@
 import React from 'react';
 import { Plate } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
-import { floatingToolbarValue } from '@/plate/toolbar/floatingToolbarValue';
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { floatingToolbarValue } from '@/plate/demo/values/floatingToolbarValue';
 
 export default function FloatingToolbarApp() {
   return (

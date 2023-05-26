@@ -40,6 +40,7 @@ import {
   createStrikethroughPlugin,
   createSubscriptPlugin,
   createSuperscriptPlugin,
+  createTabbablePlugin,
   createTablePlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
@@ -57,47 +58,48 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
 import { createPlateUI } from '@/lib/createPlateUI';
-import { alignPlugin } from '@/plate/align/alignPlugin';
-import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
 import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
 import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
 import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
-import { dragOverCursorPlugin } from '@/plate/cursor-overlay/dragOverCursorPlugin';
 import { editableProps } from '@/plate/demo/editableProps';
-import { withStyledDraggables } from '@/plate/dnd/withStyledDraggables';
-import { emojiPlugin } from '@/plate/emoji/emojiPlugin';
-import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
-import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
-import { forcedLayoutPlugin } from '@/plate/forced-layout/forcedLayoutPlugin';
-import { indentPlugin } from '@/plate/indent/indentPlugin';
-import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
-import { linkPlugin } from '@/plate/link/linkPlugin';
-import { MENTIONABLES } from '@/plate/mention/mentionables';
-import { MentionCombobox } from '@/plate/mention/MentionCombobox';
-import { withStyledPlaceHolders } from '@/plate/placeholder/withStyledPlaceHolders';
-import { playgroundValue } from '@/plate/playground/playgroundValue';
-import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from '@/plate/select-on-backspace/selectOnBackspacePlugin';
-import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import { FloatingToolbar } from '@/plate/toolbar/FloatingToolbar';
-import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
-import { trailingBlockPlugin } from '@/plate/trailing-block/trailingBlockPlugin';
 import {
   createMyPlugins,
   MyEditor,
   MyPlatePlugin,
   MyValue,
-} from '@/plate/typescript/plateTypes';
+} from '@/plate/demo/plate.types';
+import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
+import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { MENTIONABLES } from '@/plate/demo/values/mentionables';
+import { playgroundValue } from '@/plate/demo/values/playgroundValue';
+import { withDraggables } from '@/plate/dnd/withDraggables';
+import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
+import { MentionCombobox } from '@/plate/mention/MentionCombobox';
+import { withPlaceHolders } from '@/plate/placeholder/withPlaceHolders';
+import { FloatingToolbar } from '@/plate/toolbar/FloatingToolbar';
+import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
+import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
+import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
 
 let components = createPlateUI({
   [ELEMENT_CODE_BLOCK]: CodeBlockElement,
   [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
   // customize your components by plugin key
 });
-components = withStyledPlaceHolders(components);
+components = withPlaceHolders(components);
 
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
@@ -113,6 +115,7 @@ export function PlaygroundDemo() {
           createImagePlugin(),
           createHorizontalRulePlugin(),
           createLinkPlugin(linkPlugin),
+          // Choose either "list" or "indent list" plugin
           // createListPlugin(),
           createIndentListPlugin(),
           createTablePlugin(),
@@ -152,6 +155,7 @@ export function PlaygroundDemo() {
           createComboboxPlugin(),
           createMentionPlugin(),
           createCommentsPlugin(),
+          createTabbablePlugin(tabbablePlugin),
           createDeserializeMdPlugin() as MyPlatePlugin,
           createDeserializeCsvPlugin(),
           createDeserializeDocxPlugin(),
@@ -159,7 +163,7 @@ export function PlaygroundDemo() {
           createEmojiPlugin(emojiPlugin),
         ],
         {
-          components: withStyledDraggables(components),
+          components: withDraggables(components),
         }
       ),
     []

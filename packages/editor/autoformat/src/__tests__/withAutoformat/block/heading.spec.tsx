@@ -6,8 +6,8 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
 import { withAutoformat } from '@/editor/autoformat/src/withAutoformat';
-import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
-import { preFormat } from '@/plate/autoformat/autoformatUtils';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 
 jsx;
 

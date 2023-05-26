@@ -1,17 +1,17 @@
 import React from 'react';
 import { createExitBreakPlugin, Plate } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
-import { placeholderValue } from '@/plate/placeholder/placeholderValue';
-import { withStyledPlaceHolders } from '@/plate/placeholder/withStyledPlaceHolders';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { placeholderValue } from '@/plate/demo/values/placeholderValue';
+import { withPlaceHolders } from '@/plate/placeholder/withPlaceHolders';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
-const components = withStyledPlaceHolders(plateUI);
+const components = withPlaceHolders(plateUI);
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createExitBreakPlugin(exitBreakPlugin)],

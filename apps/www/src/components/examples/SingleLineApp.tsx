@@ -6,11 +6,11 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { singleLineValue } from '@/plate/single-line/singleLineValue';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { singleLineValue } from '@/plate/demo/values/singleLineValue';
 
 const plugins = createMyPlugins(
   [

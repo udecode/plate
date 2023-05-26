@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { CommentsProvider } from '@udecode/plate';
-import { commentsData, usersData } from './constants';
+
+import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 
 export function MyCommentsProvider({ children }: { children: ReactNode }) {
   return (

@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  ELEMENT_OL,
+  ELEMENT_UL,
   KEY_EMOJI,
   MARK_BG_COLOR,
   MARK_BOLD,
@@ -27,7 +29,7 @@ import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';
 import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
 import { LineHeightToolbarDropdown } from '@/plate/line-height/LineHeightToolbarDropdown';
 import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
-import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
+import { ListToolbarButton } from '@/plate/list/ListToolbarButton';
 import { insertMedia } from '@/plate/media/insertMedia';
 import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';
 
@@ -84,7 +86,13 @@ export function HeadingToolbarButtons() {
 
             <LineHeightToolbarDropdown />
 
-            <ListToolbarButtons />
+            <ListToolbarButton tooltip="Bullet List" nodeType={ELEMENT_UL}>
+              <Icons.ul />
+            </ListToolbarButton>
+            <ListToolbarButton tooltip="Ordered List" nodeType={ELEMENT_OL}>
+              <Icons.ol />
+            </ListToolbarButton>
+
             <IndentToolbarButtons />
 
             <ToolbarSeparator />

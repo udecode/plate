@@ -10,19 +10,15 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
-import { autoformatValue } from '@/plate/autoformat/autoformatValue';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyEditor, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
-import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
-import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import {
-  createMyPlugins,
-  MyEditor,
-  MyValue,
-} from '@/plate/typescript/plateTypes';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { autoformatValue } from '@/plate/demo/values/autoformatValue';
 
 const plugins = createMyPlugins(
   [

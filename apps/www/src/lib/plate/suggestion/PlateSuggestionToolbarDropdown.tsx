@@ -7,8 +7,8 @@ import {
 import { cn, cva } from '@udecode/plate-tailwind';
 import { Edit2, Lightbulb } from 'lucide-react';
 
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { ChevronDownIcon } from '@/plate/icon/ChevronDownIcon';
 
 const radioItemVariants = cva(
   '&[data-disabled]:pointer-events-none &[data-highlighted]:bg-gray-200 relative flex h-[25px] cursor-pointer select-none items-center rounded-[3px] px-2.5 py-1 text-[13px] leading-[1] [all:unset]'
@@ -39,7 +39,7 @@ export function PlateSuggestionToolbarDropdown() {
           <Button className="flex min-w-[140px] items-center justify-between bg-blue-50 text-blue-500">
             {isSuggesting ? SuggestingIcon : EditIcon}
             <div>
-              <ChevronDownIcon className="h-4 w-4" />
+              <Icons.arrowDown className="h-4 w-4" />
             </div>
           </Button>
         </div>

@@ -46,7 +46,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           title: 'Playground',
-          href: '/playground',
+          href: '/docs/playground',
           items: [],
         },
       ],

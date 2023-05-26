@@ -20,8 +20,8 @@ import {
   AutoformatPlugin,
   withAutoformat,
 } from '@/editor/autoformat/src/index';
-import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
-import { preFormat } from '@/plate/autoformat/autoformatUtils';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 
 jsx;
 

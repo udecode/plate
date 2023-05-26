@@ -8,16 +8,16 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
-import { plateUI } from '@/plate/demo/plateUI';
-import { linkPlugin } from '@/plate/link/linkPlugin';
-import { deserializeMdValue } from '@/plate/serializing-md/deserializeMdValue';
 import {
   createMyPlugins,
   MyPlatePlugin,
   MyValue,
-} from '@/plate/typescript/plateTypes';
+} from '@/plate/demo/plate.types';
+import { plateUI } from '@/plate/demo/plateUI';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
 
 const plugins = createMyPlugins(
   [

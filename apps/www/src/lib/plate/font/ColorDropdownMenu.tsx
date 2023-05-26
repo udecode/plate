@@ -11,8 +11,8 @@ import {
   usePlateEditorState,
 } from '@udecode/plate-common';
 import { ColorPicker } from './ColorPicker';
-import { ColorType } from './ColorType';
 import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
+import { TColor } from './TColor';
 
 import {
   DropdownMenu,
@@ -24,8 +24,8 @@ import { ToolbarButton } from '@/components/ui/toolbar-button';
 type ColorDropdownMenuProps = {
   id?: string;
   pluginKey: string;
-  colors?: ColorType[];
-  customColors?: ColorType[];
+  colors?: TColor[];
+  customColors?: TColor[];
   closeOnSelect?: boolean;
   tooltip?: string;
 } & DropdownMenuProps;

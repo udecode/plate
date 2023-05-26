@@ -24,8 +24,8 @@ import { jsx } from '@udecode/plate-test-utils';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
 
-import { alignPlugin } from '@/plate/align/alignPlugin';
-import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
+import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
 
 jsx;
 

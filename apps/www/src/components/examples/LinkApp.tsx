@@ -2,14 +2,14 @@ import React from 'react';
 import { createLinkPlugin, Plate, PlateProvider } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { linkPlugin } from '@/plate/link/linkPlugin';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { linkValue } from '@/plate/demo/values/linkValue';
 import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
-import { linkValue } from '@/plate/link/linkValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createLinkPlugin(linkPlugin)],

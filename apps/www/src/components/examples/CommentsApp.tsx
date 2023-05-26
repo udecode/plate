@@ -6,15 +6,15 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { CommentLeaf } from '@/plate/comments/CommentLeaf';
-import { commentsValue } from '@/plate/comments/constants';
 import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { commentsValue } from '@/plate/demo/values/commentsValue';
 import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createCommentsPlugin()],

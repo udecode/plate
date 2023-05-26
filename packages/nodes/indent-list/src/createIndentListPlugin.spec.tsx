@@ -15,8 +15,8 @@ import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
 import { createHorizontalRulePlugin } from '@/nodes/horizontal-rule/src/index';
 import { createLineHeightPlugin } from '@/nodes/line-height/src/index';
 import { createLinkPlugin } from '@/nodes/link/src/index';
-import { alignPlugin } from '@/plate/align/alignPlugin';
-import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
+import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
 import { createDeserializeDocxPlugin } from '@/serializers/docx/src/index';
 
 jsx;

@@ -8,15 +8,15 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { basicElementsValue } from '@/plate/basic-elements/basicElementsValue';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
-import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
-import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

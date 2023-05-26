@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
 import { withAutoformat } from '@/editor/autoformat/src/withAutoformat';
-import { autoformatPlugin } from '@/plate/autoformat/autoformatPlugin';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 
 jsx;
 

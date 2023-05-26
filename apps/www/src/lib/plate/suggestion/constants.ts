@@ -1,4 +1,4 @@
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
 
 export const usersData = {
   1: {

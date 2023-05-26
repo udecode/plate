@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
+  collapseSelection,
+  MARK_HIGHLIGHT,
+  MARK_KBD,
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   useEventPlateId,
@@ -15,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
+import { useMyPlateEditorState } from '@/plate/demo/plate.types';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());
@@ -41,7 +44,32 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         className="flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto"
       >
         <DropdownMenuItem
-          className="min-w-[180px]"
+          onSelect={() => {
+            toggleMark(editor, {
+              key: MARK_HIGHLIGHT,
+            });
+            collapseSelection(editor, { edge: 'end' });
+            focusEditor(editor);
+          }}
+        >
+          <Icons.highlight className="mr-2 h-5 w-5" />
+          Highlight
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onSelect={() => {
+            toggleMark(editor, {
+              key: MARK_KBD,
+            });
+            collapseSelection(editor, { edge: 'end' });
+            focusEditor(editor);
+          }}
+        >
+          <Icons.kbd className="mr-2 h-5 w-5" />
+          Keyboard input
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
               key: MARK_SUBSCRIPT,
@@ -55,7 +83,6 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
           {/* (⌘+,) */}
         </DropdownMenuItem>
         <DropdownMenuItem
-          className=""
           onSelect={() => {
             toggleMark(editor, {
               key: MARK_SUPERSCRIPT,

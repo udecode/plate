@@ -9,16 +9,15 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { exitBreakPlugin } from '@/plate/exit-break/exitBreakPlugin';
-import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
-import { listValue } from '@/plate/list/listValue';
-import { resetBlockTypePlugin } from '@/plate/reset-node/resetBlockTypePlugin';
-import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { listValue } from '@/plate/demo/values/listValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [
@@ -37,9 +36,7 @@ const plugins = createMyPlugins(
 export default function ListApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={listValue}>
-      <HeadingToolbar>
-        <ListToolbarButtons />
-      </HeadingToolbar>
+      <HeadingToolbar>{/* <ListToolbarButtons /> */}</HeadingToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

@@ -7,13 +7,13 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { kbdValue } from '@/plate/kbd/kbdValue';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { kbdValue } from '@/plate/demo/values/kbdValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 import { MarkToolbarButton } from '@/plate/toolbar/MarkToolbarButton';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 function KbdToolbarButton() {
   return (

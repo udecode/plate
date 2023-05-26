@@ -3,7 +3,7 @@ import { focusEditor, indent, outdent } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorRef } from '@/plate/typescript/plateTypes';
+import { useMyPlateEditorRef } from '@/plate/demo/plate.types';
 
 export function IndentToolbarButtons() {
   const editor = useMyPlateEditorRef();

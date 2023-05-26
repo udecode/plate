@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
 
 const boxStyle: CSSProperties = {
   padding: '8px',

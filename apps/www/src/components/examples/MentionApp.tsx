@@ -7,14 +7,14 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { MENTIONABLES } from '@/plate/mention/mentionables';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { MENTIONABLES } from '@/plate/demo/values/mentionables';
+import { mentionValue } from '@/plate/demo/values/mentionValue';
 import { MentionCombobox } from '@/plate/mention/MentionCombobox';
 import { MentionElement } from '@/plate/mention/MentionElement';
-import { mentionValue } from '@/plate/mention/mentionValue';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

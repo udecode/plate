@@ -1,14 +1,14 @@
 import React from 'react';
 import { createLineHeightPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { lineHeightPlugin } from '@/plate/line-height/lineHeightPlugin';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
+import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
 import { LineHeightToolbarDropdown } from '@/plate/line-height/LineHeightToolbarDropdown';
-import { lineHeightValue } from '@/plate/line-height/lineHeightValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createLineHeightPlugin(lineHeightPlugin)],

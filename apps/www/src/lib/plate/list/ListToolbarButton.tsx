@@ -4,27 +4,25 @@ import {
   useEventPlateId,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ELEMENT_UL, getListItemEntry } from '@udecode/plate-list';
+import { ELEMENT_UL } from '@udecode/plate-list';
 
-import { toggleListDemo } from '@/plate/demo/toggleListDemo';
 import {
-  BlockToolbarButton,
-  BlockToolbarButtonProps,
-} from '@/plate/toolbar/BlockToolbarButton';
+  ToolbarButton,
+  ToolbarButtonProps,
+} from '@/components/ui/toolbar-button';
+import { someListDemo } from '@/plate/demo/someListDemo';
+import { toggleListDemo } from '@/plate/demo/toggleListDemo';
 
 export function ListToolbarButton({
   id,
   nodeType = ELEMENT_UL,
   ...props
-}: BlockToolbarButtonProps) {
+}: ToolbarButtonProps & { nodeType?: string }) {
   const editor = usePlateEditorState(useEventPlateId(id));
 
-  const res = !!editor?.selection && getListItemEntry(editor);
-
   return (
-    <BlockToolbarButton
-      pressed={!!res && res.list[0].type === nodeType}
-      nodeType={nodeType}
+    <ToolbarButton
+      pressed={someListDemo(editor, nodeType)}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();

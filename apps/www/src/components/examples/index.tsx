@@ -19,7 +19,6 @@ import ExitBreakApp from './ExitBreakApp';
 import FindReplaceApp from './FindReplaceApp';
 import FloatingToolbarApp from './FloatingToolbarApp';
 import FontApp from './FontApp';
-import ForcedLayoutApp from './ForcedLayoutApp';
 import HighlightApp from './HighlightApp';
 import HorizontalRuleApp from './HorizontalRuleApp';
 import HugeDocumentApp from './HugeDocumentApp';
@@ -50,7 +49,7 @@ import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
-import { playgroundValue } from '@/plate/playground/playgroundValue';
+import { playgroundValue } from '@/plate/demo/values/playgroundValue';
 import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
 
 export const examples = {
@@ -75,7 +74,6 @@ export const examples = {
   ExitBreakApp,
   FindReplaceApp,
   FontApp,
-  ForcedLayoutApp,
   HighlightApp,
   HorizontalRuleApp,
   HugeDocumentApp,

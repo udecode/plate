@@ -1,5 +1,6 @@
 import React from 'react';
 import { CursorOverlay, CursorOverlayProps } from '@udecode/plate-cursor';
+import { Cursor } from './Cursor';
 import { cursorStore } from './cursorStore';
 
 export function CursorOverlayContainer({
@@ -10,5 +11,7 @@ export function CursorOverlayContainer({
 
   const allCursors = { ...cursors, ...dynamicCursors };
 
-  return <CursorOverlay {...props} cursors={allCursors} />;
+  return (
+    <CursorOverlay {...props} cursors={allCursors} onRenderCursor={Cursor} />
+  );
 }

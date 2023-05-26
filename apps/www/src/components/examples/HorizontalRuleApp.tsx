@@ -11,16 +11,12 @@ import {
   setNodes,
 } from '@udecode/plate';
 
-import { preFormat } from '@/plate/autoformat/autoformatUtils';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyEditor, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { horizontalRuleValue } from '@/plate/horizontal-rule/horizontalRuleValue';
-import {
-  createMyPlugins,
-  MyEditor,
-  MyValue,
-} from '@/plate/typescript/plateTypes';
+import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
 
 const plugins = createMyPlugins(
   [

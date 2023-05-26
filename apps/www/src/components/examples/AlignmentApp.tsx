@@ -15,12 +15,12 @@ import {
 } from '@udecode/plate';
 
 import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
-import { alignValue } from '@/plate/align/alignValue';
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { alignValue } from '@/plate/demo/values/alignValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

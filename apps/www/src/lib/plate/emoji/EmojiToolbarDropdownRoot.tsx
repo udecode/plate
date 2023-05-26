@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 
-import { useDropdownControls } from '@/plate/toolbar/useDropdownControls';
+import { useDropdownControls } from '@/lib/@/useDropdownControls';
 
 type EmojiToolbarDropdownProps = {
   control: ReactNode;

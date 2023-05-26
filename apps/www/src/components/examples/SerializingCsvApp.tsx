@@ -14,13 +14,13 @@ import {
 } from '@udecode/plate';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { linkPlugin } from '@/plate/link/linkPlugin';
-import { deserializeCsvValue } from '@/plate/serializing-csv/deserializeCsvValue';
-import { softBreakPlugin } from '@/plate/soft-break/softBreakPlugin';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
 
 const plugins = createMyPlugins(
   [

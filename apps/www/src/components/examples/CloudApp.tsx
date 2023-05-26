@@ -8,16 +8,16 @@ import {
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
 
-import { basicNodesPlugins } from '@/plate/basic-nodes/basicNodesPlugins';
 import { CloudAttachmentElement } from '@/plate/cloud/CloudAttachmentElement';
 import { CloudImageElement } from '@/plate/cloud/CloudImageElement';
 import { CloudToolbarButtons } from '@/plate/cloud/CloudToolbarButtons';
-import { cloudValue } from '@/plate/cloud/cloudValue';
 import { uploadStoreInitialValue } from '@/plate/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { cloudValue } from '@/plate/demo/values/cloudValue';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   [

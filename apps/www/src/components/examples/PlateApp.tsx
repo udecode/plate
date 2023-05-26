@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Plate, PlateProvider, useResetPlateEditor } from '@udecode/plate';
 
-import { plainTextValue } from '@/plate/basic-editor/plainTextValue';
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyValue } from '@/plate/typescript/plateTypes';
+import { MyValue } from '@/plate/demo/plate.types';
 
 function Buttons({ disabled, setDisabled }: any) {
   const resetPlateEditor = useResetPlateEditor();
@@ -36,7 +35,18 @@ export default function PlateApp() {
   const [disabled, setDisabled] = useState(false);
 
   return (
-    <PlateProvider initialValue={plainTextValue}>
+    <PlateProvider
+      initialValue={[
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'This is editable plain text with react and history plugins, just like a textarea!',
+            },
+          ],
+        },
+      ]}
+    >
       <Buttons disabled={disabled} setDisabled={setDisabled} />
 
       <p />

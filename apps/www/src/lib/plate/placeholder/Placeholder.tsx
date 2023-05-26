@@ -56,4 +56,4 @@ export const Placeholder = (props: PlaceholderProps) => {
 };
 
 export const withPlaceholder = createNodeHOC(Placeholder);
-export const withPlaceholders = createNodesHOC(Placeholder);
+export const withPlaceholdersPrimitive = createNodesHOC(Placeholder);

@@ -9,7 +9,7 @@ const HeadingToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
       <Toolbar
         ref={ref}
         className={cn(
-          'sticky left-0 top-[57px] z-40 w-full flex-wrap justify-between overflow-hidden border-b border-b-border',
+          'sticky left-0 top-[56px] z-40 w-full justify-between overflow-x-scroll border-b border-b-border',
           className
         )}
         {...props}

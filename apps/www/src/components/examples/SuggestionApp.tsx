@@ -2,11 +2,11 @@ import React from 'react';
 import { Plate, PlateProvider } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
+import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { suggestionValue } from '@/plate/suggestion/constants';
 import { MySuggestionProvider } from '@/plate/suggestion/MySuggestionsProvider';
 import { PlateSuggestionToolbarDropdown } from '@/plate/suggestion/PlateSuggestionToolbarDropdown';
 import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { createMyPlugins, MyValue } from '@/plate/typescript/plateTypes';
 
 const plugins = createMyPlugins(
   []

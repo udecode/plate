@@ -34,8 +34,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { useMyPlateEditorState } from '@/plate/demo/plate.types';
 import { toggleListDemo } from '@/plate/demo/toggleListDemo';
-import { useMyPlateEditorState } from '@/plate/typescript/plateTypes';
 
 const items = [
   {

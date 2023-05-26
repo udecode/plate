@@ -2,15 +2,15 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
 import { ColorInput } from './ColorInput';
 import { Colors } from './Colors';
-import { ColorType } from './ColorType';
+import { TColor } from './TColor';
 
 import { buttonVariants } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type CustomColorsProps = {
   color?: string;
-  colors: ColorType[];
-  customColors: ColorType[];
+  colors: TColor[];
+  customColors: TColor[];
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
 };

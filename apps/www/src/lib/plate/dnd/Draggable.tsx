@@ -8,11 +8,17 @@ import {
   DraggableDropline,
   DraggableGutterLeft,
   DraggableRoot,
-  DragHandle as DefaultDragHandle,
   DragItemNode,
   useDraggableState,
 } from '@udecode/plate-dnd';
 import { cn, PlateElementProps } from '@udecode/plate-tailwind';
+
+import { Icons } from '@/components/icons';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export interface DragHandleProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -67,10 +73,6 @@ export interface PlateDraggableProps
       dropLine: string;
     }> {
   /**
-   * An override to render the drag handle.
-   */
-  onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
-  /**
    * Intercepts the drop handling.
    * If `false` is returned, the default drop behavior is called after.
    * If `true` is returned, the default behavior is not called.
@@ -88,9 +90,7 @@ export interface PlateDraggableProps
 
 export const Draggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
   ({ className, classNames = {}, ...props }, ref) => {
-    const { children, element, onRenderDragHandle } = props;
-
-    const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
+    const { children, element } = props;
 
     const { dropLine, isDragging, rootRef, dragRef } = useDraggableState(props);
 
@@ -123,13 +123,13 @@ export const Draggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <DragHandle
-                element={element}
-                className={cn(
-                  'h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none',
-                  classNames.dragHandle
-                )}
-              />
+              <Tooltip>
+                <TooltipTrigger>
+                  {/* className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none" */}
+                  <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>Drag to move</TooltipContent>
+              </Tooltip>
             </DraggableBlockToolbar>
           </DraggableBlockToolbarWrapper>
         </DraggableGutterLeft>
