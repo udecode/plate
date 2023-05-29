@@ -1,183 +1,18 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   comboboxActions,
-  comboboxSelectors,
-  ComboboxState,
-  ComboboxStateById,
-  ComboboxStoreById,
   Data,
-  getComboboxStoreById,
   NoData,
-  TComboboxItem,
-  useActiveComboboxStore,
   useComboboxControls,
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
 import {
-  PortalBody,
-  RenderFunction,
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import {
-  flip,
-  getRangeBoundingClientRect,
-  offset,
-  shift,
-  useVirtualFloating,
-} from '@udecode/plate-floating';
-import { cn, cva } from '@udecode/plate-tailwind';
+import { ComboboxContent } from './ComboboxContent';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-// !HEADLESS
-
-const comboboxItemVariants = cva(
-  'flex min-h-[36px] cursor-pointer select-none items-center rounded-none px-2 text-[14px] text-[rgb(32,31,30)]'
-);
-
-export interface ComboboxItemProps<TData> {
-  item: TComboboxItem<TData>;
-  search: string;
-}
-
-export interface ComboboxProps<TData = NoData>
-  extends Partial<Pick<ComboboxState<TData>, 'items' | 'floatingOptions'>>,
-    ComboboxStateById<TData> {
-  /**
-   * Render this component when the combobox is open (useful to inject hooks).
-   */
-  component?: RenderFunction<{ store: ComboboxStoreById }>;
-
-  /**
-   * Whether to hide the combobox.
-   * @default !items.length
-   */
-  disabled?: boolean;
-
-  /**
-   * Render combobox item.
-   * @default text
-   */
-  onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
-
-  portalElement?: Element;
-}
-
-function ComboboxContent<TData extends Data = NoData>(
-  props: Omit<
-    ComboboxProps<TData>,
-    | 'id'
-    | 'trigger'
-    | 'searchPattern'
-    | 'onSelectItem'
-    | 'controlled'
-    | 'maxSuggestions'
-    | 'filter'
-    | 'sort'
-  >
-) {
-  const { component: Component, items, portalElement, onRenderItem } = props;
-
-  const targetRange = useComboboxSelectors.targetRange();
-  const filteredItems = useComboboxSelectors.filteredItems();
-  const highlightedIndex = useComboboxSelectors.highlightedIndex();
-  const floatingOptions = useComboboxSelectors.floatingOptions();
-  const editor = usePlateEditorState();
-  const combobox = useComboboxControls();
-  const activeComboboxStore = useActiveComboboxStore()!;
-  const text = useComboboxSelectors.text() ?? '';
-  const storeItems = useComboboxSelectors.items();
-  const filter = activeComboboxStore.use.filter?.();
-  const sort = activeComboboxStore.use.sort?.();
-  const maxSuggestions =
-    activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
-
-  // Update items
-  useEffect(() => {
-    items && comboboxActions.items(items);
-  }, [items]);
-
-  // Filter items
-  useEffect(() => {
-    comboboxActions.filteredItems(
-      storeItems
-        .filter(
-          filter
-            ? filter(text)
-            : (value) => value.text.toLowerCase().startsWith(text.toLowerCase())
-        )
-        .sort(sort?.(text))
-        .slice(0, maxSuggestions)
-    );
-  }, [filter, sort, storeItems, maxSuggestions, text]);
-
-  // Get target range rect
-  const getBoundingClientRect = useCallback(
-    () => getRangeBoundingClientRect(editor, targetRange),
-    [editor, targetRange]
-  );
-
-  // Update popper position
-  const { style, refs } = useVirtualFloating({
-    placement: 'bottom-start',
-    getBoundingClientRect,
-    middleware: [offset(4), shift(), flip()],
-    ...floatingOptions,
-  });
-
-  const menuProps = combobox
-    ? combobox.getMenuProps({}, { suppressRefError: true })
-    : { ref: null };
-
-  return (
-    <PortalBody element={portalElement}>
-      <ScrollArea
-        {...menuProps}
-        ref={refs.setFloating}
-        style={style}
-        className={cn(
-          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-b-[2px] bg-background p-0 shadow-[rgba(0,0,0,0.133)_0_3.2px_7.2px_0,rgba(0,0,0,0.11)_0_0.6px_1.8px_0]'
-        )}
-      >
-        {Component ? Component({ store: activeComboboxStore }) : null}
-
-        {filteredItems.map((item, index) => {
-          const Item = onRenderItem
-            ? onRenderItem({ search: text, item: item as TComboboxItem<TData> })
-            : item.text;
-
-          const highlighted = index === highlightedIndex;
-
-          return (
-            <div
-              key={item.key}
-              data-highlighted={highlighted}
-              className={cn(
-                'relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors',
-                'hover:bg-accent hover:text-accent-foreground data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground'
-              )}
-              {...combobox.getItemProps({
-                item,
-                index,
-              })}
-              onMouseDown={(e) => {
-                e.preventDefault();
-
-                const onSelectItem = getComboboxStoreById(
-                  comboboxSelectors.activeId()
-                )?.get.onSelectItem();
-                onSelectItem?.(editor, item);
-              }}
-            >
-              {Item}
-            </div>
-          );
-        })}
-      </ScrollArea>
-    </PortalBody>
-  );
-}
+import { ComboboxProps } from '@/lib/@/ComboboxProps';
 
 /**
  * Register the combobox id, trigger, onSelectItem
@@ -199,10 +34,10 @@ export function Combobox<TData extends Data = NoData>({
   const storeItems = useComboboxSelectors.items();
   const disabled = _disabled ?? (!storeItems.length && !props.items?.length);
 
-  const editor = usePlateEditorState();
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
   const activeId = useComboboxSelectors.activeId();
+  const editor = usePlateEditorState();
 
   useEffect(() => {
     if (floatingOptions) {
@@ -242,5 +77,5 @@ export function Combobox<TData extends Data = NoData>({
     return null;
   }
 
-  return <ComboboxContent {...props} />;
+  return <ComboboxContent combobox={combobox} {...props} />;
 }
