@@ -1,3 +1,5 @@
+'use client';
+
 import React, { forwardRef } from 'react';
 import { DropTargetMonitor } from 'react-dnd';
 import { ClassNames, TEditor, TElement } from '@udecode/plate-common';

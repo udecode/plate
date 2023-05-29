@@ -1,5 +1,5 @@
 import React from 'react';
-import { useElement } from '@udecode/plate-common';
+import { useElement, useRemoveNodeButtonProps } from '@udecode/plate-common';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
@@ -11,7 +11,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { inputVariants } from '@/components/ui/input';
 import { popoverVariants } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { useRemoveNodeButtonProps } from '@/lib/@/useRemoveNodeButtonProps';
 
 export function FloatingMedia({ pluginKey }: { pluginKey?: string }) {
   const isEditing = useFloatingMediaSelectors().isEditing();

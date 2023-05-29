@@ -1,17 +1,13 @@
-import {
-  findNodePath,
-  focusEditor,
-  removeNodes,
-  TElement,
-  useEditorRef,
-} from '@udecode/plate-common';
+import { usePlateEditorRef } from '@udecode/plate-core';
+import { removeNodes, TElement } from '@udecode/slate';
+import { findNodePath, focusEditor } from '@udecode/slate-react';
 
 export const useRemoveNodeButtonProps = ({
   element,
 }: {
   element: TElement;
 }) => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
 
   return {
     onClick: () => {

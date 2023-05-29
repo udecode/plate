@@ -4,6 +4,7 @@ import {
   isCollapsed,
   useElement,
   usePlateEditorState,
+  useRemoveNodeButtonProps,
 } from '@udecode/plate-common';
 import { PopoverProps } from '@udecode/plate-floating';
 import { TTableElement } from '@udecode/plate-table';
@@ -18,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent } from '@/components/ui/popover';
-import { useRemoveNodeButtonProps } from '@/lib/@/useRemoveNodeButtonProps';
 
 export function TablePopover({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
