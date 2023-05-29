@@ -18,7 +18,12 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  popoverVariants,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export function TablePopover({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
@@ -33,7 +38,7 @@ export function TablePopover({ children, ...props }: PopoverProps) {
     <Popover open={open} {...props}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
-        className="z-30 flex w-[220px] flex-col gap-1 p-1"
+        className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DropdownMenu modal={false}>
