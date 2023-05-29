@@ -12,12 +12,22 @@ import { suggestionValue } from './suggestion/constants';
 import { MySuggestionProvider } from './suggestion/MySuggestionsProvider';
 import { PlateFloatingSuggestions } from './suggestion/PlateFloatingSuggestions';
 import { PlateSuggestionLeaf } from './suggestion/PlateSuggestionLeaf';
-import { PlateSuggestionToolbarDropdown } from './suggestion/PlateSuggestionToolbarDropdown';
+import {
+  PlateSuggestionToolbarDropdown,
+  UserToolbarDropdown,
+} from './suggestion/PlateSuggestionToolbarDropdown';
 import { Toolbar } from './toolbar/Toolbar';
 import { createMyPlugins, MyValue } from './typescript/plateTypes';
 
 const plugins = createMyPlugins(
-  [...basicNodesPlugins, createSuggestionPlugin()],
+  [
+    ...basicNodesPlugins,
+    createSuggestionPlugin({
+      options: {
+        currentUserId: '1',
+      },
+    }),
+  ],
   {
     components: {
       ...plateUI,
@@ -35,6 +45,7 @@ export default () => {
         <MySuggestionProvider>
           <Toolbar>
             <PlateSuggestionToolbarDropdown />
+            <UserToolbarDropdown />
           </Toolbar>
 
           <Plate<MyValue> editableProps={editableProps}>

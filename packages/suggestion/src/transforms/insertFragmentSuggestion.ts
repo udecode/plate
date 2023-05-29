@@ -8,7 +8,9 @@ import {
 } from '@udecode/plate-common';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
+import { getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
+import { getSuggestionCurrentUserKey } from './getSuggestionProps';
 
 export const insertFragmentSuggestion = <V extends Value>(
   editor: PlateEditor<V>,
@@ -39,6 +41,15 @@ export const insertFragmentSuggestion = <V extends Value>(
           }
 
           n[KEY_SUGGESTION_ID] = id;
+
+          // remove the other user keys
+          const otherUserKeys = getSuggestionKeys(n);
+          otherUserKeys.forEach((key) => {
+            delete n[key];
+          });
+
+          // set current user key
+          n[getSuggestionCurrentUserKey(editor)] = true;
         },
       });
     });

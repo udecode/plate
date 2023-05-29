@@ -4,8 +4,17 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { styled } from '@stitches/react';
 import { CommentEdit } from '@styled-icons/boxicons-regular/CommentEdit';
 import { ModeEdit } from '@styled-icons/material';
-import { ChevronDownIcon, PlateButton } from '@udecode/plate';
 import {
+  ChevronDownIcon,
+  PlateButton,
+  useCurrentSuggestionUser,
+  usePlateEditorRef,
+  useResetPlateEditor,
+  useSuggestionActions,
+} from '@udecode/plate';
+import {
+  MARK_SUGGESTION,
+  SuggestionPlugin,
   useSetIsSuggesting,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
@@ -44,6 +53,7 @@ const DropdownMenuRadioItem = styled(DropdownMenu.RadioItem, {
 });
 
 export const PlateSuggestionToolbarDropdown = () => {
+  const reset = useResetPlateEditor();
   const setIsSuggesting = useSetIsSuggesting();
   const isSuggesting = useSuggestionSelectors().isSuggesting();
 
@@ -80,8 +90,10 @@ export const PlateSuggestionToolbarDropdown = () => {
             value="editing"
             onValueChange={(value) => {
               if (value === 'editing') {
+                reset();
                 setIsSuggesting(false);
               } else {
+                reset();
                 setIsSuggesting(true);
               }
             }}
@@ -94,6 +106,58 @@ export const PlateSuggestionToolbarDropdown = () => {
                 {SuggestingIcon}
               </div>
             </DropdownMenuRadioItem>
+          </DropdownMenu.RadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+};
+
+export const UserToolbarDropdown = () => {
+  const reset = useResetPlateEditor();
+  const editor = usePlateEditorRef();
+  const users = useSuggestionSelectors().users();
+  const isSuggesting = useSuggestionSelectors().isSuggesting();
+  const currentUser = useCurrentSuggestionUser();
+  const setCurrentUserId = useSuggestionActions().currentUserId();
+
+  if (!isSuggesting) return null;
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <div>
+          <PlateButton tw="ml-2 min-w-[140px] flex justify-between items-center text-blue-500 bg-blue-50">
+            {currentUser?.name}
+            {currentUser?.isOwner && ' (owner)'}
+            <div>
+              <ChevronDownIcon tw="h-4 w-4" />
+            </div>
+          </PlateButton>
+        </div>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenuContent align="start">
+          <DropdownMenu.RadioGroup
+            value="editing"
+            onValueChange={(value) => {
+              reset();
+              setCurrentUserId(value);
+              (editor.pluginsByKey[MARK_SUGGESTION]
+                .options as SuggestionPlugin).currentUserId = value;
+            }}
+          >
+            {Object.keys(users).map((key) => {
+              const user = users[key];
+
+              return (
+                <DropdownMenuRadioItem key={user.id} value={user.id}>
+                  {user.name}
+                  {user.isOwner && ' (owner)'}
+                </DropdownMenuRadioItem>
+              );
+            })}
           </DropdownMenu.RadioGroup>
         </DropdownMenuContent>
       </DropdownMenu.Portal>

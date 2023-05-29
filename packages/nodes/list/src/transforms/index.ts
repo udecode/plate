@@ -4,6 +4,7 @@
 
 export * from './indentListItems';
 export * from './insertListItem';
+export * from './insertTodoListItem';
 export * from './moveListItemDown';
 export * from './moveListItemSublistItemsToListItemSublist';
 export * from './moveListItemUp';

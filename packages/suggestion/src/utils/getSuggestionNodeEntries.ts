@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   getNodeEntries,
   GetNodeEntriesOptions,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { TSuggestionText } from '../types';
 
@@ -19,6 +19,7 @@ export const getSuggestionNodeEntries = <V extends Value = Value>(
 ) =>
   getNodeEntries<TSuggestionText>(editor, {
     at,
-    match: (n) => (n.suggestionId === suggestionId) && match(n as TSuggestionText),
+    match: (n) =>
+      n.suggestionId === suggestionId && match(n as TSuggestionText),
     ...options,
   });

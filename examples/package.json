@@ -23,6 +23,7 @@
     "@udecode/plate-ui-cloud": "workspace:^",
     "@udecode/plate-ui-dnd": "workspace:^",
     "@udecode/plate-ui-excalidraw": "workspace:^",
+    "date-fns": "^2.30.0",
     "prism-react-renderer": "^1.2.0",
     "styled-components": "5.3.1"
   },

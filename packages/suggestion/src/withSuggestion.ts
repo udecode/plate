@@ -3,6 +3,7 @@ import {
   getPointAfter,
   getPointBefore,
   PlateEditor,
+  removeNodes,
   setNodes,
   unsetNodes,
   Value,
@@ -12,7 +13,7 @@ import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion'
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
-import { getSuggestionId } from './utils/index';
+import { getSuggestionId, getSuggestionKeys } from './utils/index';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import {
   SuggestionEditorProps,
@@ -54,7 +55,6 @@ export const withSuggestion = <
   };
 
   editor.insertText = (text) => {
-    // TODO:
     if (editor.isSuggesting) {
       insertTextSuggestion(editor, text);
       return;
@@ -124,9 +124,9 @@ export const withSuggestion = <
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    // Unset MARK_SUGGESTION prop when there is no suggestion id
     if (node[MARK_SUGGESTION]) {
       const pointBefore = getPointBefore(editor, path);
+      // Merge with previous suggestion
       if (pointBefore) {
         const nodeBefore = getNode(editor, pointBefore.path);
         if (
@@ -142,8 +142,26 @@ export const withSuggestion = <
         }
       }
 
+      // Unset suggestion when there is no suggestion id
       if (!getSuggestionId(node)) {
-        unsetNodes(editor, MARK_SUGGESTION, { at: path });
+        const keys = getSuggestionKeys(node);
+        unsetNodes(editor, [MARK_SUGGESTION, 'suggestionDeletion', ...keys], {
+          at: path,
+        });
+        return;
+      }
+
+      // Unset suggestion when there is no suggestion user id
+      if (!getSuggestionKeys(node).length) {
+        if (!node.suggestionDeletion) {
+          // Remove additions
+          removeNodes(editor, { at: path });
+        } else {
+          // Unset deletions
+          unsetNodes(editor, [MARK_SUGGESTION, KEY_SUGGESTION_ID], {
+            at: path,
+          });
+        }
         return;
       }
     }

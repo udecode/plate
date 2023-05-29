@@ -12,6 +12,7 @@ import {
 } from '@udecode/plate-common';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { SuggestionEditorProps, TSuggestionText } from '../types';
+import { getSuggestionProps } from './getSuggestionProps';
 
 export const setSuggestionNodes = <V extends Value = Value>(
   editor: PlateEditor<V> & SuggestionEditorProps,
@@ -30,35 +31,26 @@ export const setSuggestionNodes = <V extends Value = Value>(
   const nodeEntries = [..._nodeEntries];
 
   withoutNormalizing(editor, () => {
-    const props: TNodeProps<TSuggestionText> = {
-      [MARK_SUGGESTION]: true,
-      [KEY_SUGGESTION_ID]: suggestionId,
-    };
-    if (options?.suggestionDeletion) {
-      props.suggestionDeletion = true;
-    }
+    const props: TNodeProps<TSuggestionText> = getSuggestionProps(
+      editor,
+      suggestionId,
+      options
+    );
 
     addRangeMarks(editor, props, {
       at,
     });
 
     nodeEntries.forEach(([, path]) => {
-      setNodes<TSuggestionText>(
-        editor,
-        { ...props },
-        {
-          at: path,
-          match: (n) => {
-            if (!isInline(editor, n)) return false;
+      setNodes<TSuggestionText>(editor, props, {
+        at: path,
+        match: (n) => {
+          if (!isInline(editor, n)) return false;
 
-            // if (n[MARK_SUGGESTION]) {
-            // }
-
-            return true;
-          },
-          ...options,
-        }
-      );
+          return true;
+        },
+        ...options,
+      });
     });
   });
 };

@@ -1,14 +1,13 @@
 import { useEffect } from 'react';
 import {
-  findNode,
   PlateEditor,
   usePlateSelectors,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
+import { findSuggestionNode } from './queries/index';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
 import { getSuggestionId } from './utils/getSuggestionId';
-import { MARK_SUGGESTION } from './constants';
 import { SuggestionPlugin } from './types';
 
 export const useHooksSuggestion = <
@@ -34,9 +33,7 @@ export const useHooksSuggestion = <
       setActiveSuggestionId(null);
     };
 
-    const suggestionEntry = findNode(editor, {
-      match: (n) => n[MARK_SUGGESTION],
-    });
+    const suggestionEntry = findSuggestionNode(editor);
     if (!suggestionEntry) return resetActiveSuggestion();
 
     const [suggestionNode] = suggestionEntry;

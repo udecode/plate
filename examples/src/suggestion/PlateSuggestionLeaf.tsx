@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   findNodePath,
   getBlockAbove,
   getSuggestionId,
+  getSuggestionUserId,
   MARK_SUGGESTION,
   StyledLeafProps,
   TSuggestionText,
   useSuggestionSelectors,
+  useSuggestionUserById,
   Value,
 } from '@udecode/plate';
 import { cva } from 'class-variance-authority';
@@ -34,10 +36,13 @@ export const PlateSuggestionLeaf = <V extends Value = Value>({
   editor,
   nodeProps,
 }: StyledLeafProps<V, TSuggestionText>) => {
-  const [hue] = useState(() => Math.floor(Math.random() * 360));
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
+  const userId = getSuggestionUserId(text);
+  const user = useSuggestionUserById(userId);
   const isActive = activeSuggestionId === getSuggestionId(text);
   const isDeletion = Boolean(text.suggestionDeletion);
+
+  const hue = user?.hue ?? 0;
 
   const blockAbove = getBlockAbove(editor, {
     at: findNodePath(editor, text),

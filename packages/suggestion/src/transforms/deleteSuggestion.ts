@@ -21,7 +21,8 @@ import {
 import { Point, Range } from 'slate';
 import { MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
-import { TSuggestionText } from '../types';
+import { findSuggestionNode } from '../queries/index';
+import { getSuggestionCurrentUserKey } from './getSuggestionProps';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
@@ -96,7 +97,10 @@ export const deleteSuggestion = <V extends Value>(
       const entryBlock = findNode<TElement>(editor, {
         at: pointCurrent,
         match: (n) =>
-          isBlock(editor, n) && n[MARK_SUGGESTION] && !n.suggestionDeletion,
+          isBlock(editor, n) &&
+          n[MARK_SUGGESTION] &&
+          !n.suggestionDeletion &&
+          n[getSuggestionCurrentUserKey(editor)],
       });
 
       if (
@@ -128,9 +132,10 @@ export const deleteSuggestion = <V extends Value>(
       }
 
       // if the current point is in addition suggestion, delete
-      const entryText = findNode<TSuggestionText>(editor, {
+      const entryText = findSuggestionNode(editor, {
         at: range,
-        match: (n) => n[MARK_SUGGESTION] && !n.suggestionDeletion,
+        match: (n) =>
+          !n.suggestionDeletion && n[getSuggestionCurrentUserKey(editor)],
       });
       if (entryText) {
         deleteText(editor, { at: range, unit: 'character' });
