@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-react",
-  "version": "21.0.0",
+  "version": "21.3.0",
   "description": "Slate extension",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/slate": "21.0.0",
+    "@udecode/slate": "21.3.0",
     "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {
