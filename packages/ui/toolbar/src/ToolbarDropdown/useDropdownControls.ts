@@ -16,9 +16,9 @@ const closeAllExceptSelectedOneListener = ({
   if (open) {
     const target = ev.target as HTMLElement;
     // TS2339: Property 'contains' does not exist on type 'ReferenceType'
-    // if (refs.reference.current?.contains(target)) {
-    //   return;
-    // }
+    if ((refs.reference.current as any)?.contains(target)) {
+      return;
+    }
     if (refs.floating.current?.contains(target)) {
       return;
     }

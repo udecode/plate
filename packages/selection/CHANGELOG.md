@@ -1,5 +1,13 @@
 # @udecode/plate-selection
 
+## 21.1.5
+
+## 21.1.3
+
+### Patch Changes
+
+- [#2384](https://github.com/udecode/plate/pull/2384) by [@zbeyens](https://github.com/zbeyens) – Fixes #2321
+
 ## 21.0.0
 
 ## 20.7.2

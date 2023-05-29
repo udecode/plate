@@ -11,13 +11,23 @@ export const getLinkAttributes = <V extends Value>(
   editor: PlateEditor<V>,
   link: TLinkElement
 ) => {
-  const { allowedSchemes } = getPluginOptions<LinkPlugin, V>(
-    editor,
-    ELEMENT_LINK
-  );
+  const { allowedSchemes, defaultLinkAttributes } = getPluginOptions<
+    LinkPlugin,
+    V
+  >(editor, ELEMENT_LINK);
+
+  const attributes = { ...defaultLinkAttributes };
 
   const href = sanitizeUrl(link.url, { allowedSchemes }) || undefined;
-  const { target } = link;
 
-  return { href, target };
+  // Avoid passing `undefined` for href or target
+  if (href !== undefined) {
+    attributes.href = href;
+  }
+
+  if ('target' in link) {
+    attributes.target = link.target;
+  }
+
+  return attributes;
 };

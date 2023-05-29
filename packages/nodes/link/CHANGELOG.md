@@ -1,5 +1,15 @@
 # @udecode/plate-link
 
+## 21.2.0
+
+### Minor Changes
+
+- [#2405](https://github.com/udecode/plate/pull/2405) by [@12joan](https://github.com/12joan) –
+  - New link plugin option `defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>`
+  - Avoid returning `undefined` from `getLinkAttributes`, since this overrides other values
+
+## 21.1.5
+
 ## 21.0.0
 
 ## 20.7.2
