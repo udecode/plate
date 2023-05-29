@@ -1,6 +1,6 @@
 ---
-"@udecode/plate-headless": patch
-"@udecode/plate-suggestion": patch
+"@udecode/plate-headless": minor
+"@udecode/plate-suggestion": minor
 ---
 
 ✨ Suggestion plugin
