@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-emoji",
-  "version": "21.1.5",
+  "version": "21.3.0",
   "description": "Emoji plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,8 +20,8 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@emoji-mart/data": "^1.0.8",
-    "@udecode/plate-combobox": "21.1.5",
-    "@udecode/plate-common": "21.1.5"
+    "@udecode/plate-combobox": "21.3.0",
+    "@udecode/plate-common": "21.3.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

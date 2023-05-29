@@ -1,5 +1,7 @@
 # @udecode/plate-code-block-ui
 
+## 21.3.0
+
 ## 21.1.5
 
 ## 21.1.4

@@ -1,5 +1,13 @@
 # @udecode/slate
 
+## 21.3.0
+
+### Minor Changes
+
+- [#2410](https://github.com/udecode/plate/pull/2410) by [@zbeyens](https://github.com/zbeyens) –
+  - ✨ `addRangeMarks`: Add marks to each node of a range.
+  - ✨ `unhangCharacterRange`: Unhang the range of length 1 so both edges are in the same text node.
+
 ## 21.0.0
 
 ### Major Changes
