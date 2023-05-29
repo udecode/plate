@@ -3,7 +3,7 @@ slug: /plugins/mention
 title: Mention
 ---
 
-The mention plugin is using the [combobox plugin](docs/plugins/combobox).
+The mention plugin is using the [combobox plugin](/docs/plugins/combobox).
 
 The Mention plugin provides smart autocompletion support for user input. When a user types a pre-configured marker,
 such as "@" or "#", they will receive autocomplete suggestions in a panel displayed next to the cursor.
@@ -14,8 +14,7 @@ allowing for efficient user interactions such as mentioning users or applying ta
 
 To use the Mention feature, type "@" or "#" to invoke the combobox and select a suggestion from the list.
 
-
-import { MentionSandpack } from "./MentionSandpack";
+import { MentionSandpack } from './MentionSandpack'
 
 <MentionSandpack />
 
@@ -36,26 +35,28 @@ npm install @udecode/plate-ui-mention
 2. Import the plugin and add it to your plugin list:
 
 ```tsx
-import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
+import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate'
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createMentionPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createComboboxPlugin(),
+    createMentionPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+)
 ```
-
 
 ### Options
 
 ```ts
 interface MentionPlugin<TData extends Data = NoData> {
-  createMentionNode?: CreateMentionNode<TData>;
-  id?: string;
-  insertSpaceAfterMention?: boolean;
-  trigger?: string;
+  createMentionNode?: CreateMentionNode<TData>
+  id?: string
+  insertSpaceAfterMention?: boolean
+  trigger?: string
 }
 ```
 
