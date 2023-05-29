@@ -1,5 +1,4 @@
-import { TNode } from '@udecode/plate';
-import { isDefined } from '@udecode/plate-common';
+import { isDefined, TNode } from '@udecode/plate-common';
 import { MARK_SUGGESTION } from '../constants';
 
 export const getSuggestionKey = (id = '0') => `${MARK_SUGGESTION}_${id}`;
