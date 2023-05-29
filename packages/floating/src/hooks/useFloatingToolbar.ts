@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { flip, offset } from '@floating-ui/react';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -6,15 +7,13 @@ import {
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
+import { useFocused } from 'slate-react';
 import {
-  flip,
   getSelectionBoundingClientRect,
-  offset,
   useVirtualFloating,
   UseVirtualFloatingOptions,
   UseVirtualFloatingReturn,
-} from '@udecode/plate-floating';
-import { useFocused } from 'slate-react';
+} from '..';
 
 export const useFloatingToolbar = ({
   floatingOptions,

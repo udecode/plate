@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ExtendedRefs, flip, useFloating } from '@udecode/plate-floating';
+import { ExtendedRefs, flip, useFloating } from '@floating-ui/react';
 
 type useDropdownControlsProps = {
   open: boolean;
