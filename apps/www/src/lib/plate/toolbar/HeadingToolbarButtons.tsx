@@ -22,7 +22,7 @@ import { TurnIntoDropdownMenu } from './TurnIntoDropdownMenu';
 import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
+import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
 import { CommentToolbarButton } from '@/plate/comments/CommentToolbarButton';
 import { EmojiDropdownMenu } from '@/plate/emoji/EmojiDropdownMenu';
 import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';

@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { useCombobox } from 'downshift';
 import { useComboboxSelectors } from '../combobox.store';
 
+export type ComboboxControls = ReturnType<typeof useComboboxControls>;
+
 export const useComboboxControls = () => {
   const isOpen = useComboboxSelectors.isOpen();
   const highlightedIndex = useComboboxSelectors.highlightedIndex();

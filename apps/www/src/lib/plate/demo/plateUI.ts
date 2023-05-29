@@ -7,7 +7,7 @@ import {
 import { PlateElement } from '@udecode/plate-tailwind';
 
 import { createPlateUI } from '@/lib/createPlateUI';
-import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
+import { CodeBlockElement } from '@/plate/aui/code-block-element';
 import { MediaEmbedElement } from '@/plate/media/MediaEmbedElement';
 
 export const plateUI = createPlateUI({

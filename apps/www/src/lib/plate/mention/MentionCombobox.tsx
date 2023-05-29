@@ -7,7 +7,8 @@ import {
   MentionPlugin,
 } from '@udecode/plate-mention';
 
-import { Combobox, ComboboxProps } from '@/plate/combobox/Combobox';
+import { Combobox } from '@/plate/combobox/Combobox';
+import { ComboboxProps } from '@/plate/combobox/ComboboxProps';
 
 export interface MentionComboboxProps<TData extends Data = NoData>
   extends Partial<ComboboxProps<TData>> {

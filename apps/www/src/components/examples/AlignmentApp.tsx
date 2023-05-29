@@ -14,7 +14,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
+import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';

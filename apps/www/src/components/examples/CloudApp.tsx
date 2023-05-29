@@ -8,10 +8,10 @@ import {
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
 
-import { CloudAttachmentElement } from '@/plate/cloud/CloudAttachmentElement';
-import { CloudImageElement } from '@/plate/cloud/CloudImageElement';
-import { CloudToolbarButtons } from '@/plate/cloud/CloudToolbarButtons';
-import { uploadStoreInitialValue } from '@/plate/cloud/uploadStoreInitialValue';
+import { CloudAttachmentElement } from '@/plate/bcomponents/cloud/CloudAttachmentElement';
+import { CloudImageElement } from '@/plate/bcomponents/cloud/CloudImageElement';
+import { CloudToolbarButtons } from '@/plate/bcomponents/cloud/CloudToolbarButtons';
+import { uploadStoreInitialValue } from '@/plate/bcomponents/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';

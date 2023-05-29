@@ -8,18 +8,9 @@ import {
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
-// !HEADLESS
+import { CodeBlockSelectElementRoot } from '@/lib/@/CodeBlockSelectElement';
 
-export function CodeBlockSelectElement({
-  lang,
-  onChange,
-  ...props
-}: {
-  lang?: string;
-  onChange: Function;
-  className?: string;
-}) {
-  const [value, setValue] = React.useState(lang);
+export function CodeBlockSelectElement() {
   const editor = useEditorRef();
 
   if (useReadOnly()) return null;
@@ -30,30 +21,21 @@ export function CodeBlockSelectElement({
   );
 
   return (
-    <select
-      value={value}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-      onChange={(e) => {
-        onChange(e.target.value);
-        setValue(e.target.value);
-      }}
-      contentEditable={false}
-      {...props}
-    >
+    <CodeBlockSelectElementRoot>
       <option value="">Plain text</option>
+
       {syntaxPopularFirst &&
         Object.entries(CODE_BLOCK_LANGUAGES_POPULAR).map(([key, val]) => (
           <option key={key} value={key}>
             {val}
           </option>
         ))}
+
       {Object.entries(CODE_BLOCK_LANGUAGES).map(([key, val]) => (
         <option key={key} value={key}>
           {val}
         </option>
       ))}
-    </select>
+    </CodeBlockSelectElementRoot>
   );
 }

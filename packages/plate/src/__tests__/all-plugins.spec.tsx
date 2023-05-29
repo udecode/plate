@@ -29,7 +29,7 @@ import { createPlateUI } from '@/lib/createPlateUI';
 import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
 import { createLinkPlugin } from '@/nodes/link/src/index';
 import { createMentionPlugin } from '@/nodes/mention/src/index';
-import { AlignDropdownMenu } from '@/plate/align/AlignDropdownMenu';
+import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { SearchHighlightToolbar } from '@/plate/demo/find-replace/SearchHighlightToolbar';

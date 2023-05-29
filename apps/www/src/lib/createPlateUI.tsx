@@ -40,10 +40,10 @@ import {
   withProps,
 } from '@udecode/plate';
 import { PlateElement, PlateLeaf } from '@udecode/plate-tailwind';
-import { BlockquoteElement } from './plate/block-quote/BlockquoteElement';
-import { CodeBlockElement } from './plate/code-block/CodeBlockElement';
-import { CodeLineElement } from './plate/code-block/CodeLineElement';
-import { CodeSyntaxLeaf } from './plate/code-block/CodeSyntaxLeaf';
+import { BlockquoteElement } from './plate/aui/blockquote-element';
+import { CodeBlockElement } from './plate/aui/code-block-element';
+import { CodeLineElement } from './plate/aui/code-line-element';
+import { CodeSyntaxLeaf } from './plate/aui/code-syntax-leaf';
 import { CommentLeaf } from './plate/comments/CommentLeaf';
 import { HrElement } from './plate/horizontal-rule/HrElement';
 import { LinkElement } from './plate/link/LinkElement';

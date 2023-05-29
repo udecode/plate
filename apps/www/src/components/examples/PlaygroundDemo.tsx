@@ -58,7 +58,7 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
 import { createPlateUI } from '@/lib/createPlateUI';
-import { CodeBlockElement } from '@/plate/code-block/CodeBlockElement';
+import { CodeBlockElement } from '@/plate/aui/code-block-element';
 import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
 import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
 import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';

@@ -9,7 +9,8 @@ import {
 } from '@udecode/plate-emoji';
 import { EmojiComboboxItem } from './EmojiComboboxItem';
 
-import { Combobox, ComboboxProps } from '@/plate/combobox/Combobox';
+import { Combobox } from '@/plate/combobox/Combobox';
+import { ComboboxProps } from '@/plate/combobox/ComboboxProps';
 
 export interface TEmojiCombobox<TData extends Data = NoData>
   extends Partial<ComboboxProps<TData>> {
