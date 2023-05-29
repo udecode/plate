@@ -21,7 +21,6 @@ export const LineHeightToolbarDropdown = ({
   const editor = usePlateEditorState(useEventPlateId(id));
 
   const [open, setOpen] = React.useState(false);
-
   const { validNodeValues } = getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
   const onToggle = useCallback(() => {

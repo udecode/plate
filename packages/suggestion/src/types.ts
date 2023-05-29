@@ -1,28 +1,18 @@
-import { TText, Value } from '@udecode/plate-common';
+import { TText, UnknownObject } from '@udecode/plate-common';
 
-export interface SuggestionUser {
+export interface SuggestionUser extends UnknownObject {
   id: string;
   name: string;
   avatarUrl?: string;
 }
 
-export interface TSuggestion {
+export interface TSuggestion extends UnknownObject {
   id: string;
-
-  /**
-   * Slate value of the document.
-   */
-  value: Value;
 
   /**
    * @default Date.now()
    */
   createdAt: number;
-
-  /**
-   * Author id.
-   */
-  userId: string;
 
   isAccepted?: boolean;
 
@@ -38,6 +28,7 @@ export interface TSuggestionText extends TText {
 
 export interface SuggestionPlugin {
   hotkey?: string;
+  currentUserId?: string;
 }
 
 export interface SuggestionEditorProps {

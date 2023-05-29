@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
 import {
-  findNode,
-  isText,
   PlateEditor,
   usePlateSelectors,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
+import { findSuggestionNode } from './queries/index';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
 import { getSuggestionId } from './utils/getSuggestionId';
-import { MARK_SUGGESTION } from './constants';
 import { SuggestionPlugin } from './types';
 
 export const useHooksSuggestion = <
@@ -23,14 +21,19 @@ export const useHooksSuggestion = <
   const key = usePlateSelectors().keyEditor();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 
+  /**
+   * Set the active suggestion to the selected suggestion (or the first such
+   * suggestion if there are multiple). If there is no selected suggestion,
+   * set the active suggestion to null.
+   */
   useEffect(() => {
+    if (!editor.selection) return;
+
     const resetActiveSuggestion = () => {
       setActiveSuggestionId(null);
     };
 
-    const suggestionEntry = findNode(editor, {
-      match: (n) => isText(n) && n[MARK_SUGGESTION],
-    });
+    const suggestionEntry = findSuggestionNode(editor);
     if (!suggestionEntry) return resetActiveSuggestion();
 
     const [suggestionNode] = suggestionEntry;

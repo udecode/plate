@@ -3,3 +3,11 @@
  */
 
 export * from './addSuggestionMark';
+export * from './deleteFragmentSuggestion';
+export * from './deleteSuggestion';
+export * from './insertFragmentSuggestion';
+export * from './insertTextSuggestion';
+export * from './setSuggestionNodes';
+export * from './acceptSuggestion';
+export * from './rejectSuggestion';
+export { getSuggestionProps } from './getSuggestionProps';
