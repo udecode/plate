@@ -90,7 +90,7 @@ export const examples = {
   MultipleEditorsApp,
   PlaceholderApp,
   PlateApp,
-  PlaygroundApp: PlaygroundDemo,
+  PlaygroundDemo,
   playgroundValue,
   PreviewMdApp,
   ResetNodeApp,

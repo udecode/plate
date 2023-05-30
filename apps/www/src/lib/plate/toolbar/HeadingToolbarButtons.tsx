@@ -23,6 +23,7 @@ import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
+import { UserToolbarDropdown } from '@/plate/bcomponents/SuggestionToolbarDropdown';
 import { CommentToolbarButton } from '@/plate/comments/CommentToolbarButton';
 import { EmojiDropdownMenu } from '@/plate/emoji/EmojiDropdownMenu';
 import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';
@@ -121,9 +122,12 @@ export function HeadingToolbarButtons() {
 
       <div className="flex gap-1">
         {readOnly && (
-          <CommentToolbarButton>
-            <Icons.commentAdd />
-          </CommentToolbarButton>
+          <>
+            <UserToolbarDropdown />
+            <CommentToolbarButton>
+              <Icons.commentAdd />
+            </CommentToolbarButton>
+          </>
         )}
         <ModeDropdownMenu />
       </div>

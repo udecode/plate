@@ -1,12 +1,6 @@
 import React from 'react';
-import { gray } from '@radix-ui/colors';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { styled } from '@stitches/react';
-import { CommentEdit } from '@styled-icons/boxicons-regular/CommentEdit';
-import { ModeEdit } from '@styled-icons/material';
 import {
-  ChevronDownIcon,
-  PlateButton,
   useCurrentSuggestionUser,
   usePlateEditorRef,
   useResetPlateEditor,
@@ -18,55 +12,30 @@ import {
   useSetIsSuggesting,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
-import tw from 'twin.macro';
 
-const DropdownMenuContent = styled(DropdownMenu.Content, {
-  zIndex: 1001,
-  minWidth: 220,
-  backgroundColor: 'white',
-  borderRadius: 6,
-  padding: '5px 0',
-  boxShadow:
-    '0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)',
-});
+import { Icons } from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenuContent,
+  DropdownMenuRadioItem,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
-const DropdownMenuRadioItem = styled(DropdownMenu.RadioItem, {
-  all: 'unset',
-  fontSize: 13,
-  lineHeight: 1,
-  borderRadius: 3,
-  display: 'flex',
-  alignItems: 'center',
-  height: 25,
-  padding: '4px 10px',
-  position: 'relative',
-  userSelect: 'none',
-  cursor: 'pointer',
-
-  '&[data-disabled]': {
-    pointerEvents: 'none',
-  },
-
-  '&[data-highlighted]': {
-    backgroundColor: gray.gray2,
-  },
-});
-
-export const PlateSuggestionToolbarDropdown = () => {
+export function SuggestionToolbarDropdown() {
   const reset = useResetPlateEditor();
   const setIsSuggesting = useSetIsSuggesting();
   const isSuggesting = useSuggestionSelectors().isSuggesting();
 
   const EditIcon = (
     <div tw="flex items-center">
-      <ModeEdit tw="h-5 w-5 mr-1" />
+      {/* <ModeEdit tw="h-5 w-5 mr-1" /> */}
       Editing
     </div>
   );
 
   const SuggestingIcon = (
     <div tw="flex items-center">
-      <CommentEdit tw="h-5 w-5 mr-1" />
+      {/* <CommentEdit tw="h-5 w-5 mr-1" /> */}
       Suggesting
     </div>
   );
@@ -75,17 +44,27 @@ export const PlateSuggestionToolbarDropdown = () => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <div>
-          <PlateButton tw="min-w-[140px] flex justify-between items-center text-blue-500 bg-blue-50">
+          <Button className="flex min-w-[140px] items-center justify-between bg-blue-50 text-blue-500">
             {isSuggesting ? SuggestingIcon : EditIcon}
             <div>
-              <ChevronDownIcon tw="h-4 w-4" />
+              <Icons.arrowDown className="h-4 w-4" />
             </div>
-          </PlateButton>
+          </Button>
         </div>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent
+          align="start"
+          className={
+            cn()
+            // 'z-1000 min-w-[220px] bg-popover'
+            //   borderRadius: 6,
+            //   padding: '5px 0',
+            //   boxShadow:
+            //     '0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)',
+          }
+        >
           <DropdownMenu.RadioGroup
             value="editing"
             onValueChange={(value) => {
@@ -99,10 +78,35 @@ export const PlateSuggestionToolbarDropdown = () => {
             }}
           >
             <DropdownMenuRadioItem value="editing">
-              <div css={[!isSuggesting && tw`text-blue-500`]}>{EditIcon}</div>
+              <div
+                className={cn(
+                  !isSuggesting && 'text-blue-500'
+                  // all: 'unset',
+                  //   fontSize: 13,
+                  //   lineHeight: 1,
+                  //   borderRadius: 3,
+                  //   display: 'flex',
+                  //   alignItems: 'center',
+                  //   height: 25,
+                  //   padding: '4px 10px',
+                  //   position: 'relative',
+                  //   userSelect: 'none',
+                  //   cursor: 'pointer',
+                  //
+                  //   '&[data-disabled]': {
+                  //     pointerEvents: 'none',
+                  //   },
+                  //
+                  //   '&[data-highlighted]': {
+                  //     backgroundColor: gray.gray2,
+                  //   },
+                )}
+              >
+                {EditIcon}
+              </div>
             </DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="suggesting">
-              <div css={[isSuggesting && tw`text-blue-500`]}>
+              <div className={cn(isSuggesting && 'text-blue-500')}>
                 {SuggestingIcon}
               </div>
             </DropdownMenuRadioItem>
@@ -111,9 +115,9 @@ export const PlateSuggestionToolbarDropdown = () => {
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-};
+}
 
-export const UserToolbarDropdown = () => {
+export function UserToolbarDropdown() {
   const reset = useResetPlateEditor();
   const editor = usePlateEditorRef();
   const users = useSuggestionSelectors().users();
@@ -127,13 +131,13 @@ export const UserToolbarDropdown = () => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <div>
-          <PlateButton tw="ml-2 min-w-[140px] flex justify-between items-center text-blue-500 bg-blue-50">
+          <Button tw="ml-2 min-w-[140px] flex justify-between items-center text-blue-500 bg-blue-50">
             {currentUser?.name}
             {currentUser?.isOwner && ' (owner)'}
             <div>
-              <ChevronDownIcon tw="h-4 w-4" />
+              <Icons.arrowDown tw="h-4 w-4" />
             </div>
-          </PlateButton>
+          </Button>
         </div>
       </DropdownMenu.Trigger>
 
@@ -144,8 +148,9 @@ export const UserToolbarDropdown = () => {
             onValueChange={(value) => {
               reset();
               setCurrentUserId(value);
-              (editor.pluginsByKey[MARK_SUGGESTION]
-                .options as SuggestionPlugin).currentUserId = value;
+              (
+                editor.pluginsByKey[MARK_SUGGESTION].options as SuggestionPlugin
+              ).currentUserId = value;
             }}
           >
             {Object.keys(users).map((key) => {
@@ -153,8 +158,10 @@ export const UserToolbarDropdown = () => {
 
               return (
                 <DropdownMenuRadioItem key={user.id} value={user.id}>
-                  {user.name}
-                  {user.isOwner && ' (owner)'}
+                  <>
+                    {user.name}
+                    {user.isOwner && ' (owner)'}
+                  </>
                 </DropdownMenuRadioItem>
               );
             })}
@@ -163,4 +170,4 @@ export const UserToolbarDropdown = () => {
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-};
+}

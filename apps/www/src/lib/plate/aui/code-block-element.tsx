@@ -9,9 +9,9 @@ import {
 } from '@udecode/plate-code-block';
 import { getPluginOptions, Value } from '@udecode/plate-common';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
+import { CodeBlockSelectElement } from './code-block-select-element';
 
 import { useCodeBlockElementProps } from '@/lib/@/useCodeBlockElementProps';
-import { CodeBlockSelectElement } from '@/plate/aui/code-block-select-element';
 
 const CodeBlockElement = forwardRef<
   HTMLDivElement,
