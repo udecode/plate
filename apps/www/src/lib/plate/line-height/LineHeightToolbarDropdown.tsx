@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   getPluginInjectProps,
@@ -21,6 +21,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { useMyPlateEditorState } from '@/plate/demo/plate.types';
@@ -43,18 +44,16 @@ export function LineHeightToolbarDropdown(props: DropdownMenuProps) {
     }
   }
 
-  const [open, setOpen] = useState(false);
-  const onToggle = useCallback(
-    (_value = !open) => {
-      setOpen(_value);
-    },
-    [open]
-  );
+  const openState = useOpenState();
 
   return (
-    <DropdownMenu open={open} modal={false} onOpenChange={onToggle} {...props}>
+    <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Line height" isDropdown>
+        <ToolbarButton
+          pressed={openState.open}
+          tooltip="Line height"
+          isDropdown
+        >
           <Icons.lineHeight />
         </ToolbarButton>
       </DropdownMenuTrigger>
