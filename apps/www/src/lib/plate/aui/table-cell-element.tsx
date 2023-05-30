@@ -96,7 +96,6 @@ const TableCellElement = React.forwardRef<
     </TableCellElementPrimitive.Root>
   );
 });
-
 TableCellElement.displayName = 'TableCellElement';
 
 export { TableCellElement };
