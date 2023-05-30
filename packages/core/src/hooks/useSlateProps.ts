@@ -37,6 +37,7 @@ export const useSlateProps = <V extends Value>({
       editor,
       onChange,
       value,
+      initialValue: value,
     };
   }, [editor, onChange, value]);
 };
