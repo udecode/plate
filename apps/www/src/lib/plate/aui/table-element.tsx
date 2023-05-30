@@ -5,7 +5,7 @@ import {
   useTableElementState,
 } from '@udecode/plate-table';
 import { cn } from '@udecode/plate-tailwind';
-import { TablePopover } from './TablePopover';
+import { TablePopover } from './table-popover';
 
 // REVIEWW
 

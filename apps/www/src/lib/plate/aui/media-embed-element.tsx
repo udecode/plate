@@ -13,6 +13,7 @@ import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { FloatingMedia, mediaFloatingOptions } from './floating-media';
 
+// REVIEWW
 export interface MediaEmbedElementPropsCaption {
   disabled?: boolean;
 
@@ -138,3 +139,6 @@ const MediaEmbedElement = React.forwardRef<
     </ElementPopover>
   );
 });
+MediaEmbedElement.displayName = 'MediaEmbedElement';
+
+export { MediaEmbedElement };
