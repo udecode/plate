@@ -18,6 +18,7 @@ import {
   toDOMNode,
   TSuggestionDescription,
   useCurrentSuggestionUser,
+  useHotkeys,
   usePlateEditorRef,
   usePlateEditorState,
   usePlateSelectors,
@@ -199,19 +200,17 @@ export const PlateFloatingSuggestions = ({
   const [isOpen, setIsOpen] = useState(activeSuggestionId !== null);
   useEffect(() => setIsOpen(activeSuggestionId !== null), [activeSuggestionId]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  useHotkeys(
+    'escape',
+    () => setIsOpen(false),
+    {
+      enabled: isOpen,
+      enableOnFormTags: true,
+      enableOnContentEditable: true,
+      preventDefault: true,
+    },
+    []
+  );
 
   return (
     <Popover open={isOpen} {...rootProps}>
