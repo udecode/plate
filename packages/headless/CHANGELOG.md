@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 21.3.1
+
 ## 21.3.0
 
 ### Minor Changes
