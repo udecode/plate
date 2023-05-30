@@ -32,14 +32,14 @@ workflows:
 
   # This workflow assigns the most relevant reviewer to pull requests.
   # This helps guarantee that most pull requests are reviewed by at least one person.
-  - name: reviewer-assignment
-    description: Assign the most relevant reviewer to pull requests
-    always-run: true
-    if:
-      # Automatically assign reviewer when the pull request is ready for review;
-      - rule: $isDraft() == false && $eventType() == "opened" && $state() == "open"
-        extra-actions:
-          - $assignCodeAuthorReviewers()
+#   - name: reviewer-assignment
+#     description: Assign the most relevant reviewer to pull requests
+#     always-run: true
+#     if:
+#       # Automatically assign reviewer when the pull request is ready for review;
+#       - rule: $isDraft() == false && $eventType() == "opened" && $state() == "open"
+#         extra-actions:
+#           - $assignCodeAuthorReviewers()
 
   # This workflow praises contributors on their pull request contributions.
   # This helps contributors feel appreciated.

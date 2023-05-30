@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "21.1.5",
+  "version": "21.3.0",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -31,10 +31,10 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.1",
-    "@udecode/plate-core": "21.1.5",
-    "@udecode/slate": "21.0.0",
-    "@udecode/slate-react": "21.0.0",
-    "@udecode/slate-utils": "21.0.0",
+    "@udecode/plate-core": "21.3.0",
+    "@udecode/slate": "21.3.0",
+    "@udecode/slate-react": "21.3.0",
+    "@udecode/slate-utils": "21.3.0",
     "@udecode/utils": "19.7.0"
   },
   "peerDependencies": {

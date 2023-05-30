@@ -3,9 +3,7 @@ slug: /serializing-html
 title: HTML
 ---
 
-The **`@udecode/plate-serializer-html`** plugin provides functionality to convert Slate value to HTML without requiring an editor instance.
-
-This feature is particularly useful for server-side rendering, as it does not require a complicated setup.
+The **`@udecode/plate-serializer-html`** plugin provides functionality to convert a Slate value to a HTML string.
 
 ### Demo
 
@@ -17,7 +15,7 @@ import { SerializingHtmlSandpack } from "./SerializingHtmlSandpack";
 
 ### Installation
 
-Follow these steps to serialize Slate value into HTML:
+Follow these steps to serialize a Slate value to HTML:
 
 1. Install the required packages:
 
@@ -37,7 +35,35 @@ const html = serializeHtml(editor, {
 });
 ```
 
-Note that the **`createDeserializeHTMLPlugin`** is installed by `Plate` by default so you don't need to do it.
+Note that **`createDeserializeHTMLPlugin`** is included in the core plugins of `Plate`, so you don't need to import it manually.
+
+### Creating an `editor` Instance
+
+An `editor` instance is required to serialize a Slate value to HTML. If you need to use `serializeHtml` in a context where no `editor` is available, you can create one using `createPlateEditor({ plugins })`. Include the plugins and components necessary for rendering all node types used in your Slate value.
+
+```tsx
+import {
+  createParagraphPlugin,
+  createPlateEditor,
+  createPlateUI,
+  createPlugins,
+  serializeHtml,
+  // ...
+} from '@udecode/plate';
+
+const plugins = createPlugins([
+  createParagraphPlugin(),
+  // ...
+], {
+  components: createPlateUI(),
+});
+
+const editor = createPlateEditor({ plugins });
+
+const html = serializeHtml(editor, {
+  nodes: /* your Slate value */,
+});
+```
 
 ### Source Code
 

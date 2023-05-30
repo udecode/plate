@@ -1,37 +1,32 @@
-import { MyValue } from '@/plate/demo/plate.types';
+import { SuggestionUser, TSuggestion } from '@udecode/plate';
+import { MyValue } from '../typescript/plateTypes';
 
-export const usersData = {
+export const usersData: Record<string, SuggestionUser> = {
   1: {
     id: '1',
-    name: 'Foo',
+    name: 'Alice',
     avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
+    hue: Math.floor(Math.random() * 360),
+    isOwner: true,
   },
   2: {
     id: '2',
-    name: 'Bar',
+    name: 'Bob',
+    hue: Math.floor(Math.random() * 360),
   },
 };
 
-export const suggestionsData: Record<string, any> = {
+export const suggestionsData: Record<string, TSuggestion> = {
   1: {
     id: '1',
-    userId: '1',
-    value: [{ type: 'p', children: [{ text: 'paragraph' }] }],
     createdAt: 1663453625129,
   },
   2: {
     id: '2',
-    userId: '1',
-    value: [{ type: 'p', children: [{ text: 'What?' }] }],
     createdAt: 1663453729191,
   },
   3: {
     id: '3',
-    userId: '1',
-    value: [
-      { type: 'p', children: [{ text: 'This is an accepted suggestion.' }] },
-    ],
-    isAccepted: true,
     createdAt: 1663453740180,
   },
 };
@@ -45,6 +40,7 @@ export const suggestionValue: MyValue = [
         text: ' World',
         suggestion: true,
         suggestionId: 1,
+        suggestion_1: true,
       },
       { text: '.' },
     ],
@@ -56,6 +52,7 @@ export const suggestionValue: MyValue = [
         text: 'Lorem',
         suggestion: true,
         suggestionId: 2,
+        suggestion_1: true,
       },
       { text: 'amet' },
       {
@@ -63,9 +60,11 @@ export const suggestionValue: MyValue = [
         suggestion: true,
         suggestionId: 3,
         suggestionDeletion: true,
+        suggestion_2: true,
       },
       {
-        text: ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
+        text:
+          ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
       },
     ],
   },

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-select",
-  "version": "21.1.5",
+  "version": "21.3.0",
   "description": "Select plugins for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "21.1.5"
+    "@udecode/plate-common": "21.3.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
