@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table",
-  "version": "21.3.0",
+  "version": "21.3.2",
   "description": "Table plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,8 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.3.0",
-    "@udecode/resizable": "20.4.6"
+    "@udecode/plate-common": "21.3.2",
+    "@udecode/resizable": "20.4.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
