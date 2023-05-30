@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, useEffect, useMemo, useState } from 'react';
 import {
   Popover,
   PopoverAnchor,
@@ -11,6 +11,7 @@ import {
 } from '@radix-ui/react-popover';
 import {
   acceptSuggestion,
+  focusEditor,
   getActiveSuggestionDescriptions,
   getSuggestionNodeEntries,
   rejectSuggestion,
@@ -45,6 +46,7 @@ const PlateFloatingSuggestionsContent = forwardRef<
       ref={ref}
       sideOffset={4}
       onOpenAutoFocus={(event) => event.preventDefault()}
+      onCloseAutoFocus={() => focusEditor(editor)}
       className="bg-white shadow-md rounded-lg border max-w-full w-72"
       {...props}
     >
@@ -194,18 +196,25 @@ export const PlateFloatingSuggestions = ({
   const activeSuggestionId = useSuggestionSelectors().activeSuggestionId();
 
   // TODO: Refactor into useOverrideableState helper
-  // const [isOpen, setIsOpen] = useState(activeSuggestionId !== null);
-  // useEffect(() => setIsOpen(activeSuggestionId !== null), [activeSuggestionId]);
+  const [isOpen, setIsOpen] = useState(activeSuggestionId !== null);
+  useEffect(() => setIsOpen(activeSuggestionId !== null), [activeSuggestionId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   return (
-    <Popover
-      open={!!activeSuggestionId}
-      // onOpenChange={(desiredOpen) => {
-      //   // Only allow Radix UI to close the popover, not open it
-      //   if (!desiredOpen) setIsOpen(false);
-      // }}
-      {...rootProps}
-    >
+    <Popover open={isOpen} {...rootProps}>
       <PopoverAnchor
         virtualRef={{
           current: {
