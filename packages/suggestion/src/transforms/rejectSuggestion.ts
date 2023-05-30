@@ -1,5 +1,10 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
-import { removeNodes, unsetNodes, withoutNormalizing } from 'slate';
+import {
+  PlateEditor,
+  removeNodes,
+  unsetNodes,
+  Value,
+  withoutNormalizing,
+} from '@udecode/plate-common';
 import { KEY_SUGGESTION_ID } from '../constants';
 import { TSuggestionText } from '../types';
 import { getSuggestionKey, TSuggestionDescription } from '../utils/index';
