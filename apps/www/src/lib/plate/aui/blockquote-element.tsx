@@ -19,7 +19,6 @@ const BlockquoteElement = React.forwardRef<
     />
   );
 });
-
 BlockquoteElement.displayName = 'BlockquoteElement';
 
 export { BlockquoteElement };

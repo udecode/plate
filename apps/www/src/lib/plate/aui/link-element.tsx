@@ -2,9 +2,14 @@ import React from 'react';
 import { Link, LinkRootProps } from '@udecode/plate-link';
 import { cn } from '@udecode/plate-tailwind';
 
-export function LinkElement({ className, ...props }: LinkRootProps) {
+// REVIEWW
+const LinkElement = React.forwardRef<
+  React.ElementRef<typeof Link.Root>,
+  LinkRootProps
+>(({ className, ...props }, ref) => {
   return (
     <Link.Root
+      ref={ref}
       className={cn(
         'text-[#0078d4] no-underline',
         'hover:text-[#004578] hover:underline',
@@ -15,4 +20,8 @@ export function LinkElement({ className, ...props }: LinkRootProps) {
       {...props}
     />
   );
-}
+});
+
+LinkElement.displayName = 'LinkElement';
+
+export { LinkElement };

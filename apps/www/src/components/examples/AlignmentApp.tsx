@@ -14,13 +14,13 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { AlignDropdownMenu } from '@/plate/bcomponents/align-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { alignValue } from '@/plate/demo/values/alignValue';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 
 const plugins = createMyPlugins(
   [

@@ -29,8 +29,13 @@ import { createPlateUI } from '@/lib/createPlateUI';
 import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
 import { createLinkPlugin } from '@/nodes/link/src/index';
 import { createMentionPlugin } from '@/nodes/mention/src/index';
-import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { MentionCombobox } from '@/plate/aui/mention-combobox';
+import { TableDropdownMenu } from '@/plate/aui/table-dropdown-menu';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
+import { AlignDropdownMenu } from '@/plate/bcomponents/align-dropdown-menu';
+import { LinkToolbarButton } from '@/plate/bcomponents/link-toolbar-button';
+import { OutdentToolbarButton } from '@/plate/bcomponents/OutdentToolbarButton';
 import { editableProps } from '@/plate/demo/editableProps';
 import { SearchHighlightToolbar } from '@/plate/demo/find-replace/SearchHighlightToolbar';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
@@ -41,13 +46,8 @@ import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspaceP
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
-import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
-import { LinkToolbarButton } from '@/plate/link/LinkToolbarButton';
 import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
-import { MentionCombobox } from '@/plate/mention/MentionCombobox';
-import { TableDropdownMenu } from '@/plate/table/TableDropdownMenu';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { TurnIntoDropdownMenu } from '@/plate/toolbar/TurnIntoDropdownMenu';
+import { TurnIntoDropdownMenu } from '@/plate/toolbar/turn-into-dropdown-menu';
 
 function PlateContainer() {
   const [search, setSearch] = useState();

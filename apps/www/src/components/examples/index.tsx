@@ -50,7 +50,7 @@ import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
-import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
+import { HeadingToolbarButtons } from '@/plate/toolbar/heading-toolbar-buttons';
 
 export const examples = {
   AlignmentApp,

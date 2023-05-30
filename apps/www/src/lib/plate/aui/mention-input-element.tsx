@@ -4,16 +4,16 @@ import { TMentionElement } from '@udecode/plate-mention';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
+// REVIEWW
 export interface MentionInputElementProps
   extends PlateElementProps<Value, TMentionElement> {
   onClick?: (mentionNode: any) => void;
 }
 
-export function MentionInputElement({
-  className,
-  onClick,
-  ...props
-}: MentionInputElementProps) {
+const MentionInputElement = React.forwardRef<
+  React.ElementRef<typeof PlateElement>,
+  MentionInputElementProps
+>(({ className, onClick, ...props }, ref) => {
   const { children, element } = props;
 
   const selected = useSelected();
@@ -21,6 +21,7 @@ export function MentionInputElement({
 
   return (
     <PlateElement
+      ref={ref}
       as="span"
       data-slate-value={element.value}
       className={cn(
@@ -34,4 +35,8 @@ export function MentionInputElement({
       {children}
     </PlateElement>
   );
-}
+});
+
+MentionInputElement.displayName = 'MentionInputElement';
+
+export { MentionInputElement };

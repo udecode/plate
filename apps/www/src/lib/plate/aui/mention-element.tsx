@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { getHandler, Value } from '@udecode/plate-common';
 import { TMentionElement } from '@udecode/plate-mention';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
 
+// REVIEWW
 export interface MentionElementProps
   extends PlateElementProps<Value, TMentionElement> {
   /**
@@ -14,13 +15,10 @@ export interface MentionElementProps
   renderLabel?: (mentionable: TMentionElement) => string;
 }
 
-export function MentionElement({
-  prefix,
-  renderLabel,
-  className,
-  onClick,
-  ...props
-}: MentionElementProps) {
+const MentionElement = forwardRef<
+  React.ElementRef<typeof PlateElement>,
+  MentionElementProps
+>(({ prefix, renderLabel, className, onClick, ...props }, ref) => {
   const { children, element } = props;
 
   const selected = useSelected();
@@ -28,6 +26,7 @@ export function MentionElement({
 
   return (
     <PlateElement
+      ref={ref}
       className={cn(
         'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-0.5 align-baseline text-[0.9em]',
         selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',
@@ -43,4 +42,8 @@ export function MentionElement({
       {children}
     </PlateElement>
   );
-}
+});
+
+MentionElement.displayName = 'MentionElement';
+
+export { MentionElement };

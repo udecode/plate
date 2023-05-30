@@ -16,10 +16,14 @@ const TableRowElement = React.forwardRef<
 >(({ hideBorder, children, ...props }, ref) => {
   return (
     <TableRowElementPrimitive.Root
+      ref={ref}
       className={cn('h-full', hideBorder && 'border-none')}
       {...props}
     >
       {children}
     </TableRowElementPrimitive.Root>
   );
-}
+});
+TableRowElement.displayName = 'TableRowElement';
+
+export { TableRowElement };

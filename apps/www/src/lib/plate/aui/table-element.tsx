@@ -7,16 +7,17 @@ import {
 import { cn } from '@udecode/plate-tailwind';
 import { TablePopover } from './TablePopover';
 
-export function TableElement({
-  className,
-  children,
-  ...props
-}: TableElementRootProps) {
+// REVIEWW
+
+const TableElement = React.forwardRef<
+  React.ElementRef<typeof TablePopover>,
+  TableElementRootProps
+>(({ className, children, ...props }, ref) => {
   const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
     useTableElementState();
 
   return (
-    <TablePopover>
+    <TablePopover ref={ref}>
       <TableElementPrimitive.Wrapper style={{ paddingLeft: marginLeft }}>
         <TableElementPrimitive.Root
           className={cn(
@@ -45,4 +46,7 @@ export function TableElement({
       </TableElementPrimitive.Wrapper>
     </TablePopover>
   );
-}
+});
+TableElement.displayName = 'TableElement';
+
+export { TableElement };
