@@ -7,14 +7,14 @@ import {
   Plate,
 } from '@udecode/plate';
 
+import { MentionCombobox } from '@/plate/aui/mention-combobox';
+import { MentionElement } from '@/plate/aui/mention-element';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { mentionValue } from '@/plate/demo/values/mentionValue';
-import { MentionCombobox } from '@/plate/mention/MentionCombobox';
-import { MentionElement } from '@/plate/mention/MentionElement';
 
 const plugins = createMyPlugins(
   [

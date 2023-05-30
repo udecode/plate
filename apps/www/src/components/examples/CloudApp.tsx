@@ -8,6 +8,7 @@ import {
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
 
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { CloudAttachmentElement } from '@/plate/bcomponents/cloud/CloudAttachmentElement';
 import { CloudImageElement } from '@/plate/bcomponents/cloud/CloudImageElement';
 import { CloudToolbarButtons } from '@/plate/bcomponents/cloud/CloudToolbarButtons';
@@ -17,7 +18,6 @@ import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 
 const plugins = createMyPlugins(
   [

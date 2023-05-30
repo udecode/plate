@@ -16,6 +16,8 @@ import { PlateElement } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { OutdentToolbarButton } from '@/plate/bcomponents/OutdentToolbarButton';
 import { editableProps } from '@/plate/demo/editableProps';
 import {
   createMyPlugins,
@@ -25,8 +27,6 @@ import {
 import { plateUI } from '@/plate/demo/plateUI';
 import { indentListPlugin } from '@/plate/demo/plugins/indentListPlugin';
 import { indentListValue } from '@/plate/demo/values/indentListValue';
-import { IndentToolbarButtons } from '@/plate/indent/IndentToolbarButtons';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 
 const plugins = createMyPlugins(
   [
@@ -77,7 +77,7 @@ function ToolbarButtons() {
       >
         <Icons.ol />
       </ToolbarButton>
-      <IndentToolbarButtons />
+      <OutdentToolbarButton />
     </>
   );
 }

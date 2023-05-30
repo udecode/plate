@@ -1,4 +1,5 @@
 import React from 'react';
+import { PlateEditor } from '@udecode/plate';
 import { findNodePath, setNodes, Value } from '@udecode/plate-common';
 import { TTodoListItemElement } from '@udecode/plate-list';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
@@ -9,17 +10,61 @@ export type TodoListElementProps = PlateElementProps<
   TTodoListItemElement
 >;
 
-export function TodoListElement({ className, ...props }: TodoListElementProps) {
-  const { children, element, editor } = props;
+export const useTodoListElementState = (props: {
+  element: TTodoListItemElement;
+}) => {
+  const { element } = props;
+  const { checked } = element;
 
   const readOnly = useReadOnly();
 
+  return { checked, readOnly };
+};
+
+export const useTodoListElementInputProps = ({
+  element,
+  editor,
+}: {
+  element: TTodoListItemElement;
+  editor: PlateEditor;
+}) => {
   const { checked } = element;
+
+  const readOnly = useReadOnly();
+
+  return {
+    checked: !!checked,
+    onChange: (e) => {
+      if (readOnly) return;
+      const path = findNodePath(editor, element);
+      if (!path) return;
+
+      setNodes<TTodoListItemElement>(
+        editor,
+        { checked: e.target.checked },
+        {
+          at: path,
+        }
+      );
+    },
+  };
+};
+
+export function TodoListElement({
+  className,
+  children,
+  ...props
+}: TodoListElementProps) {
+  const { element, editor } = props;
+  const { checked, readOnly } = useTodoListElementState({ element });
+  const todoListElementInput = useTodoListElementInputProps({
+    editor,
+    element,
+  });
 
   return (
     <PlateElement className={cn('flex flex-row py-1', className)} {...props}>
       <div
-        contentEditable={false}
         className="mr-1.5 flex select-none items-center justify-center"
       >
         <input

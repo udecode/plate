@@ -8,7 +8,7 @@ import { PlateElement } from '@udecode/plate-tailwind';
 
 import { createPlateUI } from '@/lib/createPlateUI';
 import { CodeBlockElement } from '@/plate/aui/code-block-element';
-import { MediaEmbedElement } from '@/plate/media/MediaEmbedElement';
+import { MediaEmbedElement } from '@/plate/aui/media-embed-element';
 
 export const plateUI = createPlateUI({
   [ELEMENT_MEDIA_EMBED]: withProps(MediaEmbedElement, {

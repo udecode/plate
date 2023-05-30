@@ -94,7 +94,7 @@ function PlateContainer() {
       <HeadingToolbar>
         <TurnIntoDropdownMenu />
         <ListToolbarButtons />
-        <IndentToolbarButtons />
+        <OutdentToolbarButton />
         <AlignDropdownMenu />
         <LinkToolbarButton icon={<Icons.link />} />
         <TableDropdownMenu />

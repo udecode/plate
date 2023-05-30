@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 
 export interface SearchHighlightToolbarProps {
   icon: any;

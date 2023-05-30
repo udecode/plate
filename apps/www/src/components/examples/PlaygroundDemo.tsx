@@ -45,23 +45,25 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
-  ELEMENT_CODE_BLOCK,
   Plate,
   PlateProvider,
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
-import {
-  createExcalidrawPlugin,
-  ELEMENT_EXCALIDRAW,
-} from '@udecode/plate-excalidraw';
+import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+import { createSuggestionPlugin } from '@udecode/plate-suggestion';
 
 import { createPlateUI } from '@/lib/createPlateUI';
-import { CodeBlockElement } from '@/plate/aui/code-block-element';
-import { FloatingCommentList } from '@/plate/comments/FloatingCommentList';
-import { MyCommentsProvider } from '@/plate/comments/MyCommentsProvider';
-import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
+import { FloatingToolbar } from '@/plate/aui/floating-toolbar';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { MentionCombobox } from '@/plate/aui/mention-combobox';
+import { withPlaceHolders } from '@/plate/aui/placeholder';
+import { withDraggables } from '@/plate/aui/with-draggables';
+import { CommentsProvider } from '@/plate/bcomponents/comments/CommentsProvider';
+import { FloatingComments } from '@/plate/bcomponents/comments/FloatingComments';
+import { CursorOverlay } from '@/plate/bcomponents/cursor-overlay';
+import { FloatingSuggestions } from '@/plate/bcomponents/floating-suggestions';
 import { editableProps } from '@/plate/demo/editableProps';
 import {
   createMyPlugins,
@@ -81,25 +83,16 @@ import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { suggestionPlugin } from '@/plate/demo/plugins/suggestionPlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbable/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { SuggestionProvider } from '@/plate/demo/suggestion/SuggestionProvider';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
-import { withDraggables } from '@/plate/dnd/withDraggables';
-import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
-import { MentionCombobox } from '@/plate/mention/MentionCombobox';
-import { withPlaceHolders } from '@/plate/placeholder/withPlaceHolders';
-import { FloatingToolbar } from '@/plate/toolbar/FloatingToolbar';
-import { FloatingToolbarButtons } from '@/plate/toolbar/FloatingToolbarButtons';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
-import { HeadingToolbarButtons } from '@/plate/toolbar/HeadingToolbarButtons';
+import { FloatingToolbarButtons } from '@/plate/toolbar/floating-toolbar-buttons';
+import { HeadingToolbarButtons } from '@/plate/toolbar/heading-toolbar-buttons';
 
-let components = createPlateUI({
-  [ELEMENT_CODE_BLOCK]: CodeBlockElement,
-  [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-  // customize your components by plugin key
-});
-components = withPlaceHolders(components);
+const components = withPlaceHolders(createPlateUI());
 
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
@@ -155,6 +148,7 @@ export function PlaygroundDemo() {
           createComboboxPlugin(),
           createMentionPlugin(),
           createCommentsPlugin(),
+          createSuggestionPlugin(suggestionPlugin),
           createTabbablePlugin(tabbablePlugin),
           createDeserializeMdPlugin() as MyPlatePlugin,
           createDeserializeCsvPlugin(),
@@ -179,21 +173,24 @@ export function PlaygroundDemo() {
         <HeadingToolbarButtons />
       </HeadingToolbar>
 
-      <MyCommentsProvider>
-        <div ref={containerRef} className="relative">
-          <Plate editableProps={editableProps}>
-            <FloatingToolbar>
-              <FloatingToolbarButtons />
-            </FloatingToolbar>
+      <CommentsProvider>
+        <SuggestionProvider>
+          <div ref={containerRef} className="relative">
+            <Plate editableProps={editableProps}>
+              <FloatingToolbar>
+                <FloatingToolbarButtons />
+              </FloatingToolbar>
 
-            <MentionCombobox items={MENTIONABLES} />
+              <MentionCombobox items={MENTIONABLES} />
 
-            <CursorOverlayContainer containerRef={containerRef} />
-          </Plate>
-        </div>
+              <CursorOverlay containerRef={containerRef} />
+            </Plate>
+          </div>
 
-        <FloatingCommentList />
-      </MyCommentsProvider>
+          <FloatingComments />
+          <FloatingSuggestions containerRef={containerRef} />
+        </SuggestionProvider>
+      </CommentsProvider>
     </PlateProvider>
   );
 }

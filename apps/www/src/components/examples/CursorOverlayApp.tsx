@@ -1,7 +1,7 @@
 import React, { CSSProperties, useRef } from 'react';
 import { Plate } from '@udecode/plate';
 
-import { CursorOverlayContainer } from '@/plate/cursor-overlay/CursorOverlayContainer';
+import { CursorOverlay } from '@/plate/bcomponents/cursor-overlay';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
@@ -22,7 +22,7 @@ export default function CursorOverlayApp() {
         plugins={[...basicNodesPlugins, dragOverCursorPlugin]}
         initialValue={cursorOverlayValue}
       >
-        <CursorOverlayContainer containerRef={ref} cursors={cursorsData} />
+        <CursorOverlay containerRef={ref} cursors={cursorsData} />
       </Plate>
     </div>
   );

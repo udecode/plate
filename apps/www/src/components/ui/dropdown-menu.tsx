@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useCallback, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { cva, VariantProps } from 'class-variance-authority';
 import { Check, ChevronRight } from 'lucide-react';
@@ -224,4 +225,20 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
+};
+
+export const useOpenState = () => {
+  const [open, setOpen] = useState(false);
+
+  const onOpenChange = useCallback(
+    (_value = !open) => {
+      setOpen(_value);
+    },
+    [open]
+  );
+
+  return {
+    open,
+    onOpenChange,
+  };
 };

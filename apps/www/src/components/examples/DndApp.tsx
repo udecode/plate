@@ -8,11 +8,11 @@ import {
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
 
+import { withDraggables } from '@/plate/aui/with-draggables';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
-import { withDraggables } from '@/plate/dnd/withDraggables';
 
 // set drag handle next to each block
 const components = withDraggables(plateUI);

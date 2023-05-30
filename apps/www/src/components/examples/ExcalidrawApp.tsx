@@ -5,11 +5,11 @@ import {
   ELEMENT_EXCALIDRAW,
 } from '@udecode/plate-excalidraw';
 
+import { ExcalidrawElement } from '@/plate/aui/excalidraw-element';
 import { editableProps } from '@/plate/demo/editableProps';
 import { MyPlatePlugin, MyValue } from '@/plate/demo/plate.types';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { excalidrawValue } from '@/plate/demo/values/excalidrawValue';
-import { ExcalidrawElement } from '@/plate/excalidraw/ExcalidrawElement';
 
 const plugins: MyPlatePlugin[] = [
   ...basicNodesPlugins,

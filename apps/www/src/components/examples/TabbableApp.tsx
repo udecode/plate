@@ -5,7 +5,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbable/tabbablePlugin';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 
 const plugins = createMyPlugins(

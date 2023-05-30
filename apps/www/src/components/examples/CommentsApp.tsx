@@ -29,13 +29,13 @@ const plugins = createMyPlugins(
 export default function CommentsApp() {
   return (
     <PlateProvider plugins={plugins} initialValue={commentsValue}>
-      <MyCommentsProvider>
+      <CommentsProvider>
         <Plate<MyValue> editableProps={editableProps}>
           <FloatingToolbarButtons />
         </Plate>
 
-        <FloatingCommentList />
-      </MyCommentsProvider>
+        <FloatingComments />
+      </CommentsProvider>
     </PlateProvider>
   );
 }

@@ -21,8 +21,8 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { HighlightHTML } from '@/plate/demo/serializing-html/HighlightHTML';
 import { deserializeHtmlValue } from '@/plate/demo/values/deserializeHtmlValue';
-import { HighlightHTML } from '@/plate/serializing-html/HighlightHTML';
 
 const plugins = createMyPlugins(
   [

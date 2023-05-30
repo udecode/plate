@@ -10,13 +10,13 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
+import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { ColorDropdownMenu } from '@/plate/bcomponents/font/ColorDropdownMenu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { fontValue } from '@/plate/demo/values/fontValue';
-import { ColorDropdownMenu } from '@/plate/font/ColorDropdownMenu';
-import { HeadingToolbar } from '@/plate/toolbar/HeadingToolbar';
 
 const styles: Record<string, CSSProperties> = {
   copyWrapper: {
