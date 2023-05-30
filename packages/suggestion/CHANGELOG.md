@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 21.3.1
+
+### Patch Changes
+
+- [#2412](https://github.com/udecode/plate/pull/2412) by [@zbeyens](https://github.com/zbeyens) – 🐛 fix imports
+
 ## 21.3.0
 
 ### Minor Changes
