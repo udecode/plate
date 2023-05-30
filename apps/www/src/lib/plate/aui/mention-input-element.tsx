@@ -36,7 +36,6 @@ const MentionInputElement = React.forwardRef<
     </PlateElement>
   );
 });
-
 MentionInputElement.displayName = 'MentionInputElement';
 
 export { MentionInputElement };

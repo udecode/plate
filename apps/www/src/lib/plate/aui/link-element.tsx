@@ -21,7 +21,6 @@ const LinkElement = React.forwardRef<
     />
   );
 });
-
 LinkElement.displayName = 'LinkElement';
 
 export { LinkElement };

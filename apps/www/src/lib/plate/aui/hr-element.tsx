@@ -29,7 +29,6 @@ const HrElement = React.forwardRef<
     </PlateElement>
   );
 });
-
 HrElement.displayName = 'HrElement';
 
 export { HrElement };
