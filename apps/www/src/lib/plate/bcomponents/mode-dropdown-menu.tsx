@@ -104,8 +104,11 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
             {item.editing}
           </DropdownMenuRadioItem>
 
-          <DropdownMenuRadioItem value="suggesting">
+          <DropdownMenuRadioItem value="suggesting" disabled>
             {item.suggesting}
+            <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
+              Soon
+            </span>
           </DropdownMenuRadioItem>
 
           <DropdownMenuRadioItem value="viewing">

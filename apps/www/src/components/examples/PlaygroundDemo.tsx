@@ -52,10 +52,7 @@ import { createDndPlugin } from '@udecode/plate-dnd';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
-import { createSuggestionPlugin } from '@udecode/plate-suggestion';
 
-import { FloatingSuggestions } from '@/lib/@/suggestion/floating-suggestions';
-import { SuggestionProvider } from '@/lib/@/suggestion/SuggestionProvider';
 import { FloatingToolbar } from '@/plate/aui/floating-toolbar';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { MentionCombobox } from '@/plate/aui/mention-combobox';
@@ -80,7 +77,6 @@ import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
-import { suggestionPlugin } from '@/plate/demo/plugins/suggestionPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
@@ -148,7 +144,6 @@ export function PlaygroundDemo() {
           createComboboxPlugin(),
           createMentionPlugin(),
           createCommentsPlugin(),
-          createSuggestionPlugin(suggestionPlugin),
           createTabbablePlugin(tabbablePlugin),
           createDeserializeMdPlugin() as MyPlatePlugin,
           createDeserializeCsvPlugin(),
@@ -174,22 +169,19 @@ export function PlaygroundDemo() {
       </HeadingToolbar>
 
       <CommentsProvider>
-        <SuggestionProvider>
-          <div ref={containerRef} className="relative">
-            <Plate editableProps={editableProps}>
-              <FloatingToolbar>
-                <FloatingToolbarButtons />
-              </FloatingToolbar>
+        <div ref={containerRef} className="relative">
+          <Plate editableProps={editableProps}>
+            <FloatingToolbar>
+              <FloatingToolbarButtons />
+            </FloatingToolbar>
 
-              <MentionCombobox items={MENTIONABLES} />
+            <MentionCombobox items={MENTIONABLES} />
 
-              <CursorOverlay containerRef={containerRef} />
-            </Plate>
-          </div>
+            <CursorOverlay containerRef={containerRef} />
+          </Plate>
+        </div>
 
-          <FloatingComments />
-          <FloatingSuggestions containerRef={containerRef} />
-        </SuggestionProvider>
+        <FloatingComments />
       </CommentsProvider>
     </PlateProvider>
   );

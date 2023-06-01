@@ -44,7 +44,6 @@ import SerializingHtmlApp from './SerializingHtmlApp';
 import SerializingMdApp from './SerializingMdApp';
 import SingleLineApp from './SingleLineApp';
 import SoftBreakApp from './SoftBreakApp';
-import SuggestionApp from './SuggestionApp';
 import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
@@ -100,7 +99,6 @@ export const examples = {
   SerializingMdApp,
   SingleLineApp,
   SoftBreakApp,
-  SuggestionApp,
   TabbableApp,
   TableApp,
   ToolbarButtons: HeadingToolbarButtons,

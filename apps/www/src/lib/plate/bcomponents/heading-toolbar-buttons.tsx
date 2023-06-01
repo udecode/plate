@@ -26,7 +26,6 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
-import { UserToolbarDropdown } from '@/lib/@/suggestion/UserToolbarDropdown';
 import { LineHeightDropdownMenu } from '@/plate/aui/line-height-dropdown-menu';
 import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
 import { MediaToolbarButton } from '@/plate/aui/media-toolbar-button';
@@ -104,7 +103,6 @@ export function HeadingToolbarButtons() {
       </div>
 
       <div className="flex gap-1">
-        <UserToolbarDropdown />
         <CommentToolbarButton />
         <ModeDropdownMenu />
       </div>
