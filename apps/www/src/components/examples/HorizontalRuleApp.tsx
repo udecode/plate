@@ -12,11 +12,11 @@ import {
 } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyEditor, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
+import { createMyPlugins, MyEditor, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

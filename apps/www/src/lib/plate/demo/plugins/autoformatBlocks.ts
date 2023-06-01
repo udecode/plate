@@ -15,7 +15,7 @@ import {
 } from '@udecode/plate';
 import { preFormat } from './autoformatUtils';
 
-import { MyAutoformatRule } from '@/plate/demo/plate.types';
+import { MyAutoformatRule } from '@/types/plate.types';
 
 export const autoformatBlocks: MyAutoformatRule[] = [
   {

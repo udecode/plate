@@ -2,11 +2,11 @@ import React from 'react';
 import { createListPlugin, createTabbablePlugin, Plate } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbable/tabbablePlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

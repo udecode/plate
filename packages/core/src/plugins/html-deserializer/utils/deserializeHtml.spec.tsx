@@ -26,7 +26,7 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

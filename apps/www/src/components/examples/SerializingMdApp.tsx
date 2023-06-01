@@ -9,15 +9,11 @@ import {
 } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import {
-  createMyPlugins,
-  MyPlatePlugin,
-  MyValue,
-} from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
+import { createMyPlugins, MyPlatePlugin, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

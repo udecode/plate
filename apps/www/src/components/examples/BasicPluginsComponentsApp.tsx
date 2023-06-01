@@ -11,8 +11,8 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { createPlateUI } from '@/lib/createPlateUI';
-import { MyValue } from '@/plate/demo/plate.types';
+import { createPlateUI } from '@/plate/createPlateUI';
+import { MyValue } from '@/types/plate.types';
 
 const plugins = createPlugins<MyValue>(
   [

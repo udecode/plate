@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { createResetNodePlugin } from './createResetNodePlugin';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

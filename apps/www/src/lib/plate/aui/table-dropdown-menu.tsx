@@ -24,7 +24,7 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());

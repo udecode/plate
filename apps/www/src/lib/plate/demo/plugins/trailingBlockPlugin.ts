@@ -1,6 +1,6 @@
 import { ELEMENT_PARAGRAPH, TrailingBlockPlugin } from '@udecode/plate';
 
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 export const trailingBlockPlugin: Partial<MyPlatePlugin<TrailingBlockPlugin>> =
   {

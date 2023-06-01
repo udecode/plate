@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer/hooks';
-import { NpmCommands } from 'types/unist';
 import {
   Accordion,
   AccordionContent,
@@ -22,6 +21,7 @@ import { examples } from './examples';
 
 import { Event } from '@/lib/events';
 import { cn } from '@/lib/utils';
+import { NpmCommands } from '@/types/unist';
 
 const components = {
   Accordion,

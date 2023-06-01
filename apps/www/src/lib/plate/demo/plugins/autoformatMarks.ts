@@ -9,7 +9,7 @@ import {
   MARK_UNDERLINE,
 } from '@udecode/plate';
 
-import { MyAutoformatRule } from '@/plate/demo/plate.types';
+import { MyAutoformatRule } from '@/types/plate.types';
 
 export const autoformatMarks: MyAutoformatRule[] = [
   {

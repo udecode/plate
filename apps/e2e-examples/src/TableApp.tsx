@@ -1,7 +1,7 @@
 import { createPlugins, createTablePlugin, Plate } from '@udecode/plate';
 import { useVariant } from './useVariant';
 
-import { createPlateUI } from '@/lib/createPlateUI';
+import { createPlateUI } from '@/plate/createPlateUI';
 
 export function TableApp() {
   const {

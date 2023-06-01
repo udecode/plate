@@ -10,12 +10,12 @@ import {
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { TableDropdownMenu } from '@/plate/aui/table-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tableValue } from '@/plate/demo/values/tableValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

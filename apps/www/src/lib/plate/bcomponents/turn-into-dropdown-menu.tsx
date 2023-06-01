@@ -12,7 +12,9 @@ import {
   ELEMENT_OL,
   ELEMENT_PARAGRAPH,
   isBlock,
+  ListStyleType,
   TElement,
+  toggleIndentList,
   unwrapList,
   useEventPlateId,
 } from '@udecode/plate';
@@ -22,7 +24,7 @@ import {
   isCollapsed,
   toggleNodeType,
 } from '@udecode/plate-common';
-import { ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_UL, toggleList } from '@udecode/plate-list';
 
 import { Icons } from '@/components/icons';
 import {
@@ -35,8 +37,7 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
-import { toggleListDemo } from '@/plate/demo/toggleListDemo';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 const items = [
   {
@@ -82,13 +83,14 @@ const items = [
     icon: Icons.h6,
   },
   {
-    value: ELEMENT_UL,
+    // value: ELEMENT_UL,
+    value: ListStyleType.Disc,
     label: 'Bulleted list',
     tooltip: 'Bulleted list',
     icon: Icons.ul,
   },
   {
-    value: ELEMENT_OL,
+    value: ListStyleType.Decimal,
     label: 'Numbered list',
     tooltip: 'Numbered list',
     icon: Icons.ol,
@@ -141,7 +143,14 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           value={value}
           onValueChange={(type) => {
             if (type === ELEMENT_UL || type === ELEMENT_OL) {
-              toggleListDemo(editor as any, type);
+              toggleList(editor as any, { type });
+            } else if (
+              type === ListStyleType.Disc ||
+              type === ListStyleType.Decimal
+            ) {
+              toggleIndentList(editor, {
+                listStyleType: type,
+              });
             } else {
               unwrapList(editor);
               toggleNodeType(editor, { activeType: type });

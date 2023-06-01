@@ -4,7 +4,7 @@ import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize complex example list with paragraphs to html', () => {

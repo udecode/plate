@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-common';
 import { setLineHeight } from '@udecode/plate-line-height';
 
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 export const useLineHeightDropdownMenuRadioItemProps = () => {
   const editor = useMyPlateEditorState(useEventPlateId());

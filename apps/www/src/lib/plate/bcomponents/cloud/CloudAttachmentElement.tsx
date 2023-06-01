@@ -8,7 +8,6 @@ import {
 } from '@udecode/plate-common';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useSelected } from 'slate-react';
-import { AttachFileIcon } from './AttachFileIcon';
 import { StatusBar } from './StatusBar';
 
 import { Icons } from '@/components/icons';
@@ -66,7 +65,7 @@ export function CloudAttachmentElement({
       {...props}
     >
       <div className="shrink-0 text-muted-foreground" contentEditable={false}>
-        <AttachFileIcon width={24} height={24} />
+        <Icons.attachment width={24} height={24} />
       </div>
       <div className="grow" contentEditable={false}>
         <div className="text-base">{element.filename}</div>

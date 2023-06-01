@@ -4,7 +4,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { deserializeMd } from './deserializeMd';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { ELEMENT_HR } from '@/plate/dist';
 import { createDeserializeMdPlugin } from '@/serializers/md/src/deserializer/createDeserializeMdPlugin';
 

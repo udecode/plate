@@ -1,4 +1,8 @@
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate';
+import {
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  getPluginType,
+} from '@udecode/plate';
 import { PlateEditor, Value } from '@udecode/plate-common';
 import { insertImage, insertMediaEmbed } from '@udecode/plate-media';
 
@@ -8,12 +12,15 @@ export interface InsertMediaOptions {
    */
   getUrl?: () => Promise<string>;
 
-  type?: typeof ELEMENT_IMAGE | typeof ELEMENT_MEDIA_EMBED;
+  type?: string;
 }
 
 export const insertMedia = async <V extends Value>(
   editor: PlateEditor<V>,
-  { getUrl, type = ELEMENT_IMAGE }: InsertMediaOptions = {}
+  {
+    getUrl,
+    type = getPluginType(editor, ELEMENT_IMAGE),
+  }: InsertMediaOptions = {}
 ) => {
   let url;
   if (getUrl) {
@@ -27,7 +34,7 @@ export const insertMedia = async <V extends Value>(
   }
   if (!url) return;
 
-  if (type === ELEMENT_IMAGE) {
+  if (type === getPluginType(editor, ELEMENT_IMAGE)) {
     insertImage(editor, url);
   } else {
     insertMediaEmbed(editor, { url });

@@ -8,7 +8,7 @@ import {
 } from './findTabDestination';
 import { TabbableEntry } from './types';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

@@ -9,14 +9,14 @@ import {
 } from '@udecode/plate';
 
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
-import { TurnIntoDropdownMenu } from '@/plate/toolbar/turn-into-dropdown-menu';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

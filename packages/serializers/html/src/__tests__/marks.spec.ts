@@ -3,7 +3,7 @@ import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deseri
 import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [

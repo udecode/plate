@@ -3,9 +3,9 @@
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 import { createAlignPlugin } from '@/nodes/alignment/src/createAlignPlugin';
 import { setAlign } from '@/nodes/alignment/src/transforms/setAlign';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

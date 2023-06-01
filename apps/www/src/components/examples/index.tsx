@@ -49,8 +49,8 @@ import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
+import { HeadingToolbarButtons } from '@/plate/bcomponents/heading-toolbar-buttons';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
-import { HeadingToolbarButtons } from '@/plate/toolbar/heading-toolbar-buttons';
 
 export const examples = {
   AlignmentApp,

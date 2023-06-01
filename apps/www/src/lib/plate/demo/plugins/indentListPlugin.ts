@@ -11,7 +11,7 @@ import {
   IndentListPlugin,
 } from '@udecode/plate';
 
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 export const indentListPlugin: Partial<MyPlatePlugin<IndentListPlugin>> = {
   inject: {

@@ -8,7 +8,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 import { PlateEditor } from '@/core/src/types/PlateEditor';
 import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

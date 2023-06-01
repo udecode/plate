@@ -5,7 +5,8 @@ import {
   PlateElementProps,
   VariantProps,
 } from '@udecode/plate-tailwind';
-import { cn } from './utils';
+
+import { cn } from '@/lib/utils';
 
 const listVariants = cva('m-0 ps-6', {
   variants: {

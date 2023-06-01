@@ -21,4 +21,3 @@ export * from './CommentsPositioner';
 export * from './useCommentAddButton';
 export * from './useFloatingCommentsContentState';
 export * from './useFloatingCommentsState';
-export * from './icons/index';

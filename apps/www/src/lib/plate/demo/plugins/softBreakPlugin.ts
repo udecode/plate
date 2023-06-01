@@ -5,7 +5,7 @@ import {
   SoftBreakPlugin,
 } from '@udecode/plate';
 
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 export const softBreakPlugin: Partial<MyPlatePlugin<SoftBreakPlugin>> = {
   options: {

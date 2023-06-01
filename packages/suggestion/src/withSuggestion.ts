@@ -42,7 +42,7 @@ export const withSuggestion = <
     deleteFragment,
   } = editor;
 
-  editor.isSuggesting = true;
+  editor.isSuggesting = false;
 
   editor.insertBreak = () => {
     if (editor.isSuggesting) {

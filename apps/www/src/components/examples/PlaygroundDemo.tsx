@@ -54,7 +54,8 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createSuggestionPlugin } from '@udecode/plate-suggestion';
 
-import { createPlateUI } from '@/lib/createPlateUI';
+import { FloatingSuggestions } from '@/lib/@/suggestion/floating-suggestions';
+import { SuggestionProvider } from '@/lib/@/suggestion/SuggestionProvider';
 import { FloatingToolbar } from '@/plate/aui/floating-toolbar';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { MentionCombobox } from '@/plate/aui/mention-combobox';
@@ -63,14 +64,10 @@ import { withDraggables } from '@/plate/aui/with-draggables';
 import { CommentsProvider } from '@/plate/bcomponents/comments/CommentsProvider';
 import { FloatingComments } from '@/plate/bcomponents/comments/FloatingComments';
 import { CursorOverlay } from '@/plate/bcomponents/cursor-overlay';
-import { FloatingSuggestions } from '@/plate/bcomponents/floating-suggestions';
+import { FloatingToolbarButtons } from '@/plate/bcomponents/floating-toolbar-buttons';
+import { HeadingToolbarButtons } from '@/plate/bcomponents/heading-toolbar-buttons';
+import { createPlateUI } from '@/plate/createPlateUI';
 import { editableProps } from '@/plate/demo/editableProps';
-import {
-  createMyPlugins,
-  MyEditor,
-  MyPlatePlugin,
-  MyValue,
-} from '@/plate/demo/plate.types';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
@@ -84,13 +81,16 @@ import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin'
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { suggestionPlugin } from '@/plate/demo/plugins/suggestionPlugin';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbable/tabbablePlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { SuggestionProvider } from '@/plate/demo/suggestion/SuggestionProvider';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
-import { FloatingToolbarButtons } from '@/plate/toolbar/floating-toolbar-buttons';
-import { HeadingToolbarButtons } from '@/plate/toolbar/heading-toolbar-buttons';
+import {
+  createMyPlugins,
+  MyEditor,
+  MyPlatePlugin,
+  MyValue,
+} from '@/types/plate.types';
 
 const components = withPlaceHolders(createPlateUI());
 

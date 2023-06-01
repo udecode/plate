@@ -3,7 +3,7 @@
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

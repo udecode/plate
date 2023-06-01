@@ -19,7 +19,7 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());
@@ -72,7 +72,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 h-5 w-5" />
+          <Icons.superscript className="mr-2 h-5 w-5" />
           Superscript
           {/* (⌘+,) */}
         </DropdownMenuItem>

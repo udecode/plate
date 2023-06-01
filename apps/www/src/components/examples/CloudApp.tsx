@@ -14,10 +14,10 @@ import { CloudImageElement } from '@/plate/bcomponents/cloud/CloudImageElement';
 import { CloudToolbarButtons } from '@/plate/bcomponents/cloud/CloudToolbarButtons';
 import { uploadStoreInitialValue } from '@/plate/bcomponents/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

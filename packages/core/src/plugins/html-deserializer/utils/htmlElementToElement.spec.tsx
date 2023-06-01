@@ -6,7 +6,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

@@ -1,54 +1,15 @@
 import React from 'react';
-import { PlateEditor } from '@udecode/plate';
-import { findNodePath, setNodes, Value } from '@udecode/plate-common';
+import { Value } from '@udecode/plate-common';
 import { TTodoListItemElement } from '@udecode/plate-list';
 import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
-import { useReadOnly } from 'slate-react';
+
+import { useTodoListElementInputProps } from '@/lib/@/useTodoListElementInputProps';
+import { useTodoListElementState } from '@/lib/@/useTodoListElementState';
 
 export type TodoListElementProps = PlateElementProps<
   Value,
   TTodoListItemElement
 >;
-
-export const useTodoListElementState = (props: {
-  element: TTodoListItemElement;
-}) => {
-  const { element } = props;
-  const { checked } = element;
-
-  const readOnly = useReadOnly();
-
-  return { checked, readOnly };
-};
-
-export const useTodoListElementInputProps = ({
-  element,
-  editor,
-}: {
-  element: TTodoListItemElement;
-  editor: PlateEditor;
-}) => {
-  const { checked } = element;
-
-  const readOnly = useReadOnly();
-
-  return {
-    checked: !!checked,
-    onChange: (e) => {
-      if (readOnly) return;
-      const path = findNodePath(editor, element);
-      if (!path) return;
-
-      setNodes<TTodoListItemElement>(
-        editor,
-        { checked: e.target.checked },
-        {
-          at: path,
-        }
-      );
-    },
-  };
-};
 
 export function TodoListElement({
   className,

@@ -11,7 +11,7 @@ import {
   unwrapCodeBlock,
 } from '@udecode/plate';
 
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],

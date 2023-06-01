@@ -17,13 +17,15 @@ import {
   ELEMENT_TABLE,
   insertEmptyElement,
   insertTable,
+  ListStyleType,
+  toggleIndentList,
   useEventPlateId,
 } from '@udecode/plate';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { focusEditor } from '@udecode/plate-common';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { triggerFloatingLink } from '@udecode/plate-link';
-import { ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_UL, toggleList } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 
 import { Icons } from '@/components/icons';
@@ -38,8 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { insertMedia } from '@/lib/@/insertMedia';
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
-import { toggleListDemo } from '@/plate/demo/toggleListDemo';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 const items = [
   {
@@ -94,13 +95,14 @@ const items = [
         icon: Icons.table,
       },
       {
-        value: ELEMENT_UL,
+        // value: ELEMENT_UL,
+        value: ListStyleType.Disc,
         label: 'Bulleted list',
         tooltip: 'Bulleted list',
         icon: Icons.ul,
       },
       {
-        value: ELEMENT_OL,
+        value: ListStyleType.Decimal,
         label: 'Numbered list',
         tooltip: 'Numbered list',
         icon: Icons.ol,
@@ -200,7 +202,17 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                         nextBlock: true,
                       });
 
-                      toggleListDemo(editor as any, type);
+                      toggleList(editor, { type });
+                    } else if (
+                      type === ListStyleType.Disc ||
+                      type === ListStyleType.Decimal
+                    ) {
+                      insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
+                        select: true,
+                        nextBlock: true,
+                      });
+
+                      toggleIndentList(editor, { listStyleType: type });
                     } else if (type === ELEMENT_TABLE) {
                       insertTable(editor);
                     } else if (type === ELEMENT_LINK) {

@@ -17,16 +17,16 @@ import { PlateElement } from '@udecode/plate-tailwind';
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { OutdentToolbarButton } from '@/plate/bcomponents/OutdentToolbarButton';
+import { OutdentToolbarButton } from '@/plate/bcomponents/outdent-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
+import { plateUI } from '@/plate/demo/plateUI';
+import { indentListPlugin } from '@/plate/demo/plugins/indentListPlugin';
+import { indentListValue } from '@/plate/demo/values/indentListValue';
 import {
   createMyPlugins,
   MyValue,
   useMyPlateEditorRef,
-} from '@/plate/demo/plate.types';
-import { plateUI } from '@/plate/demo/plateUI';
-import { indentListPlugin } from '@/plate/demo/plugins/indentListPlugin';
-import { indentListValue } from '@/plate/demo/values/indentListValue';
+} from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

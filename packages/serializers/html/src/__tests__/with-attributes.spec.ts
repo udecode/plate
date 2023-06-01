@@ -2,7 +2,7 @@ import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deseri
 import { createLinkPlugin } from '@udecode/plate-link/src/index';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize link to html with attributes', () => {

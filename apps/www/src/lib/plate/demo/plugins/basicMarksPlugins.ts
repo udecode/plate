@@ -8,8 +8,8 @@ import {
   createUnderlinePlugin,
 } from '@udecode/plate';
 
-import { createMyPlugins } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
+import { createMyPlugins } from '@/types/plate.types';
 
 export const basicMarksPlugins = createMyPlugins(
   [

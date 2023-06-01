@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate';
 import { formatList, preFormat } from './autoformatUtils';
 
-import { MyAutoformatRule } from '@/plate/demo/plate.types';
+import { MyAutoformatRule } from '@/types/plate.types';
 
 export const autoformatLists: MyAutoformatRule[] = [
   {

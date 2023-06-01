@@ -8,7 +8,7 @@ import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

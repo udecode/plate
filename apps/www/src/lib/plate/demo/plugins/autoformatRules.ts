@@ -10,7 +10,7 @@ import { autoformatBlocks } from './autoformatBlocks';
 import { autoformatLists } from './autoformatLists';
 import { autoformatMarks } from './autoformatMarks';
 
-import { MyAutoformatRule } from '@/plate/demo/plate.types';
+import { MyAutoformatRule } from '@/types/plate.types';
 
 export const autoformatRules = [
   ...autoformatBlocks,

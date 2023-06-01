@@ -7,7 +7,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin, ELEMENT_UL } from './createListPlugin';
 import { ListPlugin } from './types';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

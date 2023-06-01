@@ -15,12 +15,12 @@ import {
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

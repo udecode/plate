@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Plate } from '@udecode/plate';
+import {
+  createEditableVoidPlugin,
+  EditableVoidElement,
+} from './EditableVoidsApp';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { IFrame } from '@/plate/demo/iframe/IFrame';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
-import { createEditableVoidPlugin } from '@/plate/demo/plugins/editable-voids/createEditableVoidPlugin';
-import { EditableVoidElement } from '@/plate/demo/plugins/editable-voids/EditableVoidElement';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [
@@ -21,6 +23,21 @@ const plugins = createMyPlugins(
     components: plateUI,
   }
 );
+
+export function IFrame({ children, ...props }: any) {
+  const [contentRef, setContentRef] = useState<any>(null);
+  const mountNode =
+    contentRef &&
+    contentRef.contentWindow &&
+    contentRef.contentWindow.document.body;
+
+  return (
+    // eslint-disable-next-line jsx-a11y/iframe-has-title
+    <iframe {...props} ref={setContentRef}>
+      {mountNode && createPortal(React.Children.only(children), mountNode)}
+    </iframe>
+  );
+}
 
 export default function IframeApp() {
   return (

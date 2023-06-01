@@ -1,6 +1,6 @@
 'use client';
 
-import '@/styles/prismjs.css';
+import './code-block-element.css';
 import React, { forwardRef } from 'react';
 import {
   CodeBlockPlugin,
@@ -37,7 +37,10 @@ const CodeBlockElement = forwardRef<
       </pre>
 
       {syntax && (
-        <div className="absolute right-0 top-0 z-10 px-4 py-3">
+        <div
+          className="absolute right-0 top-0 z-10 select-none px-4 py-3"
+          contentEditable={false}
+        >
           <CodeBlockSelectElement />
         </div>
       )}

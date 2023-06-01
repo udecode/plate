@@ -4,7 +4,7 @@ import { PlateEditor, TDescendant } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from './createListPlugin';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

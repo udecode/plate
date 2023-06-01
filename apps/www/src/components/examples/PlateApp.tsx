@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plate, PlateProvider, useResetPlateEditor } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyValue } from '@/plate/demo/plate.types';
+import { MyValue } from '@/types/plate.types';
 
 function Buttons({ disabled, setDisabled }: any) {
   const resetPlateEditor = useResetPlateEditor();

@@ -1,7 +1,7 @@
 import { findEventRange } from '@udecode/plate';
 
 import { cursorStore } from '@/plate/bcomponents/cursor-overlay';
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 export const dragOverCursorPlugin: MyPlatePlugin = {
   key: 'drag-over-cursor',

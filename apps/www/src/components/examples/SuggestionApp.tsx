@@ -5,14 +5,14 @@ import {
   MARK_SUGGESTION,
 } from '@udecode/plate-suggestion';
 
+import { SuggestionProvider } from '@/lib/@/suggestion/SuggestionProvider';
 import { basicNodesPlugins } from '@/lib/plate/demo/plugins/basicNodesPlugins';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { SuggestionLeaf } from '@/plate/aui/suggestion-leaf';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
-import { SuggestionProvider } from '@/plate/demo/suggestion/SuggestionProvider';
 import { suggestionValue } from '@/plate/demo/values/suggestionValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

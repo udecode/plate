@@ -9,7 +9,7 @@ import {
 import { someNode } from '@udecode/plate-common';
 import { TabbableElement } from './TabbableElement';
 
-import { MyPlatePlugin } from '@/plate/demo/plate.types';
+import { MyPlatePlugin } from '@/types/plate.types';
 
 const TABBABLE_ELEMENT = 'tabbable_element';
 

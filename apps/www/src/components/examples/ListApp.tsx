@@ -11,13 +11,13 @@ import {
 
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { listValue } from '@/plate/demo/values/listValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

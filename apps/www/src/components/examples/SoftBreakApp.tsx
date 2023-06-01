@@ -10,7 +10,6 @@ import {
 } from '@udecode/plate';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -18,6 +17,7 @@ import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin'
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { softBreakValue } from '@/plate/demo/values/softBreakValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [

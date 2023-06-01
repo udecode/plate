@@ -1,5 +1,6 @@
 import { SuggestionUser, TSuggestion } from '@udecode/plate';
-import { MyValue } from '../typescript/plateTypes';
+
+import { MyValue } from '@/types/plate.types';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {
@@ -63,8 +64,7 @@ export const suggestionValue: MyValue = [
         suggestion_2: true,
       },
       {
-        text:
-          ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
+        text: ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
       },
     ],
   },

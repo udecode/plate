@@ -39,32 +39,35 @@ import {
   PlatePluginComponent,
   withProps,
 } from '@udecode/plate';
+import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_SUGGESTION } from '@udecode/plate-suggestion';
 import { PlateElement, PlateLeaf } from '@udecode/plate-tailwind';
-import { BlockquoteElement } from './plate/aui/blockquote-element';
-import { CodeBlockElement } from './plate/aui/code-block-element';
-import { CodeLineElement } from './plate/aui/code-line-element';
-import { CodeSyntaxLeaf } from './plate/aui/code-syntax-leaf';
-import { HrElement } from './plate/aui/hr-element';
-import { ImageElement } from './plate/aui/image-element';
-import { LinkElement } from './plate/aui/link-element';
-import { MediaEmbedElement } from './plate/aui/media-embed-element';
-import { MentionElement } from './plate/aui/mention-element';
-import { MentionInputElement } from './plate/aui/mention-input-element';
-import { SuggestionLeaf } from './plate/aui/suggestion-leaf';
-import { TableCellElement } from './plate/aui/table-cell-element';
-import { TableCellHeaderElement } from './plate/aui/table-cell-header-element';
-import { TableElement } from './plate/aui/table-element';
-import { TableRowElement } from './plate/aui/table-row-element';
-import { CommentLeaf } from './plate/bcomponents/comments/CommentLeaf';
-import { TodoListElement } from './plate/list/TodoListElement';
-import { CodeLeaf } from './codeLeaf';
-import { HeadingElement } from './HeadingElement';
-import { HighlightLeaf } from './highlightLeaf';
-import { KbdLeaf } from './kbdLeaf';
-import { ListElement } from './ListElement';
-import { ParagraphElement } from './paragraphElement';
-import { SearchHighlightLeaf } from './searchHighlightLeaf';
+import { BlockquoteElement } from './aui/blockquote-element';
+import { CodeBlockElement } from './aui/code-block-element';
+import { CodeLineElement } from './aui/code-line-element';
+import { CodeSyntaxLeaf } from './aui/code-syntax-leaf';
+import { ExcalidrawElement } from './aui/excalidraw-element';
+import { HeadingElement } from './aui/heading-element';
+import { HighlightLeaf } from './aui/highlight-leaf';
+import { HrElement } from './aui/hr-element';
+import { ImageElement } from './aui/image-element';
+import { KbdLeaf } from './aui/kbd-leaf';
+import { LinkElement } from './aui/link-element';
+import { ListElement } from './aui/list-element';
+import { MediaEmbedElement } from './aui/media-embed-element';
+import { MentionElement } from './aui/mention-element';
+import { MentionInputElement } from './aui/mention-input-element';
+import { ParagraphElement } from './aui/paragraph-element';
+import { SearchHighlightLeaf } from './aui/search-highlight-leaf';
+import { SuggestionLeaf } from './aui/suggestion-leaf';
+import { TableCellElement } from './aui/table-cell-element';
+import { TableCellHeaderElement } from './aui/table-cell-header-element';
+import { TableElement } from './aui/table-element';
+import { TableRowElement } from './aui/table-row-element';
+import { TodoListElement } from './aui/todo-list-element';
+import { CommentLeaf } from './bcomponents/comments/CommentLeaf';
+
+import { CodeLeaf } from '@/lib/@/code-leaf';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<
@@ -97,7 +100,7 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_TH]: TableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
     [ELEMENT_TR]: TableRowElement,
-    // [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+    [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,

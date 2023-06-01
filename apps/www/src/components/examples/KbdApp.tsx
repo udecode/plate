@@ -10,10 +10,10 @@ import { Icons } from '@/components/icons';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
 import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { kbdValue } from '@/plate/demo/values/kbdValue';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 function KbdToolbarButton() {
   return (

@@ -9,7 +9,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

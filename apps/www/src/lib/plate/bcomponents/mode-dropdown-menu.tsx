@@ -4,7 +4,7 @@ import {
   useEventPlateId,
   usePlateReadOnly,
   usePlateStore,
-  useResetPlateEditor,
+  useSuggestionActions,
 } from '@udecode/plate';
 import { focusEditor } from '@udecode/plate-common';
 import {
@@ -22,14 +22,14 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/demo/plate.types';
+import { useMyPlateEditorState } from '@/types/plate.types';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());
   const setReadOnly = usePlateStore().set.readOnly();
   const readOnly = usePlateReadOnly();
-  const reset = useResetPlateEditor();
   const setIsSuggesting = useSetIsSuggesting();
+  const setIsSuggestingg = useSuggestionActions().isSuggesting();
   const isSuggesting = useSuggestionSelectors().isSuggesting();
   const openState = useOpenState();
 
@@ -76,13 +76,12 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
           className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(newValue) => {
-            reset();
-
             if (newValue !== 'viewing') {
               setReadOnly(false);
             }
             if (newValue !== 'suggesting') {
               setIsSuggesting(false);
+              setIsSuggestingg(false);
             }
 
             if (newValue === 'viewing') {

@@ -9,12 +9,12 @@ import {
 import { CommentLeaf } from '@/plate/bcomponents/comments/CommentLeaf';
 import { CommentsProvider } from '@/plate/bcomponents/comments/CommentsProvider';
 import { FloatingComments } from '@/plate/bcomponents/comments/FloatingComments';
+import { FloatingToolbarButtons } from '@/plate/bcomponents/floating-toolbar-buttons';
 import { editableProps } from '@/plate/demo/editableProps';
-import { createMyPlugins, MyValue } from '@/plate/demo/plate.types';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { commentsValue } from '@/plate/demo/values/commentsValue';
-import { FloatingToolbarButtons } from '@/plate/toolbar/floating-toolbar-buttons';
+import { createMyPlugins, MyValue } from '@/types/plate.types';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createCommentsPlugin()],

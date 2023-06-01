@@ -2,7 +2,7 @@ import React from 'react';
 import { useEventPlateId } from '@udecode/plate';
 import { PlateCloudEditor } from '@udecode/plate-cloud';
 
-import { useMyPlateEditorRef } from '@/plate/demo/plate.types';
+import { useMyPlateEditorRef } from '@/types/plate.types';
 
 // !HEADLESS
 

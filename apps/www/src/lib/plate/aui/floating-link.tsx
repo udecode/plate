@@ -2,8 +2,6 @@ import React from 'react';
 import { TEditableProps } from '@udecode/plate-common';
 import {
   FloatingLink as FloatingLinkPrimitive,
-  LaunchIcon,
-  LinkOffIcon,
   useFloatingLinkSelectors,
 } from '@udecode/plate-link';
 
@@ -62,7 +60,7 @@ export function FloatingLink({ readOnly }: TEditableProps) {
           size: 'sms',
         })}
       >
-        <LaunchIcon width={18} />
+        <Icons.externalLink width={18} />
       </FloatingLinkPrimitive.OpenLinkButton>
 
       <Separator orientation="vertical" />
@@ -73,7 +71,7 @@ export function FloatingLink({ readOnly }: TEditableProps) {
           size: 'sms',
         })}
       >
-        <LinkOffIcon width={18} />
+        <Icons.unlink width={18} />
       </FloatingLinkPrimitive.UnlinkButton>
     </div>
   ) : (

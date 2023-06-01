@@ -11,11 +11,10 @@ import {
   TSuggestionDescription,
 } from '@udecode/plate';
 import { formatDistanceToNow } from 'date-fns';
-
-import { useFloatingSuggestionItemState } from '@/lib/@/useFloatingSuggestionItemState';
-import { useFloatingSuggestionsContentProps } from '@/lib/@/useFloatingSuggestionsContentProps';
-import { useFloatingSuggestionsContentState } from '@/lib/@/useFloatingSuggestionsContentState';
-import { useFloatingSuggestionsState } from '@/lib/@/useFloatingSuggestionsState';
+import { useFloatingSuggestionItemState } from './useFloatingSuggestionItemState';
+import { useFloatingSuggestionsContentProps } from './useFloatingSuggestionsContentProps';
+import { useFloatingSuggestionsContentState } from './useFloatingSuggestionsContentState';
+import { useFloatingSuggestionsState } from './useFloatingSuggestionsState';
 
 export function FloatingSuggestionItem({
   description,

@@ -9,13 +9,13 @@ import * as isHotkey from 'is-hotkey';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
 import { mockPlugin } from '@/core/src/index';
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 import {
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@/nodes/code-block/src/index';
 import { unwrapList } from '@/nodes/list/src/index';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,

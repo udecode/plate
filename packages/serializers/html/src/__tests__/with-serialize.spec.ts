@@ -6,7 +6,7 @@ import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deseri
 import { PlatePlugin } from '@udecode/plate-core/src/types/plugin/PlatePlugin';
 import { createImagePlugin } from '@udecode/plate-media/src/index';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [

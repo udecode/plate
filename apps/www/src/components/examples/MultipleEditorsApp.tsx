@@ -3,13 +3,13 @@ import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 
 import { Separator } from '@/components/ui/separator';
 import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { MyValue } from '@/plate/demo/plate.types';
+import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
-import { TurnIntoDropdownMenu } from '@/plate/toolbar/turn-into-dropdown-menu';
+import { MyValue } from '@/types/plate.types';
 
 function Editor(props: PlateProps<MyValue>) {
   return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;

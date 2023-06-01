@@ -8,8 +8,8 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { outdentCodeLine } from './outdentCodeLine';
 
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
 import { createCodeBlockPlugin } from '@/nodes/code-block/src/createCodeBlockPlugin';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 

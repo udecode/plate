@@ -9,7 +9,7 @@ import { onKeyDownToggleMark } from '@udecode/plate-utils/src/plate/onKeyDownTog
 
 import { ToggleMarkPlugin } from '@/core/src/types/plugin/ToggleMarkPlugin';
 import { getPlugin } from '@/core/src/utils/getPlugin';
-import { createPlateUIEditor } from '@/lib/createPlateUIEditor';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
