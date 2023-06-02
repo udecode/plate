@@ -29,14 +29,14 @@ import { createPlugins, Plate } from '@/core/src/index';
 import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
 import { createLinkPlugin } from '@/nodes/link/src/index';
 import { createMentionPlugin } from '@/nodes/mention/src/index';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { AlignDropdownMenu } from '@/plate/aui/align-dropdown-menu';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { LinkToolbarButton } from '@/plate/aui/link-toolbar-button';
 import { MentionCombobox } from '@/plate/aui/mention-combobox';
+import { OutdentToolbarButton } from '@/plate/aui/outdent-toolbar-button';
 import { TableDropdownMenu } from '@/plate/aui/table-dropdown-menu';
+import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
 import { MarkBalloonToolbar } from '@/plate/balloon-toolbar/MarkBalloonToolbar';
-import { AlignDropdownMenu } from '@/plate/bcomponents/align-dropdown-menu';
-import { LinkToolbarButton } from '@/plate/bcomponents/link-toolbar-button';
-import { OutdentToolbarButton } from '@/plate/bcomponents/outdent-toolbar-button';
-import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { editableProps } from '@/plate/demo/editableProps';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
@@ -91,14 +91,14 @@ function PlateContainer() {
       plugins={plugins}
     >
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
-      <HeadingToolbar>
+      <FixedToolbar>
         <TurnIntoDropdownMenu />
         <ListToolbarButtons />
         <OutdentToolbarButton />
         <AlignDropdownMenu />
         <LinkToolbarButton icon={<Icons.link />} />
         <TableDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <MarkBalloonToolbar />
 

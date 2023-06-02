@@ -3,7 +3,7 @@ import {
   SCOPE_ACTIVE_COMMENT,
   useCommentReplies,
 } from '@udecode/plate-comments';
-import { CommentItem } from './CommentItem';
+import { CommentItem } from './comment-item';
 
 export function CommentReplyItems() {
   const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);

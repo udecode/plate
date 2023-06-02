@@ -12,7 +12,7 @@ import { popoverVariants } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-export function FloatingLink({ readOnly }: TEditableProps) {
+export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();
 
   if (readOnly) return null;

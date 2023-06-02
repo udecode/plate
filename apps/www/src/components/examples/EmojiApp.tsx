@@ -6,7 +6,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { EmojiDropdownMenu } from '@/plate/bcomponents/emoji/EmojiDropdownMenu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -33,9 +33,9 @@ export default function EmojiApp() {
       initialValue={emojiValue}
       onChange={(e) => console.info(e)}
     >
-      <HeadingToolbar>
+      <FixedToolbar>
         <EmojiDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

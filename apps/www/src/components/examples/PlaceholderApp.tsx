@@ -1,9 +1,9 @@
 import React from 'react';
 import { createExitBreakPlugin, Plate } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { withPlaceHolders } from '@/plate/aui/placeholder';
-import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
+import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -23,9 +23,9 @@ const plugins = createMyPlugins(
 export default function PlaceholderApp() {
   return (
     <>
-      <HeadingToolbar>
+      <FixedToolbar>
         <TurnIntoDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue>
         editableProps={editableProps}

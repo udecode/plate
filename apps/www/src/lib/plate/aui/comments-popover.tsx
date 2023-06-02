@@ -1,12 +1,15 @@
 import React from 'react';
 import {
   CommentProvider,
+  CommentsPositioner,
   SCOPE_ACTIVE_COMMENT,
   useFloatingCommentsContentState,
+  useFloatingCommentsState,
 } from '@udecode/plate-comments';
-import { CommentCreateForm } from './CommentCreateForm';
-import { CommentItem } from './CommentItem';
-import { CommentReplyItems } from './CommentReplyItems';
+import { PortalBody } from '@udecode/plate-common';
+import { CommentCreateForm } from './comment-create-form';
+import { CommentItem } from './comment-item';
+import { CommentReplyItems } from './comment-reply-items';
 
 import { popoverVariants } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -15,7 +18,7 @@ export type FloatingCommentsContentProps = {
   disableForm?: boolean;
 };
 
-export function FloatingCommentsContent(props: FloatingCommentsContentProps) {
+export function CommentsPopoverContent(props: FloatingCommentsContentProps) {
   const { disableForm } = props;
 
   const { ref, activeCommentId, hasNoComment, myUserId } =
@@ -39,5 +42,19 @@ export function FloatingCommentsContent(props: FloatingCommentsContentProps) {
         {!!myUserId && !disableForm && <CommentCreateForm />}
       </div>
     </CommentProvider>
+  );
+}
+
+export function CommentsPopover() {
+  const { loaded, activeCommentId } = useFloatingCommentsState();
+
+  if (!loaded || !activeCommentId) return null;
+
+  return (
+    <PortalBody>
+      <CommentsPositioner className="absolute z-10 w-[418px] pb-4">
+        <CommentsPopoverContent />
+      </CommentsPositioner>
+    </PortalBody>
   );
 }

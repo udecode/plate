@@ -9,7 +9,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -37,14 +37,14 @@ const plugins = createMyPlugins(
 export default function MediaApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={mediaValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         {/* <ImageToolbarButton> */}
         {/*  <Icons.image /> */}
         {/* </ImageToolbarButton> */}
         {/* <MediaEmbedToolbarButton> */}
         {/*  <Icons.embed /> */}
         {/* </MediaEmbedToolbarButton> */}
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

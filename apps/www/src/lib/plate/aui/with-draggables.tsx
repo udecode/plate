@@ -16,8 +16,7 @@ import {
   withDraggable as withDraggablePrimitive,
   WithDraggableOptions,
 } from '@udecode/plate-dnd';
-
-import { Draggable, PlateDraggableProps } from '@/plate/bcomponents/draggable';
+import { Draggable, PlateDraggableProps } from './draggable';
 
 export const withDraggable = (
   Component: RenderFunction<any>,

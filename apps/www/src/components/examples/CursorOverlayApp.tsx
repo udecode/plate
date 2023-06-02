@@ -1,7 +1,7 @@
 import React, { CSSProperties, useRef } from 'react';
 import { Plate } from '@udecode/plate';
 
-import { CursorOverlay } from '@/plate/bcomponents/cursor-overlay';
+import { CursorOverlay } from '@/plate/aui/cursor-overlay';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';

@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate';
 
 import { ComboboxItemProps } from '@/lib/@/ComboboxItem';
-import { Combobox } from '@/plate/bcomponents/combobox';
+import { Combobox } from '@/plate/aui/combobox';
 
 // WIP
 

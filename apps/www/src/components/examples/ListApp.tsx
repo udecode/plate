@@ -9,7 +9,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -36,7 +36,7 @@ const plugins = createMyPlugins(
 export default function ListApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={listValue}>
-      <HeadingToolbar>{/* <ListToolbarButtons /> */}</HeadingToolbar>
+      <FixedToolbar>{/* <ListToolbarButtons /> */}</FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

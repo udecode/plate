@@ -23,7 +23,7 @@ export const mediaFloatingOptions: PopoverProps['floatingOptions'] = {
   ],
 };
 
-export function FloatingMedia({ pluginKey }: { pluginKey?: string }) {
+export function MediaFloatingToolbar({ pluginKey }: { pluginKey?: string }) {
   const isEditing = useFloatingMediaSelectors().isEditing();
   const element = useElement();
   const removeNodeButtonProps = useRemoveNodeButtonProps({ element });

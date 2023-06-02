@@ -7,14 +7,14 @@ import {
   MARK_UNDERLINE,
   usePlateReadOnly,
 } from '@udecode/plate';
+import { LinkToolbarButton } from './link-toolbar-button';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { Icons } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
+import { CommentToolbarButton } from '@/plate/aui/comment-toolbar-button';
 import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
-import { CommentToolbarButton } from '@/plate/bcomponents/comments/comment-toolbar-button';
-import { LinkToolbarButton } from '@/plate/bcomponents/link-toolbar-button';
 
 export function FloatingToolbarButtons() {
   const readOnly = usePlateReadOnly();

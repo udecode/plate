@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createFindReplacePlugin, Plate } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -19,7 +19,7 @@ export function SearchHighlightToolbar({
   setSearch,
 }: SearchHighlightToolbarProps) {
   return (
-    <HeadingToolbar className="h-[38px]">
+    <FixedToolbar className="h-[38px]">
       <div
         style={{
           position: 'relative',
@@ -52,7 +52,7 @@ export function SearchHighlightToolbar({
           }}
         />
       </div>
-    </HeadingToolbar>
+    </FixedToolbar>
   );
 }
 

@@ -7,7 +7,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { TableDropdownMenu } from '@/plate/aui/table-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -37,9 +37,9 @@ const plugins = createMyPlugins(
 export default function TableApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={tableValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <TableDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

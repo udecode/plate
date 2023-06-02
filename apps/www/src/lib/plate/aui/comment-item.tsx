@@ -1,32 +1,26 @@
 import React from 'react';
-import {
-  CommentProvider,
-  useComment,
-  useCommentById,
-  useCommentSelectors,
-  useCommentsSelectors,
-  useCommentText,
-  useCommentUser,
-} from '@udecode/plate-comments';
+import { CommentProvider, useCommentById } from '@udecode/plate-comments';
 import { formatDistance } from 'date-fns';
-import { CommentAvatar } from './CommentAvatar';
-import { CommentMoreDropdown } from './CommentMoreDropdown';
-import { CommentResolveButton } from './CommentResolveButton';
-import { CommentValue } from './CommentValue';
+import { CommentAvatar } from './comment-avatar';
+import { CommentMoreDropdown } from './comment-more-dropdown';
+import { CommentResolveButton } from './comment-resolve-button';
+import { CommentValue } from './comment-value';
+
+import { useCommentItemContentState } from '@/lib/@/useCommentItemContentState';
 
 type PlateCommentProps = {
   commentId: string;
 };
 
 function CommentItemContent() {
-  const comment = useComment()!;
-  const isReplyComment = !!comment.parentId;
-  const commentText = useCommentText();
-  const user = useCommentUser();
-  const myUserId = useCommentsSelectors().myUserId();
-  const editingValue = useCommentSelectors().editingValue();
-
-  const isMyComment = myUserId === comment.userId;
+  const {
+    comment,
+    isMyComment,
+    isReplyComment,
+    user,
+    editingValue,
+    commentText,
+  } = useCommentItemContentState();
 
   return (
     <div>

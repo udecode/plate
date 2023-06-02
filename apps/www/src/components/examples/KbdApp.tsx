@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -30,9 +30,9 @@ const plugins = createMyPlugins([...basicNodesPlugins, createKbdPlugin()], {
 export default function KbdApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={kbdValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <KbdToolbarButton />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

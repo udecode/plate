@@ -11,7 +11,10 @@ import {
 } from '@udecode/plate-media';
 import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
-import { FloatingMedia, mediaFloatingOptions } from './floating-media';
+import {
+  mediaFloatingOptions,
+  MediaFloatingToolbar,
+} from './media-floating-toolbar';
 
 // REVIEWW
 export interface MediaEmbedElementPropsCaption {
@@ -49,7 +52,7 @@ const MediaEmbedElement = React.forwardRef<
   return (
     <ElementPopover
       ref={ref}
-      content={<FloatingMedia pluginKey={ELEMENT_MEDIA_EMBED} />}
+      content={<MediaFloatingToolbar pluginKey={ELEMENT_MEDIA_EMBED} />}
       floatingOptions={mediaFloatingOptions}
       {...popoverProps}
     >

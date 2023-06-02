@@ -11,27 +11,27 @@ import {
   MARK_UNDERLINE,
   usePlateReadOnly,
 } from '@udecode/plate';
-import { CommentToolbarButton } from './comments/comment-toolbar-button';
-import { EmojiDropdownMenu } from './emoji/EmojiDropdownMenu';
-import { ColorDropdownMenu } from './font/ColorDropdownMenu';
 import { AlignDropdownMenu } from './align-dropdown-menu';
+import { CommentToolbarButton } from './comment-toolbar-button';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
+import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
+import { MarkToolbarButton } from './mark-toolbar-button';
+import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
+import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
-import { LineHeightDropdownMenu } from '@/plate/aui/line-height-dropdown-menu';
-import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
-import { MediaToolbarButton } from '@/plate/aui/media-toolbar-button';
-import { TableDropdownMenu } from '@/plate/aui/table-dropdown-menu';
+import { EmojiDropdownMenu } from '@/plate/bcomponents/emoji/EmojiDropdownMenu';
+import { ColorDropdownMenu } from '@/plate/bcomponents/font/ColorDropdownMenu';
 
-export function HeadingToolbarButtons() {
+export function FixedToolbarButtons() {
   const readOnly = usePlateReadOnly();
 
   return (

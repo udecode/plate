@@ -1,8 +1,6 @@
 import React from 'react';
 import { useCommentsResolved } from '@udecode/plate-comments';
-import { CommentItem } from './CommentItem';
-
-// !HEADLESS
+import { CommentItem } from './comment-item';
 
 export function CommentsResolved() {
   const resolvedComments = useCommentsResolved();

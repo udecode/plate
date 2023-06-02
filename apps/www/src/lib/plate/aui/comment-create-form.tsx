@@ -5,7 +5,7 @@ import {
   useCommentsSelectors,
 } from '@udecode/plate-comments';
 import { cn } from '@udecode/plate-tailwind';
-import { CommentAvatar } from './CommentAvatar';
+import { CommentAvatar } from './comment-avatar';
 
 import { buttonVariants } from '@/components/ui/button';
 import { inputVariants } from '@/components/ui/input';

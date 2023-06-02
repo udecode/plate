@@ -53,17 +53,17 @@ import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
+import { CommentsPopover } from '@/plate/aui/comments-popover';
+import { CursorOverlay } from '@/plate/aui/cursor-overlay';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/plate/aui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/plate/aui/floating-toolbar';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FloatingToolbarButtons } from '@/plate/aui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/plate/aui/mention-combobox';
 import { withPlaceHolders } from '@/plate/aui/placeholder';
 import { withDraggables } from '@/plate/aui/with-draggables';
-import { CommentsProvider } from '@/plate/bcomponents/comments/CommentsProvider';
-import { FloatingComments } from '@/plate/bcomponents/comments/FloatingComments';
-import { CursorOverlay } from '@/plate/bcomponents/cursor-overlay';
-import { FloatingToolbarButtons } from '@/plate/bcomponents/floating-toolbar-buttons';
-import { HeadingToolbarButtons } from '@/plate/bcomponents/heading-toolbar-buttons';
 import { createPlateUI } from '@/plate/createPlateUI';
+import { CommentsProvider } from '@/plate/demo/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
@@ -164,9 +164,9 @@ export function PlaygroundDemo() {
       plugins={plugins}
       normalizeInitialValue
     >
-      <HeadingToolbar>
-        <HeadingToolbarButtons />
-      </HeadingToolbar>
+      <FixedToolbar>
+        <FixedToolbarButtons />
+      </FixedToolbar>
 
       <CommentsProvider>
         <div ref={containerRef} className="relative">
@@ -181,7 +181,7 @@ export function PlaygroundDemo() {
           </Plate>
         </div>
 
-        <FloatingComments />
+        <CommentsPopover />
       </CommentsProvider>
     </PlateProvider>
   );

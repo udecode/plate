@@ -46,6 +46,7 @@ import { BlockquoteElement } from './aui/blockquote-element';
 import { CodeBlockElement } from './aui/code-block-element';
 import { CodeLineElement } from './aui/code-line-element';
 import { CodeSyntaxLeaf } from './aui/code-syntax-leaf';
+import { CommentLeaf } from './aui/comment-leaf';
 import { ExcalidrawElement } from './aui/excalidraw-element';
 import { HeadingElement } from './aui/heading-element';
 import { HighlightLeaf } from './aui/highlight-leaf';
@@ -65,7 +66,6 @@ import { TableCellHeaderElement } from './aui/table-cell-header-element';
 import { TableElement } from './aui/table-element';
 import { TableRowElement } from './aui/table-row-element';
 import { TodoListElement } from './aui/todo-list-element';
-import { CommentLeaf } from './bcomponents/comments/CommentLeaf';
 
 import { CodeLeaf } from '@/lib/@/code-leaf';
 

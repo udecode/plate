@@ -8,8 +8,8 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -33,9 +33,9 @@ const plugins = createMyPlugins(
 export default function BasicElementsApp() {
   return (
     <PlateProvider<MyValue> initialValue={basicElementsValue} plugins={plugins}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <TurnIntoDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

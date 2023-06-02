@@ -2,8 +2,8 @@ import React from 'react';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 
 import { Separator } from '@/components/ui/separator';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { TurnIntoDropdownMenu } from '@/plate/bcomponents/turn-into-dropdown-menu';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
@@ -31,9 +31,9 @@ export default function MultipleEditorsApp() {
           plugins={imagePlugins}
           initialValue={imageValue}
         >
-          <HeadingToolbar>
+          <FixedToolbar>
             <TurnIntoDropdownMenu />
-          </HeadingToolbar>
+          </FixedToolbar>
 
           <div>
             <Editor />

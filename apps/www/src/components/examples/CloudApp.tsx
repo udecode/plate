@@ -8,7 +8,7 @@ import {
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { CloudAttachmentElement } from '@/plate/bcomponents/cloud/CloudAttachmentElement';
 import { CloudImageElement } from '@/plate/bcomponents/cloud/CloudImageElement';
 import { CloudToolbarButtons } from '@/plate/bcomponents/cloud/CloudToolbarButtons';
@@ -57,9 +57,9 @@ const plugins = createMyPlugins(
 export default function CloudApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <CloudToolbarButtons />
-      </HeadingToolbar>
+      </FixedToolbar>
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>
   );

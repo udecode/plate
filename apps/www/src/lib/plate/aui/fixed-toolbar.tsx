@@ -3,7 +3,7 @@ import { cn } from '@udecode/plate-tailwind';
 
 import { Toolbar, ToolbarProps } from '@/components/ui/toolbar';
 
-const HeadingToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
+const FixedToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
   ({ className, ...props }: ToolbarProps, ref) => {
     return (
       <Toolbar
@@ -17,6 +17,6 @@ const HeadingToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
     );
   }
 );
-HeadingToolbar.displayName = 'HeadingToolbar';
+FixedToolbar.displayName = 'FixedToolbar';
 
-export { HeadingToolbar };
+export { FixedToolbar };

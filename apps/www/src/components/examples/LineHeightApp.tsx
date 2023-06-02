@@ -1,7 +1,7 @@
 import React from 'react';
 import { createLineHeightPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { LineHeightDropdownMenu } from '@/plate/aui/line-height-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -20,9 +20,9 @@ const plugins = createMyPlugins(
 export default function LineHeightApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={lineHeightValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <LineHeightDropdownMenu />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

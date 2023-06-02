@@ -48,7 +48,7 @@ import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
-import { HeadingToolbarButtons } from '@/plate/bcomponents/heading-toolbar-buttons';
+import { FixedToolbarButtons } from '@/plate/aui/fixed-toolbar-buttons';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
 
 export const examples = {
@@ -101,6 +101,6 @@ export const examples = {
   SoftBreakApp,
   TabbableApp,
   TableApp,
-  ToolbarButtons: HeadingToolbarButtons,
+  ToolbarButtons: FixedToolbarButtons,
   TypescriptApp,
 };

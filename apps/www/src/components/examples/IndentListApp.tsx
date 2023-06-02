@@ -16,8 +16,8 @@ import { PlateElement } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { OutdentToolbarButton } from '@/plate/bcomponents/outdent-toolbar-button';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { OutdentToolbarButton } from '@/plate/aui/outdent-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { indentListPlugin } from '@/plate/demo/plugins/indentListPlugin';
@@ -89,9 +89,9 @@ export default function IndentListApp() {
       initialValue={indentListValue}
       normalizeInitialValue
     >
-      <HeadingToolbar>
+      <FixedToolbar>
         <ToolbarButtons />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

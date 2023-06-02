@@ -9,6 +9,7 @@ import {
 import { PopoverProps } from '@udecode/plate-floating';
 import { TTableElement } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
+import { TableBordersDropdownMenuContent } from './table-borders';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -23,9 +24,8 @@ import {
   popoverVariants,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { TableBordersDropdownMenuContent } from '@/plate/bcomponents/table-borders';
 
-export function TablePopover({ children, ...props }: PopoverProps) {
+export function TableFloatingToolbar({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
   const removeNodeButtonProps = useRemoveNodeButtonProps({ element });
 

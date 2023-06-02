@@ -1,8 +1,8 @@
 import React from 'react';
 import { createIndentPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { OutdentToolbarButton } from '@/plate/bcomponents/outdent-toolbar-button';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { OutdentToolbarButton } from '@/plate/aui/outdent-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -20,9 +20,9 @@ const plugins = createMyPlugins(
 export default function IndentApp() {
   return (
     <PlateProvider<MyValue> initialValue={indentValue} plugins={plugins}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <OutdentToolbarButton />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

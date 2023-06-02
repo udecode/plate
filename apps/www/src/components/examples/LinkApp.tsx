@@ -1,8 +1,8 @@
 import React from 'react';
 import { createLinkPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
-import { LinkToolbarButton } from '@/plate/bcomponents/link-toolbar-button';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { LinkToolbarButton } from '@/plate/aui/link-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -20,9 +20,9 @@ const plugins = createMyPlugins(
 export default function LinkApp() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={linkValue}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <LinkToolbarButton />
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <Plate<MyValue> editableProps={editableProps} />
     </PlateProvider>

@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { HeadingToolbar } from '@/plate/aui/heading-toolbar';
+import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
 import { ColorDropdownMenu } from '@/plate/bcomponents/font/ColorDropdownMenu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -52,14 +52,14 @@ function CopyContent() {
 export default function FontApp() {
   return (
     <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
-      <HeadingToolbar>
+      <FixedToolbar>
         <ColorDropdownMenu pluginKey={MARK_COLOR} tooltip="Text color">
           <Icons.color />
         </ColorDropdownMenu>
         <ColorDropdownMenu pluginKey={MARK_BG_COLOR} tooltip="Highlight color">
           <Icons.bg />
         </ColorDropdownMenu>
-      </HeadingToolbar>
+      </FixedToolbar>
 
       <CopyContent />
 

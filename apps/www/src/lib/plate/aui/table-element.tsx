@@ -5,19 +5,19 @@ import {
   useTableElementState,
 } from '@udecode/plate-table';
 import { cn } from '@udecode/plate-tailwind';
-import { TablePopover } from './table-popover';
+import { TableFloatingToolbar } from './table-floating-toolbar';
 
 // REVIEWW
 
 const TableElement = React.forwardRef<
-  React.ElementRef<typeof TablePopover>,
+  React.ElementRef<typeof TableFloatingToolbar>,
   TableElementRootProps
 >(({ className, children, ...props }, ref) => {
   const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
     useTableElementState();
 
   return (
-    <TablePopover ref={ref}>
+    <TableFloatingToolbar ref={ref}>
       <TableElementPrimitive.Wrapper style={{ paddingLeft: marginLeft }}>
         <TableElementPrimitive.Root
           className={cn(
@@ -44,7 +44,7 @@ const TableElement = React.forwardRef<
           </TableElementPrimitive.TBody>
         </TableElementPrimitive.Root>
       </TableElementPrimitive.Wrapper>
-    </TablePopover>
+    </TableFloatingToolbar>
   );
 });
 TableElement.displayName = 'TableElement';
