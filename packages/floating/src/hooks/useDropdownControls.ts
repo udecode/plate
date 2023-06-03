@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { ExtendedRefs, flip, useFloating } from '@floating-ui/react';
 
-type useDropdownControlsProps = {
+type UseDropdownControlsOptions = {
   open: boolean;
   onClose?: (ev: MouseEvent) => void;
 };
@@ -11,7 +11,7 @@ const closeAllExceptSelectedOneListener =
     open,
     onClose,
     refs,
-  }: useDropdownControlsProps & { refs: ExtendedRefs<HTMLElement> }) =>
+  }: UseDropdownControlsOptions & { refs: ExtendedRefs<HTMLElement> }) =>
   (ev: MouseEvent) => {
     if (open) {
       const target = ev.target as HTMLElement;
@@ -30,7 +30,7 @@ const closeAllExceptSelectedOneListener =
 export const useDropdownControls = ({
   open,
   onClose,
-}: useDropdownControlsProps) => {
+}: UseDropdownControlsOptions) => {
   const floatingResult = useFloating<HTMLElement>({
     open,
     strategy: 'fixed',

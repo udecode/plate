@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.0.1",
+    "@radix-ui/react-slot": "^1.0.2",
     "@udecode/plate-core": "21.3.0",
     "@udecode/slate": "21.3.0",
     "@udecode/slate-react": "21.3.0",

@@ -223,21 +223,27 @@ export const useTableCellElementResizableProps = ({
 
   return {
     rightProps: {
-      direction: 'right',
-      onResize: handleResizeRight,
-      ...getHandleHoverProps(colIndex),
-      ...commonHandleProps,
+      options: {
+        direction: 'right',
+        onResize: handleResizeRight,
+        ...getHandleHoverProps(colIndex),
+        ...commonHandleProps,
+      },
     },
     bottomProps: {
-      direction: 'bottom',
-      onResize: handleResizeBottom,
-      ...commonHandleProps,
+      options: {
+        direction: 'bottom',
+        onResize: handleResizeBottom,
+        ...commonHandleProps,
+      },
     },
     leftProps: {
-      direction: 'left',
-      onResize: handleResizeLeft,
-      ...getHandleHoverProps(-1),
-      ...commonHandleProps,
+      options: {
+        direction: 'left',
+        onResize: handleResizeLeft,
+        ...getHandleHoverProps(-1),
+        ...commonHandleProps,
+      },
     },
   };
 };

@@ -11,9 +11,11 @@ import {
 } from '@udecode/plate-common';
 import {
   ResizeEvent,
+  ResizeHandleProps,
   ResizeLength,
   resizeLengthClamp,
-  useResizeHandleProps,
+  useResizeHandle,
+  useResizeHandleState,
 } from '@udecode/resizable';
 import { useReadOnly } from 'slate-react';
 import { TMediaElement } from '../media/types';
@@ -31,8 +33,8 @@ export interface ResizableProps extends AsProps<'div'> {
   minWidth?: ResizeLength;
   maxWidth?: ResizeLength;
 
-  renderHandleLeft?: (props: AsProps<'div'>) => JSX.Element;
-  renderHandleRight?: (props: AsProps<'div'>) => JSX.Element;
+  renderHandleLeft?: (props: ResizeHandleProps) => JSX.Element;
+  renderHandleRight?: (props: ResizeHandleProps) => JSX.Element;
 }
 
 export const useResizable = ({
@@ -99,18 +101,22 @@ export const useResizable = ({
 
   // Remove style except for cursor
   const handlePropsLeft = {
-    ...useResizeHandleProps({
-      direction: 'left',
-      onResize: handleResize,
-    }),
+    ...useResizeHandle(
+      useResizeHandleState({
+        direction: 'left',
+        onResize: handleResize,
+      })
+    ).props,
     style: { cursor: 'ew-resize' },
   };
 
   const handlePropsRight = {
-    ...useResizeHandleProps({
-      direction: 'right',
-      onResize: handleResize,
-    }),
+    ...useResizeHandle(
+      useResizeHandleState({
+        direction: 'right',
+        onResize: handleResize,
+      })
+    ).props,
     style: { cursor: 'ew-resize' },
   };
 
