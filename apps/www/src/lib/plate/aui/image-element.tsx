@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Value } from '@udecode/plate-common';
+import { Box, PlateElementProps, Value } from '@udecode/plate-common';
 import { ElementPopover, PopoverProps } from '@udecode/plate-floating';
 import {
   Caption,
@@ -9,12 +9,13 @@ import {
   ResizableProps,
   TImageElement,
 } from '@udecode/plate-media';
-import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import {
   mediaFloatingOptions,
   MediaFloatingToolbar,
 } from './media-floating-toolbar';
+
+import { cn } from '@/lib/utils';
 
 export interface ImageElementPropsCaption {
   disabled?: boolean;

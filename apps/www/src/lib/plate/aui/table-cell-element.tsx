@@ -4,7 +4,8 @@ import {
   TableCellElementRootProps,
   useTableCellElementState,
 } from '@udecode/plate-table';
-import { cn } from '@udecode/plate-tailwind';
+
+import { cn } from '@/lib/utils';
 
 // REVIEWW
 export interface TableCellElementProps extends TableCellElementRootProps {

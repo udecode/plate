@@ -2,18 +2,12 @@
 
 import React, { forwardRef } from 'react';
 import { DropTargetMonitor } from 'react-dnd';
-import { ClassNames, TEditor, TElement } from '@udecode/plate-common';
+import { ClassNames, PlateElementProps, TEditor } from '@udecode/plate-common';
 import {
-  DraggableBlock,
-  DraggableBlockToolbar,
-  DraggableBlockToolbarWrapper,
-  DraggableDropline,
-  DraggableGutterLeft,
-  DraggableRoot,
   DragItemNode,
+  useDraggable,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { cn, PlateElementProps } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import {
@@ -21,13 +15,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
-export interface DragHandleProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  element: TElement;
-}
-
-export interface PlateDraggableProps
+export interface DraggableProps
   extends PlateElementProps,
     ClassNames<{
       /**
@@ -90,59 +80,57 @@ export interface PlateDraggableProps
   ) => boolean;
 }
 
-export const Draggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
-  ({ className, classNames = {}, ...props }, ref) => {
+export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
+  ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
     const { children, element } = props;
 
-    const { dropLine, isDragging, rootRef, dragRef } = useDraggableState(props);
+    const state = useDraggableState({ element, onDropHandler });
+    const { dropLine, isDragging } = state;
+    const { droplineProps, gutterLeftProps, previewRef, handleRef } =
+      useDraggable(state);
 
     return (
-      <DraggableRoot
+      <div
         className={cn(
           'relative',
           isDragging && 'opacity-50',
           'group',
           className
-          // selected && 'bg-[rgb(181, 215, 255)]',
         )}
-        rootRef={rootRef}
         ref={ref}
       >
-        <DraggableGutterLeft
+        <div
           className={cn(
             'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
             classNames.gutterLeft
           )}
+          {...gutterLeftProps}
         >
-          <DraggableBlockToolbarWrapper
-            className={cn('flex h-[1.5em]', classNames.blockToolbarWrapper)}
-          >
-            <DraggableBlockToolbar
-              dragRef={dragRef}
-              element={element}
+          <div className={cn('flex h-[1.5em]', classNames.blockToolbarWrapper)}>
+            <div
               className={cn(
                 'pointer-events-auto mr-1 flex items-center',
                 classNames.blockToolbar
               )}
             >
               <Tooltip>
-                <TooltipTrigger>
-                  {/* className="min-h-[18px] min-w-[18px] cursor-pointer overflow-hidden border-none bg-transparent bg-no-repeat p-0 outline-none" */}
+                <TooltipTrigger ref={handleRef}>
                   <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>Drag to move</TooltipContent>
               </Tooltip>
-            </DraggableBlockToolbar>
-          </DraggableBlockToolbarWrapper>
-        </DraggableGutterLeft>
+            </div>
+          </div>
+        </div>
 
-        <DraggableBlock
+        <div
           className={cn('overflow-auto', classNames.blockWrapper)}
+          ref={previewRef}
         >
           {children}
 
           {!!dropLine && (
-            <DraggableDropline
+            <div
               className={cn(
                 'absolute inset-x-0 h-0.5 opacity-100',
                 'bg-[#B4D5FF]',
@@ -150,10 +138,11 @@ export const Draggable = forwardRef<HTMLDivElement, PlateDraggableProps>(
                 dropLine === 'bottom' && '-bottom-px',
                 classNames.dropLine
               )}
+              {...droplineProps}
             />
           )}
-        </DraggableBlock>
-      </DraggableRoot>
+        </div>
+      </div>
     );
   }
 );

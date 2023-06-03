@@ -2,13 +2,13 @@ import React from 'react';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useIndentButtonProps } from '@/lib/@/useIndentButtonProps';
+import { useIndentButton } from '@/lib/@/useIndentButton';
 
 export function IndentToolbarButton() {
-  const indentProps = useIndentButtonProps();
+  const { props } = useIndentButton();
 
   return (
-    <ToolbarButton tooltip="Indent" {...indentProps}>
+    <ToolbarButton tooltip="Indent" {...props}>
       <Icons.indent />
     </ToolbarButton>
   );

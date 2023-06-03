@@ -1,6 +1,5 @@
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
-import { cn } from '@udecode/plate-tailwind';
 import { TColor } from './color-dropdown-menu';
 
 import { Icons } from '@/components/icons';
@@ -11,6 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 type ColorDropdownMenuItemProps = {
   value: string;

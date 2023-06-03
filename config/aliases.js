@@ -50,5 +50,4 @@ module.exports = {
   '@udecode/utils': 'utils',
   '@udecode/plate': 'plate',
   '@udecode/plate-excalidraw': 'excalidraw',
-  '@udecode/plate-tailwind': 'tailwind',
 };

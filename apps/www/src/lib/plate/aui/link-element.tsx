@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, LinkRootProps } from '@udecode/plate-link';
-import { cn } from '@udecode/plate-tailwind';
 
-// REVIEWW
+import { cn } from '@/lib/utils';
+
 const LinkElement = React.forwardRef<
   React.ElementRef<typeof Link.Root>,
   LinkRootProps

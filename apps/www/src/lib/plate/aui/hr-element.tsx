@@ -1,7 +1,9 @@
 import React from 'react';
-import { TElement, Value } from '@udecode/plate-common';
-import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
+import { PlateElement } from '@udecode/plate';
+import { PlateElementProps, TElement, Value } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
+
+import { cn } from '@/lib/utils';
 
 // REVIEWW
 const HrElement = React.forwardRef<

@@ -5,7 +5,7 @@ import {
   useComboboxSelectors,
 } from '@udecode/plate';
 
-import { ComboboxItemProps } from '@/lib/@/ComboboxItem';
+import { ComboboxItemProps } from '@/lib/@/useComboboxItem';
 import { Combobox } from '@/plate/aui/combobox';
 
 // WIP

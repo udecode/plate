@@ -11,14 +11,15 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useLineHeightDropdownMenuRadioItemProps } from '@/lib/@/useLineHeightDropdownMenuRadioItemProps';
-import { useLineHeightDropdownMenuState } from '@/lib/@/useLineHeightDropdownMenuState';
+import {
+  useLineHeightDropdownMenu,
+  useLineHeightDropdownMenuState,
+} from '@/lib/@/useLineHeightDropdownMenu';
 
 export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
   const openState = useOpenState();
-  const { values } = useLineHeightDropdownMenuState();
-  const lineHeightDropdownMenuRadioItemProps =
-    useLineHeightDropdownMenuRadioItemProps();
+  const state = useLineHeightDropdownMenuState();
+  const { radioGroupProps } = useLineHeightDropdownMenu(state);
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -35,9 +36,9 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
       <DropdownMenuContent align="start" className="min-w-0">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
-          {...lineHeightDropdownMenuRadioItemProps}
+          {...radioGroupProps}
         >
-          {values.map((_value) => (
+          {state.values.map((_value) => (
             <DropdownMenuRadioItem
               key={_value}
               value={_value}

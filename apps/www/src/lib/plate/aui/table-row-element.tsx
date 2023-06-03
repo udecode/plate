@@ -3,9 +3,9 @@ import {
   TableRowElement as TableRowElementPrimitive,
   TableRowElementRootProps,
 } from '@udecode/plate-table';
-import { cn } from '@udecode/plate-tailwind';
 
-// REVIEWW
+import { cn } from '@/lib/utils';
+
 export interface PlateTableRowElementProps extends TableRowElementRootProps {
   hideBorder?: boolean;
 }

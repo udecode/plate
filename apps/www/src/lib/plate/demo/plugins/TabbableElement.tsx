@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { PlateElementProps } from '@udecode/plate-tailwind';
+import { PlateElementProps } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
 import { MyValue } from '@/types/plate.types';

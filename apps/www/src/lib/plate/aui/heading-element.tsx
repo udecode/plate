@@ -1,10 +1,7 @@
 import React from 'react';
-import {
-  cva,
-  PlateElement,
-  PlateElementProps,
-  VariantProps,
-} from '@udecode/plate-tailwind';
+import { PlateElement } from '@udecode/plate';
+import { PlateElementProps } from '@udecode/plate-common';
+import { cva, VariantProps } from 'class-variance-authority';
 
 const headingVariants = cva('', {
   variants: {

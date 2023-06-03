@@ -1,14 +1,16 @@
 import React from 'react';
-import { PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate';
 
-import { CodeSyntaxLeafToken } from '@/lib/@/CodeSyntaxLeafToken';
+import { useCodeSyntaxLeaf } from '@/lib/@/useCodeSyntaxLeaf';
 
 export function CodeSyntaxLeaf({ children, ...props }: PlateLeafProps) {
   const { leaf } = props;
 
+  const { tokenProps } = useCodeSyntaxLeaf({ leaf });
+
   return (
     <PlateLeaf {...props}>
-      <CodeSyntaxLeafToken leaf={leaf}>{children}</CodeSyntaxLeafToken>
+      <span {...tokenProps}>{children}</span>
     </PlateLeaf>
   );
 }

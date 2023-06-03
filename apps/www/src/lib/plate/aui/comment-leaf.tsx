@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate';
 import { TCommentText } from '@udecode/plate-comments';
 import { Value } from '@udecode/plate-common';
-import { PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
 
-import { useCommentLeafState } from '@/lib/@/useCommentLeafState';
+import { useCommentLeaf, useCommentLeafState } from '@/lib/@/useCommentLeaf';
 
 export function CommentLeaf({
   className,
@@ -13,19 +13,20 @@ export function CommentLeaf({
 }: PlateLeafProps<Value, TCommentText>) {
   const { children, nodeProps, leaf } = props;
 
-  const { commentCount, isActive, onClick } = useCommentLeafState({ leaf });
+  const state = useCommentLeafState({ leaf });
+  const { props: rootProps } = useCommentLeaf(state);
 
   // hide resolved comments
-  if (!commentCount) return <>{children}</>;
+  if (!state.commentCount) return <>{children}</>;
 
   let aboveChildren = <>{children}</>;
 
-  const backgroundColor = isActive
+  const backgroundColor = state.isActive
     ? 'rgb(255, 212, 0)'
     : 'rgba(255, 212, 0, 0.14)';
 
-  if (!isActive) {
-    for (let i = 1; i < commentCount; i++) {
+  if (!state.isActive) {
+    for (let i = 1; i < state.commentCount; i++) {
       aboveChildren = (
         <span
           style={{
@@ -42,7 +43,7 @@ export function CommentLeaf({
     <PlateLeaf
       {...props}
       nodeProps={{
-        onClick,
+        ...rootProps,
         style: {
           backgroundColor,
           borderBottom: '2px solid rgb(255, 212, 0)',

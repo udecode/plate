@@ -1,5 +1,8 @@
 import React from 'react';
-import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
+import { PlateElement } from '@udecode/plate';
+import { PlateElementProps } from '@udecode/plate-common';
+
+import { cn } from '@/lib/utils';
 
 export function ParagraphElement({ className, ...props }: PlateElementProps) {
   return (

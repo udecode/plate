@@ -4,9 +4,9 @@ import {
   useFloatingToolbar,
   UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
-import { cn } from '@udecode/plate-tailwind';
 
 import { Toolbar, ToolbarProps } from '@/components/ui/toolbar';
+import { cn } from '@/lib/utils';
 
 export interface FloatingToolbarProps extends ToolbarProps {
   children: ReactNode;

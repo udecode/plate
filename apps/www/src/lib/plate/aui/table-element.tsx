@@ -4,8 +4,9 @@ import {
   TableElementRootProps,
   useTableElementState,
 } from '@udecode/plate-table';
-import { cn } from '@udecode/plate-tailwind';
 import { TableFloatingToolbar } from './table-floating-toolbar';
+
+import { cn } from '@/lib/utils';
 
 // REVIEWW
 

@@ -5,5 +5,5 @@
 export * from './useComposedRef';
 export * from './useElementProps';
 export * from './useOnClickOutside';
-export * from './useRemoveNodeButtonProps';
+export * from './useRemoveNodeButton';
 export * from './useWrapElement';

@@ -3,10 +3,10 @@ import {
   CommentResolveButton as CommentResolveButtonPrimitive,
   useComment,
 } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function CommentResolveButton() {
   const comment = useComment()!;

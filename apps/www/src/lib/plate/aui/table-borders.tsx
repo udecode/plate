@@ -1,7 +1,6 @@
 import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { useTableBordersDropdownMenuContentState } from '@udecode/plate-table';
-import { cn } from '@udecode/plate-tailwind';
 
 import { Icons, iconVariants } from '@/components/icons';
 import {
@@ -9,6 +8,7 @@ import {
   DropdownMenuContent,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const TableBordersDropdownMenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,

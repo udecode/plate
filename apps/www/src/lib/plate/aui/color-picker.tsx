@@ -1,5 +1,4 @@
 import React from 'react';
-import { cn } from '@udecode/plate-tailwind';
 import { TColor } from './color-dropdown-menu';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import { ColorsCustom } from './colors-custom';
@@ -7,6 +6,7 @@ import { ColorsCustom } from './colors-custom';
 import { buttonVariants } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 type ColorPickerProps = {
   color?: string;

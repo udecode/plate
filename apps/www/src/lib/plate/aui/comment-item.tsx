@@ -6,7 +6,7 @@ import { CommentMoreDropdown } from './comment-more-dropdown';
 import { CommentResolveButton } from './comment-resolve-button';
 import { CommentValue } from './comment-value';
 
-import { useCommentItemContentState } from '@/lib/@/useCommentItemContentState';
+import { useCommentItemContentState } from '@/lib/@/useCommentItemContent';
 
 type PlateCommentProps = {
   commentId: string;

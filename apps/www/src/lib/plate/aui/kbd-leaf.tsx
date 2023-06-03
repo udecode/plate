@@ -1,5 +1,7 @@
 import React from 'react';
-import { cn, PlateLeaf, PlateLeafProps } from '@udecode/plate-tailwind';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate';
+
+import { cn } from '@/lib/utils';
 
 export function KbdLeaf({ className, ...props }: PlateLeafProps) {
   return (

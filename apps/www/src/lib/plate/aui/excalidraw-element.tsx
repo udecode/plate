@@ -1,38 +1,26 @@
 import React from 'react';
-import {
-  ExcalidrawProps,
-  LibraryItems,
-} from '@excalidraw/excalidraw/types/types';
-import { Value } from '@udecode/plate-common';
+import { LibraryItems } from '@excalidraw/excalidraw/types/types';
+import { PlateElement } from '@udecode/plate';
+import { PlateElementProps, Value } from '@udecode/plate-common';
 import { TExcalidrawElement } from '@udecode/plate-excalidraw';
-import { PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
 
-import { useExalidawElementProps } from '@/lib/@/useExalidawElementProps';
+import { useExalidawElement } from '@/lib/@/useExalidawElement';
 
 export interface ExcalidrawElementProps
   extends PlateElementProps<Value, TExcalidrawElement> {
   scrollToContent?: boolean;
 
   libraryItems?: LibraryItems;
-
-  excalidrawProps?: ExcalidrawProps;
 }
 
 export function ExcalidrawElement({
   nodeProps,
   ...props
 }: ExcalidrawElementProps) {
-  const {
-    children,
-    element,
-    scrollToContent,
-    libraryItems,
-    excalidrawProps: _excalidrawProps,
-  } = props;
+  const { children, element, scrollToContent, libraryItems } = props;
 
-  const { Excalidraw, excalidrawProps } = useExalidawElementProps({
+  const { Excalidraw, excalidrawProps } = useExalidawElement({
     element,
-    excalidrawProps: _excalidrawProps,
     scrollToContent,
     libraryItems,
   });

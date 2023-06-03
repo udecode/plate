@@ -7,9 +7,9 @@ import {
   TRenderLeafProps,
   TText,
 } from '@udecode/plate';
-import { cn } from '@udecode/plate-tailwind';
 import Prism from 'prismjs';
 
+import { cn } from '@/lib/utils';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

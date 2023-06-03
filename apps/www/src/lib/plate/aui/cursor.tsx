@@ -1,6 +1,7 @@
 import React from 'react';
 import { CursorData, CursorProps } from '@udecode/plate-cursor';
-import { cn } from '@udecode/plate-tailwind';
+
+import { cn } from '@/lib/utils';
 
 export function Cursor({
   data,

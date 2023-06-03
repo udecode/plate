@@ -4,11 +4,11 @@ import {
   CommentNewTextarea,
   useCommentsSelectors,
 } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-tailwind';
 import { CommentAvatar } from './comment-avatar';
 
 import { buttonVariants } from '@/components/ui/button';
 import { inputVariants } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();

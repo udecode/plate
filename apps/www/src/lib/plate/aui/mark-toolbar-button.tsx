@@ -4,9 +4,13 @@ import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '@/components/ui/toolbar-button';
-import { useMarkToolbarButtonProps } from '@/lib/@/useMarkToolbarButtonProps';
+import {
+  useMarkToolbarButton,
+  useMarkToolbarButtonState,
+} from '@/lib/@/useMarkToolbarButton';
 
-export interface MarkToolbarButtonProps extends ToolbarButtonProps {
+export interface MarkToolbarButtonProps
+  extends Pick<ToolbarButtonProps, 'tooltip' | 'children'> {
   nodeType: string;
   clear?: string | string[];
 }
@@ -15,12 +19,12 @@ export interface MarkToolbarButtonProps extends ToolbarButtonProps {
  * Toolbar button to toggle the mark of the leaves in selection.
  */
 export function MarkToolbarButton({
-  id,
   clear,
   nodeType,
   ...props
 }: MarkToolbarButtonProps) {
-  const markToolbarButton = useMarkToolbarButtonProps({ id, clear, nodeType });
+  const state = useMarkToolbarButtonState({ clear, nodeType });
+  const { props: buttonProps } = useMarkToolbarButton(state);
 
-  return <ToolbarButton {...markToolbarButton} {...props} />;
+  return <ToolbarButton {...buttonProps} {...props} />;
 }

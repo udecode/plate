@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import { PlateElement } from '@udecode/plate';
 import {
   generateSrcAndSrcSet,
   TCloudImageElement,
   useUpload,
 } from '@udecode/plate-cloud';
-import { findNodePath, setNodes, Value } from '@udecode/plate-common';
-import { cn, PlateElement, PlateElementProps } from '@udecode/plate-tailwind';
+import {
+  findNodePath,
+  PlateElementProps,
+  setNodes,
+  Value,
+} from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 import { ResizeControls } from './ResizeControls';
 import { StatusBar } from './StatusBar';
+
+import { cn } from '@/lib/utils';
 
 // !HEADLESS
 

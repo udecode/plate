@@ -7003,26 +7003,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-tailwind@workspace:packages/tailwind":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-tailwind@workspace:packages/tailwind"
-  dependencies:
-    "@udecode/plate-common": "npm:21.3.0"
-    class-variance-authority: "npm:^0.6.0"
-    clsx: "npm:^1.2.1"
-    tailwind-merge: "npm:^1.12.0"
-    tailwind-styled-components: "npm:^2.2.0"
-    tailwindcss-animate: "npm:^1.0.5"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    react-is: ">=16.8.0"
-    slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
-    slate-react: ">=0.94.0"
-  languageName: unknown
-  linkType: soft
-
 "@udecode/plate-test-utils@workspace:^, @udecode/plate-test-utils@workspace:packages/test-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-test-utils@workspace:packages/test-utils"
@@ -9090,18 +9070,6 @@ __metadata:
     isobject: "npm:^3.0.0"
     static-extend: "npm:^0.1.1"
   checksum: e7fc96034dc63955d303b96c41eaa5728ca86b25aa9a14931d8a440bf7a30c6e7f52837d97337716e24bf74a46e703bbf05eba1b8ef8b67324e61955abc6b0aa
-  languageName: node
-  linkType: hard
-
-"class-variance-authority@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "class-variance-authority@npm:0.4.0"
-  peerDependencies:
-    typescript: ">= 4.5.5 < 5"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: eb3355d70646d57efa1da0d0ed4d03bf3800ab67a80ed09bb84fc274aa2e6ac34a627c1de63fc7063f97dbc226c20835b07ac036b1df396a8765656bc3877c57
   languageName: node
   linkType: hard
 
@@ -23124,22 +23092,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwind-merge@npm:^1.12.0, tailwind-merge@npm:^1.3.0, tailwind-merge@npm:^1.8.0":
+"tailwind-merge@npm:^1.8.0":
   version: 1.12.0
   resolution: "tailwind-merge@npm:1.12.0"
   checksum: 6bf27035df18483655b12423116af1f2e4208f665c8a41d8f6fbcad9b72a58c2d490065b124bfc061a3367d7130637073a54adf4479330aebc32baaed190c36c
-  languageName: node
-  linkType: hard
-
-"tailwind-styled-components@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "tailwind-styled-components@npm:2.2.0"
-  dependencies:
-    tailwind-merge: "npm:^1.3.0"
-  peerDependencies:
-    react: ">= 16.8.0"
-    react-dom: ">= 16.8.0"
-  checksum: 83b5e521724c7b99a898a7e23d6517d9e065d61c9c6febb847da18ea1da1f151bf42aed4420aeb08c8ec9d4cc09fcb677875fd2ccb8f031d06d351e1364ec609
   languageName: node
   linkType: hard
 
@@ -25163,7 +25119,7 @@ __metadata:
     "@vercel/og": "npm:^0.0.21"
     autoprefixer: "npm:^10.4.14"
     change-case: "npm:^4.1.2"
-    class-variance-authority: "npm:^0.4.0"
+    class-variance-authority: "npm:^0.6.0"
     clsx: "npm:^1.2.1"
     cmdk: "npm:^0.2.0"
     contentlayer: "npm:0.3.0"
@@ -25195,6 +25151,7 @@ __metadata:
     slate-test-utils: "npm:1.3.2"
     tailwind-merge: "npm:^1.8.0"
     tailwindcss: "npm:^3.3.2"
+    tailwindcss-animate: "npm:^1.0.5"
     typescript: "npm:4.6.4"
     unist-builder: "npm:3.0.0"
     unist-util-visit: "npm:^4.1.1"

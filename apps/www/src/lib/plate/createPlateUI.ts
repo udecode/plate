@@ -36,14 +36,15 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  PlateElement,
+  PlateLeaf,
   PlatePluginComponent,
   withProps,
 } from '@udecode/plate';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_SUGGESTION } from '@udecode/plate-suggestion';
-import { PlateElement, PlateLeaf } from '@udecode/plate-tailwind';
 import { BlockquoteElement } from './aui/blockquote-element';
 import { CodeBlockElement } from './aui/code-block-element';
+import { CodeLeaf } from './aui/code-leaf';
 import { CodeLineElement } from './aui/code-line-element';
 import { CodeSyntaxLeaf } from './aui/code-syntax-leaf';
 import { CommentLeaf } from './aui/comment-leaf';
@@ -60,14 +61,11 @@ import { MentionElement } from './aui/mention-element';
 import { MentionInputElement } from './aui/mention-input-element';
 import { ParagraphElement } from './aui/paragraph-element';
 import { SearchHighlightLeaf } from './aui/search-highlight-leaf';
-import { SuggestionLeaf } from './aui/suggestion-leaf';
 import { TableCellElement } from './aui/table-cell-element';
 import { TableCellHeaderElement } from './aui/table-cell-header-element';
 import { TableElement } from './aui/table-element';
 import { TableRowElement } from './aui/table-row-element';
 import { TodoListElement } from './aui/todo-list-element';
-
-import { CodeLeaf } from '@/lib/@/code-leaf';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<
@@ -112,7 +110,6 @@ export const createPlateUI = <T extends string = string>(
     [MARK_SUPERSCRIPT]: withProps(PlateLeaf, { as: 'sup' }),
     [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
     [MARK_COMMENT]: CommentLeaf,
-    [MARK_SUGGESTION]: SuggestionLeaf,
   };
 
   if (overrideByKey) {

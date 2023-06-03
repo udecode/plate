@@ -6,22 +6,22 @@ import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '@/components/ui/toolbar-button';
-import { useIndentListToolbarButtonProps } from '@/lib/@/useIndentListToolbarButtonProps';
+import {
+  useIndentListToolbarButton,
+  useIndentListToolbarButtonState,
+} from '@/lib/@/useIndentListToolbarButton';
 
 export function IndentListToolbarButton({
   nodeType = ListStyleType.Disc,
-  ...props
 }: ToolbarButtonProps & { nodeType?: ListStyleType }) {
-  const indentListToolbarButtonProps = useIndentListToolbarButtonProps({
-    nodeType,
-  });
+  const state = useIndentListToolbarButtonState({ nodeType });
+  const { props } = useIndentListToolbarButton(state);
 
   return (
     <ToolbarButton
       tooltip={
         nodeType === ListStyleType.Disc ? 'Bulleted List' : 'Numbered List'
       }
-      {...indentListToolbarButtonProps}
       {...props}
     >
       {nodeType === ListStyleType.Disc ? <Icons.ul /> : <Icons.ol />}

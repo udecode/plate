@@ -5,7 +5,7 @@ import {
   NoData,
 } from '@udecode/plate-combobox';
 import { RenderFunction } from '@udecode/plate-common';
-import { ComboboxItemProps } from './ComboboxItem';
+import { ComboboxItemProps } from './useComboboxItem';
 
 export interface ComboboxProps<TData = NoData>
   extends Partial<Pick<ComboboxState<TData>, 'items' | 'floatingOptions'>>,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { EmojiItemData } from '@udecode/plate-emoji';
 
-import { ComboboxItemProps } from '@/lib/@/ComboboxItem';
+import { ComboboxItemProps } from '@/lib/@/useComboboxItem';
 
 export function EmojiComboboxItem({
   item,

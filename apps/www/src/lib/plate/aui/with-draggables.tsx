@@ -16,19 +16,15 @@ import {
   withDraggable as withDraggablePrimitive,
   WithDraggableOptions,
 } from '@udecode/plate-dnd';
-import { Draggable, PlateDraggableProps } from './draggable';
+import { Draggable, DraggableProps } from './draggable';
 
 export const withDraggable = (
   Component: RenderFunction<any>,
   options?: WithDraggableOptions<
-    Partial<Omit<PlateDraggableProps, 'editor' | 'element' | 'children'>>
+    Partial<Omit<DraggableProps, 'editor' | 'element' | 'children'>>
   >
 ) =>
-  withDraggablePrimitive<PlateDraggableProps>(
-    Draggable,
-    Component,
-    options as any
-  );
+  withDraggablePrimitive<DraggableProps>(Draggable, Component, options as any);
 
 export const withDraggablesPrimitive = createNodesWithHOC(withDraggable);
 

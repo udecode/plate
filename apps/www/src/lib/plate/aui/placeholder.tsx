@@ -1,12 +1,9 @@
 import React from 'react';
 import { ELEMENT_H1, ELEMENT_PARAGRAPH } from '@udecode/plate';
 import { createNodeHOC, createNodesHOC } from '@udecode/plate-common';
-import { cn } from '@udecode/plate-tailwind';
 
-import {
-  PlaceholderProps,
-  usePlaceholderState,
-} from '@/lib/@/usePlaceholderState';
+import { PlaceholderProps, usePlaceholderState } from '@/lib/@/usePlaceholder';
+import { cn } from '@/lib/utils';
 
 export const Placeholder = (props: PlaceholderProps) => {
   const { children, placeholder, nodeProps } = props;

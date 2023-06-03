@@ -1,17 +1,18 @@
 import React from 'react';
 
 import { Icons } from '@/components/icons';
+import { ToolbarButton } from '@/components/ui/toolbar-button';
 import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@/components/ui/toolbar-button';
-import { useLinkToolbarButtonProps } from '@/lib/@/useLinkToolbarButtonProps';
+  useLinkToolbarButton,
+  useLinkToolbarButtonState,
+} from '@/lib/@/useLinkToolbarButton';
 
-export function LinkToolbarButton(props: ToolbarButtonProps) {
-  const linkToolbarButtonProps = useLinkToolbarButtonProps();
+export function LinkToolbarButton() {
+  const state = useLinkToolbarButtonState();
+  const { props } = useLinkToolbarButton(state);
 
   return (
-    <ToolbarButton tooltip="Link" {...linkToolbarButtonProps} {...props}>
+    <ToolbarButton tooltip="Link" {...props}>
       <Icons.link />
     </ToolbarButton>
   );

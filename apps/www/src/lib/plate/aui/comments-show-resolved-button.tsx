@@ -1,13 +1,10 @@
 import React from 'react';
 
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useCommentsShowResolvedButtonProps } from '@/lib/@/useCommentsShowResolvedButtonProps';
+import { useCommentsShowResolvedButton } from '@/lib/@/useCommentsShowResolvedButton';
 
 export function CommentsShowResolvedButton() {
-  return (
-    <ToolbarButton
-      aria-label="Show resolved comments"
-      {...useCommentsShowResolvedButtonProps()}
-    />
-  );
+  const { props } = useCommentsShowResolvedButton();
+
+  return <ToolbarButton aria-label="Show resolved comments" {...props} />;
 }

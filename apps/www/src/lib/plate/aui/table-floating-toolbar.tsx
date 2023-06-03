@@ -4,7 +4,7 @@ import {
   isCollapsed,
   useElement,
   usePlateEditorState,
-  useRemoveNodeButtonProps,
+  useRemoveNodeButton,
 } from '@udecode/plate-common';
 import { PopoverProps } from '@udecode/plate-floating';
 import { TTableElement } from '@udecode/plate-table';
@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 
 export function TableFloatingToolbar({ children, ...props }: PopoverProps) {
   const element = useElement<TTableElement>();
-  const removeNodeButtonProps = useRemoveNodeButtonProps({ element });
+  const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -54,12 +54,7 @@ export function TableFloatingToolbar({ children, ...props }: PopoverProps) {
           </DropdownMenuPortal>
         </DropdownMenu>
 
-        <Button
-          contentEditable={false}
-          variant="ghost"
-          isMenu
-          {...removeNodeButtonProps}
-        >
+        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
           <Icons.delete className="mr-2 h-4 w-4" />
           Delete
         </Button>

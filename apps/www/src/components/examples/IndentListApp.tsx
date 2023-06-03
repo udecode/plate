@@ -8,11 +8,11 @@ import {
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
   Plate,
+  PlateElement,
   PlateProvider,
   toggleIndentList,
   withProps,
 } from '@udecode/plate';
-import { PlateElement } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';

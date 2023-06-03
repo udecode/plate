@@ -1,7 +1,7 @@
 import React from 'react';
-import { cn } from '@udecode/plate-tailwind';
 
 import { Toolbar, ToolbarProps } from '@/components/ui/toolbar';
+import { cn } from '@/lib/utils';
 
 const FixedToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
   ({ className, ...props }: ToolbarProps, ref) => {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import { useEventPlateId } from '@udecode/plate-common';
 
 import { Icons, iconVariants } from '@/components/icons';
 import {
@@ -12,7 +11,10 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useAlignDropdownMenuRadioGroupProps } from '@/lib/@/useAlignDropdownMenuRadioGroupProps';
+import {
+  useAlignDropdownMenu,
+  useAlignDropdownMenuState,
+} from '@/lib/@/useAlignDropdownMenu';
 
 const items = [
   {
@@ -33,23 +35,19 @@ const items = [
   },
 ];
 
-export interface AlignDropdownMenuProps extends DropdownMenuProps {
-  id?: string;
-}
+export interface AlignDropdownMenuProps extends DropdownMenuProps {}
 
 export function AlignDropdownMenu({
-  id,
   children,
   ...props
 }: AlignDropdownMenuProps) {
-  const alignDropdownMenuRadioGroupProps = useAlignDropdownMenuRadioGroupProps(
-    useEventPlateId(id)
-  );
+  const state = useAlignDropdownMenuState();
+  const { radioGroupProps } = useAlignDropdownMenu(state);
 
   const openState = useOpenState();
   const IconValue =
-    items.find((item) => item.value === alignDropdownMenuRadioGroupProps.value)
-      ?.icon ?? Icons.alignLeft;
+    items.find((item) => item.value === radioGroupProps.value)?.icon ??
+    Icons.alignLeft;
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -62,7 +60,7 @@ export function AlignDropdownMenu({
       <DropdownMenuContent align="start" className="min-w-0">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
-          {...alignDropdownMenuRadioGroupProps}
+          {...radioGroupProps}
         >
           {items.map(({ value: itemValue, icon: Icon }) => (
             <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCommentEditButton } from '@udecode/plate';
 import { useCommentDeleteButton } from '@udecode/plate-comments';
-import { cn } from '@udecode/plate-tailwind';
 
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export function CommentMoreDropdown() {
   const editProps = useCommentEditButton({});

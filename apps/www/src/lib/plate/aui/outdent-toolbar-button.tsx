@@ -2,13 +2,13 @@ import React from 'react';
 
 import { Icons } from '@/components/icons';
 import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useOutdentButtonProps } from '@/lib/@/useOutdentButtonProps';
+import { useOutdentButton } from '@/lib/@/useOutdentButton';
 
 export function OutdentToolbarButton() {
-  const outdentProps = useOutdentButtonProps();
+  const { props } = useOutdentButton();
 
   return (
-    <ToolbarButton tooltip="Outdent" {...outdentProps}>
+    <ToolbarButton tooltip="Outdent" {...props}>
       <Icons.outdent />
     </ToolbarButton>
   );

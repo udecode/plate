@@ -1,11 +1,12 @@
 import React from 'react';
 import { UseEmojiPickerType } from '@udecode/plate-emoji';
-import { cn } from '@udecode/plate-tailwind';
 import { EmojiPickerContent } from './EmojiPickerContent';
 import { EmojiPickerNavigation } from './EmojiPickerNavigation';
 import { EmojiPickerPreview } from './EmojiPickerPreview';
 import { EmojiPickerSearchAndClear } from './EmojiPickerSearchAndClear';
 import { EmojiPickerSearchBar } from './EmojiPickerSearchBar';
+
+import { cn } from '@/lib/utils';
 
 export function EmojiPicker({
   i18n,
