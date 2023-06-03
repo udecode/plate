@@ -10,8 +10,8 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
+import { ColorDropdownMenu } from '@/plate/aui/color-dropdown-menu';
 import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { ColorDropdownMenu } from '@/plate/bcomponents/font/ColorDropdownMenu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

@@ -12,6 +12,7 @@ import {
   usePlateReadOnly,
 } from '@udecode/plate';
 import { AlignDropdownMenu } from './align-dropdown-menu';
+import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
@@ -29,7 +30,6 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 import { Icons, iconVariants } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { EmojiDropdownMenu } from '@/plate/bcomponents/emoji/EmojiDropdownMenu';
-import { ColorDropdownMenu } from '@/plate/bcomponents/font/ColorDropdownMenu';
 
 export function FixedToolbarButtons() {
   const readOnly = usePlateReadOnly();

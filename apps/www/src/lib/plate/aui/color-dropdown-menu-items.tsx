@@ -1,6 +1,7 @@
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import { cn } from '@udecode/plate-tailwind';
+import { TColor } from './color-dropdown-menu';
 
 import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-type ColorButtonProps = {
+type ColorDropdownMenuItemProps = {
   value: string;
   isBrightColor: boolean;
   isSelected: boolean;
@@ -19,7 +20,7 @@ type ColorButtonProps = {
   name?: string;
 } & DropdownMenuItemProps;
 
-export function ColorButton({
+export function ColorDropdownMenuItem({
   name,
   value,
   isBrightColor,
@@ -27,7 +28,7 @@ export function ColorButton({
   updateColor,
   className,
   ...props
-}: ColorButtonProps) {
+}: ColorDropdownMenuItemProps) {
   const content = (
     <DropdownMenuItem
       className={cn(
@@ -57,5 +58,37 @@ export function ColorButton({
     </Tooltip>
   ) : (
     content
+  );
+}
+
+type ColorDropdownMenuItemsProps = {
+  color?: string;
+  colors: TColor[];
+  updateColor: (color: string) => void;
+} & React.HTMLAttributes<HTMLDivElement>;
+
+export function ColorDropdownMenuItems({
+  color,
+  colors,
+  updateColor,
+  className,
+  ...props
+}: ColorDropdownMenuItemsProps) {
+  return (
+    <div
+      className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
+      {...props}
+    >
+      {colors.map(({ name, value, isBrightColor }) => (
+        <ColorDropdownMenuItem
+          key={name ?? value}
+          name={name}
+          value={value}
+          isBrightColor={isBrightColor}
+          isSelected={color === value}
+          updateColor={updateColor}
+        />
+      ))}
+    </div>
   );
 }

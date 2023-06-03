@@ -2,29 +2,24 @@ import React from 'react';
 import {
   CODE_BLOCK_LANGUAGES,
   CODE_BLOCK_LANGUAGES_POPULAR,
-  CodeBlockPlugin,
-  ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
-import { useReadOnly } from 'slate-react';
 
-import { CodeBlockSelectElementRoot } from '@/lib/@/CodeBlockSelectElement';
+import {
+  useCodeBlockSelectElement,
+  useCodeBlockSelectElementState,
+} from '@/lib/@/useCodeBlockSelectElement';
 
 export function CodeBlockSelectElement() {
-  const editor = useEditorRef();
+  const state = useCodeBlockSelectElementState();
+  const { selectProps } = useCodeBlockSelectElement();
 
-  if (useReadOnly()) return null;
-
-  const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin>(
-    editor,
-    ELEMENT_CODE_BLOCK
-  );
+  if (state.readOnly) return null;
 
   return (
-    <CodeBlockSelectElementRoot>
+    <select {...selectProps}>
       <option value="">Plain text</option>
 
-      {syntaxPopularFirst &&
+      {state.syntaxPopularFirst &&
         Object.entries(CODE_BLOCK_LANGUAGES_POPULAR).map(([key, val]) => (
           <option key={key} value={key}>
             {val}
@@ -36,6 +31,6 @@ export function CodeBlockSelectElement() {
           {val}
         </option>
       ))}
-    </CodeBlockSelectElementRoot>
+    </select>
   );
 }

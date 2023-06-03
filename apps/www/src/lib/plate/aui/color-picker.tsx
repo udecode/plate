@@ -1,8 +1,8 @@
 import React from 'react';
 import { cn } from '@udecode/plate-tailwind';
-import { Colors } from './Colors';
-import { CustomColors } from './CustomColors';
-import { TColor } from './TColor';
+import { TColor } from './color-dropdown-menu';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import { ColorsCustom } from './colors-custom';
 
 import { buttonVariants } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -29,7 +29,7 @@ export function ColorPickerContent({
 }: ColorPickerProps) {
   return (
     <div className={cn('flex flex-col gap-4 p-4', className)} {...props}>
-      <CustomColors
+      <ColorsCustom
         color={color}
         colors={colors}
         customColors={customColors}
@@ -39,7 +39,11 @@ export function ColorPickerContent({
 
       <Separator />
 
-      <Colors color={color} colors={colors} updateColor={updateColor} />
+      <ColorDropdownMenuItems
+        color={color}
+        colors={colors}
+        updateColor={updateColor}
+      />
       {color && (
         <DropdownMenuItem
           className={buttonVariants({
