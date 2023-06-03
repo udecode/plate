@@ -1,14 +1,13 @@
 import React from 'react';
 import { PlateElement } from '@udecode/plate';
-import { PlateElementProps, TElement, Value } from '@udecode/plate-common';
+import { PlateElementProps } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 
-// REVIEWW
 const HrElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
-  PlateElementProps<Value, TElement>
+  PlateElementProps
 >(({ className, nodeProps, ...props }, ref) => {
   const { children } = props;
 

@@ -4,7 +4,6 @@ import { PlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@/lib/utils';
 
-// REVIEWW
 const BlockquoteElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps

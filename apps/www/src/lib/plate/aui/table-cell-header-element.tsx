@@ -1,8 +1,6 @@
 import React from 'react';
 import { TableCellElement, TableCellElementProps } from './table-cell-element';
 
-// REVIEWW
-
 const TableCellHeaderElement = React.forwardRef<
   React.ElementRef<typeof TableCellElement>,
   TableCellElementProps

@@ -1,4 +1,5 @@
 import {
+  collapseSelection,
   getPluginOptions,
   useElement,
   usePlateEditorRef,
@@ -6,6 +7,7 @@ import {
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
+import { useSelectedCells } from './useSelectedCells';
 import { useTableColSizes } from './useTableColSizes';
 
 export interface TableElementState {
@@ -54,5 +56,27 @@ export const useTableElementState = ({
     isSelectingCell: !!selectedCells,
     minColumnWidth: minColumnWidth!,
     marginLeft,
+  };
+};
+
+export const useTableElement = () => {
+  const editor = usePlateEditorRef();
+  const selectedCells = useTableStore().get.selectedCells();
+
+  useSelectedCells();
+
+  return {
+    props: {
+      onMouseDown: () => {
+        // until cell dnd is supported, we collapse the selection on mouse down
+        if (selectedCells) {
+          collapseSelection(editor);
+        }
+      },
+    },
+    colGroupProps: {
+      contentEditable: false,
+      style: { width: '100%' },
+    },
   };
 };

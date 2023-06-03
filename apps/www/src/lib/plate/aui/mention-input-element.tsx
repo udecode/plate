@@ -6,7 +6,6 @@ import { useFocused, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 
-// REVIEWW
 export interface MentionInputElementProps
   extends PlateElementProps<Value, TMentionElement> {
   onClick?: (mentionNode: any) => void;

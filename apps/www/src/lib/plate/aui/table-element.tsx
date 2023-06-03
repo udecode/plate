@@ -1,36 +1,36 @@
 import React from 'react';
-import {
-  TableElement as TableElementPrimitive,
-  TableElementRootProps,
-  useTableElementState,
-} from '@udecode/plate-table';
+import { PlateElement } from '@udecode/plate';
+import { PlateElementProps } from '@udecode/plate-common';
+import { useTableElement, useTableElementState } from '@udecode/plate-table';
 import { TableFloatingToolbar } from './table-floating-toolbar';
 
 import { cn } from '@/lib/utils';
 
-// REVIEWW
-
 const TableElement = React.forwardRef<
-  React.ElementRef<typeof TableFloatingToolbar>,
-  TableElementRootProps
+  React.ElementRef<typeof PlateElement>,
+  PlateElementProps
 >(({ className, children, ...props }, ref) => {
   const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
     useTableElementState();
+  const { props: tableProps, colGroupProps } = useTableElement();
 
   return (
-    <TableFloatingToolbar ref={ref}>
-      <TableElementPrimitive.Wrapper style={{ paddingLeft: marginLeft }}>
-        <TableElementPrimitive.Root
+    <TableFloatingToolbar>
+      <div style={{ paddingLeft: marginLeft }}>
+        <PlateElement
+          as="table"
+          ref={ref}
           className={cn(
             'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
             isSelectingCell && '[&_*::selection]:bg-none',
             className
           )}
+          {...tableProps}
           {...props}
         >
-          <TableElementPrimitive.ColGroup>
+          <colgroup {...colGroupProps}>
             {colSizes.map((width, index) => (
-              <TableElementPrimitive.Col
+              <col
                 key={index}
                 style={{
                   minWidth: minColumnWidth,
@@ -38,13 +38,11 @@ const TableElement = React.forwardRef<
                 }}
               />
             ))}
-          </TableElementPrimitive.ColGroup>
+          </colgroup>
 
-          <TableElementPrimitive.TBody className="min-w-full">
-            {children}
-          </TableElementPrimitive.TBody>
-        </TableElementPrimitive.Root>
-      </TableElementPrimitive.Wrapper>
+          <tbody className="min-w-full">{children}</tbody>
+        </PlateElement>
+      </div>
     </TableFloatingToolbar>
   );
 });
