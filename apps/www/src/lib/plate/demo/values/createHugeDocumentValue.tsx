@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
+import { TDescendant } from '@udecode/plate-common';
 /** @jsx jsx */
-import { TDescendant } from '@udecode/plate';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

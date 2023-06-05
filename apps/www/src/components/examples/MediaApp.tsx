@@ -9,7 +9,7 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

@@ -3,4 +3,5 @@
  */
 
 export * from './useLink';
+export * from './useLinkToolbarButton';
 export * from './FloatingLink/index';

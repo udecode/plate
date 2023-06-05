@@ -1,9 +1,9 @@
 import React from 'react';
 import { createExitBreakPlugin, Plate } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { withPlaceHolders } from '@/plate/aui/placeholder';
-import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { withPlaceHolders } from '@/components/plate-ui/placeholder';
+import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

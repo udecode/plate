@@ -48,7 +48,7 @@ import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
-import { FixedToolbarButtons } from '@/plate/aui/fixed-toolbar-buttons';
+import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
 import { playgroundValue } from '@/plate/demo/values/playgroundValue';
 
 export const examples = {

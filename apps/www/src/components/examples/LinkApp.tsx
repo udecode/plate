@@ -1,8 +1,8 @@
 import React from 'react';
 import { createLinkPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { LinkToolbarButton } from '@/plate/aui/link-toolbar-button';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { LinkToolbarButton } from '@/components/plate-ui/link-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

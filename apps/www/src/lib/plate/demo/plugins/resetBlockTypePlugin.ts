@@ -1,15 +1,17 @@
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
-  ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_PARAGRAPH,
-  ELEMENT_TODO_LI,
-  isBlockAboveEmpty,
   isCodeBlockEmpty,
-  isSelectionAtBlockStart,
   isSelectionAtCodeBlockStart,
-  ResetNodePlugin,
   unwrapCodeBlock,
-} from '@udecode/plate';
+} from '@udecode/plate-code-block';
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from '@udecode/plate-common';
+import { ELEMENT_TODO_LI } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { MyPlatePlugin } from '@/types/plate.types';
 

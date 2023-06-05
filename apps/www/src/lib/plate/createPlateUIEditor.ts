@@ -4,7 +4,7 @@ import {
   PlateEditor,
   TEditor,
   Value,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
 import { createPlateUI } from './createPlateUI';
 
 /**

@@ -1,13 +1,10 @@
+import { AutoformatBlockRule } from '@udecode/plate-autoformat';
 import {
-  AutoformatBlockRule,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-  getParentNode,
-  isElement,
-  isType,
-  toggleList,
-  unwrapList,
-} from '@udecode/plate';
+} from '@udecode/plate-code-block';
+import { getParentNode, isElement, isType } from '@udecode/plate-common';
+import { toggleList, unwrapList } from '@udecode/plate-list';
 
 import { MyEditor, MyValue } from '@/types/plate.types';
 

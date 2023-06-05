@@ -1,8 +1,8 @@
 import React from 'react';
 import { createIndentPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { OutdentToolbarButton } from '@/plate/aui/outdent-toolbar-button';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { OutdentToolbarButton } from '@/components/plate-ui/outdent-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

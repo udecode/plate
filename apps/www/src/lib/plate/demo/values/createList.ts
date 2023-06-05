@@ -1,10 +1,5 @@
-import {
-  ELEMENT_LI,
-  ELEMENT_LIC,
-  ELEMENT_UL,
-  TElement,
-  TText,
-} from '@udecode/plate';
+import { TElement, TText } from '@udecode/plate-common';
+import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_UL } from '@udecode/plate-list';
 
 export const createList = (
   items: string[],

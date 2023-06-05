@@ -1,8 +1,8 @@
 import React from 'react';
 import { createLineHeightPlugin, Plate, PlateProvider } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { LineHeightDropdownMenu } from '@/plate/aui/line-height-dropdown-menu';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { LineHeightDropdownMenu } from '@/components/plate-ui/line-height-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

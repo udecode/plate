@@ -1,12 +1,11 @@
+import { isBlock, setNodes } from '@udecode/plate-common';
 import {
   ELEMENT_LI,
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  isBlock,
-  setNodes,
   TTodoListItemElement,
-} from '@udecode/plate';
+} from '@udecode/plate-list';
 import { formatList, preFormat } from './autoformatUtils';
 
 import { MyAutoformatRule } from '@/types/plate.types';

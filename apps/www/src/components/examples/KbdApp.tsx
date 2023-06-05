@@ -7,8 +7,8 @@ import {
 } from '@udecode/plate';
 
 import { Icons } from '@/components/icons';
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { MarkToolbarButton } from '@/plate/aui/mark-toolbar-button';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { MarkToolbarButton } from '@/components/plate-ui/mark-toolbar-button';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

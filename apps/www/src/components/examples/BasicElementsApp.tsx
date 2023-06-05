@@ -8,8 +8,8 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';

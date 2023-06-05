@@ -1,6 +1,12 @@
 import React from 'react';
+import { AutoformatRule } from '@udecode/plate-autoformat';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
-  AutoformatRule,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+} from '@udecode/plate-code-block';
+import { TCommentText } from '@udecode/plate-comments';
+import {
   createPlateEditor,
   CreatePlateEditorOptions,
   createPluginFactory,
@@ -13,26 +19,6 @@ import {
   EElement,
   EElementEntry,
   EElementOrText,
-  ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_HR,
-  ELEMENT_IMAGE,
-  ELEMENT_LI,
-  ELEMENT_LINK,
-  ELEMENT_MEDIA_EMBED,
-  ELEMENT_MENTION,
-  ELEMENT_MENTION_INPUT,
-  ELEMENT_OL,
-  ELEMENT_PARAGRAPH,
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TODO_LI,
-  ELEMENT_TR,
-  ELEMENT_UL,
   EMarks,
   ENode,
   ENodeEntry,
@@ -54,18 +40,9 @@ import {
   PlateProps,
   PluginOptions,
   SerializeHtml,
-  TCommentText,
   TElement,
-  TImageElement,
-  TLinkElement,
-  TMediaEmbedElement,
-  TMentionElement,
-  TMentionInputElement,
   TNodeEntry,
   TReactEditor,
-  TTableElement,
-  TText,
-  TTodoListItemElement,
   useEditorRef,
   useEditorState,
   usePlateActions,
@@ -74,7 +51,38 @@ import {
   usePlateSelectors,
   usePlateStates,
   WithOverride,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
+import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { ELEMENT_LINK, TLinkElement } from '@udecode/plate-link';
+import {
+  ELEMENT_LI,
+  ELEMENT_OL,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
+  TTodoListItemElement,
+} from '@udecode/plate-list';
+import {
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  TImageElement,
+  TMediaEmbedElement,
+} from '@udecode/plate-media';
+import {
+  ELEMENT_MENTION,
+  ELEMENT_MENTION_INPUT,
+  TMentionElement,
+  TMentionInputElement,
+} from '@udecode/plate-mention';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import {
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TR,
+  TTableElement,
+} from '@udecode/plate-table';
+
+import { TText } from '@/../../../packages/slate/dist';
 // import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,

@@ -1,4 +1,4 @@
-import { TComment } from '@udecode/plate';
+import { TComment } from '@udecode/plate-comments';
 
 import { MyValue } from '@/types/plate.types';
 

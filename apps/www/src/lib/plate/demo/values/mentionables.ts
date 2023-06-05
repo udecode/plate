@@ -1,4 +1,4 @@
-import { TComboboxItem } from '@udecode/plate';
+import { TComboboxItem } from '@udecode/plate-combobox';
 
 export const MENTIONABLES: TComboboxItem[] = [
   { key: '0', text: 'Aayla Secura' },

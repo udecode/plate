@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate';
 import { createDndPlugin } from '@udecode/plate-dnd';
 
-import { withDraggables } from '@/plate/aui/with-draggables';
+import { withDraggables } from '@/components/plate-ui/with-draggables';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';

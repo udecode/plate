@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { ELEMENT_HR } from '@udecode/plate';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

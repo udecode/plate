@@ -1,71 +1,80 @@
 import {
-  DefaultPlatePluginKey,
-  ELEMENT_BLOCKQUOTE,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
+} from '@udecode/plate-basic-marks';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
+} from '@udecode/plate-code-block';
+import { MARK_COMMENT } from '@udecode/plate-comments';
+import {
+  PlateElement,
+  PlateLeaf,
+  PlatePluginComponent,
+  withProps,
+} from '@udecode/plate-common';
+import { KEY_EMOJI } from '@udecode/plate-emoji';
+import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
+import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
+import {
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-  ELEMENT_HR,
-  ELEMENT_IMAGE,
+} from '@udecode/plate-heading';
+import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_LINK } from '@udecode/plate-link';
+import {
   ELEMENT_LI,
-  ELEMENT_LINK,
-  ELEMENT_MEDIA_EMBED,
-  ELEMENT_MENTION,
-  ELEMENT_MENTION_INPUT,
   ELEMENT_OL,
-  ELEMENT_PARAGRAPH,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
+} from '@udecode/plate-list';
+import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
-  ELEMENT_TODO_LI,
   ELEMENT_TR,
-  ELEMENT_UL,
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_COMMENT,
-  MARK_HIGHLIGHT,
-  MARK_ITALIC,
-  MARK_KBD,
-  MARK_SEARCH_HIGHLIGHT,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
-  PlateElement,
-  PlateLeaf,
-  PlatePluginComponent,
-  withProps,
-} from '@udecode/plate';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { BlockquoteElement } from './aui/blockquote-element';
-import { CodeBlockElement } from './aui/code-block-element';
-import { CodeLeaf } from './aui/code-leaf';
-import { CodeLineElement } from './aui/code-line-element';
-import { CodeSyntaxLeaf } from './aui/code-syntax-leaf';
-import { CommentLeaf } from './aui/comment-leaf';
-import { ExcalidrawElement } from './aui/excalidraw-element';
-import { HeadingElement } from './aui/heading-element';
-import { HighlightLeaf } from './aui/highlight-leaf';
-import { HrElement } from './aui/hr-element';
-import { ImageElement } from './aui/image-element';
-import { KbdLeaf } from './aui/kbd-leaf';
-import { LinkElement } from './aui/link-element';
-import { ListElement } from './aui/list-element';
-import { MediaEmbedElement } from './aui/media-embed-element';
-import { MentionElement } from './aui/mention-element';
-import { MentionInputElement } from './aui/mention-input-element';
-import { ParagraphElement } from './aui/paragraph-element';
-import { SearchHighlightLeaf } from './aui/search-highlight-leaf';
-import { TableCellElement } from './aui/table-cell-element';
-import { TableCellHeaderElement } from './aui/table-cell-header-element';
-import { TableElement } from './aui/table-element';
-import { TableRowElement } from './aui/table-row-element';
-import { TodoListElement } from './aui/todo-list-element';
+} from '@udecode/plate-table';
+
+import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
+import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
+import { CodeLeaf } from '@/components/plate-ui/code-leaf';
+import { CodeLineElement } from '@/components/plate-ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
+import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
+import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
+import { HeadingElement } from '@/components/plate-ui/heading-element';
+import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
+import { HrElement } from '@/components/plate-ui/hr-element';
+import { ImageElement } from '@/components/plate-ui/image-element';
+import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
+import { LinkElement } from '@/components/plate-ui/link-element';
+import { ListElement } from '@/components/plate-ui/list-element';
+import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
+import { MentionElement } from '@/components/plate-ui/mention-element';
+import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
+import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
+import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
+import { TableCellElement } from '@/components/plate-ui/table-cell-element';
+import { TableCellHeaderElement } from '@/components/plate-ui/table-cell-header-element';
+import { TableElement } from '@/components/plate-ui/table-element';
+import { TableRowElement } from '@/components/plate-ui/table-row-element';
+import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<
@@ -120,3 +129,39 @@ export const createPlateUI = <T extends string = string>(
 
   return components as Record<DefaultPlatePluginKey | T, PlatePluginComponent>;
 };
+
+export type DefaultPlatePluginKey =
+  | typeof ELEMENT_BLOCKQUOTE
+  | typeof ELEMENT_CODE_BLOCK
+  | typeof ELEMENT_CODE_LINE
+  | typeof KEY_EMOJI
+  | typeof ELEMENT_H1
+  | typeof ELEMENT_H2
+  | typeof ELEMENT_H3
+  | typeof ELEMENT_H4
+  | typeof ELEMENT_H5
+  | typeof ELEMENT_H6
+  | typeof ELEMENT_IMAGE
+  | typeof ELEMENT_LI
+  | typeof ELEMENT_LINK
+  | typeof ELEMENT_MEDIA_EMBED
+  | typeof ELEMENT_MENTION
+  | typeof ELEMENT_MENTION_INPUT
+  | typeof ELEMENT_OL
+  | typeof ELEMENT_PARAGRAPH
+  | typeof ELEMENT_TABLE
+  | typeof ELEMENT_TD
+  | typeof ELEMENT_TH
+  | typeof ELEMENT_TODO_LI
+  | typeof ELEMENT_TR
+  | typeof ELEMENT_UL
+  | typeof MARK_BOLD
+  | typeof MARK_CODE
+  | typeof MARK_HIGHLIGHT
+  | typeof MARK_ITALIC
+  | typeof MARK_KBD
+  | typeof MARK_SEARCH_HIGHLIGHT
+  | typeof MARK_STRIKETHROUGH
+  | typeof MARK_SUBSCRIPT
+  | typeof MARK_SUPERSCRIPT
+  | typeof MARK_UNDERLINE;

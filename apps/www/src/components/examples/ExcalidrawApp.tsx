@@ -5,7 +5,7 @@ import {
   ELEMENT_EXCALIDRAW,
 } from '@udecode/plate-excalidraw';
 
-import { ExcalidrawElement } from '@/plate/aui/excalidraw-element';
+import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { excalidrawValue } from '@/plate/demo/values/excalidrawValue';

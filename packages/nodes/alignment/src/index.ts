@@ -4,4 +4,5 @@
 
 export * from './createAlignPlugin';
 export * from './types';
+export * from './hooks/index';
 export * from './transforms/index';

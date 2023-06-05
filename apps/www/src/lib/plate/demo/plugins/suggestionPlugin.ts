@@ -1,7 +1,7 @@
-import { InjectComponent } from '@udecode/plate';
+import { InjectComponent } from '@udecode/plate-common';
 import { SuggestionPlugin } from '@udecode/plate-suggestion';
 
-import { InjectSuggestion } from '@/plate/aui/inject-suggestion';
+import { InjectSuggestion } from '@/components/plate-ui/inject-suggestion';
 import { MyPlatePlugin, MyValue } from '@/types/plate.types';
 
 export const suggestionPlugin: Partial<MyPlatePlugin<SuggestionPlugin>> = {

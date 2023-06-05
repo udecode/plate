@@ -8,6 +8,7 @@ export * from './normalizeIndentList';
 export * from './onKeyDownIndentList';
 export * from './types';
 export * from './withIndentList';
+export * from './hooks/index';
 export * from './normalizers/index';
 export * from './queries/index';
 export * from './transforms/index';

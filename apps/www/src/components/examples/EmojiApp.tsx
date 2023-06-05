@@ -6,8 +6,8 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { EmojiDropdownMenu } from '@/plate/bcomponents/emoji/EmojiDropdownMenu';
+import { EmojiDropdownMenu } from '@/components/plate-ui/emoji-dropdown-menu';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import {
   comboboxActions,
-  isDefined,
+  ComboboxItemProps,
   useComboboxSelectors,
-} from '@udecode/plate';
+} from '@udecode/plate-combobox';
+import { isDefined } from '@udecode/plate-common';
 
-import { ComboboxItemProps } from '@/lib/@/useComboboxItem';
-import { Combobox } from '@/plate/aui/combobox';
+import { Combobox } from '@/components/plate-ui/combobox';
 
 // WIP
 

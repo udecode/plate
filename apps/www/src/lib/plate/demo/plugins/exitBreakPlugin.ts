@@ -1,4 +1,5 @@
-import { ExitBreakPlugin, KEYS_HEADING } from '@udecode/plate';
+import { ExitBreakPlugin } from '@udecode/plate-break';
+import { KEYS_HEADING } from '@udecode/plate-heading';
 
 import { MyPlatePlugin } from '@/types/plate.types';
 

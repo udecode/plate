@@ -1,4 +1,4 @@
-import { AutoformatPlugin } from '@udecode/plate';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import { autoformatRules } from './autoformatRules';
 
 import { MyEditor, MyPlatePlugin, MyValue } from '@/types/plate.types';

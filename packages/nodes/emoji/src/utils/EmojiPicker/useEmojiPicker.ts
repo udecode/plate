@@ -52,7 +52,7 @@ export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   handleCategoryClick: (id: EmojiCategoryList) => void;
   visibleCategories: MapEmojiCategoryList;
   refs: MutableRefs;
-  settings: EmojiSettingsType;
+  settings?: EmojiSettingsType;
   focusedCategory?: EmojiCategoryList;
   emoji?: Emoji;
   styles?: any;

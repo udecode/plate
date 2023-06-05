@@ -8,11 +8,11 @@ import {
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
 
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { CloudAttachmentElement } from '@/plate/bcomponents/cloud/CloudAttachmentElement';
-import { CloudImageElement } from '@/plate/bcomponents/cloud/CloudImageElement';
-import { CloudToolbarButtons } from '@/plate/bcomponents/cloud/CloudToolbarButtons';
-import { uploadStoreInitialValue } from '@/plate/bcomponents/cloud/uploadStoreInitialValue';
+import { CloudAttachmentElement } from '@/components/plate-ui/cloud-attachment-element';
+import { CloudImageElement } from '@/components/plate-ui/cloud-image-element';
+import { CloudToolbarButtons } from '@/components/plate-ui/cloud-toolbar-buttons';
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

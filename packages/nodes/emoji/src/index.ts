@@ -7,5 +7,6 @@ export * from './createEmojiPlugin';
 export * from './types';
 export * from './withEmoji';
 export * from './handlers/index';
+export * from './hooks/index';
 export * from './storage/index';
 export * from './utils/index';

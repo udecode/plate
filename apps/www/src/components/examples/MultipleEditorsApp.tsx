@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
 
+import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
+import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { FixedToolbar } from '@/plate/aui/fixed-toolbar';
-import { TurnIntoDropdownMenu } from '@/plate/aui/turn-into-dropdown-menu';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';

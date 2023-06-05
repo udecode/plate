@@ -6,10 +6,10 @@ import {
   PlateProvider,
 } from '@udecode/plate';
 
-import { CommentLeaf } from '@/plate/aui/comment-leaf';
-import { CommentsPopover } from '@/plate/aui/comments-popover';
-import { FloatingToolbarButtons } from '@/plate/aui/floating-toolbar-buttons';
-import { CommentsProvider } from '@/plate/demo/CommentsProvider';
+import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
+import { CommentsPopover } from '@/components/plate-ui/comments-popover';
+import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
+import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

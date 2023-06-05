@@ -7,8 +7,8 @@ import {
   Plate,
 } from '@udecode/plate';
 
-import { MentionCombobox } from '@/plate/aui/mention-combobox';
-import { MentionElement } from '@/plate/aui/mention-element';
+import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
+import { MentionElement } from '@/components/plate-ui/mention-element';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

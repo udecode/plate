@@ -1,12 +1,9 @@
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_LI,
-  ELEMENT_TABLE,
-  isSelectionAtBlockStart,
-  KEY_LIST_STYLE_TYPE,
-  TabbablePlugin,
-} from '@udecode/plate';
-import { someNode } from '@udecode/plate-common';
+import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
+import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
+import { ELEMENT_LI } from '@udecode/plate-list';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { TabbableElement } from './TabbableElement';
 
 import { MyPlatePlugin } from '@/types/plate.types';

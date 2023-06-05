@@ -1,9 +1,7 @@
-import {
-  ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_TD,
-  SoftBreakPlugin,
-} from '@udecode/plate';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { SoftBreakPlugin } from '@udecode/plate-break';
+import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { ELEMENT_TD } from '@udecode/plate-table';
 
 import { MyPlatePlugin } from '@/types/plate.types';
 

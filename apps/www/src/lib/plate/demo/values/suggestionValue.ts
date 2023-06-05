@@ -1,4 +1,4 @@
-import { SuggestionUser, TSuggestion } from '@udecode/plate';
+import { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
 
 import { MyValue } from '@/types/plate.types';
 

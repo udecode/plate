@@ -1,9 +1,7 @@
-import {
-  createBasicElementsPlugin,
-  createComboboxPlugin,
-  createImagePlugin,
-  createSelectOnBackspacePlugin,
-} from '@udecode/plate';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createImagePlugin } from '@udecode/plate-media';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { basicMarksPlugins } from './basicMarksPlugins';
 import { selectOnBackspacePlugin } from './selectOnBackspacePlugin';
 
