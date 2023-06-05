@@ -25,14 +25,19 @@ const getFoundText = <V extends Value>(
 ) => getEditorString(editor, getRange(editor, start, end));
 
 const isBreakingCharInText = (text: string) => /\s/.test(text);
+const isNextCharacterInSameLine = (
+  firstPoint: BasePoint,
+  secondPoint?: BasePoint
+) => firstPoint?.path[0] === secondPoint?.path[0];
 
 export const getFindTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
   emojiTriggeringController: IEmojiTriggeringController
 ) => (text = '') => {
-  const selection = editor.selection as BaseRange;
-  const startPoint = editor.selection as BaseRange;
   let currentText = text;
+  const selection = editor.selection as BaseRange;
+  const startRange = editor.selection as BaseRange;
+  const startPoint = startRange.anchor;
 
   let endPoint = selection.anchor;
   let nextPoint;
@@ -45,7 +50,13 @@ export const getFindTriggeringInput = <V extends Value>(
     if (emojiTriggeringController.hasTriggeringMark) break;
 
     nextPoint = getNextPoint(editor, endPoint);
-    const foundText = getFoundText(editor, startPoint, nextPoint);
+
+    if (!isNextCharacterInSameLine(startPoint, nextPoint)) {
+      emojiTriggeringController.reset();
+      break;
+    }
+
+    const foundText = getFoundText(editor, startRange, nextPoint);
 
     endPoint = nextPoint!;
     currentText = `${foundText}${text}`;
