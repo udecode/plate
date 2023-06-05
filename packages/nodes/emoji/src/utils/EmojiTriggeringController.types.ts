@@ -11,4 +11,5 @@ export interface IEmojiTriggeringController {
   reset: () => void;
   getOptions: () => EmojiTriggeringControllerOptions;
   getTextSize: () => number;
+  isEnclosingTriggeringCharacter: (char: string) => boolean;
 }
