@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react';
 import {
-  createComponentAs,
   findNodePath,
   getPluginOptions,
-  HTMLPropsAs,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
@@ -30,21 +28,23 @@ import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
-export type TableCellElementResizableProps = HTMLPropsAs<'div'> &
-  Pick<TableCellElementState, 'colIndex' | 'rowIndex' | 'readOnly'> & {
-    /**
-     * Resize by step instead of by pixel.
-     */
-    step?: number;
+export type TableCellElementResizableProps = Pick<
+  TableCellElementState,
+  'colIndex' | 'rowIndex' | 'readOnly'
+> & {
+  /**
+   * Resize by step instead of by pixel.
+   */
+  step?: number;
 
-    /**
-     * Overrides for X and Y axes.
-     */
-    stepX?: number;
-    stepY?: number;
-  };
+  /**
+   * Overrides for X and Y axes.
+   */
+  stepX?: number;
+  stepY?: number;
+};
 
-export const useTableCellElementResizableProps = ({
+export const useTableCellElementResizable = ({
   colIndex,
   rowIndex,
   step,
@@ -248,26 +248,25 @@ export const useTableCellElementResizableProps = ({
   };
 };
 
-export const TableCellElementResizable =
-  createComponentAs<TableCellElementResizableProps>((props) => {
-    const editor = usePlateEditorRef();
-    const { disableMarginLeft } = getPluginOptions<TablePlugin>(
-      editor,
-      ELEMENT_TABLE
-    );
-    const { readOnly, colIndex } = props;
-    const { rightProps, bottomProps, leftProps } =
-      useTableCellElementResizableProps(props);
+export function TableCellElementResizable(
+  props: TableCellElementResizableProps
+) {
+  const editor = usePlateEditorRef();
+  const { disableMarginLeft } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
+  const { readOnly, colIndex } = props;
+  const { rightProps, bottomProps, leftProps } =
+    useTableCellElementResizable(props);
 
-    const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
+  const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
-    return (
-      !readOnly && (
-        <>
-          <ResizeHandle {...rightProps} />
-          <ResizeHandle {...bottomProps} />
-          {hasLeftHandle && <ResizeHandle {...leftProps} />}
-        </>
-      )
-    );
-  });
+  return !readOnly ? (
+    <>
+      <ResizeHandle {...rightProps} />
+      <ResizeHandle {...bottomProps} />
+      {hasLeftHandle && <ResizeHandle {...leftProps} />}
+    </>
+  ) : null;
+}

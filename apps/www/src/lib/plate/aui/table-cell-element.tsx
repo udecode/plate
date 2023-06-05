@@ -1,20 +1,21 @@
 import React from 'react';
+import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 import {
-  TableCellElement as TableCellElementPrimitive,
-  TableCellElementRootProps,
+  TableCellElementResizable,
+  useTableCellElement,
   useTableCellElementState,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
 
 // REVIEWW
-export interface TableCellElementProps extends TableCellElementRootProps {
+export interface TableCellElementProps extends PlateElementProps {
   hideBorder?: boolean;
   isHeader?: boolean;
 }
 
 const TableCellElement = React.forwardRef<
-  React.ElementRef<typeof TableCellElementPrimitive.Root>,
+  React.ElementRef<typeof PlateElement>,
   TableCellElementProps
 >(({ className, ...props }, ref) => {
   const { children, hideBorder, isHeader, ...rootProps } = props;
@@ -29,9 +30,10 @@ const TableCellElement = React.forwardRef<
     rowSize,
     borders,
   } = useTableCellElementState();
+  const { props: cellProps } = useTableCellElement({ element: props.element });
 
   return (
-    <TableCellElementPrimitive.Root
+    <PlateElement
       ref={ref}
       asAlias={isHeader ? 'th' : 'td'}
       className={cn(
@@ -58,26 +60,30 @@ const TableCellElement = React.forwardRef<
           ),
         className
       )}
+      {...cellProps}
       {...rootProps}
     >
-      <TableCellElementPrimitive.Content
+      <div
         className="relative z-20 box-border h-full px-3 py-2"
         style={{
           minHeight: rowSize,
         }}
       >
         {children}
-      </TableCellElementPrimitive.Content>
+      </div>
 
-      <TableCellElementPrimitive.ResizableWrapper className="group absolute top-0 h-full w-full select-none">
-        <TableCellElementPrimitive.Resizable
+      <div
+        className="group absolute top-0 h-full w-full select-none"
+        contentEditable={false}
+      >
+        <TableCellElementResizable
           colIndex={colIndex}
           rowIndex={rowIndex}
           readOnly={readOnly}
         />
 
         {!readOnly && hovered && (
-          <TableCellElementPrimitive.Handle
+          <div
             className={cn(
               'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
               'right-[-1.5px]'
@@ -86,15 +92,15 @@ const TableCellElement = React.forwardRef<
         )}
 
         {!readOnly && hoveredLeft && (
-          <TableCellElementPrimitive.Handle
+          <div
             className={cn(
               'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
               'left-[-1.5px]'
             )}
           />
         )}
-      </TableCellElementPrimitive.ResizableWrapper>
-    </TableCellElementPrimitive.Root>
+      </div>
+    </PlateElement>
   );
 });
 TableCellElement.displayName = 'TableCellElement';

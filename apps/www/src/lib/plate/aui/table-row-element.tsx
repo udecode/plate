@@ -1,27 +1,25 @@
 import React from 'react';
-import {
-  TableRowElement as TableRowElementPrimitive,
-  TableRowElementRootProps,
-} from '@udecode/plate-table';
+import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@/lib/utils';
 
-export interface PlateTableRowElementProps extends TableRowElementRootProps {
+export interface PlateTableRowElementProps extends PlateElementProps {
   hideBorder?: boolean;
 }
 
 const TableRowElement = React.forwardRef<
-  React.ElementRef<typeof TableRowElementPrimitive.Root>,
+  React.ElementRef<typeof PlateElement>,
   PlateTableRowElementProps
 >(({ hideBorder, children, ...props }, ref) => {
   return (
-    <TableRowElementPrimitive.Root
+    <PlateElement
+      as="tr"
       ref={ref}
       className={cn('h-full', hideBorder && 'border-none')}
       {...props}
     >
       {children}
-    </TableRowElementPrimitive.Root>
+    </PlateElement>
   );
 });
 TableRowElement.displayName = 'TableRowElement';

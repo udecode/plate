@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
@@ -67,5 +68,23 @@ export const useTableCellElementState = ({
     hoveredLeft: isFirstCell && hoveredColIndex === -1,
     rowSize,
     borders,
+  };
+};
+
+export const useTableCellElement = ({
+  element,
+}: {
+  element: TTableCellElement;
+}) => {
+  const setHoveredColIndex = useTableStore().set.hoveredColIndex();
+
+  useEffect(() => {
+    setHoveredColIndex(null);
+  }, [element, setHoveredColIndex]);
+
+  return {
+    props: {
+      colSpan: element.colSpan,
+    },
   };
 };
