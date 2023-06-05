@@ -24,19 +24,24 @@ export function HeadingElement({
   className,
   variant = 'h1',
   isFirstBlock,
+  children,
   ...props
 }: PlateElementProps & VariantProps<typeof headingVariants>) {
   const { element, editor } = props;
 
+  const Element = variant!;
+
   return (
     <PlateElement
-      as={variant}
+      asChild
       className={headingVariants({
         variant,
         className,
         isFirstBlock: element === editor.children[0],
       })}
       {...props}
-    />
+    >
+      <Element>{children}</Element>
+    </PlateElement>
   );
 }

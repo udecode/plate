@@ -1,5 +1,5 @@
 import React from 'react';
-import { deselectEditor, useEditorRef } from '@udecode/plate-common';
+import { deselectEditor, usePlateEditorRef } from '@udecode/plate-common';
 import { blockSelectionActions } from '../blockSelectionStore';
 import {
   SelectionArea,
@@ -12,7 +12,7 @@ export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {}
 export const useBlockSelectionArea = (
   props: BlockSelectionAreaProps
 ): SelectionAreaProps => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
 
   const onStart = ({ event, selection }: SelectionEvent) => {
     deselectEditor(editor);

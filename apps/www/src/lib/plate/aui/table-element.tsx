@@ -18,7 +18,7 @@ const TableElement = React.forwardRef<
     <TableFloatingToolbar>
       <div style={{ paddingLeft: marginLeft }}>
         <PlateElement
-          as="table"
+          asChild
           ref={ref}
           className={cn(
             'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
@@ -28,19 +28,21 @@ const TableElement = React.forwardRef<
           {...tableProps}
           {...props}
         >
-          <colgroup {...colGroupProps}>
-            {colSizes.map((width, index) => (
-              <col
-                key={index}
-                style={{
-                  minWidth: minColumnWidth,
-                  width: width || undefined,
-                }}
-              />
-            ))}
-          </colgroup>
+          <table>
+            <colgroup {...colGroupProps}>
+              {colSizes.map((width, index) => (
+                <col
+                  key={index}
+                  style={{
+                    minWidth: minColumnWidth,
+                    width: width || undefined,
+                  }}
+                />
+              ))}
+            </colgroup>
 
-          <tbody className="min-w-full">{children}</tbody>
+            <tbody className="min-w-full">{children}</tbody>
+          </table>
         </PlateElement>
       </div>
     </TableFloatingToolbar>

@@ -6,7 +6,7 @@ jsx;
 
 export const mentionValue: any = (
   <fragment>
-    <hh2>💬 Mention</hh2>
+    <hh2>＠ Mention</hh2>
     <hp>
       This example shows how you might implement a simple @-mentions feature
       that lets users autocomplete mentioning a user by their username. Which,

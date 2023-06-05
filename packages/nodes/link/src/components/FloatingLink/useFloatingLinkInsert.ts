@@ -1,18 +1,19 @@
-import { useEffect } from 'react';
+import { ChangeEventHandler, useCallback, useEffect } from 'react';
 import {
   focusEditor,
   getPluginOptions,
-  HTMLPropsAs,
   useComposedRef,
-  useEditorRef,
   useHotkeys,
   useOnClickOutside,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
-import { getSelectionBoundingClientRect } from '@udecode/plate-floating';
+import {
+  getSelectionBoundingClientRect,
+  UseVirtualFloatingOptions,
+} from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
-import { FloatingLinkProps } from './FloatingLink';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -21,11 +22,12 @@ import {
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
-export const useFloatingLinkInsert = ({
+export const useFloatingLinkInsertState = ({
   floatingOptions,
-  ...props
-}: FloatingLinkProps): HTMLPropsAs<'div'> => {
-  const editor = useEditorRef();
+}: {
+  floatingOptions?: UseVirtualFloatingOptions;
+} = {}) => {
+  const editor = usePlateEditorRef();
   const focused = useFocused();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
@@ -60,13 +62,14 @@ export const useFloatingLinkInsert = ({
     }
   );
 
-  const { update, style, refs } = useVirtualFloatingLink({
+  const floating = useVirtualFloatingLink({
     editorId: editor.id,
     open: open && mode === 'insert',
     getBoundingClientRect: getSelectionBoundingClientRect,
     whileElementsMounted: () => {},
     ...floatingOptions,
   });
+  const { update } = floating;
 
   // wait for update before focusing input
   useEffect(() => {
@@ -81,11 +84,32 @@ export const useFloatingLinkInsert = ({
   useFloatingLinkEscape();
 
   return {
-    style: {
-      ...style,
-      zIndex: 1,
+    floating,
+    refClickOutside: ref,
+  };
+};
+
+export const useFloatingLinkInsert = (
+  state: ReturnType<typeof useFloatingLinkInsertState>
+) => {
+  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    floatingLinkActions.text(e.target.value);
+  }, []);
+
+  return {
+    ref: useComposedRef<HTMLDivElement>(
+      state.floating.refs.setFloating,
+      state.refClickOutside
+    ),
+    props: {
+      style: {
+        ...state.floating.style,
+        zIndex: 1,
+      },
     },
-    ...props,
-    ref: useComposedRef<HTMLElement | null>(props.ref, refs.setFloating, ref),
+    textInputProps: {
+      onChange,
+      defaultValue: floatingLinkSelectors.text(),
+    },
   };
 };

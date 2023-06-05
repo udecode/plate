@@ -13,12 +13,12 @@ const TableRowElement = React.forwardRef<
 >(({ hideBorder, children, ...props }, ref) => {
   return (
     <PlateElement
-      as="tr"
+      asChild
       ref={ref}
       className={cn('h-full', hideBorder && 'border-none')}
       {...props}
     >
-      {children}
+      <tr>{children}</tr>
     </PlateElement>
   );
 });

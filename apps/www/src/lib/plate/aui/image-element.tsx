@@ -1,13 +1,20 @@
 import React from 'react';
-import { Box, PlateElementProps, Value } from '@udecode/plate-common';
+import {
+  Box,
+  PlateElement,
+  PlateElementProps,
+  Value,
+} from '@udecode/plate-common';
 import { ElementPopover, PopoverProps } from '@udecode/plate-floating';
 import {
   Caption,
+  CaptionTextarea,
   ELEMENT_IMAGE,
   Image,
-  Media,
+  Resizable,
   ResizableProps,
   TImageElement,
+  useMediaState,
 } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import {
@@ -71,6 +78,8 @@ export function ImageElement({ className, ...props }: ImageElementProps) {
   const selected = useSelected();
   const readOnly = useReadOnly();
 
+  useMediaState();
+
   return (
     <ElementPopover
       content={
@@ -79,9 +88,9 @@ export function ImageElement({ className, ...props }: ImageElementProps) {
       floatingOptions={mediaFloatingOptions}
       {...popoverProps}
     >
-      <Media.Root className={cn('py-2.5', className)} {...props}>
+      <PlateElement className={cn('py-2.5', className)} {...props}>
         <figure className="group relative m-0" contentEditable={false}>
-          <Media.Resizable
+          <Resizable
             className={cn(
               align === 'center' && 'mx-auto',
               align === 'right' && 'ml-auto'
@@ -128,16 +137,16 @@ export function ImageElement({ className, ...props }: ImageElementProps) {
                 nodeProps?.className
               )}
             />
-          </Media.Resizable>
+          </Resizable>
 
           {!caption.disabled && (
-            <Caption.Root
+            <Caption
               className={cn(
                 align === 'center' && 'mx-auto',
                 align === 'right' && 'ml-auto'
               )}
             >
-              <Caption.Textarea
+              <CaptionTextarea
                 className={cn(
                   'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',
                   'focus:outline-none focus:[&::placeholder]:opacity-0',
@@ -147,12 +156,12 @@ export function ImageElement({ className, ...props }: ImageElementProps) {
                 placeholder={caption.placeholder ?? 'Write a caption...'}
                 readOnly={(!ignoreReadOnly && readOnly) || !!caption.readOnly}
               />
-            </Caption.Root>
+            </Caption>
           )}
         </figure>
 
         {children}
-      </Media.Root>
+      </PlateElement>
     </ElementPopover>
   );
 }

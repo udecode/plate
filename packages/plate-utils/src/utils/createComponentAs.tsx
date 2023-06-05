@@ -2,6 +2,7 @@
 import React, { forwardRef, ReactElement } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { isDefined } from '@udecode/utils';
+import { useComposedRef } from '../hooks';
 import { AsProps, Children, Component, Props } from '../types/index';
 
 /**
@@ -30,10 +31,15 @@ export const createComponentAs = <O extends AsProps>(
   return forwardRef(Role as any) as unknown as Component<O>;
 };
 
-export const createSlotComponent = <T, P = {}>(element: any) =>
+export const createSlotComponent = <
+  T extends React.ElementType,
+  P extends React.ComponentProps<T>
+>(
+  element: T
+) =>
   // eslint-disable-next-line react/display-name
   React.forwardRef<
-    T,
+    any,
     P & {
       asChild?: boolean;
     }
@@ -44,11 +50,45 @@ export const createSlotComponent = <T, P = {}>(element: any) =>
   });
 
 type StateHook<O> = (options: O) => any;
-type PropsHook<S> = (state: S) => any;
+type PropsHook<S> = (state: S) => {
+  ref?: any;
+  props?: any;
+  hidden?: boolean;
+  [key: string]: unknown;
+};
 
-export const createPrimitiveComponent =
-  <T, P = {}>(element: React.ElementType) =>
-  <S = {}, O = {}>({
+/**
+ * Primitive component factory. It uses hooks for managing
+ * state and props, and forwards references to child components.
+ * Component props:
+ * - `asChild`: If true, the component will be rendered as a `Slot` {@link https://www.radix-ui.com/docs/primitives/utilities/slot}.
+ * - `options`: Options passed to the state hook.
+ * - `state`: Provide your state instead of using the state hook.
+ * - `...props`: Props to be passed to the component.
+ * Props hook return value:
+ * - `ref`: Reference to be forwarded to the component.
+ * - `props`: Props to be passed to the component.
+ * - `hidden`: If true, the component will not be rendered.
+ *
+ * @param {React.ElementType} element The base component or native HTML element.
+ * @returns {function} A primitive component.
+ *
+ * @example
+ *
+ * const MyButton = createPrimitiveComponent(Button)({
+ *   stateHook: useButtonState,
+ *   propsHook: useButton
+ * });
+ */
+export const createPrimitiveComponent = <
+  T extends React.ElementType,
+  P extends React.ComponentProps<T>
+>(
+  element: T
+) => {
+  const Comp = createSlotComponent<T, P>(element);
+
+  return <S = {}, O = {}>({
     propsHook,
     stateHook,
   }: {
@@ -56,24 +96,31 @@ export const createPrimitiveComponent =
     stateHook?: StateHook<O>;
   } = {}) => {
     return React.forwardRef<
-      T,
+      any,
       {
         asChild?: boolean;
-        // Provide your state instead of using the hook
         state?: S;
-        // State options passed to the state hook
         options?: O;
       } & P
-    >(({ asChild = false, options, state: _state, ...props }, ref) => {
+    >(({ asChild, options, state: _state, ...props }, ref) => {
       const state = isDefined(_state)
         ? _state
         : stateHook
         ? stateHook(options as any)
         : undefined;
-      const { props: hookProps } = propsHook ? propsHook(state) : { props: {} };
+      const {
+        ref: hookRef,
+        props: hookProps,
+        hidden,
+      } = propsHook
+        ? propsHook(state)
+        : { props: {}, hidden: false, ref: null };
 
-      const Comp = asChild ? Slot : element;
+      const _ref = useComposedRef(ref, hookRef);
 
-      return <Comp ref={ref} {...hookProps} {...props} />;
+      if (!asChild && hidden) return null;
+
+      return <Comp ref={_ref} asChild={asChild} {...hookProps} {...props} />;
     });
   };
+};

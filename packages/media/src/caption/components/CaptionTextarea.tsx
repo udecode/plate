@@ -1,5 +1,4 @@
 import React, {
-  RefAttributes,
   RefObject,
   useCallback,
   useEffect,
@@ -8,17 +7,15 @@ import React, {
 } from 'react';
 import { TextareaAutosizeProps } from 'react-textarea-autosize';
 import {
-  AsProps,
-  createComponentAs,
+  createPrimitiveComponent,
   findNodePath,
   focusEditor,
   getNodeString,
   getPointAfter,
   setNodes,
   TElement,
-  useComposedRef,
-  useEditorRef,
   useElement,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Path } from 'slate';
@@ -27,18 +24,13 @@ import { captionGlobalStore } from '../captionGlobalStore';
 import { TCaptionElement } from '../types/TCaptionElement';
 import { TextareaAutosize } from './TextareaAutosize';
 
-export interface CaptionTextareaProps
-  extends TextareaAutosizeProps,
-    RefAttributes<HTMLTextAreaElement>,
-    AsProps<'textarea'> {}
-
 /**
  * Focus textareaRef when focusCaptionPath is set to the image path.
  */
 export const useCaptionTextareaFocus = (
   textareaRef: RefObject<HTMLTextAreaElement>
 ) => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
   const element = useElement<TCaptionElement>();
 
   const focusCaptionPath = captionGlobalStore.use.focusEndCaptionPath();
@@ -54,9 +46,7 @@ export const useCaptionTextareaFocus = (
   }, [editor, element, focusCaptionPath, textareaRef]);
 };
 
-export const useCaptionTextarea = (
-  props: CaptionTextareaProps
-): TextareaAutosizeProps & RefAttributes<HTMLTextAreaElement> => {
+export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
 
   const {
@@ -67,13 +57,29 @@ export const useCaptionTextarea = (
     TextareaAutosizeProps['value']
   >(getNodeString(nodeCaption[0]));
 
-  const editor = useEditorRef();
   const readOnly = useReadOnly();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const ref = useComposedRef(textareaRef, props.ref);
 
   useCaptionTextareaFocus(textareaRef);
+
+  return {
+    textareaRef,
+    captionValue,
+    setCaptionValue,
+    element,
+    readOnly,
+  };
+};
+
+export const useCaptionTextarea = ({
+  textareaRef,
+  captionValue,
+  setCaptionValue,
+  element,
+  readOnly,
+}: ReturnType<typeof useCaptionTextareaState>) => {
+  const editor = usePlateEditorRef();
 
   const onChange: TextareaAutosizeProps['onChange'] = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -92,7 +98,7 @@ export const useCaptionTextarea = (
         { at: path }
       );
     },
-    [editor, element]
+    [editor, element, setCaptionValue]
   );
 
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
@@ -121,19 +127,17 @@ export const useCaptionTextarea = (
   };
 
   return {
-    value: captionValue,
-    readOnly,
-    onChange,
-    onKeyDown,
-    ...props,
-    ref,
+    ref: textareaRef,
+    props: {
+      value: captionValue,
+      readOnly,
+      onChange,
+      onKeyDown,
+    },
   };
 };
 
-export const CaptionTextarea = createComponentAs<CaptionTextareaProps>(
-  ({ as, ...props }) => {
-    const htmlProps = useCaptionTextarea({ as: as as any, ...props });
-
-    return <TextareaAutosize {...htmlProps} />;
-  }
-);
+export const CaptionTextarea = createPrimitiveComponent(TextareaAutosize)({
+  stateHook: useCaptionTextareaState,
+  propsHook: useCaptionTextarea,
+});

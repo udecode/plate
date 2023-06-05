@@ -8,7 +8,6 @@ import {
 
 import { cn } from '@/lib/utils';
 
-// REVIEWW
 export interface TableCellElementProps extends PlateElementProps {
   hideBorder?: boolean;
   isHeader?: boolean;
@@ -32,10 +31,12 @@ const TableCellElement = React.forwardRef<
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
 
+  const Cell = isHeader ? 'th' : 'td';
+
   return (
     <PlateElement
+      asChild
       ref={ref}
-      asAlias={isHeader ? 'th' : 'td'}
       className={cn(
         'relative overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
@@ -63,43 +64,45 @@ const TableCellElement = React.forwardRef<
       {...cellProps}
       {...rootProps}
     >
-      <div
-        className="relative z-20 box-border h-full px-3 py-2"
-        style={{
-          minHeight: rowSize,
-        }}
-      >
-        {children}
-      </div>
+      <Cell>
+        <div
+          className="relative z-20 box-border h-full px-3 py-2"
+          style={{
+            minHeight: rowSize,
+          }}
+        >
+          {children}
+        </div>
 
-      <div
-        className="group absolute top-0 h-full w-full select-none"
-        contentEditable={false}
-      >
-        <TableCellElementResizable
-          colIndex={colIndex}
-          rowIndex={rowIndex}
-          readOnly={readOnly}
-        />
-
-        {!readOnly && hovered && (
-          <div
-            className={cn(
-              'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
-              'right-[-1.5px]'
-            )}
+        <div
+          className="group absolute top-0 h-full w-full select-none"
+          contentEditable={false}
+        >
+          <TableCellElementResizable
+            colIndex={colIndex}
+            rowIndex={rowIndex}
+            readOnly={readOnly}
           />
-        )}
 
-        {!readOnly && hoveredLeft && (
-          <div
-            className={cn(
-              'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
-              'left-[-1.5px]'
-            )}
-          />
-        )}
-      </div>
+          {!readOnly && hovered && (
+            <div
+              className={cn(
+                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+                'right-[-1.5px]'
+              )}
+            />
+          )}
+
+          {!readOnly && hoveredLeft && (
+            <div
+              className={cn(
+                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+                'left-[-1.5px]'
+              )}
+            />
+          )}
+        </div>
+      </Cell>
     </PlateElement>
   );
 });

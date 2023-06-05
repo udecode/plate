@@ -1,4 +1,4 @@
-import { useEditorRef } from '@udecode/plate-common';
+import { usePlateEditorRef } from '@udecode/plate-common';
 import { PlateCloudEditor } from '../cloud/types';
 import { Upload } from './types';
 
@@ -7,7 +7,7 @@ import { Upload } from './types';
  * Upload object from it.
  */
 export const useUpload = (id: string): Upload => {
-  const editor = useEditorRef() as PlateCloudEditor;
+  const editor = usePlateEditorRef() as PlateCloudEditor;
 
   /**
    * We call this even if it's not always required because it calls `useStore`

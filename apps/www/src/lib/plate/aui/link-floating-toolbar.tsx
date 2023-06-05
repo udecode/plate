@@ -1,9 +1,13 @@
 import React from 'react';
-import { TEditableProps } from '@udecode/plate-common';
 import {
-  FloatingLink as FloatingLinkPrimitive,
-  useFloatingLinkSelectors,
-} from '@udecode/plate-link';
+  FloatingLinkUrlInput,
+  useFloatingLinkEdit,
+  useFloatingLinkEditState,
+  useFloatingLinkInsert,
+  useFloatingLinkInsertState,
+} from '@udecode/plate';
+import { TEditableProps } from '@udecode/plate-common';
+import { LinkOpenButton, useFloatingLinkSelectors } from '@udecode/plate-link';
 
 import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/components/ui/button';
@@ -15,6 +19,21 @@ import { cn } from '@/lib/utils';
 export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();
 
+  const state = useFloatingLinkInsertState();
+  const {
+    props: insertProps,
+    ref: insertRef,
+    textInputProps,
+  } = useFloatingLinkInsert(state);
+
+  const editState = useFloatingLinkEditState();
+  const {
+    props: editProps,
+    ref: editRef,
+    editButtonProps,
+    unlinkButtonProps,
+  } = useFloatingLinkEdit(editState);
+
   if (readOnly) return null;
 
   const input = (
@@ -24,7 +43,7 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
           <Icons.link className="h-4 w-4" />
         </div>
 
-        <FloatingLinkPrimitive.UrlInput
+        <FloatingLinkUrlInput
           className={inputVariants({ variant: 'ghost', h: 'sm' })}
           placeholder="Paste link"
         />
@@ -36,9 +55,10 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
         <div className="flex items-center pl-3 text-muted-foreground">
           <Icons.text className="h-4 w-4" />
         </div>
-        <FloatingLinkPrimitive.TextInput
+        <input
           className={inputVariants({ variant: 'ghost', h: 'sm' })}
           placeholder="Text to display"
+          {...textInputProps}
         />
       </div>
     </div>
@@ -46,33 +66,37 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
 
   const editContent = !isEditing ? (
     <div className="box-content flex h-9 items-center gap-1">
-      <FloatingLinkPrimitive.EditButton
+      <button
+        type="button"
         className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        {...editButtonProps}
       >
         Edit link
-      </FloatingLinkPrimitive.EditButton>
+      </button>
 
       <Separator orientation="vertical" />
 
-      <FloatingLinkPrimitive.OpenLinkButton
+      <LinkOpenButton
         className={buttonVariants({
           variant: 'ghost',
           size: 'sms',
         })}
       >
         <Icons.externalLink width={18} />
-      </FloatingLinkPrimitive.OpenLinkButton>
+      </LinkOpenButton>
 
       <Separator orientation="vertical" />
 
-      <FloatingLinkPrimitive.UnlinkButton
+      <button
+        type="button"
         className={buttonVariants({
           variant: 'ghost',
           size: 'sms',
         })}
+        {...unlinkButtonProps}
       >
         <Icons.unlink width={18} />
-      </FloatingLinkPrimitive.UnlinkButton>
+      </button>
     </div>
   ) : (
     input
@@ -80,17 +104,21 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
 
   return (
     <>
-      <FloatingLinkPrimitive.InsertRoot
+      <div
+        ref={insertRef}
         className={cn(popoverVariants(), 'w-auto p-1')}
+        {...insertProps}
       >
         {input}
-      </FloatingLinkPrimitive.InsertRoot>
+      </div>
 
-      <FloatingLinkPrimitive.EditRoot
+      <div
+        ref={editRef}
         className={cn(popoverVariants(), 'w-auto p-1')}
+        {...editProps}
       >
         {editContent}
-      </FloatingLinkPrimitive.EditRoot>
+      </div>
     </>
   );
 }

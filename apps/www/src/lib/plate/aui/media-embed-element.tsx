@@ -1,12 +1,15 @@
 import React from 'react';
+import { PlateElement } from '@udecode/plate';
 import { Box, PlateElementProps, Value } from '@udecode/plate-common';
 import { ElementPopover, PopoverProps } from '@udecode/plate-floating';
 import {
   Caption,
+  CaptionTextarea,
   ELEMENT_MEDIA_EMBED,
-  Media,
   MediaEmbed,
+  Resizable,
   TMediaEmbedElement,
+  useMediaState,
   useMediaStore,
 } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
@@ -50,6 +53,8 @@ const MediaEmbedElement = React.forwardRef<
 
   const { provider } = useMediaStore().get.urlData();
 
+  useMediaState();
+
   return (
     <ElementPopover
       ref={ref}
@@ -57,7 +62,7 @@ const MediaEmbedElement = React.forwardRef<
       floatingOptions={mediaFloatingOptions}
       {...popoverProps}
     >
-      <Media.Root className={cn('relative py-2.5', className)} {...props}>
+      <PlateElement className={cn('relative py-2.5', className)} {...props}>
         <figure
           className={cn(
             'group relative m-0 w-full',
@@ -70,7 +75,7 @@ const MediaEmbedElement = React.forwardRef<
           )}
           contentEditable={false}
         >
-          <Media.Resizable
+          <Resizable
             className={cn('mx-auto')}
             maxWidth={provider === 'twitter' ? 550 : '100%'}
             minWidth={provider === 'twitter' ? 300 : 100}
@@ -122,11 +127,11 @@ const MediaEmbedElement = React.forwardRef<
                 {...nodeProps}
               />
             </div>
-          </Media.Resizable>
+          </Resizable>
 
           {!caption.disabled && (
-            <Caption.Root className={cn('mx-auto')}>
-              <Caption.Textarea
+            <Caption className={cn('mx-auto')}>
+              <CaptionTextarea
                 className={cn(
                   'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',
                   'focus:outline-none focus:[&::placeholder]:opacity-0',
@@ -134,12 +139,12 @@ const MediaEmbedElement = React.forwardRef<
                 )}
                 placeholder={caption.placeholder ?? 'Write a caption...'}
               />
-            </Caption.Root>
+            </Caption>
           )}
         </figure>
 
         {children}
-      </Media.Root>
+      </PlateElement>
     </ElementPopover>
   );
 });

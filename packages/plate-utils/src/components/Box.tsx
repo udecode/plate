@@ -1,9 +1,6 @@
-import { AsProps, HTMLPropsAs } from '../types/index';
-import { createComponentAs } from '../utils/createComponentAs';
-import { createElementAs } from '../utils/index';
+import { ComponentProps } from 'react';
+import { createSlotComponent } from '../utils/createComponentAs';
 
-export const Box = createComponentAs<AsProps<'div'>>((props) =>
-  createElementAs('div', props)
-);
+export const Box = createSlotComponent('div');
 
-export type BoxProps = HTMLPropsAs<'div'>;
+export type BoxProps = ComponentProps<typeof Box>;

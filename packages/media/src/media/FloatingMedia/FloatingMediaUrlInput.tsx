@@ -5,9 +5,9 @@ import {
   focusEditor,
   HTMLPropsAs,
   mergeProps,
-  useEditorRef,
   useElement,
   useHotkeys,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
 import { TMediaElement } from '../types';
 import {
@@ -24,7 +24,7 @@ export const useFloatingMediaUrlInput = ({
   pluginKey,
   ...props
 }: FloatingMediaUrlInputProps): HTMLPropsAs<'input'> => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
 
   useEffect(() => {

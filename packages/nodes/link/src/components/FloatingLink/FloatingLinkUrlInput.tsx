@@ -1,21 +1,12 @@
 import { ChangeEventHandler, useCallback, useEffect, useRef } from 'react';
-import {
-  AsProps,
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-  mergeProps,
-  useComposedRef,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
 
-export const useFloatingLinkUrlInput = (
-  props: HTMLPropsAs<'input'>
-): HTMLPropsAs<'input'> => {
+export const useFloatingLinkUrlInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
   const ref = useRef<HTMLInputElement>(null);
 
@@ -27,23 +18,28 @@ export const useFloatingLinkUrlInput = (
     }
   }, [updated]);
 
+  return {
+    ref,
+  };
+};
+
+export const useFloatingLinkUrlInput = (
+  state: ReturnType<typeof useFloatingLinkUrlInputState>
+) => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingLinkActions.url(e.target.value);
   }, []);
 
-  return mergeProps(
-    {
+  return {
+    ref: state.ref,
+    props: {
       onChange,
       defaultValue: floatingLinkSelectors.url(),
     },
-    { ...props, ref: useComposedRef<HTMLInputElement>(props.ref, ref) }
-  );
+  };
 };
 
-export const FloatingLinkUrlInput = createComponentAs<AsProps<'input'>>(
-  (props) => {
-    const htmlProps = useFloatingLinkUrlInput(props);
-
-    return createElementAs('input', htmlProps);
-  }
-);
+export const FloatingLinkUrlInput = createPrimitiveComponent('input')({
+  propsHook: useFloatingLinkUrlInput,
+  stateHook: useFloatingLinkUrlInputState,
+});

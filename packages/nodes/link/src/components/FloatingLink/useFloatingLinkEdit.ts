@@ -1,24 +1,24 @@
 import { useCallback, useEffect } from 'react';
 import {
+  focusEditor,
   getAboveNode,
   getEndPoint,
   getPluginOptions,
   getPluginType,
   getStartPoint,
-  HTMLPropsAs,
   someNode,
-  useComposedRef,
-  useEditorRef,
   useHotkeys,
+  usePlateEditorRef,
   usePlateSelectors,
 } from '@udecode/plate-common';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
+  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
+import { unwrapLink } from '../..';
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
-import { FloatingLinkProps } from './FloatingLink';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -28,11 +28,12 @@ import { useFloatingLinkEnter } from './useFloatingLinkEnter';
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
-export const useFloatingLinkEdit = ({
+export const useFloatingLinkEditState = ({
   floatingOptions,
-  ...props
-}: FloatingLinkProps): HTMLPropsAs<'div'> => {
-  const editor = useEditorRef();
+}: {
+  floatingOptions?: UseVirtualFloatingOptions;
+} = {}) => {
+  const editor = usePlateEditorRef();
   const keyEditor = usePlateSelectors().keyEditor();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
@@ -60,12 +61,13 @@ export const useFloatingLinkEdit = ({
 
   const isOpen = open && mode === 'edit';
 
-  const { update, style, refs } = useVirtualFloatingLink({
+  const floating = useVirtualFloatingLink({
     editorId: editor.id,
     open: isOpen,
     getBoundingClientRect,
     ...floatingOptions,
   });
+  const { update } = floating;
 
   useEffect(() => {
     if (
@@ -105,11 +107,33 @@ export const useFloatingLinkEdit = ({
   useFloatingLinkEscape();
 
   return {
-    style: {
-      ...style,
-      zIndex: 1,
+    floating,
+  };
+};
+
+export const useFloatingLinkEdit = (
+  state: ReturnType<typeof useFloatingLinkEditState>
+) => {
+  const editor = usePlateEditorRef();
+
+  return {
+    ref: state.floating.refs.setFloating,
+    props: {
+      style: {
+        ...state.floating.style,
+        zIndex: 1,
+      },
     },
-    ...props,
-    ref: useComposedRef<HTMLElement | null>(props.ref, refs.setFloating),
+    editButtonProps: {
+      onClick: useCallback(() => {
+        triggerFloatingLinkEdit(editor);
+      }, [editor]),
+    },
+    unlinkButtonProps: {
+      onClick: useCallback(() => {
+        unwrapLink(editor);
+        focusEditor(editor, editor.selection!);
+      }, [editor]),
+    },
   };
 };

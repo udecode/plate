@@ -1,22 +1,17 @@
 import { useMemo } from 'react';
 import {
-  AsProps,
-  createComponentAs,
-  createElementAs,
+  createPrimitiveComponent,
   findNode,
   getPluginType,
-  HTMLPropsAs,
-  useEditorRef,
+  usePlateEditorRef,
   usePlateSelection,
 } from '@udecode/plate-common';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { TLinkElement } from '../../types';
 import { getLinkAttributes } from '../../utils/index';
 
-export const useOpenLinkButton = (
-  props: HTMLPropsAs<'a'>
-): HTMLPropsAs<'a'> => {
-  const editor = useEditorRef();
+export const useLinkOpenButtonState = () => {
+  const editor = usePlateEditorRef();
   const selection = usePlateSelection();
 
   const entry = useMemo(
@@ -33,21 +28,36 @@ export const useOpenLinkButton = (
   }
 
   const [element] = entry;
-  const linkAttributes = getLinkAttributes(editor, element);
 
   return {
-    ...linkAttributes,
-    target: '_blank',
-    'aria-label': 'Open link in a new tab',
-    onMouseOver: (e) => {
-      e.stopPropagation();
-    },
-    ...props,
+    element,
   };
 };
 
-export const OpenLinkButton = createComponentAs<AsProps<'a'>>((props) => {
-  const htmlProps = useOpenLinkButton(props);
+export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
+  const editor = usePlateEditorRef();
 
-  return createElementAs('a', htmlProps);
+  if (!element) {
+    return {
+      props: {},
+    };
+  }
+
+  const linkAttributes = getLinkAttributes(editor, element);
+
+  return {
+    props: {
+      ...linkAttributes,
+      target: '_blank',
+      'aria-label': 'Open link in a new tab',
+      onMouseOver: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        e.stopPropagation();
+      },
+    },
+  };
+};
+
+export const LinkOpenButton = createPrimitiveComponent('a')({
+  stateHook: useLinkOpenButtonState,
+  propsHook: useLinkOpenButton,
 });

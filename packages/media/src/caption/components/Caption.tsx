@@ -1,35 +1,23 @@
-import {
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-} from '@udecode/plate-common';
+import { ComponentPropsWithoutRef } from 'react';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 import { useResizableStore } from '../../resizable/resizableStore';
 import { useCaptionString } from '../hooks/useCaptionString';
-import { CaptionTextarea } from './CaptionTextarea';
 
-export interface CaptionProps extends HTMLPropsAs<'figcaption'> {
+export interface CaptionOptions {
   readOnly?: boolean;
 }
 
-export const useCaption = ({
-  readOnly,
-  ...props
-}: CaptionProps = {}): HTMLPropsAs<'figcaption'> => {
-  const width = useResizableStore().get.width();
+export interface CaptionProps extends ComponentPropsWithoutRef<'figcaption'> {
+  options?: CaptionOptions;
+}
 
-  return {
-    style: { width },
-    ...props,
-  };
-};
-
-export const useCaptionState = (props: CaptionProps) => {
+export const useCaptionState = (options: CaptionOptions = {}) => {
   const captionString = useCaptionString();
 
   const selected = useSelected();
   const _readOnly = useReadOnly();
-  const readOnly = props.readOnly || _readOnly;
+  const readOnly = options.readOnly || _readOnly;
 
   return {
     captionString,
@@ -38,18 +26,20 @@ export const useCaptionState = (props: CaptionProps) => {
   };
 };
 
-export const CaptionRoot = createComponentAs<CaptionProps>((props) => {
-  const htmlProps = useCaption(props);
-  const { captionString, selected, readOnly } = useCaptionState(props);
+export const useCaption = (state: ReturnType<typeof useCaptionState>) => {
+  const width = useResizableStore().get.width();
 
-  if (!captionString.length && (readOnly || !selected)) {
-    return null;
-  }
-
-  return createElementAs('figcaption', htmlProps);
-});
-
-export const Caption = {
-  Root: CaptionRoot,
-  Textarea: CaptionTextarea,
+  return {
+    props: {
+      style: { width },
+    },
+    hidden: !state.captionString.length && (state.readOnly || !state.selected),
+  };
 };
+
+export const Caption = createPrimitiveComponent<'figcaption', CaptionProps>(
+  'figcaption'
+)({
+  stateHook: useCaptionState,
+  propsHook: useCaption,
+});

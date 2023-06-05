@@ -142,7 +142,7 @@ export const useResizeHandle = (
 };
 
 export const ResizeHandle = createPrimitiveComponent<
-  HTMLDivElement,
+  'div',
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onResize'>
 >('div')({
   propsHook: useResizeHandle,

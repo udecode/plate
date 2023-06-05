@@ -1,14 +1,18 @@
 import React from 'react';
-import { Link, LinkRootProps } from '@udecode/plate-link';
+import { PlateElement, TLinkElement, useLink } from '@udecode/plate';
+import { PlateElementProps, Value } from '@udecode/plate-common';
 
 import { cn } from '@/lib/utils';
 
 const LinkElement = React.forwardRef<
-  React.ElementRef<typeof Link.Root>,
-  LinkRootProps
->(({ className, ...props }, ref) => {
+  React.ElementRef<typeof PlateElement>,
+  PlateElementProps<Value, TLinkElement>
+>(({ className, children, ...props }, ref) => {
+  const { props: linkProps } = useLink({ element: props.element });
+
   return (
-    <Link.Root
+    <PlateElement
+      asChild
       ref={ref}
       className={cn(
         'text-[#0078d4] no-underline',
@@ -17,8 +21,11 @@ const LinkElement = React.forwardRef<
         'visited:text-[#0078d4]',
         className
       )}
-      {...props}
-    />
+      {...linkProps}
+      {...(props as any)}
+    >
+      <a>{children}</a>
+    </PlateElement>
   );
 });
 LinkElement.displayName = 'LinkElement';

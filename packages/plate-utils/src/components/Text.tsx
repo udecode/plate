@@ -1,8 +1,6 @@
-import { AsProps, HTMLPropsAs } from '../types';
-import { createComponentAs, createElementAs } from '../utils';
+import { ComponentProps } from 'react';
+import { createSlotComponent } from '../utils';
 
-export const Text = createComponentAs<AsProps<'span'>>((props) =>
-  createElementAs('span', props)
-);
+export const Text = createSlotComponent('span');
 
-export type TextProps = HTMLPropsAs<'span'>;
+export type TextProps = ComponentProps<typeof Text>;

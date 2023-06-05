@@ -55,6 +55,10 @@ export const commentsData: Record<string, TComment> = {
 
 export const commentsValue: MyValue = [
   {
+    type: 'h2',
+    children: [{ text: '💬 Comments' }],
+  },
+  {
     type: 'p',
     children: [
       { text: 'A line of text in a ' },

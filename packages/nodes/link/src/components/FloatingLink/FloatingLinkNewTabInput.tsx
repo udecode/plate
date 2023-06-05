@@ -5,23 +5,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  AsProps,
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-  mergeProps,
-  useComposedRef,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
 
-export const useFloatingLinkNewTabInput = (
-  props: HTMLPropsAs<'input'>
-): HTMLPropsAs<'input'> => {
+export const useFloatingLinkNewTabInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
   const ref = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState<boolean>(
@@ -36,25 +27,37 @@ export const useFloatingLinkNewTabInput = (
     }
   }, [updated]);
 
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    setChecked(e.target.checked);
-    floatingLinkActions.newTab(e.target.checked);
-  }, []);
+  return {
+    ref,
+    checked,
+    setChecked,
+  };
+};
 
-  return mergeProps(
-    {
+export const useFloatingLinkNewTabInput = ({
+  checked,
+  ref,
+  setChecked,
+}: ReturnType<typeof useFloatingLinkNewTabInputState>) => {
+  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      setChecked(e.target.checked);
+      floatingLinkActions.newTab(e.target.checked);
+    },
+    [setChecked]
+  );
+
+  return {
+    ref,
+    props: {
       onChange,
       checked,
       type: 'checkbox',
     },
-    { ...props, ref: useComposedRef<HTMLInputElement>(props.ref, ref) }
-  );
+  };
 };
 
-export const FloatingLinkNewTabInput = createComponentAs<AsProps<'input'>>(
-  (props) => {
-    const htmlProps = useFloatingLinkNewTabInput(props);
-
-    return createElementAs('input', htmlProps);
-  }
-);
+export const FloatingLinkNewTabInput = createPrimitiveComponent('input')({
+  propsHook: useFloatingLinkNewTabInput,
+  stateHook: useFloatingLinkNewTabInputState,
+});

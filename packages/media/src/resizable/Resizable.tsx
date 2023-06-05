@@ -6,8 +6,8 @@ import {
   isDefined,
   select,
   setNodes,
-  useEditorRef,
   useElement,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
 import {
   ResizeEvent,
@@ -47,7 +47,7 @@ export const useResizable = ({
   ...props
 }: ResizableProps) => {
   const element = useElement<TMediaElement>();
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
   const _readOnly = useReadOnly();
   readOnly = isDefined(readOnly) ? readOnly : _readOnly;
   const wrapperRef = useRef<HTMLDivElement>(null);

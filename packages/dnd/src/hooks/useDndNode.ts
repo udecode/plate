@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DropTargetMonitor } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { TEditor, useEditorRef } from '@udecode/plate-common';
+import { TEditor, usePlateEditorRef } from '@udecode/plate-common';
 import { DragItemNode, DropLineDirection } from '../types';
 import { useDragNode, UseDragNodeOptions } from './useDragNode';
 import { useDropNode, UseDropNodeOptions } from './useDropNode';
@@ -47,7 +47,7 @@ export const useDndNode = ({
   drop: dropOptions,
   onDropHandler,
 }: UseDndNodeOptions) => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
 
   const [dropLine, setDropLine] = useState<DropLineDirection>('');
 

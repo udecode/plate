@@ -16,14 +16,19 @@ const listVariants = cva('m-0 ps-6', {
 
 export function ListElement({
   className,
+  children,
   variant = 'ul',
   ...props
 }: PlateElementProps & VariantProps<typeof listVariants>) {
+  const Element = variant!;
+
   return (
     <PlateElement
-      as={variant}
+      asChild
       className={cn(listVariants({ variant }), className)}
       {...props}
-    />
+    >
+      <Element>{children}</Element>
+    </PlateElement>
   );
 }

@@ -6,7 +6,7 @@ import {
   isInline,
   queryNode,
   TElement,
-  useEditorRef,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
@@ -29,7 +29,7 @@ export const useBlockSelectableState = ({
   element,
   state,
 }: BlockSelectableProps) => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
 
   const path = useMemo(() => findNodePath(editor, element), [editor, element]);
 

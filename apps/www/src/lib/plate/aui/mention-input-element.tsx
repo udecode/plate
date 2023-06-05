@@ -22,8 +22,8 @@ const MentionInputElement = React.forwardRef<
 
   return (
     <PlateElement
+      asChild
       ref={ref}
-      as="span"
       data-slate-value={element.value}
       className={cn(
         'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-2 align-baseline text-[0.9em]',
@@ -33,7 +33,7 @@ const MentionInputElement = React.forwardRef<
       onClick={getHandler(onClick, element)}
       {...props}
     >
-      {children}
+      <span>{children}</span>
     </PlateElement>
   );
 });
