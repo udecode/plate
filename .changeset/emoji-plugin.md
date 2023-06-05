@@ -1,0 +1,3 @@
+---
+'@udecode/plate-emoji': patch
+---
