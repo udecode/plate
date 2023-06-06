@@ -1,13 +1,13 @@
 import React from 'react';
 import {
   createExitBreakPlugin,
-  createListPlugin,
-  createResetNodePlugin,
   createSoftBreakPlugin,
-  createTablePlugin,
-  createTrailingBlockPlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-break';
+import { Plate } from '@udecode/plate-common';
+import { createListPlugin } from '@udecode/plate-list';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
+import { createTablePlugin } from '@udecode/plate-table';
+import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -17,7 +17,7 @@ import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin'
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { exitBreakValue } from '@/plate/demo/values/exitBreakValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

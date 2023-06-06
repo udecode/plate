@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plate, PlateProps, PlateProvider } from '@udecode/plate';
+import { Plate, PlateProps, PlateProvider } from '@udecode/plate-common';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';
@@ -9,7 +9,7 @@ import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
-import { MyValue } from '@/types/plate.types';
+import { MyValue } from '@/plate/plate.types';
 
 function Editor(props: PlateProps<MyValue>) {
   return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;

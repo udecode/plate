@@ -1,8 +1,8 @@
 import React from 'react';
-import { Plate } from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyParagraphElement, MyValue } from '@/types/plate.types';
+import { MyParagraphElement, MyValue } from '@/plate/plate.types';
 
 const initialValue = [
   {

@@ -80,7 +80,7 @@ export interface DraggableProps
   ) => boolean;
 }
 
-export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
+const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
     const { children, element } = props;
 
@@ -146,3 +146,6 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
     );
   }
 );
+Draggable.displayName = 'Draggable';
+
+export { Draggable };

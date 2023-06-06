@@ -4,7 +4,7 @@ import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { plateUI } from '@/plate/demo/plateUI';
-import { createMyPlugins } from '@/types/plate.types';
+import { createMyPlugins } from '@/plate/plate.types';
 
 export const basicElementsPlugins = createMyPlugins(
   [

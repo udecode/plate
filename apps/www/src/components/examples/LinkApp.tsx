@@ -1,5 +1,6 @@
 import React from 'react';
-import { createLinkPlugin, Plate, PlateProvider } from '@udecode/plate';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+import { createLinkPlugin } from '@udecode/plate-link';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { LinkToolbarButton } from '@/components/plate-ui/link-toolbar-button';
@@ -8,7 +9,7 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { linkValue } from '@/plate/demo/values/linkValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createLinkPlugin(linkPlugin)],

@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { PlateElementProps } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
-import { MyValue } from '@/types/plate.types';
+import { MyValue } from '@/plate/plate.types';
 
 const boxStyle: CSSProperties = {
   padding: '8px',

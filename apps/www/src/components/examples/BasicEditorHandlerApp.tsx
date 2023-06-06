@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Plate } from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyValue } from '@/types/plate.types';
+import { MyValue } from '@/plate/plate.types';
 
 export default function BasicEditorHandlerApp() {
   const [debugValue, setDebugValue] = useState<MyValue | null>(null);

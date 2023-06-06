@@ -1,13 +1,12 @@
 import React, { CSSProperties } from 'react';
+import { Plate, PlateProvider } from '@udecode/plate-common';
 import {
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
   createFontSizePlugin,
   MARK_BG_COLOR,
   MARK_COLOR,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+} from '@udecode/plate-font';
 
 import { Icons } from '@/components/icons';
 import { ColorDropdownMenu } from '@/components/plate-ui/color-dropdown-menu';
@@ -16,7 +15,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { fontValue } from '@/plate/demo/values/fontValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const styles: Record<string, CSSProperties> = {
   copyWrapper: {
@@ -53,10 +52,10 @@ export default function FontApp() {
   return (
     <PlateProvider<MyValue> initialValue={fontValue} plugins={plugins}>
       <FixedToolbar>
-        <ColorDropdownMenu pluginKey={MARK_COLOR} tooltip="Text color">
+        <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text color">
           <Icons.color />
         </ColorDropdownMenu>
-        <ColorDropdownMenu pluginKey={MARK_BG_COLOR} tooltip="Highlight color">
+        <ColorDropdownMenu nodeType={MARK_BG_COLOR} tooltip="Highlight color">
           <Icons.bg />
         </ColorDropdownMenu>
       </FixedToolbar>

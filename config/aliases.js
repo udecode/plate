@@ -48,6 +48,5 @@ module.exports = {
   '@udecode/plate-trailing-block': 'editor/trailing-block',
   '@udecode/plate-utils': 'plate-utils',
   '@udecode/utils': 'utils',
-  '@udecode/plate': 'plate',
   '@udecode/plate-excalidraw': 'excalidraw',
 };

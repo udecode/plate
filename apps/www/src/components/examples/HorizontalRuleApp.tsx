@@ -2,21 +2,25 @@ import React from 'react';
 import {
   AutoformatPlugin,
   createAutoformatPlugin,
-  createHorizontalRulePlugin,
-  createSelectOnBackspacePlugin,
+} from '@udecode/plate-autoformat';
+import {
   ELEMENT_DEFAULT,
-  ELEMENT_HR,
   insertNodes,
   Plate,
   setNodes,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
+import {
+  createHorizontalRulePlugin,
+  ELEMENT_HR,
+} from '@udecode/plate-horizontal-rule';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
-import { createMyPlugins, MyEditor, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyEditor, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

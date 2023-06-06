@@ -1,10 +1,6 @@
 import React from 'react';
-import {
-  createKbdPlugin,
-  MARK_KBD,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+import { createKbdPlugin, MARK_KBD } from '@udecode/plate-kbd';
 
 import { Icons } from '@/components/icons';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -13,7 +9,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { kbdValue } from '@/plate/demo/values/kbdValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 function KbdToolbarButton() {
   return (

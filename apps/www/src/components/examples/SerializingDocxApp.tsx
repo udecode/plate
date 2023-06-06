@@ -1,22 +1,24 @@
 import React from 'react';
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import { Plate } from '@udecode/plate-common';
 import {
-  createAlignPlugin,
-  createDeserializeDocxPlugin,
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
   createFontFamilyPlugin,
   createFontSizePlugin,
   createFontWeightPlugin,
-  createHorizontalRulePlugin,
-  createImagePlugin,
-  createIndentListPlugin,
+} from '@udecode/plate-font';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import {
   createIndentPlugin,
-  createLineHeightPlugin,
-  createTablePlugin,
   createTextIndentPlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-indent';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
+import { createImagePlugin } from '@udecode/plate-media';
+import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { createTablePlugin } from '@udecode/plate-table';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -25,7 +27,7 @@ import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
 import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
 import { deserializeDocxValue } from '@/plate/demo/values/deserializeDocxValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

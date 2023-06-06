@@ -1,18 +1,21 @@
 import React from 'react';
 import {
-  createHeadingPlugin,
-  createIndentListPlugin,
-  createIndentPlugin,
-  createParagraphPlugin,
-  createResetNodePlugin,
-  ELEMENT_H1,
-  ELEMENT_PARAGRAPH,
   Plate,
   PlateElement,
   PlateProvider,
-  toggleIndentList,
   withProps,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
+import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
+import { createIndentPlugin } from '@udecode/plate-indent';
+import {
+  createIndentListPlugin,
+  toggleIndentList,
+} from '@udecode/plate-indent-list';
+import {
+  createParagraphPlugin,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate-paragraph';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Icons } from '@/components/icons';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -26,7 +29,7 @@ import {
   createMyPlugins,
   MyValue,
   useMyPlateEditorRef,
-} from '@/types/plate.types';
+} from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

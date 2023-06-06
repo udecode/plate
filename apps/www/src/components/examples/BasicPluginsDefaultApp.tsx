@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import {
-  createBlockquotePlugin,
   createBoldPlugin,
-  createCodeBlockPlugin,
   createCodePlugin,
-  createHeadingPlugin,
   createItalicPlugin,
-  createParagraphPlugin,
   createStrikethroughPlugin,
   createUnderlinePlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-basic-marks';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { Plate } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { basicEditorValue } from './BasicPluginsComponentsApp';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyPlatePlugin, MyValue } from '@/types/plate.types';
+import { MyPlatePlugin, MyValue } from '@/plate/plate.types';
 
 const plugins: MyPlatePlugin[] = [
   createParagraphPlugin(),

@@ -2,13 +2,15 @@ import React from 'react';
 import {
   AutoformatPlugin,
   createAutoformatPlugin,
+} from '@udecode/plate-autoformat';
+import {
   createExitBreakPlugin,
-  createHorizontalRulePlugin,
-  createListPlugin,
-  createResetNodePlugin,
   createSoftBreakPlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-break';
+import { Plate } from '@udecode/plate-common';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { createListPlugin } from '@udecode/plate-list';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -18,7 +20,7 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
-import { createMyPlugins, MyEditor, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyEditor, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

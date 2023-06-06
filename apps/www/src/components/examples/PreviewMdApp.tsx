@@ -6,7 +6,7 @@ import {
   Plate,
   TRenderLeafProps,
   TText,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
 import Prism from 'prismjs';
 
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 /**
  * Decorate texts with markdown preview.

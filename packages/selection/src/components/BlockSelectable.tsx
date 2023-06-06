@@ -89,5 +89,9 @@ export function BlockSelectable({
 
   if (!state.active) return <>{children}</>;
 
-  return <div {...rootProps} {...props} />;
+  return (
+    <div {...rootProps} {...props}>
+      {children}
+    </div>
+  );
 }

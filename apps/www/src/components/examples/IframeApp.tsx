@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Plate } from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
 import {
   createEditableVoidPlugin,
   EditableVoidElement,
@@ -10,7 +10,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

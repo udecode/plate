@@ -1,10 +1,6 @@
 import React from 'react';
-import {
-  createCommentsPlugin,
-  MARK_COMMENT,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
+import { Plate, PlateProvider } from '@udecode/plate-common';
 
 import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
 import { CommentsPopover } from '@/components/plate-ui/comments-popover';
@@ -14,7 +10,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { commentsValue } from '@/plate/demo/values/commentsValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [...basicNodesPlugins, createCommentsPlugin()],

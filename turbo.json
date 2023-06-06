@@ -8,6 +8,7 @@
     "build": {
       "dependsOn": ["^build"],
       "env": [
+        "NODE_ENV",
         "NEXT_PUBLIC_APP_URL",
         "COMPONENTS_BASE_URL",
         "npm_config_user_agent"

@@ -234,6 +234,7 @@ export function Mdx({ code }: MdxProps) {
   const Component = useMDXComponent(code);
 
   return (
+    // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="mdx">
       <Component components={components} />
     </div>

@@ -44,6 +44,7 @@ export function CopyButton({
 
   return (
     <button
+      type="button"
       className={cn(
         'relative z-20 inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-sm font-medium transition-all hover:bg-muted focus:outline-none',
         className
@@ -94,8 +95,8 @@ export function CopyWithClassNames({
     }, 2000);
   }, [hasCopied]);
 
-  const copyToClipboard = React.useCallback((value: string) => {
-    copyToClipboardWithMeta(value);
+  const copyToClipboard = React.useCallback((_value: string) => {
+    copyToClipboardWithMeta(_value);
     setHasCopied(true);
   }, []);
 

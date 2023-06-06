@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin } from '@/types/plate.types';
+import { MyPlatePlugin } from '@/plate/plate.types';
 
 export const alignPlugin: Partial<MyPlatePlugin> = {
   inject: {

@@ -41,7 +41,7 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
-import { createTodoListPlugin } from '@udecode/plate-list';
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
   createImagePlugin,
   createMediaEmbedPlugin,
@@ -74,6 +74,7 @@ import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { blockSelectionPlugin } from '@/plate/demo/plugins/blockSelectionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -93,7 +94,7 @@ import {
   MyEditor,
   MyPlatePlugin,
   MyValue,
-} from '@/types/plate.types';
+} from '@/plate/plate.types';
 
 const components = withDraggables(withPlaceHolders(createPlateUI()));
 
@@ -112,7 +113,7 @@ export function PlaygroundDemo() {
           createHorizontalRulePlugin(),
           createLinkPlugin(linkPlugin),
           // Choose either "list" or "indent list" plugin
-          // createListPlugin(),
+          createListPlugin(),
           createIndentListPlugin(),
           createTablePlugin(),
           createMediaEmbedPlugin(),
@@ -133,9 +134,8 @@ export function PlaygroundDemo() {
           createLineHeightPlugin(lineHeightPlugin),
           createKbdPlugin(),
           createNodeIdPlugin(),
-          createBlockSelectionPlugin(),
+          createBlockSelectionPlugin(blockSelectionPlugin),
           createDndPlugin({ options: { enableScroller: true } }),
-          dragOverCursorPlugin,
           createIndentPlugin(indentPlugin),
           createAutoformatPlugin<
             AutoformatPlugin<MyValue, MyEditor>,
@@ -157,6 +157,7 @@ export function PlaygroundDemo() {
           createDeserializeDocxPlugin(),
           createJuicePlugin() as MyPlatePlugin,
           createEmojiPlugin(emojiPlugin),
+          dragOverCursorPlugin,
         ],
         {
           components,

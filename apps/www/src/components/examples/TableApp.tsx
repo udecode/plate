@@ -2,10 +2,9 @@ import React from 'react';
 import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
-  createTablePlugin,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+} from '@udecode/plate-break';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+import { createTablePlugin } from '@udecode/plate-table';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { TableDropdownMenu } from '@/components/plate-ui/table-dropdown-menu';
@@ -15,7 +14,7 @@ import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tableValue } from '@/plate/demo/values/tableValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

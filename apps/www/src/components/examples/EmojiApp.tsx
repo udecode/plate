@@ -1,10 +1,7 @@
 import React from 'react';
-import {
-  createComboboxPlugin,
-  createEmojiPlugin,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+import { createEmojiPlugin } from '@udecode/plate-emoji';
 
 import { EmojiDropdownMenu } from '@/components/plate-ui/emoji-dropdown-menu';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -13,7 +10,7 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { emojiValue } from '@/plate/demo/values/emojiValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

@@ -1,47 +1,46 @@
-import { notFound } from "next/navigation"
-import { allDocs } from "contentlayer/generated"
+import '@/styles/mdx.css';
+import Balancer from 'react-wrap-balancer';
+import { allDocs } from 'contentlayer/generated';
+import { ChevronRight } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-import "@/styles/mdx.css"
-import type { Metadata } from "next"
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
-import Balancer from "react-wrap-balancer"
-
-import { siteConfig } from "@/config/site"
-import { getTableOfContents } from "@/lib/toc"
-import { absoluteUrl, cn } from "@/lib/utils"
-import { badgeVariants } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Icons } from "@/components/icons"
-import { Mdx } from "@/components/mdx-components"
-import { DocsPager } from "@/components/pager"
-import { DashboardTableOfContents } from "@/components/toc"
+import { Icons } from '@/components/icons';
+import { Mdx } from '@/components/mdx-components';
+import { DocsPager } from '@/components/pager';
+import { DashboardTableOfContents } from '@/components/toc';
+import { badgeVariants } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { siteConfig } from '@/config/site';
+import { getTableOfContents } from '@/lib/toc';
+import { absoluteUrl, cn } from '@/lib/utils';
 
 interface DocPageProps {
   params: {
-    slug: string[]
-  }
+    slug: string[];
+  };
 }
 
 async function getDocFromParams({ params }: DocPageProps) {
-  const slug = params.slug?.join("/") || ""
-  const doc = allDocs.find((doc) => doc.slugAsParams === slug)
+  const slug = params.slug?.join('/') || '';
+  const doc = allDocs.find((_doc) => _doc.slugAsParams === slug);
 
   if (!doc) {
-    null
+    null;
   }
 
-  return doc
+  return doc;
 }
 
 export async function generateMetadata({
   params,
 }: DocPageProps): Promise<Metadata> {
-  const doc = await getDocFromParams({ params })
+  const doc = await getDocFromParams({ params });
 
   if (!doc) {
-    return {}
+    return {};
   }
 
   return {
@@ -50,7 +49,7 @@ export async function generateMetadata({
     openGraph: {
       title: doc.title,
       description: doc.description,
-      type: "article",
+      type: 'article',
       url: absoluteUrl(doc.slug),
       images: [
         {
@@ -62,31 +61,31 @@ export async function generateMetadata({
       ],
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title: doc.title,
       description: doc.description,
       images: [siteConfig.ogImage],
-      creator: "@shadcn",
+      creator: '@shadcn',
     },
-  }
+  };
 }
 
 export async function generateStaticParams(): Promise<
-  DocPageProps["params"][]
+  DocPageProps['params'][]
 > {
   return allDocs.map((doc) => ({
-    slug: doc.slugAsParams.split("/"),
-  }))
+    slug: doc.slugAsParams.split('/'),
+  }));
 }
 
 export default async function DocPage({ params }: DocPageProps) {
-  const doc = await getDocFromParams({ params })
+  const doc = await getDocFromParams({ params });
 
   if (!doc) {
-    notFound()
+    notFound();
   }
 
-  const toc = await getTableOfContents(doc.body.raw)
+  const toc = await getTableOfContents(doc.body.raw);
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
@@ -99,7 +98,7 @@ export default async function DocPage({ params }: DocPageProps) {
           <div className="font-medium text-foreground">{doc.title}</div>
         </div>
         <div className="space-y-2">
-          <h1 className={cn("scroll-m-20 text-4xl font-bold tracking-tight")}>
+          <h1 className={cn('scroll-m-20 text-4xl font-bold tracking-tight')}>
             {doc.title}
           </h1>
           {doc.description && (
@@ -115,7 +114,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.link}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: "secondary" }))}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 <Icons.radix className="mr-1 h-3 w-3" />
                 Radix UI
@@ -126,7 +125,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.api}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: "secondary" }))}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 API Reference
               </Link>
@@ -146,5 +145,5 @@ export default async function DocPage({ params }: DocPageProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }

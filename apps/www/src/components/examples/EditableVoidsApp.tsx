@@ -1,14 +1,16 @@
 import React, { CSSProperties, useState } from 'react';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import {
-  createBasicElementsPlugin,
   createExitBreakPlugin,
-  createPluginFactory,
-  createResetNodePlugin,
   createSoftBreakPlugin,
+} from '@udecode/plate-break';
+import {
+  createPluginFactory,
   Plate,
   PlateRenderElementProps,
   TElement,
-} from '@udecode/plate';
+} from '@udecode/plate-common';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -17,7 +19,7 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { createMyPlugins, MyEditor, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyEditor, MyValue } from '@/plate/plate.types';
 
 const EDITABLE_VOID = 'editable-void';
 

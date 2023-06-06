@@ -1,5 +1,4 @@
 import React from 'react';
-import { Plate, PlateProvider } from '@udecode/plate';
 import {
   createCloudAttachmentPlugin,
   createCloudImagePlugin,
@@ -7,6 +6,7 @@ import {
   ELEMENT_CLOUD_ATTACHMENT,
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
+import { Plate, PlateProvider } from '@udecode/plate-common';
 
 import { CloudAttachmentElement } from '@/components/plate-ui/cloud-attachment-element';
 import { CloudImageElement } from '@/components/plate-ui/cloud-image-element';
@@ -17,7 +17,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

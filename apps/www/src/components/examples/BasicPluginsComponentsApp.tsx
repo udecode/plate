@@ -1,18 +1,17 @@
 import {
-  createBlockquotePlugin,
   createBoldPlugin,
   createCodePlugin,
-  createHeadingPlugin,
   createItalicPlugin,
-  createParagraphPlugin,
-  createPlugins,
   createStrikethroughPlugin,
   createUnderlinePlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-basic-marks';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createPlugins, Plate } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { createPlateUI } from '@/plate/createPlateUI';
-import { MyValue } from '@/types/plate.types';
+import { MyValue } from '@/plate/plate.types';
 
 const plugins = createPlugins<MyValue>(
   [

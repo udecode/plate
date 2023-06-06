@@ -1,5 +1,6 @@
 import React from 'react';
-import { createExitBreakPlugin, Plate } from '@udecode/plate';
+import { createExitBreakPlugin } from '@udecode/plate-break';
+import { Plate } from '@udecode/plate-common';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { withPlaceHolders } from '@/components/plate-ui/placeholder';
@@ -9,7 +10,7 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { placeholderValue } from '@/plate/demo/values/placeholderValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const components = withPlaceHolders(plateUI);
 

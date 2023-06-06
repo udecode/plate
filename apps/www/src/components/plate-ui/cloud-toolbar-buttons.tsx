@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlateCloudEditor } from '@udecode/plate-cloud';
 
-import { useMyPlateEditorRef } from '@/types/plate.types';
+import { useMyPlateEditorRef } from '@/plate/plate.types';
 
 const buttonStyle: React.CSSProperties = {
   marginRight: 4,

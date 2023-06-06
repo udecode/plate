@@ -59,6 +59,7 @@ const Button = memo(
     );
   }
 );
+Button.displayName = 'Button';
 
 const RowOfButtons = memo(
   ({ row, emojiLibrary, onSelectEmoji, onMouseOver }: RowOfButtonsProps) => (
@@ -75,6 +76,7 @@ const RowOfButtons = memo(
     </div>
   )
 );
+RowOfButtons.displayName = 'RowOfButtons';
 
 export function EmojiPickerContent({
   i18n,

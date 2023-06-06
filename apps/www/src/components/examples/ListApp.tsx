@@ -1,13 +1,11 @@
 import React from 'react';
 import {
   createExitBreakPlugin,
-  createListPlugin,
-  createResetNodePlugin,
   createSoftBreakPlugin,
-  createTodoListPlugin,
-  Plate,
-  PlateProvider,
-} from '@udecode/plate';
+} from '@udecode/plate-break';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
@@ -17,7 +15,7 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { listValue } from '@/plate/demo/values/listValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

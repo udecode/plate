@@ -52,7 +52,18 @@ import {
   usePlateStates,
   WithOverride,
 } from '@udecode/plate-common';
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import {
+  ELEMENT_EXCALIDRAW,
+  TExcalidrawElement,
+} from '@udecode/plate-excalidraw';
+import {
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+} from '@udecode/plate-heading';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { ELEMENT_LINK, TLinkElement } from '@udecode/plate-link';
 import {
@@ -81,12 +92,7 @@ import {
   ELEMENT_TR,
   TTableElement,
 } from '@udecode/plate-table';
-
-import { TText } from '@/../../../packages/slate/dist';
-// import {
-//   ELEMENT_EXCALIDRAW,
-//   TExcalidrawElement,
-// } from '@udecode/plate-excalidraw';
+import { TText } from '@udecode/slate';
 
 /**
  * Text
@@ -194,6 +200,21 @@ export interface MyH3Element extends MyBlockElement {
   children: MyInlineChildren;
 }
 
+export interface MyH4Element extends MyBlockElement {
+  type: typeof ELEMENT_H4;
+  children: MyInlineChildren;
+}
+
+export interface MyH5Element extends MyBlockElement {
+  type: typeof ELEMENT_H5;
+  children: MyInlineChildren;
+}
+
+export interface MyH6Element extends MyBlockElement {
+  type: typeof ELEMENT_H6;
+  children: MyInlineChildren;
+}
+
 export interface MyBlockquoteElement extends MyBlockElement {
   type: typeof ELEMENT_BLOCKQUOTE;
   children: MyInlineChildren;
@@ -263,12 +284,12 @@ export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
 }
 
-// export interface MyExcalidrawElement
-//   extends TExcalidrawElement,
-//     MyBlockElement {
-//   type: typeof ELEMENT_EXCALIDRAW;
-//   children: [EmptyText];
-// }
+export interface MyExcalidrawElement
+  extends TExcalidrawElement,
+    MyBlockElement {
+  type: typeof ELEMENT_EXCALIDRAW;
+  children: [EmptyText];
+}
 
 export type MyNestableBlock = MyParagraphElement;
 
@@ -280,6 +301,9 @@ export type MyRootBlock =
   | MyH1Element
   | MyH2Element
   | MyH3Element
+  | MyH4Element
+  | MyH5Element
+  | MyH6Element
   | MyBlockquoteElement
   | MyCodeBlockElement
   | MyTableElement
@@ -288,8 +312,8 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyImageElement
   | MyMediaEmbedElement
-  | MyHrElement;
-// | MyExcalidrawElement;
+  | MyHrElement
+  | MyExcalidrawElement;
 
 export type MyValue = MyRootBlock[];
 

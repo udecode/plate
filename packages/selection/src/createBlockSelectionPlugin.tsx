@@ -11,6 +11,12 @@ export const KEY_BLOCK_SELECTION = 'blockSelection';
 export interface BlockSelectionPlugin {
   query?: QueryNodeOptions;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
+  sizes?: {
+    left?: number;
+    top?: number;
+    bottom?: number;
+    right?: number;
+  };
 }
 
 export const createBlockSelectionPlugin =
@@ -19,6 +25,12 @@ export const createBlockSelectionPlugin =
     options: {
       query: {
         maxLevel: 1,
+      },
+      sizes: {
+        left: 4,
+        top: 4,
+        right: 4,
+        bottom: 4,
       },
     },
     inject: {
@@ -37,33 +49,35 @@ export const createBlockSelectionPlugin =
       onChange: onChangeBlockSelection,
     },
     useHooks: useHooksBlockSelection,
-    renderAboveEditable: ({ children }) => (
-      <BlockSelectionArea>
-        <BlockStartArea
-          state={{
-            size: 28,
-            placement: 'left',
-          }}
-        />
-        <BlockStartArea
-          state={{
-            size: 50,
-            placement: 'top',
-          }}
-        />
-        <BlockStartArea
-          state={{
-            size: 50,
-            placement: 'right',
-          }}
-        />
-        <BlockStartArea
-          state={{
-            size: 50,
-            placement: 'bottom',
-          }}
-        />
-        {children}
-      </BlockSelectionArea>
-    ),
+    then: (editor, { options }) => ({
+      renderAboveEditable: ({ children }) => (
+        <BlockSelectionArea>
+          <BlockStartArea
+            state={{
+              size: options.sizes?.left,
+              placement: 'left',
+            }}
+          />
+          <BlockStartArea
+            state={{
+              size: options.sizes?.top,
+              placement: 'top',
+            }}
+          />
+          <BlockStartArea
+            state={{
+              size: options.sizes?.right,
+              placement: 'right',
+            }}
+          />
+          <BlockStartArea
+            state={{
+              size: options.sizes?.bottom,
+              placement: 'bottom',
+            }}
+          />
+          {children}
+        </BlockSelectionArea>
+      ),
+    }),
   });

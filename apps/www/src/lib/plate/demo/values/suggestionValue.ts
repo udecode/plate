@@ -1,6 +1,6 @@
 import { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
 
-import { MyValue } from '@/types/plate.types';
+import { MyValue } from '@/plate/plate.types';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {

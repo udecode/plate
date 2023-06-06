@@ -12,6 +12,9 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "files": [

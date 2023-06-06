@@ -6,7 +6,7 @@ import { basicMarksPlugins } from './basicMarksPlugins';
 import { selectOnBackspacePlugin } from './selectOnBackspacePlugin';
 
 import { plateUI } from '@/plate/demo/plateUI';
-import { createMyPlugins } from '@/types/plate.types';
+import { createMyPlugins } from '@/plate/plate.types';
 
 export const imagePlugins = createMyPlugins(
   [

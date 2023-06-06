@@ -1,20 +1,20 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import Link, { LinkProps } from "next/link"
-import { useRouter } from "next/navigation"
-import { SidebarOpen } from "lucide-react"
+import * as React from 'react';
+import { SidebarOpen } from 'lucide-react';
+import Link, { LinkProps } from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Icons } from './icons';
 
-import { docsConfig } from "@/config/docs"
-import { siteConfig } from "@/config/site"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Icons } from "@/components/icons"
+import { docsConfig } from '@/config/docs';
+import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 
 export function MobileNav() {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -56,15 +56,15 @@ export function MobileNav() {
               <div key={index} className="flex flex-col space-y-3 pt-6">
                 <h4 className="font-medium">{item.title}</h4>
                 {item?.items?.length &&
-                  item.items.map((item) => (
-                    <React.Fragment key={item.href}>
-                      {!item.disabled &&
-                        (item.href ? (
-                          <MobileLink href={item.href} onOpenChange={setOpen}>
-                            {item.title}
+                  item.items.map((_item) => (
+                    <React.Fragment key={_item.href}>
+                      {!_item.disabled &&
+                        (_item.href ? (
+                          <MobileLink href={_item.href} onOpenChange={setOpen}>
+                            {_item.title}
                           </MobileLink>
                         ) : (
-                          item.title
+                          _item.title
                         ))}
                     </React.Fragment>
                   ))}
@@ -74,13 +74,13 @@ export function MobileNav() {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 interface MobileLinkProps extends LinkProps {
-  onOpenChange?: (open: boolean) => void
-  children: React.ReactNode
-  className?: string
+  onOpenChange?: (open: boolean) => void;
+  children: React.ReactNode;
+  className?: string;
 }
 
 function MobileLink({
@@ -90,18 +90,18 @@ function MobileLink({
   children,
   ...props
 }: MobileLinkProps) {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <Link
       href={href}
       onClick={() => {
-        router.push(href.toString())
-        onOpenChange?.(false)
+        router.push(href.toString());
+        onOpenChange?.(false);
       }}
       className={cn(className)}
       {...props}
     >
       {children}
     </Link>
-  )
+  );
 }

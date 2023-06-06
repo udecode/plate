@@ -1,19 +1,17 @@
 import React from 'react';
-import {
-  createDeserializeMdPlugin,
-  createImagePlugin,
-  createLinkPlugin,
-  createListPlugin,
-  createTablePlugin,
-  Plate,
-} from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createListPlugin } from '@udecode/plate-list';
+import { createImagePlugin } from '@udecode/plate-media';
+import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { createTablePlugin } from '@udecode/plate-table';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
-import { createMyPlugins, MyPlatePlugin, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyPlatePlugin, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

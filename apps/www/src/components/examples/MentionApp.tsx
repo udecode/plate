@@ -1,11 +1,9 @@
 import React from 'react';
-import {
-  createComboboxPlugin,
-  createMentionPlugin,
-  getBlockAbove,
-  isStartPoint,
-  Plate,
-} from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { Plate } from '@udecode/plate-common';
+import { createMentionPlugin } from '@udecode/plate-mention';
+import { isStartPoint } from '@udecode/slate';
+import { getBlockAbove } from '@udecode/slate-utils';
 
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { MentionElement } from '@/components/plate-ui/mention-element';
@@ -14,7 +12,7 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { mentionValue } from '@/plate/demo/values/mentionValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [

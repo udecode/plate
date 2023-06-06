@@ -2,7 +2,7 @@ import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
-import { MyPlatePlugin } from '@/types/plate.types';
+import { MyPlatePlugin } from '@/plate/plate.types';
 
 export const selectOnBackspacePlugin: Partial<
   MyPlatePlugin<SelectOnBackspacePlugin>

@@ -1,12 +1,14 @@
 import React from 'react';
-import { createListPlugin, createTabbablePlugin, Plate } from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
+import { createListPlugin } from '@udecode/plate-list';
+import { createTabbablePlugin } from '@udecode/plate-tabbable';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
-import { createMyPlugins, MyValue } from '@/types/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
 const plugins = createMyPlugins(
   [
