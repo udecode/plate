@@ -24,6 +24,7 @@ import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
+import { SettingsToggle } from './settings-toggle';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
@@ -104,6 +105,8 @@ export function FixedToolbarButtons() {
       <div className="flex gap-1">
         <CommentToolbarButton />
         <ModeDropdownMenu />
+
+        <SettingsToggle />
       </div>
     </>
   );

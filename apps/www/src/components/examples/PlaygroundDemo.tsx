@@ -68,6 +68,7 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { withPlaceHolders } from '@/components/plate-ui/placeholder';
+import { SettingsPanel } from '@/components/plate-ui/settings-toggle';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
@@ -186,6 +187,8 @@ export function PlaygroundDemo() {
             <MentionCombobox items={MENTIONABLES} />
 
             <CursorOverlay containerRef={containerRef} />
+
+            <SettingsPanel />
           </Plate>
         </div>
 
