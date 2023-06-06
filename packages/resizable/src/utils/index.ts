@@ -5,3 +5,4 @@
 export * from './resizeLengthClamp';
 export * from './resizeLengthToRelative';
 export * from './resizeLengthToStatic';
+export * from './isTouchEvent';
