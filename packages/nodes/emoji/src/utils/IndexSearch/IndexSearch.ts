@@ -77,5 +77,9 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
     return emojis;
   }
 
+  getEmoji(): RData | undefined {
+    return this.get()[0];
+  }
+
   protected abstract transform(emoji: Emoji): RData;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/resizable",
-  "version": "20.4.6",
+  "version": "20.4.7",
   "description": "Resize components",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "21.3.0"
+    "@udecode/plate-common": "21.3.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

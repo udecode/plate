@@ -50,6 +50,10 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
     return this.text.length;
   }
 
+  isEnclosingTriggeringCharacter(char: string): boolean {
+    return this.isTriggering && char === this.trigger;
+  }
+
   reset() {
     this.text = '';
     this.isTriggering = false;

@@ -25,37 +25,46 @@ const getFoundText = <V extends Value>(
 ) => getEditorString(editor, getRange(editor, start, end));
 
 const isBreakingCharInText = (text: string) => /\s/.test(text);
+const isNextCharacterInSameLine = (
+  firstPoint: BasePoint,
+  secondPoint?: BasePoint
+) => firstPoint?.path[0] === secondPoint?.path[0];
 
-export const getFindTriggeringInput =
-  <V extends Value>(
-    editor: PlateEditor<V>,
-    emojiTriggeringController: IEmojiTriggeringController
-  ) =>
-  (text = '') => {
-    const selection = editor.selection as BaseRange;
-    const startPoint = editor.selection as BaseRange;
-    let currentText = text;
+export const getFindTriggeringInput = <V extends Value>(
+  editor: PlateEditor<V>,
+  emojiTriggeringController: IEmojiTriggeringController
+) => (text = '') => {
+  let currentText = text;
+  const selection = editor.selection as BaseRange;
+  const startRange = editor.selection as BaseRange;
+  const startPoint = startRange.anchor;
 
-    let endPoint = selection.anchor;
-    let nextPoint;
-    let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
+  let endPoint = selection.anchor;
+  let nextPoint;
+  let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
 
-    do {
-      if (!endPoint) break;
+  do {
+    if (!endPoint) break;
 
-      emojiTriggeringController.setText(currentText);
-      if (emojiTriggeringController.hasTriggeringMark) break;
+    emojiTriggeringController.setText(currentText);
+    if (emojiTriggeringController.hasTriggeringMark) break;
 
-      nextPoint = getNextPoint(editor, endPoint);
-      const foundText = getFoundText(editor, startPoint, nextPoint);
+    nextPoint = getNextPoint(editor, endPoint);
 
-      endPoint = nextPoint!;
-      currentText = `${foundText}${text}`;
+    if (!isNextCharacterInSameLine(startPoint, nextPoint)) {
+      emojiTriggeringController.reset();
+      break;
+    }
 
-      if (isBreakingCharInText(currentText)) {
-        emojiTriggeringController.reset();
-        comboboxActions.reset();
-        break;
-      }
-    } while (--repeat > 0);
-  };
+    const foundText = getFoundText(editor, startRange, nextPoint);
+
+    endPoint = nextPoint!;
+    currentText = `${foundText}${text}`;
+
+    if (isBreakingCharInText(currentText)) {
+      emojiTriggeringController.reset();
+      comboboxActions.reset();
+      break;
+    }
+  } while (--repeat > 0);
+};
