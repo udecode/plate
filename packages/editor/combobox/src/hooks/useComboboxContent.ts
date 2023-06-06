@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { HTMLPropsAs, usePlateEditorState } from '@udecode/plate-common';
+import { usePlateEditorState } from '@udecode/plate-common';
 import {
   flip,
   getRangeBoundingClientRect,
@@ -30,8 +30,7 @@ export type ComboboxContentProps<TData extends Data = NoData> = Omit<
 > & { combobox: ComboboxControls };
 
 export type ComboboxContentRootProps<TData extends Data = NoData> =
-  HTMLPropsAs<'ul'> &
-    ComboboxContentProps<TData> & { combobox: ComboboxControls };
+  ComboboxContentProps<TData> & { combobox: ComboboxControls };
 
 export const useComboboxContentState = <TData extends Data = NoData>({
   items,

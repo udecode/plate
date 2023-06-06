@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useElement, usePlateEditorRef } from '@udecode/plate-common';
+import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import { ELEMENT_MEDIA_EMBED } from '../media-embed/index';
 import { useMediaStore } from './mediaStore';
 import { parseMediaUrl } from './parseMediaUrl';
@@ -12,7 +13,12 @@ export const useMediaState = ({
 } = {}) => {
   const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
+  const { provider } = useMediaStore().get.urlData();
   const setUrlData = useMediaStore().set.urlData();
+  const focused = useFocused();
+  const selected = useSelected();
+  const readOnly = useReadOnly();
+
   const { url: elementUrl } = element;
 
   useEffect(() => {
@@ -25,4 +31,11 @@ export const useMediaState = ({
       setUrlData(parsed);
     }
   }, [editor, elementUrl, pluginKey, setUrlData]);
+
+  return {
+    focused,
+    selected,
+    readOnly,
+    provider,
+  };
 };

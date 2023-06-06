@@ -26,9 +26,11 @@ export const createBlockSelectionPlugin =
         () =>
         ({ element, children }) =>
           BlockSelectable({
-            element,
+            options: {
+              element,
+              selectedColor: 'rgb(219 234 254)',
+            },
             children,
-            selectedColor: 'rgb(219 234 254)',
           }),
     },
     handlers: {
@@ -37,10 +39,30 @@ export const createBlockSelectionPlugin =
     useHooks: useHooksBlockSelection,
     renderAboveEditable: ({ children }) => (
       <BlockSelectionArea>
-        <BlockStartArea size={28} placement="left" />
-        <BlockStartArea size={50} placement="top" />
-        <BlockStartArea size={50} placement="right" />
-        <BlockStartArea size={50} placement="bottom" />
+        <BlockStartArea
+          state={{
+            size: 28,
+            placement: 'left',
+          }}
+        />
+        <BlockStartArea
+          state={{
+            size: 50,
+            placement: 'top',
+          }}
+        />
+        <BlockStartArea
+          state={{
+            size: 50,
+            placement: 'right',
+          }}
+        />
+        <BlockStartArea
+          state={{
+            size: 50,
+            placement: 'bottom',
+          }}
+        />
         {children}
       </BlockSelectionArea>
     ),

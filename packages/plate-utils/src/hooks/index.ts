@@ -3,7 +3,6 @@
  */
 
 export * from './useComposedRef';
-export * from './useElementProps';
 export * from './useMarkToolbarButton';
 export * from './useOnClickOutside';
 export * from './usePlaceholder';

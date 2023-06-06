@@ -1,10 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-  useComposedRef,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   useCommentById,
   useCommentsActions,
@@ -12,12 +7,7 @@ import {
   useNewCommentText,
 } from '../stores/comments/CommentsProvider';
 
-export type CommentNewTextareaProps = {} & HTMLPropsAs<'textarea'>;
-
-export const useCommentNewTextarea = ({
-  ref: _ref,
-  ...props
-}: CommentNewTextareaProps): HTMLPropsAs<'textarea'> => {
+export const useCommentNewTextareaState = () => {
   const setNewValue = useCommentsActions().newValue();
   const activeComment = useCommentById(
     useCommentsSelectors().activeCommentId()
@@ -27,7 +17,6 @@ export const useCommentNewTextarea = ({
   const setFocusTextarea = useCommentsActions().focusTextarea();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const ref = useComposedRef(textareaRef, _ref);
 
   useEffect(() => {
     if (focusTextarea) {
@@ -39,20 +28,33 @@ export const useCommentNewTextarea = ({
   const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
 
   return {
+    textareaRef,
     placeholder,
-    rows: 1,
-    ref,
-    value: value ?? undefined,
-    onChange: (event) => {
-      setNewValue([{ type: 'p', children: [{ text: event.target.value }] }]);
-    },
-    ...props,
+    value,
+    setNewValue,
   };
 };
 
-export const CommentNewTextarea = createComponentAs<CommentNewTextareaProps>(
-  (props) => {
-    const htmlProps = useCommentNewTextarea(props);
-    return createElementAs('textarea', htmlProps);
-  }
-);
+export const useCommentNewTextarea = ({
+  textareaRef,
+  placeholder,
+  value,
+  setNewValue,
+}: ReturnType<typeof useCommentNewTextareaState>) => {
+  return {
+    props: {
+      placeholder,
+      rows: 1,
+      ref: textareaRef,
+      value: value ?? undefined,
+      onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setNewValue([{ type: 'p', children: [{ text: event.target.value }] }]);
+      },
+    },
+  };
+};
+
+export const CommentNewTextarea = createPrimitiveComponent('textarea')({
+  stateHook: useCommentNewTextareaState,
+  propsHook: useCommentNewTextarea,
+});

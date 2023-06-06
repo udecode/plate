@@ -1,29 +1,37 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   useComment,
   useCommentActions,
 } from '../stores/comment/CommentProvider';
 
-export const useCommentEditButton = (
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-): ButtonHTMLAttributes<HTMLButtonElement> => {
+export const useCommentEditButtonState = () => {
   const setIsMenuOpen = useCommentActions().isMenuOpen();
   const comment = useComment()!;
   const editingValue = useCommentActions().editingValue();
 
   return {
-    onClick: () => {
-      setIsMenuOpen(false);
-      editingValue(comment.value);
-    },
-    ...props,
+    setIsMenuOpen,
+    comment,
+    editingValue,
   };
 };
 
-export function CommentEditButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  const htmlProps = useCommentEditButton(props);
+export const useCommentEditButton = ({
+  setIsMenuOpen,
+  comment,
+  editingValue,
+}: ReturnType<typeof useCommentEditButtonState>) => {
+  return {
+    props: {
+      onClick: () => {
+        setIsMenuOpen(false);
+        editingValue(comment.value);
+      },
+    },
+  };
+};
 
-  return <button type="button" {...htmlProps} />;
-}
+export const CommentEditButton = createPrimitiveComponent('button')({
+  stateHook: useCommentEditButtonState,
+  propsHook: useCommentEditButton,
+});

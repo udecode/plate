@@ -1,26 +1,15 @@
 import { useEffect, useRef } from 'react';
-import {
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-  useComposedRef,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   useCommentActions,
   useEditingCommentText,
 } from '../stores/comment/CommentProvider';
 
-export type CommentEditTextareaProps = {} & HTMLPropsAs<'textarea'>;
-
-export const useCommentEditTextarea = ({
-  ref: _ref,
-  ...props
-}: CommentEditTextareaProps): HTMLPropsAs<'textarea'> => {
+export const useCommentEditTextareaState = () => {
   const setEditingValue = useCommentActions().editingValue();
   const value = useEditingCommentText();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const ref = useComposedRef(textareaRef, _ref);
 
   useEffect(() => {
     setTimeout(() => {
@@ -32,22 +21,33 @@ export const useCommentEditTextarea = ({
   }, [textareaRef]);
 
   return {
-    placeholder: 'Add a comment...',
-    rows: 1,
-    ref,
-    value: value ?? undefined,
-    onChange: (event) => {
-      setEditingValue([
-        { type: 'p', children: [{ text: event.target.value }] },
-      ]);
-    },
-    ...props,
+    textareaRef,
+    setEditingValue,
+    value,
   };
 };
 
-export const CommentEditTextarea = createComponentAs<CommentEditTextareaProps>(
-  (props) => {
-    const htmlProps = useCommentEditTextarea(props);
-    return createElementAs('textarea', htmlProps);
-  }
-);
+export const useCommentEditTextarea = ({
+  setEditingValue,
+  textareaRef,
+  value,
+}: ReturnType<typeof useCommentEditTextareaState>) => {
+  return {
+    props: {
+      placeholder: 'Add a comment...',
+      rows: 1,
+      ref: textareaRef,
+      value: value ?? undefined,
+      onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditingValue([
+          { type: 'p', children: [{ text: event.target.value }] },
+        ]);
+      },
+    },
+  };
+};
+
+export const CommentEditTextarea = createPrimitiveComponent('textarea')({
+  stateHook: useCommentEditTextareaState,
+  propsHook: useCommentEditTextarea,
+});

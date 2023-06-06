@@ -1,5 +1,8 @@
-import React, { cloneElement, ReactNode } from 'react';
-import { createElementAs, HTMLPropsAs } from '@udecode/plate-common';
+import React, {
+  cloneElement,
+  ComponentPropsWithoutRef,
+  ReactNode,
+} from 'react';
 import {
   autoUpdate,
   flip,
@@ -10,7 +13,7 @@ import {
   useInteractions,
 } from '../libs/floating-ui';
 
-export interface PopoverProps extends HTMLPropsAs<'div'> {
+export interface PopoverProps extends ComponentPropsWithoutRef<'div'> {
   floatingOptions?: Partial<UseFloatingProps>;
   disabled?: boolean;
   content?: ReactNode;
@@ -47,19 +50,21 @@ export function Popover({
         getReferenceProps({ ref: refs.setReference, ...children.props })
       )}
 
-      {floatingOptions?.open &&
-        createElementAs('div', {
-          ref: refs.setFloating,
-          style: {
+      {floatingOptions?.open && (
+        <div
+          ref={refs.setFloating}
+          style={{
             position: strategy,
             top: y ?? 0,
             left: x ?? 0,
             zIndex: 1,
-          },
-          contentEditable: false,
-          children: content,
-          ...props,
-        })}
+          }}
+          contentEditable={false}
+          {...props}
+        >
+          {children}
+        </div>
+      )}
     </>
   );
 }

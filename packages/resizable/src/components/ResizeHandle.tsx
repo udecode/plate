@@ -149,4 +149,6 @@ export const ResizeHandle = createPrimitiveComponent<
   stateHook: useResizeHandleState,
 });
 
-export type ResizeHandleProps = React.ComponentProps<typeof ResizeHandle>;
+export type ResizeHandleProps = React.ComponentPropsWithRef<
+  typeof ResizeHandle
+>;

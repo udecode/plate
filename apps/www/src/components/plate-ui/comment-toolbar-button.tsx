@@ -2,16 +2,13 @@ import React from 'react';
 import { useCommentAddButton } from '@udecode/plate-comments';
 
 import { Icons } from '@/components/icons';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar-button';
 
-export function CommentToolbarButton(props: ToolbarButtonProps) {
-  const buttonProps = useCommentAddButton(props as any);
+export function CommentToolbarButton() {
+  const { props } = useCommentAddButton();
 
   return (
-    <ToolbarButton tooltip="Comment (⌘+⇧+M)" {...(buttonProps as any)}>
+    <ToolbarButton tooltip="Comment (⌘+⇧+M)" {...props}>
       <Icons.commentAdd />
     </ToolbarButton>
   );

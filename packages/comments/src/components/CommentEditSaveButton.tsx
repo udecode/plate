@@ -1,4 +1,5 @@
-import React, { ButtonHTMLAttributes, useCallback } from 'react';
+import { useCallback } from 'react';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import {
   useCommentActions,
   useCommentSelectors,
@@ -9,9 +10,7 @@ import {
   useUpdateComment,
 } from '../stores/comments/CommentsProvider';
 
-export const useCommentEditSaveButton = ({
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>): ButtonHTMLAttributes<HTMLButtonElement> => {
+export const useCommentEditSaveButtonState = () => {
   const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const editingValue = useCommentSelectors().editingValue();
   const setEditingValue = useCommentActions().editingValue();
@@ -19,29 +18,43 @@ export const useCommentEditSaveButton = ({
   const updateComment = useUpdateComment(id);
   const value = useCommentText();
 
-  const onClick = useCallback(() => {
-    if (!editingValue) return;
-
-    updateComment({
-      value: editingValue,
-    });
-
-    setEditingValue(null);
-
-    onCommentUpdate?.({ id, value: editingValue });
-  }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]);
-
   return {
-    onClick,
-    disabled: value?.trim().length === 0,
-    ...props,
+    value,
+    editingValue,
+    setEditingValue,
+    id,
+    onCommentUpdate,
+    updateComment,
   };
 };
 
-export function CommentEditSaveButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  const htmlProps = useCommentEditSaveButton(props);
+export const useCommentEditSaveButton = ({
+  editingValue,
+  setEditingValue,
+  id,
+  onCommentUpdate,
+  updateComment,
+  value,
+}: ReturnType<typeof useCommentEditSaveButtonState>) => {
+  return {
+    props: {
+      onClick: useCallback(() => {
+        if (!editingValue) return;
 
-  return <button type="button" {...htmlProps} />;
-}
+        updateComment({
+          value: editingValue,
+        });
+
+        setEditingValue(null);
+
+        onCommentUpdate?.({ id, value: editingValue });
+      }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]),
+      disabled: value?.trim().length === 0,
+    },
+  };
+};
+
+export const CommentEditSaveButton = createPrimitiveComponent('button')({
+  stateHook: useCommentEditSaveButtonState,
+  propsHook: useCommentEditSaveButton,
+});

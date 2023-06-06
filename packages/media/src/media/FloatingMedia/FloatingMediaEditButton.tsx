@@ -1,32 +1,21 @@
 import { useCallback } from 'react';
-import {
-  AsProps,
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
-  useElement,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 import { TMediaElement } from '../types';
 import { floatingMediaActions } from './floatingMediaStore';
 
-export const useFloatingMediaEditButton = (
-  props: HTMLPropsAs<'button'>
-): HTMLPropsAs<'button'> => {
+export const useFloatingMediaEditButton = () => {
   const element = useElement<TMediaElement>();
 
   return {
-    onClick: useCallback(() => {
-      floatingMediaActions.url(element.url);
-      floatingMediaActions.isEditing(true);
-    }, [element.url]),
-    ...props,
+    props: {
+      onClick: useCallback(() => {
+        floatingMediaActions.url(element.url);
+        floatingMediaActions.isEditing(true);
+      }, [element.url]),
+    },
   };
 };
 
-export const FloatingMediaEditButton = createComponentAs<AsProps<'button'>>(
-  (props) => {
-    const htmlProps = useFloatingMediaEditButton(props);
-
-    return createElementAs('button', htmlProps);
-  }
-);
+export const FloatingMediaEditButton = createPrimitiveComponent('button')({
+  propsHook: useFloatingMediaEditButton,
+});

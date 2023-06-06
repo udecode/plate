@@ -1,5 +1,7 @@
-import React, { ButtonHTMLAttributes } from 'react';
-import { usePlateEditorRef } from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  usePlateEditorRef,
+} from '@udecode/plate-common';
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,
@@ -8,9 +10,7 @@ import {
 } from '../stores/comments/CommentsProvider';
 import { unsetCommentNodesById } from '../utils/index';
 
-export const useCommentDeleteButton = (
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-): ButtonHTMLAttributes<HTMLButtonElement> => {
+export const useCommentDeleteButtonState = () => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const onCommentDelete = useCommentsSelectors().onCommentDelete();
   const id = useCommentSelectors().id();
@@ -19,24 +19,40 @@ export const useCommentDeleteButton = (
   const editor = usePlateEditorRef();
 
   return {
-    onClick: () => {
-      if (activeCommentId === id) {
-        unsetCommentNodesById(editor, { id });
-        setActiveCommentId(null);
-      } else {
-        removeComment(id);
-      }
-
-      onCommentDelete?.(id);
-    },
-    ...props,
+    activeCommentId,
+    onCommentDelete,
+    id,
+    setActiveCommentId,
+    removeComment,
+    editor,
   };
 };
 
-export function CommentDeleteButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  const htmlProps = useCommentDeleteButton(props);
+export const useCommentDeleteButton = ({
+  activeCommentId,
+  editor,
+  id,
+  onCommentDelete,
+  removeComment,
+  setActiveCommentId,
+}: ReturnType<typeof useCommentDeleteButtonState>) => {
+  return {
+    props: {
+      onClick: () => {
+        if (activeCommentId === id) {
+          unsetCommentNodesById(editor, { id });
+          setActiveCommentId(null);
+        } else {
+          removeComment(id);
+        }
 
-  return <button type="button" {...htmlProps} />;
-}
+        onCommentDelete?.(id);
+      },
+    },
+  };
+};
+
+export const CommentDeleteButton = createPrimitiveComponent('button')({
+  stateHook: useCommentDeleteButtonState,
+  propsHook: useCommentDeleteButton,
+});

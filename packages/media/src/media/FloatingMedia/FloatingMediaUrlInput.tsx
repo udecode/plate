@@ -1,10 +1,7 @@
 import { ChangeEventHandler, useCallback, useEffect } from 'react';
 import {
-  createComponentAs,
-  createElementAs,
+  createPrimitiveComponent,
   focusEditor,
-  HTMLPropsAs,
-  mergeProps,
   useElement,
   useHotkeys,
   usePlateEditorRef,
@@ -16,14 +13,11 @@ import {
 } from './floatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';
 
-export type FloatingMediaUrlInputProps = HTMLPropsAs<'input'> & {
-  pluginKey?: string;
-};
-
-export const useFloatingMediaUrlInput = ({
+export const useFloatingMediaUrlInputState = ({
   pluginKey,
-  ...props
-}: FloatingMediaUrlInputProps): HTMLPropsAs<'input'> => {
+}: {
+  pluginKey?: string;
+} = {}) => {
   const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
 
@@ -61,23 +55,28 @@ export const useFloatingMediaUrlInput = ({
     []
   );
 
+  return {
+    defaultValue: floatingMediaSelectors.url(),
+  };
+};
+
+export const useFloatingMediaUrlInput = ({
+  defaultValue,
+}: ReturnType<typeof useFloatingMediaUrlInputState>) => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingMediaActions.url(e.target.value);
   }, []);
 
-  return mergeProps(
-    {
+  return {
+    props: {
       onChange,
       autoFocus: true,
-      defaultValue: floatingMediaSelectors.url(),
+      defaultValue,
     },
-    props
-  );
+  };
 };
 
-export const FloatingMediaUrlInput =
-  createComponentAs<FloatingMediaUrlInputProps>((props) => {
-    const htmlProps = useFloatingMediaUrlInput(props);
-
-    return createElementAs('input', htmlProps);
-  });
+export const FloatingMediaUrlInput = createPrimitiveComponent('input')({
+  stateHook: useFloatingMediaUrlInputState,
+  propsHook: useFloatingMediaUrlInput,
+});

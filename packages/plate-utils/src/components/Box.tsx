@@ -1,6 +1,6 @@
-import { ComponentProps } from 'react';
-import { createSlotComponent } from '../utils/createComponentAs';
+import { ComponentPropsWithRef } from 'react';
+import { createSlotComponent } from '../utils/createSlotComponent';
 
 export const Box = createSlotComponent('div');
 
-export type BoxProps = ComponentProps<typeof Box>;
+export type BoxProps = ComponentPropsWithRef<typeof Box>;

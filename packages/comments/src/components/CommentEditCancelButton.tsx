@@ -1,23 +1,18 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 import { useCommentActions } from '../stores/comment/CommentProvider';
 
-export const useCommentEditCancelButton = (
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-): ButtonHTMLAttributes<HTMLButtonElement> => {
+export const useCommentEditCancelButton = () => {
   const setEditingValue = useCommentActions().editingValue();
 
   return {
-    onClick: () => {
-      setEditingValue(null);
+    props: {
+      onClick: () => {
+        setEditingValue(null);
+      },
     },
-    ...props,
   };
 };
 
-export function CommentEditCancelButton(
-  props: ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  const htmlProps = useCommentEditCancelButton(props);
-
-  return <button type="button" {...htmlProps} />;
-}
+export const CommentEditCancelButton = createPrimitiveComponent('button')({
+  propsHook: useCommentEditCancelButton,
+});

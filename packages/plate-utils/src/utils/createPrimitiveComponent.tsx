@@ -1,53 +1,8 @@
 /* eslint-disable react/display-name */
-import React, { forwardRef, ReactElement } from 'react';
-import { Slot } from '@radix-ui/react-slot';
+import React from 'react';
 import { isDefined } from '@udecode/utils';
 import { useComposedRef } from '../hooks';
-import { AsProps, Children, Component, Props } from '../types/index';
-
-/**
- * Creates a type-safe component with the `as` prop and `React.forwardRef`.
- *
- * @example
- * import { createComponent } from "ariakit-react-utils/system";
- *
- * type Props = {
- *   as?: "div";
- *   customProp?: boolean;
- * };
- *
- * const Component = createComponent<Props>(({ customProp, ...props }) => {
- *   return <div {...props} />;
- * });
- *
- * <Component as="button" customProp />
- */
-export const createComponentAs = <O extends AsProps>(
-  render: (props: Props<O>) => ReactElement | Children | null
-) => {
-  const Role = (props: Props<O>, ref: React.Ref<any>) =>
-    render({ ref, ...props });
-
-  return forwardRef(Role as any) as unknown as Component<O>;
-};
-
-export const createSlotComponent = <
-  T extends React.ElementType,
-  P extends React.ComponentProps<T>
->(
-  element: T
-) =>
-  // eslint-disable-next-line react/display-name
-  React.forwardRef<
-    any,
-    P & {
-      asChild?: boolean;
-    }
-  >(({ asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : element;
-
-    return <Comp ref={ref} {...props} />;
-  });
+import { createSlotComponent } from './createSlotComponent';
 
 type StateHook<O> = (options: O) => any;
 type PropsHook<S> = (state: S) => {
@@ -82,7 +37,7 @@ type PropsHook<S> = (state: S) => {
  */
 export const createPrimitiveComponent = <
   T extends React.ElementType,
-  P extends React.ComponentProps<T>
+  P extends React.ComponentPropsWithoutRef<T>
 >(
   element: T
 ) => {
@@ -98,6 +53,7 @@ export const createPrimitiveComponent = <
     return React.forwardRef<
       any,
       {
+        as?: React.ElementType;
         asChild?: boolean;
         state?: S;
         options?: O;
