@@ -43,10 +43,13 @@ export const usePlateElement = <T extends TElement = TElement>(
  * Headless element component.
  */
 const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
-  (props: PlateElementProps) => {
-    const { ref, props: rootProps } = usePlateElement(props);
+  (props: PlateElementProps, ref) => {
+    const { ref: rootRef, props: rootProps } = usePlateElement({
+      ...props,
+      ref,
+    });
 
-    return <Box {...rootProps} ref={ref} />;
+    return <Box {...rootProps} ref={rootRef} />;
   }
 ) as (<V extends Value = Value, N extends TElement = EElement<V>>(
   props: PlateElementProps<V, N> & RefAttributes<HTMLDivElement>

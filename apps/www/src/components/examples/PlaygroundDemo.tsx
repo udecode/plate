@@ -95,7 +95,7 @@ import {
   MyValue,
 } from '@/types/plate.types';
 
-const components = withPlaceHolders(createPlateUI());
+const components = withDraggables(withPlaceHolders(createPlateUI()));
 
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
@@ -159,7 +159,7 @@ export function PlaygroundDemo() {
           createEmojiPlugin(emojiPlugin),
         ],
         {
-          components: withDraggables(components),
+          components,
         }
       ),
     []

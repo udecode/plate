@@ -13,6 +13,7 @@ export interface IEmojiTriggeringController {
   reset: () => void;
   getOptions: () => EmojiTriggeringControllerOptions;
   getTextSize: () => number;
+  isEnclosingTriggeringCharacter: (char: string) => boolean;
 }
 export class EmojiTriggeringController implements IEmojiTriggeringController {
   protected text = '';
