@@ -46,7 +46,7 @@ import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin'
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { playgroundValue } from '@/plate/demo/values/playgroundValue';
+import { playgroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { ListToolbarButtons } from '@/plate/list/ListToolbarButtons';
 
 function PlateContainer() {

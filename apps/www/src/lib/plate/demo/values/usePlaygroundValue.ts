@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
@@ -25,34 +26,45 @@ import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableValue } from './tableValue';
 
+import { settingsStore } from '@/components/context/settings-store';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
+import { MyValue } from '@/plate/plate.types';
 
-export const playgroundValue: any = mapNodeId([
-  ...basicElementsValue,
-  ...basicMarksValue,
-  ...kbdValue,
-  ...fontValue,
-  ...highlightValue,
-  ...horizontalRuleValue,
-  ...alignValue,
-  ...lineHeightValue,
-  ...indentValue,
-  ...indentListValue,
-  // ...listValue,
-  ...mediaValue,
-  ...tableValue,
-  ...linkValue,
-  ...mentionValue,
-  ...emojiValue,
-  ...commentsValue,
-  ...autoformatValue,
-  ...softBreakValue,
-  ...exitBreakValue,
-  ...tabbableValue,
-  ...cursorOverlayValue,
-  ...deserializeHtmlValue,
-  ...deserializeDocxValue,
-  ...deserializeMdValue,
-  ...deserializeCsvValue,
-  ...excalidrawValue,
-]);
+export const usePlaygroundValue = () => {
+  const checkedIds = settingsStore.use.checkedIds();
+
+  return useMemo(() => {
+    const value = [...basicElementsValue, ...basicMarksValue];
+
+    value.push(...kbdValue);
+    if (checkedIds.color) value.push(...fontValue);
+
+    value.push(
+      ...highlightValue,
+      ...horizontalRuleValue,
+      ...alignValue,
+      ...lineHeightValue,
+      ...indentValue,
+      ...indentListValue,
+      // ...listValue,
+      ...mediaValue,
+      ...tableValue,
+      ...linkValue,
+      ...mentionValue,
+      ...emojiValue,
+      ...commentsValue,
+      ...autoformatValue,
+      ...softBreakValue,
+      ...exitBreakValue,
+      ...tabbableValue,
+      ...cursorOverlayValue,
+      ...deserializeHtmlValue,
+      ...deserializeDocxValue,
+      ...deserializeMdValue,
+      ...deserializeCsvValue,
+      ...excalidrawValue
+    );
+
+    return mapNodeId(value) as MyValue;
+  }, [checkedIds]);
+};

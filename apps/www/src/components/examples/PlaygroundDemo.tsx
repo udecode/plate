@@ -91,7 +91,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
-import { playgroundValue } from '@/plate/demo/values/playgroundValue';
+import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import {
   createMyPlugins,
   MyEditor,
@@ -107,6 +107,8 @@ export function PlaygroundDemo() {
   const checkedIds = settingsStore.use.checkedIds();
   const [_key, setKey] = useState(1);
   const key = useDebounce(_key, 1000);
+
+  const initialValue = usePlaygroundValue();
 
   const plugins = useMemo(() => {
     setKey(Math.random());
@@ -177,7 +179,7 @@ export function PlaygroundDemo() {
   return (
     <PlateProvider<MyValue>
       key={key}
-      initialValue={playgroundValue}
+      initialValue={initialValue}
       plugins={plugins}
       normalizeInitialValue
     >

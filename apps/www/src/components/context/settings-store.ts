@@ -1,16 +1,18 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { createStore } from '@udecode/plate-common';
+import { MARK_COLOR } from '@udecode/plate-font';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 export type CheckedId =
   | 'heading'
   | typeof ELEMENT_PARAGRAPH
-  | typeof ELEMENT_BLOCKQUOTE;
+  | typeof ELEMENT_BLOCKQUOTE
+  | typeof MARK_COLOR;
 
 export const categories = [
   {
     id: 'blocks',
-    label: 'Blocks',
+    label: 'Nodes',
     children: [
       {
         id: ELEMENT_PARAGRAPH as CheckedId,
@@ -30,6 +32,22 @@ export const categories = [
         popoverContent: '',
       },
     ],
+  },
+  {
+    id: 'marks',
+    label: 'Marks',
+    children: [
+      {
+        id: MARK_COLOR as CheckedId,
+        label: 'Color',
+        popoverContent: '',
+      },
+    ],
+  },
+  {
+    id: 'functionality',
+    label: 'Functionality',
+    children: [],
   },
 ];
 

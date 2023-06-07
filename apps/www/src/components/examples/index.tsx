@@ -49,7 +49,7 @@ import TableApp from './TableApp';
 import TypescriptApp from './TypescriptApp';
 
 import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
-import { playgroundValue } from '@/plate/demo/values/playgroundValue';
+import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 
 export const examples = {
   AlignmentApp,
@@ -90,7 +90,7 @@ export const examples = {
   PlaceholderApp,
   PlateApp,
   PlaygroundDemo,
-  playgroundValue,
+  usePlaygroundValue,
   PreviewMdApp,
   ResetNodeApp,
   SerializingCsvApp,
