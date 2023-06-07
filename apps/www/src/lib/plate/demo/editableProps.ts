@@ -1,5 +1,6 @@
 import { TEditableProps } from '@udecode/plate-common';
 
+import { cn } from '@/lib/utils';
 import { MyValue } from '@/plate/plate.types';
 
 export const editableProps: TEditableProps<MyValue> = {
@@ -9,4 +10,7 @@ export const editableProps: TEditableProps<MyValue> = {
   style: {
     outline: 'none',
   },
+  className: cn(
+    'relative w-full max-w-[900px] px-[96px] pb-[20vh] leading-[1.4] [&_strong]:font-bold'
+  ),
 };

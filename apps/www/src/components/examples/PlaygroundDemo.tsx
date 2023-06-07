@@ -223,18 +223,20 @@ export function PlaygroundDemo() {
       </FixedToolbar>
 
       <CommentsProvider>
-        <div ref={containerRef} className="relative">
-          <Plate editableProps={editableProps}>
-            <FloatingToolbar>
-              <FloatingToolbarButtons />
-            </FloatingToolbar>
+        <div className="relative flex">
+          <div ref={containerRef} className="relative flex max-w-[1092px]">
+            <Plate editableProps={editableProps}>
+              <FloatingToolbar>
+                <FloatingToolbarButtons />
+              </FloatingToolbar>
 
-            <MentionCombobox items={MENTIONABLES} />
+              <MentionCombobox items={MENTIONABLES} />
 
-            <CursorOverlay containerRef={containerRef} />
+              <CursorOverlay containerRef={containerRef} />
+            </Plate>
+          </div>
 
-            <SettingsPanel />
-          </Plate>
+          <SettingsPanel />
         </div>
 
         <CommentsPopover />

@@ -233,6 +233,7 @@ export const categories = [
         id: MARK_BG_COLOR as CheckedId,
         label: 'Background Color',
         popoverContent: 'Add color to text backgrounds for emphasis or style.',
+        route: '/docs/',
       },
       {
         id: MARK_KBD as CheckedId,

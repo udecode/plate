@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { PlaygroundDemo } from '@/components/examples/PlaygroundDemo';
+import { ExampleCodeLink } from '@/components/examples-nav';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
@@ -35,7 +36,7 @@ export default function IndexPage() {
           Plugin system & primitive component library. <br />
           CLI for styled components. Customizable. Open Source.
         </PageHeaderDescription>
-        <div className="flex w-full items-center space-x-4 pb-8 pt-4 md:pb-10">
+        <section className="flex w-full items-center space-x-4 pb-8 pt-4 md:pb-10">
           <Link href="/docs" className={cn(buttonVariants())}>
             Get Started
           </Link>
@@ -48,25 +49,18 @@ export default function IndexPage() {
             <Icons.gitHub className="mr-2 h-4 w-4" />
             GitHub
           </Link>
-        </div>
+        </section>
       </PageHeader>
-      {/* <ExamplesNav className="[&>a:first-child]:text-primary" /> */}
-      {/* <section className="space-y-8 overflow-hidden rounded-lg border-2 border-primary dark:border-muted md:hidden"> */}
-      {/*  <Image */}
-      {/*    src="/examples/dashboard-light.png" */}
-      {/*    width={1280} */}
-      {/*    height={866} */}
-      {/*    alt="Dashboard" */}
-      {/*    className="block dark:hidden" */}
-      {/*  /> */}
-      {/*  <Image */}
-      {/*    src="/examples/dashboard-dark.png" */}
-      {/*    width={1280} */}
-      {/*    height={866} */}
-      {/*    alt="Dashboard" */}
-      {/*    className="hidden dark:block" */}
-      {/*  /> */}
-      {/* </section> */}
+
+      <section className="mb-4 flex w-full justify-between">
+        <h2 className="ml-4 font-bold">Playground</h2>
+        <div>
+          <ExampleCodeLink />
+        </div>
+      </section>
+
+      {/* <div className="overflow-hidden rounded-[0.5rem] border bg-background shadow-xl" /> */}
+
       <section className="relative">
         <div className="border bg-background shadow-xl">
           <PlaygroundDemo />
