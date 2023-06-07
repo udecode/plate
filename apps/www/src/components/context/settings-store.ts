@@ -18,6 +18,7 @@ import { createStore } from '@udecode/plate-common';
 import { KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
+import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
