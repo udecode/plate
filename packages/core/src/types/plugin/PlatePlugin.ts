@@ -92,6 +92,11 @@ export type PlatePlugin<
   isVoid?: boolean;
 
   /**
+   * Property used by Plate to enable/disable the plugin.
+   */
+  enabled?: boolean;
+
+  /**
    * Extended properties used by any plugin as options.
    */
   options?: P;

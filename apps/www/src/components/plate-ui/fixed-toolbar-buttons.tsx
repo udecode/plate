@@ -24,11 +24,11 @@ import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
-import { SettingsToggle } from './settings-toggle';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { Icons, iconVariants } from '@/components/icons';
+import { SettingsToggle } from '@/components/settings-toggle';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 
 export function FixedToolbarButtons() {
