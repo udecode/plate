@@ -234,6 +234,7 @@ export const Icons = {
   close: X,
   spinner: Loader2,
   chevronLeft: ChevronLeft,
+  chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   trash: Trash,
   post: FileText,

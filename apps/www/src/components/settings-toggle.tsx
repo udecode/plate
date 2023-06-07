@@ -13,9 +13,7 @@ import {
   AccordionTrigger,
 } from './ui/accordion';
 import { Button } from './ui/button';
-import { Label } from './ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Switch } from './ui/switch';
 import { Toggle } from './ui/toggle';
 import { Icons } from './icons';
 
@@ -28,9 +26,7 @@ export function SettingsToggle() {
         <Toggle
           className="h-9 w-9 p-0"
           pressed={showSettings}
-          onClick={() =>
-            settingsStore.set.showSettings(!settingsStore.get.showSettings())
-          }
+          onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
         >
           <Icons.plugin className="h-6 w-6" />
         </Toggle>
@@ -51,20 +47,32 @@ export function SettingsSwitch({
   icon?: LucideIcon;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <Switch
+    <div className="flex items-center justify-between gap-2">
+      {/* <Switch */}
+      {/*  id={id} */}
+      {/*  checked={settingsStore.use.checkedId(id)} */}
+      {/*  onCheckedChange={(_checked) => { */}
+      {/*    settingsStore.set.setCheckedId(id, _checked); */}
+      {/*  }} */}
+      {/* /> */}
+      {/* <Label htmlFor={id}>{label}</Label> */}
+
+      <Toggle
         id={id}
-        checked={settingsStore.use.checkedId(id)}
-        onCheckedChange={(_checked) => {
-          settingsStore.set.setCheckedId(id, _checked);
+        pressed={settingsStore.use.checkedId(id)}
+        size="sm"
+        className="data-[state=on]:font-semibold"
+        onPressedChange={(pressed) => {
+          settingsStore.set.setCheckedId(id, pressed);
         }}
-      />
-      <Label htmlFor={id}>{label}</Label>
+      >
+        {label}
+      </Toggle>
 
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" className="h-9 w-9 p-0">
-            <Icons.info className="h-4 w-4 text-muted-foreground" />
+            <Icons.chevronDown className="h-4 w-4 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
 
@@ -83,22 +91,26 @@ export function SettingsPanel() {
 
   return (
     <div className="absolute right-0 top-0 z-40 h-full w-[217px] border-l border-l-border">
-      <div className="p-3 px-4">
-        <h3 className="mb-2 text-lg font-semibold">Plugins</h3>
+      <div>
+        <h3 className="mb-2 p-3 px-4 text-lg font-semibold">Plugins</h3>
 
         <Accordion type="multiple" defaultValue={categoryIds}>
           {categories.map((item) => (
             <AccordionItem key={item.id} value={item.id}>
-              <AccordionTrigger>{item.label}</AccordionTrigger>
-              <AccordionContent>
-                {item.children.map((child) => (
-                  <SettingsSwitch
-                    key={child.id}
-                    id={child.id}
-                    label={child.label}
-                    popoverContent={child.popoverContent}
-                  />
-                ))}
+              <AccordionTrigger className="p-3 px-4">
+                {item.label}
+              </AccordionTrigger>
+              <AccordionContent className="p-3 px-4">
+                <div className="flex flex-col gap-1">
+                  {item.children.map((child) => (
+                    <SettingsSwitch
+                      key={child.id}
+                      id={child.id}
+                      label={child.label}
+                      popoverContent={child.popoverContent}
+                    />
+                  ))}
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}
