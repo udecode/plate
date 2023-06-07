@@ -9,12 +9,16 @@ import { ElementPopover } from '@udecode/plate-floating';
 import {
   Caption,
   CaptionTextarea,
+  ELEMENT_MEDIA_EMBED,
   Resizable,
   TMediaEmbedElement,
   useMediaEmbed,
   useMediaState,
 } from '@udecode/plate-media';
-import { mediaFloatingOptions } from './media-floating-toolbar';
+import {
+  mediaFloatingOptions,
+  MediaFloatingToolbar,
+} from './media-floating-toolbar';
 
 import { cn } from '@/lib/utils';
 
@@ -27,7 +31,7 @@ const MediaEmbedElement = React.forwardRef<
 
   return (
     <ElementPopover
-      content={<div>a</div>}
+      content={<MediaFloatingToolbar pluginKey={ELEMENT_MEDIA_EMBED} />}
       floatingOptions={mediaFloatingOptions}
     >
       <PlateElement

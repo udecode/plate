@@ -8,7 +8,8 @@ import {
 } from '@udecode/plate-common';
 import { PopoverProps } from '@udecode/plate-floating';
 import { TTableElement } from '@udecode/plate-table';
-import { useReadOnly, useSelected } from 'slate-react';
+import { someNode } from '@udecode/slate';
+import { useReadOnly } from 'slate-react';
 import { TableBordersDropdownMenuContent } from './table-borders';
 
 import { Icons } from '@/components/icons';
@@ -30,9 +31,13 @@ export function TableFloatingToolbar({ children, ...props }: PopoverProps) {
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const readOnly = useReadOnly();
-  const selected = useSelected();
   const editor = usePlateEditorState();
-  const open = !readOnly && selected && isCollapsed(editor.selection);
+  const open =
+    !readOnly &&
+    someNode(editor, {
+      match: (n) => n === element,
+    }) &&
+    isCollapsed(editor.selection);
 
   return (
     <Popover open={open} {...props}>

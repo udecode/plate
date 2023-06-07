@@ -4,6 +4,7 @@ import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
 import { commentsValue } from './commentsValue';
+import { cursorOverlayValue } from './cursorOverlayValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
 import { deserializeDocxValue } from './deserializeDocxValue';
 import { deserializeHtmlValue } from './deserializeHtmlValue';
@@ -39,7 +40,7 @@ export const usePlaygroundValue = () => {
     if (checkedIds.hr) value.push(...horizontalRuleValue);
     if (checkedIds.highlight) value.push(...highlightValue);
     if (checkedIds.table) value.push(...tableValue);
-    if (checkedIds.media_embed) value.push(...mediaValue);
+    if (checkedIds.img || checkedIds.media_embed) value.push(...mediaValue);
     if (checkedIds.a) value.push(...linkValue);
     if (checkedIds.align) value.push(...alignValue);
     if (checkedIds.lineHeight) value.push(...lineHeightValue);
@@ -57,9 +58,7 @@ export const usePlaygroundValue = () => {
     if (checkedIds.listStyleType) value.push(...indentListValue);
     if (checkedIds.comment) value.push(...commentsValue);
     if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
-    // if (checkedIds.dragOverCursor) value.push(...cursorOverlayValue);
-
-    value.push();
+    if (checkedIds.dragOverCursor) value.push(...cursorOverlayValue);
 
     return mapNodeId(value) as MyValue;
   }, [checkedIds]);
