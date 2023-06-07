@@ -19,6 +19,8 @@ export const flattenDeepPlugins = <V extends Value>(
 
     p = mergeDeepPlugins<V>(editor, p);
 
+    if (p.enabled === false) return;
+
     if (!editor.pluginsByKey[p.key]) {
       editor.plugins.push(p);
       editor.pluginsByKey[p.key] = p;

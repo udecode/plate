@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import {
   AutoformatPlugin,
@@ -60,6 +60,8 @@ import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { settingsStore } from '@/components/context/settings-store';
+import { useDebounce } from '@/components/hooks/use-debounce';
 import { CommentsPopover } from '@/components/plate-ui/comments-popover';
 import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -68,8 +70,8 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { withPlaceHolders } from '@/components/plate-ui/placeholder';
-import { SettingsPanel } from '@/components/plate-ui/settings-toggle';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
+import { SettingsPanel } from '@/components/settings-toggle';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
@@ -89,7 +91,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
-import { playgroundValue } from '@/plate/demo/values/playgroundValue';
+import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import {
   createMyPlugins,
   MyEditor,
@@ -102,74 +104,82 @@ const components = withDraggables(withPlaceHolders(createPlateUI()));
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
 
-  const plugins = useMemo(
-    () =>
-      createMyPlugins(
-        [
-          createParagraphPlugin(),
-          createBlockquotePlugin(),
-          createTodoListPlugin(),
-          createHeadingPlugin(),
-          createImagePlugin(),
-          createHorizontalRulePlugin(),
-          createLinkPlugin(linkPlugin),
-          // Choose either "list" or "indent list" plugin
-          createListPlugin(),
-          createIndentListPlugin(),
-          createTablePlugin(),
-          createMediaEmbedPlugin(),
-          createExcalidrawPlugin() as MyPlatePlugin,
-          createCodeBlockPlugin(),
-          createAlignPlugin(alignPlugin),
-          createBoldPlugin(),
-          createCodePlugin(),
-          createItalicPlugin(),
-          createHighlightPlugin(),
-          createUnderlinePlugin(),
-          createStrikethroughPlugin(),
-          createSubscriptPlugin(),
-          createSuperscriptPlugin(),
-          createFontColorPlugin(),
-          createFontBackgroundColorPlugin(),
-          createFontSizePlugin(),
-          createLineHeightPlugin(lineHeightPlugin),
-          createKbdPlugin(),
-          createNodeIdPlugin(),
-          createBlockSelectionPlugin(blockSelectionPlugin),
-          createDndPlugin({ options: { enableScroller: true } }),
-          createIndentPlugin(indentPlugin),
-          createAutoformatPlugin<
-            AutoformatPlugin<MyValue, MyEditor>,
-            MyValue,
-            MyEditor
-          >(autoformatPlugin),
-          createResetNodePlugin(resetBlockTypePlugin),
-          createSoftBreakPlugin(softBreakPlugin),
-          createExitBreakPlugin(exitBreakPlugin),
-          createNormalizeTypesPlugin(forcedLayoutPlugin),
-          createTrailingBlockPlugin(trailingBlockPlugin),
-          createSelectOnBackspacePlugin(selectOnBackspacePlugin),
-          createComboboxPlugin(),
-          createMentionPlugin(),
-          createCommentsPlugin(),
-          createTabbablePlugin(tabbablePlugin),
-          createDeserializeMdPlugin() as MyPlatePlugin,
-          createDeserializeCsvPlugin(),
-          createDeserializeDocxPlugin(),
-          createJuicePlugin() as MyPlatePlugin,
-          createEmojiPlugin(emojiPlugin),
-          dragOverCursorPlugin,
-        ],
-        {
-          components,
-        }
-      ),
-    []
-  );
+  const checkedIds = settingsStore.use.checkedIds();
+  const [_key, setKey] = useState(1);
+  const key = useDebounce(_key, 1000);
+
+  const initialValue = usePlaygroundValue();
+
+  const plugins = useMemo(() => {
+    setKey(Math.random());
+
+    return createMyPlugins(
+      [
+        createParagraphPlugin({ enabled: checkedIds.p }),
+        createHeadingPlugin({ enabled: checkedIds.heading }),
+        createBlockquotePlugin({ enabled: checkedIds.blockquote }),
+        createTodoListPlugin(),
+        createImagePlugin(),
+        createHorizontalRulePlugin(),
+        createLinkPlugin(linkPlugin),
+        // Choose either "list" or "indent list" plugin
+        createListPlugin(),
+        createIndentListPlugin(),
+        createTablePlugin(),
+        createMediaEmbedPlugin(),
+        createExcalidrawPlugin() as MyPlatePlugin,
+        createCodeBlockPlugin(),
+        createAlignPlugin(alignPlugin),
+        createBoldPlugin(),
+        createCodePlugin(),
+        createItalicPlugin(),
+        createHighlightPlugin(),
+        createUnderlinePlugin(),
+        createStrikethroughPlugin(),
+        createSubscriptPlugin(),
+        createSuperscriptPlugin(),
+        createFontColorPlugin(),
+        createFontBackgroundColorPlugin(),
+        createFontSizePlugin(),
+        createLineHeightPlugin(lineHeightPlugin),
+        createKbdPlugin(),
+        createNodeIdPlugin(),
+        createBlockSelectionPlugin(blockSelectionPlugin),
+        createDndPlugin({ options: { enableScroller: true } }),
+        createIndentPlugin(indentPlugin),
+        createAutoformatPlugin<
+          AutoformatPlugin<MyValue, MyEditor>,
+          MyValue,
+          MyEditor
+        >(autoformatPlugin),
+        createResetNodePlugin(resetBlockTypePlugin),
+        createSoftBreakPlugin(softBreakPlugin),
+        createExitBreakPlugin(exitBreakPlugin),
+        createNormalizeTypesPlugin(forcedLayoutPlugin),
+        createTrailingBlockPlugin(trailingBlockPlugin),
+        createSelectOnBackspacePlugin(selectOnBackspacePlugin),
+        createComboboxPlugin(),
+        createMentionPlugin(),
+        createCommentsPlugin(),
+        createTabbablePlugin(tabbablePlugin),
+        createDeserializeMdPlugin() as MyPlatePlugin,
+        createDeserializeCsvPlugin(),
+        createDeserializeDocxPlugin(),
+        createJuicePlugin() as MyPlatePlugin,
+        createEmojiPlugin(emojiPlugin),
+        dragOverCursorPlugin,
+      ],
+      {
+        components,
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkedIds]);
 
   return (
     <PlateProvider<MyValue>
-      initialValue={playgroundValue}
+      key={key}
+      initialValue={initialValue}
       plugins={plugins}
       normalizeInitialValue
     >
