@@ -54,7 +54,9 @@ export function MediaFloatingToolbar({ pluginKey }: { pluginKey?: string }) {
             <FloatingMediaPrimitive.UrlInput
               className={inputVariants({ variant: 'ghost', h: 'sm' })}
               placeholder="Paste the embed link..."
-              pluginKey={pluginKey}
+              options={{
+                pluginKey,
+              }}
             />
           </div>
         </div>

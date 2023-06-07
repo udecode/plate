@@ -68,7 +68,6 @@ export type CheckedId =
   | typeof MARK_SUBSCRIPT
   | typeof MARK_SUPERSCRIPT
   | typeof MARK_CODE
-  | typeof MARK_COLOR
   | typeof MARK_FONT_SIZE
   | typeof MARK_BG_COLOR
   | typeof MARK_KBD
@@ -154,13 +153,13 @@ export const categories = [
         popoverContent: '',
       },
       {
-        id: ELEMENT_LINK as CheckedId,
-        label: 'a',
+        id: ELEMENT_EXCALIDRAW as CheckedId,
+        label: 'Excalidraw',
         popoverContent: '',
       },
       {
-        id: ELEMENT_EXCALIDRAW as CheckedId,
-        label: 'Excalidraw',
+        id: ELEMENT_LINK as CheckedId,
+        label: 'Link',
         popoverContent: '',
       },
       {
@@ -175,46 +174,6 @@ export const categories = [
     label: 'Marks',
     children: [
       {
-        id: MARK_COLOR as CheckedId,
-        label: 'Color',
-        popoverContent: '',
-      },
-      {
-        id: MARK_STRIKETHROUGH as CheckedId,
-        label: 'Strikethrough',
-        popoverContent: '',
-      },
-      {
-        id: MARK_UNDERLINE as CheckedId,
-        label: 'Underline',
-        popoverContent: '',
-      },
-      {
-        id: MARK_SUBSCRIPT as CheckedId,
-        label: 'Subscript',
-        popoverContent: '',
-      },
-      {
-        id: MARK_CODE as CheckedId,
-        label: 'Code',
-        popoverContent: '',
-      },
-      {
-        id: MARK_COLOR as CheckedId,
-        label: 'Color',
-        popoverContent: '',
-      },
-      {
-        id: MARK_SUPERSCRIPT as CheckedId,
-        label: 'Superscript',
-        popoverContent: '',
-      },
-      {
-        id: MARK_FONT_SIZE as CheckedId,
-        label: 'Font Size',
-        popoverContent: '',
-      },
-      {
         id: MARK_BOLD as CheckedId,
         label: 'Bold',
         popoverContent: '',
@@ -225,8 +184,28 @@ export const categories = [
         popoverContent: '',
       },
       {
-        id: MARK_HIGHLIGHT as CheckedId,
-        label: 'Highlight',
+        id: MARK_UNDERLINE as CheckedId,
+        label: 'Underline',
+        popoverContent: '',
+      },
+      {
+        id: MARK_STRIKETHROUGH as CheckedId,
+        label: 'Strikethrough',
+        popoverContent: '',
+      },
+      {
+        id: MARK_CODE as CheckedId,
+        label: 'Code',
+        popoverContent: '',
+      },
+      {
+        id: MARK_FONT_SIZE as CheckedId,
+        label: 'Font Size',
+        popoverContent: '',
+      },
+      {
+        id: MARK_COLOR as CheckedId,
+        label: 'Color',
         popoverContent: '',
       },
       {
@@ -235,13 +214,28 @@ export const categories = [
         popoverContent: '',
       },
       {
+        id: MARK_HIGHLIGHT as CheckedId,
+        label: 'Highlight',
+        popoverContent: '',
+      },
+      {
         id: MARK_KBD as CheckedId,
         label: 'Kbd',
         popoverContent: '',
       },
       {
+        id: MARK_SUBSCRIPT as CheckedId,
+        label: 'Subscript',
+        popoverContent: '',
+      },
+      {
+        id: MARK_SUPERSCRIPT as CheckedId,
+        label: 'Superscript',
+        popoverContent: '',
+      },
+      {
         id: MARK_COMMENT as CheckedId,
-        label: 'comments',
+        label: 'Comments',
         popoverContent: '',
       },
     ],
@@ -261,7 +255,7 @@ export const categories = [
         popoverContent: '',
       },
       {
-        id: KEY_ALIGN as CheckedId,
+        id: KEY_LINE_HEIGHT as CheckedId,
         label: 'Line height',
         popoverContent: '',
       },

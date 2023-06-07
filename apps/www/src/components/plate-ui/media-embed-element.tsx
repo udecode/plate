@@ -9,16 +9,12 @@ import { ElementPopover } from '@udecode/plate-floating';
 import {
   Caption,
   CaptionTextarea,
-  ELEMENT_MEDIA_EMBED,
   Resizable,
   TMediaEmbedElement,
   useMediaEmbed,
   useMediaState,
 } from '@udecode/plate-media';
-import {
-  mediaFloatingOptions,
-  MediaFloatingToolbar,
-} from './media-floating-toolbar';
+import { mediaFloatingOptions } from './media-floating-toolbar';
 
 import { cn } from '@/lib/utils';
 
@@ -27,11 +23,11 @@ const MediaEmbedElement = React.forwardRef<
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
   const { focused, provider, readOnly, selected } = useMediaState();
-  const { props: mediaEmbedProps } = useMediaEmbed();
+  const { props: mediaEmbedProps, component: MediaComponent } = useMediaEmbed();
 
   return (
     <ElementPopover
-      content={<MediaFloatingToolbar pluginKey={ELEMENT_MEDIA_EMBED} />}
+      content={<div>a</div>}
       floatingOptions={mediaFloatingOptions}
     >
       <PlateElement
@@ -97,7 +93,7 @@ const MediaEmbedElement = React.forwardRef<
                 provider === 'coub' && 'pb-[51.25%]'
               )}
             >
-              <iframe
+              <MediaComponent
                 className={cn(
                   'absolute left-0 top-0 h-full w-full',
                   'rounded-[3px] shadow-[0_0_1px_rgb(59,130,249)]'
