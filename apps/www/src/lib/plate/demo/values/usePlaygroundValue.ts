@@ -46,38 +46,46 @@ export const usePlaygroundValue = () => {
     if (checkedIds.lineHeight) value.push(...lineHeightValue);
     if (checkedIds.indent) value.push(...indentValue);
     if (checkedIds.softBreak) value.push(...softBreakValue);
+    if (checkedIds.exitBreak) value.push(...exitBreakValue);
+    if (checkedIds.autoformat) value.push(...autoformatValue);
+    if (checkedIds.mention) value.push(...mentionValue);
+    if (checkedIds.tabbable) value.push(...tabbableValue);
+    if (checkedIds.deserializeMd) value.push(...deserializeMdValue);
+    if (checkedIds.deserializeCsv) value.push(...deserializeCsvValue);
+    if (checkedIds.deserializeDocx) value.push(...deserializeDocxValue);
+    if (checkedIds.excalidraw) value.push(...excalidrawValue);
+    if (checkedIds.emoji) value.push(...emojiValue);
+    if (checkedIds.indentList) value.push(...indentListValue);
+    if (checkedIds.comments) value.push(...commentsValue);
+    if (checkedIds.cursorOverlay) value.push(...cursorOverlayValue);
+    if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
 
-    value.push(
+    value
+      .push
       // ...highlightValue,
       // ...horizontalRuleValue,
       // ...alignValue,
       // ...lineHeightValue,
       // ...indentValue,
-      ...indentListValue,
+      // ...indentListValue,
       // ...listValue,
       // ...mediaValue,
       // ...tableValue,
       // ...linkValue,
-      ...mentionValue,
-      ...emojiValue,
-      ...commentsValue,
-      ...autoformatValue,
-      ...softBreakValue,
-      ...exitBreakValue,
-      ...tabbableValue,
-      ...cursorOverlayValue,
-      ...deserializeHtmlValue,
-      ...deserializeDocxValue,
-      ...deserializeMdValue,
-      ...deserializeCsvValue,
-      ...excalidrawValue
-    );
-
-    // todoList, image, bold, italic, strikethrough, underline
-    // subscript, code, color, superscript, fontsize, background color,
-    // resetNode, kbd, nodeID, blockSelection, excalidraw
-
-    // hr, highlight, table, media, link, align, lineheight, indent
+      // ...mentionValue,
+      // ...emojiValue,
+      // ...commentsValue,
+      // ...autoformatValue,
+      // ...softBreakValue,
+      // ...exitBreakValue,
+      // ...tabbableValue,
+      // ...cursorOverlayValue,
+      // ...deserializeHtmlValue
+      // ...deserializeDocxValue,
+      // ...deserializeMdValue,
+      // ...deserializeCsvValue,
+      // ...excalidrawValue
+      ();
 
     return mapNodeId(value) as MyValue;
   }, [checkedIds]);

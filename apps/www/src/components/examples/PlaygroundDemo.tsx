@@ -157,34 +157,53 @@ export function PlaygroundDemo() {
         createExcalidrawPlugin({
           enabled: checkedIds.excalidraw,
         }) as MyPlatePlugin,
-        // TT
-        createDndPlugin({ options: { enableScroller: true } }),
-        createAutoformatPlugin<
-          AutoformatPlugin<MyValue, MyEditor>,
-          MyValue,
-          MyEditor
-        >(autoformatPlugin),
         createSoftBreakPlugin({
           ...softBreakPlugin,
           enabled: checkedIds.softBreak,
         }),
-        createExitBreakPlugin(exitBreakPlugin),
-        createNormalizeTypesPlugin(forcedLayoutPlugin),
-        createTrailingBlockPlugin(trailingBlockPlugin),
-        createSelectOnBackspacePlugin(selectOnBackspacePlugin),
-        createComboboxPlugin(),
-        createMentionPlugin(),
-        createCommentsPlugin(),
-        createTabbablePlugin(tabbablePlugin),
-        createDeserializeMdPlugin() as MyPlatePlugin,
-        createDeserializeCsvPlugin(),
-        createDeserializeDocxPlugin(),
-        createJuicePlugin() as MyPlatePlugin,
-        createEmojiPlugin(emojiPlugin),
-        dragOverCursorPlugin,
+        createExitBreakPlugin({
+          ...exitBreakPlugin,
+          enabled: checkedIds.exitBreak,
+        }),
+        createNormalizeTypesPlugin({
+          ...forcedLayoutPlugin,
+          enabled: checkedIds.normalizeTypes,
+        }),
+        createTrailingBlockPlugin({
+          ...trailingBlockPlugin,
+          enabled: checkedIds.trailingBlock,
+        }),
+        createSelectOnBackspacePlugin({
+          ...selectOnBackspacePlugin,
+          enabled: checkedIds.selectOnBackspace,
+        }),
+        createAutoformatPlugin<
+          AutoformatPlugin<MyValue, MyEditor>,
+          MyValue,
+          MyEditor
+        >({ ...autoformatPlugin, enabled: checkedIds.autoformat }),
+        createComboboxPlugin({ enabled: checkedIds.combobox }),
+        createMentionPlugin({ enabled: checkedIds.mention }),
+        createTabbablePlugin({
+          ...tabbablePlugin,
+          enabled: checkedIds.tabbable,
+        }),
+        createDeserializeMdPlugin({
+          enabled: checkedIds.deserializeMd,
+        }) as MyPlatePlugin,
+        createDeserializeCsvPlugin({ enabled: checkedIds.deserializeCsv }),
+        createDeserializeDocxPlugin({ enabled: checkedIds.deserializeDocx }),
+        createJuicePlugin({ enabled: checkedIds.juice }) as MyPlatePlugin,
+        createEmojiPlugin({ ...emojiPlugin, enabled: checkedIds.emoji }),
         // Choose either "list" or "indent list" plugin
-        createListPlugin(),
-        createIndentListPlugin(),
+        createListPlugin({ enabled: checkedIds.list }),
+        createIndentListPlugin({ enabled: checkedIds.indentList }),
+        createCommentsPlugin({ enabled: checkedIds.comments }),
+        createDndPlugin({
+          options: { enableScroller: true },
+          enabled: checkedIds.dnd,
+        }),
+        { ...dragOverCursorPlugin, enabled: checkedIds.dragOverCursor },
       ],
       {
         components,
