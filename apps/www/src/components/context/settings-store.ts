@@ -118,6 +118,11 @@ export const categories = [
         label: 'a',
         popoverContent: '',
       },
+      {
+        id: ELEMENT_EXCALIDRAW as CheckedId,
+        label: 'Excalidraw',
+        popoverContent: '',
+      },
     ],
   },
   {
