@@ -62,7 +62,7 @@ export function Popover({
           contentEditable={false}
           {...props}
         >
-          {children}
+          {content}
         </div>
       )}
     </>

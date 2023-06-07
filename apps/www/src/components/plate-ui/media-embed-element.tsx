@@ -27,7 +27,7 @@ const MediaEmbedElement = React.forwardRef<
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
   const { focused, provider, readOnly, selected } = useMediaState();
-  const { props: mediaEmbedProps } = useMediaEmbed();
+  const { props: mediaEmbedProps, component: MediaComponent } = useMediaEmbed();
 
   return (
     <ElementPopover
@@ -97,7 +97,7 @@ const MediaEmbedElement = React.forwardRef<
                 provider === 'coub' && 'pb-[51.25%]'
               )}
             >
-              <iframe
+              <MediaComponent
                 className={cn(
                   'absolute left-0 top-0 h-full w-full',
                   'rounded-[3px] shadow-[0_0_1px_rgb(59,130,249)]'

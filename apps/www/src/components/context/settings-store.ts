@@ -68,7 +68,6 @@ export type CheckedId =
   | typeof MARK_SUBSCRIPT
   | typeof MARK_SUPERSCRIPT
   | typeof MARK_CODE
-  | typeof MARK_COLOR
   | typeof MARK_FONT_SIZE
   | typeof MARK_BG_COLOR
   | typeof MARK_KBD
@@ -114,20 +113,9 @@ export const categories = [
           'Structure your content into well-defined sections using up to six different levels of headings.',
       },
       {
-        id: ELEMENT_TABLE as CheckedId,
-        label: 'Table',
-        popoverContent:
-          'Enhance readability and organization of specific types of information by using tables.',
-      },
-      {
         id: 'list' as CheckedId,
         label: 'List',
         popoverContent: 'Create ordered and unordered lists.',
-      },
-      {
-        id: ELEMENT_TODO_LI as CheckedId,
-        label: 'Todo List',
-        popoverContent: 'Manage tasks within your document.',
       },
       {
         id: ELEMENT_BLOCKQUOTE as CheckedId,
@@ -135,14 +123,14 @@ export const categories = [
         popoverContent: 'Highlight important text or citations.',
       },
       {
-        id: ELEMENT_HR as CheckedId,
-        label: 'Hr',
-        popoverContent: 'Insert horizontal lines or rules.',
-      },
-      {
         id: ELEMENT_CODE_BLOCK as CheckedId,
         label: 'Code block',
         popoverContent: 'Encapsulate blocks of code within your document.',
+      },
+      {
+        id: ELEMENT_TODO_LI as CheckedId,
+        label: 'Todo List',
+        popoverContent: 'Manage tasks within your document.',
       },
       {
         id: ELEMENT_IMAGE as CheckedId,
@@ -150,21 +138,32 @@ export const categories = [
         popoverContent: 'Embed visual content into your document.',
       },
       {
+        id: ELEMENT_HR as CheckedId,
+        label: 'Hr',
+        popoverContent: 'Insert horizontal lines or rules.',
+      },
+      {
+        id: ELEMENT_TABLE as CheckedId,
+        label: 'Table',
+        popoverContent:
+          'Enhance readability and organization of specific types of information by using tables.',
+      },
+      {
         id: ELEMENT_MEDIA_EMBED as CheckedId,
         label: 'Media embed',
         popoverContent: 'Insert embeddable media into your editor.',
+      },
+      {
+        id: ELEMENT_LINK as CheckedId,
+        label: 'Link',
+        popoverContent:
+          'Achieve comprehensive hyperlink insertion and management.',
       },
       {
         id: ELEMENT_EXCALIDRAW as CheckedId,
         label: 'Excalidraw',
         popoverContent:
           'Enable creation of drawings and diagrams stored as block nodes.',
-      },
-      {
-        id: ELEMENT_LINK as CheckedId,
-        label: 'a',
-        popoverContent:
-          'Achieve comprehensive hyperlink insertion and management.',
       },
       {
         id: ELEMENT_MENTION as CheckedId,
@@ -179,6 +178,42 @@ export const categories = [
     label: 'Marks',
     children: [
       {
+        id: MARK_COLOR as CheckedId,
+        label: 'Color',
+        popoverContent: 'Highlight text with a specific color.',
+      },
+      {
+        id: MARK_STRIKETHROUGH as CheckedId,
+        label: 'Strikethrough',
+        popoverContent: 'Indicate deletions or corrections in your text.',
+      },
+      {
+        id: MARK_UNDERLINE as CheckedId,
+        label: 'Underline',
+        popoverContent: 'Emphasize specific words or phrases in your text.',
+      },
+      {
+        id: MARK_SUBSCRIPT as CheckedId,
+        label: 'Subscript',
+        popoverContent: 'Lower portions of your text.',
+      },
+      {
+        id: MARK_CODE as CheckedId,
+        label: 'Code',
+        popoverContent: 'Embed code into your text.',
+      },
+      {
+        id: MARK_SUPERSCRIPT as CheckedId,
+        label: 'Superscript',
+        popoverContent: 'Elevate portions of your text.',
+      },
+      {
+        id: MARK_FONT_SIZE as CheckedId,
+        label: 'Font Size',
+        popoverContent:
+          'Gain control over font size by utilizing inline elements.',
+      },
+      {
         id: MARK_BOLD as CheckedId,
         label: 'Bold',
         popoverContent: 'Make your text stand out powerfully.',
@@ -187,26 +222,6 @@ export const categories = [
         id: MARK_ITALIC as CheckedId,
         label: 'Italic',
         popoverContent: 'Add a subtle emphasis to your text.',
-      },
-      {
-        id: MARK_UNDERLINE as CheckedId,
-        label: 'Underline',
-        popoverContent: 'Emphasize specific words or phrases in your text.',
-      },
-      {
-        id: MARK_STRIKETHROUGH as CheckedId,
-        label: 'Strikethrough',
-        popoverContent: 'Indicate deletions or corrections in your text.',
-      },
-      {
-        id: MARK_CODE as CheckedId,
-        label: 'Code',
-        popoverContent: 'Embed code into your text.',
-      },
-      {
-        id: MARK_COLOR as CheckedId,
-        label: 'Color',
-        popoverContent: 'Highlight text with a specific color.',
       },
       {
         id: MARK_HIGHLIGHT as CheckedId,
@@ -220,25 +235,9 @@ export const categories = [
         popoverContent: 'Add color to text backgrounds for emphasis or style.',
       },
       {
-        id: MARK_FONT_SIZE as CheckedId,
-        label: 'Font Size',
-        popoverContent:
-          'Gain control over font size by utilizing inline elements.',
-      },
-      {
         id: MARK_KBD as CheckedId,
         label: 'Kbd',
         popoverContent: 'Designate keyboard inputs or commands in your text.',
-      },
-      {
-        id: MARK_SUPERSCRIPT as CheckedId,
-        label: 'Superscript',
-        popoverContent: 'Elevate portions of your text.',
-      },
-      {
-        id: MARK_SUBSCRIPT as CheckedId,
-        label: 'Subscript',
-        popoverContent: 'Lower portions of your text.',
       },
       {
         id: MARK_COMMENT as CheckedId,
@@ -252,9 +251,10 @@ export const categories = [
     label: 'Functionality',
     children: [
       {
-        id: KEY_DND as CheckedId,
-        label: 'Dnd',
-        popoverContent: 'Move images or tables within the editor.',
+        id: KEY_RESET_NODE as CheckedId,
+        label: 'Reset node',
+        popoverContent:
+          'Quickly reset the formatting of a selected block of text to its default settings.',
       },
       {
         id: KEY_ALIGN as CheckedId,
@@ -262,14 +262,40 @@ export const categories = [
         popoverContent:
           'Align your content to the left, right, center, or justify it.',
       },
-
+      {
+        id: KEY_LINE_HEIGHT as CheckedId,
+        label: 'Line height',
+        popoverContent: 'Adjust line height.',
+      },
       {
         id: KEY_NODE_ID as CheckedId,
         label: 'Node Id',
         popoverContent:
           'Assign unique identifiers to nodes within your document.',
       },
-
+      {
+        id: KEY_BLOCK_SELECTION as CheckedId,
+        label: 'Block selection',
+        popoverContent: 'Select and manipulate entire text blocks.',
+      },
+      {
+        id: KEY_INDENT as CheckedId,
+        label: 'Indent',
+        popoverContent:
+          'Customize the indentation of text blocks, including paragraphs, headings, and lists.',
+      },
+      {
+        id: KEY_SOFT_BREAK as CheckedId,
+        label: 'Soft break',
+        popoverContent:
+          'Insert line breaks within a block of text without starting a new block.',
+      },
+      {
+        id: KEY_EXIT_BREAK as CheckedId,
+        label: 'Exit break',
+        popoverContent:
+          'Streamline your workflow when working with large blocks of text.',
+      },
       {
         id: KEY_NORMALIZE_TYPES as CheckedId,
         label: 'Normalize types',
@@ -288,24 +314,10 @@ export const categories = [
         popoverContent:
           'Optimize editing efficiency by highlighting the preceding block upon hitting backspace.',
       },
-
       {
-        id: KEY_INDENT as CheckedId,
-        label: 'Indent',
-        popoverContent:
-          'Customize the indentation of text blocks, including paragraphs, headings, and lists.',
-      },
-
-      {
-        id: KEY_LINE_HEIGHT as CheckedId,
-        label: 'Line height',
-        popoverContent: 'Adjust line height.',
-      },
-      {
-        id: KEY_LIST_STYLE_TYPE as CheckedId,
-        label: 'List style type',
-        popoverContent:
-          'Choose from various bullet or numbering styles for your lists.',
+        id: KEY_AUTOFORMAT as CheckedId,
+        label: 'Autoformat',
+        popoverContent: 'Quickly apply formatting to content using shortcodes.',
       },
       {
         id: KEY_COMBOBOX as CheckedId,
@@ -313,49 +325,10 @@ export const categories = [
         popoverContent: 'Select options from a predefined list.',
       },
       {
-        id: KEY_EMOJI as CheckedId,
-        label: 'Emoji',
-        popoverContent:
-          'Enhance your text with emojis using the Emoji plugin, adding visual expression to your content.',
-      },
-      {
-        id: KEY_AUTOFORMAT as CheckedId,
-        label: 'Autoformat',
-        popoverContent: 'Quickly apply formatting to content using shortcodes.',
-      },
-      {
-        id: KEY_BLOCK_SELECTION as CheckedId,
-        label: 'Block selection',
-        popoverContent: 'Select and manipulate entire text blocks.',
-      },
-      {
-        id: KEY_EXIT_BREAK as CheckedId,
-        label: 'Exit break',
-        popoverContent:
-          'Streamline your workflow when working with large blocks of text.',
-      },
-      {
-        id: KEY_RESET_NODE as CheckedId,
-        label: 'Reset node',
-        popoverContent:
-          'Quickly reset the formatting of a selected block of text to its default settings.',
-      },
-      {
-        id: KEY_SOFT_BREAK as CheckedId,
-        label: 'Soft break',
-        popoverContent:
-          'Insert line breaks within a block of text without starting a new block.',
-      },
-      {
         id: KEY_TABBABLE as CheckedId,
         label: 'Tabbable',
         popoverContent:
           'Maintain a consistent tab order for tabbable elements while navigating.',
-      },
-      {
-        id: KEY_DESERIALIZE_HTML as CheckedId,
-        label: 'Deserialize html',
-        popoverContent: 'Convert Slate values to HTML strings.',
       },
       {
         id: KEY_DESERIALIZE_MD as CheckedId,
@@ -380,10 +353,32 @@ export const categories = [
         popoverContent: 'Inline CSS properties into the `style` attribute.',
       },
       {
+        id: KEY_EMOJI as CheckedId,
+        label: 'Emoji',
+        popoverContent:
+          'Enhance your text with emojis using the Emoji plugin, adding visual expression to your content.',
+      },
+      {
+        id: KEY_LIST_STYLE_TYPE as CheckedId,
+        label: 'List style type',
+        popoverContent:
+          'Choose from various bullet or numbering styles for your lists.',
+      },
+      {
+        id: KEY_DND as CheckedId,
+        label: 'Dnd',
+        popoverContent: 'Move images or tables within the editor.',
+      },
+      {
         id: 'drag-over-cursor' as CheckedId,
         label: 'Drag over cursor',
         popoverContent:
           'Display controlled cursors or selections over the editor.',
+      },
+      {
+        id: KEY_DESERIALIZE_HTML as CheckedId,
+        label: 'Deserialize html',
+        popoverContent: 'Convert Slate values to HTML strings.',
       },
     ],
   },

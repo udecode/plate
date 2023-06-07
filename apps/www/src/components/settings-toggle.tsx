@@ -15,6 +15,7 @@ import {
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Toggle } from './ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 
 export function SettingsToggle() {
@@ -47,7 +48,7 @@ export function SettingsSwitch({
   icon?: LucideIcon;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex w-full items-center justify-between">
       {/* <Switch */}
       {/*  id={id} */}
       {/*  checked={settingsStore.use.checkedId(id)} */}
@@ -61,18 +62,32 @@ export function SettingsSwitch({
         id={id}
         pressed={settingsStore.use.checkedId(id)}
         size="sm"
-        className="data-[state=on]:font-semibold"
+        className="flex max-w-[144px] flex-nowrap text-ellipsis pr-2"
         onPressedChange={(pressed) => {
           settingsStore.set.setCheckedId(id, pressed);
         }}
       >
-        {label}
+        {settingsStore.use.checkedId(id) ? (
+          <Icons.check className="mr-2 !h-4 !w-4" />
+        ) : (
+          <div className="mr-2 w-4" />
+        )}
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="w-[100px] overflow-hidden text-ellipsis whitespace-nowrap text-left">
+              {label}
+            </div>
+          </TooltipTrigger>
+
+          <TooltipContent>Toggle {label} Plugin</TooltipContent>
+        </Tooltip>
       </Toggle>
 
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" className="h-9 w-9 p-0">
-            <Icons.chevronDown className="h-4 w-4 text-muted-foreground" />
+            <Icons.info className="h-4 w-4 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
 
@@ -101,7 +116,7 @@ export function SettingsPanel() {
                 {item.label}
               </AccordionTrigger>
               <AccordionContent className="p-3 px-4">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
                   {item.children.map((child) => (
                     <SettingsSwitch
                       key={child.id}

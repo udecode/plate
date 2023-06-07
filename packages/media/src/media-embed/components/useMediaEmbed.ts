@@ -4,8 +4,10 @@ export const useMediaEmbed = () => {
   const { component, ...embedData } = useMediaStore().get.urlData();
 
   return {
+    component: component || 'iframe',
     props: {
-      embedData,
+      id: embedData.id,
+      src: embedData.url,
     },
   };
 };
