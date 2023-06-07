@@ -78,7 +78,6 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { blockSelectionPlugin } from '@/plate/demo/plugins/blockSelectionPlugin';
-import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
@@ -197,13 +196,13 @@ export function PlaygroundDemo() {
         createEmojiPlugin({ ...emojiPlugin, enabled: checkedIds.emoji }),
         // Choose either "list" or "indent list" plugin
         createListPlugin({ enabled: checkedIds.list }),
-        createIndentListPlugin({ enabled: checkedIds.indentList }),
-        createCommentsPlugin({ enabled: checkedIds.comments }),
+        createIndentListPlugin({ enabled: checkedIds.listStyleType }),
+        createCommentsPlugin({ enabled: checkedIds.comment }),
         createDndPlugin({
           options: { enableScroller: true },
           enabled: checkedIds.dnd,
         }),
-        { ...dragOverCursorPlugin, enabled: checkedIds.dragOverCursor },
+        // { ...dragOverCursorPlugin, enabled: checkedIds.dragOverCursor },
       ],
       {
         components,

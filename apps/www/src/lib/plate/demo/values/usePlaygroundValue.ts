@@ -4,7 +4,6 @@ import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
 import { commentsValue } from './commentsValue';
-import { cursorOverlayValue } from './cursorOverlayValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
 import { deserializeDocxValue } from './deserializeDocxValue';
 import { deserializeHtmlValue } from './deserializeHtmlValue';
@@ -55,37 +54,12 @@ export const usePlaygroundValue = () => {
     if (checkedIds.deserializeDocx) value.push(...deserializeDocxValue);
     if (checkedIds.excalidraw) value.push(...excalidrawValue);
     if (checkedIds.emoji) value.push(...emojiValue);
-    if (checkedIds.indentList) value.push(...indentListValue);
-    if (checkedIds.comments) value.push(...commentsValue);
-    if (checkedIds.cursorOverlay) value.push(...cursorOverlayValue);
+    if (checkedIds.listStyleType) value.push(...indentListValue);
+    if (checkedIds.comment) value.push(...commentsValue);
     if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
+    // if (checkedIds.dragOverCursor) value.push(...cursorOverlayValue);
 
-    value
-      .push
-      // ...highlightValue,
-      // ...horizontalRuleValue,
-      // ...alignValue,
-      // ...lineHeightValue,
-      // ...indentValue,
-      // ...indentListValue,
-      // ...listValue,
-      // ...mediaValue,
-      // ...tableValue,
-      // ...linkValue,
-      // ...mentionValue,
-      // ...emojiValue,
-      // ...commentsValue,
-      // ...autoformatValue,
-      // ...softBreakValue,
-      // ...exitBreakValue,
-      // ...tabbableValue,
-      // ...cursorOverlayValue,
-      // ...deserializeHtmlValue
-      // ...deserializeDocxValue,
-      // ...deserializeMdValue,
-      // ...deserializeCsvValue,
-      // ...excalidrawValue
-      ();
+    value.push();
 
     return mapNodeId(value) as MyValue;
   }, [checkedIds]);

@@ -15,6 +15,7 @@ import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { createStore } from '@udecode/plate-common';
+import { KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
@@ -92,6 +93,7 @@ export type CheckedId =
   | typeof KEY_EMOJI
   | typeof KEY_LIST_STYLE_TYPE
   | typeof KEY_DND
+  | typeof KEY_DESERIALIZE_HTML
   | typeof KEY_DESERIALIZE_MD;
 
 export const categories = [
@@ -356,6 +358,11 @@ export const categories = [
       {
         id: 'drag-over-cursor' as CheckedId,
         label: 'Drag over cursor',
+        popoverContent: '',
+      },
+      {
+        id: KEY_DESERIALIZE_HTML as CheckedId,
+        label: 'Deserialize html',
         popoverContent: '',
       },
     ],
