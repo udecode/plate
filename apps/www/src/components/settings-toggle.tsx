@@ -12,6 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -43,26 +44,18 @@ export function SettingsSwitch({
   // icon: Icon,
   id,
   label,
-  popoverContent,
+  tooltip,
 }: {
   label: string;
   id: CheckedId;
-  popoverContent: string;
+  tooltip: string;
   icon?: LucideIcon;
 }) {
   return (
     <div className="flex w-full items-center justify-between">
-      {/* <Switch */}
-      {/*  id={id} */}
-      {/*  checked={settingsStore.use.checkedId(id)} */}
-      {/*  onCheckedChange={(_checked) => { */}
-      {/*    settingsStore.set.setCheckedId(id, _checked); */}
-      {/*  }} */}
-      {/* /> */}
-      {/* <Label htmlFor={id}>{label}</Label> */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="w-[100px] overflow-hidden text-ellipsis whitespace-nowrap text-left">
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-left">
             <div className="flex items-center">
               <Checkbox
                 id={id}
@@ -71,14 +64,19 @@ export function SettingsSwitch({
                   settingsStore.set.setCheckedId(id, _checked);
                 }}
               />
-              <Label htmlFor={id} className="flex w-[200px] p-2">
+              <Label htmlFor={id} className="flex p-2">
                 {label}
               </Label>
+              <div className="flex gap-1">
+                <Badge variant="secondary">Element</Badge>
+                <Badge variant="secondary">Inline</Badge>
+                <Badge variant="secondary">Void</Badge>
+              </div>
             </div>
           </div>
         </TooltipTrigger>
 
-        <TooltipContent>Toggle {label} Plugin</TooltipContent>
+        <TooltipContent className="max-w-[200px]">{tooltip}</TooltipContent>
       </Tooltip>
 
       {/* <Toggle */}
@@ -106,7 +104,7 @@ export function SettingsSwitch({
         </PopoverTrigger>
 
         <PopoverContent className="w-[265px]" side="top">
-          {popoverContent}
+          {tooltip}
         </PopoverContent>
       </Popover>
     </div>
@@ -120,8 +118,8 @@ export function SettingsPanel() {
 
   return (
     <div className="sticky top-[102px] z-10 h-full grow border-l border-l-border">
-      <ScrollArea className="h-[calc(100vh-102px)]">
-        <h3 className="mb-2 px-6 py-4 text-lg font-semibold">Plugins</h3>
+      <ScrollArea className="relative h-[calc(100vh-102px)] w-[434px]">
+        <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3>
 
         <Accordion type="multiple" defaultValue={categoryIds}>
           {categories.map((item) => (
@@ -129,14 +127,14 @@ export function SettingsPanel() {
               <AccordionTrigger className="px-6 py-4">
                 {item.label}
               </AccordionTrigger>
-              <AccordionContent className="py-4 pl-6 pr-3.5">
-                <div className="flex flex-col gap-2">
+              <AccordionContent>
+                <div className="flex flex-col gap-2 pl-6 pr-3.5">
                   {item.children.map((child) => (
                     <SettingsSwitch
                       key={child.id}
                       id={child.id}
                       label={child.label}
-                      popoverContent={child.popoverContent}
+                      tooltip={child.tooltip}
                     />
                   ))}
                 </div>
