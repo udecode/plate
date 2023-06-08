@@ -59,10 +59,8 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* <div className="overflow-hidden rounded-[0.5rem] border bg-background shadow-xl" /> */}
-
       <section className="relative">
-        <div className="border bg-background shadow-xl">
+        <div className="max-w-[1336px] border bg-background shadow-xl">
           <PlaygroundDemo />
         </div>
       </section>

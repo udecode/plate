@@ -105,6 +105,7 @@ export const categories = [
         id: ELEMENT_BLOCKQUOTE as CheckedId,
         label: 'Blockquote',
         tooltip: 'Highlight important text or citations.',
+        route: '/docs/basic-elements',
       },
       {
         id: ELEMENT_CODE_BLOCK as CheckedId,

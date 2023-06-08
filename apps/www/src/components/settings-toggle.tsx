@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import {
   categories,
   categoryIds,
@@ -13,30 +14,27 @@ import {
   AccordionTrigger,
 } from './ui/accordion';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { buttonVariants } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ScrollArea } from './ui/scroll-area';
 import { Toggle } from './ui/toggle';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 
+import { cn } from '@/lib/utils';
+
 export function SettingsToggle() {
   const showSettings = settingsStore.use.showSettings();
 
   return (
-    <div className="absolute right-0 top-0 z-50 pr-1 pt-1">
-      <div className="right-0 top-[100px] z-10">
-        <Toggle
-          className="h-9 w-9 p-0"
-          pressed={showSettings}
-          onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
-        >
-          <Icons.plugin className="h-6 w-6" />
-        </Toggle>
-      </div>
-    </div>
+    <Toggle
+      className="h-9 w-9 p-0"
+      pressed={showSettings}
+      onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
+    >
+      <Icons.plugin className="h-6 w-6" />
+    </Toggle>
   );
 }
 
@@ -45,10 +43,12 @@ export function SettingsSwitch({
   id,
   label,
   tooltip,
+  route,
 }: {
   label: string;
   id: CheckedId;
   tooltip: string;
+  route?: string;
   icon?: LucideIcon;
 }) {
   return (
@@ -79,34 +79,12 @@ export function SettingsSwitch({
         <TooltipContent className="max-w-[200px]">{tooltip}</TooltipContent>
       </Tooltip>
 
-      {/* <Toggle */}
-      {/*  id={id} */}
-      {/*  pressed={settingsStore.use.checkedId(id)} */}
-      {/*  size="sm" */}
-      {/*  className="flex max-w-[144px] flex-nowrap text-ellipsis pr-2" */}
-      {/*  onPressedChange={(pressed) => { */}
-      {/*    settingsStore.set.setCheckedId(id, pressed); */}
-      {/*  }} */}
-      {/* > */}
-      {/*  {settingsStore.use.checkedId(id) ? ( */}
-      {/*    <Icons.check className="mr-2 !h-4 !w-4" /> */}
-      {/*  ) : ( */}
-      {/*    <div className="mr-2 w-4" /> */}
-      {/*  )} */}
-
-      {/* </Toggle> */}
-
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" className="h-9 w-9 p-0">
-            <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
-          </Button>
-        </PopoverTrigger>
-
-        <PopoverContent className="w-[265px]" side="top">
-          {tooltip}
-        </PopoverContent>
-      </Popover>
+      <Link
+        href={route ?? '/docs'}
+        className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 w-9 p-0')}
+      >
+        <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
     </div>
   );
 }
@@ -117,32 +95,35 @@ export function SettingsPanel() {
   if (!showSettings) return null;
 
   return (
-    <div className="sticky top-[102px] z-10 h-full grow border-l border-l-border">
-      <ScrollArea className="relative h-[calc(100vh-102px)] w-[434px]">
-        <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3>
+    <div className="absolute right-0 top-0 z-40 h-full">
+      <div className="sticky right-0 top-[102px] w-[433px] grow border-l border-l-border bg-background">
+        <ScrollArea className="relative h-[calc(100vh-102px)] ">
+          <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3>
 
-        <Accordion type="multiple" defaultValue={categoryIds}>
-          {categories.map((item) => (
-            <AccordionItem key={item.id} value={item.id}>
-              <AccordionTrigger className="px-6 py-4">
-                {item.label}
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-2 pl-6 pr-3.5">
-                  {item.children.map((child) => (
-                    <SettingsSwitch
-                      key={child.id}
-                      id={child.id}
-                      label={child.label}
-                      tooltip={child.tooltip}
-                    />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </ScrollArea>
+          <Accordion type="multiple" defaultValue={categoryIds}>
+            {categories.map((item) => (
+              <AccordionItem key={item.id} value={item.id}>
+                <AccordionTrigger className="px-6 py-4">
+                  {item.label}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-2 pl-6 pr-3.5">
+                    {item.children.map((child) => (
+                      <SettingsSwitch
+                        key={child.id}
+                        id={child.id}
+                        label={child.label}
+                        tooltip={child.tooltip}
+                        route={child.route}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

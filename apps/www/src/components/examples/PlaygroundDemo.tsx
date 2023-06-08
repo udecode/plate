@@ -224,7 +224,10 @@ export function PlaygroundDemo() {
 
       <CommentsProvider>
         <div className="relative flex">
-          <div ref={containerRef} className="relative flex max-w-[900px]">
+          <div
+            ref={containerRef}
+            className="relative flex max-w-[900px] overflow-x-scroll"
+          >
             <Plate editableProps={editableProps}>
               <FloatingToolbar>
                 <FloatingToolbarButtons />
