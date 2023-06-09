@@ -7,14 +7,13 @@ jsx;
 
 export const horizontalRuleValue: any = (
   <fragment>
-    <hp>This is a paragraph.</hp>
+    <hh2>Horizontal Rule</hh2>
+    <hp>
+      Add horizontal rules to visually separate sections and content within your
+      document.
+    </hp>
     <element type={ELEMENT_HR}>
       <htext />
     </element>
-    <hp>And this is another paragraph.</hp>
-    <element type={ELEMENT_HR}>
-      <htext />
-    </element>
-    <hp>But between those paragraphs are horizontal rules.</hp>
   </fragment>
 );

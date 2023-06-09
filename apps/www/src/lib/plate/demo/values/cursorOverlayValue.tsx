@@ -6,10 +6,10 @@ jsx;
 
 export const cursorOverlayValue: any = (
   <fragment>
-    <hp>This example shows two static cursors in red.</hp>
+    <hh2>Cursor Overlay</hh2>
     <hp>
-      Try also to drag over text: you will see a dynamic cursor on the drop
-      target.
+      Try to drag over text: you will see a black cursor on the drop target:
+      color and other styles are customizable!
     </hp>
   </fragment>
 );

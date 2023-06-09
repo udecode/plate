@@ -6,10 +6,7 @@ jsx;
 
 export const deserializeCsvValue: any = (
   <fragment>
-    <hh1>Deserialize CSV</hh1>
+    <hh2>Deserialize CSV</hh2>
     <hp>Copy and paste CSV content into a table.</hp>
-    <hp>
-      <htext />
-    </hp>
   </fragment>
 );

@@ -6,11 +6,15 @@ jsx;
 
 export const tabbableValue: any = (
   <fragment>
-    <hh1>Tabbable</hh1>
+    <hh2>Tabbable</hh2>
     <hp>
-      This plugin ensures that the tab order works as you would expect when
-      tabbing into and out of void nodes. Without this plugin, DOM elements
-      inside void nodes come after the editor in the tab order.
+      Ensure a smooth tab navigation experience within your editor with the
+      Tabbable plugin.
+    </hp>
+    <hp>
+      Properly handle tab orders for void nodes, allowing for seamless
+      navigation and interaction. Without this plugin, DOM elements inside void
+      nodes come after the editor in the tab order.
     </hp>
     <element type="tabbable_element">
       <htext />
@@ -30,7 +34,7 @@ export const tabbableValue: any = (
         <hlic>List item 3</hlic>
       </hli>
     </hul>
-    <hcodeblock>
+    <hcodeblock lang="javascript">
       <hcodeline>if (true) {'{'}</hcodeline>
       <hcodeline>
         {'// <-'} Place cursor at start of line and press tab

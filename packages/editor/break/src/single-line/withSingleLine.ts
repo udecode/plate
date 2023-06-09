@@ -11,11 +11,11 @@ export const withSingleLine = <
   editor.insertBreak = () => null;
 
   editor.normalizeNode = (entry) => {
-    if (editor.children.length > 1) {
+    if (entry[1].length === 0 && editor.children.length > 1) {
       removeNodes(editor, {
         at: [],
         mode: 'highest',
-        match: (node, path) => path[0] > 0,
+        match: (node, path) => path.length === 1 && path[0] > 0,
       });
     }
     normalizeNode(entry);

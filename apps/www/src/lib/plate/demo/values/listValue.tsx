@@ -12,35 +12,63 @@ export const listValue: any = (
     </hp>
     <hul>
       <hli>
-        <hlic>Bulleted list</hlic>
+        <hlic>Cats</hlic>
+      </hli>
+      <hli>
+        <hlic>Dogs</hlic>
+      </hli>
+      <hli>
+        <hlic>Birds</hlic>
         <hul>
           <hli>
-            <hlic>support</hlic>
-            <hul>
-              <hli>
-                <hlic>a</hlic>
-              </hli>
-            </hul>
+            <hlic>Parrots</hlic>
           </hli>
           <hli>
-            <hlic>nesting</hlic>
+            <hlic>Owls</hlic>
             <hul>
               <hli>
-                <hlic>b</hlic>
+                <hlic>Barn Owls</hlic>
+              </hli>
+              <hli>
+                <hlic>Snowy Owls</hlic>
               </hli>
             </hul>
           </hli>
         </hul>
       </hli>
-      <hli>
-        <hlic>c</hlic>
-      </hli>
     </hul>
     <hol>
       <hli>
-        <hlic>Numbered list'</hlic>
+        <hlic>Red</hlic>
+      </hli>
+      <hli>
+        <hlic>Blue</hlic>
+        <hul>
+          <hli>
+            <hlic>Light blue</hlic>
+          </hli>
+          <hli>
+            <hlic>Dark blue</hlic>
+            <hol>
+              <hli>
+                <hlic>Navy blue</hlic>
+              </hli>
+              <hli>
+                <hlic>Turquoise blue</hlic>
+              </hli>
+            </hol>
+          </hli>
+        </hul>
+      </hli>
+      <hli>
+        <hlic>Green</hlic>
       </hli>
     </hol>
+  </fragment>
+);
+
+export const todoListValue: any = (
+  <fragment>
     <hp>
       With Slate you can build complex block types that have their own embedded
       content and behaviors, like rendering checkboxes inside check list items!
@@ -51,6 +79,5 @@ export const listValue: any = (
     <htodoli checked>Criss-cross.</htodoli>
     <htodoli>Cha cha real smooth…</htodoli>
     <htodoli>Let's go to work!</htodoli>
-    <hp>Try it out for yourself!</hp>
   </fragment>
 );

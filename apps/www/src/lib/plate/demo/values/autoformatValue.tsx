@@ -6,12 +6,12 @@ jsx;
 
 export const autoformatValue: any = (
   <fragment>
-    <hh1>🏃‍♀️ Autoformat</hh1>
+    <hh2>🏃‍♀️ Autoformat</hh2>
     <hp>
-      The editor gives you full control over the logic you can add. For example,
-      it's fairly common to want to add markdown-like shortcuts to editors.
+      Empower your writing experience by enabling autoformatting features. Add
+      Markdown-like shortcuts that automatically apply formatting as you type.
     </hp>
-    <hp>While typing, try these (mark rules):</hp>
+    <hp>While typing, try these mark rules:</hp>
     <hul>
       <hli>
         <hlic>

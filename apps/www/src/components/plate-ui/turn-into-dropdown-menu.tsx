@@ -19,15 +19,14 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 import {
-  ELEMENT_OL,
-  ELEMENT_UL,
-  toggleList,
-  unwrapList,
-} from '@udecode/plate-list';
+  KEY_LIST_STYLE_TYPE,
+  toggleIndentList,
+} from '@udecode/plate-indent-list';
+import { toggleList, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
+import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
@@ -85,14 +84,13 @@ const items = [
     icon: Icons.h6,
   },
   {
-    // value: ELEMENT_UL,
-    value: ListStyleType.Disc,
+    value: 'ul',
     label: 'Bulleted list',
     tooltip: 'Bulleted list',
     icon: Icons.ul,
   },
   {
-    value: ListStyleType.Decimal,
+    value: 'ol',
     label: 'Numbered list',
     tooltip: 'Numbered list',
     icon: Icons.ol,
@@ -144,15 +142,14 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(type) => {
-            if (type === ELEMENT_UL || type === ELEMENT_OL) {
-              toggleList(editor as any, { type });
-            } else if (
-              type === ListStyleType.Disc ||
-              type === ListStyleType.Decimal
-            ) {
-              toggleIndentList(editor, {
-                listStyleType: type,
-              });
+            if (type === 'ul' || type === 'ol') {
+              if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
+                toggleIndentList(editor, {
+                  listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                });
+              } else if (settingsStore.get.checkedId('list')) {
+                toggleList(editor, { type });
+              }
             } else {
               unwrapList(editor);
               toggleNodeType(editor, { activeType: type });

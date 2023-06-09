@@ -10,55 +10,71 @@ export const createTable = (): any => (
       <htr>
         <hth>
           <hp>
-            <htext />
+            <htext bold>Plugin</htext>
           </hp>
         </hth>
         <hth>
           <hp>
-            <htext bold>Human</htext>
+            <htext bold>Element</htext>
           </hp>
         </hth>
         <hth>
           <hp>
-            <htext bold>Dog</htext>
+            <htext bold>Inline</htext>
           </hp>
         </hth>
         <hth>
           <hp>
-            <htext bold>Cat</htext>
+            <htext bold>Void</htext>
           </hp>
         </hth>
       </htr>
       <htr>
         <htd>
           <hp>
-            <htext bold># of Feet</htext>
+            <htext bold>Heading</htext>
           </hp>
         </htd>
         <htd>
-          <hp>2</hp>
+          <hp>Yes</hp>
         </htd>
         <htd>
-          <hp>4</hp>
+          <hp>No</hp>
         </htd>
         <htd>
-          <hp>4</hp>
+          <hp>No</hp>
         </htd>
       </htr>
       <htr>
         <htd>
           <hp>
-            <htext bold># of Lives</htext>
+            <htext bold>Image</htext>
           </hp>
         </htd>
         <htd>
-          <hp>1</hp>
+          <hp>Yes</hp>
         </htd>
         <htd>
-          <hp>1</hp>
+          <hp>No</hp>
         </htd>
         <htd>
-          <hp>9</hp>
+          <hp>Yes</hp>
+        </htd>
+      </htr>
+      <htr>
+        <htd>
+          <hp>
+            <htext bold>Mention</htext>
+          </hp>
+        </htd>
+        <htd>
+          <hp>Yes</hp>
+        </htd>
+        <htd>
+          <hp>Yes</hp>
+        </htd>
+        <htd>
+          <hp>Yes</hp>
         </htd>
       </htr>
     </htable>
@@ -93,8 +109,8 @@ export const tableValue: any = (
   <fragment>
     <hh2>🏓 Table</hh2>
     <hp>
-      Since the editor is based on a recursive tree model, similar to an HTML
-      document, you can create complex nested structures, like tables:
+      Create customizable tables with resizable columns and rows, allowing you
+      to design structured layouts.
     </hp>
     {createTable()}
     <hp>

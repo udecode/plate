@@ -7,10 +7,9 @@ jsx;
 export const emojiValue: any = (
   <fragment>
     <hh2>🙂 Emoji's</hh2>
+    <hp>Express yourself with a touch of fun 🎉 and emotion 😃.</hp>
     <hp>
-      This example shows how you might implement a simple :emoji feature. The
-      emoji's are rendered as void inline elements inside the document.
+      Pick from the toolbar or write after the colon to open the combobox :
     </hp>
-    <hp>Try emoji's, like ... </hp>
   </fragment>
 );

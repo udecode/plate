@@ -8,7 +8,8 @@ import {
 } from '@udecode/plate-basic-marks';
 import { usePlateReadOnly } from '@udecode/plate-common';
 import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
-import { ListStyleType } from '@udecode/plate-indent-list';
+import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
+import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
@@ -19,6 +20,7 @@ import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
+import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
@@ -27,12 +29,14 @@ import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
+import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 
 export function FixedToolbarButtons() {
   const readOnly = usePlateReadOnly();
+  const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
   return (
     <>
@@ -83,8 +87,17 @@ export function FixedToolbarButtons() {
 
             <LineHeightDropdownMenu />
 
-            <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-            <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+            {indentList ? (
+              <>
+                <IndentListToolbarButton nodeType={ListStyleType.Disc} />
+                <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+              </>
+            ) : (
+              <>
+                <ListToolbarButton nodeType={ELEMENT_UL} />
+                <ListToolbarButton nodeType={ELEMENT_OL} />
+              </>
+            )}
 
             <OutdentToolbarButton />
             <IndentToolbarButton />

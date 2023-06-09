@@ -6,10 +6,10 @@ jsx;
 
 export const deserializeDocxValue: any = (
   <fragment>
-    <hh1>Deserialize Docx</hh1>
-    <hp>Copy and paste Docx content from Microsoft Word.</hp>
+    <hh2>Deserialize Docx</hh2>
     <hp>
-      <htext />
+      Easily import content from Microsoft Word documents by simply copying and
+      pasting the Docx content into the editor.
     </hp>
   </fragment>
 );

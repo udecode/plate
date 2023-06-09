@@ -6,7 +6,7 @@ jsx;
 
 export const previewMdValue: any = (
   <fragment>
-    <hh1>👀 Preview Markdown</hh1>
+    <hh2>👀 Preview Markdown</hh2>
     <hp>
       Slate is flexible enough to add **decorations** that can format text based
       on its content. For example, this editor has **Markdown** preview

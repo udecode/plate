@@ -52,7 +52,7 @@ export function CommentsPopover() {
 
   return (
     <PortalBody>
-      <CommentsPositioner className="absolute z-10 w-[418px] pb-4">
+      <CommentsPositioner className="absolute z-50 w-[418px] pb-4">
         <CommentsPopoverContent />
       </CommentsPositioner>
     </PortalBody>

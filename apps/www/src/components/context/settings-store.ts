@@ -10,7 +10,11 @@ import {
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { KEY_EXIT_BREAK, KEY_SOFT_BREAK } from '@udecode/plate-break';
+import {
+  KEY_EXIT_BREAK,
+  KEY_SINGLE_LINE,
+  KEY_SOFT_BREAK,
+} from '@udecode/plate-break';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
@@ -44,10 +48,12 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+
 export type CheckedId =
   | 'heading'
   | 'list'
-  | 'drag-over-cursor'
+  | typeof KEY_DRAG_OVER_CURSOR
   | typeof ELEMENT_PARAGRAPH
   | typeof ELEMENT_BLOCKQUOTE
   | typeof ELEMENT_CODE_BLOCK
@@ -70,6 +76,7 @@ export type CheckedId =
   | typeof MARK_CODE
   | typeof MARK_COLOR
   | typeof MARK_FONT_SIZE
+  | typeof KEY_SINGLE_LINE
   | typeof MARK_BG_COLOR
   | typeof MARK_KBD
   | typeof MARK_COMMENT
@@ -96,6 +103,49 @@ export type CheckedId =
   | typeof KEY_DESERIALIZE_HTML
   | typeof KEY_DESERIALIZE_MD;
 
+export type SettingBadge = {
+  label: string;
+};
+
+export const SettingBadges = {
+  element: {
+    label: 'Element',
+    tooltip: '',
+  },
+  inline: {
+    label: 'Inline',
+  },
+  void: {
+    label: 'Void',
+  },
+  leaf: {
+    label: 'Leaf',
+  },
+  style: {
+    label: 'Style',
+  },
+  normalizer: {
+    label: 'Normalizer',
+  },
+  handler: {
+    label: 'Handler',
+  },
+  ui: {
+    label: 'UI',
+  },
+};
+
+export const PluginLabels = {
+  [KEY_COMBOBOX]: 'Combobox',
+  [KEY_INDENT]: 'Indent',
+  [KEY_NODE_ID]: 'Id',
+  [KEY_TRAILING_BLOCK]: 'Trailing Block',
+  [KEY_SINGLE_LINE]: 'Single Line',
+  [KEY_JUICE]: 'Juice',
+  [KEY_LIST_STYLE_TYPE]: 'Indent List',
+  list: 'List',
+};
+
 export const categories = [
   {
     id: 'blocks',
@@ -106,54 +156,87 @@ export const categories = [
         label: 'Blockquote',
         tooltip: 'Highlight important text or citations.',
         route: '/docs/basic-elements',
+        badges: [SettingBadges.element],
       },
       {
         id: ELEMENT_CODE_BLOCK as CheckedId,
         label: 'Code block',
-        tooltip: 'Encapsulate blocks of code within your document.',
+        tooltip: 'Encapsulate blocks of code.',
+        badges: [SettingBadges.element],
       },
       {
         id: ELEMENT_EXCALIDRAW as CheckedId,
         label: 'Excalidraw',
-        tooltip:
-          'Enable creation of drawings and diagrams stored as block nodes.',
+        tooltip: 'Create drawings and diagrams as block nodes.',
+        badges: [SettingBadges.element, SettingBadges.void],
       },
       {
         id: ELEMENT_HR as CheckedId,
-        label: 'Hr',
-        tooltip: 'Insert horizontal lines or rules.',
+        label: 'Horizontal Rule',
+        tooltip: 'Insert horizontal lines.',
+        badges: [SettingBadges.element, SettingBadges.void],
       },
       {
         id: ELEMENT_IMAGE as CheckedId,
         label: 'Image',
-        tooltip: 'Embed visual content into your document.',
+        tooltip: 'Embed images into your document.',
+        badges: [SettingBadges.element, SettingBadges.void],
+      },
+      {
+        id: ELEMENT_LINK as CheckedId,
+        label: 'Link',
+        tooltip: 'Insert and manage hyperlinks.',
+        badges: [SettingBadges.element, SettingBadges.inline],
+      },
+      {
+        id: 'heading' as CheckedId,
+        label: 'Heading',
+        tooltip: 'Organize your document with up to 6 headings.',
+        badges: [SettingBadges.element],
+      },
+      {
+        id: 'list' as CheckedId,
+        label: PluginLabels.list,
+        tooltip: 'Organize nestable items in a bulleted or numbered list.',
+        badges: [SettingBadges.element],
+        conflicts: [KEY_LIST_STYLE_TYPE],
+      },
+      {
+        id: ELEMENT_MEDIA_EMBED as CheckedId,
+        label: 'Media Embed',
+        tooltip: 'Embed medias like videos or tweets into your document.',
+        badges: [SettingBadges.element, SettingBadges.void],
+      },
+      {
+        id: ELEMENT_MENTION as CheckedId,
+        label: 'Mention',
+        tooltip: 'Enable autocompletion for user mentions.',
+        badges: [
+          SettingBadges.element,
+          SettingBadges.inline,
+          SettingBadges.void,
+        ],
+        dependencies: [KEY_COMBOBOX],
       },
       {
         id: ELEMENT_PARAGRAPH as CheckedId,
         label: 'Paragraph',
         tooltip:
           'The foundational block in your editor, serving as the default block for text entry',
+        badges: [SettingBadges.element],
       },
       {
         id: ELEMENT_TABLE as CheckedId,
         label: 'Table',
         tooltip:
-          'Empower content authors with text marking tools for reviewing and referencing content.',
+          'Organize and display data in a structured and resizable tabular format.',
+        badges: [SettingBadges.element],
       },
       {
         id: ELEMENT_TODO_LI as CheckedId,
         label: 'Todo List',
         tooltip: 'Manage tasks within your document.',
-      },
-      {
-        id: ELEMENT_LINK as CheckedId,
-        label: 'Link',
-        tooltip: 'Achieve comprehensive hyperlink insertion and management.',
-      },
-      {
-        id: ELEMENT_MENTION as CheckedId,
-        label: 'Mention',
-        tooltip: 'Enable intelligent autocompletion support for user input.',
+        badges: [SettingBadges.element],
       },
     ],
   },
@@ -162,70 +245,109 @@ export const categories = [
     label: 'Marks',
     children: [
       {
-        id: MARK_BG_COLOR as CheckedId,
-        label: 'Background Color',
-        tooltip: 'Add color to text backgrounds for emphasis or style.',
-      },
-      {
         id: MARK_BOLD as CheckedId,
         label: 'Bold',
-        tooltip: 'Make your text stand out powerfully.',
+        tooltip: 'Make your text stand out.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_CODE as CheckedId,
         label: 'Code',
         tooltip: 'Embed code into your text.',
+        badges: [SettingBadges.leaf],
+      },
+
+      {
+        id: MARK_COMMENT as CheckedId,
+        label: 'Comments',
+        tooltip: 'Add comments to text as marks.',
+        badges: [SettingBadges.leaf],
+      },
+      {
+        id: MARK_BG_COLOR as CheckedId,
+        label: 'Font Background',
+        tooltip: 'Add color to text backgrounds.',
+        badges: [SettingBadges.style],
       },
       {
         id: MARK_COLOR as CheckedId,
-        label: 'Color',
+        label: 'Font Color',
         tooltip: 'Highlight text with a specific color.',
-      },
-      {
-        id: MARK_COMMENT as CheckedId,
-        label: 'comments',
-        tooltip: 'Add comments to text as marks.',
+        badges: [SettingBadges.style],
       },
       {
         id: MARK_FONT_SIZE as CheckedId,
         label: 'Font Size',
-        tooltip: 'Gain control over font size by utilizing inline elements.',
+        tooltip: 'Adjust the size of the text.',
+        badges: [SettingBadges.style],
       },
       {
         id: MARK_HIGHLIGHT as CheckedId,
         label: 'Highlight',
-        tooltip:
-          'Empower content authors with text marking tools for reviewing and referencing content.',
+        tooltip: 'Mark and reference text for review.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_ITALIC as CheckedId,
         label: 'Italic',
-        tooltip: 'Add a subtle emphasis to your text.',
+        tooltip: 'Emphasize your text.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_KBD as CheckedId,
-        label: 'Kbd',
-        tooltip: 'Designate keyboard inputs or commands in your text.',
+        label: 'Keyboard Input',
+        tooltip: 'Indicate keyboard inputs or commands.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_STRIKETHROUGH as CheckedId,
         label: 'Strikethrough',
-        tooltip: 'Indicate deletions or corrections in your text.',
+        tooltip: 'Cross out text to indicate deletion or correction.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_SUBSCRIPT as CheckedId,
         label: 'Subscript',
         tooltip: 'Lower portions of your text.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_SUPERSCRIPT as CheckedId,
         label: 'Superscript',
         tooltip: 'Elevate portions of your text.',
+        badges: [SettingBadges.leaf],
       },
       {
         id: MARK_UNDERLINE as CheckedId,
         label: 'Underline',
         tooltip: 'Emphasize specific words or phrases in your text.',
+        badges: [SettingBadges.leaf],
+      },
+    ],
+  },
+  {
+    id: 'style',
+    label: 'Block Style',
+    children: [
+      {
+        id: KEY_ALIGN as CheckedId,
+        label: 'Align',
+        tooltip: 'Align your content to different positions.',
+        badges: [SettingBadges.style],
+      },
+      {
+        id: KEY_INDENT as CheckedId,
+        label: 'Indent',
+        tooltip: 'Customize text indentation.',
+        badges: [SettingBadges.style],
+      },
+      {
+        id: KEY_LIST_STYLE_TYPE as CheckedId,
+        label: PluginLabels[KEY_LIST_STYLE_TYPE],
+        tooltip: 'Turn any block into a list item. Alternative to List.',
+        badges: [SettingBadges.style],
+        dependencies: [KEY_INDENT],
+        conflicts: ['list'],
       },
     ],
   },
@@ -234,99 +356,128 @@ export const categories = [
     label: 'Functionality',
     children: [
       {
-        id: KEY_ALIGN as CheckedId,
-        label: 'Align',
-        tooltip:
-          'Align your content to the left, right, center, or justify it.',
-      },
-      {
         id: KEY_AUTOFORMAT as CheckedId,
         label: 'Autoformat',
-        tooltip: 'Quickly apply formatting to content using shortcodes.',
+        tooltip: 'Apply formatting automatically using shortcodes.',
+        badges: [SettingBadges.handler],
       },
       {
         id: KEY_BLOCK_SELECTION as CheckedId,
-        label: 'Block selection',
+        label: 'Block Selection',
         tooltip: 'Select and manipulate entire text blocks.',
+        badges: [SettingBadges.ui],
       },
       {
         id: KEY_COMBOBOX as CheckedId,
         label: 'Combobox',
         tooltip: 'Select options from a predefined list.',
+        badges: [SettingBadges.handler, SettingBadges.ui],
       },
       {
         id: KEY_DND as CheckedId,
-        label: 'Dnd',
-        tooltip: 'Move images or tables within the editor.',
+        label: 'Drag & Drop',
+        tooltip: 'Move blocks within the editor.',
+        badges: [SettingBadges.handler, SettingBadges.ui],
+        dependencies: [KEY_NODE_ID],
+      },
+      {
+        id: KEY_DRAG_OVER_CURSOR as CheckedId,
+        label: 'Drag Cursor',
+        tooltip: 'Customize the cursor when dragging.',
+        badges: [SettingBadges.handler, SettingBadges.ui],
       },
       {
         id: KEY_EMOJI as CheckedId,
         label: 'Emoji',
-        tooltip:
-          'Enhance your text with emojis using the Emoji plugin, adding visual expression to your content.',
+        tooltip: 'Enhance your text with emojis.',
+        badges: [SettingBadges.handler],
+        dependencies: [KEY_COMBOBOX],
       },
       {
         id: KEY_EXIT_BREAK as CheckedId,
-        label: 'Exit break',
-        tooltip:
-          'Streamline your workflow when working with large blocks of text.',
-      },
-      {
-        id: KEY_INDENT as CheckedId,
-        label: 'Indent',
-        tooltip:
-          'Customize the indentation of text blocks, including paragraphs, headings, and lists.',
-      },
-      {
-        id: KEY_JUICE as CheckedId,
-        label: 'Juice',
-        tooltip: 'Inline CSS properties into the `style` attribute.',
-      },
-      {
-        id: KEY_LIST_STYLE_TYPE as CheckedId,
-        label: 'List style type',
-        tooltip:
-          'Choose from various bullet or numbering styles for your lists.',
+        label: 'Exit Break',
+        tooltip: 'Exit a large block using a shortcut.',
+        badges: [SettingBadges.handler],
       },
       {
         id: KEY_NODE_ID as CheckedId,
-        label: 'Node Id',
+        label: 'Id',
         tooltip: 'Assign unique identifiers to nodes within your document.',
+        badges: [SettingBadges.normalizer],
       },
       {
         id: KEY_NORMALIZE_TYPES as CheckedId,
-        label: 'Normalize types',
-        tooltip: 'Standardize text styles and structures for consistency.',
+        label: 'Normalize Types',
+        tooltip: 'Enforce block types using rules.',
+        badges: [SettingBadges.normalizer],
       },
       {
         id: KEY_RESET_NODE as CheckedId,
-        label: 'Reset node',
-        tooltip:
-          'Quickly reset the formatting of a selected block of text to its default settings.',
+        label: 'Reset Node',
+        tooltip: 'Reset the block type using rules.',
+        badges: [SettingBadges.handler],
       },
       {
         id: KEY_SELECT_ON_BACKSPACE as CheckedId,
-        label: 'Select on backspace',
+        label: 'Select on Backspace',
         tooltip:
-          'Optimize editing efficiency by highlighting the preceding block upon hitting backspace.',
+          'Select the preceding block instead of deleting when pressing backspace.',
+        badges: [SettingBadges.handler],
+      },
+      {
+        id: KEY_SINGLE_LINE as CheckedId,
+        label: 'Single Line',
+        tooltip: 'Restrict the editor to a single block.',
+        disablePlugins: [KEY_TRAILING_BLOCK],
+        badges: [SettingBadges.normalizer],
+        conflicts: [KEY_TRAILING_BLOCK],
       },
       {
         id: KEY_SOFT_BREAK as CheckedId,
-        label: 'Soft break',
+        label: 'Soft Break',
         tooltip:
           'Insert line breaks within a block of text without starting a new block.',
+        badges: [SettingBadges.handler],
       },
       {
         id: KEY_TABBABLE as CheckedId,
         label: 'Tabbable',
-        tooltip:
-          'Maintain a consistent tab order for tabbable elements while navigating.',
+        tooltip: 'Maintain a consistent tab order for tabbable elements.',
+        badges: [SettingBadges.handler],
       },
       {
         id: KEY_TRAILING_BLOCK as CheckedId,
-        label: 'Tailing block',
+        label: 'Trailing Block',
+        tooltip: 'Automatically add a new paragraph after the final block.',
+        disablePlugins: [KEY_SINGLE_LINE],
+        badges: [SettingBadges.normalizer],
+        conflicts: [KEY_SINGLE_LINE],
+      },
+    ],
+  },
+  {
+    id: 'Deserialization',
+    label: 'Deserialization',
+    children: [
+      {
+        id: KEY_DESERIALIZE_DOCX as CheckedId,
+        label: 'Deserialize DOCX',
+        tooltip: 'Copy paste from DOCX to Slate.',
+        badges: [SettingBadges.handler],
+        dependencies: [KEY_JUICE],
+      },
+      {
+        id: KEY_DESERIALIZE_MD as CheckedId,
+        label: 'Deserialize MD',
+        tooltip: 'Copy paste from MD to Slate.',
+        badges: [SettingBadges.handler],
+      },
+      {
+        id: KEY_JUICE as CheckedId,
+        label: 'Juice',
         tooltip:
-          'Ensure a smooth writing flow by automatically adding a new paragraph after the final block.',
+          'Inline CSS properties into the `style` attribute when pasting HTML.',
+        badges: [SettingBadges.handler],
       },
     ],
   },
@@ -344,11 +495,21 @@ const defaultCheckedIds = categories.reduce((acc, item) => {
 export const settingsStore = createStore('settings')({
   showSettings: true,
 
-  checkedIds: { ...defaultCheckedIds } as Record<CheckedId, boolean>,
+  checkedIds: {
+    ...defaultCheckedIds,
+    singleLine: false,
+    list: false,
+  } as Record<CheckedId, boolean>,
 })
   .extendActions((set) => ({
-    setCheckedId: (id: CheckedId, checked: boolean) => {
+    setCheckedId: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
       set.state((draft) => {
+        draft.checkedIds = { ...draft.checkedIds };
+
+        uncheck?.forEach((item) => {
+          draft.checkedIds[item] = false;
+        });
+
         draft.checkedIds[id] = checked;
       });
     },

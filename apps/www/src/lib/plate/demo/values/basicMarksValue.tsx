@@ -7,34 +7,29 @@ jsx;
 export const basicMarksValue: any = (
   <fragment>
     <hh1>🌱 Marks</hh1>
-    <hh2>Basic Marks</hh2>
     <hp>
-      The basic marks consist of text formatting such as bold, italic,
-      underline, strikethrough, subscript, superscript, and code.
+      Add style and emphasis to your text using the mark plugins, which offers a
+      variety of formatting options.
     </hp>
     <hp>
-      You can customize the type, the component and the hotkey for each of
-      these.
-    </hp>
-    <hp>
-      <htext bold>This text is bold.</htext>
-    </hp>
-    <hp>
-      <htext italic>This text is italic.</htext>
-    </hp>
-    <hp>
-      <htext underline>This text is underlined.</htext>
-    </hp>
-    <hp>
+      Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}
+      <htext underline>underlined</htext>, or apply a{' '}
       <htext bold italic underline>
-        This text is bold, italic and underlined.
-      </htext>
+        combination
+      </htext>{' '}
+      of these styles for a visually striking effect.
     </hp>
     <hp>
-      <htext strikethrough>This is a strikethrough text.</htext>
+      Add <htext strikethrough>strikethrough</htext> to indicate deleted or
+      outdated content.
     </hp>
     <hp>
-      <htext code>This is an inline code.</htext>
+      Write code snippets with inline <htext code>code</htext> formatting for
+      easy readability.
+    </hp>
+    <hp>
+      Press <htext kbd>⌘+B</htext> to apply bold mark or <htext kbd>⌘+I</htext>{' '}
+      for italic mark.
     </hp>
   </fragment>
 );

@@ -8,14 +8,13 @@ export const linkValue: any = (
   <fragment>
     <hh2>🔗 Link</hh2>
     <hp>
-      In addition to block nodes, you can create inline nodes, like{' '}
-      <ha url="https://en.wikipedia.org/wiki/Hypertext">hyperlinks</ha>!
+      Add <ha url="https://en.wikipedia.org/wiki/Hypertext">hyperlinks</ha>{' '}
+      within your text to reference external sources or provide additional
+      information using the Link plugin.
     </hp>
     <hp>
-      This example shows hyperlinks in action. It features two ways to add
-      links. You can either add a link via the toolbar icon above, or if you
-      want in on a little secret, copy a URL to your keyboard and paste it while
-      a range of text is selected.
+      Effortlessly create hyperlinks using the toolbar or by pasting a URL while
+      selecting the desired text.
     </hp>
   </fragment>
 );

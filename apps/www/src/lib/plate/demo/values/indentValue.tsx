@@ -6,11 +6,10 @@ jsx;
 
 export const indentValue: any = (
   <fragment>
-    <hh1>Changing block indentation</hh1>
+    <hh2>Indentation</hh2>
     <hp indent={1}>
-      Use the toolbar buttons to control the indentation of specific blocks. You
-      can use these tools to highlight an important piece of information,
-      communicate a hierarchy or just give your content some room.
+      Easily control the indentation of specific blocks to highlight important
+      information and improve visual structure.
     </hp>
     <hp indent={2}>
       For instance, this paragraph looks like it belongs to the previous one.

@@ -61,33 +61,23 @@ export const commentsValue: MyValue = [
   {
     type: 'p',
     children: [
-      { text: 'A line of text in a ' },
       {
-        text: 'paragraph',
+        text: 'Add ',
+      },
+      {
+        text: 'comments to your content',
         comment: true,
         comment_1: true,
       },
-      { text: '.' },
-    ],
-  },
-  {
-    type: 'p',
-    children: [
+      { text: ' to provide additional context, insights, or ' },
       {
-        text: 'Lorem',
+        text: 'collaborate',
         comment: true,
         comment_2: true,
       },
-      // { text: 'amet' },
-      // {
-      //   text: 'paragraph',
-      //   comment: true,
-      //   comment_3: true,
-      // },
       {
-        text: ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
+        text: '  with others',
       },
     ],
   },
-  { type: 'p', children: [{ text: '' }] },
 ];

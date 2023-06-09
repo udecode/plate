@@ -6,21 +6,30 @@ import { createTable } from './tableValue';
 
 jsx;
 
+export const trailingBlockValue: any = (
+  <fragment>
+    <hh2>Trailing Block</hh2>
+    <hp>Always have a trailing paragraph at the end of your editor.</hp>
+  </fragment>
+);
+
 export const exitBreakValue: any = (
   <fragment>
-    <hh1>Exit Break ⏎</hh1>
-    <hp>You can define a set of rules with:</hp>
+    <hh2>Exit Break ⏎</hh2>
+    <hp>
+      Configure how exit breaks (line breaks between blocks) behave using simple
+      rules:
+    </hp>
     {createList([
-      'hotkey – e.g. press ⌘⏎ to exit to the next block 👇',
-      'query – Filter the block types where the rule applies.',
-      'level – Path level where the exit is.',
-      'before – If true, exit to the previous block. e.g. press ⇧⌘⏎ to exit before the selected block 👆',
+      'hotkey – Use hotkeys like ⌘⏎ to move the cursor to the next block',
+      'query – Specify block types where exit breaks are allowed.',
+      'before – Choose whether the cursor exits to the next or previous block',
     ])}
     <hblockquote>Try here ⌘⏎</hblockquote>
     <hcodeblock>
-      <hcodeline>And in the middle ⌘⏎ of the block.</hcodeline>
+      <hcodeline>And in the middle ⌘⏎ of a block.</hcodeline>
     </hcodeblock>
-    <hp>It also works for nested blocks:</hp>
+    <hp>Exit breaks also work within nested blocks:</hp>
     {createTable()}
   </fragment>
 );

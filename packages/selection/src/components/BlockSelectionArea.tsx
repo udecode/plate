@@ -33,6 +33,7 @@ export const useBlockSelectionArea = (
     className: 'slate-SelectionArea',
     style: {
       position: 'relative',
+      width: '100%',
     },
     onStart,
     onMove,

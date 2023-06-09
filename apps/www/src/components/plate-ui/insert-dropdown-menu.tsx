@@ -20,9 +20,12 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
+import {
+  KEY_LIST_STYLE_TYPE,
+  toggleIndentList,
+} from '@udecode/plate-indent-list';
 import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
-import { ELEMENT_OL, ELEMENT_UL, toggleList } from '@udecode/plate-list';
+import { toggleList } from '@udecode/plate-list';
 import {
   ELEMENT_IMAGE,
   ELEMENT_MEDIA_EMBED,
@@ -31,6 +34,7 @@ import {
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { ELEMENT_TABLE, insertTable } from '@udecode/plate-table';
 
+import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
@@ -97,14 +101,13 @@ const items = [
         icon: Icons.table,
       },
       {
-        // value: ELEMENT_UL,
-        value: ListStyleType.Disc,
+        value: 'ul',
         label: 'Bulleted list',
         tooltip: 'Bulleted list',
         icon: Icons.ul,
       },
       {
-        value: ListStyleType.Decimal,
+        value: 'ol',
         label: 'Numbered list',
         tooltip: 'Numbered list',
         icon: Icons.ol,
@@ -198,23 +201,19 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                       await insertMedia(editor, { type: ELEMENT_IMAGE });
                     } else if (type === ELEMENT_MEDIA_EMBED) {
                       await insertMedia(editor, { type: ELEMENT_MEDIA_EMBED });
-                    } else if (type === ELEMENT_UL || type === ELEMENT_OL) {
+                    } else if (type === 'ul' || type === 'ol') {
                       insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
                         select: true,
                         nextBlock: true,
                       });
 
-                      toggleList(editor, { type });
-                    } else if (
-                      type === ListStyleType.Disc ||
-                      type === ListStyleType.Decimal
-                    ) {
-                      insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
-                        select: true,
-                        nextBlock: true,
-                      });
-
-                      toggleIndentList(editor, { listStyleType: type });
+                      if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
+                        toggleIndentList(editor, {
+                          listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                        });
+                      } else if (settingsStore.get.checkedId('list')) {
+                        toggleList(editor, { type });
+                      }
                     } else if (type === ELEMENT_TABLE) {
                       insertTable(editor);
                     } else if (type === ELEMENT_LINK) {

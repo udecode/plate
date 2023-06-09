@@ -7,9 +7,8 @@ jsx;
 export const kbdValue: any = (
   <fragment>
     <hp>
-      Press <htext kbd>⌘+B</htext> to mark selected text bold or{' '}
-      <htext kbd>⌘+I</htext>
-      to mark it italic.
+      Press <htext kbd>⌘+B</htext> to apply bold mark or <htext kbd>⌘+I</htext>{' '}
+      for italic mark.
     </hp>
   </fragment>
 );

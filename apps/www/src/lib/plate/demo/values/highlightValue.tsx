@@ -6,11 +6,9 @@ jsx;
 
 export const highlightValue: any = (
   <fragment>
-    <hh2>🌈 Highlight</hh2>
     <hp>
-      The Highlight plugin enables support for{' '}
-      <htext highlight>highlights</htext>, useful when reviewing content or
-      highlighting it for future reference.
+      <htext highlight>Highlight</htext> important information for better
+      clarity.
     </hp>
   </fragment>
 );

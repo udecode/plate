@@ -15,12 +15,12 @@ export const useListToolbarButtonState = ({ nodeType = ELEMENT_UL } = {}) => {
 
   return {
     pressed,
+    nodeType,
   };
 };
 
 export const useListToolbarButton = (
-  state: ReturnType<typeof useListToolbarButtonState>,
-  nodeType = ELEMENT_UL
+  state: ReturnType<typeof useListToolbarButtonState>
 ) => {
   const editor = usePlateEditorRef();
 
@@ -31,7 +31,7 @@ export const useListToolbarButton = (
         e.preventDefault();
         e.stopPropagation();
 
-        toggleList(editor, { type: nodeType });
+        toggleList(editor, { type: state.nodeType });
         focusEditor(editor);
       },
     },

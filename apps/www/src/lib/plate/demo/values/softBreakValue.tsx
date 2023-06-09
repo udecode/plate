@@ -7,15 +7,18 @@ jsx;
 
 export const softBreakValue: any = (
   <fragment>
-    <hh1>Soft Break ⇧⏎</hh1>
-    <hp>You can define a set of rules with:</hp>
+    <hh2>Soft Break ⇧⏎</hh2>
+    <hp>
+      Customize how soft breaks (line breaks within a paragraph) are handled
+      using configurable rules
+    </hp>
     {createList([
-      'hotkey – e.g. press ⇧⏎ anywhere to insert a soft break 👇',
-      'query – filter the block types where the rule applies, e.g. pressing ⏎ will insert a soft break only inside block quotes and code blocks.',
+      'hotkey – Use hotkeys like ⇧⏎ to insert a soft break anywhere within a paragraph.',
+      'query – Define custom rules to limit soft breaks to specific block types.',
     ])}
     <hblockquote>Try here ⏎</hblockquote>
     <hcodeblock>
-      <hcodeline>And ⏎ here.</hcodeline>
+      <hcodeline>And here ⏎ as well.</hcodeline>
     </hcodeblock>
   </fragment>
 );

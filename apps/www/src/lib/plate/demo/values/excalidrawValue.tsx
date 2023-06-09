@@ -8,10 +8,12 @@ jsx;
 export const excalidrawValue: any = (
   <fragment>
     <hh2>Excalidraw</hh2>
-    <hp>Embed Excalidraw within your Slate document!</hp>
+    <hp>
+      Unleash your creativity with the Excalidraw plugin, which enables you to
+      embed and draw diagrams directly within your editor.
+    </hp>
     <hexcalidraw {...excalidrawInitialData}>
       <htext />
     </hexcalidraw>
-    <hp>Try it out!</hp>
   </fragment>
 );

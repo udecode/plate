@@ -6,23 +6,21 @@ jsx;
 
 export const deserializeHtmlValue: any = (
   <fragment>
-    <hh1>Deserialize HTML</hh1>
+    <hh2>Deserialize HTML</hh2>
     <hp>
-      By default, pasting content into a Slate editor will use the clipboard's{' '}
-      <htext code>'text/plain'</htext>
-      data. That's okay for some use cases, but sometimes you want users to be
-      able to paste in content and have it maintain its formatting. To do this,
-      your editor needs to handle <htext code>'text/html'</htext>
+      By default, when you paste content into the Slate editor, it will utilize
+      the clipboard's <htext code>'text/plain'</htext>
+      data. While this is suitable for certain scenarios, there are times when
+      you want users to be able to paste content while preserving its
+      formatting. To achieve this, your editor should be capable of handling{' '}
+      <htext code>'text/html'</htext>
       data.
     </hp>
-    <hp>This is an example of doing exactly that!</hp>
     <hp>
-      Try it out for yourself! Copy and paste some rendered HTML rich text
-      content (not the source code) from another site into this editor and it's
-      formatting should be preserved.
-    </hp>
-    <hp>
-      <htext />
+      To experience the seamless preservation of formatting, simply copy and
+      paste rendered HTML rich text content (not the source code) from another
+      website into this editor. You'll notice that the formatting of the pasted
+      content is maintained.
     </hp>
   </fragment>
 );
