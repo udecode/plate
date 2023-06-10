@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-import {
-  categories,
-  categoryIds,
-  CheckedId,
-  PluginLabels,
-  SettingBadge,
-  settingsStore,
-} from './context/settings-store';
+import { categoryIds, settingsStore } from './context/settings-store';
 import { useDebounce } from './hooks/use-debounce';
 import {
   Accordion,
@@ -26,10 +18,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
+import {
+  CheckedId,
+  SettingPlugin,
+  SettingPlugins,
+  settingPlugins,
+} from '@/config/setting-plugins';
 import { cn } from '@/lib/utils';
 
 export function SettingsSwitch({
-  // icon: Icon,
   id,
   label,
   tooltip,
@@ -37,16 +34,7 @@ export function SettingsSwitch({
   badges,
   conflicts,
   dependencies,
-}: {
-  label: string;
-  id: CheckedId;
-  tooltip: string;
-  route?: string;
-  icon?: LucideIcon;
-  badges?: SettingBadge[];
-  dependencies?: CheckedId[];
-  conflicts?: CheckedId[];
-}) {
+}: SettingPlugin) {
   return (
     <div className="flex w-full items-center justify-between">
       <div className="overflow-hidden text-left">
@@ -56,10 +44,10 @@ export function SettingsSwitch({
               <div className="flex items-center">
                 <Checkbox
                   id={id}
-                  checked={settingsStore.use.checkedIdNext(id)}
+                  checked={settingsStore.use.checkedIdNext(id as CheckedId)}
                   onCheckedChange={(_checked: boolean) => {
                     settingsStore.set.setCheckedIdNext(
-                      id,
+                      id as CheckedId,
                       _checked,
                       _checked ? conflicts : []
                     );
@@ -107,7 +95,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {PluginLabels[dependency]}
+                          {SettingPlugins[dependency].label}
                         </Badge>
                       ))}
                     </div>
@@ -138,7 +126,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {PluginLabels[conflict]}
+                          {SettingPlugins[conflict].label}
                         </Badge>
                       ))}
                     </div>
@@ -201,7 +189,7 @@ export function SettingsPanel() {
               <SettingsCombobox />
             </div>
             <Accordion type="multiple" defaultValue={categoryIds}>
-              {categories.map((item) => (
+              {settingPlugins.map((item) => (
                 <AccordionItem key={item.id} value={item.id}>
                   <AccordionTrigger className="px-6 py-4">
                     {item.label}

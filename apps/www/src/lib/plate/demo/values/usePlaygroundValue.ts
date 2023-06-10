@@ -31,10 +31,15 @@ import { mapNodeId } from '@/plate/demo/mapNodeId';
 import { MyValue } from '@/plate/plate.types';
 
 export const usePlaygroundValue = () => {
+  const preset = settingsStore.use.value();
   const checkedIds = settingsStore.use.checkedIds();
 
   return useMemo(() => {
     const value = [...basicElementsValue, ...basicMarksValue];
+
+    if (preset !== 'playground') {
+      return value;
+    }
 
     // Marks
     if (checkedIds.color || checkedIds.backgroundColor)
@@ -86,5 +91,35 @@ export const usePlaygroundValue = () => {
     if (checkedIds.excalidraw) value.push(...excalidrawValue);
 
     return mapNodeId(value) as MyValue;
-  }, [checkedIds]);
+  }, [
+    checkedIds.a,
+    checkedIds.action_item,
+    checkedIds.align,
+    checkedIds.autoformat,
+    checkedIds.backgroundColor,
+    checkedIds.color,
+    checkedIds.comment,
+    checkedIds.deserializeCsv,
+    checkedIds.deserializeDocx,
+    checkedIds.deserializeHtml,
+    checkedIds.deserializeMd,
+    checkedIds.dragOverCursor,
+    checkedIds.emoji,
+    checkedIds.excalidraw,
+    checkedIds.exitBreak,
+    checkedIds.highlight,
+    checkedIds.hr,
+    checkedIds.img,
+    checkedIds.indent,
+    checkedIds.lineHeight,
+    checkedIds.list,
+    checkedIds.listStyleType,
+    checkedIds.media_embed,
+    checkedIds.mention,
+    checkedIds.softBreak,
+    checkedIds.tabbable,
+    checkedIds.table,
+    checkedIds.trailingBlock,
+    preset,
+  ]);
 };

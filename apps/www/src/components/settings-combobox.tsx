@@ -13,45 +13,46 @@ import { Icons } from './icons';
 
 import { cn } from '@/lib/utils';
 
+const items = {
+  playground: {
+    value: 'playground',
+    label: 'Playground',
+  },
+  sveltekit: {
+    value: 'sveltekit',
+    label: 'SvelteKit',
+  },
+  nuxt: {
+    value: 'nuxt',
+    label: 'Nuxt.js',
+  },
+  remix: {
+    value: 'remix',
+    label: 'Remix',
+  },
+  astro: {
+    value: 'astro',
+    label: 'Astro',
+  },
+};
+
 const categories = [
   {
     value: 'root',
     label: '',
-    items: [
-      {
-        value: 'playground',
-        label: 'Playground',
-      },
-    ],
+    items: [items.playground],
   },
   {
     value: 'plugins',
     label: 'Plugins',
-    items: [
-      {
-        value: 'sveltekit',
-        label: 'SvelteKit',
-      },
-      {
-        value: 'nuxt.js',
-        label: 'Nuxt.js',
-      },
-      {
-        value: 'remix',
-        label: 'Remix',
-      },
-      {
-        value: 'astro',
-        label: 'Astro',
-      },
-    ],
+    items: [items.nuxt, items.remix, items.astro],
   },
 ];
 
 export function SettingsCombobox() {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState('');
-
+  const [value, setValue] = React.useState(items.playground.value);
+  console.log(items[value]);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -61,8 +62,8 @@ export function SettingsCombobox() {
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value
-            ? categories.find((framework) => framework.value === value)?.label
+          {value !== items.playground.value
+            ? items[value]?.label
             : 'Select a value...'}
           <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
