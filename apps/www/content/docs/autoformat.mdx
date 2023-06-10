@@ -1,0 +1,230 @@
+---
+title: Autoformat
+description: Apply formatting automatically using shortcodes.
+---
+
+The Autoformat plugin enables fast application of formatting to content through the use of shortcodes.
+By using Markdown-like inline codes while you type,
+this plugin speeds up and simplifies the editing process by eliminating the need to use toolbar buttons and shortcuts for common formatting features.
+
+Such as automatically converting `# ` into an H1. This package also provides predefined rules.
+
+As you type, enter the following shortcodes to apply the formatting:
+
+- **`*text*`** for bold text
+- **`_text_`** for italicized text
+- **`~~text~~`** for strikethrough text
+
+### Installation
+
+```bash
+npm install @udecode/plate-autoformat
+```
+
+### Usage
+
+```tsx
+import {
+  createAutoformatPlugin,
+} from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createAutoformatPlugin(autoformatPlugin),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+| Name                           | Description                                                  |
+|:-------------------------------|:-------------------------------------------------------------|
+| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.                                        |
+|                                | Converts `'text'` to `‘text’`.                                        |
+| `autoformatPunctuation`        | Converts `--` to `—`.                                        |
+|                                | Converts `...` to `…`.                                       |
+|                                | Converts `>>` to `»`.                                        |
+|                                | Converts `<<` to `«`.                                        |
+| `autoformatArrow`              | Converts `->` to `→`.                                        |
+|                                | Converts `<-` to `←`.                                        |
+|                                | Converts `=>` to `⇒`.                                        |
+|                                | Converts `<=` and `≤=` to `⇐`.                               |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.                           |
+|                                | Converts `(r)` and `(R)` to `®`.                             |
+|                                | Converts `(c)` and `(C)` to `©`.                             |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.                                   |
+|                                | Converts `&reg;` to `®`.                                     |
+|                                | Converts `&copy;` to `©`.                                    |
+|                                | Converts `&sect;` to `§`.                                    |
+| `autoformatComparison`         | Converts `!>` to `!>`.                                       |
+|                                | Converts `!<` to `≮`.                                        |
+|                                | Converts `>=` to `≥`.                                        |
+|                                | Converts `<=` to `≤`.                                        |
+|                                | Converts `!>=` to `≱`.                                       |
+|                                | Converts `!<=` to `≰`.                                       |
+| `autoformatEquality`           | Converts `!=` to `≠`.                                        |
+|                                | Converts `==` to `≡`.                                        |
+|                                | Converts `!==` and `≠=` to `≢`.                              |
+|                                | Converts `~=` to `≈`.                                        |
+|                                | Converts `!~=` to `≉`.                                       |
+| `autoformatFraction`           | Converts `1/2` to `½`.                                       |
+|                                | Converts `1/3` to `⅓`.                                       |
+|                                | ...                                      |
+|                                | Converts `7/8` to `⅞`.                                       |
+| `autoformatDivision`           | Converts `//` to `÷`.                                        |
+| `autoformatOperation`          | Converts `+-` to `±`.                                        |
+|                                | Converts `%%` to `‰`.                              |
+|                                | Converts `%%%` and `‰%` to `‱.
+|                                | `autoformatDivision` rules.                                  |
+| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                                        |
+|                                | Converts `~1` to `₁`.                                        |
+|                                | ...                                                          |
+|                                | Converts `~9` to `₉`.                                        |
+| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                                        |
+|                                | Converts `~-` to `₋`.                                        |
+| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                                        |
+|                                | Converts `^1` to `¹`.                                        |
+|                                | ...                                                          |
+|                                | Converts `^9` to `⁹`.                                        |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                                        |
+|                                | Converts `^-` to `⁺`.                                        |
+| `autoformatMath`               | `autoformatComparison` rules                                 |
+|                                | `autoformatEquality` rules                                   |
+|                                | `autoformatOperation` rules                                  |
+|                                | `autoformatFraction` rules                                   |
+|                                | `autoformatSubscriptNumbers` rules                         |
+|                                | `autoformatSubscriptSymbols` rules                           |
+|                                | `autoformatSuperscriptNumbers` rules                         |
+|                                | `autoformatSuperscriptSymbols` rules                           |
+
+```tsx
+export interface MatchRange {
+  start: string;
+  end: string;
+}
+
+export interface AutoformatQueryOptions
+  extends Omit<AutoformatCommonRule, 'query'> {
+  /**
+   * `insertText` text.
+   */
+  text: string;
+}
+
+export interface AutoformatCommonRule {
+  /**
+   * The rule applies when the trigger and the text just before the cursor matches.
+   * For `mode: 'block'`: lookup for the end match(es) before the cursor.
+   * For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
+   * For `mode: 'mark'`: lookup for the start and end matches.
+   * Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
+   */
+  match: string | string[] | MatchRange | MatchRange[];
+
+  /**
+   * Triggering character to autoformat.
+   * @default the last character of `match` or `match.end`
+   */
+  trigger?: string | string[];
+
+  /**
+   * If true, insert the triggering character after autoformatting.
+   * @default: false
+   */
+  insertTrigger?: boolean;
+
+  /**
+   * Query to allow autoformat.
+   */
+  query?: (editor: TEditor<V>, options: AutoformatQueryOptions) => boolean;
+}
+
+export interface AutoformatBlockRule extends AutoformatCommonRule {
+  /**
+   * - text: insert text.
+   * - block: set block type or custom format.
+   * - mark: insert mark(s) between matches.
+   * @default 'text'
+   */
+  mode: 'block';
+
+  match: string | string[];
+
+  /**
+   * For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
+   * For `mode: 'mark'`: Mark(s) to add.
+   */
+  type?: string;
+
+  /**
+   * If true, the trigger should be at block start to allow autoformatting.
+   * @default true
+   */
+  triggerAtBlockStart?: boolean;
+
+  /**
+   * If true, allow to autoformat even if there is a block of the same type above the selected block.
+   * @default false
+   */
+  allowSameTypeAbove?: boolean;
+
+  /**
+   * Function called just before `format`.
+   * Generally used to reset the selected block.
+   */
+  preFormat?: (editor: TEditor<V>) => void;
+
+  /**
+   * Custom formatting function.
+   * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
+   */
+  format?: (editor: TEditor<V>) => void;
+}
+
+export interface AutoformatMarkRule extends AutoformatCommonRule {
+  mode: 'mark';
+
+  /**
+   * Mark(s) to add.
+   */
+  type: string | string[];
+
+  /**
+   * If false, do not format when the string can be trimmed.
+   */
+  ignoreTrim?: boolean;
+}
+
+export interface AutoformatTextRule extends AutoformatCommonRule {
+  mode: 'text';
+
+  match: string | string[];
+
+  /**
+   * string: the matched text is replaced by that string.
+   * string[]: the matched texts are replaced by these strings.
+   * function: called when there is a match.
+   */
+  format:
+    | string
+    | string[]
+    | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void);
+}
+
+export type AutoformatRule =
+  | AutoformatBlockRule
+  | AutoformatMarkRule
+  | AutoformatTextRule;
+
+export interface AutoformatPlugin {
+  /**
+   * A list of triggering rules.
+   */
+  rules?: AutoformatRule[];
+}
+```
+
+### Source code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/autoformat/src/createAutoformatPlugin.ts)

@@ -69,7 +69,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/styling',
           items: [],
         },
-
         {
           title: 'Multiple Editors',
           href: '/docs/multiple-editors',
@@ -91,28 +90,169 @@ export const docsConfig: DocsConfig = {
       title: 'Plugins',
       items: [
         {
-          title: 'Accordion',
-          href: '/docs/components/accordion',
+          title: 'Alignment',
+          href: '/docs/alignment',
           items: [],
         },
         {
-          title: 'Collaboration',
-          href: '/docs/components/accordion',
-          items: [
-            {
-              title: 'Comments',
-              href: '/docs/forms/react-hook-form',
-              label: 'New',
-              items: [],
-            },
-            {
-              title: 'Suggestions',
-              href: '#',
-              items: [],
-              label: 'Soon',
-              disabled: true,
-            },
-          ],
+          title: 'Autoformat',
+          href: '/docs/autoformat',
+          items: [],
+        },
+        {
+          title: 'Basic Elements',
+          href: '/docs/basic-elements',
+          items: [],
+        },
+        {
+          title: 'Basic Marks',
+          href: '/docs/basic-marks',
+          items: [],
+        },
+        {
+          title: 'Block Selection',
+          href: '/docs/block-selection',
+          items: [],
+        },
+        // {
+        //   title: 'Cloud',
+        //   href: '/docs/cloud',
+        //   items: [],
+        // },
+        {
+          title: 'Combobox',
+          href: '/docs/combobox',
+          items: [],
+        },
+        {
+          title: 'Comments',
+          href: '/docs/comments',
+          items: [],
+        },
+        {
+          title: 'Emoji',
+          href: '/docs/emoji',
+          items: [],
+        },
+        {
+          title: 'Excalidraw',
+          href: '/docs/excalidraw',
+          items: [],
+        },
+        {
+          title: 'Exit break',
+          href: '/docs/exit-break',
+          items: [],
+        },
+        {
+          title: 'Find',
+          href: '/docs/find-replace',
+          items: [],
+        },
+        {
+          title: 'Font',
+          href: '/docs/font',
+          items: [],
+        },
+        {
+          title: 'Forced layout',
+          href: '/docs/forced-layout',
+          items: [],
+        },
+        {
+          title: 'Highlight',
+          href: '/docs/highlight',
+          items: [],
+        },
+        {
+          title: 'Horizontal Rule',
+          href: '/docs/horizontal-rule',
+          items: [],
+        },
+        {
+          title: 'Indent',
+          href: '/docs/indent',
+          items: [],
+        },
+        {
+          title: 'Indent list',
+          href: '/docs/indent-list',
+          items: [],
+        },
+        {
+          title: 'Kbd',
+          href: '/docs/kbd',
+          items: [],
+        },
+        {
+          title: 'Line height',
+          href: '/docs/line-height',
+          items: [],
+        },
+        {
+          title: 'Link',
+          href: '/docs/link',
+          items: [],
+        },
+        {
+          title: 'List',
+          href: '/docs/list',
+          items: [],
+        },
+        {
+          title: 'Media',
+          href: '/docs/media',
+          items: [],
+        },
+        {
+          title: 'Mention',
+          href: '/docs/mention',
+          items: [],
+        },
+        {
+          title: 'Reset Node',
+          href: '/docs/reset-node',
+          items: [],
+        },
+        {
+          title: 'Serializing csv',
+          href: '/docs/serializing-csv',
+          items: [],
+        },
+        {
+          title: 'Serializing docx',
+          href: '/docs/serializing-docx',
+          items: [],
+        },
+        {
+          title: 'Serializing html',
+          href: '/docs/serializing-html',
+          items: [],
+        },
+        {
+          title: 'serializing md',
+          href: '/docs/serializing-md',
+          items: [],
+        },
+        {
+          title: 'Single line',
+          href: '/docs/single-line',
+          items: [],
+        },
+        {
+          title: 'Soft break',
+          href: '/docs/soft-break',
+          items: [],
+        },
+        {
+          title: 'Tabbable',
+          href: '/docs/tabbable',
+          items: [],
+        },
+        {
+          title: 'Table',
+          href: '/docs/table',
+          items: [],
         },
       ],
     },

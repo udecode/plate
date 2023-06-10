@@ -1,0 +1,68 @@
+---
+title: List
+description: Organize nestable items in a bulleted or numbered list.
+---
+
+The List plugin allows you to create both ordered (numbered) and unordered (bulleted) lists within your Plate editor.
+
+Ordered lists are useful when the sequence of items is crucial, such as step-by-step instructions, while unordered lists are suitable for presenting items where the order is not significant, like a list of ingredients or features.
+
+Experience the List plugin in action by using the toolbar buttons to insert ordered and unordered lists within the editor.
+
+### Installation
+
+```bash
+npm install @udecode/plate-list
+npm install @udecode/plate-ui-list
+```
+
+### Usage
+
+```tsx
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createListPlugin(),
+    createTodoListPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```
+
+#### Options
+
+#### List Plugin Options
+
+```tsx
+export interface ListPlugin extends HotkeyPlugin {
+  /**
+   * Valid children types for list items, in addition to p and ul types.
+   */
+  validLiChildrenTypes?: string[];
+}
+```
+
+#### Todo List Plugin Options
+
+```tsx
+export interface TodoListPlugin extends HotkeyPlugin {
+  inheritCheckStateOnLineStartBreak?: boolean;
+  inheritCheckStateOnLineEndBreak?: boolean;
+}
+```
+
+`inheritCheckStateOnLineStartBreak`: This setting is triggered when a todo item line is broken from the beginning.
+It takes on the checkbox state of the current todo item when a new one is made above it.
+By default, its value is set to `false`.
+
+`inheritCheckStateOnLineEndBreak`: This setting is triggered when a todo item line is broken from the end.
+It takes on the checkbox state of the current todo item when a new one is made below it.
+By default, its value is set to `false`.
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/list/src/createListPlugin.ts)

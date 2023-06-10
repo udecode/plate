@@ -1,0 +1,37 @@
+---
+title: Highlight
+description: Mark and reference text for review.
+---
+
+The Highlight plugin provides text marking tools to aid content authors in their work, such as reviewing and referencing content.
+
+It utilizes inline **`<mark>`** elements, supporting markers (background color).
+
+[//]: # (It utilizes inline **`<mark>`** elements, supporting both markers &#40;background color&#41; and pens &#40;text color&#41;, and comes with a flexible configuration.)
+
+To utilize the highlight feature, first select the desired text and then use the Highlight toolbar button to apply the highlight.
+
+[//]: # (You can choose from a predefined and limited number of available colors.)
+
+### Installation
+
+```bash
+npm install @udecode/plate-highlight
+```
+
+### Usage
+
+```tsx
+import { createHighlightPlugin } from '@udecode/plate-highlight';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createHighlightPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/highlight/src/createHighlightPlugin.ts)

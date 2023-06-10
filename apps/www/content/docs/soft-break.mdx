@@ -1,0 +1,64 @@
+---
+title: Soft Break
+description: Insert line breaks within a block of text without starting a new block.
+---
+
+The Soft Break plugin allows users to insert line breaks within a block of text without starting a new block.
+
+This can be useful for creating spacing or separating elements within a block of text without disrupting the structure of the document.
+
+To test the Soft Break feature, use the Shift+Enter keyboard shortcut in the provided demo.
+
+The results will vary depending on the type of block you're currently working with.
+
+### Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+### Usage
+
+```tsx
+import { createSoftBreakPlugin, ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createSoftBreakPlugin({
+    options: {
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          },
+        },
+      ],
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+export interface SoftBreakRule {
+  hotkey: string;
+
+  /**
+   * Filter the block types where the rule applies.
+   */
+  query?: QueryNodeOptions;
+}
+
+export interface SoftBreakPlugin {
+  rules?: SoftBreakRule[];
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/soft-break/createSoftBreakPlugin.ts)

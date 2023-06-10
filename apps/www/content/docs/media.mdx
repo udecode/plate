@@ -1,0 +1,111 @@
+---
+title: Media
+description: Embed medias like videos or tweets into your document.
+---
+
+This package implements the media plugins for Plate.
+
+It allows inserting embeddable media such as images, YouTube or Vimeo videos and tweets into your
+editor.
+
+> For easy cloud uploads of images and attachment including server-side image resizing, please see our official [Plate Cloud](/docs/guides/cloud) service and associated plugin.
+
+Media providers supported by this plugin:
+
+- video:
+- youtube
+- vimeo
+- dailymotion
+- youku
+- coub
+- twitter
+
+In addition to basic media embedding, this plugin offers features like editable captions below the media and resizing capabilities.
+
+- To insert upload images, use the image button in the toolbar.
+- To insert embedded media or images, use the media button in the toolbar.
+
+### Installation
+
+```bash
+npm install @udecode/plate-media
+npm install @udecode/plate-ui-media
+```
+
+### Plugins
+
+```tsx
+import { createImagePlugin, createMediaEmbedPlugin, createSelectOnBackspacePlugin, ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createImagePlugin(),
+  createMediaEmbedPlugin(),
+  createSelectOnBackspacePlugin({
+    options: {
+      query: {
+        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+      },
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+export type EmbedUrlData = {
+  url?: string;
+  provider?: string;
+  id?: string;
+  component?: RenderFunction<EmbedUrlData>;
+};
+
+export type MediaUrlParser = (url: string) => EmbedUrlData | undefined;
+
+export type MediaPluginRule = {
+  parser: MediaUrlParser;
+  component?: RenderFunction<EmbedUrlData>;
+};
+
+export interface MediaPlugin {
+  isUrl?: (text: string) => boolean;
+
+  /**
+   * Transforms the url.
+   */
+  transformUrl?: (url: string) => string;
+
+  /**
+   * List of rules. The first rule that matches the url will be used,
+   * i.e. its component will be used to render the media. Used by `MediaEmbed`.
+   */
+  rules?: MediaPluginRule[];
+}
+
+export interface ImagePlugin extends MediaPlugin {
+  /**
+   * An optional method that will upload the image to a server.
+   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+   */
+  uploadImage?: (
+    dataUrl: string | ArrayBuffer
+  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+
+  /**
+   * Disable file upload on insert data.
+   */
+  disableUploadInsert?: boolean;
+
+  /**
+   * Disable url embed on insert data.
+   */
+  disableEmbedInsert?: boolean;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/media/src/createMediaEmbedPlugin.ts)

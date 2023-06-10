@@ -1,0 +1,34 @@
+---
+title: Line Height
+description: Adjust the height between lines of text.
+---
+
+The Line Height plugin enables support for line height adjustments within your Plate editor.
+
+It allows you to set the line height for selected elements, such as paragraphs or headings, to improve readability and visual presentation.
+
+To apply a custom line height, click within a paragraph or header and use the toolbar button to select and apply the desired line height value.
+
+### Installation
+
+```bash
+npm install @udecode/plate-line-height
+npm install @udecode/plate-ui-line-height
+```
+
+### Usage
+
+```tsx
+import { createLineHeightPlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createLineHeightPlugin(lineHeightPlugin),
+], {
+  components: createPlateUI(),
+});
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/line-height/src/createLineHeightPlugin.ts)

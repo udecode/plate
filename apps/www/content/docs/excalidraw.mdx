@@ -1,0 +1,35 @@
+---
+title: Excalidraw
+description: Create drawings and diagrams as block nodes.
+---
+
+The Excalidraw plugin for Plate enhances your editor by integrating the Excalidraw library, which allows users to create drawings and diagrams effortlessly. These visual elements are stored as block nodes within Plate, making it simple to incorporate them into your content.
+
+Explore the full range of capabilities offered by the Excalidraw tool by trying out the Embed plugin in the provided demo.
+
+### Installation
+
+```bash
+npm install @udecode/plate-excalidraw
+```
+
+### Usage
+
+```tsx
+import { createSelectOnBackspacePlugin } from '@udecode/plate';
+import { createExcalidrawPlugin, ExcalidrawElement, ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
+
+const plugins = createPlugins([
+  // ...basicNodesPlugins,
+  createExcalidrawPlugin({
+    component: ExcalidrawElement,
+  }),
+  createSelectOnBackspacePlugin({
+    options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
+  }),
+]);
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/ui/nodes/excalidraw/src/createExcalidrawPlugin.ts)

@@ -1,0 +1,93 @@
+---
+title: Forced Layout
+description: Compel the document to adhere to a specified structure, dictating the type and order of blocks.
+---
+
+The Forced Layout plugin empowers users to maintain a consistent document structure by enforcing specific element usage.
+
+This feature promotes uniformity and organization within the created content.
+
+When using the Forced Layout plugin, the editor will automatically ensure that the specified elements are used as required,
+maintaining the desired structure throughout the document.
+
+For instance, the first line could be mandated as an H1 element.
+
+### Installation
+
+```bash
+npm install @udecode/plate-normalizers
+npm install @udecode/plate-trailing-block
+```
+
+### Usage
+
+```tsx
+import {
+  createNormalizeTypesPlugin,
+  createTrailingBlockPlugin,
+  ELEMENT_H1,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate';
+
+const plugins = createPlugins([
+  ...basicNodesPlugins,
+  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH }}),
+  createNormalizeTypesPlugin({
+    options: {
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+export interface TrailingBlockPlugin extends QueryNodeOptions {
+  /**
+   * Level where the trailing node should be, the first level being 0.
+   */
+  level?: number;
+
+  /**
+   * Type of the trailing block
+   */
+  type?: string;
+}
+```
+
+```tsx
+interface Rule {
+  /**
+   * Force the type of the node at the given path
+   */
+  strictType?: string;
+  /**
+   * Type of the inserted node at the given path if `strictType` is not provided
+   */
+  type?: string;
+  /**
+   * Path where the rule applies
+   */
+  path: Path;
+}
+
+export interface NormalizeTypesPlugin extends ErrorHandler {
+  /**
+   * Set of rules for the types.
+   * For each rule, provide a `path` and either `strictType` or `type`.
+   * If there is no node existing at `path`:
+   * insert a node with `strictType`.
+   * If there is a node existing at `path` but its type is not `strictType` or `type`:
+   * set the node type to `strictType` or `type`.
+   */
+  rules?: Rule[];
+}
+```
+
+### Source Code
+
+- [Trailing Block Plugin](https://github.com/udecode/plate/blob/main/packages/editor/trailing-block/src/createTrailingBlockPlugin.ts)
+- [Normalize Types Plugin](https://github.com/udecode/plate/blob/main/packages/editor/normalizers/src/createNormalizeTypesPlugin.ts)

@@ -1,0 +1,57 @@
+---
+title : Alignment
+description: Align your content to different positions.
+---
+
+The Alignment plugin provides support for text alignment, enabling you to align content to the left, right, center, or justify it.
+Click inside a paragraph or a header and click on the align toolbar button to apply the desired text alignment.
+
+### Installation
+
+```bash
+npm install @udecode/plate-alignment
+```
+
+### Usage
+
+```tsx
+import {
+  basicNodesPlugins,
+  createAlignPlugin,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  ...basicNodesPlugins,
+  createAlignPlugin({
+    inject: {
+      props: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
+      },
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
+
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/alignment/src/createAlignPlugin.ts)

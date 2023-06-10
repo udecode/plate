@@ -1,0 +1,74 @@
+---
+title: Basic Marks
+description: Set of essential text formatting options.
+---
+
+This package includes commonly used text styling features such as bold, italic, underline, strikethrough, subscript, superscript, and code.
+
+Includes the following plugins:
+- `createBoldPlugin()` for the `bold` mark
+- `createItalicPlugin()` for the `italic` mark
+- `createUnderlinePlugin()` for the `underline` mark
+- `createStrikethroughPlugin()` for the `strikethrough` mark
+- `createSubscriptPlugin()` for the `subscript` mark
+- `createSuperscriptPlugin()` for the `superscript` mark
+- `createCodePlugin()` for the `code` mark
+
+Basic marks can be applied using toolbar buttons or keyboard shortcuts:
+
+- Bold – Use the bold toolbar button or press Cmd/Ctrl + B
+- Italic – Use the italic toolbar button or press Cmd/Ctrl + I
+- Underline – Use the underline toolbar button or press Cmd/Ctrl + U
+- Strikethrough – Use the strikethrough toolbar button or press Cmd/Ctrl + Shift + X
+- Code – Use the code toolbar button
+- Superscript – Use the superscript toolbar button
+- Subscript – Use the subscript toolbar button
+
+### Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+### Usage
+
+```tsx
+import { createBasicMarksPlugin, createBasicElementsPlugins } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createBasicElementsPlugins(),
+  createBasicMarksPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+export type HotkeyPlugin = {
+  /**
+   * Hotkeys to listen to trigger a plugin action.
+   */
+  hotkey?: string | string[];
+};
+
+export interface ToggleMarkPlugin extends HotkeyPlugin {
+  /**
+   * Node properties to delete.
+   */
+  clear?: string | string[];
+}
+```
+
+### Source Code
+
+- [Basic Marks Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createBasicMarksPlugin.ts)
+- [Bold Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createBoldPlugin.ts)
+- [Italic Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createItalicPlugin.ts)
+- [Underline Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createUnderlinePlugin.ts)
+- [Strikethrough Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createStrikethroughPlugin.ts)
+- [Subscript Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createSubscriptPlugin.ts)
+- [Superscript Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createSuperscriptPlugin.ts)
+- [Code Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/basic-marks/src/createCodePlugin.ts)
