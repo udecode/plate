@@ -1,0 +1,62 @@
+---
+title: Keyboard Input
+description: Indicate keyboard inputs or commands.
+---
+
+A Plate plugin to handle keyboard input.
+
+you can use the following list of keyboard shortcuts to get started:
+
+
+- Bold: **`Ctrl/Cmd + B`**
+
+- Italic: **`Ctrl/Cmd + I`**
+
+- Underline: **`Ctrl/Cmd + U`**
+
+- Strikethrough: **`Ctrl/Cmd + Shift + X`**
+
+- Code: **`Ctrl/Cmd + E`**
+
+- Blockquote: **`Ctrl/Cmd + Shift + .`**
+
+- Code Block: **`Ctrl/Cmd + Shift + 8`**
+
+- Heading 1-6: **`Ctrl/Cmd + Alt/Opt + 1-6`**
+
+- Paragraph: **`Ctrl/Cmd + Alt/Opt + 0`**
+
+- Undo: **`Ctrl/Cmd + Z`**
+
+- Redo: **`Ctrl/Cmd + Shift + Z`**
+
+- Cut: **`Ctrl/Cmd + X`**
+
+- Copy: **`Ctrl/Cmd + C`**
+
+- Paste: **`Ctrl/Cmd + V`**
+
+- Select All: **`Ctrl/Cmd + A`**
+
+### Installation
+
+```bash
+npm install @udecode/plate-kbd
+```
+
+### Usage
+
+```tsx
+import { createKbdPlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createKbdPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/kbd/src/createKbdPlugin.ts)

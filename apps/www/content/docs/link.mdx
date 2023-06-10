@@ -1,0 +1,93 @@
+---
+title: Link
+description: Insert and manage hyperlinks.
+---
+
+The Link plugin for Plate provides comprehensive support for hyperlink insertion and management within the rich-text editor.
+
+It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs into functional links.
+
+[//]: # (It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.)
+
+To create a new link, use the Link toolbar button or press Ctrl/Cmd+K.
+Clicking on an existing link will activate the contextual toolbar,
+where you can edit or unlink the link with ease.
+
+### Installation
+
+```bash
+npm install @udecode/plate-link
+npm install @udecode/plate-ui-link
+```
+
+### Usage
+
+```tsx
+import { createLinkPlugin, PlateFloatingLink } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createLinkPlugin({
+    renderAfterEditable: PlateFloatingLink,
+  })
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+interface LinkPlugin {
+  /**
+   * Allow custom config for rangeBeforeOptions.
+   * @example default
+   * {
+   *   matchString: ' ',
+   *   skipInvalid: true,
+   *   afterMatch: true,
+   * }
+   */
+  rangeBeforeOptions?: RangeBeforeOptions;
+
+  /**
+   * Hotkeys to trigger floating link.
+   * @default 'meta+k, ctrl+k'
+   */
+  triggerFloatingLinkHotkeys?: string | string[];
+
+  /**
+   * List of allowed URL schemes.
+   * @default ['http', 'https', 'mailto', 'tel']
+   */
+  allowedSchemes?: string[];
+
+  /**
+   * Default HTML attributes for link elements.
+   * @default {}
+   */
+  defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
+
+  /**
+   * Callback to validate an url.
+   * @default isUrl
+   */
+  isUrl?: (text: string) => boolean;
+
+  /**
+   * Callback to optionally get the href for a url
+   * @returns href: an optional link to be used that is different from the text content (example https://google.com for google.com)
+   */
+  getUrlHref?: (url: string) => string | undefined;
+
+  /**
+   * On keyboard shortcut or toolbar mousedown, get the link url by calling this promise. The
+   * default behavior is to use the browser's native `prompt`.
+   */
+  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/link/src/createLinkPlugin.ts)

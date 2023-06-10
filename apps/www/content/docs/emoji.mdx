@@ -1,0 +1,46 @@
+---
+title: Emoji
+description: Enhance your text with emojis.
+---
+
+The emoji plugin is using the combobox plugin(/docs/plugins/combobox). The Emoji plugin enables users to effortlessly insert emojis into their text, enhancing the user experience by providing a simple and convenient way to add visual expression to content.
+
+To use the Emoji plugin, click the emoji icon on the toolbar or use the shortcut ":", followed by the emoji name, such as :apple: 🍎. Autocomplete suggestions will appear as you type, and you can select the desired emoji from the list.
+
+### Installation
+
+```bash
+npm install @udecode/plate-combobox
+npm install @udecode/plate-emoji
+npm install @udecode/plate-ui-combobox
+npm install @udecode/plate-ui-emoji
+```
+
+### Usage
+
+```tsx
+import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createEmojiPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+#### Options
+
+```tsx
+interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
+  trigger?: string;
+  createEmoji?: CreateEmoji<TData>;
+  emojiTriggeringController?: IEmojiTriggeringController;
+  id?: string;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/emoji/src/createEmojiPlugin.ts)

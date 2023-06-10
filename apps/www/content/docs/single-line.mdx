@@ -1,0 +1,34 @@
+---
+title: Single Line
+description: Restrict the editor to a single block.
+---
+
+The Single Line plugin limits the editor to only one line of text, making it suitable for certain types of content.
+
+Test out the Single Line feature in the demo provided.
+
+It limits the editor to one line of text, perfect for brief content or titles.
+
+### Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+### Usage
+
+```tsx
+import { createSingleLinePlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  ...otherPlugins,
+  createSingleLinePlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/single-line/createSingleLinePlugin.ts)

@@ -1,0 +1,69 @@
+---
+title: Docx
+description: Copy paste from DOCX to Slate.
+---
+
+The Deserialize Docx plugin allows you to copy and paste content from Microsoft Word documents directly into your Plate editor.
+
+This functionality makes it easy to integrate formatted text and other content from Word documents into your editor without losing formatting or structure.
+
+To see the Deserialize Docx plugin in action, simply copy content from a Microsoft Word document and paste it into your Plate editor.
+
+The plugin will automatically preserve the formatting and structure of the pasted content.
+
+### Installation
+
+```bash
+npm install @udecode/plate-serializer-docx @udecode/plate-juice
+```
+
+### Usage
+
+```tsx
+import React from 'react';
+import {
+  createImagePlugin,
+  createHorizontalRulePlugin,
+  createLineHeightPlugin,
+  createTablePlugin,
+  createAlignPlugin,
+  createFontBackgroundColorPlugin,
+  createFontFamilyPlugin,
+  createFontColorPlugin,
+  createFontSizePlugin,
+  createFontWeightPlugin,
+  createIndentListPlugin,
+  createIndentPlugin,
+  createTextIndentPlugin,
+  createDeserializeDocxPlugin,
+} from '@udecode/plate';
+import { createJuicePlugin } from '@udecode/plate-juice';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createImagePlugin(),
+  createHorizontalRulePlugin(),
+  createLineHeightPlugin(),
+  createTablePlugin(),
+  createAlignPlugin(),
+  createFontBackgroundColorPlugin(),
+  createFontFamilyPlugin(),
+  createFontColorPlugin(),
+  createFontSizePlugin(),
+  createFontWeightPlugin(),
+  createIndentListPlugin(),
+  createIndentPlugin(),
+  createTextIndentPlugin(),
+  createDeserializeDocxPlugin(),
+  createJuicePlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
+
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/docx/src/deserializer/createDeserializeDocxPlugin.ts)

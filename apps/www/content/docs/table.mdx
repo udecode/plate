@@ -1,0 +1,47 @@
+---
+title: Table
+description: Organize and display data in a structured and resizable tabular format.
+---
+
+Tables are useful for organizing content in a visually distinct way, making it more easily readable for certain types of information.
+
+They are perfect for listing, grouping, and otherwise organizing data sets or for presenting information in a clear and efficient manner.
+
+The Table plugin provides tools for creating and editing tables, enabling table rendering with advanced behaviors such as:
+
+- Arrow navigation (up/down)
+- Selecting cells as a grid
+- Expanding cell selection with ⇧ + arrow keys
+- Copying and pasting cells
+
+Click anywhere within the table and use the toolbar buttons to explore the features.
+
+Use ⇧ + arrow keys to select multiple cells.
+
+### Installation
+
+```bash
+npm install @udecode/plate-table
+npm install @udecode/plate-ui-table
+```
+
+### Usage
+
+```tsx
+import { createTablePlugin } from '@udecode/plate';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createTablePlugin({
+    options: {
+      initialTableWidth: 600,
+    },
+  }),
+], {
+  components: createPlateUI(),
+});
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/table/src/createTablePlugin.ts)

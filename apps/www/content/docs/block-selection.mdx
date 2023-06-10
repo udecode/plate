@@ -1,0 +1,65 @@
+---
+title: Block Selection
+description: Select and manipulate entire text blocks.
+---
+
+The Block Selection plugin enhances user productivity by enabling the selection and manipulation of entire text blocks, as opposed to individual words or characters.
+This streamlined approach facilitates efficient editing of large text sections and simplifies copying and pasting of content blocks.
+
+To experience the block selection feature, initiate your selection outside the text area and then move the cursor into the text to select an entire block.
+
+### Installation
+
+```bash
+npm install @udecode/plate-selection
+# or
+npm install @udecode/plate-node-id
+```
+
+### Usage
+
+```tsx
+import { createNodeIdPlugin } from '@udecode/plate';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+
+const plugins = createPlugins([
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createBlockSelectionPlugin(),
+], {
+  components: createPlateUI(),
+});
+```
+
+Note: the Selection plugin needs `id` property on each selectable block. You can use `createNodeIdPlugin()` to add it automatically.
+
+
+[//]: # (### Styling)
+
+[//]: # ()
+[//]: # (You can style the selection area by using the `slate-selection-area` class:)
+
+[//]: # ()
+[//]: # (```css)
+
+[//]: # (.slate-selection-area {)
+
+[//]: # (  background: #4f90f22d;)
+
+[//]: # (  border: 1px solid #4f90f2;)
+
+[//]: # (})
+
+[//]: # (```)
+
+#### Options
+
+```tsx
+export interface BlockSelectionPlugin {
+  query?: QueryNodeOptions;
+}
+```
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/selection/src)

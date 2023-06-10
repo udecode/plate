@@ -1,0 +1,40 @@
+---
+title: Markdown
+description: Copy paste from MD to Slate.
+---
+
+The Deserialize Markdown plugin enables copying and pasting Markdown content from external sources.
+
+This plugin simplifies the process of importing Markdown content into your Plate editor, ensuring seamless integration of formatted text.
+
+The plugin will automatically convert the Markdown formatting to match the editor's styling.
+
+### Installation
+
+```bash
+npm install @udecode/plate-serializer-md
+```
+
+### Usage
+
+```tsx
+import { createDeserializeMdPlugin } from '@udecode/plate';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createDeserializeMdPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```
+
+### Serializer Usage
+
+Use [remark-slate](https://github.com/hanford/remark-slate).
+
+### Source Code
+
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/md/src/deserializer/createDeserializeMdPlugin.ts)
