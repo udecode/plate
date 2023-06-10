@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
+import { descriptions } from '@/config/descriptions';
 import {
   CheckedId,
   SettingPlugin,
@@ -29,7 +30,6 @@ import { cn } from '@/lib/utils';
 export function SettingsSwitch({
   id,
   label,
-  tooltip,
   route,
   badges,
   conflicts,
@@ -59,7 +59,9 @@ export function SettingsSwitch({
               </div>
             </TooltipTrigger>
 
-            <TooltipContent className="max-w-[200px]">{tooltip}</TooltipContent>
+            <TooltipContent className="max-w-[200px]">
+              {descriptions[id]}
+            </TooltipContent>
           </Tooltip>
 
           <div className="flex flex-wrap gap-1">

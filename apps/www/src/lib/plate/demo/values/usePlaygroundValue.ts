@@ -81,9 +81,10 @@ export const usePlaygroundValue = () => {
     if (checkedIds.comment) value.push(...commentsValue);
 
     // Deserialization
-    if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
-    if (checkedIds.deserializeDocx) value.push(...deserializeDocxValue);
+    // if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
+    value.push(...deserializeHtmlValue);
     if (checkedIds.deserializeMd) value.push(...deserializeMdValue);
+    if (checkedIds.deserializeDocx) value.push(...deserializeDocxValue);
     if (checkedIds.deserializeCsv) value.push(...deserializeCsvValue);
 
     // Exceptions
@@ -101,7 +102,6 @@ export const usePlaygroundValue = () => {
     checkedIds.comment,
     checkedIds.deserializeCsv,
     checkedIds.deserializeDocx,
-    checkedIds.deserializeHtml,
     checkedIds.deserializeMd,
     checkedIds.dragOverCursor,
     checkedIds.emoji,

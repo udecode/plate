@@ -4,7 +4,7 @@ export type SettingBadge = {
 export const SettingBadges = {
   element: {
     label: 'Element',
-    tooltip: '',
+    description: '',
   },
   inline: {
     label: 'Inline',

@@ -52,7 +52,7 @@ const categories = [
 export function SettingsCombobox() {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(items.playground.value);
-  console.log(items[value]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
