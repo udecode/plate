@@ -32,7 +32,7 @@ import { MyValue } from '@/plate/plate.types';
 
 export const usePlaygroundValue = () => {
   const preset = settingsStore.use.value();
-  const checkedIds = settingsStore.use.checkedIds();
+  const checked = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
     const value = [...basicElementsValue, ...basicMarksValue];
@@ -42,32 +42,31 @@ export const usePlaygroundValue = () => {
     }
 
     // Marks
-    if (checkedIds.color || checkedIds.backgroundColor)
-      value.push(...fontValue);
-    if (checkedIds.highlight) value.push(...highlightValue);
+    if (checked.color || checked.backgroundColor) value.push(...fontValue);
+    if (checked.highlight) value.push(...highlightValue);
 
     // Inline nodes
-    if (checkedIds.a) value.push(...linkValue);
-    if (checkedIds.mention) value.push(...mentionValue);
-    if (checkedIds.emoji) value.push(...emojiValue);
+    if (checked.a) value.push(...linkValue);
+    if (checked.mention) value.push(...mentionValue);
+    if (checked.emoji) value.push(...emojiValue);
 
     // Nodes
-    if (checkedIds.align) value.push(...alignValue);
-    if (checkedIds.lineHeight) value.push(...lineHeightValue);
-    if (checkedIds.indent) value.push(...indentValue);
-    if (checkedIds.listStyleType) value.push(...indentListValue);
-    if (checkedIds.hr) value.push(...horizontalRuleValue);
-    if (checkedIds.list) value.push(...listValue);
-    if (checkedIds.img || checkedIds.media_embed) value.push(...mediaValue);
-    if (checkedIds.table) value.push(...tableValue);
-    if (checkedIds.action_item) value.push(...todoListValue);
+    if (checked.align) value.push(...alignValue);
+    if (checked.lineHeight) value.push(...lineHeightValue);
+    if (checked.indent) value.push(...indentValue);
+    if (checked.listStyleType) value.push(...indentListValue);
+    if (checked.hr) value.push(...horizontalRuleValue);
+    if (checked.list) value.push(...listValue);
+    if (checked.img || checked.media_embed) value.push(...mediaValue);
+    if (checked.table) value.push(...tableValue);
+    if (checked.action_item) value.push(...todoListValue);
 
     // Functionalities
-    if (checkedIds.autoformat) value.push(...autoformatValue);
-    if (checkedIds.softBreak) value.push(...softBreakValue);
-    if (checkedIds.exitBreak) value.push(...exitBreakValue);
-    if (checkedIds.dragOverCursor) value.push(...cursorOverlayValue);
-    if (checkedIds.tabbable) value.push(...tabbableValue);
+    if (checked.autoformat) value.push(...autoformatValue);
+    if (checked.softBreak) value.push(...softBreakValue);
+    if (checked.exitBreak) value.push(...exitBreakValue);
+    if (checked.dragOverCursor) value.push(...cursorOverlayValue);
+    if (checked.tabbable) value.push(...tabbableValue);
     // if (checkedIds.blockSelection) value.push(...blockSelectionValue);
     // if (checkedIds.combobox) value.push(...comboboxValue);
     // if (checkedIds.dnd) value.push(...dndValue);
@@ -78,48 +77,48 @@ export const usePlaygroundValue = () => {
     // if (checkedIds.singleLine) value.push(...singleLineValue);
 
     // Collaboration
-    if (checkedIds.comment) value.push(...commentsValue);
+    if (checked.comment) value.push(...commentsValue);
 
     // Deserialization
     // if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
     value.push(...deserializeHtmlValue);
-    if (checkedIds.deserializeMd) value.push(...deserializeMdValue);
-    if (checkedIds.deserializeDocx) value.push(...deserializeDocxValue);
-    if (checkedIds.deserializeCsv) value.push(...deserializeCsvValue);
+    if (checked.deserializeMd) value.push(...deserializeMdValue);
+    if (checked.deserializeDocx) value.push(...deserializeDocxValue);
+    if (checked.deserializeCsv) value.push(...deserializeCsvValue);
 
     // Exceptions
-    if (checkedIds.trailingBlock) value.push(...trailingBlockValue);
-    if (checkedIds.excalidraw) value.push(...excalidrawValue);
+    if (checked.trailingBlock) value.push(...trailingBlockValue);
+    if (checked.excalidraw) value.push(...excalidrawValue);
 
     return mapNodeId(value) as MyValue;
   }, [
-    checkedIds.a,
-    checkedIds.action_item,
-    checkedIds.align,
-    checkedIds.autoformat,
-    checkedIds.backgroundColor,
-    checkedIds.color,
-    checkedIds.comment,
-    checkedIds.deserializeCsv,
-    checkedIds.deserializeDocx,
-    checkedIds.deserializeMd,
-    checkedIds.dragOverCursor,
-    checkedIds.emoji,
-    checkedIds.excalidraw,
-    checkedIds.exitBreak,
-    checkedIds.highlight,
-    checkedIds.hr,
-    checkedIds.img,
-    checkedIds.indent,
-    checkedIds.lineHeight,
-    checkedIds.list,
-    checkedIds.listStyleType,
-    checkedIds.media_embed,
-    checkedIds.mention,
-    checkedIds.softBreak,
-    checkedIds.tabbable,
-    checkedIds.table,
-    checkedIds.trailingBlock,
+    checked.a,
+    checked.action_item,
+    checked.align,
+    checked.autoformat,
+    checked.backgroundColor,
+    checked.color,
+    checked.comment,
+    checked.deserializeCsv,
+    checked.deserializeDocx,
+    checked.deserializeMd,
+    checked.dragOverCursor,
+    checked.emoji,
+    checked.excalidraw,
+    checked.exitBreak,
+    checked.highlight,
+    checked.hr,
+    checked.img,
+    checked.indent,
+    checked.lineHeight,
+    checked.list,
+    checked.listStyleType,
+    checked.media_embed,
+    checked.mention,
+    checked.softBreak,
+    checked.tabbable,
+    checked.table,
+    checked.trailingBlock,
     preset,
   ]);
 };

@@ -49,7 +49,7 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { SettingBadge, SettingBadges } from '@/config/setting-badges';
 import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
-export type CheckedId = keyof typeof SettingPlugins;
+export type CheckedId = keyof typeof settingItems;
 
 export type SettingPlugin = {
   id: string;
@@ -60,7 +60,7 @@ export type SettingPlugin = {
   conflicts?: CheckedId[];
 };
 
-export const SettingPlugins = {
+export const settingItems = {
   [ELEMENT_BLOCKQUOTE]: {
     id: ELEMENT_BLOCKQUOTE,
     label: 'Blockquote',
@@ -325,84 +325,84 @@ export const SettingPlugins = {
   },
 };
 
-export const settingPlugins = [
+export const settingValues = [
   {
     id: 'blocks',
     label: 'Nodes',
     children: [
-      SettingPlugins[ELEMENT_BLOCKQUOTE],
-      SettingPlugins[ELEMENT_CODE_BLOCK],
-      SettingPlugins[ELEMENT_EXCALIDRAW],
-      SettingPlugins[ELEMENT_HR],
-      SettingPlugins[ELEMENT_IMAGE],
-      SettingPlugins[ELEMENT_LINK],
-      SettingPlugins.heading,
-      SettingPlugins.list,
-      SettingPlugins[ELEMENT_MEDIA_EMBED],
-      SettingPlugins[ELEMENT_MENTION],
-      SettingPlugins[ELEMENT_PARAGRAPH],
-      SettingPlugins[ELEMENT_TABLE],
-      SettingPlugins[ELEMENT_TODO_LI],
+      settingItems[ELEMENT_BLOCKQUOTE],
+      settingItems[ELEMENT_CODE_BLOCK],
+      settingItems[ELEMENT_EXCALIDRAW],
+      settingItems[ELEMENT_HR],
+      settingItems[ELEMENT_IMAGE],
+      settingItems[ELEMENT_LINK],
+      settingItems.heading,
+      settingItems.list,
+      settingItems[ELEMENT_MEDIA_EMBED],
+      settingItems[ELEMENT_MENTION],
+      settingItems[ELEMENT_PARAGRAPH],
+      settingItems[ELEMENT_TABLE],
+      settingItems[ELEMENT_TODO_LI],
     ],
   },
   {
     id: 'marks',
     label: 'Marks',
     children: [
-      SettingPlugins[MARK_BOLD],
-      SettingPlugins[MARK_CODE],
-      SettingPlugins[MARK_COMMENT],
-      SettingPlugins[MARK_BG_COLOR],
-      SettingPlugins[MARK_COLOR],
-      SettingPlugins[MARK_FONT_SIZE],
-      SettingPlugins[MARK_HIGHLIGHT],
-      SettingPlugins[MARK_ITALIC],
-      SettingPlugins[MARK_KBD],
-      SettingPlugins[MARK_STRIKETHROUGH],
-      SettingPlugins[MARK_SUBSCRIPT],
-      SettingPlugins[MARK_SUPERSCRIPT],
-      SettingPlugins[MARK_UNDERLINE],
+      settingItems[MARK_BOLD],
+      settingItems[MARK_CODE],
+      settingItems[MARK_COMMENT],
+      settingItems[MARK_BG_COLOR],
+      settingItems[MARK_COLOR],
+      settingItems[MARK_FONT_SIZE],
+      settingItems[MARK_HIGHLIGHT],
+      settingItems[MARK_ITALIC],
+      settingItems[MARK_KBD],
+      settingItems[MARK_STRIKETHROUGH],
+      settingItems[MARK_SUBSCRIPT],
+      settingItems[MARK_SUPERSCRIPT],
+      settingItems[MARK_UNDERLINE],
     ],
   },
   {
     id: 'style',
     label: 'Block Style',
     children: [
-      SettingPlugins[KEY_ALIGN],
-      SettingPlugins[KEY_INDENT],
-      SettingPlugins[KEY_LIST_STYLE_TYPE],
-      SettingPlugins[KEY_LINE_HEIGHT],
+      settingItems[KEY_ALIGN],
+      settingItems[KEY_INDENT],
+      settingItems[KEY_LIST_STYLE_TYPE],
+      settingItems[KEY_LINE_HEIGHT],
     ],
   },
   {
     id: 'functionality',
     label: 'Functionality',
     children: [
-      SettingPlugins[KEY_AUTOFORMAT],
-      SettingPlugins[KEY_BLOCK_SELECTION],
-      SettingPlugins[KEY_COMBOBOX],
-      SettingPlugins[KEY_DND],
-      SettingPlugins[KEY_DRAG_OVER_CURSOR],
-      SettingPlugins[KEY_EMOJI],
-      SettingPlugins[KEY_EXIT_BREAK],
-      SettingPlugins[KEY_NODE_ID],
-      SettingPlugins[KEY_NORMALIZE_TYPES],
-      SettingPlugins[KEY_RESET_NODE],
-      SettingPlugins[KEY_SELECT_ON_BACKSPACE],
-      SettingPlugins[KEY_SINGLE_LINE],
-      SettingPlugins[KEY_SOFT_BREAK],
-      SettingPlugins[KEY_TABBABLE],
-      SettingPlugins[KEY_TRAILING_BLOCK],
+      settingItems[KEY_AUTOFORMAT],
+      settingItems[KEY_BLOCK_SELECTION],
+      settingItems[KEY_COMBOBOX],
+      settingItems[KEY_DND],
+      settingItems[KEY_DRAG_OVER_CURSOR],
+      settingItems[KEY_EMOJI],
+      settingItems[KEY_EXIT_BREAK],
+      settingItems[KEY_NODE_ID],
+      settingItems[KEY_NORMALIZE_TYPES],
+      settingItems[KEY_RESET_NODE],
+      settingItems[KEY_SELECT_ON_BACKSPACE],
+      settingItems[KEY_SINGLE_LINE],
+      settingItems[KEY_SOFT_BREAK],
+      settingItems[KEY_TABBABLE],
+      settingItems[KEY_TRAILING_BLOCK],
     ],
   },
   {
     id: 'Deserialization',
     label: 'Deserialization',
     children: [
-      SettingPlugins[KEY_DESERIALIZE_CSV],
-      SettingPlugins[KEY_DESERIALIZE_DOCX],
-      SettingPlugins[KEY_DESERIALIZE_MD],
-      SettingPlugins[KEY_JUICE],
+      settingItems[KEY_DESERIALIZE_CSV],
+      settingItems[KEY_DESERIALIZE_DOCX],
+      settingItems[KEY_DESERIALIZE_MD],
+      settingItems[KEY_JUICE],
     ],
   },
 ];

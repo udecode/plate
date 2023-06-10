@@ -21,10 +21,10 @@ import { SettingsCombobox } from './settings-combobox';
 import { descriptions } from '@/config/descriptions';
 import {
   CheckedId,
+  settingItems,
   SettingPlugin,
-  SettingPlugins,
-  settingPlugins,
-} from '@/config/setting-plugins';
+  settingValues,
+} from '@/config/setting-items';
 import { cn } from '@/lib/utils';
 
 export function SettingsSwitch({
@@ -97,7 +97,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {SettingPlugins[dependency].label}
+                          {settingItems[dependency].label}
                         </Badge>
                       ))}
                     </div>
@@ -128,7 +128,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {SettingPlugins[conflict].label}
+                          {settingItems[conflict].label}
                         </Badge>
                       ))}
                     </div>
@@ -153,20 +153,20 @@ export function SettingsSwitch({
 }
 
 export function SettingsEffect() {
-  const checkedIdsNext = settingsStore.use.checkedIdsNext();
+  const checkedPluginsNext = settingsStore.use.checkedPluginsNext();
 
   const [key, setKey] = useState(1);
   const debouncedKey = useDebounce(key, 1000);
 
   useEffect(() => {
-    if (checkedIdsNext) {
+    if (checkedPluginsNext) {
       setKey(Math.random());
     }
-  }, [checkedIdsNext]);
+  }, [checkedPluginsNext]);
 
   useEffect(() => {
     if (debouncedKey) {
-      settingsStore.set.syncCheckedIds();
+      settingsStore.set.syncChecked();
     }
   }, [debouncedKey]);
 
@@ -191,7 +191,7 @@ export function SettingsPanel() {
               <SettingsCombobox />
             </div>
             <Accordion type="multiple" defaultValue={categoryIds}>
-              {settingPlugins.map((item) => (
+              {settingValues.map((item) => (
                 <AccordionItem key={item.id} value={item.id}>
                   <AccordionTrigger className="px-6 py-4">
                     {item.label}

@@ -1,11 +1,12 @@
 import { createStore } from '@udecode/plate-common';
 
+import { toast } from '@/components/ui/use-toast';
 import { SettingValue, SettingValues } from '@/config/setting-badges';
-import { CheckedId, settingPlugins } from '@/config/setting-plugins';
+import { CheckedId, settingItems, settingValues } from '@/config/setting-items';
 
-export const categoryIds = settingPlugins.map((item) => item.id);
+export const categoryIds = settingValues.map((item) => item.id);
 
-const defaultCheckedIds = settingPlugins.reduce((acc, item) => {
+const defaultCheckedPlugins = settingValues.reduce((acc, item) => {
   item.children.forEach((child) => {
     acc[child.id] = true;
   });
@@ -17,14 +18,14 @@ export const settingsStore = createStore('settings')({
 
   value: SettingValues.playground as SettingValue,
 
-  checkedIdsNext: {
-    ...defaultCheckedIds,
+  checkedPluginsNext: {
+    ...defaultCheckedPlugins,
     singleLine: false,
     list: false,
   } as Record<CheckedId, boolean>,
 
-  checkedIds: {
-    ...defaultCheckedIds,
+  checkedPlugins: {
+    ...defaultCheckedPlugins,
     singleLine: false,
     list: false,
   } as Record<CheckedId, boolean>,
@@ -34,23 +35,31 @@ export const settingsStore = createStore('settings')({
   .extendActions((set) => ({
     setCheckedIdNext: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
       set.state((draft) => {
-        draft.checkedIdsNext = { ...draft.checkedIdsNext };
+        draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
         uncheck?.forEach((item) => {
-          draft.checkedIdsNext[item] = false;
+          draft.checkedPluginsNext[item] = false;
+
+          const label = settingItems[item]?.label;
+          if (label) {
+            toast({
+              description: `${label} unchecked.`,
+              variant: 'default',
+            });
+          }
         });
 
-        draft.checkedIdsNext[id] = checked;
+        draft.checkedPluginsNext[id] = checked;
       });
     },
-    syncCheckedIds: () => {
+    syncChecked: () => {
       set.state((draft) => {
         draft.key += 1;
-        draft.checkedIds = { ...draft.checkedIdsNext };
+        draft.checkedPlugins = { ...draft.checkedPluginsNext };
       });
     },
   }))
   .extendSelectors((get) => ({
-    checkedIdNext: (id: CheckedId) => get.checkedIdsNext[id],
-    checkedId: (id: CheckedId) => get.checkedIds[id],
+    checkedIdNext: (id: CheckedId) => get.checkedPluginsNext[id],
+    checkedId: (id: CheckedId) => get.checkedPlugins[id],
   }));

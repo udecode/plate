@@ -93,7 +93,7 @@ const components = withDraggables(withPlaceHolders(createPlateUI()));
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
 
-  const checkedIds = settingsStore.use.checkedIds();
+  const enabled = settingsStore.use.checkedPlugins();
 
   const initialValue = usePlaygroundValue();
 
@@ -101,104 +101,104 @@ export function PlaygroundDemo() {
     return createMyPlugins(
       [
         // Nodes
-        createParagraphPlugin({ enabled: checkedIds.p }),
-        createHeadingPlugin({ enabled: checkedIds.heading }),
-        createBlockquotePlugin({ enabled: checkedIds.blockquote }),
-        createCodeBlockPlugin({ enabled: checkedIds.code_block }),
-        createHorizontalRulePlugin({ enabled: checkedIds.hr }),
-        createLinkPlugin({ ...linkPlugin, enabled: checkedIds.a }),
-        createListPlugin({ enabled: checkedIds.list }),
-        createImagePlugin({ enabled: checkedIds.img }),
-        createMediaEmbedPlugin({ enabled: checkedIds.media_embed }),
-        createMentionPlugin({ enabled: checkedIds.mention }),
-        createTablePlugin({ enabled: checkedIds.table }),
-        createTodoListPlugin({ enabled: checkedIds.action_item }),
-        createExcalidrawPlugin({ enabled: checkedIds.excalidraw }),
+        createParagraphPlugin({ enabled: enabled.p }),
+        createHeadingPlugin({ enabled: enabled.heading }),
+        createBlockquotePlugin({ enabled: enabled.blockquote }),
+        createCodeBlockPlugin({ enabled: enabled.code_block }),
+        createHorizontalRulePlugin({ enabled: enabled.hr }),
+        createLinkPlugin({ ...linkPlugin, enabled: enabled.a }),
+        createListPlugin({ enabled: enabled.list }),
+        createImagePlugin({ enabled: enabled.img }),
+        createMediaEmbedPlugin({ enabled: enabled.media_embed }),
+        createMentionPlugin({ enabled: enabled.mention }),
+        createTablePlugin({ enabled: enabled.table }),
+        createTodoListPlugin({ enabled: enabled.action_item }),
+        createExcalidrawPlugin({ enabled: enabled.excalidraw }),
 
         // Marks
-        createBoldPlugin({ enabled: checkedIds.bold }),
-        createItalicPlugin({ enabled: checkedIds.italic }),
-        createUnderlinePlugin({ enabled: checkedIds.underline }),
-        createStrikethroughPlugin({ enabled: checkedIds.strikethrough }),
-        createCodePlugin({ enabled: checkedIds.code }),
-        createSubscriptPlugin({ enabled: checkedIds.subscript }),
-        createSuperscriptPlugin({ enabled: checkedIds.superscript }),
-        createFontColorPlugin({ enabled: checkedIds.color }),
+        createBoldPlugin({ enabled: enabled.bold }),
+        createItalicPlugin({ enabled: enabled.italic }),
+        createUnderlinePlugin({ enabled: enabled.underline }),
+        createStrikethroughPlugin({ enabled: enabled.strikethrough }),
+        createCodePlugin({ enabled: enabled.code }),
+        createSubscriptPlugin({ enabled: enabled.subscript }),
+        createSuperscriptPlugin({ enabled: enabled.superscript }),
+        createFontColorPlugin({ enabled: enabled.color }),
         createFontBackgroundColorPlugin({
-          enabled: checkedIds.backgroundColor,
+          enabled: enabled.backgroundColor,
         }),
-        createFontSizePlugin({ enabled: checkedIds.fontSize }),
-        createHighlightPlugin({ enabled: checkedIds.highlight }),
-        createKbdPlugin({ enabled: checkedIds.kbd }),
+        createFontSizePlugin({ enabled: enabled.fontSize }),
+        createHighlightPlugin({ enabled: enabled.highlight }),
+        createKbdPlugin({ enabled: enabled.kbd }),
 
         // Block Style
-        createAlignPlugin({ ...alignPlugin, enabled: checkedIds.align }),
-        createIndentPlugin({ ...indentPlugin, enabled: checkedIds.indent }),
-        createIndentListPlugin({ enabled: checkedIds.listStyleType }),
+        createAlignPlugin({ ...alignPlugin, enabled: enabled.align }),
+        createIndentPlugin({ ...indentPlugin, enabled: enabled.indent }),
+        createIndentListPlugin({ enabled: enabled.listStyleType }),
 
         // Functionality
         createAutoformatPlugin({
           ...(autoformatPlugin as any),
-          enabled: checkedIds.autoformat,
+          enabled: enabled.autoformat,
         }),
         createBlockSelectionPlugin({
           ...blockSelectionPlugin,
-          enabled: checkedIds.blockSelection,
+          enabled: enabled.blockSelection,
         }),
-        createComboboxPlugin({ enabled: checkedIds.combobox }),
+        createComboboxPlugin({ enabled: enabled.combobox }),
         createDndPlugin({
           options: { enableScroller: true },
-          enabled: checkedIds.dnd,
+          enabled: enabled.dnd,
         }),
-        createEmojiPlugin({ ...emojiPlugin, enabled: checkedIds.emoji }),
+        createEmojiPlugin({ ...emojiPlugin, enabled: enabled.emoji }),
         createExitBreakPlugin({
           ...exitBreakPlugin,
-          enabled: checkedIds.exitBreak,
+          enabled: enabled.exitBreak,
         }),
-        createNodeIdPlugin({ enabled: checkedIds.nodeId }),
+        createNodeIdPlugin({ enabled: enabled.nodeId }),
         createNormalizeTypesPlugin({
           ...forcedLayoutPlugin,
-          enabled: checkedIds.normalizeTypes,
+          enabled: enabled.normalizeTypes,
         }),
         createResetNodePlugin({
           ...resetBlockTypePlugin,
-          enabled: checkedIds.resetNode,
+          enabled: enabled.resetNode,
         }),
         createSelectOnBackspacePlugin({
           ...selectOnBackspacePlugin,
-          enabled: checkedIds.selectOnBackspace,
+          enabled: enabled.selectOnBackspace,
         }),
         createSingleLinePlugin({
-          enabled: checkedIds.singleLine,
+          enabled: enabled.singleLine,
         }),
         createSoftBreakPlugin({
           ...softBreakPlugin,
-          enabled: checkedIds.softBreak,
+          enabled: enabled.softBreak,
         }),
         createTabbablePlugin({
           ...tabbablePlugin,
-          enabled: checkedIds.tabbable,
+          enabled: enabled.tabbable,
         }),
         createTrailingBlockPlugin({
           ...trailingBlockPlugin,
-          enabled: checkedIds.trailingBlock,
+          enabled: enabled.trailingBlock,
         }),
-        { ...dragOverCursorPlugin, enabled: checkedIds.dragOverCursor },
+        { ...dragOverCursorPlugin, enabled: enabled.dragOverCursor },
 
         // Collaboration
-        createCommentsPlugin({ enabled: checkedIds.comment }),
+        createCommentsPlugin({ enabled: enabled.comment }),
 
         // Deserialization
-        createDeserializeDocxPlugin({ enabled: checkedIds.deserializeDocx }),
-        createDeserializeMdPlugin({ enabled: checkedIds.deserializeMd }),
-        createJuicePlugin({ enabled: checkedIds.juice }),
+        createDeserializeDocxPlugin({ enabled: enabled.deserializeDocx }),
+        createDeserializeMdPlugin({ enabled: enabled.deserializeMd }),
+        createJuicePlugin({ enabled: enabled.juice }),
       ],
       {
         components,
       }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkedIds]);
+  }, [enabled]);
 
   return (
     <div className="relative">

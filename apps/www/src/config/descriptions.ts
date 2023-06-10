@@ -46,7 +46,7 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-import { CheckedId } from '@/config/setting-plugins';
+import { CheckedId } from '@/config/setting-items';
 import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export const descriptions: Record<CheckedId, string> = {
