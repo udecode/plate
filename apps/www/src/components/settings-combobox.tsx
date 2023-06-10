@@ -13,26 +13,38 @@ import { Icons } from './icons';
 
 import { cn } from '@/lib/utils';
 
-const frameworks = [
+const categories = [
   {
-    value: 'next.js',
-    label: 'Next.js',
+    value: 'root',
+    label: '',
+    items: [
+      {
+        value: 'playground',
+        label: 'Playground',
+      },
+    ],
   },
   {
-    value: 'sveltekit',
-    label: 'SvelteKit',
-  },
-  {
-    value: 'nuxt.js',
-    label: 'Nuxt.js',
-  },
-  {
-    value: 'remix',
-    label: 'Remix',
-  },
-  {
-    value: 'astro',
-    label: 'Astro',
+    value: 'plugins',
+    label: 'Plugins',
+    items: [
+      {
+        value: 'sveltekit',
+        label: 'SvelteKit',
+      },
+      {
+        value: 'nuxt.js',
+        label: 'Nuxt.js',
+      },
+      {
+        value: 'remix',
+        label: 'Remix',
+      },
+      {
+        value: 'astro',
+        label: 'Astro',
+      },
+    ],
   },
 ];
 
@@ -50,34 +62,37 @@ export function SettingsCombobox() {
           className="w-[200px] justify-between"
         >
           {value
-            ? frameworks.find((framework) => framework.value === value)?.label
+            ? categories.find((framework) => framework.value === value)?.label
             : 'Select a value...'}
           <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
-        <Command>
+        <Command defaultValue="playground">
           <CommandInput placeholder="Search value..." />
-          <CommandEmpty>No framework found.</CommandEmpty>
-          <CommandGroup>
-            {frameworks.map((framework) => (
-              <CommandItem
-                key={framework.value}
-                onSelect={(currentValue) => {
-                  setValue(currentValue === value ? '' : currentValue);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    'mr-2 h-4 w-4',
-                    value === framework.value ? 'opacity-100' : 'opacity-0'
-                  )}
-                />
-                {framework.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandEmpty>No value found.</CommandEmpty>
+
+          {categories.map((category) => (
+            <CommandGroup key={category.value} heading={category.label}>
+              {category.items.map((item) => (
+                <CommandItem
+                  key={item.value}
+                  onSelect={(currentValue) => {
+                    setValue(currentValue === value ? '' : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === item.value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  {item.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
         </Command>
       </PopoverContent>
     </Popover>

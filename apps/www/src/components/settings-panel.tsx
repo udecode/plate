@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -9,6 +9,7 @@ import {
   SettingBadge,
   settingsStore,
 } from './context/settings-store';
+import { useDebounce } from './hooks/use-debounce';
 import {
   Accordion,
   AccordionContent,
@@ -55,9 +56,9 @@ export function SettingsSwitch({
               <div className="flex items-center">
                 <Checkbox
                   id={id}
-                  checked={settingsStore.use.checkedId(id)}
+                  checked={settingsStore.use.checkedIdNext(id)}
                   onCheckedChange={(_checked: boolean) => {
-                    settingsStore.set.setCheckedId(
+                    settingsStore.set.setCheckedIdNext(
                       id,
                       _checked,
                       _checked ? conflicts : []
@@ -161,6 +162,27 @@ export function SettingsSwitch({
   );
 }
 
+export function SettingsEffect() {
+  const checkedIdsNext = settingsStore.use.checkedIdsNext();
+
+  const [key, setKey] = useState(1);
+  const debouncedKey = useDebounce(key, 1000);
+
+  useEffect(() => {
+    if (checkedIdsNext) {
+      setKey(Math.random());
+    }
+  }, [checkedIdsNext]);
+
+  useEffect(() => {
+    if (debouncedKey) {
+      settingsStore.set.syncCheckedIds();
+    }
+  }, [debouncedKey]);
+
+  return null;
+}
+
 export function SettingsPanel() {
   const showSettings = settingsStore.use.showSettings();
 
@@ -168,6 +190,8 @@ export function SettingsPanel() {
 
   return (
     <div className="absolute right-0 top-[44px] z-40 h-full">
+      <SettingsEffect />
+
       <div className="sticky right-0 top-[102px] grow border-l border-l-border bg-background">
         <ScrollArea className="relative h-[calc(100vh-102px)]">
           <div className="w-[433px]">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -57,7 +57,6 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { useDebounce } from '@/components/hooks/use-debounce';
 import { CommentsPopover } from '@/components/plate-ui/comments-popover';
 import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -95,14 +94,10 @@ export function PlaygroundDemo() {
   const containerRef = useRef(null);
 
   const checkedIds = settingsStore.use.checkedIds();
-  const [_key, setKey] = useState(1);
-  const key = useDebounce(_key, 1000);
 
   const initialValue = usePlaygroundValue();
 
   const plugins = useMemo(() => {
-    setKey(Math.random());
-
     return createMyPlugins(
       [
         // Nodes
@@ -208,7 +203,7 @@ export function PlaygroundDemo() {
   return (
     <div className="relative">
       <PlateProvider<MyValue>
-        key={key}
+        key={settingsStore.use.key()}
         initialValue={initialValue}
         plugins={plugins}
         normalizeInitialValue

@@ -495,25 +495,40 @@ const defaultCheckedIds = categories.reduce((acc, item) => {
 export const settingsStore = createStore('settings')({
   showSettings: true,
 
+  checkedIdsNext: {
+    ...defaultCheckedIds,
+    singleLine: false,
+    list: false,
+  } as Record<CheckedId, boolean>,
+
   checkedIds: {
     ...defaultCheckedIds,
     singleLine: false,
     list: false,
   } as Record<CheckedId, boolean>,
+
+  key: 1,
 })
   .extendActions((set) => ({
-    setCheckedId: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
+    setCheckedIdNext: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
       set.state((draft) => {
-        draft.checkedIds = { ...draft.checkedIds };
+        draft.checkedIdsNext = { ...draft.checkedIdsNext };
 
         uncheck?.forEach((item) => {
-          draft.checkedIds[item] = false;
+          draft.checkedIdsNext[item] = false;
         });
 
-        draft.checkedIds[id] = checked;
+        draft.checkedIdsNext[id] = checked;
+      });
+    },
+    syncCheckedIds: () => {
+      set.state((draft) => {
+        draft.key += 1;
+        draft.checkedIds = { ...draft.checkedIdsNext };
       });
     },
   }))
   .extendSelectors((get) => ({
+    checkedIdNext: (id: CheckedId) => get.checkedIdsNext[id],
     checkedId: (id: CheckedId) => get.checkedIds[id],
   }));
