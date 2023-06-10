@@ -32,7 +32,7 @@ import { MyValue } from '@/plate/plate.types';
 
 export const usePlaygroundValue = () => {
   const preset = settingsStore.use.value();
-  const checked = settingsStore.use.checkedPlugins();
+  const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
     const value = [...basicElementsValue, ...basicMarksValue];
@@ -42,31 +42,31 @@ export const usePlaygroundValue = () => {
     }
 
     // Marks
-    if (checked.color || checked.backgroundColor) value.push(...fontValue);
-    if (checked.highlight) value.push(...highlightValue);
+    if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
+    if (enabled.highlight) value.push(...highlightValue);
 
     // Inline nodes
-    if (checked.a) value.push(...linkValue);
-    if (checked.mention) value.push(...mentionValue);
-    if (checked.emoji) value.push(...emojiValue);
+    if (enabled.a) value.push(...linkValue);
+    if (enabled.mention) value.push(...mentionValue);
+    if (enabled.emoji) value.push(...emojiValue);
 
     // Nodes
-    if (checked.align) value.push(...alignValue);
-    if (checked.lineHeight) value.push(...lineHeightValue);
-    if (checked.indent) value.push(...indentValue);
-    if (checked.listStyleType) value.push(...indentListValue);
-    if (checked.hr) value.push(...horizontalRuleValue);
-    if (checked.list) value.push(...listValue);
-    if (checked.img || checked.media_embed) value.push(...mediaValue);
-    if (checked.table) value.push(...tableValue);
-    if (checked.action_item) value.push(...todoListValue);
+    if (enabled.align) value.push(...alignValue);
+    if (enabled.lineHeight) value.push(...lineHeightValue);
+    if (enabled.indent) value.push(...indentValue);
+    if (enabled.listStyleType) value.push(...indentListValue);
+    if (enabled.hr) value.push(...horizontalRuleValue);
+    if (enabled.list) value.push(...listValue);
+    if (enabled.img || enabled.media_embed) value.push(...mediaValue);
+    if (enabled.table) value.push(...tableValue);
+    if (enabled.action_item) value.push(...todoListValue);
 
     // Functionalities
-    if (checked.autoformat) value.push(...autoformatValue);
-    if (checked.softBreak) value.push(...softBreakValue);
-    if (checked.exitBreak) value.push(...exitBreakValue);
-    if (checked.dragOverCursor) value.push(...cursorOverlayValue);
-    if (checked.tabbable) value.push(...tabbableValue);
+    if (enabled.autoformat) value.push(...autoformatValue);
+    if (enabled.softBreak) value.push(...softBreakValue);
+    if (enabled.exitBreak) value.push(...exitBreakValue);
+    if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
+    if (enabled.tabbable) value.push(...tabbableValue);
     // if (checkedIds.blockSelection) value.push(...blockSelectionValue);
     // if (checkedIds.combobox) value.push(...comboboxValue);
     // if (checkedIds.dnd) value.push(...dndValue);
@@ -77,48 +77,48 @@ export const usePlaygroundValue = () => {
     // if (checkedIds.singleLine) value.push(...singleLineValue);
 
     // Collaboration
-    if (checked.comment) value.push(...commentsValue);
+    if (enabled.comment) value.push(...commentsValue);
 
     // Deserialization
     // if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
     value.push(...deserializeHtmlValue);
-    if (checked.deserializeMd) value.push(...deserializeMdValue);
-    if (checked.deserializeDocx) value.push(...deserializeDocxValue);
-    if (checked.deserializeCsv) value.push(...deserializeCsvValue);
+    if (enabled.deserializeMd) value.push(...deserializeMdValue);
+    if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
+    if (enabled.deserializeCsv) value.push(...deserializeCsvValue);
 
     // Exceptions
-    if (checked.trailingBlock) value.push(...trailingBlockValue);
-    if (checked.excalidraw) value.push(...excalidrawValue);
+    if (enabled.trailingBlock) value.push(...trailingBlockValue);
+    if (enabled.excalidraw) value.push(...excalidrawValue);
 
     return mapNodeId(value) as MyValue;
   }, [
-    checked.a,
-    checked.action_item,
-    checked.align,
-    checked.autoformat,
-    checked.backgroundColor,
-    checked.color,
-    checked.comment,
-    checked.deserializeCsv,
-    checked.deserializeDocx,
-    checked.deserializeMd,
-    checked.dragOverCursor,
-    checked.emoji,
-    checked.excalidraw,
-    checked.exitBreak,
-    checked.highlight,
-    checked.hr,
-    checked.img,
-    checked.indent,
-    checked.lineHeight,
-    checked.list,
-    checked.listStyleType,
-    checked.media_embed,
-    checked.mention,
-    checked.softBreak,
-    checked.tabbable,
-    checked.table,
-    checked.trailingBlock,
+    enabled.a,
+    enabled.action_item,
+    enabled.align,
+    enabled.autoformat,
+    enabled.backgroundColor,
+    enabled.color,
+    enabled.comment,
+    enabled.deserializeCsv,
+    enabled.deserializeDocx,
+    enabled.deserializeMd,
+    enabled.dragOverCursor,
+    enabled.emoji,
+    enabled.excalidraw,
+    enabled.exitBreak,
+    enabled.highlight,
+    enabled.hr,
+    enabled.img,
+    enabled.indent,
+    enabled.lineHeight,
+    enabled.list,
+    enabled.listStyleType,
+    enabled.media_embed,
+    enabled.mention,
+    enabled.softBreak,
+    enabled.tabbable,
+    enabled.table,
+    enabled.trailingBlock,
     preset,
   ]);
 };

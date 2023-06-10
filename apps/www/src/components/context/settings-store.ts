@@ -1,12 +1,16 @@
 import { createStore } from '@udecode/plate-common';
 
 import { toast } from '@/components/ui/use-toast';
-import { SettingValue, SettingValues } from '@/config/setting-badges';
-import { CheckedId, settingItems, settingValues } from '@/config/setting-items';
+import {
+  CheckedId,
+  settingPluginItems,
+  settingPlugins,
+} from '@/config/setting-plugins';
+import { settingValues } from '@/config/setting-values';
 
-export const categoryIds = settingValues.map((item) => item.id);
+export const categoryIds = settingPlugins.map((item) => item.id);
 
-const defaultCheckedPlugins = settingValues.reduce((acc, item) => {
+const defaultCheckedPlugins = settingPlugins.reduce((acc, item) => {
   item.children.forEach((child) => {
     acc[child.id] = true;
   });
@@ -16,7 +20,7 @@ const defaultCheckedPlugins = settingValues.reduce((acc, item) => {
 export const settingsStore = createStore('settings')({
   showSettings: true,
 
-  value: SettingValues.playground as SettingValue,
+  value: settingValues.playground.value,
 
   checkedPluginsNext: {
     ...defaultCheckedPlugins,
@@ -40,7 +44,7 @@ export const settingsStore = createStore('settings')({
         uncheck?.forEach((item) => {
           draft.checkedPluginsNext[item] = false;
 
-          const label = settingItems[item]?.label;
+          const label = settingPluginItems[item]?.label;
           if (label) {
             toast({
               description: `${label} unchecked.`,

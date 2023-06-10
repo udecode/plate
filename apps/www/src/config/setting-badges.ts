@@ -1,7 +1,7 @@
 export type SettingBadge = {
   label: string;
 };
-export const SettingBadges = {
+export const settingBadges = {
   element: {
     label: 'Element',
     description: '',
@@ -27,10 +27,4 @@ export const SettingBadges = {
   ui: {
     label: 'UI',
   },
-};
-
-export type SettingValue = keyof typeof SettingValues;
-
-export const SettingValues = {
-  playground: 'playground',
 };

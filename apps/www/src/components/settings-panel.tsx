@@ -21,10 +21,10 @@ import { SettingsCombobox } from './settings-combobox';
 import { descriptions } from '@/config/descriptions';
 import {
   CheckedId,
-  settingItems,
   SettingPlugin,
-  settingValues,
-} from '@/config/setting-items';
+  settingPluginItems,
+  settingPlugins,
+} from '@/config/setting-plugins';
 import { cn } from '@/lib/utils';
 
 export function SettingsSwitch({
@@ -97,7 +97,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {settingItems[dependency].label}
+                          {settingPluginItems[dependency].label}
                         </Badge>
                       ))}
                     </div>
@@ -128,7 +128,7 @@ export function SettingsSwitch({
                           variant="secondary"
                           className="inline leading-none"
                         >
-                          {settingItems[conflict].label}
+                          {settingPluginItems[conflict].label}
                         </Badge>
                       ))}
                     </div>
@@ -191,7 +191,7 @@ export function SettingsPanel() {
               <SettingsCombobox />
             </div>
             <Accordion type="multiple" defaultValue={categoryIds}>
-              {settingValues.map((item) => (
+              {settingPlugins.map((item) => (
                 <AccordionItem key={item.id} value={item.id}>
                   <AccordionTrigger className="px-6 py-4">
                     {item.label}
