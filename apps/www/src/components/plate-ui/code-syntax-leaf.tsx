@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useCodeSyntaxLeaf } from '@udecode/plate-code-block';
 import { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';

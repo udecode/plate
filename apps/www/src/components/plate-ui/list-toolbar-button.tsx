@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-list';
 
 import { Icons } from '@/components/icons';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function ListToolbarButton({
   nodeType = ELEMENT_UL,

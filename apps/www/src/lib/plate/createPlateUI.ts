@@ -69,19 +69,25 @@ import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
 import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
+import { withPlaceHolders } from '@/components/plate-ui/placeholder';
 import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
 import { TableCellElement } from '@/components/plate-ui/table-cell-element';
 import { TableCellHeaderElement } from '@/components/plate-ui/table-cell-header-element';
 import { TableElement } from '@/components/plate-ui/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
+import { withDraggables } from '@/components/plate-ui/with-draggables';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<
     Record<DefaultPlatePluginKey | T, PlatePluginComponent>
-  >
+  >,
+  {
+    draggable,
+    placeholder,
+  }: { placeholder?: boolean; draggable?: boolean } = {}
 ) => {
-  const components = {
+  let components = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
@@ -125,6 +131,13 @@ export const createPlateUI = <T extends string = string>(
     Object.keys(overrideByKey).forEach((key) => {
       components[key] = overrideByKey[key];
     });
+  }
+
+  if (placeholder) {
+    components = withPlaceHolders(components);
+  }
+  if (draggable) {
+    components = withDraggables(components);
   }
 
   return components as Record<DefaultPlatePluginKey | T, PlatePluginComponent>;

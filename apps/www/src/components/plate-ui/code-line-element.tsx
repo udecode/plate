@@ -1,3 +1,5 @@
+'use client';
+
 import React, { forwardRef } from 'react';
 import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 

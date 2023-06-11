@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from '@/components/ui/dropdown-menu';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 import { useMyPlateEditorState } from '@/plate/plate.types';
 
 const items = [

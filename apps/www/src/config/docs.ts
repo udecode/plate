@@ -87,6 +87,16 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
+      title: 'Components',
+      items: [
+        {
+          title: 'Toolbar',
+          href: '/docs/components/toolbar',
+          items: [],
+        },
+      ],
+    },
+    {
       title: 'Plugins',
       items: [
         {

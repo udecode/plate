@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
@@ -8,7 +10,7 @@ import {
 import {
   focusEditor,
   insertEmptyElement,
-  useEventPlateId,
+  usePlateEditorState,
 } from '@udecode/plate-common';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import {
@@ -45,8 +47,7 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from '@/components/ui/dropdown-menu';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/plate.types';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 const items = [
   {
@@ -169,7 +170,7 @@ const items = [
 ];
 
 export function InsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useMyPlateEditorState(useEventPlateId());
+  const editor = usePlateEditorState();
   const openState = useOpenState();
 
   return (

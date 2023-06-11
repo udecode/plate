@@ -1,3 +1,5 @@
+'use client';
+
 import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { Upload, UploadProgress } from '@udecode/plate-cloud';
 

@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-media';
 
 import { Icons } from '@/components/icons';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function MediaToolbarButton({
   nodeType,

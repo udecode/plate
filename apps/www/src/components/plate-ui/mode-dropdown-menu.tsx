@@ -2,7 +2,7 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   focusEditor,
-  useEventPlateId,
+  usePlateEditorState,
   usePlateReadOnly,
   usePlateStore,
 } from '@udecode/plate-common';
@@ -21,11 +21,10 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from '@/components/ui/dropdown-menu';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
-import { useMyPlateEditorState } from '@/plate/plate.types';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
-  const editor = useMyPlateEditorState(useEventPlateId());
+  const editor = usePlateEditorState();
   const setReadOnly = usePlateStore().set.readOnly();
   const readOnly = usePlateReadOnly();
   const setIsSuggesting = useSetIsSuggesting();

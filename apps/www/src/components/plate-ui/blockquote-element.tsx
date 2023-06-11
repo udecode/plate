@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 

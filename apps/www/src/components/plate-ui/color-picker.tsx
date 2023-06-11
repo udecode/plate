@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { TColor } from './color-dropdown-menu';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';

@@ -46,6 +46,7 @@ import SingleLineApp from './SingleLineApp';
 import SoftBreakApp from './SoftBreakApp';
 import TabbableApp from './TabbableApp';
 import TableApp from './TableApp';
+import { ToolbarDemo } from './ToolbarDemo';
 import TypescriptApp from './TypescriptApp';
 
 import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
@@ -90,6 +91,7 @@ export const examples = {
   PlaceholderApp,
   PlateApp,
   PlaygroundDemo,
+  ToolbarDemo,
   usePlaygroundValue,
   PreviewMdApp,
   ResetNodeApp,

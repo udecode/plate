@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from '@/components/ui/dropdown-menu';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
   const openState = useOpenState();

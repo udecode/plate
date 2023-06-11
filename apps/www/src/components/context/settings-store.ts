@@ -17,26 +17,39 @@ const defaultCheckedPlugins = settingPlugins.reduce((acc, item) => {
   return acc;
 }, {} as Record<CheckedId, boolean>);
 
+export const getDefaultCheckedPlugins = () => {
+  return {
+    ...defaultCheckedPlugins,
+    singleLine: false,
+    list: false,
+  } as Record<CheckedId, boolean>;
+};
+
 export const settingsStore = createStore('settings')({
   showSettings: true,
 
   value: settingValues.playground.value,
 
-  checkedPluginsNext: {
-    ...defaultCheckedPlugins,
-    singleLine: false,
-    list: false,
-  } as Record<CheckedId, boolean>,
+  checkedPluginsNext: getDefaultCheckedPlugins(),
 
-  checkedPlugins: {
-    ...defaultCheckedPlugins,
-    singleLine: false,
-    list: false,
-  } as Record<CheckedId, boolean>,
+  checkedPlugins: getDefaultCheckedPlugins(),
 
   key: 1,
 })
   .extendActions((set) => ({
+    reset: ({
+      exclude,
+    }: {
+      exclude?: string[];
+    } = {}) => {
+      set.state((draft) => {
+        draft.checkedPluginsNext = getDefaultCheckedPlugins();
+
+        exclude?.forEach((item) => {
+          draft.checkedPluginsNext[item] = false;
+        });
+      });
+    },
     setCheckedIdNext: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
       set.state((draft) => {
         draft.checkedPluginsNext = { ...draft.checkedPluginsNext };

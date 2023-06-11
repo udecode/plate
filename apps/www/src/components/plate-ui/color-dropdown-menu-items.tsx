@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import { TColor } from './color-dropdown-menu';

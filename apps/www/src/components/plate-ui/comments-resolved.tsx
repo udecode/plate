@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useCommentsResolved } from '@udecode/plate-comments';
 import { CommentItem } from './comment-item';

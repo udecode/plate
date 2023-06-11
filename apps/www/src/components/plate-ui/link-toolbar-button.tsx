@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-link';
 
 import { Icons } from '@/components/icons';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 
 export function LinkToolbarButton() {
   const state = useLinkToolbarButtonState();

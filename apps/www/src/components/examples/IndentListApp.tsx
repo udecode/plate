@@ -20,7 +20,7 @@ import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { Icons } from '@/components/icons';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { OutdentToolbarButton } from '@/components/plate-ui/outdent-toolbar-button';
-import { ToolbarButton } from '@/components/ui/toolbar-button';
+import { ToolbarButton } from '@/components/ui/toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { indentListPlugin } from '@/plate/demo/plugins/indentListPlugin';

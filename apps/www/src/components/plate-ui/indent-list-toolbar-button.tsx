@@ -6,10 +6,7 @@ import {
 } from '@udecode/plate-indent-list';
 
 import { Icons } from '@/components/icons';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@/components/ui/toolbar-button';
+import { ToolbarButton, ToolbarButtonProps } from '@/components/ui/toolbar';
 
 export function IndentListToolbarButton({
   nodeType = ListStyleType.Disc,
