@@ -90,6 +90,16 @@ export const docsConfig: DocsConfig = {
       title: 'Components',
       items: [
         {
+          title: 'Table Dropdown Menu',
+          href: '/docs/components/table-dropdown-menu',
+          items: [],
+        },
+        {
+          title: 'Table Element',
+          href: '/docs/components/table-element',
+          items: [],
+        },
+        {
           title: 'Toolbar',
           href: '/docs/components/toolbar',
           items: [],

@@ -1,0 +1,60 @@
+---
+title: Table Element
+description: Component for table plugin.
+component: true
+---
+
+[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
+[//]: # (  <PlaygroundDemo />)
+[//]: # (</ComponentExample>)
+
+## Installation
+
+```bash
+npx plate-ui add table-element
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+1. Install the `@udecode/plate-table` component from plate:
+
+```bash
+npm install @udecode/plate-table
+```
+
+2. Copy and paste the following code into your project. 
+
+- `components/plate-ui/table-element.tsx`
+
+<ComponentSource src="/src/components/plate-ui/table-element.tsx" />
+
+- `components/plate-ui/table-floating-toolbar.tsx`
+
+<ComponentSource src="/src/components/plate-ui/table-floating-toolbar.tsx" />
+      
+- `components/plate-ui/table-borders.tsx`
+
+<ComponentSource src="/src/components/plate-ui/table-borders.tsx" />
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+```tsx
+import { createTablePlugin } from '@udecode/plate-table';
+import {
+  TableElement,
+} from '@/components/plate-ui/table-element'
+```
+
+```tsx
+createTablePlugin({
+  component: TableElement,
+})
+```
