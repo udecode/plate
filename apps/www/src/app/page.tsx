@@ -60,7 +60,7 @@ export default function IndexPage() {
       </section>
 
       <section className="relative">
-        <div className="max-w-[1336px] border bg-background shadow-xl">
+        <div className="max-w-[1336px] border bg-background shadow-xl rounded-lg">
           <PlaygroundDemo />
         </div>
       </section>
