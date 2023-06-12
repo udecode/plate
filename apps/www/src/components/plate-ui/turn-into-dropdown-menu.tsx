@@ -103,6 +103,8 @@ const items = [
   },
 ];
 
+const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
+
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const editor = useMyPlateEditorState(useEventPlateId());
   const openState = useOpenState();
@@ -119,8 +121,8 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
     }
   }
 
-  const valueText =
-    items.find((item) => item.value === value)?.label ?? 'Paragraph';
+  const selectedItem = items.find((item) => item.value === value) ?? defaultItem;
+  const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -129,9 +131,10 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           pressed={openState.open}
           tooltip="Turn into"
           isDropdown
-          className="min-w-[140px]"
+          className="sm:min-w-[140px]"
         >
-          {valueText}
+          <SelectedItemIcon className="w-5 h-5 sm:hidden" />
+          <span className="max-sm:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
