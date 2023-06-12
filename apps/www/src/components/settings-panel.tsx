@@ -179,36 +179,29 @@ export function SettingsPanel() {
   if (!showSettings) return null;
 
   return (
-    <div className="absolute right-0 top-[44px] z-40 h-full">
+    <div className="grow shrink-0 border-l border-l-border w-[433px]">
       <SettingsEffect />
 
-      <div className="sticky right-0 top-[102px] grow border-l border-l-border bg-background">
-        <ScrollArea className="relative h-[calc(100vh-102px)]">
-          <div className="w-[433px]">
-            {/* <h3 className="px-6 py-4 text-lg font-semibold">Value</h3> */}
-            {/* <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3> */}
-            <div className="px-6 pb-1 pt-4">
-              <SettingsCombobox />
-            </div>
-            <Accordion type="multiple" defaultValue={categoryIds}>
-              {settingPlugins.map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
-                  <AccordionTrigger className="px-6 py-4">
-                    {item.label}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex flex-col gap-2 pl-6 pr-3.5">
-                      {item.children.map((child) => (
-                        <SettingsSwitch key={child.id} {...child} />
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </ScrollArea>
+      <div className="px-6 pb-1 pt-4">
+        <SettingsCombobox />
       </div>
+
+      <Accordion type="multiple" defaultValue={categoryIds}>
+        {settingPlugins.map((item) => (
+          <AccordionItem key={item.id} value={item.id} className="last:border-b-0">
+            <AccordionTrigger className="px-6 py-4">
+              {item.label}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col gap-2 pl-6 pr-3.5">
+                {item.children.map((child) => (
+                  <SettingsSwitch key={child.id} {...child} />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 }

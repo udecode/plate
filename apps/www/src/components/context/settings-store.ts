@@ -33,8 +33,6 @@ export const settingsStore = createStore('settings')({
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
   checkedPlugins: getDefaultCheckedPlugins(),
-
-  key: 1,
 })
   .extendActions((set) => ({
     reset: ({
@@ -71,7 +69,6 @@ export const settingsStore = createStore('settings')({
     },
     syncChecked: () => {
       set.state((draft) => {
-        draft.key += 1;
         draft.checkedPlugins = { ...draft.checkedPluginsNext };
       });
     },
