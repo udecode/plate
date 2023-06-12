@@ -5,8 +5,6 @@ import {
   getPlugin,
   getPointBefore,
   getRange,
-  insertNodes,
-  insertText,
   PlateEditor,
   setSelection,
   TNode,
@@ -38,10 +36,11 @@ export const withMention = <
   const {
     apply,
     insertBreak,
-    insertText: _insertText,
+    insertText,
     deleteBackward,
     insertFragment,
     insertTextData,
+    insertNode,
   } = editor;
 
   const stripNewLineAndTrim: (text: string) => string = (text) => {
@@ -58,7 +57,6 @@ export const withMention = <
     }
 
     return insertText(
-      editor,
       fragment.map((node) => stripNewLineAndTrim(getNodeString(node))).join('')
     );
   };
@@ -103,7 +101,7 @@ export const withMention = <
       (query && !query<V, E>(editor)) ||
       isSelectionInMentionInput(editor)
     ) {
-      return _insertText(text);
+      return insertText(text);
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
@@ -128,10 +126,10 @@ export const withMention = <
       if (inputCreation) {
         data[inputCreation.key] = inputCreation.value;
       }
-      return insertNodes<TMentionInputElement>(editor, data);
+      return insertNode(data);
     }
 
-    return _insertText(text);
+    return insertText(text);
   };
 
   editor.apply = (operation) => {
