@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -38,6 +38,7 @@ import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
 import { createLinkPlugin } from '@udecode/plate-link';
+import { usePlateSelectors, usePlateActions, createPlateEditor } from '@udecode/plate-core';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
   createImagePlugin,
@@ -196,6 +197,23 @@ export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
   );
 };
 
+export interface ResetPluginsEffectProps {
+  plugins: any;
+}
+
+export function ResetPluginsEffect({
+  plugins,
+}: ResetPluginsEffectProps) {
+  const editor = usePlateSelectors().editor();
+  const setEditor = usePlateActions().editor();
+
+  useEffect(() => {
+    setEditor(createPlateEditor({ id: editor.id, plugins }));
+  }, [plugins, setEditor, editor.id]);
+
+  return null;
+}
+
 export function PlaygroundDemo() {
   const containerRef = useRef(null);
 
@@ -213,44 +231,47 @@ export function PlaygroundDemo() {
   return (
     <div className="relative">
       <PlateProvider<MyValue>
-        key={settingsStore.use.key()}
         initialValue={initialValue}
         plugins={plugins}
         normalizeInitialValue
       >
+        <ResetPluginsEffect plugins={plugins} />
+
         <FixedToolbar>
           <FixedToolbarButtons />
         </FixedToolbar>
 
-        <CommentsProvider>
-          <div
-            ref={containerRef}
-            className="relative flex w-[calc(100vw-64px)] max-w-[900px] overflow-x-scroll"
-          >
-            <Plate
-              editableProps={{
-                ...editableProps,
-                className: cn(
-                  editableProps.className,
-                  'min-h-[calc(100vh-102px)] w-[900px]'
-                ),
-              }}
+        <div className="flex">
+          <CommentsProvider>
+            <div
+              ref={containerRef}
+              className="relative flex w-[calc(100vw-64px)] max-w-[900px] overflow-x-scroll"
             >
-              <FloatingToolbar>
-                <FloatingToolbarButtons />
-              </FloatingToolbar>
+              <Plate
+                editableProps={{
+                  ...editableProps,
+                  className: cn(
+                    editableProps.className,
+                    'min-h-[calc(100vh-102px)] w-[900px]'
+                  ),
+                }}
+              >
+                <FloatingToolbar>
+                  <FloatingToolbarButtons />
+                </FloatingToolbar>
 
-              <MentionCombobox items={MENTIONABLES} />
+                <MentionCombobox items={MENTIONABLES} />
 
-              <CursorOverlay containerRef={containerRef} />
-            </Plate>
-          </div>
+                <CursorOverlay containerRef={containerRef} />
+              </Plate>
+            </div>
 
-          <CommentsPopover />
-        </CommentsProvider>
+            <CommentsPopover />
+          </CommentsProvider>
+
+          <SettingsPanel />
+        </div>
       </PlateProvider>
-
-      <SettingsPanel />
     </div>
   );
 }
