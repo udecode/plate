@@ -3,7 +3,6 @@ import {
   getEditorString,
   getNodeString,
   getPlugin,
-  getPointAfter,
   getPointBefore,
   getRange,
   insertNodes,
@@ -117,24 +116,10 @@ export const withMention = <
       )
     );
 
-    const nextChar = getEditorString(
-      editor,
-      getRange(
-        editor,
-        editor.selection,
-        getPointAfter(editor, editor.selection)
-      )
-    );
-
     const beginningOfLine = previousChar === '';
-    const endOfLine = nextChar === '';
     const precededByWhitespace = previousChar === ' ';
-    const followedByWhitespace = nextChar === ' ';
 
-    if (
-      (beginningOfLine || precededByWhitespace) &&
-      (endOfLine || followedByWhitespace)
-    ) {
+    if ((beginningOfLine || precededByWhitespace) && text === trigger) {
       const data: TMentionInputElement = {
         type,
         children: [{ text: '' }],
