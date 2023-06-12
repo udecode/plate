@@ -232,7 +232,7 @@ export function PlaygroundDemo() {
                 ...editableProps,
                 className: cn(
                   editableProps.className,
-                  'min-h-[calc(100vh-102px)] w-[900px]'
+                  'min-h-[920px] w-[900px]'
                 ),
               }}
             >

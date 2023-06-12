@@ -27,17 +27,18 @@ import { tabbableValue } from './tabbableValue';
 import { tableValue } from './tableValue';
 
 import { settingsStore } from '@/components/context/settings-store';
+import { settingValues } from '@/config/setting-values';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 import { MyValue } from '@/plate/plate.types';
 
 export const usePlaygroundValue = () => {
-  const preset = settingsStore.use.value();
+  const valueId = settingsStore.use.valueId();
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
     const value = [...basicElementsValue, ...basicMarksValue];
 
-    if (preset !== 'playground') {
+    if (valueId !== settingValues.playground.id) {
       return value;
     }
 
@@ -119,6 +120,6 @@ export const usePlaygroundValue = () => {
     enabled.tabbable,
     enabled.table,
     enabled.trailingBlock,
-    preset,
+    valueId,
   ]);
 };

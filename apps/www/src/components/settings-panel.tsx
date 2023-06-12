@@ -183,7 +183,7 @@ export function SettingsPanel() {
       <SettingsEffect />
 
       <div className="sticky right-0 top-[102px] grow border-l border-l-border bg-background">
-        <ScrollArea className="relative h-[calc(100vh-102px)]">
+        <ScrollArea className="relative h-[calc(100vh-102px)] overflow-hidden">
           <div className="w-[433px]">
             {/* <h3 className="px-6 py-4 text-lg font-semibold">Value</h3> */}
             {/* <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3> */}

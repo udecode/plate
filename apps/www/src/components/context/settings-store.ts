@@ -28,7 +28,7 @@ export const getDefaultCheckedPlugins = () => {
 export const settingsStore = createStore('settings')({
   showSettings: true,
 
-  value: settingValues.playground.value,
+  valueId: settingValues.playground.id,
 
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
@@ -60,7 +60,7 @@ export const settingsStore = createStore('settings')({
           const label = settingPluginItems[item]?.label;
           if (label) {
             toast({
-              description: `${label} unchecked.`,
+              description: `${label} plugin disabled.`,
               variant: 'default',
             });
           }
