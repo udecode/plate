@@ -21,10 +21,10 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { createMyPlugins, MyEditor, MyValue } from '@/plate/plate.types';
 
-const EDITABLE_VOID = 'editable-void';
+export const ELEMENT_EDITABLE_VOID = 'editable-void';
 
 export const createEditableVoidPlugin = createPluginFactory({
-  key: EDITABLE_VOID,
+  key: ELEMENT_EDITABLE_VOID,
   isElement: true,
   isVoid: true,
 });

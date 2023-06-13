@@ -1,6 +1,8 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import { Button } from './ui/button';
+import Link from 'next/link';
+import { settingsStore } from './context/settings-store';
+import { Button, buttonVariants } from './ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,6 +14,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Icons } from './icons';
 
+import { settingPluginItems } from '@/config/setting-plugins';
 import { settingValues } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 
@@ -25,88 +28,122 @@ const categories = [
     value: 'plugins',
     label: 'Plugins',
     items: [
-      settingValues.font,
-      settingValues.highlight,
-      settingValues.link,
-      settingValues.mention,
-      settingValues.emoji,
       settingValues.align,
-      settingValues.lineheight,
-      settingValues.indent,
-      settingValues.liststyletype,
-      settingValues.hr,
-      settingValues.list,
-      settingValues.media,
-      settingValues.table,
-      settingValues.action_item,
       settingValues.autoformat,
-      settingValues.softbreak,
-      settingValues.exitbreak,
-      settingValues.dragovercursor,
-      settingValues.tabbable,
+      settingValues.basicnodes,
+      settingValues.blockselection,
       settingValues.comment,
+      settingValues.cursoroverlay,
+      settingValues.deserializecsv,
+      settingValues.deserializedocx,
       settingValues.deserializehtml,
       settingValues.deserializemd,
-      settingValues.deserializedocx,
-      settingValues.deserializecsv,
-      settingValues.trailingblock,
+      settingValues.emoji,
       settingValues.excalidraw,
+      settingValues.exitbreak,
+      settingValues.font,
+      settingValues.forcedlayout,
+      settingValues.highlight,
+      settingValues.hr,
+      settingValues.indent,
+      settingValues.lineheight,
+      settingValues.link,
+      settingValues.list,
+      settingValues.liststyletype,
+      settingValues.media,
+      settingValues.mention,
+      settingValues.playground,
+      settingValues.resetnode,
+      settingValues.singleline,
+      settingValues.softbreak,
+      settingValues.tabbable,
+      settingValues.table,
+      settingValues.todoli,
+      settingValues.trailingblock,
     ],
   },
 ];
 
 export function SettingsCombobox() {
   const [open, setOpen] = React.useState(false);
-  const [id, setId] = React.useState(settingValues.playground.id);
+  const valueId = settingsStore.use.valueId();
+
+  const route = settingValues[valueId]?.route;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[200px] justify-between"
-        >
-          {id !== settingValues.playground.id
-            ? settingValues[id]?.label
-            : 'Select a value...'}
-          <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command defaultValue="playground">
-          <CommandInput placeholder="Search value..." />
-          <CommandEmpty>No value found.</CommandEmpty>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[220px] justify-between"
+          >
+            {settingValues[valueId]?.label ?? 'Select a value...'}
+            <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[220px] p-0">
+          <Command defaultValue={valueId}>
+            <CommandInput placeholder="Search value..." />
+            <CommandEmpty>No value found.</CommandEmpty>
 
-          <CommandList>
-            {categories.map((category) => (
-              <CommandGroup key={category.value} heading={category.label}>
-                {category.items.map((item) => {
-                  return (
-                    <CommandItem
-                      key={item.id}
-                      value={item.id}
-                      onSelect={(newId) => {
-                        setId(newId);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          id === item.id ? 'opacity-100' : 'opacity-0'
-                        )}
-                      />
-                      {item.label}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            ))}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            <CommandList>
+              {categories.map((category) => (
+                <CommandGroup key={category.value} heading={category.label}>
+                  {category.items.map((item) => {
+                    return (
+                      <CommandItem
+                        key={item.id}
+                        value={item.id}
+                        onSelect={(newId) => {
+                          settingsStore.set.valueId(newId);
+
+                          const valuePlugins =
+                            settingValues[newId]?.plugins ?? [];
+
+                          valuePlugins.forEach((pluginKey) => {
+                            const deps =
+                              settingPluginItems[pluginKey]?.dependencies;
+
+                            deps?.forEach((dep) => {
+                              settingsStore.set.setCheckedIdNext(dep, true);
+                            });
+                            settingsStore.set.setCheckedIdNext(pluginKey, true);
+                          });
+
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            valueId === item.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {item.label}
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              ))}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+
+      {!!route && (
+        <Link
+          className={buttonVariants({
+            size: 'sms',
+            variant: 'ghost',
+          })}
+          href={route}
+        >
+          <Icons.externalLink className="h-4 w-4 text-muted-foreground" />
+        </Link>
+      )}
+    </>
   );
 }

@@ -14,6 +14,7 @@ import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ScrollArea } from './ui/scroll-area';
+import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
@@ -48,8 +49,7 @@ export function SettingsSwitch({
                   onCheckedChange={(_checked: boolean) => {
                     settingsStore.set.setCheckedIdNext(
                       id as CheckedId,
-                      _checked,
-                      _checked ? conflicts : []
+                      _checked
                     );
                   }}
                 />
@@ -140,29 +140,32 @@ export function SettingsSwitch({
         </div>
       </div>
 
-      <div>
-        <Link
-          href={route ?? '/docs'}
-          className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 w-9 p-0')}
-        >
-          <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      </div>
+      {!!route && (
+        <div>
+          <Link
+            href={route}
+            className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 w-9 p-0')}
+          >
+            <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
 
 export function SettingsEffect() {
   const checkedPluginsNext = settingsStore.use.checkedPluginsNext();
+  const valueId = settingsStore.use.valueId();
 
   const [key, setKey] = useState(1);
   const debouncedKey = useDebounce(key, 1000);
 
   useEffect(() => {
-    if (checkedPluginsNext) {
+    if (checkedPluginsNext || valueId) {
       setKey(Math.random());
     }
-  }, [checkedPluginsNext]);
+  }, [checkedPluginsNext, valueId]);
 
   useEffect(() => {
     if (debouncedKey) {
@@ -187,8 +190,22 @@ export function SettingsPanel() {
           <div className="w-[433px]">
             {/* <h3 className="px-6 py-4 text-lg font-semibold">Value</h3> */}
             {/* <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3> */}
-            <div className="px-6 pb-1 pt-4">
+            <div className="flex justify-between pl-6 pr-3.5 pt-5">
               <SettingsCombobox />
+            </div>
+            <div className="flex items-center gap-2 px-6 pb-1 pt-5">
+              <Switch
+                id="allPlugins"
+                defaultChecked
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    settingsStore.set.reset();
+                  } else {
+                    settingsStore.set.checkedPluginsNext({} as any);
+                  }
+                }}
+              />
+              <Label htmlFor="allPlugins">All plugins</Label>
             </div>
             <Accordion type="multiple" defaultValue={categoryIds}>
               {settingPlugins.map((item) => (

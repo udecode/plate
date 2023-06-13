@@ -39,7 +39,12 @@ export const usePlaygroundValue = () => {
     const value = [...basicElementsValue, ...basicMarksValue];
 
     if (valueId !== settingValues.playground.id) {
-      return value;
+      const newValue = settingValues[valueId].value ?? [];
+
+      if (!newValue.length) {
+        return value;
+      }
+      return newValue;
     }
 
     // Marks
@@ -68,20 +73,11 @@ export const usePlaygroundValue = () => {
     if (enabled.exitBreak) value.push(...exitBreakValue);
     if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
     if (enabled.tabbable) value.push(...tabbableValue);
-    // if (checkedIds.blockSelection) value.push(...blockSelectionValue);
-    // if (checkedIds.combobox) value.push(...comboboxValue);
-    // if (checkedIds.dnd) value.push(...dndValue);
-    // if (checkedIds.nodeId) value.push(...nodeIdValue);
-    // if (checkedIds.normalizeTypes) value.push(...normalizeTypesValue);
-    // if (checkedIds.resetNode) value.push(...resetNodeValue);
-    // if (checkedIds.selectOnBackspace) value.push(...selectOnBackspaceValue);
-    // if (checkedIds.singleLine) value.push(...singleLineValue);
 
     // Collaboration
     if (enabled.comment) value.push(...commentsValue);
 
     // Deserialization
-    // if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
     value.push(...deserializeHtmlValue);
     if (enabled.deserializeMd) value.push(...deserializeMdValue);
     if (enabled.deserializeDocx) value.push(...deserializeDocxValue);

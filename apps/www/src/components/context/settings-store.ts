@@ -3,6 +3,7 @@ import { createStore } from '@udecode/plate-common';
 import { toast } from '@/components/ui/use-toast';
 import {
   CheckedId,
+  SettingPlugin,
   settingPluginItems,
   settingPlugins,
 } from '@/config/setting-plugins';
@@ -20,6 +21,7 @@ const defaultCheckedPlugins = settingPlugins.reduce((acc, item) => {
 export const getDefaultCheckedPlugins = () => {
   return {
     ...defaultCheckedPlugins,
+    normalizeTypes: false,
     singleLine: false,
     list: false,
   } as Record<CheckedId, boolean>;
@@ -50,11 +52,16 @@ export const settingsStore = createStore('settings')({
         });
       });
     },
-    setCheckedIdNext: (id: CheckedId, checked: boolean, uncheck?: string[]) => {
+    setCheckedIdNext: (id: CheckedId | CheckedId[], checked: boolean) => {
       set.state((draft) => {
         draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
-        uncheck?.forEach((item) => {
+        const conflicts =
+          (settingPluginItems[id as string] as SettingPlugin)?.conflicts ?? [];
+
+        conflicts.forEach((item) => {
+          if (!draft.checkedPluginsNext[item]) return;
+
           draft.checkedPluginsNext[item] = false;
 
           const label = settingPluginItems[item]?.label;
@@ -66,7 +73,7 @@ export const settingsStore = createStore('settings')({
           }
         });
 
-        draft.checkedPluginsNext[id] = checked;
+        draft.checkedPluginsNext[id as string] = checked;
       });
     },
     syncChecked: () => {
