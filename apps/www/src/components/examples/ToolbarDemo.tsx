@@ -15,7 +15,7 @@ import { usePlaygroundPlugins } from './PlaygroundDemo';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
-import { ColorDropdownMenu } from '@/components/plate-ui/color-dropdown-menu';
+import { ColorDropdownMenu } from '@/components/plate-ui/color-dropdown-menu/color-dropdown-menu';
 import { InsertDropdownMenu } from '@/components/plate-ui/insert-dropdown-menu';
 import { MarkToolbarButton } from '@/components/plate-ui/mark-toolbar-button';
 import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';

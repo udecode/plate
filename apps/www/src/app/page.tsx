@@ -4,7 +4,6 @@ import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { PlaygroundDemo } from '@/components/examples/PlaygroundDemo';
-import { ExampleCodeLink } from '@/components/examples-nav';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
@@ -52,12 +51,12 @@ export default function IndexPage() {
         </section>
       </PageHeader>
 
-      <section className="mb-4 flex w-full justify-between">
-        <h2 className="ml-4 font-bold">Playground</h2>
-        <div>
-          <ExampleCodeLink />
-        </div>
-      </section>
+      {/* <section className="mb-4 flex w-full justify-between"> */}
+      {/*  <h2 className="ml-4 font-bold">Playground</h2> */}
+      {/*  <div> */}
+      {/*    <ExampleCodeLink /> */}
+      {/*  </div> */}
+      {/* </section> */}
 
       <section className="relative">
         <div className="max-w-[1336px] border bg-background shadow-xl">

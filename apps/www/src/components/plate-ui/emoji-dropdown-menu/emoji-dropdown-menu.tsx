@@ -5,9 +5,9 @@ import {
 } from '@udecode/plate-emoji';
 import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
 import { EmojiPicker } from './emoji-picker';
-import { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';
 
 import { Icons } from '@/components/icons';
+import { EmojiToolbarDropdown } from '@/components/plate-ui/emoji-toolbar-dropdown';
 import { ToolbarButton, ToolbarButtonProps } from '@/components/ui/toolbar';
 
 type EmojiDropdownMenuProps = {

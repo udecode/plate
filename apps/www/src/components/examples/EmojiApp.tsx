@@ -3,7 +3,7 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 
-import { EmojiDropdownMenu } from '@/components/plate-ui/emoji-dropdown-menu';
+import { EmojiDropdownMenu } from '@/components/plate-ui/emoji-dropdown-menu/emoji-dropdown-menu';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';

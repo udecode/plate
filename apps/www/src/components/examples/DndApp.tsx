@@ -6,7 +6,7 @@ import { Plate } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
-import { withDraggables } from '@/components/plate-ui/with-draggables';
+import { withDraggables } from '@/components/plate-ui/with-draggables/with-draggables';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';

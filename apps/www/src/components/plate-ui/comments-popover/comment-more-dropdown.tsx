@@ -3,7 +3,9 @@
 import React from 'react';
 import {
   useCommentDeleteButton,
+  useCommentDeleteButtonState,
   useCommentEditButton,
+  useCommentEditButtonState,
 } from '@udecode/plate-comments';
 
 import { Icons } from '@/components/icons';
@@ -17,8 +19,10 @@ import {
 import { cn } from '@/lib/utils';
 
 export function CommentMoreDropdown() {
-  const editProps = useCommentEditButton({});
-  const deleteProps = useCommentDeleteButton({});
+  const editButtonState = useCommentEditButtonState();
+  const editProps = useCommentEditButton(editButtonState);
+  const deleteButtonState = useCommentDeleteButtonState();
+  const deleteProps = useCommentDeleteButton(deleteButtonState);
 
   return (
     <DropdownMenu modal={false}>

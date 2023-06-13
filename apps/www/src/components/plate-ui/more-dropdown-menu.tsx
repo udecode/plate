@@ -6,6 +6,7 @@ import {
   focusEditor,
   toggleMark,
 } from '@udecode/plate-common';
+import { usePlateEditorState } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { MARK_KBD } from '@udecode/plate-kbd';
 
@@ -18,10 +19,9 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar';
-import { useMyPlateEditorState } from '@/plate/plate.types';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
-  const editor = useMyPlateEditorState();
+  const editor = usePlateEditorState();
   const openState = useOpenState();
 
   return (

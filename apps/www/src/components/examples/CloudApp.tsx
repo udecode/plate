@@ -8,9 +8,9 @@ import {
 } from '@udecode/plate-cloud';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 
-import { CloudAttachmentElement } from '@/components/plate-ui/cloud-attachment-element';
-import { CloudImageElement } from '@/components/plate-ui/cloud-image-element';
-import { CloudToolbarButtons } from '@/components/plate-ui/cloud-toolbar-buttons';
+import { CloudAttachmentElement } from '@/components/plate-ui/cloud/cloud-attachment-element';
+import { CloudImageElement } from '@/components/plate-ui/cloud/cloud-image-element';
+import { CloudToolbarButtons } from '@/components/plate-ui/cloud/cloud-toolbar-buttons';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';

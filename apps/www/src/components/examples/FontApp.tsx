@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-font';
 
 import { Icons } from '@/components/icons';
-import { ColorDropdownMenu } from '@/components/plate-ui/color-dropdown-menu';
+import { ColorDropdownMenu } from '@/components/plate-ui/color-dropdown-menu/color-dropdown-menu';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';

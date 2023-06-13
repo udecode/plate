@@ -3,8 +3,8 @@ import { createExitBreakPlugin } from '@udecode/plate-break';
 import { Plate } from '@udecode/plate-common';
 
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
-import { withPlaceHolders } from '@/components/plate-ui/placeholder';
 import { TurnIntoDropdownMenu } from '@/components/plate-ui/turn-into-dropdown-menu';
+import { withPlaceHolders } from '@/components/plate-ui/with-placeHolders';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';

@@ -57,8 +57,8 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { CommentsPopover } from '@/components/plate-ui/comments-popover';
-import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
+import { CommentsPopover } from '@/components/plate-ui/comments-popover/comments-popover';
+import { CursorOverlay } from '@/components/plate-ui/cursor-overlay/cursor-overlay';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
