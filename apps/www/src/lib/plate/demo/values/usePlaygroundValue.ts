@@ -31,8 +31,11 @@ import { settingValues } from '@/config/setting-values';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 import { MyValue } from '@/plate/plate.types';
 
-export const usePlaygroundValue = () => {
-  const valueId = settingsStore.use.valueId();
+export const usePlaygroundValue = (id?: string) => {
+  let valueId = settingsStore.use.valueId();
+  if (id) {
+    valueId = id;
+  }
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {

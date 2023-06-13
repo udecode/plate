@@ -64,7 +64,7 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 
-export type SettingValue = keyof typeof settingValues;
+export type ValueId = keyof typeof settingValues;
 
 // cmdk needs lowercase
 export const settingValues = {

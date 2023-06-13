@@ -22,6 +22,7 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
+import { PlatePluginComponent } from '@udecode/plate-core';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -65,6 +66,7 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { SettingsPanel } from '@/components/settings-panel';
+import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
@@ -87,7 +89,10 @@ import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { createMyPlugins, MyValue } from '@/plate/plate.types';
 
-export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
+export const usePlaygroundPlugins = ({
+  id,
+  components = createPlateUI(),
+}: { id?: string; components?: Record<string, PlatePluginComponent> } = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(
@@ -196,11 +201,12 @@ export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
   );
 };
 
-export function PlaygroundDemo() {
+export function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
 
-  const initialValue = usePlaygroundValue();
+  const initialValue = usePlaygroundValue(id);
   const plugins = usePlaygroundPlugins({
+    id,
     components: createPlateUI(
       {},
       {
@@ -219,7 +225,7 @@ export function PlaygroundDemo() {
         normalizeInitialValue
       >
         <FixedToolbar>
-          <FixedToolbarButtons />
+          <FixedToolbarButtons id={id} />
         </FixedToolbar>
 
         <CommentsProvider>
@@ -250,7 +256,7 @@ export function PlaygroundDemo() {
         </CommentsProvider>
       </PlateProvider>
 
-      <SettingsPanel />
+      {!id && <SettingsPanel />}
     </div>
   );
 }

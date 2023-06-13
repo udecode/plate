@@ -33,8 +33,10 @@ import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
+import { ValueId } from '@/config/setting-values';
+import { isEnabled } from '@/plate/demo/is-enabled';
 
-export function FixedToolbarButtons() {
+export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
@@ -71,55 +73,73 @@ export function FixedToolbarButtons() {
               <Icons.code />
             </MarkToolbarButton>
 
-            <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
-              <Icons.color className={iconVariants({ variant: 'toolbar' })} />
-            </ColorDropdownMenu>
-            <ColorDropdownMenu
-              nodeType={MARK_BG_COLOR}
-              tooltip="Highlight Color"
-            >
-              <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
-            </ColorDropdownMenu>
+            {isEnabled('font', id) && (
+              <>
+                <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
+                  <Icons.color
+                    className={iconVariants({ variant: 'toolbar' })}
+                  />
+                </ColorDropdownMenu>
+                <ColorDropdownMenu
+                  nodeType={MARK_BG_COLOR}
+                  tooltip="Highlight Color"
+                >
+                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                </ColorDropdownMenu>
+              </>
+            )}
 
             <ToolbarSeparator />
 
-            <AlignDropdownMenu />
+            {isEnabled('align', id) && <AlignDropdownMenu />}
 
-            <LineHeightDropdownMenu />
+            {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
 
-            {indentList ? (
+            {isEnabled('liststyletype', id) && indentList && (
               <>
                 <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                 <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
               </>
-            ) : (
+            )}
+
+            {isEnabled('list', id) && !indentList && (
               <>
                 <ListToolbarButton nodeType={ELEMENT_UL} />
                 <ListToolbarButton nodeType={ELEMENT_OL} />
               </>
             )}
 
-            <OutdentToolbarButton />
-            <IndentToolbarButton />
+            {isEnabled('indent', id) ||
+              isEnabled('list', id) ||
+              (isEnabled('liststyletype', id) && (
+                <>
+                  <OutdentToolbarButton />
+                  <IndentToolbarButton />
+                </>
+              ))}
 
             <ToolbarSeparator />
 
-            <LinkToolbarButton />
+            {isEnabled('link', id) && <LinkToolbarButton />}
 
-            <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+            {isEnabled('media', id) && (
+              <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+            )}
 
-            <TableDropdownMenu />
-            <EmojiDropdownMenu />
+            {isEnabled('table', id) && <TableDropdownMenu />}
+
+            {isEnabled('emoji', id) && <EmojiDropdownMenu />}
+
             <MoreDropdownMenu />
           </>
         )}
       </div>
 
       <div className="flex gap-1">
-        <CommentToolbarButton />
+        {isEnabled('comment', id) && <CommentToolbarButton />}
         <ModeDropdownMenu />
 
-        <SettingsToggle />
+        {!id && <SettingsToggle />}
       </div>
     </>
   );
