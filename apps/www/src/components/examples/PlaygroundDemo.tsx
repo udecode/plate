@@ -89,7 +89,7 @@ import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { createMyPlugins, MyValue } from '@/plate/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate-types';
 
 export const usePlaygroundPlugins = ({
   id,

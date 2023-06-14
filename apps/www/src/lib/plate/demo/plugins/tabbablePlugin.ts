@@ -6,7 +6,7 @@ import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { TabbableElement } from './TabbableElement';
 
-import { MyPlatePlugin } from '@/plate/plate.types';
+import { MyPlatePlugin } from '@/plate/plate-types';
 
 const TABBABLE_ELEMENT = 'tabbable_element';
 

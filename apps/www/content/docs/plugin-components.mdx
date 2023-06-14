@@ -1,0 +1,95 @@
+---
+title: Components
+description: Markup and styling.
+---
+
+Plate plugins are headless so you'll need to register React components to each plugin.
+
+## Create Components
+
+### Plate UI
+
+To get started, you can use Plate UI: a set of components that you can use to build your own editor UI.
+
+See [Components](/components) for more information.
+
+### Custom Components
+
+Creating a custom component is straightforward:
+
+#### Element
+
+```tsx
+import React from 'react';
+import { PlateElement, PlateElementProps } from '@udecode/plate-common';
+
+export function BlockquoteElement(({ className, children, ...props }: PlateElementProps) {
+  return (
+    <PlateElement asChild className={className} {...props}>
+      <blockquote>{children}</blockquote>
+    </PlateElement>
+  );
+};
+```
+
+#### Leaf
+
+```tsx
+import React from 'react';
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';
+
+export function CodeLeaf({ className, children, ...props }: PlateLeafProps) {
+  return (
+    <PlateLeaf asChild className={className} {...props}>
+      <code>{children}</code>
+    </PlateLeaf>
+  );
+}
+```
+
+## Register Components
+
+### Plugin Component
+
+To register a single component, use the plugin property `component`:
+
+```tsx
+const plugins = [
+  createParagraphPlugin({
+    component: ParagraphElement,
+  }),
+  createLinkPlugin({
+    component: LinkElement,
+  }),
+];
+```
+
+### Components
+
+To register components by plugin key, use `createPlugins` second parameter.
+This way, the UI is decoupled from the plugins. Note that there is no difference with the previous method.
+
+It's an object whose property keys are plugin keys and whose property values are React components.
+
+```tsx
+const plugins = createPlugins(plugins, {
+  components: {
+    [ELEMENT_PARAGRAPH]: ParagraphElement,
+    [ELEMENT_LINK]: LinkElement,
+    // ...other components
+  },
+});
+```
+
+## CSS
+
+Plate adds a `class` attribute to all elements and leaves.
+
+Its value is the plugin `type` prefixed by `slate-`, for example:
+
+- `slate-p` for the paragraph
+- `slate-ul` for the list
+- `slate-li` for the list item
+- ...
+
+That way, you can style your nodes with class selectors.

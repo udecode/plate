@@ -29,7 +29,7 @@ import { tableValue } from './tableValue';
 import { settingsStore } from '@/components/context/settings-store';
 import { settingValues, ValueId } from '@/config/setting-values';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
-import { MyValue } from '@/plate/plate.types';
+import { MyValue } from '@/plate/plate-types';
 
 export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();

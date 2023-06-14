@@ -3,7 +3,7 @@ title: Plugins
 description: How to create a plugin.
 ---
 
-[PlatePlugin API](/docs/api/plate-plugin).
+- [PlatePlugin API](/docs/api/plate-plugin)
 
 Plate plugins are objects passed to `Plate` [plugins](plate#plugins) prop.
 
@@ -12,6 +12,7 @@ Plate plugins are objects passed to `Plate` [plugins](plate#plugins) prop.
 ### Plugin Factory
 
 Let's create a plugin factory with `createPluginFactory`:
+
 - first param is the default plugin.
 - the only required property of the default plugin is `key`.
 - the naming convention is `create...Plugin`
@@ -23,13 +24,13 @@ Let's create a plugin factory with `createPluginFactory`:
 ```ts
 const createParagraphPlugin = createPluginFactory({
   key: ELEMENT_PARAGRAPH,
-})
+});
 
-// -> { key: ELEMENT_PARAGRAPH } 
-const paragraphPlugin = createParagraphPlugin()
+// -> { key: ELEMENT_PARAGRAPH }
+const paragraphPlugin = createParagraphPlugin();
 
-// -> { key: 'p', type: 'paragraph' } 
-const paragraphPlugin = createParagraphPlugin({ key: 'p', type: 'paragraph' })
+// -> { key: 'p', type: 'paragraph' }
+const paragraphPlugin = createParagraphPlugin({ key: 'p', type: 'paragraph' });
 ```
 
 ### Element
@@ -51,7 +52,7 @@ const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   options: {
     hotkey: ['mod+opt+0', 'mod+shift+0'],
   },
-})
+});
 ```
 
 ### Inline & Void
@@ -65,7 +66,7 @@ const createTagPlugin = createPluginFactory({
   isElement: true,
   isInline: true,
   isVoid: true,
-})
+});
 ```
 
 ### Leaf
@@ -97,7 +98,7 @@ const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
 ```ts
 // Example
 const createReactPlugin = {
-  withOverrides: withTReact
+  withOverrides: withTReact,
 };
 ```
 
@@ -113,12 +114,12 @@ const createBoldPlugin = {
     rules: [
       { validNodeName: ['STRONG', 'B'] },
       {
-       validStyle: {
-         fontWeight: ['600', '700', 'bold'],
-       },
+        validStyle: {
+          fontWeight: ['600', '700', 'bold'],
+        },
       },
     ],
-  }
+  },
 };
 ```
 
@@ -130,7 +131,7 @@ const createBoldPlugin = {
 // Example
 const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,
-  
+
   // Note that we're using `then` to access to the editor.
   then: (editor) => ({
     inject: {
@@ -149,6 +150,7 @@ const createAlignPlugin = createPluginFactory({
 ### Others
 
 See the following API for other use cases like:
+
 - `editor.insertData`: used by the deserializer plugins.
 - `decorate`: used by find & replace plugin.
 - `inject.aboveComponent`
@@ -157,4 +159,3 @@ See the following API for other use cases like:
 - `plugins`: used by the heading plugin.
 - `props`
 - `serializeHtml`
-

@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyValue } from '@/plate/plate.types';
+import { MyValue } from '@/plate/plate-types';
 
 function Buttons({ disabled, setDisabled }: any) {
   const resetPlateEditor = useResetPlateEditor();

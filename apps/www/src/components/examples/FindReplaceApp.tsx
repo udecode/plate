@@ -8,7 +8,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { createMyPlugins, MyValue } from '@/plate/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate-types';
 
 export interface SearchHighlightToolbarProps {
   icon: any;

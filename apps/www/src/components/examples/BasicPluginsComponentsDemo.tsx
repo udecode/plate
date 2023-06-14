@@ -11,7 +11,7 @@ import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { createPlateUI } from '@/plate/createPlateUI';
-import { MyValue } from '@/plate/plate.types';
+import { MyValue } from '@/plate/plate-types';
 
 const plugins = createPlugins<MyValue>(
   [
@@ -30,7 +30,7 @@ const plugins = createPlugins<MyValue>(
   }
 );
 
-export default function BasicPluginsComponentsApp() {
+export default function BasicPluginsComponentsDemo() {
   return (
     <Plate<MyValue>
       editableProps={{

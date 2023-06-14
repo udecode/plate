@@ -11,10 +11,10 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { basicEditorValue } from './BasicPluginsComponentsApp';
+import { basicEditorValue } from './BasicPluginsComponentsDemo';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyPlatePlugin, MyValue } from '@/plate/plate.types';
+import { MyPlatePlugin, MyValue } from '@/plate/plate-types';
 
 const plugins: MyPlatePlugin[] = [
   createParagraphPlugin(),
@@ -29,7 +29,7 @@ const plugins: MyPlatePlugin[] = [
   createCodePlugin(),
 ];
 
-export default function BasicPluginsDefaultApp() {
+export default function BasicPluginsDefaultDemo() {
   const [debugValue, setDebugValue] = useState<MyValue | null>(null);
 
   return (

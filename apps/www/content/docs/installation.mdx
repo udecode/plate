@@ -11,14 +11,15 @@ Add the following dependencies to your project:
 
 ```bash
 npm install @udecode/plate
-  
+
 # required peer deps
 npm install slate slate-react slate-history slate-hyperscript react react-dom
 ```
-  
+
 Alternatively you can install only the packages you need.
+
 ```bash
-# core
+# used by all plate packages
 npm install @udecode/plate-common
 
 # required peer deps
@@ -28,15 +29,12 @@ npm install slate slate-react slate-history slate-hyperscript react react-dom
 npm install @udecode/plate-basic-elements
 # npm install @udecode/plate-...
 
-# if using @udecode/plate-serializer-docx
-npm install @udecode/plate-juice
-
 # if using @udecode/plate-dnd
 npm install react-dnd react-dnd-html5-backend
 ```
-  
+
 ### Basic Editor
-  
+
 Let's start with a minimal editor setup leveraging `Plate` and `editableProps`.
 
 ```tsx showLineNumbers {1,3-5,9}
@@ -45,26 +43,23 @@ import { Plate } from '@udecode/plate';
 const editableProps = {
   placeholder: 'Type...',
 };
-  
+
 export default function BasicEditor() {
-  return (
-    <Plate editableProps={editableProps} />
-  );
+  return <Plate editableProps={editableProps} />;
 }
 ```
 
 Simple and straightforward. Try it out:
 
 <ComponentPreview>
-  <BasicEditorDefaultApp />
+  <BasicEditorDefaultDemo />
 </ComponentPreview>
 
 <Callout className="mt-4">
-**Note**: The following examples are using these styles:
-<ComponentSource src="/src/styles/globals.scss" />
+  **Note**: The following examples are using these styles:
+  <ComponentSource src="/src/styles/globals.scss" />
 </Callout>
 
-  
 ### Initializing Editor's Value
 
 Let's specify the initial content of the editor: a single paragraph.
@@ -84,21 +79,17 @@ const initialValue = [
 ];
 
 export default function BasicEditor() {
-  return (
-    <Plate 
-      editableProps={editableProps} 
-      initialValue={initialValue} 
-    />
-  );
+  return <Plate editableProps={editableProps} initialValue={initialValue} />;
 }
 ```
 
 <Callout className="mt-4">
-**Note**: Plate uses the `type` property to allow a plugin to render a node by type.
+  **Note**: Plate uses the `type` property to allow a plugin to render a node by
+  type.
 </Callout>
 
 <ComponentPreview>
-  <BasicEditorValueApp />
+  <BasicEditorValueDemo />
 </ComponentPreview>
 
 ### Implementing Change Handler
@@ -110,7 +101,7 @@ At this stage, it's crucial to monitor editor modifications in order to store th
 
 export default function BasicEditor() {
   return (
-    <Plate 
+    <Plate
       editableProps={editableProps}
       initialValue={initialValue}
       onChange={(newValue) => {
@@ -122,7 +113,7 @@ export default function BasicEditor() {
 ```
 
 <ComponentPreview>
-  <BasicEditorHandlerApp />
+  <BasicEditorHandlerDemo />
 </ComponentPreview>
 
 ### Plugins
@@ -130,22 +121,26 @@ export default function BasicEditor() {
 Let's use the basic plugins for a rich-text editor.
 
 <ComponentPreview>
-  <BasicPluginsDefaultApp />
+  <BasicPluginsDefaultDemo />
 </ComponentPreview>
 
 The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a `div` and the default leaf component is a `span`.
 
 <Callout className="mt-4">
-**Note**: You don't need to add core plugins such as `react` and `history` as `Plate` already does it. To disable these, use the `disableCorePlugins` prop.
+  **Note**: You don't need to add core plugins such as `react` and `history` as
+  `Plate` already does it.
 </Callout>
 
 ### Components
 
 <Callout className="mt-4">
-**Note**: Plate plugins are packaged unstyled, implying that you have complete control over markup and styling, hence you can integrate your own design system or [Plate UI](/components).
+  **Note**: Plate plugins are packaged unstyled, implying that you have complete
+  control over markup and styling, hence you can integrate your own design
+  system or [Plate UI](/components).
 </Callout>
 
 To simultaneously plug-in all the components, `createPlugins` can be used:
+
 - use the first parameter for the `plugins`
 - use the second parameter for the `components`. In the following example, we'll call `createPlateUI()`, which returns all Plate components by plugin key.
 
@@ -195,9 +190,8 @@ export default function BasicEditor() {
 }
 ```
 
-<ComponentExample src="/src/components/examples/BasicPluginsComponentsApp.tsx">
-  <BasicPluginsComponentsApp />
+<ComponentExample src="/src/components/examples/BasicPluginsComponentsDemo.tsx">
+  <BasicPluginsComponentsDemo />
 </ComponentExample>
 
 </Steps>
-

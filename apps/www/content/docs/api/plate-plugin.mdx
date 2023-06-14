@@ -3,7 +3,7 @@ title: PlatePlugin
 description: PlatePlugin API.
 ---
 
-[Plugins guide](/docs/plugins)
+- [Plugins guide](/docs/plugins)
 
 ## `PlatePlugin`
 
@@ -91,7 +91,7 @@ type DeserializeHtml = {
    * Whether or not to include deserialized children on this node
    */
   withoutChildren?: boolean;
-}
+};
 ```
 
 ### `editor.insertData`
@@ -151,7 +151,7 @@ type PlatePluginInsertData<V extends Value = Value> = {
     fragment: EElementOrText<V>[],
     options: PlatePluginInsertDataOptions
   ) => EElementOrText<V>[];
-}
+};
 ```
 
 ### `handlers`
@@ -166,20 +166,19 @@ const plugin = {
   handlers: {
     onKeyDown: (event, editor, next) => {
       // Implement custom event logic...
-      
       // When no value is returned, the next handlers will be executed when
       // isPropagationStopped was not set on the event
     },
     onDrop: (event, editor, next) => {
       // Implement custom event logic...
-      
+
       // No matter the state of the event, treat it as being handled by returning
       // true here, the next handlers will be skipped
       return true;
     },
     onDragStart: (event, editor, next) => {
       // Implement custom event logic...
-      
+
       // No matter the status of the event, treat event as *not* being handled by
       // returning false, the next handlers will be executed afterward
       return false;
@@ -189,6 +188,7 @@ const plugin = {
 ```
 
 This property extends most `textarea` handlers like:
+
 - `onCopy`,
 - `onPaste`,
 - `onFocus`,
@@ -198,9 +198,15 @@ This property extends most `textarea` handlers like:
 - ...
 
 The type of each handler is:
+
 ```ts
-type Handler<P = PluginOptions, V extends Value, E extends PlateEditor<V> = PlateEditor<V>> = (
-  editor: E, plugin: WithPlatePlugin<P, V, E>
+type Handler<
+  P = PluginOptions,
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = (
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
 ) => (event: Event) => boolean | void;
 ```
 
@@ -216,9 +222,9 @@ type Handler<P = PluginOptions, V extends Value, E extends PlateEditor<V> = Plat
 
 - Property that can be used by a plugin to allow other plugins to inject code.
 - Differs from `overrideByKey` as this is not overriding any plugin.
-- For example, if multiple plugins have defined 
-`inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
-`insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
+- For example, if multiple plugins have defined
+  `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
+  `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
 
 ### `inject.props`
 
@@ -383,7 +389,6 @@ createIndentPlugin({
 - Recursive plugin merging.
 - Can be used to derive plugin fields from `editor` and `plugin`.
 - The returned value will be deeply merged to the plugin.
-
 
 ### `type`
 

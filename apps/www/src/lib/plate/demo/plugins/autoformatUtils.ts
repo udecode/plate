@@ -6,7 +6,7 @@ import {
 import { getParentNode, isElement, isType } from '@udecode/plate-common';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 
-import { MyEditor, MyValue } from '@/plate/plate.types';
+import { MyEditor, MyValue } from '@/plate/plate-types';
 
 export const preFormat: AutoformatBlockRule<MyValue, MyEditor>['preFormat'] = (
   editor
