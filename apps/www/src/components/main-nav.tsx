@@ -45,17 +45,6 @@ export function MainNav() {
         >
           Components
         </Link>
-        <Link
-          href="/examples"
-          className={cn(
-            'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/examples')
-              ? 'text-foreground'
-              : 'text-foreground/60'
-          )}
-        >
-          Examples
-        </Link>
       </nav>
     </div>
   );
