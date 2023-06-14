@@ -4,9 +4,9 @@ description: Component for table plugin.
 component: true
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
 ## Installation
 
@@ -23,19 +23,18 @@ npx plate-ui add table-element
 
 - [Table](/docs/table)
 
-2. Copy and paste the following code into your project. 
+2. Copy and paste the following code into your project.
 
-- `components/plate-ui/table-element.tsx`
+- `components/plate-ui/table-element/table-element.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-element.tsx" />
+<ComponentSource src="/src/components/plate-ui/table-element/table-element.tsx" />
 
-- `components/plate-ui/table-floating-toolbar.tsx`
+- `components/plate-ui/table-element/table-floating-toolbar.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-floating-toolbar.tsx" />
-      
-- `components/plate-ui/table-borders.tsx`
+<ComponentSource src="/src/components/plate-ui/table-element/table-floating-toolbar.tsx" />
+- `components/plate-ui/table-element/table-borders.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-borders.tsx" />
+<ComponentSource src="/src/components/plate-ui/table-element/table-borders.tsx" />
 
     </AccordionContent>
 
@@ -46,13 +45,11 @@ npx plate-ui add table-element
 
 ```tsx
 import { createTablePlugin } from '@udecode/plate-table';
-import {
-  TableElement,
-} from '@/components/plate-ui/table-element'
+import { TableElement } from '@/components/plate-ui/table-element';
 ```
 
 ```tsx
 createTablePlugin({
   component: TableElement,
-})
+});
 ```
