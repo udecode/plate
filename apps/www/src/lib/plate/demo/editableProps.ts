@@ -10,7 +10,5 @@ export const editableProps: TEditableProps<MyValue> = {
   style: {
     outline: 'none',
   },
-  className: cn(
-    'relative max-w-full px-[96px] pb-[20vh] pt-4 leading-[1.4] [&_strong]:font-bold'
-  ),
+  className: cn('relative max-w-full leading-[1.4] [&_strong]:font-bold'),
 };

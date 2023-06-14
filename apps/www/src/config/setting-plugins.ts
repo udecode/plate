@@ -244,7 +244,7 @@ export const settingPluginItems = {
     badges: [settingBadges.style],
     dependencies: [KEY_INDENT],
     conflicts: ['list'],
-    route: settingValues.liststyletype.route,
+    route: settingValues.indentlist.route,
   },
 
   // Functionality
@@ -258,6 +258,7 @@ export const settingPluginItems = {
     id: KEY_BLOCK_SELECTION,
     label: 'Block Selection',
     badges: [settingBadges.ui],
+    dependencies: [KEY_NODE_ID],
     route: settingValues.blockselection.route,
   },
   [KEY_COMBOBOX]: {

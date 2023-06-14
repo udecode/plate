@@ -4,7 +4,7 @@ This package implements the table plugin for Plate.
 
 ## Documentation
 
-Check out [Table](https://plate.udecode.io/docs/plugins/table).
+Check out [Table](https://plate.udecode.io/docs/table).
 
 ## API
 

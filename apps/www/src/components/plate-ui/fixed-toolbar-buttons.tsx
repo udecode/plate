@@ -40,6 +40,20 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
+  const showFirstSeparator =
+    isEnabled('align', id) ||
+    isEnabled('lineheight', id) ||
+    (isEnabled('indentlist', id) && indentList) ||
+    (isEnabled('list', id) && !indentList) ||
+    isEnabled('indent', id) ||
+    isEnabled('list', id) ||
+    isEnabled('indentlist', id);
+  const showSeparator =
+    isEnabled('link', id) ||
+    isEnabled('media', id) ||
+    isEnabled('table', id) ||
+    isEnabled('emoji', id);
+
   return (
     <>
       <div className="flex gap-1">
@@ -47,7 +61,7 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
           <>
             <InsertDropdownMenu />
 
-            <TurnIntoDropdownMenu />
+            {isEnabled('basicnodes', id) && <TurnIntoDropdownMenu />}
 
             <ToolbarSeparator />
 
@@ -63,15 +77,20 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
             >
               <Icons.underline />
             </MarkToolbarButton>
-            <MarkToolbarButton
-              tooltip="Strikethrough (⌘+⇧+M)"
-              nodeType={MARK_STRIKETHROUGH}
-            >
-              <Icons.strikethrough />
-            </MarkToolbarButton>
-            <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
-              <Icons.code />
-            </MarkToolbarButton>
+
+            {isEnabled('basicnodes', id) && (
+              <>
+                <MarkToolbarButton
+                  tooltip="Strikethrough (⌘+⇧+M)"
+                  nodeType={MARK_STRIKETHROUGH}
+                >
+                  <Icons.strikethrough />
+                </MarkToolbarButton>
+                <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+                  <Icons.code />
+                </MarkToolbarButton>
+              </>
+            )}
 
             {isEnabled('font', id) && (
               <>
@@ -89,13 +108,13 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
               </>
             )}
 
-            <ToolbarSeparator />
+            {showFirstSeparator && <ToolbarSeparator />}
 
             {isEnabled('align', id) && <AlignDropdownMenu />}
 
             {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
 
-            {isEnabled('liststyletype', id) && indentList && (
+            {isEnabled('indentlist', id) && indentList && (
               <>
                 <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                 <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
@@ -109,16 +128,16 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
               </>
             )}
 
-            {isEnabled('indent', id) ||
+            {(isEnabled('indent', id) ||
               isEnabled('list', id) ||
-              (isEnabled('liststyletype', id) && (
-                <>
-                  <OutdentToolbarButton />
-                  <IndentToolbarButton />
-                </>
-              ))}
+              isEnabled('indentlist', id)) && (
+              <>
+                <OutdentToolbarButton />
+                <IndentToolbarButton />
+              </>
+            )}
 
-            <ToolbarSeparator />
+            {showSeparator && <ToolbarSeparator />}
 
             {isEnabled('link', id) && <LinkToolbarButton />}
 

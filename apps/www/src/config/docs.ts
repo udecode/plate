@@ -69,19 +69,14 @@ export const docsConfig: DocsConfig = {
           href: '/docs/styling',
           items: [],
         },
-        {
-          title: 'Multiple Editors',
-          href: '/docs/multiple-editors',
-          items: [],
-        },
+        // {
+        //   title: 'Multiple Editors',
+        //   href: '/docs/multiple-editors',
+        //   items: [],
+        // },
         {
           title: 'Typescript',
           href: '/docs/typescript',
-          items: [],
-        },
-        {
-          title: 'Cloud',
-          href: '/docs/cloud',
           items: [],
         },
       ],
@@ -264,11 +259,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/block-selection',
           items: [],
         },
-        // {
-        //   title: 'Cloud',
-        //   href: '/docs/cloud',
-        //   items: [],
-        // },
+        {
+          title: 'Cloud',
+          href: '/docs/cloud',
+          items: [],
+        },
         {
           title: 'Combobox',
           href: '/docs/combobox',
@@ -290,22 +285,22 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Exit break',
+          title: 'Exit Break',
           href: '/docs/exit-break',
           items: [],
         },
-        {
-          title: 'Find',
-          href: '/docs/find-replace',
-          items: [],
-        },
+        // {
+        //   title: 'Find',
+        //   href: '/docs/find-replace',
+        //   items: [],
+        // },
         {
           title: 'Font',
           href: '/docs/font',
           items: [],
         },
         {
-          title: 'Forced layout',
+          title: 'Forced Layout',
           href: '/docs/forced-layout',
           items: [],
         },
@@ -325,17 +320,12 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Indent list',
+          title: 'Indent List',
           href: '/docs/indent-list',
           items: [],
         },
         {
-          title: 'Kbd',
-          href: '/docs/kbd',
-          items: [],
-        },
-        {
-          title: 'Line height',
+          title: 'Line Height',
           href: '/docs/line-height',
           items: [],
         },
@@ -365,32 +355,32 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Serializing csv',
+          title: 'Serializing CSV',
           href: '/docs/serializing-csv',
           items: [],
         },
         {
-          title: 'Serializing docx',
+          title: 'Serializing DOCX',
           href: '/docs/serializing-docx',
           items: [],
         },
         {
-          title: 'Serializing html',
+          title: 'Serializing HTML',
           href: '/docs/serializing-html',
           items: [],
         },
         {
-          title: 'serializing md',
+          title: 'Serializing MD',
           href: '/docs/serializing-md',
           items: [],
         },
         {
-          title: 'Single line',
+          title: 'Single Line',
           href: '/docs/single-line',
           items: [],
         },
         {
-          title: 'Soft break',
+          title: 'Soft Break',
           href: '/docs/soft-break',
           items: [],
         },

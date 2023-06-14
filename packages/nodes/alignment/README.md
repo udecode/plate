@@ -4,7 +4,7 @@ This package implements the text alignment plugin for Plate.
 
 ## Documentation
 
-Check out [Alignment](https://plate.udecode.io/docs/plugins/alignment).
+Check out [Alignment](https://plate.udecode.io/docs/alignment).
 
 ## API
 

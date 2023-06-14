@@ -5,7 +5,7 @@ autocompletion from user input.
 
 ## Documentation
 
-Check out [Mention](https://plate.udecode.io/docs/plugins/mention).
+Check out [Mention](https://plate.udecode.io/docs/mention).
 
 ## API
 

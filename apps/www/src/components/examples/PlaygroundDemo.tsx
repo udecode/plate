@@ -38,6 +38,7 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
@@ -71,14 +72,15 @@ import { cn } from '@/lib/utils';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { blockSelectionPlugin } from '@/plate/demo/plugins/blockSelectionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
 import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
@@ -92,7 +94,10 @@ import { createMyPlugins, MyValue } from '@/plate/plate.types';
 export const usePlaygroundPlugins = ({
   id,
   components = createPlateUI(),
-}: { id?: string; components?: Record<string, PlatePluginComponent> } = {}) => {
+}: {
+  id?: ValueId;
+  components?: Record<string, PlatePluginComponent>;
+} = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(
@@ -106,7 +111,9 @@ export const usePlaygroundPlugins = ({
           createCodeBlockPlugin({ enabled: !!enabled.code_block }),
           createHorizontalRulePlugin({ enabled: !!enabled.hr }),
           createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
-          createListPlugin({ enabled: !!enabled.list }),
+          createListPlugin({
+            enabled: isEnabled('list', id) || !!enabled.list,
+          }),
           createImagePlugin({ enabled: !!enabled.img }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
           createMentionPlugin({ enabled: !!enabled.mention }),
@@ -133,7 +140,13 @@ export const usePlaygroundPlugins = ({
           // Block Style
           createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
           createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
-          createIndentListPlugin({ enabled: !!enabled.listStyleType }),
+          createIndentListPlugin({
+            enabled: isEnabled('indentlist', id) || !!enabled.listStyleType,
+          }),
+          createLineHeightPlugin({
+            ...lineHeightPlugin,
+            enabled: !!enabled.lineHeight,
+          }),
 
           // Functionality
           createAutoformatPlugin({
@@ -141,8 +154,15 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.autoformat,
           }),
           createBlockSelectionPlugin({
-            ...blockSelectionPlugin,
-            enabled: !!enabled.blockSelection,
+            options: {
+              sizes: {
+                left: id === 'blockselection' ? 32 : 76,
+                top: 0,
+                right: id === 'blockselection' ? 32 : 76,
+                bottom: 0,
+              },
+            },
+            enabled: id === 'blockselection' && !!enabled.blockSelection,
           }),
           createComboboxPlugin({ enabled: !!enabled.combobox }),
           createDndPlugin({
@@ -168,7 +188,7 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.selectOnBackspace,
           }),
           createSingleLinePlugin({
-            enabled: !!enabled.singleLine,
+            enabled: id === 'singleline' || !!enabled.singleLine,
           }),
           createSoftBreakPlugin({
             ...softBreakPlugin,
@@ -180,7 +200,7 @@ export const usePlaygroundPlugins = ({
           }),
           createTrailingBlockPlugin({
             ...trailingBlockPlugin,
-            enabled: !!enabled.trailingBlock,
+            enabled: id !== 'singleline' && !!enabled.trailingBlock,
           }),
           { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
 
@@ -205,13 +225,14 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
 
   const initialValue = usePlaygroundValue(id);
+
   const plugins = usePlaygroundPlugins({
     id,
     components: createPlateUI(
       {},
       {
-        placeholder: true,
-        draggable: true,
+        placeholder: isEnabled('placeholder', id),
+        draggable: isEnabled('dnd', id),
       }
     ),
   });
@@ -231,28 +252,36 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
         <CommentsProvider>
           <div
             ref={containerRef}
-            className="relative flex w-[calc(100vw-64px)] max-w-[900px] overflow-x-scroll"
+            className={cn(
+              'relative flex max-w-[900px] overflow-x-scroll',
+              !id && 'w-[calc(100vw-64px)]'
+            )}
           >
             <Plate
               editableProps={{
                 ...editableProps,
                 className: cn(
                   editableProps.className,
-                  'min-h-[920px] w-[900px]'
+                  !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
+                  id && 'px-8 pb-8 pt-2'
                 ),
               }}
             >
               <FloatingToolbar>
-                <FloatingToolbarButtons />
+                <FloatingToolbarButtons id={id} />
               </FloatingToolbar>
 
-              <MentionCombobox items={MENTIONABLES} />
+              {isEnabled('mention', id) && (
+                <MentionCombobox items={MENTIONABLES} />
+              )}
 
-              <CursorOverlay containerRef={containerRef} />
+              {isEnabled('cursoroverlay', id) && (
+                <CursorOverlay containerRef={containerRef} />
+              )}
             </Plate>
           </div>
 
-          <CommentsPopover />
+          {isEnabled('comment', id) && <CommentsPopover />}
         </CommentsProvider>
       </PlateProvider>
 

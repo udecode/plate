@@ -54,7 +54,7 @@ const plugins = createMyPlugins(
   }
 );
 
-export default function CloudApp() {
+export default function CloudDemo() {
   return (
     <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
       <FixedToolbar>

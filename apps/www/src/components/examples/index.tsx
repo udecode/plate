@@ -8,7 +8,7 @@ import BasicMarksApp from './BasicMarksApp';
 import BasicPluginsComponentsApp from './BasicPluginsComponentsApp';
 import BasicPluginsDefaultApp from './BasicPluginsDefaultApp';
 import BlockSelectionApp from './BlockSelectionApp';
-import CloudApp from './CloudApp';
+import CloudDemo from './CloudDemo';
 import CommentsApp from './CommentsApp';
 import CursorOverlayApp from './CursorOverlayApp';
 import DndApp from './DndApp';
@@ -64,7 +64,7 @@ export const examples = {
   BasicPluginsComponentsApp,
   BasicPluginsDefaultApp,
   BlockSelectionApp,
-  CloudApp,
+  CloudDemo,
   CommentsApp,
   CursorOverlayApp,
   DndApp,

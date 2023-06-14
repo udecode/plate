@@ -40,7 +40,7 @@ export function FloatingToolbar({
     <PortalBody element={portalElement}>
       <Toolbar
         className={cn(
-          'absolute z-40 whitespace-nowrap border bg-popover opacity-100 shadow-md'
+          'absolute z-50 whitespace-nowrap border bg-popover opacity-100 shadow-md'
         )}
         ref={refs.setFloating}
         style={style}

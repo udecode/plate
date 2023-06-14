@@ -4,7 +4,7 @@ This package implements the find and replace plugin for Plate.
 
 ## Documentation
 
-Check out [Find & Replace](https://plate.udecode.io/docs/plugins/find-replace).
+Check out [Find & Replace](https://plate.udecode.io/docs/find-replace).
 
 ## API
 

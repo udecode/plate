@@ -27,11 +27,11 @@ import { tabbableValue } from './tabbableValue';
 import { tableValue } from './tableValue';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { settingValues } from '@/config/setting-values';
+import { settingValues, ValueId } from '@/config/setting-values';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 import { MyValue } from '@/plate/plate.types';
 
-export const usePlaygroundValue = (id?: string) => {
+export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();
   if (id) {
     valueId = id;
@@ -45,9 +45,9 @@ export const usePlaygroundValue = (id?: string) => {
       const newValue = settingValues[valueId].value ?? [];
 
       if (!newValue.length) {
-        return value;
+        return mapNodeId(value);
       }
-      return newValue;
+      return mapNodeId(newValue);
     }
 
     // Marks
