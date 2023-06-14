@@ -19,17 +19,19 @@ npx plate-ui add code-block-element
     <AccordionTrigger>Manual Installation</AccordionTrigger>
     <AccordionContent>
 
-      1. Install the `@udecode/code-block-element` component from plate:
+      1. Install the following dependencies:
 
-      ```bash
-      npm install @udecode/code-block-element
-      ```
+      - [Cloud](/docs/cloud)
 
       2. Copy and paste the following code into your project.
 
       - `components/plate-ui/code-block-element.tsx`
 
-      <ComponentSource src="/src/components/plate-ui/code-block-element.tsx" />
+      <ComponentSource src="/src/components/plate-ui/code-block-element/code-block-element.tsx" />
+
+      `components/plate-ui/code-block-select-element.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/code-block-select-element.tsx" />
 
     </AccordionContent>
 
@@ -38,8 +40,20 @@ npx plate-ui add code-block-element
 
 ## Usage
 
+
 ```tsx
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import {
+  CodeBlockElement,
+} from '@/components/plate-ui/code-Block-element';
 ```
 
 ```tsx
+createPlugins([
+  createCodeBlockPlugin(),
+], {
+  components: {
+    [ELEMENT_CODE_LINE]: CodeBlockElement,
+  }
+})
 ```

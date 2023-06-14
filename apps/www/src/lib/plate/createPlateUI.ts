@@ -57,6 +57,7 @@ import { CodeLeaf } from '@/components/plate-ui/code-leaf';
 import { CodeLineElement } from '@/components/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
 import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
+import { withDraggables } from '@/components/plate-ui/draggables/with-draggables';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
@@ -69,14 +70,13 @@ import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
 import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
+import { placeholders } from '@/components/plate-ui/placeholders';
 import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
 import { TableCellElement } from '@/components/plate-ui/table-cell-element/table-cell-element';
 import { TableCellHeaderElement } from '@/components/plate-ui/table-cell-element/table-cell-header-element';
 import { TableElement } from '@/components/plate-ui/table-element/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
-import { withDraggables } from '@/components/plate-ui/with-draggables/with-draggables';
-import { withPlaceHolders } from '@/components/plate-ui/with-placeHolders';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<
@@ -134,7 +134,7 @@ export const createPlateUI = <T extends string = string>(
   }
 
   if (placeholder) {
-    components = withPlaceHolders(components);
+    components = placeholders(components);
   }
   if (draggable) {
     components = withDraggables(components);
