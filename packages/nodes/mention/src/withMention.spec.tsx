@@ -146,6 +146,7 @@ describe('withMention', () => {
 
       expect(editor.children).toEqual([
         <hp>
+          <htext />
           <hmentioninput trigger={trigger}>
             <htext />
             <cursor />
