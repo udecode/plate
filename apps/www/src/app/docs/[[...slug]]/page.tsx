@@ -108,13 +108,13 @@ export default async function DocPage({ params }: DocPageProps) {
           )}
         </div>
         {doc.radix || doc.docs ? (
-          <div className="flex items-center space-x-2 pt-4">
+          <div className="flex flex-wrap items-center gap-1 pt-4">
             {doc.radix?.shadcn && (
               <Link
                 href={doc.radix.shadcn}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
               >
                 shadcn/ui
               </Link>
@@ -124,7 +124,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.link}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
               >
                 <Icons.radix className="mr-1 h-3 w-3" />
                 Radix UI
@@ -135,7 +135,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.api}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
               >
                 API Reference
               </Link>
@@ -144,7 +144,7 @@ export default async function DocPage({ params }: DocPageProps) {
               <Link
                 key={item.route}
                 href={item.route as any}
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
               >
                 {item.title}
               </Link>
