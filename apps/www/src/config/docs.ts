@@ -624,6 +624,12 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
+          title: 'Search Highlight',
+          href: '/docs/components/search-highlight-leaf',
+          items: [],
+          label: 'Leaf',
+        },
+        {
           title: 'Separator',
           href: '/docs/components/separator',
           items: [],
