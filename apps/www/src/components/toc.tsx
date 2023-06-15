@@ -28,6 +28,7 @@ export function DashboardTableOfContents({ toc }: TocProps) {
     [toc]
   );
   const activeHeading = useActiveItem(itemIds);
+  console.log(itemIds, activeHeading);
   const mounted = useMounted();
 
   if (!toc?.items || !mounted) {
@@ -50,6 +51,7 @@ function useActiveItem(itemIds: string[]) {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            console.log(entry.target.id);
             setActiveId(entry.target.id);
           }
         });
@@ -59,6 +61,7 @@ function useActiveItem(itemIds: string[]) {
 
     itemIds?.forEach((id) => {
       const element = document.getElementById(id);
+
       if (element) {
         observer.observe(element);
       }

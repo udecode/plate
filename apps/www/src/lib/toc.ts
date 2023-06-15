@@ -69,7 +69,10 @@ const getToc = () => (node, file) => {
   file.data = getItems(table.map, {});
 };
 
-export type TableOfContents = Items;
+export type TableOfContents = {
+  items?: Item[];
+  isAPI?: boolean;
+};
 
 export async function getTableOfContents(
   content: string
@@ -78,3 +81,26 @@ export async function getTableOfContents(
 
   return result.data;
 }
+
+export const getAPITableOfContents = (content: string): TableOfContents => {
+  const categories = content.split(/name="([^"]*)"/g).filter((_, i) => i > 0); // we ignore the first element because it's the part of the string before the first category
+
+  const result: TableOfContents = { items: [], isAPI: true };
+
+  for (let i = 0; i < categories.length; i += 2) {
+    const category = categories[i];
+    const itemsStr = categories[i + 1];
+
+    const names = Array.from(itemsStr.matchAll(/name: '([^']*)'/g), (m) => ({
+      name: m[1],
+    }));
+
+    result.items.push({
+      title: category,
+      url: `#${category}`,
+      items: names.map((n) => ({ title: n.name, url: `#${n.name}` })),
+    });
+  }
+
+  return result;
+};
