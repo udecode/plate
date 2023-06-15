@@ -33,7 +33,7 @@ export const Placeholder = (props: PlaceholderProps) => {
 export const withPlaceholder = createNodeHOC(Placeholder);
 export const withPlaceholdersPrimitive = createNodesHOC(Placeholder);
 
-export const placeholders = (components: any) =>
+export const withPlaceholders = (components: any) =>
   withPlaceholdersPrimitive(components, [
     {
       key: ELEMENT_PARAGRAPH,

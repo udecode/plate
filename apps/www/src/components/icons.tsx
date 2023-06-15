@@ -120,6 +120,7 @@ export const Icons = {
   dependency: Link,
   conflict: Unlink,
   link: Link2,
+  pragma: Link,
   indent: Indent,
   outdent: Outdent,
   bold: Bold,

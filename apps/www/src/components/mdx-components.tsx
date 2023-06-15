@@ -11,7 +11,9 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
+import { APIList } from './api-list';
 import { Callout } from './callout';
+import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
@@ -198,15 +200,7 @@ const components = {
       </>
     );
   },
-  code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
-    <code
-      className={cn(
-        'relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm',
-        className
-      )}
-      {...props}
-    />
-  ),
+  code: Code,
   Image,
   Callout,
   ComponentExample,
@@ -223,6 +217,7 @@ const components = {
       {...props}
     />
   ),
+  APIList,
   ...examples,
 };
 

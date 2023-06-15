@@ -70,7 +70,7 @@ import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
 import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
-import { placeholders } from '@/components/plate-ui/placeholders';
+import { withPlaceholders } from '@/components/plate-ui/placeholders';
 import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
 import { TableCellElement } from '@/components/plate-ui/table-cell-element/table-cell-element';
 import { TableCellHeaderElement } from '@/components/plate-ui/table-cell-element/table-cell-header-element';
@@ -134,7 +134,7 @@ export const createPlateUI = <T extends string = string>(
   }
 
   if (placeholder) {
-    components = placeholders(components);
+    components = withPlaceholders(components);
   }
   if (draggable) {
     components = withDraggables(components);

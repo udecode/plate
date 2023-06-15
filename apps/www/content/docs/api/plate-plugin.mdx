@@ -5,7 +5,94 @@ description: PlatePlugin API.
 
 - [Plugins guide](/docs/plugins)
 
-## `PlatePlugin`
+<APIList
+  name="PlatePlugin"
+  type="object"
+  description={
+    <div>
+      Plate plugins are objects passed to <code>Plate</code>{' '}
+      <a href="/docs/plate#plugins">plugins</a> prop.
+    </div>
+  }
+  returns="A <code>PlatePlugin</code> object."
+  data={[
+    {
+      name: 'asChild',
+      required: false,
+      type: 'boolean',
+      default: 'false',
+      description: (
+        <>
+          Change the default rendered element for the one passed as a child,
+          merging their props and behavior.
+          <br />
+          <br />
+          Read our <a href="../guides/composition">Composition</a> guide for more
+          details.
+        </>
+      ),
+    },
+    {
+      name: 'defaultChecked',
+      type: 'boolean',
+      description:
+        'The checked state of the checkbox when it is initially rendered. Use when you do not need to control its checked state.',
+    },
+    {
+      name: 'checked',
+      type: 'boolean',
+      description: (
+        <span>
+          The controlled checked state of the checkbox. Must be used in
+          conjunction with <code>onCheckedChange</code>.
+        </span>
+      ),
+    },
+    {
+      name: 'onCheckedChange',
+      type: `(checked: boolean | 'indeterminate') => void`,
+      typeSimple: 'function',
+      description:
+        'Event handler called when the checked state of the checkbox changes.',
+    },
+    {
+      name: 'disabled',
+      type: 'boolean',
+      description: (
+        <span>
+          When <code>true</code>, prevents the user from interacting with the
+          checkbox.
+        </span>
+      ),
+    },
+    {
+      name: 'required',
+      type: 'boolean',
+      description: (
+        <span>
+          When <code>true</code>, indicates that the user must check the
+          checkbox before the owning form can be submitted.
+        </span>
+      ),
+    },
+    {
+      name: 'name',
+      type: 'string',
+      description:
+        'The name of the checkbox. Submitted with its owning form as part of a name/value pair.',
+    },
+    {
+      name: 'value',
+      type: 'string',
+      default: 'on',
+      description: (
+        <span>
+          The value given as data when submitted with a <code>name</code>.
+        </span>
+      ),
+    },
+  ]}
+/>
 
 ### `key`
 

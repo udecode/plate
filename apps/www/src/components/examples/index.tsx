@@ -13,7 +13,6 @@ import MultipleEditorsDemo from './MultipleEditorsDemo';
 import PlateApp from './PlateApp';
 import { PlaygroundDemo } from './PlaygroundDemo';
 import PreviewMdDemo from './PreviewMdDemo';
-import { ToolbarDemo } from './ToolbarDemo';
 
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 
@@ -32,7 +31,6 @@ export const examples = {
   MultipleEditorsDemo,
   PlateApp,
   PlaygroundDemo,
-  ToolbarDemo,
   usePlaygroundValue,
   PreviewMdDemo,
 };

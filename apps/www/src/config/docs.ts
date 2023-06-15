@@ -285,7 +285,7 @@ export const docsConfig: DocsConfig = {
       items: [
         {
           title: 'Plate',
-          href: '/docs/plate',
+          href: '/docs/api/plate',
           items: [],
         },
         {
