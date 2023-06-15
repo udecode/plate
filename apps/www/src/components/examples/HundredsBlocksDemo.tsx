@@ -51,7 +51,7 @@ function WithoutPlate() {
   );
 }
 
-export default function HugeDocumentApp() {
+export default function HundredsBlocksDemo() {
   return (
     <div className="flex">
       <WithPlate />

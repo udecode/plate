@@ -45,12 +45,12 @@ function WithPlate({ initialValue, id }: any) {
 // }
 
 const styles = {
-  wrapper: { border: '1px solid cyan', marginBottom: '20px' },
+  wrapper: { border: '1px solid black', marginBottom: '20px', padding: 4 },
 };
 
-export default function MultiEditorsApp() {
+export default function HundredsEditorsDemo() {
   return (
-    <div className="flex">
+    <div className="flex flex-col">
       {initialValues.map((initialValue, idx) => {
         return (
           <div style={styles.wrapper} key={idx}>

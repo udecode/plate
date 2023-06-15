@@ -107,17 +107,17 @@ export default async function DocPage({ params }: DocPageProps) {
             </p>
           )}
         </div>
-        {doc.radix ? (
+        {doc.radix || doc.docs ? (
           <div className="flex items-center space-x-2 pt-4">
-            {doc.radix?.link && (
+            {doc.radix?.shadcn && (
               <Link
-                href={doc.radix.link}
+                href={doc.radix.shadcn}
                 target="_blank"
                 rel="noreferrer"
                 className={cn(badgeVariants({ variant: 'secondary' }))}
               >
-                <Icons.radix className="mr-1 h-3 w-3" />
-                Radix UI
+                <Icons.circle className="mr-1 h-3 w-3" />
+                shadcn/ui
               </Link>
             )}
             {doc.radix?.api && (
@@ -130,6 +130,15 @@ export default async function DocPage({ params }: DocPageProps) {
                 API Reference
               </Link>
             )}
+            {doc.docs?.map((item) => (
+              <Link
+                key={item.route}
+                href={item.route as any}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
+              >
+                {item.title}
+              </Link>
+            ))}
           </div>
         ) : null}
         <Separator className="my-4 md:my-6" />

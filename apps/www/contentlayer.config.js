@@ -29,10 +29,25 @@ const computedFields = {
 const RadixProperties = defineNestedType(() => ({
   name: 'RadixProperties',
   fields: {
+    shadcn: {
+      type: 'string',
+    },
     link: {
       type: 'string',
     },
     api: {
+      type: 'string',
+    },
+  },
+}));
+
+const DocProperties = defineNestedType(() => ({
+  name: 'DocProperties',
+  fields: {
+    route: {
+      type: 'string',
+    },
+    title: {
       type: 'string',
     },
   },
@@ -58,6 +73,10 @@ export const Doc = defineDocumentType(() => ({
     radix: {
       type: 'nested',
       of: RadixProperties,
+    },
+    docs: {
+      type: 'list',
+      of: DocProperties,
     },
     featured: {
       type: 'boolean',

@@ -15,7 +15,7 @@ function Editor(props: PlateProps<MyValue>) {
   return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;
 }
 
-export default function MultipleEditorsApp() {
+export default function MultipleEditorsDemo() {
   return (
     <PlateProvider<MyValue>
       plugins={basicNodesPlugins}

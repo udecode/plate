@@ -1,3 +1,3 @@
-import App from '@/components/examples/MultiEditorsApp';
+import App from '@/components/examples/HundredsEditorsDemo';
 
 export default App;

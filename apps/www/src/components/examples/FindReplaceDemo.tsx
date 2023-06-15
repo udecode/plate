@@ -57,7 +57,7 @@ export function SearchHighlightToolbar({
   );
 }
 
-export default function FindReplaceApp() {
+export default function FindReplaceDemo() {
   const [search, setSearch] = useState('');
 
   const plugins = useMemo(

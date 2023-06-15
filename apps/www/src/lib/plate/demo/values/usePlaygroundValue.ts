@@ -17,6 +17,7 @@ import { highlightValue } from './highlightValue';
 import { horizontalRuleValue } from './horizontalRuleValue';
 import { indentListValue } from './indentListValue';
 import { indentValue } from './indentValue';
+import { kbdValue } from './kbdValue';
 import { lineHeightValue } from './lineHeightValue';
 import { linkValue } from './linkValue';
 import { listValue, todoListValue } from './listValue';
@@ -53,6 +54,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
+    if (enabled.kbd) value.push(...kbdValue);
 
     // Inline nodes
     if (enabled.a) value.push(...linkValue);
@@ -110,6 +112,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.hr,
     enabled.img,
     enabled.indent,
+    enabled.kbd,
     enabled.lineHeight,
     enabled.list,
     enabled.listStyleType,

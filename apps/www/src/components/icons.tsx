@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Circle,
   ClipboardCheck,
   Code2,
   Copy,
@@ -90,12 +91,12 @@ import { Logo } from './icons/Logo';
 export type Icon = LucideIcon;
 
 export const Icons = {
-  // plate
   paragraph: Pilcrow,
   arrowDown: ChevronDown,
   delete: Trash,
   editing: Edit2,
   info: Info,
+  circle: Circle,
   chevronsUpDown: ChevronsUpDown,
   attachment: Paperclip,
   suggesting: Edit3,
@@ -236,7 +237,6 @@ export const Icons = {
     </svg>
   ),
 
-  // www
   close: X,
   spinner: Loader2,
   chevronLeft: ChevronLeft,

@@ -6,6 +6,7 @@ import {
   createUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createPlugins, Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
@@ -17,6 +18,7 @@ const plugins = createPlugins<MyValue>(
   [
     createParagraphPlugin(),
     createBlockquotePlugin(),
+    createCodeBlockPlugin(),
     createHeadingPlugin(),
 
     createBoldPlugin(),
@@ -37,6 +39,9 @@ export default function BasicPluginsComponentsDemo() {
         spellCheck: false,
         autoFocus: false,
         placeholder: 'Type…',
+        style: {
+          outline: 'none',
+        },
       }}
       initialValue={basicEditorValue}
       plugins={plugins}
@@ -49,91 +54,28 @@ export const basicEditorValue: MyValue = [
     type: 'h1',
     children: [
       {
-        text: '🧱 Elements',
+        text: '🌳 Blocks',
       },
     ],
     id: '1',
   },
   {
-    type: 'h2',
+    type: 'p',
     children: [
       {
-        text: '🔥 Basic Elements',
+        text: 'Easily create headings of various levels, from H1 to H6, to structure your content and make it more organized.',
       },
     ],
     id: '2',
   },
   {
-    type: 'p',
-    children: [
-      {
-        text: 'These are the most common elements, known as blocks:',
-      },
-    ],
-    id: '3',
-  },
-  {
-    type: 'h1',
-    children: [
-      {
-        text: 'Heading 1',
-      },
-    ],
-    id: '4',
-  },
-  {
-    type: 'h2',
-    children: [
-      {
-        text: 'Heading 2',
-      },
-    ],
-    id: '5',
-  },
-  {
-    type: 'h3',
-    children: [
-      {
-        text: 'Heading 3',
-      },
-    ],
-    id: '6',
-  },
-  {
-    type: 'h4',
-    children: [
-      {
-        text: 'Heading 4',
-      },
-    ],
-    id: '7',
-  },
-  {
-    type: 'h5',
-    children: [
-      {
-        text: 'Heading 5',
-      },
-    ],
-    id: '8',
-  },
-  {
-    type: 'h6',
-    children: [
-      {
-        text: 'Heading 6',
-      },
-    ],
-    id: '9',
-  },
-  {
     type: 'blockquote',
     children: [
       {
-        text: 'Blockquote',
+        text: 'Create blockquotes to emphasize important information or highlight quotes from external sources.',
       },
     ],
-    id: '10',
+    id: '3',
   },
   {
     type: 'code_block',
@@ -143,7 +85,7 @@ export const basicEditorValue: MyValue = [
         type: 'code_line',
         children: [
           {
-            text: "const a = 'Hello';",
+            text: '// Use code blocks to showcase code snippets',
           },
         ],
       },
@@ -151,99 +93,139 @@ export const basicEditorValue: MyValue = [
         type: 'code_line',
         children: [
           {
-            text: "const b = 'World';",
+            text: 'function greet() {',
+          },
+        ],
+      },
+      {
+        type: 'code_line',
+        children: [
+          {
+            text: "  console.info('Hello World!');",
+          },
+        ],
+      },
+      {
+        type: 'code_line',
+        children: [
+          {
+            text: '}',
           },
         ],
       },
     ],
-    id: '11',
+    id: '4',
   },
   {
     type: 'h1',
     children: [
       {
-        text: '💅 Marks',
+        text: '🌱 Marks',
       },
     ],
-  },
-  {
-    type: 'h2',
-    children: [
-      {
-        text: '💧 Basic Marks',
-      },
-    ],
+    id: '1',
   },
   {
     type: 'p',
     children: [
       {
-        text: 'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.',
+        text: 'Add style and emphasis to your text using the mark plugins, which offers a variety of formatting options.',
       },
     ],
+    id: '2',
   },
   {
     type: 'p',
     children: [
       {
-        text: 'You can customize the type, the component and the hotkey for each of these.',
+        text: 'Make text ',
       },
-    ],
-  },
-  {
-    type: 'p',
-    children: [
       {
-        text: 'This text is bold.',
+        text: 'bold',
         bold: true,
       },
-    ],
-  },
-  {
-    type: 'p',
-    children: [
       {
-        text: 'This text is italic.',
+        text: ', ',
+      },
+      {
+        text: 'italic',
         italic: true,
       },
-    ],
-  },
-  {
-    type: 'p',
-    children: [
       {
-        text: 'This text is underlined.',
+        text: ', ',
+      },
+      {
+        text: 'underlined',
         underline: true,
       },
-    ],
-  },
-  {
-    type: 'p',
-    children: [
       {
-        text: 'This text is bold, italic and underlined.',
+        text: ', or apply a ',
+      },
+      {
+        text: 'combination',
         bold: true,
         italic: true,
         underline: true,
       },
+      {
+        text: ' of these styles for a visually striking effect.',
+      },
     ],
+    id: '3',
   },
   {
     type: 'p',
     children: [
       {
-        text: 'This is a strikethrough text.',
+        text: 'Add ',
+      },
+      {
+        text: 'strikethrough',
         strikethrough: true,
       },
+      {
+        text: ' to indicate deleted or outdated content.',
+      },
     ],
+    id: '4',
   },
   {
     type: 'p',
     children: [
       {
-        text: 'This is an inline code.',
+        text: 'Write code snippets with inline ',
+      },
+      {
+        text: 'code',
         code: true,
       },
+      {
+        text: ' formatting for easy readability.',
+      },
     ],
+    id: '5',
+  },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Press ',
+      },
+      {
+        text: '⌘+B',
+        kbd: true,
+      },
+      {
+        text: ' to apply bold mark or ',
+      },
+      {
+        text: '⌘+I',
+        kbd: true,
+      },
+      {
+        text: ' for italic mark.',
+      },
+    ],
+    id: '6',
   },
 ];

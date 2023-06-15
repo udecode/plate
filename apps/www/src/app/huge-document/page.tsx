@@ -1,3 +1,3 @@
-import App from '@/components/examples/HugeDocumentApp';
+import App from '@/components/examples/HundredsBlocksDemo';
 
 export default App;

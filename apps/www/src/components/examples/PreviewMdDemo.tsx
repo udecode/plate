@@ -107,7 +107,7 @@ const _editableProps = {
   renderLeaf: PreviewLeaf,
 };
 
-export default function PreviewMdApp() {
+export default function PreviewMdDemo() {
   return (
     <Plate<MyValue>
       editableProps={_editableProps}

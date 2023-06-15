@@ -109,7 +109,7 @@ const plugins = createMyPlugins(
   }
 );
 
-export default function EditableVoidsApp() {
+export default function EditableVoidsDemo() {
   return (
     <Plate<MyValue>
       editableProps={editableProps}

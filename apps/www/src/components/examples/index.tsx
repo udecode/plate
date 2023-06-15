@@ -4,19 +4,17 @@ import BasicEditorValueDemo from './BasicEditorValueDemo';
 import BasicPluginsComponentsDemo from './BasicPluginsComponentsDemo';
 import BasicPluginsDefaultDemo from './BasicPluginsDefaultDemo';
 import CloudDemo from './CloudDemo';
-import EditableVoidsApp from './EditableVoidsApp';
-import FindReplaceApp from './FindReplaceApp';
-import HugeDocumentApp from './HugeDocumentApp';
-import IframeApp from './IframeApp';
-import KbdApp from './KbdApp';
-import MultiEditorsApp from './MultiEditorsApp';
-import MultipleEditorsApp from './MultipleEditorsApp';
+import EditableVoidsDemo from './EditableVoidsDemo';
+import FindReplaceDemo from './FindReplaceDemo';
+import HundredsBlocksDemo from './HundredsBlocksDemo';
+import HundredsEditorsDemo from './HundredsEditorsDemo';
+import IframeDemo from './IframeDemo';
+import MultipleEditorsDemo from './MultipleEditorsDemo';
 import PlateApp from './PlateApp';
 import { PlaygroundDemo } from './PlaygroundDemo';
-import PreviewMdApp from './PreviewMdApp';
+import PreviewMdDemo from './PreviewMdDemo';
 import { ToolbarDemo } from './ToolbarDemo';
 
-import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 
 export const examples = {
@@ -26,17 +24,15 @@ export const examples = {
   BasicPluginsComponentsDemo,
   BasicPluginsDefaultDemo,
   CloudDemo,
-  EditableVoidsApp,
-  FindReplaceApp,
-  HugeDocumentApp,
-  IframeApp,
-  KbdApp,
-  MultiEditorsApp,
-  MultipleEditorsApp,
+  EditableVoidsDemo,
+  FindReplaceDemo,
+  HundredsBlocksDemo,
+  IframeDemo,
+  HundredsEditorsDemo,
+  MultipleEditorsDemo,
   PlateApp,
   PlaygroundDemo,
   ToolbarDemo,
   usePlaygroundValue,
-  PreviewMdApp,
-  FixedToolbarButtons,
+  PreviewMdDemo,
 };

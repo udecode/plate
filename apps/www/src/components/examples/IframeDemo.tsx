@@ -4,7 +4,7 @@ import { Plate } from '@udecode/plate-common';
 import {
   createEditableVoidPlugin,
   EditableVoidElement,
-} from './EditableVoidsApp';
+} from './EditableVoidsDemo';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
@@ -39,7 +39,7 @@ export function IFrame({ children, ...props }: any) {
   );
 }
 
-export default function IframeApp() {
+export default function IframeDemo() {
   return (
     <IFrame>
       <Plate<MyValue>

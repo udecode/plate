@@ -29,7 +29,7 @@ export const docsConfig: DocsConfig = {
   ],
   sidebarNav: [
     {
-      title: 'Getting Started',
+      title: 'Overview',
       items: [
         {
           title: 'Introduction',
@@ -37,8 +37,8 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Installation',
-          href: '/docs/installation',
+          title: 'Getting Started',
+          href: '/docs/getting-started',
           items: [],
         },
         {
@@ -66,11 +66,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/plugin-components',
           items: [],
         },
-        // {
-        //   title: 'Multiple Editors',
-        //   href: '/docs/multiple-editors',
-        //   items: [],
-        // },
         {
           title: 'Typescript',
           href: '/docs/typescript',
@@ -256,6 +251,36 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
+      title: 'Examples',
+      items: [
+        {
+          title: 'Editable Voids',
+          href: '/docs/examples/editable-voids',
+          items: [],
+        },
+        {
+          title: 'Hundreds Blocks',
+          href: '/docs/examples/hundreds-blocks',
+          items: [],
+        },
+        {
+          title: 'Hundreds Editors',
+          href: '/docs/examples/hundreds-editors',
+          items: [],
+        },
+        {
+          title: 'IFrame',
+          href: '/docs/examples/iframe',
+          items: [],
+        },
+        {
+          title: 'Preview Markdown',
+          href: '/docs/examples/preview-markdown',
+          items: [],
+        },
+      ],
+    },
+    {
       title: 'API',
       items: [
         {
@@ -275,11 +300,6 @@ export const docsConfig: DocsConfig = {
         },
       ],
     },
-    // {
-    //   title: 'Community',
-    //   items: [
-    //   ],
-    // },
   ],
   componentsNav: [
     {
