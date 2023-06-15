@@ -1,6 +1,7 @@
 ---
 title: Font
 description: Provide extended formatting options for document content.
+docs:
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -35,14 +36,17 @@ import {
   createFontSizePlugin,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createFontColorPlugin(),
-  createFontBackgroundColorPlugin(),
-  createFontSizePlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createFontColorPlugin(),
+    createFontBackgroundColorPlugin(),
+    createFontSizePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 ### Source Code
