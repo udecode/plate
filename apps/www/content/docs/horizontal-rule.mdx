@@ -1,6 +1,9 @@
 ---
 title: Horizontal Rule
 description: Insert horizontal lines.
+docs:
+  - route: /docs/components/hr-element
+    title: Hr Element
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -17,11 +20,11 @@ Use this plugin to render a `<hr>` HTML tag.
 
 Type three dashes (`---`) at the beginning of a new line and it will magically transform to a horizontal rule.
 
-[//]: # (Type three dashes &#40;`---`&#41; or three underscores and a space &#40;`___ `&#41; at the beginning of a new line and it will magically transform to a horizontal rule.)
+[//]: # 'Type three dashes (`---`) or three underscores and a space (`___ `) at the beginning of a new line and it will magically transform to a horizontal rule.'
 
 To add a horizontal rule in the provided demo, type three dashes (**`---`**), and it will automatically transform into a horizontal line.
 
-[//]: # (To add a horizontal rule in the provided demo, type three dashes &#40;**`---`**&#41; or three underscores followed by a space &#40;**`___`** &#41; at the beginning of a new line, and it will automatically transform into a horizontal line.)
+[//]: # 'To add a horizontal rule in the provided demo, type three dashes (**`---`**) or three underscores followed by a space (**`___`** ) at the beginning of a new line, and it will automatically transform into a horizontal line.'
 
 ### Installation
 
@@ -40,38 +43,40 @@ import {
   ELEMENT_DEFAULT,
   ELEMENT_HR,
   setNodes,
-  insertNodes
+  insertNodes,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createHorizontalRulePlugin(),
-  createSelectOnBackspacePlugin({
-    options: { query: { allow: [ELEMENT_HR] } },
-  }),
-  createAutoformatPlugin({
-    options: {
-      rules: [
-        {
-          mode: 'block',
-          type: ELEMENT_HR,
-          match: ['---', '—-', '___ '],
-          format: (editor) => {
-            setNodes(editor, { type: ELEMENT_HR });
-            insertNodes(editor, {
-              type: ELEMENT_DEFAULT,
-              children: [{ text: '' }],
-            });
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHorizontalRulePlugin(),
+    createSelectOnBackspacePlugin({
+      options: { query: { allow: [ELEMENT_HR] } },
+    }),
+    createAutoformatPlugin({
+      options: {
+        rules: [
+          {
+            mode: 'block',
+            type: ELEMENT_HR,
+            match: ['---', '—-', '___ '],
+            format: (editor) => {
+              setNodes(editor, { type: ELEMENT_HR });
+              insertNodes(editor, {
+                type: ELEMENT_DEFAULT,
+                children: [{ text: '' }],
+              });
+            },
           },
-        },
-      ],
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+        ],
+      },
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
-
 
 ### Source Code
 

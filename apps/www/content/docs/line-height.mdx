@@ -1,6 +1,9 @@
 ---
 title: Line Height
 description: Adjust the height between lines of text.
+docs:
+  - route: /docs/components/line-height-dropdown-menu
+    title: Line Height Dropdown Menu
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -26,12 +29,15 @@ npm install @udecode/plate-line-height
 ```tsx
 import { createLineHeightPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createLineHeightPlugin(lineHeightPlugin),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createLineHeightPlugin(lineHeightPlugin),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 ### Source Code

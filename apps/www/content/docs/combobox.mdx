@@ -1,6 +1,13 @@
 ---
 title: Combobox
 description: Select options from a predefined list.
+docs:
+  - route: /docs/components/combobox
+    title: Combobox
+  - route: /docs/components/emoji-combobox
+    title: Emoji Combobox
+  - route: /docs/components/mention-combobox
+    title: Mention Combobox
 ---
 
 ### Features
@@ -23,13 +30,16 @@ npm install @udecode/plate-combobox
 ```tsx
 import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createMentionPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createComboboxPlugin(),
+    createMentionPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Combobox Store
@@ -101,6 +111,7 @@ export interface ComboboxItemData {
 `onChange`:
 
 #### For each combobox state:
+
 - if the selection is collapsed
 - if the cursor follows the trigger
 - if there is text without whitespaces after the trigger
@@ -109,6 +120,7 @@ export interface ComboboxItemData {
 #### `onKeyDown`
 
 If the combobox is open, handle:
+
 - down (next item)
 - up (previous item)
 - escape (reset combobox)

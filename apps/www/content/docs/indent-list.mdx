@@ -1,6 +1,9 @@
 ---
 title: Indent List
 description: Turn any block into a list item. Alternative to List.
+docs:
+  - route: /docs/components/indent-list-toolbar-button
+    title: Indent List Toolbar Button
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -38,33 +41,35 @@ import {
   createIndentPlugin,
   createIndentListPlugin,
   ELEMENT_H1,
-  ELEMENT_PARAGRAPH
+  ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createHeadingPlugin(),
-  createParagraphPlugin(),
-  createIndentListPlugin({
-    inject: {
-      props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHeadingPlugin(),
+    createParagraphPlugin(),
+    createIndentListPlugin({
+      inject: {
+        props: {
+          validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+        },
       },
-    },
-  }),
-  createIndentPlugin({
-    inject: {
-      props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+    }),
+    createIndentPlugin({
+      inject: {
+        props: {
+          validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+        },
       },
-    },
-  }),
-  createResetNodePlugin(),
-], {
-  components: createPlateUI(),
-});
+    }),
+    createResetNodePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
-
 
 #### Commands
 

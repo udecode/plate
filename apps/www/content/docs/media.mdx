@@ -1,6 +1,15 @@
 ---
 title: Media
 description: Embed medias like videos or tweets into your document.
+docs:
+  - route: /docs/components/image-element
+    title: Image Element
+  - route: /docs/components/media-embed-element
+    title: Media Embed Element
+  - route: /docs/components/media-floating-toolbar
+    title: Media Floating Toolbar
+  - route: /docs/components/media-toolbar-button
+    title: Media Toolbar Button
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -40,22 +49,31 @@ npm install @udecode/plate-media
 ### Plugins
 
 ```tsx
-import { createImagePlugin, createMediaEmbedPlugin, createSelectOnBackspacePlugin, ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate';
+import {
+  createImagePlugin,
+  createMediaEmbedPlugin,
+  createSelectOnBackspacePlugin,
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+} from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createImagePlugin(),
-  createMediaEmbedPlugin(),
-  createSelectOnBackspacePlugin({
-    options: {
-      query: {
-        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createImagePlugin(),
+    createMediaEmbedPlugin(),
+    createSelectOnBackspacePlugin({
+      options: {
+        query: {
+          allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+        },
       },
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options

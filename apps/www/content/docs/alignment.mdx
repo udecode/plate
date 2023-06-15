@@ -1,6 +1,9 @@
 ---
-title : Alignment
+title: Alignment
 description: Align your content to different positions.
+docs:
+  - route: /docs/components/align-dropdown-menu
+    title: Align Dropdown Menu
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -34,30 +37,31 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  ...basicNodesPlugins,
-  createAlignPlugin({
-    inject: {
-      props: {
-        validTypes: [
-          ELEMENT_PARAGRAPH,
-          ELEMENT_H1,
-          ELEMENT_H2,
-          ELEMENT_H3,
-          ELEMENT_H4,
-          ELEMENT_H5,
-          ELEMENT_H6,
-        ],
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    ...basicNodesPlugins,
+    createAlignPlugin({
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1,
+            ELEMENT_H2,
+            ELEMENT_H3,
+            ELEMENT_H4,
+            ELEMENT_H5,
+            ELEMENT_H6,
+          ],
+        },
       },
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
-
-
 
 ### Source Code
 

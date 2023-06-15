@@ -1,6 +1,9 @@
 ---
 title: Excalidraw
 description: Create drawings and diagrams as block nodes.
+docs:
+  - route: /docs/components/excalidraw
+    title: Excalidraw
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -21,7 +24,11 @@ npm install @udecode/plate-excalidraw
 
 ```tsx
 import { createSelectOnBackspacePlugin } from '@udecode/plate';
-import { createExcalidrawPlugin, ExcalidrawElement, ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
+import {
+  createExcalidrawPlugin,
+  ExcalidrawElement,
+  ELEMENT_EXCALIDRAW,
+} from '@udecode/plate-excalidraw';
 
 const plugins = createPlugins([
   // ...basicNodesPlugins,

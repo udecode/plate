@@ -1,6 +1,13 @@
 ---
 title: Mention
 description: Enable autocompletion for user mentions.
+docs:
+  - route: /docs/components/mention-combobox
+    title: Mention Combobox
+  - route: /docs/components/mention-element
+    title: Mention Element
+  - route: /docs/components/mention-input-element
+    title: Mention Input Element
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -28,7 +35,7 @@ npm install @udecode/plate-mention
 ### Usage
 
 ```tsx
-import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate'
+import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
 
 const plugins = createPlugins(
   [
@@ -39,17 +46,17 @@ const plugins = createPlugins(
   {
     components: createPlateUI(),
   }
-)
+);
 ```
 
 #### Options
 
 ```ts
 interface MentionPlugin<TData extends Data = NoData> {
-  createMentionNode?: CreateMentionNode<TData>
-  id?: string
-  insertSpaceAfterMention?: boolean
-  trigger?: string
+  createMentionNode?: CreateMentionNode<TData>;
+  id?: string;
+  insertSpaceAfterMention?: boolean;
+  trigger?: string;
 }
 ```
 

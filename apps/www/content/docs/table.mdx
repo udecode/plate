@@ -1,6 +1,15 @@
 ---
 title: Table
 description: Organize and display data in a structured and resizable tabular format.
+docs:
+  - route: /docs/components/table-cell-element
+    title: Table Cell Element
+  - route: /docs/components/table-dropdown-menu
+    title: Table Dropdown Menu
+  - route: /docs/components/table-element
+    title: Table Element
+  - route: /docs/components/table-row-element
+    title: Table Row Element
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -35,16 +44,19 @@ npm install @udecode/plate-table
 ```tsx
 import { createTablePlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createTablePlugin({
-    options: {
-      initialTableWidth: 600,
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTablePlugin({
+      options: {
+        initialTableWidth: 600,
+      },
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 ### Source Code
