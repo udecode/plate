@@ -402,13 +402,13 @@ export const docsConfig: DocsConfig = {
           label: 'Leaf',
         },
         {
-          title: 'Comments Popover',
-          href: '/docs/components/comments-popover',
+          title: 'Comment Toolbar Button',
+          href: '/docs/components/comment-toolbar-button',
           items: [],
         },
         {
-          title: 'Comment Toolbar Button',
-          href: '/docs/components/comment-toolbar-button',
+          title: 'Comments Popover',
+          href: '/docs/components/comments-popover',
           items: [],
         },
         {

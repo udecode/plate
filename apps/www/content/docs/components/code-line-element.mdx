@@ -2,11 +2,14 @@
 title: Code Line Element
 description: Code line component for code block plugin.
 component: true
+docs:
+  - route: /docs/basic-elements
+    title: Code Block
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
 ## Installation
 
@@ -38,17 +41,13 @@ npx plate-ui add code-line-element
 
 ```tsx
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import {
-  codeLineElement,
-} from '@/components/plate-ui/code-line-element';
+import { codeLineElement } from '@/components/plate-ui/code-line-element';
 ```
 
 ```tsx
-createPlugins([
-  createCodeBlockPlugin(),
-], {
+createPlugins([createCodeBlockPlugin()], {
   components: {
     [ELEMENT_CODE_LINE]: CodeLineElement,
-  }
-})
+  },
+});
 ```

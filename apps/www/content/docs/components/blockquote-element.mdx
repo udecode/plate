@@ -2,11 +2,14 @@
 title: Blockquote Element
 description: Blockquote Element
 component: true
+docs:
+  - route: /docs/basic-elements
+    title: Code Block
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
 ## Installation
 
@@ -19,10 +22,9 @@ npx plate-ui add blockquote-element
     <AccordionTrigger>Manual Installation</AccordionTrigger>
     <AccordionContent>
 
-
       1. Install the following dependencies:
 
-      - [Blockquote](/docs/basic-elements)
+      - [Code Block](/docs/basic-elements)
 
       2. Copy and paste the following code into your project.
 
@@ -37,19 +39,17 @@ npx plate-ui add blockquote-element
 
 ## Usage
 
-```tsx
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  blockquote,
-} from '@/components/plate-ui/blockquote-element;
-```
+### Plugins
 
 ```tsx
-createPlugins([
-  createBlockquotePlugin(),
-], {
+import { createPlugins } from '@udecode/createPlugins';
+import { createPlateUI } from '@udecode/createPlateUI';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquoteElement } from '@udecode/blockquote-element';
+
+createPlugins([createPlateUI()], {
   components: {
-    [ELEMENT_BLOCKQUOTE]: blockquote,
-  }
-})
+    [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
+  },
+});
 ```

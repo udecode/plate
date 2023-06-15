@@ -2,11 +2,22 @@
 title: Color Dropdown Menu
 description: Color Dropdown Menu
 component: true
+docs:
+  - route: /docs/components/dropdown-menu
+    title: Dropdown Menu
+  - route: /docs/components/toolbar
+    title: Toolbar
+  - route: /docs/components/separator
+    title: Separator
+  - route: /docs/components/button
+    title: Button
+  - route: /docs/components/tooltip
+    title: Tooltip
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
 ## Installation
 
@@ -66,13 +77,11 @@ npx plate-ui add color-dropdown-menu
 
 ```tsx
 import { createCloudAttachmentPlugin } from '@udecode/plate-cloud';
-import {
-  CloudAttachmentElement,
-} from '@/components/plate-ui/cloud-attachment-element'
+import { CloudAttachmentElement } from '@/components/plate-ui/cloud-attachment-element';
 ```
 
 ```tsx
 createCloudAttachmentPlugin({
-  component: CloudAttachmentElement
-})
+  component: CloudAttachmentElement,
+});
 ```

@@ -2,11 +2,14 @@
 title: Code Block Element
 description: Code Block Element
 component: true
+docs:
+  - route: /docs/basic-elements
+    title: Code Block
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
 ## Installation
 
@@ -40,20 +43,15 @@ npx plate-ui add code-block-element
 
 ## Usage
 
-
 ```tsx
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import {
-  CodeBlockElement,
-} from '@/components/plate-ui/code-Block-element';
+import { CodeBlockElement } from '@/components/plate-ui/code-Block-element';
 ```
 
 ```tsx
-createPlugins([
-  createCodeBlockPlugin(),
-], {
+createPlugins([createCodeBlockPlugin()], {
   components: {
     [ELEMENT_CODE_LINE]: CodeBlockElement,
-  }
-})
+  },
+});
 ```
