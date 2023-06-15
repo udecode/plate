@@ -114,7 +114,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.shadcn}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 shadcn/ui
               </Link>
@@ -124,7 +124,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.link}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 <Icons.radix className="mr-1 h-3 w-3" />
                 Radix UI
@@ -135,7 +135,7 @@ export default async function DocPage({ params }: DocPageProps) {
                 href={doc.radix.api}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 API Reference
               </Link>
@@ -144,7 +144,7 @@ export default async function DocPage({ params }: DocPageProps) {
               <Link
                 key={item.route}
                 href={item.route as any}
-                className={cn(badgeVariants({ variant: 'secondary' }), 'mb-1')}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
               >
                 {item.title}
               </Link>
