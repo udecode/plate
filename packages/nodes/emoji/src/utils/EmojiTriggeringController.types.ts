@@ -1,15 +1,14 @@
 export type EmojiTriggeringControllerOptions = {
   limitTriggeringChars: number;
-  maxTextToSearch: number;
 };
 
 export interface IEmojiTriggeringController {
   isTriggering: boolean;
   hasTriggeringMark: boolean;
+  setIsTriggering: (isTriggering: boolean) => this;
+  setText: (text: string) => this;
   getText: () => string;
-  setText: (text: string) => void;
-  reset: () => void;
-  getOptions: () => EmojiTriggeringControllerOptions;
+  hasEnclosingTriggeringMark: () => boolean;
   getTextSize: () => number;
-  isEnclosingTriggeringCharacter: (char: string) => boolean;
+  reset: () => this;
 }

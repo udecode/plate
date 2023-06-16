@@ -7,7 +7,8 @@ import {
 export class EmojiTriggeringController implements IEmojiTriggeringController {
   protected text = '';
   protected pos: any;
-  public isTriggering = false;
+  // public isTriggering = false;
+  private _isTriggering = false;
   public hasTriggeringMark = false;
 
   constructor(
@@ -15,38 +16,54 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
     protected options: EmojiTriggeringControllerOptions = EMOJI_TRIGGERING_CONTROLLER_OPTIONS
   ) {}
 
-  setText(text: string) {
-    this.text = text;
-    this.hasTriggeringMark = this.isWithTriggeringMark(text);
-
-    this.isTriggering =
-      this.hasTriggeringMark &&
-      this.text.length >= this.options.limitTriggeringChars;
+  get isTriggering(): boolean {
+    return this._isTriggering;
   }
 
-  private isWithTriggeringMark(text: string) {
-    return new RegExp(`^${this.trigger}.*`).test(text);
+  setIsTriggering(isTriggering: boolean) {
+    this._isTriggering = isTriggering;
+    return this;
+  }
+
+  hasEnclosingTriggeringMark(): boolean {
+    return this.endsWithEnclosingMark(this.text);
+  }
+
+  setText(text: string) {
+    this.hasTriggeringMark = this.startsWithTriggeringMark(text);
+
+    this.setIsTriggering(
+      this.hasTriggeringMark && text.length > this.options.limitTriggeringChars
+    );
+
+    this.text = this.isTriggering ? text : '';
+
+    return this;
+  }
+
+  private startsWithTriggeringMark(text: string) {
+    return new RegExp(`^${this.trigger}`).test(text);
+  }
+
+  private endsWithEnclosingMark(text: string) {
+    return new RegExp(`${this.trigger}$`).test(text);
   }
 
   getText() {
-    return this.hasTriggeringMark ? this.text.slice(1) : this.text;
-  }
+    let text = this.hasTriggeringMark ? this.text.slice(1) : this.text;
+    text = this.hasEnclosingTriggeringMark() ? text.slice(0, -1) : text;
 
-  getOptions(): EmojiTriggeringControllerOptions {
-    return this.options;
+    return text;
   }
 
   getTextSize() {
     return this.text.length;
   }
 
-  isEnclosingTriggeringCharacter(char: string): boolean {
-    return this.isTriggering && char === this.trigger;
-  }
-
   reset() {
     this.text = '';
-    this.isTriggering = false;
+    this.setIsTriggering(false);
     this.hasTriggeringMark = false;
+    return this;
   }
 }
