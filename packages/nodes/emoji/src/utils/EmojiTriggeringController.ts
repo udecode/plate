@@ -5,11 +5,10 @@ import {
 } from './EmojiTriggeringController.types';
 
 export class EmojiTriggeringController implements IEmojiTriggeringController {
+  private _isTriggering = false;
+  private _hasTriggeringMark = false;
   protected text = '';
   protected pos: any;
-  // public isTriggering = false;
-  private _isTriggering = false;
-  public hasTriggeringMark = false;
 
   constructor(
     protected trigger = ':',
@@ -25,15 +24,19 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
     return this;
   }
 
+  get hasTriggeringMark(): boolean {
+    return this._hasTriggeringMark;
+  }
+
   hasEnclosingTriggeringMark(): boolean {
     return this.endsWithEnclosingMark(this.text);
   }
 
   setText(text: string) {
-    this.hasTriggeringMark = this.startsWithTriggeringMark(text);
+    this._hasTriggeringMark = this.startsWithTriggeringMark(text);
 
     this.setIsTriggering(
-      this.hasTriggeringMark && text.length > this.options.limitTriggeringChars
+      this._hasTriggeringMark && text.length > this.options.limitTriggeringChars
     );
 
     this.text = this.isTriggering ? text : '';
@@ -50,7 +53,7 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
   }
 
   getText() {
-    let text = this.hasTriggeringMark ? this.text.slice(1) : this.text;
+    let text = this._hasTriggeringMark ? this.text.slice(1) : this.text;
     text = this.hasEnclosingTriggeringMark() ? text.slice(0, -1) : text;
 
     return text;
@@ -63,7 +66,7 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
   reset() {
     this.text = '';
     this.setIsTriggering(false);
-    this.hasTriggeringMark = false;
+    this._hasTriggeringMark = false;
     return this;
   }
 }

@@ -42,7 +42,7 @@ export const getFindTriggeringInput = <V extends Value>(
   const { selection } = editor;
 
   if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {
-    emojiTriggeringController.reset();
+    emojiTriggeringController.setIsTriggering(false);
     return;
   }
 

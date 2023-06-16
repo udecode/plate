@@ -25,7 +25,7 @@ export const withEmoji = <
     emojiTriggeringController!
   );
 
-  const { apply, insertText } = editor;
+  const { apply, insertText, deleteBackward } = editor;
 
   editor.insertText = (char) => {
     const { selection } = editor;
@@ -39,6 +39,11 @@ export const withEmoji = <
     return insertText(char);
   };
 
+  editor.deleteBackward = (unit) => {
+    findTheTriggeringInput();
+    return deleteBackward(unit);
+  };
+
   editor.apply = (operation) => {
     apply(operation);
 
@@ -49,6 +54,11 @@ export const withEmoji = <
     const searchText = emojiTriggeringController.getText();
 
     switch (operation.type) {
+      case 'set_selection':
+        emojiTriggeringController.reset();
+        comboboxActions.reset();
+        break;
+
       case 'insert_text':
         if (
           emojiTriggeringController.hasEnclosingTriggeringMark() &&
@@ -70,7 +80,11 @@ export const withEmoji = <
             text: '',
             targetRange: editor.selection,
           });
+          break;
         }
+
+        emojiTriggeringController.reset();
+        comboboxActions.reset();
         break;
 
       case 'remove_text':
