@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -18,18 +18,58 @@ type PropDef = {
   default?: string | boolean;
   type: string;
   description?: string;
+  descriptionCode?: string;
+  value?: string;
+  children: ReactNode;
 };
+
+export function APIItem({ children, name, type, value }: PropDef) {
+  console.log(value);
+  return (
+    <AccordionItem value={value ?? name}>
+      <AccordionTrigger className="group">
+        <li id={name} className="scroll-mt-[56px]">
+          <h4 className="relative flex py-2 font-semibold leading-none tracking-tight">
+            <a
+              href={`#${name}`}
+              className={cn(
+                'opacity-0 hover:opacity-100 group-hover:opacity-100'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute -left-5 top-2 pr-1">
+                <Icons.pragma className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </a>
+            <div className="mr-2 font-mono font-semibold leading-5">{name}</div>
+            <div className="mr-2 text-left font-mono text-sm font-medium leading-5 text-muted-foreground">
+              {type}
+            </div>
+          </h4>
+        </li>
+      </AccordionTrigger>
+      <AccordionContent>{children}</AccordionContent>
+    </AccordionItem>
+  );
+}
 
 export function APIList({
   type = 'function',
   description,
-  data,
+  children,
 }: {
   type?: string;
   description?: string;
-  data: PropDef[];
+  children: ReactNode;
 }) {
-  const [values, setValues] = useState(data.map((item) => item.name));
+  const defaultValues = Array.from(
+    Array(React.Children.count(children)).keys()
+  ).map((i) => i.toString());
+
+  const [values, setValues] = useState<string[]>(defaultValues);
+  const [expanded, setExpanded] = useState(true);
+
+  const childCount = React.Children.count(children);
 
   return (
     <section className="flex w-full flex-col items-center">
@@ -64,13 +104,14 @@ export function APIList({
             </h3>
             <div
               className="cursor-pointer select-none text-sm text-muted-foreground"
-              onClick={() =>
-                values.length === data.length
+              onClick={() => {
+                values.length === childCount
                   ? setValues([])
-                  : setValues(data.map((item) => item.name))
-              }
+                  : setValues(defaultValues);
+                setExpanded(!expanded);
+              }}
             >
-              {values.length === data.length ? 'Collapse all' : 'Expand all'}
+              {values.length === childCount ? 'Collapse all' : 'Expand all'}
             </div>
           </div>
 
@@ -83,34 +124,9 @@ export function APIList({
               onValueChange={setValues}
               className="w-full"
             >
-              {data.map((item, i) => (
-                <AccordionItem key={`${item.name}-${i}`} value={item.name}>
-                  <AccordionTrigger className="group">
-                    <li id={item.name} className="scroll-mt-[56px]">
-                      <h4 className="relative flex items-end py-2 font-semibold leading-none tracking-tight">
-                        <a
-                          href={`#${item.name}`}
-                          className={cn(
-                            'opacity-0 hover:opacity-100 group-hover:opacity-100'
-                          )}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="absolute -left-5 top-2 pr-1">
-                            <Icons.pragma className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </a>
-                        <span className="mr-2 font-mono font-semibold leading-none">
-                          {item.name}
-                        </span>
-                        <span className="mr-2 font-mono text-sm font-medium leading-none text-muted-foreground">
-                          {item.type}
-                        </span>
-                      </h4>
-                    </li>
-                  </AccordionTrigger>
-                  <AccordionContent>{item.description}</AccordionContent>
-                </AccordionItem>
-              ))}
+              {React.Children.map(children, (child, i) =>
+                React.cloneElement(child as any, { value: i.toString() })
+              )}
             </Accordion>
           </ul>
         </div>

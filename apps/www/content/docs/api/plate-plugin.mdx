@@ -16,81 +16,86 @@ description: PlatePlugin API.
     </>
   }
   returns="A <code>PlatePlugin</code> object."
-  data={[
-    {
-      name: 'key',
-      type: 'string',
-      description: (
-        <ul>
-          <li>
-            Property used by Plate to store the plugins by key in
-            `editor.pluginsByKey`.
-          </li>
-          <li>Unique and required.</li>
-          <li>Naming convention:</li>
-          <li>all Plate element keys start with `ELEMENT_`.</li>
-          <li>all Plate mark keys start with `MARK_`.</li>
-        </ul>
-      ),
-    },
-    {
-      name: 'defaultChecked',
-      type: 'boolean',
-      description:
-        'The checked state of the checkbox when it is initially rendered. Use when you do not need to control its checked state.',
-    },
-    {
-      name: 'checked',
-      type: 'boolean',
-      description: (
-        <span>
-          The controlled checked state of the checkbox. Must be used in
-          conjunction with <code>onCheckedChange</code>.
-        </span>
-      ),
-    },
-    {
-      name: 'onCheckedChange',
-      type: `(checked: boolean | 'indeterminate') => void`,
-      typeSimple: 'function',
-      description:
-        'Event handler called when the checked state of the checkbox changes.',
-    },
-    {
-      name: 'disabled',
-      type: 'boolean',
-      description: (
-        <span>
-          When <code>true</code>, prevents the user from interacting with the
-          checkbox.
-        </span>
-      ),
-    },
-    {
-      name: 'required',
-      type: 'boolean',
-      description: (
-        <span>
-          When <code>true</code>, indicates that the user must check the
-          checkbox before the owning form can be submitted.
-        </span>
-      ),
-    },
-    {
-      name: 'name',
-      type: 'string',
-      description:
-        'The name of the checkbox. Submitted with its owning form as part of a name/value pair.',
-    },
-    {
-      name: 'value',
-      type: 'string',
-      default: 'on',
-      description: (
-        <span>
-          The value given as data when submitted with a <code>name</code>.
-        </span>
-      ),
-    },
-  ]}
-/>
+>
+<APIItem name="key" type="string">
+
+Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+- Unique and required.
+- Naming convention:
+- all Plate element keys start with `ELEMENT_`.
+- all Plate mark keys start with `MARK_`.
+
+</APIItem>
+  
+<APIItem name="component" type="RenderFunction">
+
+Property used by Plate to render a slate element or leaf.
+- React component with element of leaf props.
+
+</APIItem>
+  
+<APIItem name="decorate" type="Decorate">
+
+Property used by Plate to decorate editor ranges.
+- If the function returns undefined then no ranges are modified.
+- If the function returns an array the returned ranges are merged with the ranges called by other plugins.
+- See https://docs.slatejs.org/concepts/09-rendering#decorations
+
+<ComponentSource src="../../packages/core/src/types/plugin/Decorate.ts" />
+
+</APIItem>
+  
+<APIItem name="deserializeHtml" type="DeserializeHtml | DeserializeHtml[]">
+
+Properties used by the HTML deserializer core plugin for each HTML element.
+
+<ComponentSource src="../../packages/core/src/types/plugin/DeserializeHtml.ts" />
+
+</APIItem>
+</APIList>
+
+[//]: # (  data={[)
+
+[//]: # (    {)
+
+[//]: # (      name: 'key',)
+
+[//]: # (      type: 'string',)
+
+[//]: # (      description: &#40;)
+
+[//]: # (        <ul>)
+
+[//]: # (          <li>)
+
+[//]: # (            Property used by Plate to store the plugins by key in)
+
+[//]: # (            `editor.pluginsByKey`.)
+
+[//]: # (          </li>)
+
+[//]: # (          <li>Unique and required.</li>)
+
+[//]: # (          <li>Naming convention:</li>)
+
+[//]: # (          <li>all Plate element keys start with `ELEMENT_`.</li>)
+
+[//]: # (          <li>all Plate mark keys start with `MARK_`.</li>)
+
+[//]: # (        </ul>)
+
+[//]: # (      &#41;,)
+
+[//]: # (    },)
+
+[//]: # (    {)
+
+[//]: # (      name: 'component',)
+
+[//]: # (      type: 'RenderFunction',)
+
+[//]: # (      description:)
+
+[//]: # (        'React component with element of leaf props. Property used by Plate to render a slate element or leaf.',)
+
+[//]: # (    },)

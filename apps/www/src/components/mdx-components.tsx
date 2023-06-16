@@ -11,7 +11,7 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
-import { APIList } from './api-list';
+import { APIItem, APIList } from './api-list';
 import { Callout } from './callout';
 import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
@@ -218,6 +218,7 @@ const components = {
     />
   ),
   APIList,
+  APIItem,
   ...examples,
 };
 

@@ -253,7 +253,7 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
           <div
             ref={containerRef}
             className={cn(
-              'relative flex max-w-[900px] overflow-x-scroll',
+              'relative flex max-w-[900px] overflow-x-auto',
               !id && 'w-[calc(100vw-64px)]'
             )}
           >
