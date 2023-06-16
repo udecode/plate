@@ -1,4 +1,4 @@
-import { EMOJI_TRIGGERING_CONTROLLER_OPTIONS } from '../constants';
+import { emojiTriggeringControllerOptions } from '../constants';
 import {
   EmojiTriggeringControllerOptions,
   IEmojiTriggeringController,
@@ -11,8 +11,7 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
   protected pos: any;
 
   constructor(
-    protected trigger = ':',
-    protected options: EmojiTriggeringControllerOptions = EMOJI_TRIGGERING_CONTROLLER_OPTIONS
+    protected options: EmojiTriggeringControllerOptions = emojiTriggeringControllerOptions
   ) {}
 
   get isTriggering(): boolean {
@@ -45,18 +44,15 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
   }
 
   private startsWithTriggeringMark(text: string) {
-    return new RegExp(`^${this.trigger}`).test(text);
+    return new RegExp(`^${this.options.trigger}`).test(text);
   }
 
   private endsWithEnclosingMark(text: string) {
-    return new RegExp(`${this.trigger}$`).test(text);
+    return new RegExp(`${this.options.trigger}$`).test(text);
   }
 
   getText() {
-    let text = this._hasTriggeringMark ? this.text.slice(1) : this.text;
-    text = this.hasEnclosingTriggeringMark() ? text.slice(0, -1) : text;
-
-    return text;
+    return this.text.replace(/(^:)|(:$)/, '');
   }
 
   getTextSize() {

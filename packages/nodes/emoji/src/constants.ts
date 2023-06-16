@@ -7,11 +7,11 @@ import {
 import { EmojiTriggeringControllerOptions, FrequentEmojis } from './utils';
 
 export const KEY_EMOJI = 'emoji';
-
 export const EMOJI_TRIGGER = ':';
 export const EMOJI_MAX_SEARCH_RESULT = 60;
 
-export const EMOJI_TRIGGERING_CONTROLLER_OPTIONS: EmojiTriggeringControllerOptions = {
+export const emojiTriggeringControllerOptions: EmojiTriggeringControllerOptions = {
+  trigger: EMOJI_TRIGGER,
   limitTriggeringChars: 2,
 };
 

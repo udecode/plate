@@ -1,4 +1,5 @@
 export type EmojiTriggeringControllerOptions = {
+  trigger: string;
   limitTriggeringChars: number;
 };
 
