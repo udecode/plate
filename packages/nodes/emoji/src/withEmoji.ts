@@ -64,16 +64,14 @@ export const withEmoji = <
           emojiTriggeringController.hasEnclosingTriggeringMark() &&
           emojiInlineIndexSearch.search(searchText).hasFound()
         ) {
-          const item = emojiInlineIndexSearch.search(searchText).getEmoji();
+          const item = emojiInlineIndexSearch.getEmoji();
           item && getEmojiOnSelectItem()(editor, item);
           break;
         }
 
         if (emojiTriggeringController.isTriggering) {
           comboboxActions.items(
-            emojiInlineIndexSearch
-              .search(emojiTriggeringController.getText())
-              .get()
+            emojiInlineIndexSearch.search(searchText).get()
           );
           comboboxActions.open({
             activeId: id!,
