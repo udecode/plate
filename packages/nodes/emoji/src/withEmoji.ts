@@ -67,7 +67,7 @@ export const withEmoji = <
       case 'insert_text':
         if (
           emojiTriggeringController.hasEnclosingTriggeringMark() &&
-          emojiInlineIndexSearch.search(searchText).hasFound()
+          emojiInlineIndexSearch.search(searchText).hasFound(true)
         ) {
           const item = emojiInlineIndexSearch.getEmoji();
           item && getEmojiOnSelectItem()(editor, item);
@@ -75,6 +75,7 @@ export const withEmoji = <
         }
 
         if (
+          !emojiTriggeringController.hasEnclosingTriggeringMark() &&
           emojiTriggeringController.isTriggering &&
           emojiInlineIndexSearch.search(searchText).hasFound()
         ) {
