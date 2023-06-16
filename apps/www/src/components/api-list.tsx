@@ -24,7 +24,6 @@ type PropDef = {
 };
 
 export function APIItem({ children, name, type, value }: PropDef) {
-  console.log(value);
   return (
     <AccordionItem value={value ?? name}>
       <AccordionTrigger className="group">
