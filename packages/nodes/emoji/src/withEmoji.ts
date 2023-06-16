@@ -69,7 +69,10 @@ export const withEmoji = <
           break;
         }
 
-        if (emojiTriggeringController.isTriggering) {
+        if (
+          emojiTriggeringController.isTriggering &&
+          emojiInlineIndexSearch.search(searchText).hasFound()
+        ) {
           comboboxActions.items(
             emojiInlineIndexSearch.search(searchText).get()
           );
@@ -86,8 +89,10 @@ export const withEmoji = <
         break;
 
       case 'remove_text':
-        findTheTriggeringInput();
-        if (emojiTriggeringController.isTriggering) {
+        if (
+          emojiTriggeringController.isTriggering &&
+          emojiInlineIndexSearch.search(searchText).hasFound()
+        ) {
           comboboxActions.items(
             emojiInlineIndexSearch.search(searchText).get()
           );

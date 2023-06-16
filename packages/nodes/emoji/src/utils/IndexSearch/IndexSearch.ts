@@ -63,7 +63,7 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
   }
 
   hasFound() {
-    return !!this.result.length;
+    return this.result.length > 0;
   }
 
   get() {
