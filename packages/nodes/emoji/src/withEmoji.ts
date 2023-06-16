@@ -25,7 +25,7 @@ export const withEmoji = <
     emojiTriggeringController!
   );
 
-  const { apply, insertText, deleteBackward } = editor;
+  const { apply, insertText, deleteBackward, deleteForward } = editor;
 
   editor.insertText = (char) => {
     const { selection } = editor;
@@ -34,14 +34,19 @@ export const withEmoji = <
       return insertText(char);
     }
 
-    findTheTriggeringInput(char);
+    findTheTriggeringInput({ char });
 
     return insertText(char);
   };
 
   editor.deleteBackward = (unit) => {
-    findTheTriggeringInput();
+    findTheTriggeringInput({ action: 'delete' });
     return deleteBackward(unit);
+  };
+
+  editor.deleteForward = (unit) => {
+    findTheTriggeringInput();
+    return deleteForward(unit);
   };
 
   editor.apply = (operation) => {

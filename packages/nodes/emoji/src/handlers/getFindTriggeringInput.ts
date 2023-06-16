@@ -7,6 +7,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 import { BasePoint } from 'slate';
+import { FindTriggeringInputProps } from '../types';
 import { IEmojiTriggeringController } from '../utils';
 
 const isSpaceBreak = (char?: string) => !!char && /\s/.test(char);
@@ -38,7 +39,12 @@ const isBeginningOfTheLine = <V extends Value>(
 export const getFindTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
   emojiTriggeringController: IEmojiTriggeringController
-) => (char = '') => {
+) => (
+  { char = '', action = 'insert' }: FindTriggeringInputProps = {
+    char: '',
+    action: 'insert',
+  }
+) => {
   const { selection } = editor;
 
   if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {
@@ -66,6 +72,7 @@ export const getFindTriggeringInput = <V extends Value>(
   } while (!isSpaceBreak(previousChar));
 
   foundText = foundText.trim();
+  if (action === 'delete') foundText = foundText.slice(0, -1);
 
   emojiTriggeringController.setText(foundText);
 };
