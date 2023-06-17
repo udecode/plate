@@ -17,11 +17,7 @@ import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA,
-  ELEMENT_MEDIA_EMBED,
-} from '@udecode/plate-media';
+import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_MENTION } from '@udecode/plate-mention';
 import { KEY_NODE_ID } from '@udecode/plate-node-id';
 import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
@@ -149,8 +145,8 @@ export const settingValues = {
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
-    value: [ELEMENT_MEDIA],
-    route: '/docs/dnd',
+    value: [],
+    route: '/docs/components/draggables',
     plugins: [KEY_DND],
   },
   emoji: {
