@@ -3,20 +3,6 @@ title: Store
 description: Plate Store API
 ---
 
-### `key`
-
-### `component`
-
-- Property used by Plate to render a slate element or leaf.
-- React component with element of leaf props.
-
-### `decorate`
-
-- Property used by Plate to decorate editor ranges.
-- If the function returns undefined then no ranges are modified.
-- If the function returns an array the returned ranges are merged with the ranges called by other plugins.
-- See https://docs.slatejs.org/concepts/09-rendering#decorations
-
 ### `deserializeHtml`
 
 `DeserializeHtml | DeserializeHtml[]`
@@ -397,6 +383,8 @@ createIndentPlugin({
 
 - Editor method overriders.
 - See https://docs.slatejs.org/concepts/08-plugins
+
+---
 
 `Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
 

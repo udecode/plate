@@ -19,6 +19,7 @@ description: PlatePlugin API.
 <APIItem name="key" type="string">
 
 Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+
 - Unique and required.
 - Naming convention:
 - all Plate element keys start with `ELEMENT_`.
@@ -29,6 +30,7 @@ Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
 <APIItem name="component" type="RenderFunction">
 
 Property used by Plate to render a slate element or leaf.
+
 - React component with element of leaf props.
 
 </APIItem>
@@ -36,15 +38,19 @@ Property used by Plate to render a slate element or leaf.
 <APIItem name="decorate" type="Decorate" >
 
 Property used by Plate to decorate editor ranges.
+
 - If the function returns undefined then no ranges are modified.
 - If the function returns an array the returned ranges are merged with the ranges called by other plugins.
 - See https://docs.slatejs.org/concepts/09-rendering#decorations
 
-<ComponentSource name="Decorate" src="../../packages/core/src/types/plugin/Decorate.ts" />
+<ComponentSource
+  name="Decorate"
+  src="../../packages/core/src/types/plugin/Decorate.ts"
+/>
 
 </APIItem>
   
-<APIItem name="deserializeHtml" type="DeserializeHtml | DeserializeHtml[]">
+<APIItem name="deserializeHtml" type="object">
   Properties used by the HTML deserializer core plugin for each HTML element.
 
   <APISubList>
@@ -84,6 +90,7 @@ Property used by Plate to decorate editor ranges.
 <APIItem name="key" type="string">
 
 Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+
 - Unique and required.
 - Naming convention:
 - all Plate element keys start with `ELEMENT_`.

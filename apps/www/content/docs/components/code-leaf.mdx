@@ -42,12 +42,12 @@ npx plate-ui add code-leaf
 ### Plugins
 
 ```tsx
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { createCodePlugin } from '@udecode/plate-basic-marks';
 
 const plugins = createPlugins(
   [
     // ...otherPlugins,
-    createCodeBlockPlugin(),
+    createCodePlugin(),
   ],
   {
     components: createPlateUI(),
