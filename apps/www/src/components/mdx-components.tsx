@@ -11,7 +11,7 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
-import { APIItem, APIList } from './api-list';
+import { APIItem, APIList, APISubList } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
 import { Callout } from './callout';
 import { Code } from './code';
@@ -221,6 +221,7 @@ const components = {
   BadgeList,
   BadgePopover,
   APIList,
+  APISubList,
   APIItem,
   ...examples,
 };

@@ -115,3 +115,20 @@ export function APIList({
     </section>
   );
 }
+
+export function APISubList({
+  name,
+  children,
+}: {
+  name: string;
+  children: ReactNode;
+}) {
+  return (
+    <Accordion type="single" className="w-full">
+      <AccordionItem value="one">
+        <AccordionTrigger>Show child attributes</AccordionTrigger>
+        <AccordionContent>{children}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
