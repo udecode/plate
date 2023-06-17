@@ -39,10 +39,18 @@ npx plate-ui add list-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createListPlugin } from '@udecode/plate-list';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createListPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

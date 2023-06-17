@@ -47,10 +47,18 @@ npx plate-ui add media-embed-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createMediaEmbedPlugin } from '@udecode/plate-media';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createMediaEmbedPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

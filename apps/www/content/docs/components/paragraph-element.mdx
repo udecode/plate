@@ -39,10 +39,18 @@ npx plate-ui add paragraph-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createParagraphPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

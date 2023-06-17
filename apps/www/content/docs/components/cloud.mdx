@@ -56,10 +56,46 @@ npx plate-ui add cloud
 
 ## Usage
 
-```tsx
+### Plugins
 
+```tsx
+const plugins = createMyPlugins(
+  [
+    ...basicNodesPlugins,
+    createCloudPlugin({
+      options: {},
+    }),
+    createCloudAttachmentPlugin(),
+    createCloudImagePlugin({
+      options: {
+        maxInitialWidth: 320,
+        maxInitialHeight: 320,
+        minResizeWidth: 100,
+        maxResizeWidth: 720,
+      },
+    }),
+  ],
+  {
+    components: {
+      ...plateUI,
+      [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
+      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+    },
+  }
+);
 ```
 
-```tsx
+### Demo
 
+```tsx
+export default function CloudDemo() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+      <FixedToolbar>
+        <CloudToolbarButtons />
+      </FixedToolbar>
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}
 ```

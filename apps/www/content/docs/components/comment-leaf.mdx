@@ -40,10 +40,18 @@ npx plate-ui add comment-leaf
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createCommentsPlugin } from '@udecode/plate-comments';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCommentsPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

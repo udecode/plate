@@ -39,10 +39,18 @@ npx plate-ui add heading-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createHeadingPlugin } from '@udecode/plate-heading';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHeadingPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

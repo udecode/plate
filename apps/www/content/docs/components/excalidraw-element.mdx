@@ -40,10 +40,18 @@ npx plate-ui add excalidraw-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createExcalidrawPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

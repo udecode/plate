@@ -43,10 +43,22 @@ npx plate-ui add table-cell-element
 
 ## Usage
 
+### components
+
+<ComponentSource src="/src/components/plate-ui/table-cell-header-element.tsx" />
+
+### Plugins
+
 ```tsx
+import { createTablePlugin } from '@udecode/plate-table';
 
-```
-
-```tsx
-
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTablePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

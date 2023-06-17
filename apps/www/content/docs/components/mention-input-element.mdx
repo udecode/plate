@@ -40,10 +40,18 @@ npx plate-ui add mention-input-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createMentionPlugin } from '@udecode/plate-mention';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createMentionPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

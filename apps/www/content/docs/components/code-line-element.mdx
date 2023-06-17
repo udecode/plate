@@ -39,15 +39,18 @@ npx plate-ui add code-line-element
 
 ## Usage
 
-```tsx
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { codeLineElement } from '@/components/plate-ui/code-line-element';
-```
+### Plugins
 
 ```tsx
-createPlugins([createCodeBlockPlugin()], {
-  components: {
-    [ELEMENT_CODE_LINE]: CodeLineElement,
-  },
-});
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCodeBlockPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

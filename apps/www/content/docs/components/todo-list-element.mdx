@@ -39,10 +39,18 @@ npx plate-ui add todo-list-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createTodoListPlugin } from '@udecode/plate-list';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTodoListPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

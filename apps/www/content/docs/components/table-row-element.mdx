@@ -39,10 +39,18 @@ npx plate-ui add table-row-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createTablePlugin } from '@udecode/plate-table';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTablePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
