@@ -5,7 +5,7 @@ description: PlatePlugin API.
 
 - [Plugins guide](/docs/plugins)
 
-## The PlatePlugin object
+## `PlatePlugin`
 
 <APIList
   type="object"
@@ -15,7 +15,6 @@ description: PlatePlugin API.
       <a href="/docs/plate#plugins">plugins</a> prop.
     </>
   }
-  returns="A <code>PlatePlugin</code> object."
 >
 <APIItem name="key" type="string">
 
@@ -34,7 +33,7 @@ Property used by Plate to render a slate element or leaf.
 
 </APIItem>
   
-<APIItem name="decorate" >
+<APIItem name="decorate" type="Decorate" >
 
 Property used by Plate to decorate editor ranges.
 - If the function returns undefined then no ranges are modified.
@@ -46,61 +45,50 @@ Property used by Plate to decorate editor ranges.
 </APIItem>
   
 <APIItem name="deserializeHtml" type="DeserializeHtml | DeserializeHtml[]">
+  Properties used by the HTML deserializer core plugin for each HTML element.
 
-Properties used by the HTML deserializer core plugin for each HTML element.
-
-<APISubList name="DeserializeHtml">
-hellos
-</APISubList>
-
-<ComponentSource name="DeserializeHtml" src="../../packages/core/src/types/plugin/DeserializeHtml.ts" />
-
+  <APISubList>
+    <APISubListItem parent="deserializeHtml" name="attributeNames" type="string[]?">
+      List of HTML attribute names to store their values in `node.attributes`.
+      <APISubList>
+        <APISubListItem parent="deserializeHtml.attributeNames" name="test" type="string[]?">
+          List of HTML attribute names to store their values in `node.attributes`.
+        </APISubListItem>
+        <APISubListItem parent="deserializeHtml.attributeNames" name="test" type="string[]?">
+          List of HTML attribute names to store their values in `node.attributes`.
+        </APISubListItem>
+      </APISubList>
+    </APISubListItem>
+  </APISubList>
 </APIItem>
 
 </APIList>
 
-[//]: # (  data={[)
+## `createPlugins`
 
-[//]: # (    {)
+<APIList
+  type="function"
+  description={
+    <>
+      Creates a new array of plugins by overriding the plugins in the original array.
+      Components can be overridden by key using <code>components</code> in the second param.
+      Any other properties can be overridden by key using <code>overrideByKey</code> in the second param.
+    </>
+  }
+  returns={
+    <>
+      A list of <code>PlatePlugin</code> objects.
+    </>
+  }
+>
+<APIItem name="key" type="string">
 
-[//]: # (      name: 'key',)
+Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+- Unique and required.
+- Naming convention:
+- all Plate element keys start with `ELEMENT_`.
+- all Plate mark keys start with `MARK_`.
 
-[//]: # (      type: 'string',)
-
-[//]: # (      description: &#40;)
-
-[//]: # (        <ul>)
-
-[//]: # (          <li>)
-
-[//]: # (            Property used by Plate to store the plugins by key in)
-
-[//]: # (            `editor.pluginsByKey`.)
-
-[//]: # (          </li>)
-
-[//]: # (          <li>Unique and required.</li>)
-
-[//]: # (          <li>Naming convention:</li>)
-
-[//]: # (          <li>all Plate element keys start with `ELEMENT_`.</li>)
-
-[//]: # (          <li>all Plate mark keys start with `MARK_`.</li>)
-
-[//]: # (        </ul>)
-
-[//]: # (      &#41;,)
-
-[//]: # (    },)
-
-[//]: # (    {)
-
-[//]: # (      name: 'component',)
-
-[//]: # (      type: 'RenderFunction',)
-
-[//]: # (      description:)
-
-[//]: # (        'React component with element of leaf props. Property used by Plate to render a slate element or leaf.',)
-
-[//]: # (    },)
+</APIItem>
+  
+</APIList>

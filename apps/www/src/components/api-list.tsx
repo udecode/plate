@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
+import { Card } from './ui/card';
 import { Separator } from './ui/separator';
 import { Icons } from './icons';
 
@@ -57,10 +58,12 @@ export function APIItem({ children, name, type, value }: Item) {
 export function APIList({
   type = 'function',
   description,
+  returns,
   children,
 }: {
   type?: string;
   description?: string;
+  returns?: string;
   children: ReactNode;
 }) {
   const defaultValues = Array.from(
@@ -74,7 +77,7 @@ export function APIList({
 
   return (
     <section className="flex w-full flex-col items-center">
-      <div className="w-full pb-16">
+      <div className="w-full">
         {!!description && <p className="mt-10">{description}</p>}
 
         <div className="mt-10 pb-3 ">
@@ -111,24 +114,78 @@ export function APIList({
             </Accordion>
           </ul>
         </div>
+
+        {!!returns && (
+          <div className="mt-5 pt-6">
+            <h3 className="pb-4 text-lg font-medium leading-none tracking-tight">
+              Returns
+            </h3>
+
+            <Separator />
+
+            <p className="mt-5">{returns}</p>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-export function APISubList({
+export function APISubListItem({
+  parent,
   name,
+  type,
   children,
 }: {
+  parent: string;
   name: string;
+  type: string;
   children: ReactNode;
 }) {
   return (
-    <Accordion type="single" className="w-full">
-      <AccordionItem value="one">
-        <AccordionTrigger>Show child attributes</AccordionTrigger>
-        <AccordionContent>{children}</AccordionContent>
-      </AccordionItem>
-    </Accordion>
+    <div className="border-t border-t-border p-3">
+      <h4 className="relative flex py-2 font-semibold leading-none tracking-tight">
+        {/* <a */}
+        {/*  href={`#${name}`} */}
+        {/*  className={cn('opacity-0 hover:opacity-100 group-hover:opacity-100')} */}
+        {/*  onClick={(e) => e.stopPropagation()} */}
+        {/* > */}
+        {/*  <div className="absolute -left-5 top-2 pr-1"> */}
+        {/*    <Icons.pragma className="h-4 w-4 text-muted-foreground" /> */}
+        {/*  </div> */}
+        {/* </a> */}
+        <div className="font-mono font-semibold leading-5 text-muted-foreground">
+          {parent}.
+        </div>
+        <div className="font-mono font-semibold leading-5">{name}</div>
+        <div className="ml-2 text-left font-mono text-sm font-medium leading-5 text-muted-foreground">
+          {type}
+        </div>
+      </h4>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+export function APISubList({ children }: { children: ReactNode }) {
+  const [value, setValue] = useState('');
+
+  return (
+    <Card className="my-2">
+      <Accordion
+        type="single"
+        collapsible
+        className="w-full"
+        defaultValue="1"
+        onValueChange={setValue}
+      >
+        <AccordionItem value="1" className="border-none">
+          <AccordionTrigger iconVariant="plus" className="px-3">
+            {value ? 'Hide' : 'Show'} child attributes
+          </AccordionTrigger>
+          <AccordionContent>{children}</AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </Card>
   );
 }
