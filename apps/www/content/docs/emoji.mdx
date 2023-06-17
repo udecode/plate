@@ -1,6 +1,13 @@
 ---
 title: Emoji
 description: Enhance your text with emojis.
+docs:
+  - route: /docs/components/emoji-combobox
+    title: Emoji Combobox
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Dropdown Menu
+  - route: /docs/components/emoji-toolbar-dropdown
+    title: Emoji Toolbar Dropdown
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -25,13 +32,16 @@ npm install @udecode/plate-emoji
 ```tsx
 import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createEmojiPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createComboboxPlugin(),
+    createEmojiPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options

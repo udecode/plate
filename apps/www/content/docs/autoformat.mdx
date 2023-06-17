@@ -1,6 +1,17 @@
 ---
 title: Autoformat
 description: Apply formatting automatically using shortcodes.
+docs:
+  - route: /docs/basic-elements
+    title: Basic elements
+  - route: /docs/horizontal-rule
+    title: Horizontal rule
+  - route: /docs/list
+    title: List
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/highlight
+    title: Highlight
 ---
 
 <ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
@@ -30,79 +41,80 @@ npm install @udecode/plate-autoformat
 ### Usage
 
 ```tsx
-import {
-  createAutoformatPlugin,
-} from '@udecode/plate';
+import { createAutoformatPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createAutoformatPlugin(autoformatPlugin),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createAutoformatPlugin(autoformatPlugin),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
 
-| Name                           | Description                                                  |
-|:-------------------------------|:-------------------------------------------------------------|
-| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.                                        |
-|                                | Converts `'text'` to `‘text’`.                                        |
-| `autoformatPunctuation`        | Converts `--` to `—`.                                        |
-|                                | Converts `...` to `…`.                                       |
-|                                | Converts `>>` to `»`.                                        |
-|                                | Converts `<<` to `«`.                                        |
-| `autoformatArrow`              | Converts `->` to `→`.                                        |
-|                                | Converts `<-` to `←`.                                        |
-|                                | Converts `=>` to `⇒`.                                        |
-|                                | Converts `<=` and `≤=` to `⇐`.                               |
-| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.                           |
-|                                | Converts `(r)` and `(R)` to `®`.                             |
-|                                | Converts `(c)` and `(C)` to `©`.                             |
-| `autoformatLegalHtml`          | Converts `&trade;` to `™`.                                   |
-|                                | Converts `&reg;` to `®`.                                     |
-|                                | Converts `&copy;` to `©`.                                    |
-|                                | Converts `&sect;` to `§`.                                    |
-| `autoformatComparison`         | Converts `!>` to `!>`.                                       |
-|                                | Converts `!<` to `≮`.                                        |
-|                                | Converts `>=` to `≥`.                                        |
-|                                | Converts `<=` to `≤`.                                        |
-|                                | Converts `!>=` to `≱`.                                       |
-|                                | Converts `!<=` to `≰`.                                       |
-| `autoformatEquality`           | Converts `!=` to `≠`.                                        |
-|                                | Converts `==` to `≡`.                                        |
-|                                | Converts `!==` and `≠=` to `≢`.                              |
-|                                | Converts `~=` to `≈`.                                        |
-|                                | Converts `!~=` to `≉`.                                       |
-| `autoformatFraction`           | Converts `1/2` to `½`.                                       |
-|                                | Converts `1/3` to `⅓`.                                       |
-|                                | ...                                      |
-|                                | Converts `7/8` to `⅞`.                                       |
-| `autoformatDivision`           | Converts `//` to `÷`.                                        |
-| `autoformatOperation`          | Converts `+-` to `±`.                                        |
-|                                | Converts `%%` to `‰`.                              |
-|                                | Converts `%%%` and `‰%` to `‱.
-|                                | `autoformatDivision` rules.                                  |
-| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                                        |
-|                                | Converts `~1` to `₁`.                                        |
-|                                | ...                                                          |
-|                                | Converts `~9` to `₉`.                                        |
-| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                                        |
-|                                | Converts `~-` to `₋`.                                        |
-| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                                        |
-|                                | Converts `^1` to `¹`.                                        |
-|                                | ...                                                          |
-|                                | Converts `^9` to `⁹`.                                        |
-| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                                        |
-|                                | Converts `^-` to `⁺`.                                        |
-| `autoformatMath`               | `autoformatComparison` rules                                 |
-|                                | `autoformatEquality` rules                                   |
-|                                | `autoformatOperation` rules                                  |
-|                                | `autoformatFraction` rules                                   |
-|                                | `autoformatSubscriptNumbers` rules                         |
-|                                | `autoformatSubscriptSymbols` rules                           |
-|                                | `autoformatSuperscriptNumbers` rules                         |
-|                                | `autoformatSuperscriptSymbols` rules                           |
+| Name                           | Description                          |
+| :----------------------------- | :----------------------------------- |
+| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.       |
+|                                | Converts `'text'` to `‘text’`.       |
+| `autoformatPunctuation`        | Converts `--` to `—`.                |
+|                                | Converts `...` to `…`.               |
+|                                | Converts `>>` to `»`.                |
+|                                | Converts `<<` to `«`.                |
+| `autoformatArrow`              | Converts `->` to `→`.                |
+|                                | Converts `<-` to `←`.                |
+|                                | Converts `=>` to `⇒`.                |
+|                                | Converts `<=` and `≤=` to `⇐`.       |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.   |
+|                                | Converts `(r)` and `(R)` to `®`.     |
+|                                | Converts `(c)` and `(C)` to `©`.     |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.           |
+|                                | Converts `&reg;` to `®`.             |
+|                                | Converts `&copy;` to `©`.            |
+|                                | Converts `&sect;` to `§`.            |
+| `autoformatComparison`         | Converts `!>` to `!>`.               |
+|                                | Converts `!<` to `≮`.                |
+|                                | Converts `>=` to `≥`.                |
+|                                | Converts `<=` to `≤`.                |
+|                                | Converts `!>=` to `≱`.               |
+|                                | Converts `!<=` to `≰`.               |
+| `autoformatEquality`           | Converts `!=` to `≠`.                |
+|                                | Converts `==` to `≡`.                |
+|                                | Converts `!==` and `≠=` to `≢`.      |
+|                                | Converts `~=` to `≈`.                |
+|                                | Converts `!~=` to `≉`.               |
+| `autoformatFraction`           | Converts `1/2` to `½`.               |
+|                                | Converts `1/3` to `⅓`.               |
+|                                | ...                                  |
+|                                | Converts `7/8` to `⅞`.               |
+| `autoformatDivision`           | Converts `//` to `÷`.                |
+| `autoformatOperation`          | Converts `+-` to `±`.                |
+|                                | Converts `%%` to `‰`.                |
+|                                | Converts `%%%` and `‰%` to `‱.       |
+|                                | `autoformatDivision` rules.          |
+| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                |
+|                                | Converts `~1` to `₁`.                |
+|                                | ...                                  |
+|                                | Converts `~9` to `₉`.                |
+| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                |
+|                                | Converts `~-` to `₋`.                |
+| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                |
+|                                | Converts `^1` to `¹`.                |
+|                                | ...                                  |
+|                                | Converts `^9` to `⁹`.                |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                |
+|                                | Converts `^-` to `⁺`.                |
+| `autoformatMath`               | `autoformatComparison` rules         |
+|                                | `autoformatEquality` rules           |
+|                                | `autoformatOperation` rules          |
+|                                | `autoformatFraction` rules           |
+|                                | `autoformatSubscriptNumbers` rules   |
+|                                | `autoformatSubscriptSymbols` rules   |
+|                                | `autoformatSuperscriptNumbers` rules |
+|                                | `autoformatSuperscriptSymbols` rules |
 
 ```tsx
 export interface MatchRange {
