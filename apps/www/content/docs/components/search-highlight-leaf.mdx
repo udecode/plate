@@ -7,9 +7,9 @@ docs:
     title: Highlight
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="highlight" />
+</ComponentExample>
 
 ## Installation
 
@@ -40,10 +40,18 @@ npx plate-ui add search-highlight-leaf
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createHighlightPlugin } from '@udecode/plate-highlight';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHighlightPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

@@ -7,9 +7,9 @@ docs:
     title: Code Block
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="basicnodes" />
+</ComponentExample>
 
 ## Installation
 
@@ -39,10 +39,18 @@ npx plate-ui add code-leaf
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCodeBlockPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

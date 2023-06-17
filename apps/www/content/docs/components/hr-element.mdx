@@ -7,9 +7,9 @@ docs:
     title: Horizontal Rule
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="hr" />
+</ComponentExample>
 
 ## Installation
 
@@ -40,10 +40,18 @@ npx plate-ui add hr-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHorizontalRulePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

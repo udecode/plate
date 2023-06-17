@@ -7,9 +7,9 @@ docs:
     title: Table
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="table" />
+</ComponentExample>
 
 ## Installation
 
@@ -46,13 +46,18 @@ npx plate-ui add table-element
 
 ## Usage
 
-```tsx
-import { createTablePlugin } from '@udecode/plate-table';
-import { TableElement } from '@/components/plate-ui/table-element';
-```
+### Plugins
 
 ```tsx
-createTablePlugin({
-  component: TableElement,
-});
+import { createTablePlugin } from '@udecode/plate-table';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTablePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

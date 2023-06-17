@@ -7,9 +7,9 @@ docs:
     title: Link
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="link" />
+</ComponentExample>
 
 ## Installation
 
@@ -40,10 +40,18 @@ npx plate-ui add link-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createLinkPlugin } from '@udecode/plate-link';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createLinkPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

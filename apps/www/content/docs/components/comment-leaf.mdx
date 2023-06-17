@@ -7,9 +7,9 @@ docs:
     title: Comments
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="comment" />
+</ComponentExample>
 
 ## Installation
 
@@ -40,10 +40,18 @@ npx plate-ui add comment-leaf
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createCommentsPlugin } from '@udecode/plate-comments';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCommentsPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

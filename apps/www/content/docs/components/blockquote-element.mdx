@@ -7,9 +7,9 @@ docs:
     title: Code Block
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="basicnodes" />
+</ComponentExample>
 
 ## Installation
 
@@ -42,14 +42,15 @@ npx plate-ui add blockquote-element
 ### Plugins
 
 ```tsx
-import { createPlugins } from '@udecode/createPlugins';
-import { createPlateUI } from '@udecode/createPlateUI';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { BlockquoteElement } from '@udecode/blockquote-element';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 
-createPlugins([createPlateUI()], {
-  components: {
-    [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-  },
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createBlockquotePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

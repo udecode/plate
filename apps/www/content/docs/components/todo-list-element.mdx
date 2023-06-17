@@ -7,9 +7,9 @@ docs:
     title: List
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="list" />
+</ComponentExample>
 
 ## Installation
 
@@ -39,10 +39,18 @@ npx plate-ui add todo-list-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createTodoListPlugin } from '@udecode/plate-list';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTodoListPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

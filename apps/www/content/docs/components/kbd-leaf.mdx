@@ -4,16 +4,15 @@ description: Kbd Leaf
 component: true
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
-## Installation
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo />'
+[//]: # '</ComponentExample>'
 
+## Installation
 
 ```bash
 npx plate-ui add kbd-leaf
 ```
-
 
 <Accordion type="single" collapsible>
 
@@ -40,20 +39,24 @@ npx plate-ui add kbd-leaf
 
     </AccordionContent>
 
-
   </AccordionItem>
 
 </Accordion>
 
-
 ## Usage
 
+### Plugins
 
 ```tsx
+import { createKbdPlugin } from '@udecode/plate-kbd';
 
-```
-
-
-```tsx
-
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createKbdPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

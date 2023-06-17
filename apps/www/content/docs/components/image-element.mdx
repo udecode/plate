@@ -9,9 +9,9 @@ docs:
     title: Media Floating Toolbar
 ---
 
-[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
-[//]: # '  <PlaygroundDemo />'
-[//]: # '</ComponentExample>'
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="media" />
+</ComponentExample>
 
 ## Installation
 
@@ -47,10 +47,18 @@ npx plate-ui add image-element
 
 ## Usage
 
-```tsx
-
-```
+### Plugins
 
 ```tsx
+import { createImagePlugin } from '@udecode/plate-media';
 
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createImagePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
