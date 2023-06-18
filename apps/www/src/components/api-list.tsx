@@ -25,10 +25,10 @@ type Item = {
 
 export function APIItem({ children, name, type, value }: Item) {
   return (
-    <AccordionItem value={value ?? name}>
+    <AccordionItem value={value ?? name} className="select-text">
       <AccordionTrigger className="group">
         <li id={name} className="scroll-mt-[56px]">
-          <h4 className="relative flex py-2 font-semibold leading-none tracking-tight">
+          <h4 className="relative py-2 font-semibold leading-none tracking-tight">
             <a
               href={`#${name}`}
               className={cn(
@@ -36,14 +36,16 @@ export function APIItem({ children, name, type, value }: Item) {
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute -left-5 top-[10px] pr-1 leading-5">
+              <div className="absolute -left-5 top-2 pr-1 leading-none">
                 <Icons.pragma className="h-4 w-4 text-muted-foreground" />
               </div>
             </a>
-            <div className="mr-2 font-mono font-semibold leading-5">{name}</div>
-            <div className="mr-2 text-left font-mono text-sm font-medium leading-5 text-muted-foreground">
+            <span className="mr-2 font-mono font-semibold leading-none">
+              {name}
+            </span>
+            <span className="mr-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
               {type}
-            </div>
+            </span>
           </h4>
         </li>
       </AccordionTrigger>
@@ -149,7 +151,7 @@ export function APISubListItem({
 }) {
   return (
     <div className="border-t border-t-border p-3">
-      <h4 className="relative flex py-2 font-mono font-semibold tracking-tight">
+      <h4 className="relative py-2 font-mono font-semibold tracking-tight">
         {/* <a */}
         {/*  href={`#${name}`} */}
         {/*  className={cn('opacity-0 hover:opacity-100 group-hover:opacity-100')} */}
@@ -159,23 +161,23 @@ export function APISubListItem({
         {/*    <Icons.pragma className="h-4 w-4 text-muted-foreground" /> */}
         {/*  </div> */}
         {/* </a> */}
-        <div className="font-semibold leading-5 text-muted-foreground">
+        <span className="font-semibold leading-none text-muted-foreground">
           {parent}.
-        </div>
-        <div className="font-semibold leading-5">{name}</div>
+        </span>
+        <span className="font-semibold leading-none">{name}</span>
         {required && (
-          <div className="ml-2 font-mono text-sm leading-5 text-orange-500">
+          <span className="ml-2 font-mono text-xs leading-none text-orange-500">
             REQUIRED
-          </div>
+          </span>
         )}
         {!required && optional && (
-          <div className="ml-2 text-left text-sm font-medium leading-5 text-muted-foreground">
+          <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
             optional
-          </div>
+          </span>
         )}
-        <div className="ml-2 text-left text-sm font-medium leading-5 text-muted-foreground">
+        <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
           {type}
-        </div>
+        </span>
       </h4>
       <div>{children}</div>
     </div>
