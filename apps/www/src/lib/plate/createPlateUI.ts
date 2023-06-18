@@ -57,7 +57,6 @@ import { CodeLeaf } from '@/components/plate-ui/code-leaf';
 import { CodeLineElement } from '@/components/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
 import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
-import { withDraggables } from '@/components/plate-ui/draggables/with-draggables';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
@@ -137,7 +136,7 @@ export const createPlateUI = <T extends string = string>(
     components = withPlaceholders(components);
   }
   if (draggable) {
-    components = withDraggables(components);
+    // components = withDraggables(components);
   }
 
   return components as Record<DefaultPlatePluginKey | T, PlatePluginComponent>;

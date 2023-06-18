@@ -23,7 +23,6 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 import { PlatePluginComponent } from '@udecode/plate-core';
-import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
@@ -165,10 +164,10 @@ export const usePlaygroundPlugins = ({
             enabled: id === 'blockselection' && !!enabled.blockSelection,
           }),
           createComboboxPlugin({ enabled: !!enabled.combobox }),
-          createDndPlugin({
-            options: { enableScroller: true },
-            enabled: !!enabled.dnd,
-          }),
+          // createDndPlugin({
+          //   options: { enableScroller: true },
+          //   enabled: !!enabled.dnd,
+          // }),
           createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
@@ -232,7 +231,7 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
       {},
       {
         placeholder: isEnabled('placeholder', id),
-        draggable: isEnabled('dnd', id),
+        // draggable: isEnabled('dnd', id),
       }
     ),
   });

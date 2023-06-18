@@ -36,7 +36,7 @@ export function APIItem({ children, name, type, value }: Item) {
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute -left-5 top-5 pr-1">
+              <div className="absolute -left-5 top-[10px] pr-1 leading-5">
                 <Icons.pragma className="h-4 w-4 text-muted-foreground" />
               </div>
             </a>
@@ -149,7 +149,7 @@ export function APISubListItem({
 }) {
   return (
     <div className="border-t border-t-border p-3">
-      <h4 className="relative flex py-2 font-semibold leading-none tracking-tight">
+      <h4 className="relative flex py-2 font-mono font-semibold tracking-tight">
         {/* <a */}
         {/*  href={`#${name}`} */}
         {/*  className={cn('opacity-0 hover:opacity-100 group-hover:opacity-100')} */}
@@ -159,14 +159,21 @@ export function APISubListItem({
         {/*    <Icons.pragma className="h-4 w-4 text-muted-foreground" /> */}
         {/*  </div> */}
         {/* </a> */}
-        <div className="font-mono font-semibold leading-5 text-muted-foreground">
+        <div className="font-semibold leading-5 text-muted-foreground">
           {parent}.
         </div>
-        <div className="font-mono font-semibold leading-5">{name}</div>
+        <div className="font-semibold leading-5">{name}</div>
         {required && (
-          <div className="font-mono text-primary-foreground">REQUIRED</div>
+          <div className="ml-2 font-mono text-sm leading-5 text-orange-500">
+            REQUIRED
+          </div>
         )}
-        <div className="ml-2 text-left font-mono text-sm font-medium leading-5 text-muted-foreground">
+        {!required && optional && (
+          <div className="ml-2 text-left text-sm font-medium leading-5 text-muted-foreground">
+            optional
+          </div>
+        )}
+        <div className="ml-2 text-left text-sm font-medium leading-5 text-muted-foreground">
           {type}
         </div>
       </h4>

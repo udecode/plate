@@ -18,7 +18,6 @@ import {
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
-import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
@@ -267,13 +266,13 @@ export const settingPluginItems = {
     badges: [settingBadges.handler, settingBadges.ui],
     // route: settingValues.combobox.route,
   },
-  [KEY_DND]: {
-    id: KEY_DND,
-    label: 'Drag & Drop',
-    badges: [settingBadges.handler, settingBadges.ui],
-    dependencies: [KEY_NODE_ID],
-    route: settingValues.dnd.route,
-  },
+  // [KEY_DND]: {
+  //   id: KEY_DND,
+  //   label: 'Drag & Drop',
+  //   badges: [settingBadges.handler, settingBadges.ui],
+  //   dependencies: [KEY_NODE_ID],
+  //   route: settingValues.dnd.route,
+  // },
   [KEY_DRAG_OVER_CURSOR]: {
     id: KEY_DRAG_OVER_CURSOR,
     label: 'Drag Cursor',
@@ -430,7 +429,7 @@ export const settingPlugins = [
       settingPluginItems[KEY_AUTOFORMAT],
       settingPluginItems[KEY_BLOCK_SELECTION],
       settingPluginItems[KEY_COMBOBOX],
-      settingPluginItems[KEY_DND],
+      // settingPluginItems[KEY_DND],
       settingPluginItems[KEY_DRAG_OVER_CURSOR],
       settingPluginItems[KEY_EMOJI],
       settingPluginItems[KEY_EXIT_BREAK],
