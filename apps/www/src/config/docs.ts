@@ -292,6 +292,7 @@ export const docsConfig: DocsConfig = {
           title: 'PlatePlugin',
           href: '/docs/api/plate-plugin',
           items: [],
+          headings: ['createPlugins'],
         },
         {
           title: 'Store',

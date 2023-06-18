@@ -19,11 +19,19 @@ type Item = {
   type: string;
   description?: string;
   value?: string;
+  required?: boolean;
   optional?: boolean;
   children: ReactNode;
 };
 
-export function APIItem({ children, name, type, value }: Item) {
+export function APIItem({
+  children,
+  name,
+  type,
+  value,
+  optional,
+  required,
+}: Item) {
   return (
     <AccordionItem value={value ?? name} className="select-text">
       <AccordionTrigger className="group">
@@ -40,10 +48,18 @@ export function APIItem({ children, name, type, value }: Item) {
                 <Icons.pragma className="h-4 w-4 text-muted-foreground" />
               </div>
             </a>
-            <span className="mr-2 font-mono font-semibold leading-none">
-              {name}
-            </span>
-            <span className="mr-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
+            <span className="font-mono font-semibold leading-none">{name}</span>
+            {required && (
+              <span className="ml-2 font-mono text-xs leading-none text-orange-500">
+                REQUIRED
+              </span>
+            )}
+            {!required && optional && (
+              <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
+                optional
+              </span>
+            )}
+            <span className="ml-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
               {type}
             </span>
           </h4>
