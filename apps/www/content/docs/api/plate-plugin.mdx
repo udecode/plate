@@ -16,14 +16,14 @@ description: PlatePlugin API.
     </>
   }
 >
-<APIItem name="key" type="string">
+<APIItem name="key" type="string" required>
 
 Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
 
-- Unique and required.
+- Unique in the editor.
 - Naming convention:
-- all Plate element keys start with `ELEMENT_`.
-- all Plate mark keys start with `MARK_`.
+  - all Plate element keys start with `ELEMENT_`.
+  - all Plate mark keys start with `MARK_`.
 
 </APIItem>
   
@@ -54,7 +54,7 @@ Property used by Plate to decorate editor ranges.
   Properties used by the HTML deserializer core plugin for each HTML element.
 
   <APISubList>
-    <APISubListItem parent="deserializeHtml" name="attributeNames" type="string[]?">
+    <APISubListItem required optional parent="deserializeHtml" name="attributeNames" type="string[]?">
       List of HTML attribute names to store their values in `node.attributes`.
       <APISubList>
         <APISubListItem parent="deserializeHtml.attributeNames" name="test" type="string[]?">

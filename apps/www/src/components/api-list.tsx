@@ -19,6 +19,7 @@ type Item = {
   type: string;
   description?: string;
   value?: string;
+  optional?: boolean;
   children: ReactNode;
 };
 
@@ -35,7 +36,7 @@ export function APIItem({ children, name, type, value }: Item) {
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute -left-5 top-2 pr-1">
+              <div className="absolute -left-5 top-5 pr-1">
                 <Icons.pragma className="h-4 w-4 text-muted-foreground" />
               </div>
             </a>
@@ -135,11 +136,15 @@ export function APISubListItem({
   parent,
   name,
   type,
+  optional,
+  required,
   children,
 }: {
   parent: string;
   name: string;
   type: string;
+  required?: boolean;
+  optional?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -158,6 +163,9 @@ export function APISubListItem({
           {parent}.
         </div>
         <div className="font-mono font-semibold leading-5">{name}</div>
+        {required && (
+          <div className="font-mono text-primary-foreground">REQUIRED</div>
+        )}
         <div className="ml-2 text-left font-mono text-sm font-medium leading-5 text-muted-foreground">
           {type}
         </div>

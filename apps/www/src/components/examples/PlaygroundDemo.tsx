@@ -238,6 +238,7 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
   });
 
   return (
+    // <DndProvider backend={HTML5Backend}>
     <div className="relative">
       <PlateProvider<MyValue>
         key={settingsStore.use.key()}
@@ -287,5 +288,6 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
 
       {!id && <SettingsPanel />}
     </div>
+    // </DndProvider>
   );
 }
