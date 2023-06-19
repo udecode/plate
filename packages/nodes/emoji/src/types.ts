@@ -77,3 +77,8 @@ export type EmojiIconList<T = string> = {
     delete: T;
   };
 };
+
+export type FindTriggeringInputProps = {
+  char?: string;
+  action?: 'insert' | 'delete';
+};
