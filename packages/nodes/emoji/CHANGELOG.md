@@ -1,5 +1,14 @@
 # @udecode/plate-emoji
 
+## 21.3.5
+
+### Patch Changes
+
+- [#2433](https://github.com/udecode/plate/pull/2433) by [@bojangles-m](https://github.com/bojangles-m) –
+  - removed fix number to find triggering mark, now triggered with space followed by colon
+  - possible forward delete
+  - improved code to no interfere with other combobox plugin
+
 ## 21.3.3
 
 ### Patch Changes

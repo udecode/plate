@@ -1,5 +1,12 @@
 # @udecode/plate-table-ui
 
+## 21.3.5
+
+### Patch Changes
+
+- [#2435](https://github.com/udecode/plate/pull/2435) by [@12joan](https://github.com/12joan) –
+  - Specify button icon width explicitly
+
 ## 21.3.4
 
 ## 21.3.2

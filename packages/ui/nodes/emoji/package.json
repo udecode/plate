@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-emoji",
-  "version": "21.3.3",
+  "version": "21.3.5",
   "description": "Emoji UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -21,10 +21,10 @@
   "dependencies": {
     "@udecode/plate-combobox": "21.3.2",
     "@udecode/plate-common": "21.3.2",
-    "@udecode/plate-emoji": "21.3.3",
+    "@udecode/plate-emoji": "21.3.5",
     "@udecode/plate-styled-components": "21.3.2",
     "@udecode/plate-ui-combobox": "21.3.2",
-    "@udecode/plate-ui-toolbar": "21.3.2"
+    "@udecode/plate-ui-toolbar": "21.3.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

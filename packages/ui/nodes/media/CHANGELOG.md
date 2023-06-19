@@ -1,5 +1,7 @@
 # @udecode/plate-ui-media
 
+## 21.3.5
+
 ## 21.3.4
 
 ## 21.3.2

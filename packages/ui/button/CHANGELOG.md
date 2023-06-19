@@ -1,5 +1,13 @@
 # @udecode/plate-ui-button
 
+## 21.3.5
+
+### Patch Changes
+
+- [#2435](https://github.com/udecode/plate/pull/2435) by [@12joan](https://github.com/12joan) –
+  - Remove hardcoded svg width and height
+    - Fixes overflow in comment popover button icons
+
 ## 21.3.2
 
 ## 21.3.0
