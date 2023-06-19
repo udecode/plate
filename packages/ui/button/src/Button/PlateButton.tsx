@@ -29,11 +29,6 @@ export const plateButtonCss = [
     :visited {
       color: inherit;
     }
-
-    svg {
-      width: 16px;
-      height: 16px;
-    }
   `,
 ];
 

@@ -27,7 +27,7 @@ export const RemoveNodeButton = ({
       }}
       {...props}
     >
-      <DeleteIcon />
+      <DeleteIcon tw="w-4" />
       {children}
     </PlateButton>
   );

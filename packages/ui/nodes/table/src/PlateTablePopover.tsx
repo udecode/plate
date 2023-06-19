@@ -29,7 +29,7 @@ export const PlateTablePopover = ({ children, ...props }: PopoverProps) => {
                 tw="justify-start w-full"
                 aria-label="Borders"
               >
-                <BorderAllIcon />
+                <BorderAllIcon tw="w-4" />
                 <div>Borders</div>
               </PlateButton>
             </DropdownMenu.Trigger>
