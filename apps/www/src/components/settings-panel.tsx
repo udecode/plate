@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
+import Sheet from 'react-modal-sheet';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { useDebounce } from './hooks/use-debounce';
+import { useViewport } from './hooks/use-viewport';
 import {
   Accordion,
   AccordionContent,
@@ -13,7 +15,6 @@ import { buttonVariants } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { ScrollArea } from './ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
@@ -173,13 +174,71 @@ export function SettingsEffect() {
   return null;
 }
 
-export function SettingsPanel() {
-  const showSettings = settingsStore.use.showSettings();
+export interface SettingsPanelWrapperProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
 
-  if (!showSettings) return null;
+export function SettingsPanelStaticWrapper({
+  isOpen,
+  children,
+}: SettingsPanelWrapperProps) {
+  return isOpen ? (
+    <div className="grow shrink-0 border-l border-l-border w-[433px]">
+      {children}
+    </div>
+  ) : null;
+}
+
+export function SettingsPanelSheetWrapper({
+  isOpen,
+  onClose,
+  children,
+}: SettingsPanelWrapperProps) {
+  const [isFirstRender, setIsFirstRender] = useState(true);
+
+  useEffect(() => {
+    setIsFirstRender(false);
+  }, []);
+
+  const SheetBackdrop = Sheet.Backdrop as (typeof Sheet.Backdrop & React.FC<{
+    onClick: () => void;
+  }>);
 
   return (
-    <div className="grow shrink-0 border-l border-l-border w-[433px]">
+    <Sheet
+      isOpen={isOpen}
+      onClose={onClose}
+      snapPoints={[0.8, 0]}
+      // Prevent close animation on first render
+      prefersReducedMotion={isFirstRender}
+    >
+      <Sheet.Container>
+        <Sheet.Header />
+        <Sheet.Content disableDrag>
+          {isOpen ? children : null}
+        </Sheet.Content>
+      </Sheet.Container>
+
+      <SheetBackdrop onClick={onClose} />
+    </Sheet>
+  );
+}
+
+export function SettingsPanel() {
+  const showSettings = settingsStore.use.showSettings();
+  const { width: viewportWidth } = useViewport();
+
+  const isSheet = viewportWidth < 1024;
+  const Wrapper = isSheet ? SettingsPanelSheetWrapper : SettingsPanelStaticWrapper;
+
+  useLayoutEffect(() => {
+    settingsStore.set.showSettings(!isSheet);
+  }, [isSheet]);
+
+  return (
+    <Wrapper isOpen={showSettings} onClose={() => settingsStore.set.showSettings(false)}>
       <SettingsEffect />
 
       <div className="px-6 pb-1 pt-4">
@@ -202,6 +261,6 @@ export function SettingsPanel() {
           </AccordionItem>
         ))}
       </Accordion>
-    </div>
+    </Wrapper>
   );
 }

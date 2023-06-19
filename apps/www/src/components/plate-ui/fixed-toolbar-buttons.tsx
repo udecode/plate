@@ -31,7 +31,6 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
-import { SettingsToggle } from '@/components/settings-toggle';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
 
 export function FixedToolbarButtons() {
@@ -118,8 +117,6 @@ export function FixedToolbarButtons() {
       <div className="flex gap-1">
         <CommentToolbarButton />
         <ModeDropdownMenu />
-
-        <SettingsToggle />
       </div>
     </>
   );

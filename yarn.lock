@@ -1962,6 +1962,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emotion/is-prop-valid@npm:^0.8.2":
+  version: 0.8.8
+  resolution: "@emotion/is-prop-valid@npm:0.8.8"
+  dependencies:
+    "@emotion/memoize": "npm:0.7.4"
+  checksum: 2709fd849da334055e4bb29724647af73209a3e7f274ff3ad24d55e244747ade89daf4526bf541837559adb271f70ad26c60d311f51c4bdcc8728e6b14eb3d18
+  languageName: node
+  linkType: hard
+
+"@emotion/memoize@npm:0.7.4":
+  version: 0.7.4
+  resolution: "@emotion/memoize@npm:0.7.4"
+  checksum: 6ea6add503898a3ffa90d549c7d841ba31652a37fd12c1517574d7aebcfa7735583489ff0678e28626e33c34f701cb1e9ced71dd4684cb8d43efc054f11bcaff
+  languageName: node
+  linkType: hard
+
 "@esbuild-plugins/node-resolve@npm:^0.1.4":
   version: 0.1.4
   resolution: "@esbuild-plugins/node-resolve@npm:0.1.4"
@@ -5323,6 +5339,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-aria/ssr@npm:^3.4.1":
+  version: 3.6.0
+  resolution: "@react-aria/ssr@npm:3.6.0"
+  dependencies:
+    "@swc/helpers": "npm:^0.4.14"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+  checksum: 3b8d3933d9f5f9e16a5b448b753c033146ff342f8cacc09db4e2a89458dce6d3a95f91769921f3932de983d5f64db10ece560f806d02a6667abd02dbd9e5ab26
+  languageName: node
+  linkType: hard
+
+"@react-aria/utils@npm:3.14.2":
+  version: 3.14.2
+  resolution: "@react-aria/utils@npm:3.14.2"
+  dependencies:
+    "@react-aria/ssr": "npm:^3.4.1"
+    "@react-stately/utils": "npm:^3.5.2"
+    "@react-types/shared": "npm:^3.16.0"
+    "@swc/helpers": "npm:^0.4.14"
+    clsx: "npm:^1.1.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+  checksum: 71a20e62f452b28d9f4ea69f568a033369ab4a07fd3fc5e1eeb610bdeb2b6cd9220b173137d0148dd39c459f5f9d1b3af04b951474bb140602701096eef2abb3
+  languageName: node
+  linkType: hard
+
 "@react-dnd/asap@npm:4.0.1":
   version: 4.0.1
   resolution: "@react-dnd/asap@npm:4.0.1"
@@ -5350,6 +5392,26 @@ __metadata:
   peerDependencies:
     react: ">=16.8"
   checksum: ab03742ec3d75bd48b0f84978ea7fdae28a0e498d895490d7125a6b47af9d0657ea0b9954c99e6a96698e754ab17fc9caa115456afa48feb0cb602dbf2bcc6a6
+  languageName: node
+  linkType: hard
+
+"@react-stately/utils@npm:^3.5.2":
+  version: 3.6.0
+  resolution: "@react-stately/utils@npm:3.6.0"
+  dependencies:
+    "@swc/helpers": "npm:^0.4.14"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+  checksum: 395f451198065acee895e9b4cb2096618c3d1d7c2bb49bd4d45651f8c68567c54fc404b7031194ba01e10c3f286ce00d7eba8e448e74f5d7984d58afc5638869
+  languageName: node
+  linkType: hard
+
+"@react-types/shared@npm:^3.16.0":
+  version: 3.18.1
+  resolution: "@react-types/shared@npm:3.18.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+  checksum: 797a3512734d41ad55361c4b4fbbbb6cd3c54879731f86152b57c8ea1fafd8066e6a4ee2744af791db9fe01c500288e439c47460885365ea505b41738385a645
   languageName: node
   linkType: hard
 
@@ -5443,6 +5505,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.4.0"
   checksum: ac7ad276f6afaf22e251b246f71e797e451a80ac606fa0ad978ee016fd17eddd317737004b792d8486f40ed8e9df083337309afc851d6861aa09d8f8f6d47b1f
+  languageName: node
+  linkType: hard
+
+"@swc/helpers@npm:^0.4.14":
+  version: 0.4.14
+  resolution: "@swc/helpers@npm:0.4.14"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 39441920bbc95a5d13538f2250af91ec0e32b65fe3c774bbfc8912199e6a92d77705b2c7b3f3e3cbbe1e6e58978637a5b9fc5f3908fda94a73f0ed998f3dea6d
   languageName: node
   linkType: hard
 
@@ -12328,6 +12399,27 @@ __metadata:
   dependencies:
     map-cache: "npm:^0.2.2"
   checksum: 2a3a27cb1381b8ab24227bd3f5bc3df610c8628585945aa549abbbf0faff8dbf919986b3df6325e4a2dd7835466d0d271587d27f660ad007d273f9613f8b36a5
+  languageName: node
+  linkType: hard
+
+"framer-motion@npm:10.12.16":
+  version: 10.12.16
+  resolution: "framer-motion@npm:10.12.16"
+  dependencies:
+    "@emotion/is-prop-valid": "npm:^0.8.2"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  dependenciesMeta:
+    "@emotion/is-prop-valid":
+      optional: true
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: 938b0267a1be021ab6fa5d4727f66d87f99d3fe1d8d23ee9d782101aad8c939e6c9cb83c9a937b8ad4a5d796ad32341aaf55ce9285aac3f4a54afe6a52f853a9
   languageName: node
   linkType: hard
 
@@ -20229,6 +20321,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-modal-sheet@npm:1.10.2":
+  version: 1.10.2
+  resolution: "react-modal-sheet@npm:1.10.2"
+  dependencies:
+    "@react-aria/utils": "npm:3.14.2"
+  peerDependencies:
+    framer-motion: ">=2"
+    react: ">=16"
+  checksum: b1965754c6d208cad62baad2759240c9793aaea7623f980bfff9f06f8ae72eaec353913e717b73787023ef672265907a0b1f3f889b3317ec963d213730b3847e
+  languageName: node
+  linkType: hard
+
 "react-pro-sidebar@npm:^0.7.1":
   version: 0.7.1
   resolution: "react-pro-sidebar@npm:0.7.1"
@@ -24995,6 +25099,7 @@ __metadata:
     cmdk: "npm:^0.2.0"
     contentlayer: "npm:0.3.0"
     date-fns: "npm:^2.29.3"
+    framer-motion: "npm:10.12.16"
     lucide-react: "npm:^0.220.0"
     mdast-util-toc: "npm:^6.1.0"
     next: "npm:^13.4.3"
@@ -25004,6 +25109,7 @@ __metadata:
     prism-react-renderer: "npm:^1.2.0"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
+    react-modal-sheet: "npm:1.10.2"
     react-pro-sidebar: "npm:^0.7.1"
     react-wrap-balancer: "npm:^0.4.0"
     rehype: "npm:^12.0.1"

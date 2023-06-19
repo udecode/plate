@@ -66,6 +66,7 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { SettingsPanel } from '@/components/settings-panel';
+import { SettingsToggle } from '@/components/settings-toggle';
 import { cn } from '@/lib/utils';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
@@ -268,6 +269,12 @@ export function PlaygroundDemo() {
 
             <CommentsPopover />
           </CommentsProvider>
+
+          <div className="sticky top-full z-10 h-0 w-0">
+            <div className="-translate-x-[200%] -translate-y-full p-5">
+              <SettingsToggle />
+            </div>
+          </div>
 
           <SettingsPanel />
         </div>
