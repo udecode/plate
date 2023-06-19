@@ -1,6 +1,5 @@
 import React, { use, useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
-import Sheet from 'react-modal-sheet';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { useDebounce } from './hooks/use-debounce';
 import { useViewport } from './hooks/use-viewport';
@@ -16,6 +15,13 @@ import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import {
+  BottomSheet,
+  BottomSheetContainer,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetBackdrop,
+} from './ui/bottom-sheet';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
@@ -202,33 +208,21 @@ export function SettingsPanelSheetWrapper({
   onClose,
   children,
 }: SettingsPanelWrapperProps) {
-  const [isFirstRender, setIsFirstRender] = useState(true);
-
-  useEffect(() => {
-    setIsFirstRender(false);
-  }, []);
-
-  const SheetBackdrop = Sheet.Backdrop as (typeof Sheet.Backdrop & React.FC<{
-    onClick: () => void;
-  }>);
-
   return (
-    <Sheet
-      isOpen={isOpen}
-      onClose={onClose}
-      snapPoints={[0.8, 0]}
-      // Prevent close animation on first render
-      prefersReducedMotion={isFirstRender}
-    >
-      <Sheet.Container>
-        <Sheet.Header />
-        <Sheet.Content disableDrag>
-          {isOpen ? children : null}
-        </Sheet.Content>
-      </Sheet.Container>
+    <BottomSheet isOpen={isOpen} onClose={onClose}>
+      <BottomSheetContainer>
+        <BottomSheetHeader
+          className="cursor-pointer"
+          onTap={onClose}
+        />
 
-      <SheetBackdrop onClick={onClose} />
-    </Sheet>
+        <BottomSheetContent>
+          {isOpen ? children : null}
+        </BottomSheetContent>
+      </BottomSheetContainer>
+
+      <BottomSheetBackdrop onTap={onClose} />
+    </BottomSheet>
   );
 }
 
