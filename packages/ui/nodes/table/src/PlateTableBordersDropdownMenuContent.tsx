@@ -28,7 +28,7 @@ const CheckIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const Check = ({ checked }: { checked?: boolean }) =>
-  checked ? <CheckIcon tw="block" /> : <div tw="w-4 h-4" />;
+  checked ? <CheckIcon tw="block w-4" /> : <div tw="w-4 h-4" />;
 
 export const PlateTableBordersDropdownMenuContent = () => {
   const {
