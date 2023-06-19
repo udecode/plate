@@ -160,12 +160,18 @@ export function SettingsEffect() {
   const debouncedKey = useDebounce(key, 1000);
 
   useEffect(() => {
+    console.log(0);
+  }, []);
+
+  useEffect(() => {
+    console.log(1);
     if (checkedPluginsNext) {
       setKey(Math.random());
     }
   }, [checkedPluginsNext]);
 
   useEffect(() => {
+    console.log(2);
     if (debouncedKey) {
       settingsStore.set.syncChecked();
     }
