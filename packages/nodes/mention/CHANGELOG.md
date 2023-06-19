@@ -1,5 +1,15 @@
 # @udecode/plate-mention
 
+## 21.3.5
+
+### Patch Changes
+
+- [#2430](https://github.com/udecode/plate/pull/2430) by [@bojangles-m](https://github.com/bojangles-m) – Render an empty node tag at block start
+
+## 21.3.2
+
+## 21.3.0
+
 ## 21.1.5
 
 ## 21.0.0

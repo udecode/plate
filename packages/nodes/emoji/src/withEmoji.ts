@@ -5,7 +5,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { getFindTriggeringInput } from './handlers';
+import { getEmojiOnSelectItem, getFindTriggeringInput } from './handlers';
 import { EmojiPlugin } from './types';
 import { EmojiInlineIndexSearch } from './utils';
 
@@ -25,15 +25,28 @@ export const withEmoji = <
     emojiTriggeringController!
   );
 
-  const { apply, insertText } = editor;
+  const { apply, insertText, deleteBackward, deleteForward } = editor;
 
-  editor.insertText = (text) => {
+  editor.insertText = (char) => {
     const { selection } = editor;
-    if (!selection || !isCollapsed(selection)) return insertText(text);
 
-    findTheTriggeringInput(text);
+    if (!isCollapsed(selection)) {
+      return insertText(char);
+    }
 
-    return insertText(text);
+    findTheTriggeringInput({ char });
+
+    return insertText(char);
+  };
+
+  editor.deleteBackward = (unit) => {
+    findTheTriggeringInput({ action: 'delete' });
+    return deleteBackward(unit);
+  };
+
+  editor.deleteForward = (unit) => {
+    findTheTriggeringInput();
+    return deleteForward(unit);
   };
 
   editor.apply = (operation) => {
@@ -43,30 +56,29 @@ export const withEmoji = <
       return;
     }
 
+    const searchText = emojiTriggeringController.getText();
+
     switch (operation.type) {
       case 'set_selection':
-        emojiTriggeringController!.reset();
+        emojiTriggeringController.reset();
         comboboxActions.reset();
         break;
 
       case 'insert_text':
-        if (emojiTriggeringController!.isTriggering) {
-          const searchText = emojiTriggeringController!.getText();
-          comboboxActions.items(
-            emojiInlineIndexSearch.search(searchText).get()
-          );
-          comboboxActions.open({
-            activeId: id!,
-            text: '',
-            targetRange: editor.selection,
-          });
+        if (
+          emojiTriggeringController.hasEnclosingTriggeringMark() &&
+          emojiInlineIndexSearch.search(searchText).hasFound(true)
+        ) {
+          const item = emojiInlineIndexSearch.getEmoji();
+          item && getEmojiOnSelectItem()(editor, item);
+          break;
         }
-        break;
 
-      case 'remove_text':
-        findTheTriggeringInput();
-        if (emojiTriggeringController!.isTriggering) {
-          const searchText = emojiTriggeringController!.getText();
+        if (
+          !emojiTriggeringController.hasEnclosingTriggeringMark() &&
+          emojiTriggeringController.isTriggering &&
+          emojiInlineIndexSearch.search(searchText).hasFound()
+        ) {
           comboboxActions.items(
             emojiInlineIndexSearch.search(searchText).get()
           );
@@ -78,7 +90,27 @@ export const withEmoji = <
           break;
         }
 
-        emojiTriggeringController!.reset();
+        emojiTriggeringController.reset();
+        comboboxActions.reset();
+        break;
+
+      case 'remove_text':
+        if (
+          emojiTriggeringController.isTriggering &&
+          emojiInlineIndexSearch.search(searchText).hasFound()
+        ) {
+          comboboxActions.items(
+            emojiInlineIndexSearch.search(searchText).get()
+          );
+          comboboxActions.open({
+            activeId: id!,
+            text: '',
+            targetRange: editor.selection,
+          });
+          break;
+        }
+
+        emojiTriggeringController.reset();
         comboboxActions.reset();
         break;
     }

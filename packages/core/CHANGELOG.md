@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 21.3.2
+
+### Patch Changes
+
+- [#2415](https://github.com/udecode/plate/pull/2415) by [@santialbo](https://github.com/santialbo) – support new prop name initialValue on Slate after 0.94.1
+
+## 21.3.0
+
 ## 21.1.5
 
 ### Patch Changes

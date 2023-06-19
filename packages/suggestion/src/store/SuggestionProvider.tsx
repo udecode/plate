@@ -16,7 +16,7 @@ export interface SuggestionStoreState {
    */
   users: Record<string, SuggestionUser>;
 
-  myUserId: string | null;
+  currentUserId: string | null;
 
   /**
    * Suggestions data.
@@ -44,7 +44,7 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
     /**
      * Id of the current user.
      */
-    myUserId: null,
+    currentUserId: null,
 
     /**
      * Users data.
@@ -108,12 +108,12 @@ export const useSuggestionUserById = (
   return users[id];
 };
 
-export const useMySuggestionUser = (): SuggestionUser | null => {
+export const useCurrentSuggestionUser = (): SuggestionUser | null => {
   const users = useSuggestionSelectors().users();
-  const myUserId = useSuggestionSelectors().myUserId();
-  if (!myUserId) return null;
+  const currentUserId = useSuggestionSelectors().currentUserId();
+  if (!currentUserId) return null;
 
-  return users[myUserId];
+  return users[currentUserId];
 };
 
 export const useUpdateSuggestion = (id?: string | null) => {
@@ -133,10 +133,10 @@ export const useUpdateSuggestion = (id?: string | null) => {
 
 export const useAddSuggestion = () => {
   const [suggestions, setSuggestions] = useSuggestionStates().suggestions();
-  const myUserId = useSuggestionSelectors().myUserId();
+  const currentUserId = useSuggestionSelectors().currentUserId();
 
   return (value: WithPartial<TSuggestion, 'id' | 'userId' | 'createdAt'>) => {
-    if (!myUserId) return;
+    if (!currentUserId) return;
 
     const id = value.id ?? nanoid();
 
@@ -144,7 +144,7 @@ export const useAddSuggestion = () => {
       ...suggestions,
       [id]: {
         id,
-        userId: myUserId,
+        userId: currentUserId,
         createdAt: Date.now(),
         ...value,
       },

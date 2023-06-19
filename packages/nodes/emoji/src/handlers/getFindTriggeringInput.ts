@@ -1,59 +1,78 @@
-import { comboboxActions } from '@udecode/plate-combobox';
 import {
   getEditorString,
   getPointBefore,
   getRange,
+  isCollapsed,
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
-import { BasePoint, BaseRange } from 'slate';
+import { BasePoint } from 'slate';
+import { FindTriggeringInputProps } from '../types';
 import { IEmojiTriggeringController } from '../utils';
 
-const getNextPoint = <V extends Value>(
+const isSpaceBreak = (char?: string) => !!char && /\s/.test(char);
+
+const getPreviousChar = <V extends Value>(
   editor: PlateEditor<V>,
-  endPoint: BasePoint
+  point?: BasePoint
 ) =>
-  getPointBefore(editor, endPoint, {
-    unit: 'character',
-    distance: 1,
-  });
+  point
+    ? getEditorString(
+        editor,
+        getRange(editor, point, getPointBefore(editor, point))
+      )
+    : undefined;
 
-const getFoundText = <V extends Value>(
+const getPreviousPoint = <V extends Value>(
   editor: PlateEditor<V>,
-  start: BaseRange,
-  end?: BasePoint
-) => getEditorString(editor, getRange(editor, start, end));
+  point?: BasePoint
+) => (point ? getPointBefore(editor, point) : undefined);
 
-const isBreakingCharInText = (text: string) => /\s/.test(text);
+const isBeginningOfTheLine = <V extends Value>(
+  editor: PlateEditor<V>,
+  point?: BasePoint
+) => {
+  const previousPoint = getPreviousPoint(editor, point);
+  return point?.path[0] !== previousPoint?.path[0];
+};
 
 export const getFindTriggeringInput = <V extends Value>(
   editor: PlateEditor<V>,
   emojiTriggeringController: IEmojiTriggeringController
-) => (text = '') => {
-  const selection = editor.selection as BaseRange;
-  const startPoint = editor.selection as BaseRange;
-  let currentText = text;
+) => (
+  { char = '', action = 'insert' }: FindTriggeringInputProps = {
+    char: '',
+    action: 'insert',
+  }
+) => {
+  const { selection } = editor;
 
-  let endPoint = selection.anchor;
-  let nextPoint;
-  let repeat = emojiTriggeringController.getOptions().maxTextToSearch;
+  if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {
+    emojiTriggeringController.setIsTriggering(false);
+    return;
+  }
+
+  const startPoint = selection.anchor;
+  let currentPoint: undefined | BasePoint = startPoint;
+  let previousPoint;
+
+  let foundText = char;
+  let previousChar;
 
   do {
-    if (!endPoint) break;
+    previousChar = getPreviousChar(editor, currentPoint);
+    foundText = previousChar + foundText;
+    previousPoint = getPreviousPoint(editor, currentPoint);
 
-    emojiTriggeringController.setText(currentText);
-    if (emojiTriggeringController.hasTriggeringMark) break;
-
-    nextPoint = getNextPoint(editor, endPoint);
-    const foundText = getFoundText(editor, startPoint, nextPoint);
-
-    endPoint = nextPoint!;
-    currentText = `${foundText}${text}`;
-
-    if (isBreakingCharInText(currentText)) {
-      emojiTriggeringController.reset();
-      comboboxActions.reset();
+    if (isBeginningOfTheLine(editor, currentPoint)) {
       break;
     }
-  } while (--repeat > 0);
+
+    currentPoint = previousPoint;
+  } while (!isSpaceBreak(previousChar));
+
+  foundText = foundText.trim();
+  if (action === 'delete') foundText = foundText.slice(0, -1);
+
+  emojiTriggeringController.setText(foundText);
 };

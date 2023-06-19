@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-horizontal-rule",
-  "version": "21.1.5",
+  "version": "21.3.2",
   "description": "Horizontal rule plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.1.5"
+    "@udecode/plate-common": "21.3.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

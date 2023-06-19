@@ -1,5 +1,21 @@
 # @udecode/plate-headless
 
+## 21.3.5
+
+## 21.3.4
+
+## 21.3.3
+
+## 21.3.2
+
+## 21.3.1
+
+## 21.3.0
+
+### Minor Changes
+
+- [#2410](https://github.com/udecode/plate/pull/2410) by [@zbeyens](https://github.com/zbeyens) – ✨ Suggestion plugin
+
 ## 21.2.0
 
 ## 21.1.5

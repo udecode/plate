@@ -8,39 +8,39 @@ import { addSuggestionMark } from './addSuggestionMark';
 jsx;
 
 describe('addSuggestionMark', () => {
-  describe('when editor.activeSuggestionId is defined', () => {
-    it('should not add marks', () => {
-      const input = ((
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any) as PlateEditor;
-
-      const editor = createPlateEditor({
-        editor: input,
-      });
-      editor.activeSuggestionId = 'active_suggestion_id';
-
-      addSuggestionMark(editor);
-
-      expect(editor.marks).toBeNull();
-    });
-  });
+  // describe('when editor.activeSuggestionId is defined', () => {
+  //   it('should not add marks', () => {
+  //     const input = ((
+  //       <editor>
+  //         <hp>
+  //           test
+  //           <cursor />
+  //         </hp>
+  //       </editor>
+  //     ) as any) as PlateEditor;
+  //
+  //     const editor = createPlateEditor({
+  //       editor: input,
+  //     });
+  //     editor.activeSuggestionId = 'active_suggestion_id';
+  //
+  //     addSuggestionMark(editor);
+  //
+  //     expect(editor.marks).toBeNull();
+  //   });
+  // });
 
   describe('when editor.activeSuggestionId is not defined', () => {
     describe('when editor.marks?.[MARK_SUGGESTION] is not defined', () => {
       it('should add marks', () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>
               test
               <cursor />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

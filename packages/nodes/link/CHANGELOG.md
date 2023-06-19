@@ -1,5 +1,9 @@
 # @udecode/plate-link
 
+## 21.3.2
+
+## 21.3.0
+
 ## 21.2.0
 
 ### Minor Changes

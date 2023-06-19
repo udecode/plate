@@ -7,7 +7,7 @@ export const MySuggestionProvider = ({ children }: { children: ReactNode }) => {
     <SuggestionProvider
       suggestions={suggestionsData}
       users={usersData}
-      myUserId="1"
+      currentUserId="1"
     >
       {children}
     </SuggestionProvider>

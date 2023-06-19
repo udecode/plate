@@ -27,6 +27,7 @@ import {
   createIndentPlugin,
   createItalicPlugin,
   createKbdPlugin,
+  createLineHeightPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
@@ -71,6 +72,7 @@ import { emojiPlugin } from './emoji/emojiPlugin';
 import { exitBreakPlugin } from './exit-break/exitBreakPlugin';
 import { forcedLayoutPlugin } from './forced-layout/forcedLayoutPlugin';
 import { indentPlugin } from './indent/indentPlugin';
+import { lineHeightPlugin } from "./line-height/lineHeightPlugin";
 import { linkPlugin } from './link/linkPlugin';
 import { MENTIONABLES } from './mention/mentionables';
 import { withStyledPlaceHolders } from './placeholder/withStyledPlaceHolders';
@@ -130,6 +132,7 @@ const App = () => {
           createFontColorPlugin(),
           createFontBackgroundColorPlugin(),
           createFontSizePlugin(),
+          createLineHeightPlugin(lineHeightPlugin),
           createKbdPlugin(),
           createNodeIdPlugin(),
           createBlockSelectionPlugin(),

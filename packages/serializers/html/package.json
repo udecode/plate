@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-html",
-  "version": "21.1.5",
+  "version": "21.3.2",
   "description": "HTML serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,7 +19,7 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.1.5",
+    "@udecode/plate-common": "21.3.2",
     "html-entities": "^2.3.3"
   },
   "peerDependencies": {
