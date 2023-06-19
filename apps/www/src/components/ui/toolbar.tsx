@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import { cva, VariantProps } from 'class-variance-authority';
 import { ToggleProps, toggleVariants } from './toggle';
-import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { Tooltip, TooltipPortal, TooltipContent, TooltipTrigger } from './tooltip';
 
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
@@ -148,7 +148,9 @@ const ToolbarButton = React.forwardRef<
       <Tooltip>
         <TooltipTrigger>{content}</TooltipTrigger>
 
-        <TooltipContent>{tooltip}</TooltipContent>
+        <TooltipPortal>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </TooltipPortal>
       </Tooltip>
     ) : (
       <>{content}</>

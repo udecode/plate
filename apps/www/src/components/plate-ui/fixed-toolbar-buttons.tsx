@@ -32,134 +32,154 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { SettingsToggle } from '@/components/settings-toggle';
-import { ToolbarSeparator } from '@/components/ui/toolbar';
 import { ValueId } from '@/config/setting-values';
 import { isEnabled } from '@/plate/demo/is-enabled';
+import { cn } from '@/lib/utils';
+
+interface ToolbarGroupProps {
+  noSeparator?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+function ToolbarGroup({
+  noSeparator = false,
+  className,
+  children,
+}: ToolbarGroupProps) {
+  if (React.Children.count(children) === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        'flex gap-1 pl-1 border-l border-border',
+        noSeparator && 'border-transparent',
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
-  const showFirstSeparator =
-    isEnabled('align', id) ||
-    isEnabled('lineheight', id) ||
-    (isEnabled('indentlist', id) && indentList) ||
-    (isEnabled('list', id) && !indentList) ||
-    isEnabled('indent', id) ||
-    isEnabled('list', id) ||
-    isEnabled('indentlist', id);
-  const showSeparator =
-    isEnabled('link', id) ||
-    isEnabled('media', id) ||
-    isEnabled('table', id) ||
-    isEnabled('emoji', id);
-
   return (
-    <>
-      <div className="flex gap-1">
+    <div className="overflow-hidden w-full">
+      <div
+        className="flex flex-wrap gap-1"
+        style={{
+          // Conceal the first separator on each line using overflow
+          transform: 'translateX(calc(-0.25rem - 1px))',
+        }}
+      >
         {!readOnly && (
           <>
-            <InsertDropdownMenu />
+            <ToolbarGroup>
+              <InsertDropdownMenu />
+              {isEnabled('basicnodes', id) && <TurnIntoDropdownMenu />}
+            </ToolbarGroup>
 
-            {isEnabled('basicnodes', id) && <TurnIntoDropdownMenu />}
+            <ToolbarGroup>
+              <MarkToolbarButton tooltip="Bold (⌘+B)" nodeType={MARK_BOLD}>
+                <Icons.bold />
+              </MarkToolbarButton>
+              <MarkToolbarButton tooltip="Italic (⌘+I)" nodeType={MARK_ITALIC}>
+                <Icons.italic />
+              </MarkToolbarButton>
+              <MarkToolbarButton
+                tooltip="Underline (⌘+U)"
+                nodeType={MARK_UNDERLINE}
+              >
+                <Icons.underline />
+              </MarkToolbarButton>
 
-            <ToolbarSeparator />
+              {isEnabled('basicnodes', id) && (
+                <>
+                  <MarkToolbarButton
+                    tooltip="Strikethrough (⌘+⇧+M)"
+                    nodeType={MARK_STRIKETHROUGH}
+                  >
+                    <Icons.strikethrough />
+                  </MarkToolbarButton>
+                  <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+                    <Icons.code />
+                  </MarkToolbarButton>
+                </>
+              )}
 
-            <MarkToolbarButton tooltip="Bold (⌘+B)" nodeType={MARK_BOLD}>
-              <Icons.bold />
-            </MarkToolbarButton>
-            <MarkToolbarButton tooltip="Italic (⌘+I)" nodeType={MARK_ITALIC}>
-              <Icons.italic />
-            </MarkToolbarButton>
-            <MarkToolbarButton
-              tooltip="Underline (⌘+U)"
-              nodeType={MARK_UNDERLINE}
-            >
-              <Icons.underline />
-            </MarkToolbarButton>
+              {isEnabled('font', id) && (
+                <>
+                  <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
+                    <Icons.color
+                      className={iconVariants({ variant: 'toolbar' })}
+                    />
+                  </ColorDropdownMenu>
+                  <ColorDropdownMenu
+                    nodeType={MARK_BG_COLOR}
+                    tooltip="Highlight Color"
+                  >
+                    <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                  </ColorDropdownMenu>
+                </>
+              )}
+            </ToolbarGroup>
 
-            {isEnabled('basicnodes', id) && (
-              <>
-                <MarkToolbarButton
-                  tooltip="Strikethrough (⌘+⇧+M)"
-                  nodeType={MARK_STRIKETHROUGH}
-                >
-                  <Icons.strikethrough />
-                </MarkToolbarButton>
-                <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
-                  <Icons.code />
-                </MarkToolbarButton>
-              </>
-            )}
+            <ToolbarGroup>
+              {isEnabled('align', id) && <AlignDropdownMenu />}
 
-            {isEnabled('font', id) && (
-              <>
-                <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
-                  <Icons.color
-                    className={iconVariants({ variant: 'toolbar' })}
-                  />
-                </ColorDropdownMenu>
-                <ColorDropdownMenu
-                  nodeType={MARK_BG_COLOR}
-                  tooltip="Highlight Color"
-                >
-                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
-                </ColorDropdownMenu>
-              </>
-            )}
+              {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
 
-            {showFirstSeparator && <ToolbarSeparator />}
+              {isEnabled('indentlist', id) && indentList && (
+                <>
+                  <IndentListToolbarButton nodeType={ListStyleType.Disc} />
+                  <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+                </>
+              )}
 
-            {isEnabled('align', id) && <AlignDropdownMenu />}
+              {isEnabled('list', id) && !indentList && (
+                <>
+                  <ListToolbarButton nodeType={ELEMENT_UL} />
+                  <ListToolbarButton nodeType={ELEMENT_OL} />
+                </>
+              )}
 
-            {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
+              {(isEnabled('indent', id) ||
+                isEnabled('list', id) ||
+                isEnabled('indentlist', id)) && (
+                <>
+                  <OutdentToolbarButton />
+                  <IndentToolbarButton />
+                </>
+              )}
+            </ToolbarGroup>
 
-            {isEnabled('indentlist', id) && indentList && (
-              <>
-                <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-                <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
-              </>
-            )}
+            <ToolbarGroup>
+              {isEnabled('link', id) && <LinkToolbarButton />}
 
-            {isEnabled('list', id) && !indentList && (
-              <>
-                <ListToolbarButton nodeType={ELEMENT_UL} />
-                <ListToolbarButton nodeType={ELEMENT_OL} />
-              </>
-            )}
+              {isEnabled('media', id) && (
+                <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+              )}
 
-            {(isEnabled('indent', id) ||
-              isEnabled('list', id) ||
-              isEnabled('indentlist', id)) && (
-              <>
-                <OutdentToolbarButton />
-                <IndentToolbarButton />
-              </>
-            )}
+              {isEnabled('table', id) && <TableDropdownMenu />}
 
-            {showSeparator && <ToolbarSeparator />}
+              {isEnabled('emoji', id) && <EmojiDropdownMenu />}
 
-            {isEnabled('link', id) && <LinkToolbarButton />}
-
-            {isEnabled('media', id) && (
-              <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
-            )}
-
-            {isEnabled('table', id) && <TableDropdownMenu />}
-
-            {isEnabled('emoji', id) && <EmojiDropdownMenu />}
-
-            <MoreDropdownMenu />
+              <MoreDropdownMenu />
+            </ToolbarGroup>
           </>
         )}
-      </div>
 
-      <div className="flex gap-1">
-        {isEnabled('comment', id) && <CommentToolbarButton />}
-        <ModeDropdownMenu />
+        <div className="grow" />
 
-        {!id && <SettingsToggle />}
+        <ToolbarGroup noSeparator>
+          {isEnabled('comment', id) && <CommentToolbarButton />}
+          <ModeDropdownMenu />
+          {!id && <SettingsToggle />}
+        </ToolbarGroup>
       </div>
-    </>
+    </div>
   );
 }
