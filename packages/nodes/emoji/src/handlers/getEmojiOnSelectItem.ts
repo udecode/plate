@@ -23,11 +23,12 @@ export const getEmojiOnSelectItem = <
   withoutNormalizing(editor, () => {
     withoutMergingHistory(editor, () =>
       deleteText(editor, {
-        distance: emojiTriggeringController!.getTextSize(),
+        distance: emojiTriggeringController!
+          .setIsTriggering(false)
+          .getTextSize(),
         reverse: true,
       })
     );
-    emojiTriggeringController!.reset();
 
     const value = createEmoji!(item);
     insertText(editor, value);
