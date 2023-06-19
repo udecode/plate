@@ -10,7 +10,7 @@ export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
   options: {
     trigger: EMOJI_TRIGGER,
     createEmoji: (item) => item.data.emoji,
-    emojiTriggeringController: new EmojiTriggeringController(EMOJI_TRIGGER),
+    emojiTriggeringController: new EmojiTriggeringController(),
   },
   then: (
     _,

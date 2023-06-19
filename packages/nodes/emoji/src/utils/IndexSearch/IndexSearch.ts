@@ -17,11 +17,13 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
   protected result: string[] = [];
   protected scores = {};
   protected maxResult = EMOJI_MAX_SEARCH_RESULT;
+  protected input: string | undefined;
 
   protected constructor(protected library: IEmojiLibrary) {}
 
   search(input: string): this {
-    const value = input.toLowerCase();
+    this.input = input.toLowerCase();
+    const value = this.input;
 
     if (value) {
       this.createSearchResult(value);
@@ -63,8 +65,12 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
     });
   }
 
-  hasFound() {
-    return !!this.result.length;
+  hasFound(exact = false) {
+    if (exact && this.input) {
+      return this.result.indexOf(this.input) !== -1;
+    }
+
+    return this.result.length > 0;
   }
 
   get() {
