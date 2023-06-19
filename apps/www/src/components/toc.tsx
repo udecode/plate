@@ -59,6 +59,7 @@ function useActiveItem(itemIds: string[]) {
 
     itemIds?.forEach((id) => {
       const element = document.getElementById(id);
+
       if (element) {
         observer.observe(element);
       }

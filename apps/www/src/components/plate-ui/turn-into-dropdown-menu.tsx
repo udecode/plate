@@ -11,6 +11,7 @@ import {
   toggleNodeType,
   useEventPlateId,
 } from '@udecode/plate-common';
+import { usePlateEditorState } from '@udecode/plate-core';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -38,7 +39,6 @@ import {
   useOpenState,
 } from '@/components/ui/dropdown-menu';
 import { ToolbarButton } from '@/components/ui/toolbar';
-import { useMyPlateEditorState } from '@/plate/plate.types';
 
 const items = [
   {
@@ -104,7 +104,7 @@ const items = [
 ];
 
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
-  const editor = useMyPlateEditorState(useEventPlateId());
+  const editor = usePlateEditorState(useEventPlateId());
   const openState = useOpenState();
 
   let value: string = ELEMENT_PARAGRAPH;

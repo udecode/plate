@@ -1,0 +1,56 @@
+---
+title: List Element
+description: List Element
+component: true
+docs:
+  - route: /docs/list
+    title: List
+---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="list" />
+</ComponentExample>
+
+## Installation
+
+```bash
+npx plate-ui add list-element
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+      1. Install the following dependencies:
+
+      - [List](/docs/list)
+
+      2. Copy and paste the following code into your project.
+
+      - `components/plate-ui/list-element.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/list-element.tsx" />
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Plugins
+
+```tsx
+import { createListPlugin } from '@udecode/plate-list';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createListPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```

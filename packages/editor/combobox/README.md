@@ -5,7 +5,7 @@ This package implements the combobox for Plate.
 ## Documentation
 
 Check out [Playground](https://plate.udecode.io/docs/playground) and
-[Combobox](https://plate.udecode.io/docs/plugins/combobox).
+[Combobox](https://plate.udecode.io/docs/combobox).
 
 ## API
 

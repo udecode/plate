@@ -1,0 +1,82 @@
+---
+title: Draggables
+description: Allows movement of blocks, such as images or tables, within the editor.
+component: true
+docs:
+  - route: /docs/components/tooltip
+    title: Tooltip
+---
+
+[//]: # '<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">'
+[//]: # '  <PlaygroundDemo id="dnd" />'
+[//]: # '</ComponentExample>'
+
+## Installation
+
+```bash
+npx plate-ui add draggables
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+1. Install the following dependencies:
+
+```bash
+npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
+```
+
+- [Tooltip](/docs/components/tooltip)
+
+2. Copy and paste the following code into your project.
+
+- `components/plate-ui/draggables/draggable.tsx`
+
+<ComponentSource src="/src/components/plate-ui/draggables/draggable.tsx" />
+
+- `components/plate-ui/draggables/with-draggables.tsx`
+
+<ComponentSource src="/src/components/plate-ui/draggables/with-draggables.tsx" />
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Components
+
+<ComponentSource src="/src/lib/plate/createPlateUI.ts" />
+
+### Plugins
+
+```tsx
+import { createPlugins } from '@udecode/plate-common';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { createDndPlugin } from '@udecode/plate-dnd';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createNodeIdPlugin(),
+    createDndPlugin({ options: { enableScroller: true } }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```
+
+### Provider
+
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+<DndProvider backend={HTML5Backend}>
+  <Plate plugins={plugins} />
+</DndProvider>;
+```

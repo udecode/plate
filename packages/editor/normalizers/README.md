@@ -5,7 +5,7 @@ This package implements the normalizer plugins for Plate.
 ## Documentation
 
 Check out
-[Forced Layout](https://plate.udecode.io/docs/plugins/forced-layout).
+[Forced Layout](https://plate.udecode.io/docs/forced-layout).
 
 ## API
 

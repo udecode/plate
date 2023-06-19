@@ -9,7 +9,7 @@ This package implements the basic elements in a single plugin:
 ## Documentation
 
 Check out
-[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+[Basic Elements](https://plate.udecode.io/docs/basic-elements).
 
 ## API
 

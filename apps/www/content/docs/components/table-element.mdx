@@ -2,11 +2,14 @@
 title: Table Element
 description: Component for table plugin.
 component: true
+docs:
+  - route: /docs/table
+    title: Table
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="table" />
+</ComponentExample>
 
 ## Installation
 
@@ -19,25 +22,22 @@ npx plate-ui add table-element
     <AccordionTrigger>Manual Installation</AccordionTrigger>
     <AccordionContent>
 
-1. Install the `@udecode/plate-table` component from plate:
+1. Install the following dependencies:
 
-```bash
-npm install @udecode/plate-table
-```
+- [Table](/docs/table)
 
-2. Copy and paste the following code into your project. 
+2. Copy and paste the following code into your project.
 
-- `components/plate-ui/table-element.tsx`
+- `components/plate-ui/table-element/table-element.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-element.tsx" />
+<ComponentSource src="/src/components/plate-ui/table-element/table-element.tsx" />
 
-- `components/plate-ui/table-floating-toolbar.tsx`
+- `components/plate-ui/table-element/table-floating-toolbar.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-floating-toolbar.tsx" />
-      
-- `components/plate-ui/table-borders.tsx`
+<ComponentSource src="/src/components/plate-ui/table-element/table-floating-toolbar.tsx" />
+- `components/plate-ui/table-element/table-borders.tsx`
 
-<ComponentSource src="/src/components/plate-ui/table-borders.tsx" />
+<ComponentSource src="/src/components/plate-ui/table-element/table-borders.tsx" />
 
     </AccordionContent>
 
@@ -46,15 +46,18 @@ npm install @udecode/plate-table
 
 ## Usage
 
-```tsx
-import { createTablePlugin } from '@udecode/plate-table';
-import {
-  TableElement,
-} from '@/components/plate-ui/table-element'
-```
+### Plugins
 
 ```tsx
-createTablePlugin({
-  component: TableElement,
-})
+import { createTablePlugin } from '@udecode/plate-table';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTablePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```

@@ -1,22 +1,29 @@
 ---
-title: CSV
+title: Serializing CSV
 description: Copy paste from CSV to Slate.
 ---
 
-The Deserialize CSV plugin enables copying and pasting CSV content directly into a table within your Plate editor.
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="deserializecsv" />
+</ComponentExample>
 
-This functionality simplifies the process of importing tabular data from CSV files and streamlines the integration of structured data into your editor.
+### Features
 
-To see the Deserialize CSV plugin in action, copy CSV content from a source and paste it into your Plate editor.
+- Convert CSV content to a Slate value. 
 
-The plugin will automatically convert the CSV data into a properly formatted table.
+<Callout className="my-4">
+**Note**: Converting a Slate value to CSV is not yet supported.
+</Callout>
 
 ### Installation
 
 ```bash
 npm install @udecode/plate-serializer-csv
 ```
+
 ### Usage
+
+#### CSV -> Slate
 
 ```tsx
 import React from 'react';

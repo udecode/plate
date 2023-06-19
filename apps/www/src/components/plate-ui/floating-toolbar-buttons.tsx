@@ -15,8 +15,10 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { Icons } from '@/components/icons';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
+import { ValueId } from '@/config/setting-values';
+import { isEnabled } from '@/plate/demo/is-enabled';
 
-export function FloatingToolbarButtons() {
+export function FloatingToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
 
   return (
@@ -49,11 +51,11 @@ export function FloatingToolbarButtons() {
 
           <ToolbarSeparator />
 
-          <LinkToolbarButton />
+          {isEnabled('link', id) && <LinkToolbarButton />}
         </>
       )}
 
-      <CommentToolbarButton />
+      {isEnabled('comment', id) && <CommentToolbarButton />}
 
       <MoreDropdownMenu />
     </>

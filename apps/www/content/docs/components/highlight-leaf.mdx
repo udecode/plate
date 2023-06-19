@@ -1,0 +1,58 @@
+---
+title: Highlight Leaf
+description: Highlight Leaf
+component: true
+docs:
+  - route: /docs/highlight
+    title: Highlight
+---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="highlight" />
+</ComponentExample>
+
+## Installation
+
+```bash
+npx plate-ui add highlight-leaf
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+      1. Install the following dependencies:
+
+      - [Highlight](/docs/highlight)
+
+
+      2. Copy and paste the following code into your project.
+
+      - `components/plate-ui/highlight-leaf.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/highlight-leaf.tsx" />
+
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Plugins
+
+```tsx
+import { createHighlightPlugin } from '@udecode/plate-highlight';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHighlightPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```

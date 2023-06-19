@@ -1,0 +1,57 @@
+---
+title: Link Element
+description: Link Element
+component: true
+docs:
+  - route: /docs/link
+    title: Link
+---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="link" />
+</ComponentExample>
+
+## Installation
+
+```bash
+npx plate-ui add link-element
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+      1. Install the following dependencies:
+
+      - [Link](/docs/link)
+
+      2. Copy and paste the following code into your project.
+
+      - `components/plate-ui/link-element.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/link-element.tsx" />
+
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Plugins
+
+```tsx
+import { createLinkPlugin } from '@udecode/plate-link';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createLinkPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```

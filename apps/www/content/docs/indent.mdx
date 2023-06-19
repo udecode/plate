@@ -1,7 +1,18 @@
 ---
 title: Indent
 description: Customize text indentation.
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Button
+  - route: /docs/components/outdent-toolbar-button
+    title: Outdent Toolbar Button
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="indent" />
+</ComponentExample>
+
+### Features
 
 The Indent plugin enables you to customize the indentation of text blocks, such as paragraphs, headings, and lists.
 
@@ -25,23 +36,26 @@ import {
   createIndentPlugin,
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-  ELEMENT_H1
+  ELEMENT_H1,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createHeadingPlugin(),
-  createParagraphPlugin(),
-  createIndentPlugin({
-    inject: {
-      props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1]
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHeadingPlugin(),
+    createParagraphPlugin(),
+    createIndentPlugin({
+      inject: {
+        props: {
+          validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+        },
       },
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options

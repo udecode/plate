@@ -5,7 +5,7 @@ This package implements the block quote plugin for Plate.
 ## Documentation
 
 Check out
-[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+[Basic Elements](https://plate.udecode.io/docs/basic-elements).
 
 ## API
 

@@ -1,9 +1,19 @@
 ---
-title : Alignment
+title: Alignment
 description: Align your content to different positions.
+docs:
+  - route: /docs/components/align-dropdown-menu
+    title: Align Dropdown Menu
 ---
 
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="align" />
+</ComponentExample>
+
+### Features
+
 The Alignment plugin provides support for text alignment, enabling you to align content to the left, right, center, or justify it.
+
 Click inside a paragraph or a header and click on the align toolbar button to apply the desired text alignment.
 
 ### Installation
@@ -27,30 +37,31 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  ...basicNodesPlugins,
-  createAlignPlugin({
-    inject: {
-      props: {
-        validTypes: [
-          ELEMENT_PARAGRAPH,
-          ELEMENT_H1,
-          ELEMENT_H2,
-          ELEMENT_H3,
-          ELEMENT_H4,
-          ELEMENT_H5,
-          ELEMENT_H6,
-        ],
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    ...basicNodesPlugins,
+    createAlignPlugin({
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1,
+            ELEMENT_H2,
+            ELEMENT_H3,
+            ELEMENT_H4,
+            ELEMENT_H5,
+            ELEMENT_H6,
+          ],
+        },
       },
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
-
-
 
 ### Source Code
 

@@ -17,6 +17,7 @@ import { highlightValue } from './highlightValue';
 import { horizontalRuleValue } from './horizontalRuleValue';
 import { indentListValue } from './indentListValue';
 import { indentValue } from './indentValue';
+import { kbdValue } from './kbdValue';
 import { lineHeightValue } from './lineHeightValue';
 import { linkValue } from './linkValue';
 import { listValue, todoListValue } from './listValue';
@@ -27,23 +28,33 @@ import { tabbableValue } from './tabbableValue';
 import { tableValue } from './tableValue';
 
 import { settingsStore } from '@/components/context/settings-store';
+import { settingValues, ValueId } from '@/config/setting-values';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
-import { MyValue } from '@/plate/plate.types';
+import { MyValue } from '@/plate/plate-types';
 
-export const usePlaygroundValue = () => {
-  const preset = settingsStore.use.value();
+export const usePlaygroundValue = (id?: ValueId) => {
+  let valueId = settingsStore.use.valueId();
+  if (id) {
+    valueId = id;
+  }
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
     const value = [...basicElementsValue, ...basicMarksValue];
 
-    if (preset !== 'playground') {
-      return value;
+    if (valueId !== settingValues.playground.id) {
+      const newValue = settingValues[valueId].value ?? [];
+
+      if (!newValue.length) {
+        return mapNodeId(value);
+      }
+      return mapNodeId(newValue);
     }
 
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
+    if (enabled.kbd) value.push(...kbdValue);
 
     // Inline nodes
     if (enabled.a) value.push(...linkValue);
@@ -67,20 +78,11 @@ export const usePlaygroundValue = () => {
     if (enabled.exitBreak) value.push(...exitBreakValue);
     if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
     if (enabled.tabbable) value.push(...tabbableValue);
-    // if (checkedIds.blockSelection) value.push(...blockSelectionValue);
-    // if (checkedIds.combobox) value.push(...comboboxValue);
-    // if (checkedIds.dnd) value.push(...dndValue);
-    // if (checkedIds.nodeId) value.push(...nodeIdValue);
-    // if (checkedIds.normalizeTypes) value.push(...normalizeTypesValue);
-    // if (checkedIds.resetNode) value.push(...resetNodeValue);
-    // if (checkedIds.selectOnBackspace) value.push(...selectOnBackspaceValue);
-    // if (checkedIds.singleLine) value.push(...singleLineValue);
 
     // Collaboration
     if (enabled.comment) value.push(...commentsValue);
 
     // Deserialization
-    // if (checkedIds.deserializeHtml) value.push(...deserializeHtmlValue);
     value.push(...deserializeHtmlValue);
     if (enabled.deserializeMd) value.push(...deserializeMdValue);
     if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
@@ -110,6 +112,7 @@ export const usePlaygroundValue = () => {
     enabled.hr,
     enabled.img,
     enabled.indent,
+    enabled.kbd,
     enabled.lineHeight,
     enabled.list,
     enabled.listStyleType,
@@ -119,6 +122,6 @@ export const usePlaygroundValue = () => {
     enabled.tabbable,
     enabled.table,
     enabled.trailingBlock,
-    preset,
+    valueId,
   ]);
 };

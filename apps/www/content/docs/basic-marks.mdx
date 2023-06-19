@@ -1,11 +1,21 @@
 ---
 title: Basic Marks
 description: Set of essential text formatting options.
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="basicnodes" />
+</ComponentExample>
+
+### Features
 
 This package includes commonly used text styling features such as bold, italic, underline, strikethrough, subscript, superscript, and code.
 
 Includes the following plugins:
+
 - `createBoldPlugin()` for the `bold` mark
 - `createItalicPlugin()` for the `italic` mark
 - `createUnderlinePlugin()` for the `underline` mark
@@ -33,15 +43,21 @@ npm install @udecode/plate-basic-marks
 ### Usage
 
 ```tsx
-import { createBasicMarksPlugin, createBasicElementsPlugins } from '@udecode/plate';
+import {
+  createBasicMarksPlugin,
+  createBasicElementsPlugins,
+} from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createBasicElementsPlugins(),
-  createBasicMarksPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createBasicElementsPlugins(),
+    createBasicMarksPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options

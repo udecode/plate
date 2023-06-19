@@ -4,7 +4,7 @@ This package implements block indentation support for Plate.
 
 ## Documentation
 
-Check out [Indentation](https://plate.udecode.io/docs/plugins/indent).
+Check out [Indentation](https://plate.udecode.io/docs/indent).
 
 ## API
 

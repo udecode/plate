@@ -1,7 +1,26 @@
 ---
 title: Basic Elements
 description: Enhance your editor with essential formatting elements.
+docs:
+  - route: /docs/components/blockquote-element
+    title: Blockquote Element
+  - route: /docs/components/code-block-element
+    title: Code Block Element
+  - route: /docs/components/code-line-element
+    title: Code Line Element
+  - route: /docs/components/code-syntax-leaf
+    title: Code Syntax Leaf
+  - route: /docs/components/heading-element
+    title: Heading Element
+  - route: /docs/components/paragraph-element
+    title: Paragraph Element
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="basicnodes" />
+</ComponentExample>
+
+### Features
 
 - **`createBlockquotePlugin()`** for the `blockquote` element
 - **`createCodeBlockPlugin()`** for the `code_block` element
@@ -24,25 +43,28 @@ npm install @udecode/plate-heading
 npm install @udecode/plate-paragraph
 ```
 
-#### Usage
+### Usage
 
 ```tsx
 import { createBasicElementsPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createBasicElementsPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createBasicElementsPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 The code block component is not included in Plate UI. You can add it using:
 
 ```tsx
 createPlateUI({
-  [ELEMENT_CODE_BLOCK]: CodeBlockElement
-})
+  [ELEMENT_CODE_BLOCK]: CodeBlockElement,
+});
 ```
 
 #### Options

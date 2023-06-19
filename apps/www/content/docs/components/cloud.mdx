@@ -1,0 +1,101 @@
+---
+title: Cloud
+description: Cloud
+component: true
+docs:
+  - route: /docs/cloud
+    title: Cloud
+---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <CloudDemo />
+</ComponentExample>
+
+## Installation
+
+```bash
+npx plate-ui add cloud
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+      1. Install the following dependencies:
+
+      - [Cloud](/docs/cloud)
+
+      2. Copy and paste the following code into your project.
+
+      - `components/plate-ui/cloud/cloud-attachment-element.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/cloud/cloud-attachment-element.tsx" />
+
+      - `components/plate-ui/cloud/cloud-image-element.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/cloud/cloud-image-element.tsx" />
+
+      - `components/plate-ui/cloud/resize-controls.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/cloud/cloud-resize-controls.tsx" />
+
+      - `components/plate-ui/cloud/cloud-status-bar.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/cloud/cloud-status-bar.tsx" />
+
+      - `components/plate-ui/cloud/cloud-toolbar-buttons.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/cloud/cloud-toolbar-buttons.tsx" />
+
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Plugins
+
+```tsx
+const plugins = createMyPlugins(
+  [
+    ...basicNodesPlugins,
+    createCloudPlugin({
+      options: {},
+    }),
+    createCloudAttachmentPlugin(),
+    createCloudImagePlugin({
+      options: {
+        maxInitialWidth: 320,
+        maxInitialHeight: 320,
+        minResizeWidth: 100,
+        maxResizeWidth: 720,
+      },
+    }),
+  ],
+  {
+    components: {
+      ...plateUI,
+      [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
+      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+    },
+  }
+);
+```
+
+### Demo
+
+```tsx
+export default function CloudDemo() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+      <FixedToolbar>
+        <CloudToolbarButtons />
+      </FixedToolbar>
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}
+```

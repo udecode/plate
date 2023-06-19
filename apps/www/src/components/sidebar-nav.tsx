@@ -2,16 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SidebarNavItem } from 'types/nav';
 
 import { cn } from '@/lib/utils';
+import { SidebarNavItem } from '@/types/nav';
 
 export interface DocsSidebarNavProps {
   items: SidebarNavItem[];
+  componentItems: SidebarNavItem[];
 }
 
-export function DocsSidebarNav({ items }: DocsSidebarNavProps) {
+export function DocsSidebarNav({
+  items: coreItems,
+  componentItems,
+}: DocsSidebarNavProps) {
   const pathname = usePathname();
+  const isUI = pathname?.includes('/docs/components');
+  const items = isUI ? componentItems : coreItems;
 
   return items.length ? (
     <div className="w-full">
@@ -57,7 +63,7 @@ export function DocsSidebarNavItems({
           >
             {item.title}
             {item.label && (
-              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+              <span className="ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
                 {item.label}
               </span>
             )}
