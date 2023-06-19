@@ -23,7 +23,7 @@ const createHOC = <T,>(withHOC: any) => {
     options: CreateHOCOptions<T> | CreateHOCOptions<T>[]
   ) => {
     const _components = { ...components };
-    const optionsByKey = {};
+    const optionsByKey: any = {};
 
     const optionsList = castArray<CreateHOCOptions<T>>(options);
 

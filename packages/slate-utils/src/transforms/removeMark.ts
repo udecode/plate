@@ -48,7 +48,7 @@ export const removeMark = <V extends Value>(
         ...rest,
       });
     } else if (editor.selection) {
-      const marks = getMarks(editor) ?? {};
+      const marks: any = getMarks(editor) ?? {};
       key.forEach((k) => {
         delete marks[k];
       });

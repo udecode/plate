@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@emoji-mart/data": "^1.0.8",
+    "@emoji-mart/data": "^1.1.2",
     "@udecode/plate-combobox": "21.3.2",
     "@udecode/plate-common": "21.3.2"
   },

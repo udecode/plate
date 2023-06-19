@@ -38,7 +38,7 @@
     "@udecode/plate-list": "21.3.2",
     "@udecode/plate-paragraph": "21.3.2",
     "remark-parse": "^9.0.0",
-    "unified": "^9.2.1"
+    "unified": "^9.2.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

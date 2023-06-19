@@ -13,7 +13,8 @@ import {
   useInteractions,
 } from '../libs/floating-ui';
 
-export interface PopoverProps extends ComponentPropsWithoutRef<'div'> {
+export interface PopoverProps
+  extends Omit<ComponentPropsWithoutRef<'div'>, 'content'> {
   floatingOptions?: Partial<UseFloatingProps>;
   disabled?: boolean;
   content?: ReactNode;

@@ -311,6 +311,7 @@ module.exports = {
         './config/eslint/bases/prettier.cjs',
       ],
       rules: {
+        'react/jsx-key': 'off',
         'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [
           'warn',

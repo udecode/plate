@@ -61,7 +61,7 @@ export class EmojiFloatingLibrary
 
   private initEmojis(categoriesLibrary: any) {
     for (const category of categoriesLibrary) {
-      this.emojis[category.id] = category.emojis;
+      (this.emojis as any)[category.id] = category.emojis;
     }
   }
 

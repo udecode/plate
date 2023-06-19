@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.22.0",
-    "@radix-ui/react-dropdown-menu": "^2.0.4",
+    "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@udecode/plate-common": "21.3.2"
   },
   "peerDependencies": {

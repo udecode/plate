@@ -30,7 +30,7 @@ export const onKeyDownTable =
   (e) => {
     if (e.defaultPrevented) return;
 
-    const isKeyDown = {
+    const isKeyDown: any = {
       'shift+up': isHotkey('shift+up', e),
       'shift+down': isHotkey('shift+down', e),
       'shift+left': isHotkey('shift+left', e),
@@ -43,7 +43,7 @@ export const onKeyDownTable =
         if (
           moveSelectionFromCell(editor, {
             reverse: key === 'shift+up',
-            edge: keyShiftEdges[key],
+            edge: (keyShiftEdges as any)[key],
           })
         ) {
           e.preventDefault();

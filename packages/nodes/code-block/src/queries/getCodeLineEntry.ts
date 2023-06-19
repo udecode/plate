@@ -5,6 +5,8 @@ import {
   isElement,
   PlateEditor,
   someNode,
+  TElement,
+  TNodeEntry,
   Value,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
@@ -32,7 +34,7 @@ export const getCodeLineEntry = <
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAboveNode<N>(editor, {
+      getAboveNode<TElement>(editor, {
         at,
         match: { type: getCodeLineType(editor) },
       }) || getParentNode<N>(editor, parentPath);
@@ -51,7 +53,7 @@ export const getCodeLineEntry = <
 
     return {
       codeBlock,
-      codeLine,
+      codeLine: codeLine as TNodeEntry<N>,
     };
   }
 };

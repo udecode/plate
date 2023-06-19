@@ -71,15 +71,19 @@ export const pluginDeserializeHtml = <V extends Value>(
             const values = castArray<string>(value);
 
             // Ignore if el style value is not included in rule style values (except *)
-            if (!values.includes(el.style[key]) && value !== '*') return;
+            if (!values.includes((el.style as any)[key]) && value !== '*')
+              return;
 
             // Ignore if el style value is falsy (for value *)
-            if (value === '*' && !el.style[key]) return;
+            if (value === '*' && !(el.style as any)[key]) return;
 
             const defaultNodeValue = plugin.inject.props?.defaultNodeValue;
 
             // Ignore if the style value = plugin.inject.props.defaultNodeValue
-            if (defaultNodeValue && defaultNodeValue === el.style[key]) {
+            if (
+              defaultNodeValue &&
+              defaultNodeValue === (el.style as any)[key]
+            ) {
               return false;
             }
           }
@@ -147,7 +151,7 @@ export const pluginDeserializeHtml = <V extends Value>(
 
     for (const elementAttributeName of elementAttributeNames) {
       if (attributeNames.includes(elementAttributeName)) {
-        elementAttributes[elementAttributeName] =
+        (elementAttributes as any)[elementAttributeName] =
           el.getAttribute(elementAttributeName);
       }
     }

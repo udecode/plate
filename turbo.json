@@ -27,12 +27,26 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "outputs": []
     },
     "lint:fix": {
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "cache": true
+    },
+    "e2e-examples#lint:fix": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#lint:fix": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "lint:apps": {
+      "dependsOn": ["build"]
+    },
+    "lint:fix:apps": {
+      "dependsOn": ["build"]
     },
     "test": {
       "dependsOn": ["build"],

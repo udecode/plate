@@ -65,8 +65,8 @@ export const getSiblingIndentList = <
 
     const [nextNode, nextPath] = nextEntry;
 
-    const indent = node[KEY_INDENT] as number;
-    const nextIndent = nextNode[KEY_INDENT] as number;
+    const indent = (node as any)[KEY_INDENT] as number;
+    const nextIndent = (nextNode as any)[KEY_INDENT] as number;
 
     if (!isDefined(nextIndent)) return;
 
@@ -76,7 +76,8 @@ export const getSiblingIndentList = <
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      nextNode[KEY_LIST_STYLE_TYPE] !== node[KEY_LIST_STYLE_TYPE]
+      (nextNode as any)[KEY_LIST_STYLE_TYPE] !==
+        (node as any)[KEY_LIST_STYLE_TYPE]
     )
       return;
 

@@ -24,7 +24,7 @@ export function PlateSlate({
     if (renderAboveSlate)
       aboveSlate = renderAboveSlate({
         children: aboveSlate,
-      });
+      }) as any;
   });
 
   return aboveSlate;

@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@portive/client": "10.0.2",
+    "@portive/client": "10.0.3",
     "@udecode/plate-common": "21.3.2",
     "delay": "5.0.0",
     "p-defer": "^3.0"

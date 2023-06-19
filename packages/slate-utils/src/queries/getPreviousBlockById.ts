@@ -7,6 +7,7 @@ import {
   queryNode,
   QueryNodeOptions,
   TEditor,
+  TElement,
   TNodeEntry,
   Value,
 } from '@udecode/slate';
@@ -27,9 +28,9 @@ export const getPreviousBlockById = <
     match: { id },
   });
   if (entry) {
-    const prevEntry = getPreviousNode<N>(editor, { at: entry[1] });
+    const prevEntry = getPreviousNode<TElement>(editor, { at: entry[1] });
     if (prevEntry && prevEntry[0].id && isBlock(editor, prevEntry[0])) {
-      return prevEntry;
+      return prevEntry as TNodeEntry<N>;
     }
   }
   let found = false;
@@ -56,7 +57,7 @@ export const getPreviousBlockById = <
   }
   if (!found) return;
 
-  const _entries = getNodeEntries(editor, {
+  const _entries = getNodeEntries<TElement>(editor, {
     mode: 'highest',
     match: (n) => {
       return isBlock(editor, n) && !!n.id && queryNode([n, []], query);

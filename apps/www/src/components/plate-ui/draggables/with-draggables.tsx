@@ -1,6 +1,7 @@
+import { FC } from 'react';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { createNodesWithHOC, RenderFunction } from '@udecode/plate-common';
+import { createNodesWithHOC } from '@udecode/plate-common';
 import {
   withDraggable as withDraggablePrimitive,
   WithDraggableOptions,
@@ -18,7 +19,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { Draggable, DraggableProps } from './draggable';
 
 export const withDraggable = (
-  Component: RenderFunction<any>,
+  Component: FC,
   options?: WithDraggableOptions<
     Partial<Omit<DraggableProps, 'editor' | 'element' | 'children'>>
   >

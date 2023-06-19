@@ -8,7 +8,7 @@ export const withHOC = <T,>(
   function hoc(props: T) {
     return (
       <HOC {...hocProps}>
-        <Component {...props} />
+        <Component {...(props as any)} />
       </HOC>
     );
   };

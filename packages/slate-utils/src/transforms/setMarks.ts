@@ -18,7 +18,7 @@ export const setMarks = <V extends Value>(
     removeMark(editor, { key: Object.keys(marks) });
 
     Object.keys(marks).forEach((key) => {
-      editor.addMark(key, marks[key]);
+      editor.addMark(key, (marks as any)[key]);
     });
   });
 };

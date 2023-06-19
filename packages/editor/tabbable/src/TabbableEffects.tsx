@@ -11,12 +11,12 @@ import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
-import { TabbableEntry } from './types';
+import { TabbableEntry, TabbablePlugin } from './types';
 
 export function TabbableEffects() {
   const editor = useEditorState();
   const { query, globalEventListener, insertTabbableEntries, isTabbable } =
-    getPluginOptions(editor, KEY_TABBABLE);
+    getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
 
   useEffect(() => {
     const editorDOMNode = toDOMNode(editor, editor);
@@ -26,11 +26,12 @@ export function TabbableEffects() {
       if (
         event.key !== 'Tab' ||
         event.defaultPrevented ||
-        !query(editor, event)
-      )
+        !query?.(editor, event)
+      ) {
         return;
+      }
 
-      const insertedTabbableEntries = insertTabbableEntries(
+      const insertedTabbableEntries = insertTabbableEntries?.(
         editor,
         event
       ) as TabbableEntry[];
@@ -42,8 +43,9 @@ export function TabbableEffects() {
           editorDOMNode,
           ...insertedTabbableEntries.map(({ domNode }) => domNode),
         ].some((container) => container.contains(event.target as Node))
-      )
+      ) {
         return;
+      }
 
       const tabbableDOMNodes = tabbable(editorDOMNode) as HTMLElement[];
 
@@ -58,7 +60,7 @@ export function TabbableEffects() {
           } as TabbableEntry;
         })
         .filter(
-          (entry) => entry && isTabbable(editor, entry)
+          (entry) => entry && isTabbable?.(editor, entry)
         ) as TabbableEntry[];
 
       const tabbableEntries = [

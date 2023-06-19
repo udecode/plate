@@ -10,10 +10,11 @@ export const KEY_EMOJI = 'emoji';
 export const EMOJI_TRIGGER = ':';
 export const EMOJI_MAX_SEARCH_RESULT = 60;
 
-export const emojiTriggeringControllerOptions: EmojiTriggeringControllerOptions = {
-  trigger: EMOJI_TRIGGER,
-  limitTriggeringChars: 2,
-};
+export const emojiTriggeringControllerOptions: EmojiTriggeringControllerOptions =
+  {
+    trigger: EMOJI_TRIGGER,
+    limitTriggeringChars: 2,
+  };
 
 export const defaultCategories: EmojiCategoryList[] = [
   EmojiCategory.People,

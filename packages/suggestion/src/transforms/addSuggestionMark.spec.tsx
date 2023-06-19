@@ -2,8 +2,9 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { addSuggestionMark } from './addSuggestionMark';
+
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '@/suggestion/src/constants';
 
 jsx;
 

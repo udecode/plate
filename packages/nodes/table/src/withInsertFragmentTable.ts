@@ -35,11 +35,11 @@ export const withInsertFragmentTable = <
   const { insertFragment } = editor;
   const { disableExpandOnInsert, insertColumn, insertRow } = options;
 
-  const myEditor = getTEditor<V>(editor);
+  const myEditor = getTEditor(editor);
 
   myEditor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
-      (n) => n.type === getPluginType(editor, ELEMENT_TABLE)
+      (n) => (n as TElement).type === getPluginType(editor, ELEMENT_TABLE)
     );
 
     if (!insertedTable) {
@@ -59,7 +59,7 @@ export const withInsertFragmentTable = <
 
               replaceNodeChildren(editor, {
                 at: cellPath,
-                nodes: cloneDeep(fragment),
+                nodes: cloneDeep(fragment) as any,
               });
             }
           });
@@ -94,7 +94,8 @@ export const withInsertFragmentTable = <
             let lastCellPath: Path | null = null;
 
             let initRow = true;
-            const insertedRows = insertedTable.children as TElement[];
+            const insertedRows = (insertedTable as TElement)
+              .children as TElement[];
             insertedRows.forEach((row) => {
               cellPath[cellPath.length - 1] = startColIndex;
 

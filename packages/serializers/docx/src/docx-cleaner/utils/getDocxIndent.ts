@@ -29,7 +29,7 @@ const styleToIndent = (style: string, indentStep = DOCX_INDENT_STEP) => {
 
 export const getDocxSpacing = (element: Element, cssProp: string): number => {
   const el = element as HTMLElement;
-  const spacing = el.style[cssProp];
+  const spacing = (el.style as any)[cssProp];
 
   if (!spacing) return 0;
 

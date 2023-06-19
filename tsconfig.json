@@ -18,7 +18,6 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
     "target": "es2017",
     "outDir": "dist",
     "baseUrl": ".",

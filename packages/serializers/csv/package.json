@@ -32,7 +32,7 @@
   "dependencies": {
     "@udecode/plate-common": "21.3.2",
     "@udecode/plate-table": "21.3.4",
-    "papaparse": "^5.3.2"
+    "papaparse": "^5.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -42,7 +42,7 @@
     "slate-react": ">=0.95.0"
   },
   "devDependencies": {
-    "@types/papaparse": "^5"
+    "@types/papaparse": "^5.3.7"
   },
   "keywords": [
     "csv",

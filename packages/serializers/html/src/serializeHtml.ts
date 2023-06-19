@@ -1,7 +1,6 @@
 import {
   EDescendant,
   EElement,
-  EText,
   isText,
   PlateEditor,
   SlateProps,
@@ -67,8 +66,8 @@ export const serializeHtml = <V extends Value>(
 
         return leafToHtml(editor, {
           props: {
-            leaf: node as EText<V>,
-            text: node as EText<V>,
+            leaf: node as any,
+            text: node as any,
             children: convertNewLinesToHtmlBr
               ? newLinesToHtmlBr(children)
               : children,

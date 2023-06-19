@@ -10,7 +10,7 @@ export const remarkTransformText = <V extends Value>(
   const { editor, textRules } = options;
 
   const { type, value, children } = node;
-  const textRule = textRules[type!] || remarkDefaultTextRules.text;
+  const textRule = (textRules as any)[type!] || remarkDefaultTextRules.text;
 
   const { mark, transform = (text: string) => text } = textRule;
 

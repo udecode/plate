@@ -30,7 +30,7 @@ export const withSuggestion = <
   // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<SuggestionPlugin, V, E>
 ) => {
-  const editor = e as EE;
+  const editor = e as unknown as EE;
 
   const {
     normalizeNode,
@@ -130,12 +130,12 @@ export const withSuggestion = <
       if (pointBefore) {
         const nodeBefore = getNode(editor, pointBefore.path);
         if (
-          nodeBefore?.[MARK_SUGGESTION] &&
-          nodeBefore[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
+          (nodeBefore as any)?.[MARK_SUGGESTION] &&
+          (nodeBefore as any)[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
         ) {
           setNodes<TSuggestionText>(
             editor,
-            { [KEY_SUGGESTION_ID]: nodeBefore[KEY_SUGGESTION_ID] },
+            { [KEY_SUGGESTION_ID]: (nodeBefore as any)[KEY_SUGGESTION_ID] },
             { at: path }
           );
           return;

@@ -100,7 +100,7 @@ export function PlateEditable<V extends Value = Value>({
     if (renderAboveEditable)
       aboveEditable = renderAboveEditable({
         children: aboveEditable,
-      });
+      }) as any;
   });
 
   return aboveEditable;

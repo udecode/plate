@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
 import { ElementProvider } from '../atoms';
@@ -46,9 +46,7 @@ export const pluginRenderElement = <V extends Value>(
         }
       });
 
-      let component: JSX.Element | null = (
-        <Element {...nodeProps}>{children}</Element>
-      );
+      let component: ReactNode = <Element {...nodeProps}>{children}</Element>;
 
       injectAboveComponents.forEach((withHOC) => {
         const hoc = withHOC({ ...nodeProps, key } as any);

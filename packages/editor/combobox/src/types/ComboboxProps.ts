@@ -1,4 +1,4 @@
-import { RenderFunction } from '@udecode/plate-common';
+import React from 'react';
 import {
   ComboboxItemProps,
   ComboboxState,
@@ -13,7 +13,7 @@ export interface ComboboxProps<TData = NoData>
   /**
    * Render this component when the combobox is open (useful to inject hooks).
    */
-  component?: RenderFunction<{ store: ComboboxStoreById }>;
+  component?: React.FC<{ store: ComboboxStoreById }>;
 
   /**
    * Whether to hide the combobox.
@@ -25,7 +25,7 @@ export interface ComboboxProps<TData = NoData>
    * Render combobox item.
    * @default text
    */
-  onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
+  onRenderItem?: React.FC<ComboboxItemProps<TData>>;
 
   portalElement?: Element;
 }

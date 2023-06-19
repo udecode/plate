@@ -4,5 +4,4 @@
 
 export * from './NoInfer';
 export * from './Nullable';
-export * from './RenderFunction';
 export * from './dom-attributes';

@@ -1,18 +1,18 @@
-import fs from 'fs';
-import path from 'path';
-import autoprefixer from 'autoprefixer';
-import babel from 'rollup-plugin-babel';
-import commonjs from 'rollup-plugin-commonjs';
-import del from 'rollup-plugin-delete';
-import includePaths from 'rollup-plugin-includepaths';
-import json from 'rollup-plugin-json';
-import builtins from 'rollup-plugin-node-builtins';
-import globals from 'rollup-plugin-node-globals';
-import resolve from 'rollup-plugin-node-resolve';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import postcss from 'rollup-plugin-postcss';
-import { terser } from 'rollup-plugin-terser';
-import tailwind from 'tailwindcss';
+const fs = require('fs');
+const path = require('path');
+const autoprefixer = require('autoprefixer');
+const babel = require('rollup-plugin-babel');
+const commonjs = require('rollup-plugin-commonjs');
+const del = require('rollup-plugin-delete');
+const includePaths = require('rollup-plugin-includepaths');
+const json = require('rollup-plugin-json');
+const builtins = require('rollup-plugin-node-builtins');
+const globals = require('rollup-plugin-node-globals');
+const resolve = require('rollup-plugin-node-resolve');
+const peerDepsExternal = require('rollup-plugin-peer-deps-external');
+const postcss = require('rollup-plugin-postcss');
+const { terser } = require('rollup-plugin-terser');
+const tailwind = require('tailwindcss');
 
 const PACKAGE_ROOT_PATH = process.cwd();
 const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
@@ -166,7 +166,7 @@ const plugins = [
     }),
 ];
 
-export default [
+module.exports = [
   {
     input: INPUT_FILE,
     external: [

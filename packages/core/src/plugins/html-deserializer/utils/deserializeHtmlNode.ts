@@ -26,13 +26,13 @@ export const deserializeHtmlNode =
     if (breakLine) return breakLine;
 
     // body
-    const fragment = htmlBodyToFragment(editor, node);
+    const fragment = htmlBodyToFragment(editor, node as HTMLElement);
     if (fragment) return fragment;
 
     // element
-    const element = htmlElementToElement(editor, node);
+    const element = htmlElementToElement(editor, node as HTMLElement);
     if (element) return element;
 
     // leaf
-    return htmlElementToLeaf(editor, node);
+    return htmlElementToLeaf(editor, node as HTMLElement);
   };

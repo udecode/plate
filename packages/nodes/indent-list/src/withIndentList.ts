@@ -81,7 +81,7 @@ export const withIndentList = <
     let nextIndentListPathRef: PathRef | null = null;
     if (
       operation.type === 'merge_node' &&
-      operation.properties[KEY_LIST_STYLE_TYPE]
+      (operation.properties as any)[KEY_LIST_STYLE_TYPE]
     ) {
       const node = getNode<TElement>(editor, path);
 
@@ -102,7 +102,7 @@ export const withIndentList = <
     if (operation.type === 'merge_node') {
       const { properties } = operation;
 
-      if (properties[KEY_LIST_STYLE_TYPE]) {
+      if ((properties as any)[KEY_LIST_STYLE_TYPE]) {
         const node = getNode<TElement>(editor, path);
         if (!node) return;
 
@@ -149,8 +149,12 @@ export const withIndentList = <
 
     if (nodeBefore) {
       if (operation.type === 'set_node') {
-        const prevListStyleType = operation.properties[KEY_LIST_STYLE_TYPE];
-        const listStyleType = operation.newProperties[KEY_LIST_STYLE_TYPE];
+        const prevListStyleType = (operation.properties as any)[
+          KEY_LIST_STYLE_TYPE
+        ];
+        const listStyleType = (operation.newProperties as any)[
+          KEY_LIST_STYLE_TYPE
+        ];
 
         // Remove list style type
         if (prevListStyleType && !listStyleType) {
@@ -230,8 +234,8 @@ export const withIndentList = <
           }
         }
 
-        const prevIndent = operation.properties[KEY_INDENT];
-        const indent = operation.newProperties[KEY_INDENT];
+        const prevIndent = (operation.properties as any)[KEY_INDENT];
+        const indent = (operation.newProperties as any)[KEY_INDENT];
 
         // Update indent
         if (prevIndent !== indent) {

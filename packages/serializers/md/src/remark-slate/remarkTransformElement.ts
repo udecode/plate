@@ -8,7 +8,7 @@ export const remarkTransformElement = <V extends Value>(
   const { elementRules } = options;
 
   const { type } = node;
-  const elementRule = elementRules[type!];
+  const elementRule = (elementRules as any)[type!];
   if (!elementRule) return [];
 
   return elementRule.transform(node, options);

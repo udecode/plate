@@ -36,43 +36,45 @@ const isBeginningOfTheLine = <V extends Value>(
   return point?.path[0] !== previousPoint?.path[0];
 };
 
-export const getFindTriggeringInput = <V extends Value>(
-  editor: PlateEditor<V>,
-  emojiTriggeringController: IEmojiTriggeringController
-) => (
-  { char = '', action = 'insert' }: FindTriggeringInputProps = {
-    char: '',
-    action: 'insert',
-  }
-) => {
-  const { selection } = editor;
+export const getFindTriggeringInput =
+  <V extends Value>(
+    editor: PlateEditor<V>,
+    emojiTriggeringController: IEmojiTriggeringController
+  ) =>
+  (
+    { char = '', action = 'insert' }: FindTriggeringInputProps = {
+      char: '',
+      action: 'insert',
+    }
+  ) => {
+    const { selection } = editor;
 
-  if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {
-    emojiTriggeringController.setIsTriggering(false);
-    return;
-  }
-
-  const startPoint = selection.anchor;
-  let currentPoint: undefined | BasePoint = startPoint;
-  let previousPoint;
-
-  let foundText = char;
-  let previousChar;
-
-  do {
-    previousChar = getPreviousChar(editor, currentPoint);
-    foundText = previousChar + foundText;
-    previousPoint = getPreviousPoint(editor, currentPoint);
-
-    if (isBeginningOfTheLine(editor, currentPoint)) {
-      break;
+    if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {
+      emojiTriggeringController.setIsTriggering(false);
+      return;
     }
 
-    currentPoint = previousPoint;
-  } while (!isSpaceBreak(previousChar));
+    const startPoint = selection.anchor;
+    let currentPoint: undefined | BasePoint = startPoint;
+    let previousPoint;
 
-  foundText = foundText.trim();
-  if (action === 'delete') foundText = foundText.slice(0, -1);
+    let foundText = char;
+    let previousChar;
 
-  emojiTriggeringController.setText(foundText);
-};
+    do {
+      previousChar = getPreviousChar(editor, currentPoint);
+      foundText = previousChar + foundText;
+      previousPoint = getPreviousPoint(editor, currentPoint);
+
+      if (isBeginningOfTheLine(editor, currentPoint)) {
+        break;
+      }
+
+      currentPoint = previousPoint;
+    } while (!isSpaceBreak(previousChar));
+
+    foundText = foundText.trim();
+    if (action === 'delete') foundText = foundText.slice(0, -1);
+
+    emojiTriggeringController.setText(foundText);
+  };

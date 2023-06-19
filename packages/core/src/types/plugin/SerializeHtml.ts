@@ -1,8 +1,8 @@
+import React from 'react';
 import { Value } from '@udecode/slate';
-import { RenderFunction } from '../misc/RenderFunction';
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
 import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
-export type SerializeHtml<V extends Value = Value> = RenderFunction<
+export type SerializeHtml<V extends Value = Value> = React.FC<
   PlateRenderElementProps<V> & PlateRenderLeafProps<V>
 >;

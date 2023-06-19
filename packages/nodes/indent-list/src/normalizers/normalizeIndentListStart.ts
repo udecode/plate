@@ -49,7 +49,7 @@ export const normalizeIndentListStart = <
 ) => {
   return withoutNormalizing(editor, () => {
     const [node] = entry;
-    const listStyleType = node[KEY_LIST_STYLE_TYPE];
+    const listStyleType = (node as any)[KEY_LIST_STYLE_TYPE];
 
     if (!listStyleType) return;
 

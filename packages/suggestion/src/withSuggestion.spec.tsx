@@ -57,14 +57,14 @@ describe('withSuggestion', () => {
             </editor>
           ) as any as PlateEditor;
 
-          const output = (
-            <editor>
-              <hp>
-                test<htext suggestion>test</htext>
-                <cursor />
-              </hp>
-            </editor>
-          ) as any as PlateEditor;
+          // const output = (
+          //   <editor>
+          //     <hp>
+          //       test<htext suggestion>test</htext>
+          //       <cursor />
+          //     </hp>
+          //   </editor>
+          // ) as any as PlateEditor;
 
           const editor = createPlateEditor({
             editor: input,
@@ -260,16 +260,16 @@ describe('withSuggestion', () => {
             </editor>
           ) as any as PlateEditor;
 
-          const output = (
-            <editor>
-              <hp>
-                tes
-                <htext suggestion suggestionId="1" suggestionDeletion>
-                  t
-                </htext>
-              </hp>
-            </editor>
-          ) as any as PlateEditor;
+          // const output = (
+          //   <editor>
+          //     <hp>
+          //       tes
+          //       <htext suggestion suggestionId="1" suggestionDeletion>
+          //         t
+          //       </htext>
+          //     </hp>
+          //   </editor>
+          // ) as any as PlateEditor;
 
           const editor = createPlateEditor({
             editor: input,

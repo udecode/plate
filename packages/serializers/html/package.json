@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.3.2",
-    "html-entities": "^2.3.3"
+    "html-entities": "^2.3.6"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -42,7 +42,7 @@
     "slate-react": ">=0.95.0"
   },
   "devDependencies": {
-    "@types/papaparse": "^5"
+    "@types/papaparse": "^5.3.7"
   },
   "keywords": [
     "html",

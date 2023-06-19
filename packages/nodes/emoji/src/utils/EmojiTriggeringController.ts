@@ -1,5 +1,4 @@
-import { emojiTriggeringControllerOptions } from '../constants';
-import { EMOJI_TRIGGERING_CONTROLLER_OPTIONS } from '../constants';
+import { emojiTriggeringControllerOptions } from '..';
 
 export type EmojiTriggeringControllerOptions = {
   trigger: string;

@@ -1,5 +1,5 @@
+import React from 'react';
 import { Value } from '@udecode/slate';
-import { RenderFunction } from '../misc/RenderFunction';
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
 
 export interface InjectComponentProps<V extends Value = Value>
@@ -8,7 +8,7 @@ export interface InjectComponentProps<V extends Value = Value>
 }
 
 export type InjectComponentReturnType<V extends Value = Value> =
-  | RenderFunction<PlateRenderElementProps<V>>
+  | React.FC<PlateRenderElementProps<V>>
   | undefined;
 
 export type InjectComponent<V extends Value = Value> = (

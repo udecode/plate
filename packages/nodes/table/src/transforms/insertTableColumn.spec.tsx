@@ -1,6 +1,7 @@
+/* eslint-disable react/jsx-key */
 /** @jsx jsx */
 
-import { createPlateEditor, TEditor, Value } from '@udecode/plate-common';
+import { createPlateEditor, TEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { insertTableColumn } from './insertTableColumn';
 
@@ -38,7 +39,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as TEditor<Value>;
+  ) as unknown as TEditor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {

@@ -43,7 +43,7 @@ export const overrideSelectionFromCell = <V extends Value = Value>(
 
   if (!hotkey) return;
 
-  const edge = keyShiftEdges[hotkey];
+  const edge = (keyShiftEdges as any)[hotkey];
 
   // if the previous selection was in many cells, return
   if (

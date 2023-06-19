@@ -17,4 +17,4 @@ export const withProviders =
       }
 
       return <Provider>{acc}</Provider>;
-    }, <WrappedComponent {...props} />);
+    }, <WrappedComponent {...(props as any)} />);

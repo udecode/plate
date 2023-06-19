@@ -87,7 +87,7 @@ export const withNodeId = <
     if (operation.type === 'split_node') {
       const node = operation.properties as TNode;
 
-      let id = operation.properties[idKey];
+      let id = (operation.properties as any)[idKey];
 
       // only for elements (node with a type) or all nodes if `filterText=false`
       if (queryNode([node, operation.path], query)) {
@@ -118,7 +118,7 @@ export const withNodeId = <
 
       // if the node is allowed, we don't want to use the same id
       if (id) {
-        delete operation.properties[idKey];
+        delete (operation.properties as any)[idKey];
       }
     }
 

@@ -1,8 +1,10 @@
 /** @jsx jsx */
-import { createPlateUIEditor } from '@udecode/plate';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { normalizeDescendantsToDocumentFragment } from './index';
+import {
+  createPlateEditor,
+  normalizeDescendantsToDocumentFragment,
+} from './index';
 
 jsx;
 
@@ -33,7 +35,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
   ])(
     'should add a blank leaf to blocks without children',
     ({ input, output }: any) => {
-      const editor = createPlateUIEditor();
+      const editor = createPlateEditor();
 
       const result = normalizeDescendantsToDocumentFragment(editor, {
         descendants: input,
@@ -101,7 +103,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
   ])(
     'should wrap inline blocks and text nodes in case they have a sibling block',
     ({ input, output }: any) => {
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         plugins: [createLinkPlugin()],
       });
       const result = normalizeDescendantsToDocumentFragment(editor, {

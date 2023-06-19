@@ -36,7 +36,7 @@ export const getIndentListSiblings = <
 
   const [node] = entry;
 
-  if (!node[KEY_LIST_STYLE_TYPE]) return siblings;
+  if (!(node as any)[KEY_LIST_STYLE_TYPE]) return siblings;
 
   let iterEntry = entry;
 

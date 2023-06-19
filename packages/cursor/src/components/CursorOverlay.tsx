@@ -1,7 +1,6 @@
 import React, { RefObject } from 'react';
 import {
   ClassNames,
-  RenderFunction,
   UnknownObject,
   usePlateSelectors,
 } from '@udecode/plate-common';
@@ -34,14 +33,14 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
    * For example, you could display a label next to the caret.
    * @default styled div
    */
-  onRenderCaret?: RenderFunction<
+  onRenderCaret?: React.FC<
     Pick<CursorProps<TCursorData>, 'data' | 'caretPosition'>
   >;
 
   /**
    * Overrides `Caret` component
    */
-  onRenderSelectionRect?: RenderFunction<
+  onRenderSelectionRect?: React.FC<
     Pick<CursorProps<TCursorData>, 'data'> & {
       selectionRect: SelectionRect;
     }
@@ -78,7 +77,7 @@ export interface CursorOverlayProps<
   /**
    * Overrides `Cursor` component.
    */
-  onRenderCursor?: RenderFunction<CursorProps>;
+  onRenderCursor?: React.FC<CursorProps>;
 }
 
 export function CursorOverlayContent<

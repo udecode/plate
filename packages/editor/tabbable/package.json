@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.3.2",
-    "tabbable": "^6.0.1"
+    "tabbable": "^6.1.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

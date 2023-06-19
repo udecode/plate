@@ -47,15 +47,15 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
       const emojiId = this.library!.getEmojiId(key);
       this.result.push(emojiId);
 
-      this.scores[emojiId] || (this.scores[emojiId] = 0);
-      this.scores[emojiId] += emojiId === value ? 0 : score + 1;
+      (this.scores as any)[emojiId] || ((this.scores as any)[emojiId] = 0);
+      (this.scores as any)[emojiId] += emojiId === value ? 0 : score + 1;
     }
   }
 
   private sortResultByScores(result: string[], scores: {}) {
     result.sort((a, b) => {
-      const aScore = scores[a];
-      const bScore = scores[b];
+      const aScore = (scores as any)[a];
+      const bScore = (scores as any)[b];
 
       if (aScore === bScore) {
         return a.localeCompare(b);

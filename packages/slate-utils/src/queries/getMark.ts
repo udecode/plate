@@ -8,5 +8,5 @@ export const getMark = <V extends Value>(editor: TEditor<V>, key: string) => {
 
   const marks = getMarks(editor);
 
-  return marks?.[key] as unknown;
+  return (marks as any)?.[key] as unknown;
 };

@@ -37,7 +37,7 @@
     "@udecode/plate-media": "21.3.4",
     "@udecode/plate-paragraph": "21.3.2",
     "@udecode/plate-table": "21.3.4",
-    "validator": "^13.7.0"
+    "validator": "^13.9.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
