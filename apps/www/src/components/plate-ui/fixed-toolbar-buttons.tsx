@@ -11,10 +11,10 @@ import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
+import { ColorDropdownMenu } from './color-dropdown-menu/color-dropdown-menu';
+import { EmojiDropdownMenu } from './emoji-dropdown-menu/emoji-dropdown-menu';
 import { AlignDropdownMenu } from './align-dropdown-menu';
-import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
-import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
@@ -33,10 +33,26 @@ import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { ToolbarSeparator } from '@/components/ui/toolbar';
+import { ValueId } from '@/config/setting-values';
+import { isEnabled } from '@/plate/demo/is-enabled';
 
-export function FixedToolbarButtons() {
+export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
+
+  const showFirstSeparator =
+    isEnabled('align', id) ||
+    isEnabled('lineheight', id) ||
+    (isEnabled('indentlist', id) && indentList) ||
+    (isEnabled('list', id) && !indentList) ||
+    isEnabled('indent', id) ||
+    isEnabled('list', id) ||
+    isEnabled('indentlist', id);
+  const showSeparator =
+    isEnabled('link', id) ||
+    isEnabled('media', id) ||
+    isEnabled('table', id) ||
+    isEnabled('emoji', id);
 
   return (
     <>
@@ -45,7 +61,7 @@ export function FixedToolbarButtons() {
           <>
             <InsertDropdownMenu />
 
-            <TurnIntoDropdownMenu />
+            {isEnabled('basicnodes', id) && <TurnIntoDropdownMenu />}
 
             <ToolbarSeparator />
 
@@ -61,65 +77,88 @@ export function FixedToolbarButtons() {
             >
               <Icons.underline />
             </MarkToolbarButton>
-            <MarkToolbarButton
-              tooltip="Strikethrough (⌘+⇧+M)"
-              nodeType={MARK_STRIKETHROUGH}
-            >
-              <Icons.strikethrough />
-            </MarkToolbarButton>
-            <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
-              <Icons.code />
-            </MarkToolbarButton>
 
-            <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
-              <Icons.color className={iconVariants({ variant: 'toolbar' })} />
-            </ColorDropdownMenu>
-            <ColorDropdownMenu
-              nodeType={MARK_BG_COLOR}
-              tooltip="Highlight Color"
-            >
-              <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
-            </ColorDropdownMenu>
+            {isEnabled('basicnodes', id) && (
+              <>
+                <MarkToolbarButton
+                  tooltip="Strikethrough (⌘+⇧+M)"
+                  nodeType={MARK_STRIKETHROUGH}
+                >
+                  <Icons.strikethrough />
+                </MarkToolbarButton>
+                <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+                  <Icons.code />
+                </MarkToolbarButton>
+              </>
+            )}
 
-            <ToolbarSeparator />
+            {isEnabled('font', id) && (
+              <>
+                <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
+                  <Icons.color
+                    className={iconVariants({ variant: 'toolbar' })}
+                  />
+                </ColorDropdownMenu>
+                <ColorDropdownMenu
+                  nodeType={MARK_BG_COLOR}
+                  tooltip="Highlight Color"
+                >
+                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                </ColorDropdownMenu>
+              </>
+            )}
 
-            <AlignDropdownMenu />
+            {showFirstSeparator && <ToolbarSeparator />}
 
-            <LineHeightDropdownMenu />
+            {isEnabled('align', id) && <AlignDropdownMenu />}
 
-            {indentList ? (
+            {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
+
+            {isEnabled('indentlist', id) && indentList && (
               <>
                 <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                 <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
               </>
-            ) : (
+            )}
+
+            {isEnabled('list', id) && !indentList && (
               <>
                 <ListToolbarButton nodeType={ELEMENT_UL} />
                 <ListToolbarButton nodeType={ELEMENT_OL} />
               </>
             )}
 
-            <OutdentToolbarButton />
-            <IndentToolbarButton />
+            {(isEnabled('indent', id) ||
+              isEnabled('list', id) ||
+              isEnabled('indentlist', id)) && (
+              <>
+                <OutdentToolbarButton />
+                <IndentToolbarButton />
+              </>
+            )}
 
-            <ToolbarSeparator />
+            {showSeparator && <ToolbarSeparator />}
 
-            <LinkToolbarButton />
+            {isEnabled('link', id) && <LinkToolbarButton />}
 
-            <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+            {isEnabled('media', id) && (
+              <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+            )}
 
-            <TableDropdownMenu />
-            <EmojiDropdownMenu />
+            {isEnabled('table', id) && <TableDropdownMenu />}
+
+            {isEnabled('emoji', id) && <EmojiDropdownMenu />}
+
             <MoreDropdownMenu />
           </>
         )}
       </div>
 
       <div className="flex gap-1">
-        <CommentToolbarButton />
+        {isEnabled('comment', id) && <CommentToolbarButton />}
         <ModeDropdownMenu />
 
-        <SettingsToggle />
+        {!id && <SettingsToggle />}
       </div>
     </>
   );

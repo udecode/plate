@@ -1,3 +1,3 @@
-import App from '@/components/examples/EditableVoidsApp';
+import App from '@/components/examples/EditableVoidsDemo';
 
 export default App;

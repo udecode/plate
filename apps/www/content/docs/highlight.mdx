@@ -1,17 +1,26 @@
 ---
 title: Highlight
 description: Mark and reference text for review.
+docs:
+  - route: /docs/components/highlight-leaf
+    title: Highlight Leaf
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="highlight" />
+</ComponentExample>
+
+### Features
 
 The Highlight plugin provides text marking tools to aid content authors in their work, such as reviewing and referencing content.
 
 It utilizes inline **`<mark>`** elements, supporting markers (background color).
 
-[//]: # (It utilizes inline **`<mark>`** elements, supporting both markers &#40;background color&#41; and pens &#40;text color&#41;, and comes with a flexible configuration.)
+[//]: # 'It utilizes inline **`<mark>`** elements, supporting both markers (background color) and pens (text color), and comes with a flexible configuration.'
 
 To utilize the highlight feature, first select the desired text and then use the Highlight toolbar button to apply the highlight.
 
-[//]: # (You can choose from a predefined and limited number of available colors.)
+[//]: # 'You can choose from a predefined and limited number of available colors.'
 
 ### Installation
 
@@ -24,12 +33,15 @@ npm install @udecode/plate-highlight
 ```tsx
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createHighlightPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createHighlightPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 ### Source Code

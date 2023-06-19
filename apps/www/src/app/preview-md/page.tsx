@@ -1,3 +1,3 @@
-import App from '@/components/examples/PreviewMdApp';
+import App from '@/components/examples/PreviewMdDemo';
 
 export default App;

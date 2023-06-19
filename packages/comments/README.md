@@ -4,7 +4,7 @@ This package implements the comments plugin for Plate.
 
 ## Documentation
 
-Check out [comments](https://plate.udecode.io/docs/plugins/comments).
+Check out [comments](https://plate.udecode.io/docs/comments).
 
 ## API
 

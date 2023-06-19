@@ -5,8 +5,8 @@ This package implements the soft break and exit break plugins for Plate.
 ## Documentation
 
 Check out:  
-- [Soft Break](https://plate.udecode.io/docs/plugins/soft-break)
-- [Exit Break](https://plate.udecode.io/docs/plugins/exit-break)
+- [Soft Break](https://plate.udecode.io/docs/soft-break)
+- [Exit Break](https://plate.udecode.io/docs/exit-break)
 
 ## API
 

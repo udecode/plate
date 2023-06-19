@@ -12,7 +12,7 @@ This package implements the following basic marks plugins:
 ## Documentation
 
 Check out
-[Basic Marks](https://plate.udecode.io/docs/plugins/basic-marks).
+[Basic Marks](https://plate.udecode.io/docs/basic-marks).
 
 ## API
 

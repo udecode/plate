@@ -1,3 +1,3 @@
-import App from '@/components/examples/IframeApp';
+import App from '@/components/examples/IframeDemo';
 
 export default App;

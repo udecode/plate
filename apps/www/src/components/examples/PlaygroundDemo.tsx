@@ -22,7 +22,7 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
-import { createDndPlugin } from '@udecode/plate-dnd';
+import { PlatePluginComponent } from '@udecode/plate-core';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
@@ -37,6 +37,7 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
@@ -57,26 +58,28 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { CommentsPopover } from '@/components/plate-ui/comments-popover';
-import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
+import { CommentsPopover } from '@/components/plate-ui/comments-popover/comments-popover';
+import { CursorOverlay } from '@/components/plate-ui/cursor-overlay/cursor-overlay';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { SettingsPanel } from '@/components/settings-panel';
+import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { createPlateUI } from '@/plate/createPlateUI';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { blockSelectionPlugin } from '@/plate/demo/plugins/blockSelectionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
 import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
 import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
@@ -85,9 +88,15 @@ import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { createMyPlugins, MyValue } from '@/plate/plate.types';
+import { createMyPlugins, MyValue } from '@/plate/plate-types';
 
-export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
+export const usePlaygroundPlugins = ({
+  id,
+  components = createPlateUI(),
+}: {
+  id?: ValueId;
+  components?: Record<string, PlatePluginComponent>;
+} = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(
@@ -95,97 +104,112 @@ export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
       createMyPlugins(
         [
           // Nodes
-          createParagraphPlugin({ enabled: enabled.p }),
-          createHeadingPlugin({ enabled: enabled.heading }),
-          createBlockquotePlugin({ enabled: enabled.blockquote }),
-          createCodeBlockPlugin({ enabled: enabled.code_block }),
-          createHorizontalRulePlugin({ enabled: enabled.hr }),
-          createLinkPlugin({ ...linkPlugin, enabled: enabled.a }),
-          createListPlugin({ enabled: enabled.list }),
-          createImagePlugin({ enabled: enabled.img }),
-          createMediaEmbedPlugin({ enabled: enabled.media_embed }),
-          createMentionPlugin({ enabled: enabled.mention }),
-          createTablePlugin({ enabled: enabled.table }),
-          createTodoListPlugin({ enabled: enabled.action_item }),
-          createExcalidrawPlugin({ enabled: enabled.excalidraw }),
+          createParagraphPlugin({ enabled: !!enabled.p }),
+          createHeadingPlugin({ enabled: !!enabled.heading }),
+          createBlockquotePlugin({ enabled: !!enabled.blockquote }),
+          createCodeBlockPlugin({ enabled: !!enabled.code_block }),
+          createHorizontalRulePlugin({ enabled: !!enabled.hr }),
+          createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
+          createListPlugin({
+            enabled: isEnabled('list', id) || !!enabled.list,
+          }),
+          createImagePlugin({ enabled: !!enabled.img }),
+          createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
+          createMentionPlugin({ enabled: !!enabled.mention }),
+          createTablePlugin({ enabled: !!enabled.table }),
+          createTodoListPlugin({ enabled: !!enabled.action_item }),
+          createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
 
           // Marks
-          createBoldPlugin({ enabled: enabled.bold }),
-          createItalicPlugin({ enabled: enabled.italic }),
-          createUnderlinePlugin({ enabled: enabled.underline }),
-          createStrikethroughPlugin({ enabled: enabled.strikethrough }),
-          createCodePlugin({ enabled: enabled.code }),
-          createSubscriptPlugin({ enabled: enabled.subscript }),
-          createSuperscriptPlugin({ enabled: enabled.superscript }),
-          createFontColorPlugin({ enabled: enabled.color }),
+          createBoldPlugin({ enabled: !!enabled.bold }),
+          createItalicPlugin({ enabled: !!enabled.italic }),
+          createUnderlinePlugin({ enabled: !!enabled.underline }),
+          createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
+          createCodePlugin({ enabled: !!enabled.code }),
+          createSubscriptPlugin({ enabled: !!enabled.subscript }),
+          createSuperscriptPlugin({ enabled: !!enabled.superscript }),
+          createFontColorPlugin({ enabled: !!enabled.color }),
           createFontBackgroundColorPlugin({
-            enabled: enabled.backgroundColor,
+            enabled: !!enabled.backgroundColor,
           }),
-          createFontSizePlugin({ enabled: enabled.fontSize }),
-          createHighlightPlugin({ enabled: enabled.highlight }),
-          createKbdPlugin({ enabled: enabled.kbd }),
+          createFontSizePlugin({ enabled: !!enabled.fontSize }),
+          createHighlightPlugin({ enabled: !!enabled.highlight }),
+          createKbdPlugin({ enabled: !!enabled.kbd }),
 
           // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: enabled.align }),
-          createIndentPlugin({ ...indentPlugin, enabled: enabled.indent }),
-          createIndentListPlugin({ enabled: enabled.listStyleType }),
+          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+          createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
+          createIndentListPlugin({
+            enabled: isEnabled('indentlist', id) || !!enabled.listStyleType,
+          }),
+          createLineHeightPlugin({
+            ...lineHeightPlugin,
+            enabled: !!enabled.lineHeight,
+          }),
 
           // Functionality
           createAutoformatPlugin({
             ...(autoformatPlugin as any),
-            enabled: enabled.autoformat,
+            enabled: !!enabled.autoformat,
           }),
           createBlockSelectionPlugin({
-            ...blockSelectionPlugin,
-            enabled: enabled.blockSelection,
+            options: {
+              sizes: {
+                left: id === 'blockselection' ? 32 : 76,
+                top: 0,
+                right: id === 'blockselection' ? 32 : 76,
+                bottom: 0,
+              },
+            },
+            enabled: id === 'blockselection' && !!enabled.blockSelection,
           }),
-          createComboboxPlugin({ enabled: enabled.combobox }),
-          createDndPlugin({
-            options: { enableScroller: true },
-            enabled: enabled.dnd,
-          }),
-          createEmojiPlugin({ ...emojiPlugin, enabled: enabled.emoji }),
+          createComboboxPlugin({ enabled: !!enabled.combobox }),
+          // createDndPlugin({
+          //   options: { enableScroller: true },
+          //   enabled: !!enabled.dnd,
+          // }),
+          createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
-            enabled: enabled.exitBreak,
+            enabled: !!enabled.exitBreak,
           }),
-          createNodeIdPlugin({ enabled: enabled.nodeId }),
+          createNodeIdPlugin({ enabled: !!enabled.nodeId }),
           createNormalizeTypesPlugin({
             ...forcedLayoutPlugin,
-            enabled: enabled.normalizeTypes,
+            enabled: !!enabled.normalizeTypes,
           }),
           createResetNodePlugin({
             ...resetBlockTypePlugin,
-            enabled: enabled.resetNode,
+            enabled: !!enabled.resetNode,
           }),
           createSelectOnBackspacePlugin({
             ...selectOnBackspacePlugin,
-            enabled: enabled.selectOnBackspace,
+            enabled: !!enabled.selectOnBackspace,
           }),
           createSingleLinePlugin({
-            enabled: enabled.singleLine,
+            enabled: id === 'singleline' || !!enabled.singleLine,
           }),
           createSoftBreakPlugin({
             ...softBreakPlugin,
-            enabled: enabled.softBreak,
+            enabled: !!enabled.softBreak,
           }),
           createTabbablePlugin({
             ...tabbablePlugin,
-            enabled: enabled.tabbable,
+            enabled: !!enabled.tabbable,
           }),
           createTrailingBlockPlugin({
             ...trailingBlockPlugin,
-            enabled: enabled.trailingBlock,
+            enabled: id !== 'singleline' && !!enabled.trailingBlock,
           }),
-          { ...dragOverCursorPlugin, enabled: enabled.dragOverCursor },
+          { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
 
           // Collaboration
-          createCommentsPlugin({ enabled: enabled.comment }),
+          createCommentsPlugin({ enabled: !!enabled.comment }),
 
           // Deserialization
-          createDeserializeDocxPlugin({ enabled: enabled.deserializeDocx }),
-          createDeserializeMdPlugin({ enabled: enabled.deserializeMd }),
-          createJuicePlugin({ enabled: enabled.juice }),
+          createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
+          createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
+          createJuicePlugin({ enabled: !!enabled.juice }),
         ],
         {
           components,
@@ -196,21 +220,24 @@ export const usePlaygroundPlugins = ({ components = createPlateUI() } = {}) => {
   );
 };
 
-export function PlaygroundDemo() {
+export function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
 
-  const initialValue = usePlaygroundValue();
+  const initialValue = usePlaygroundValue(id);
+
   const plugins = usePlaygroundPlugins({
+    id,
     components: createPlateUI(
       {},
       {
-        placeholder: true,
-        draggable: true,
+        placeholder: isEnabled('placeholder', id),
+        // draggable: isEnabled('dnd', id),
       }
     ),
   });
 
   return (
+    // <DndProvider backend={HTML5Backend}>
     <div className="relative">
       <PlateProvider<MyValue>
         key={settingsStore.use.key()}
@@ -219,38 +246,47 @@ export function PlaygroundDemo() {
         normalizeInitialValue
       >
         <FixedToolbar>
-          <FixedToolbarButtons />
+          <FixedToolbarButtons id={id} />
         </FixedToolbar>
 
         <CommentsProvider>
           <div
             ref={containerRef}
-            className="relative flex w-[calc(100vw-64px)] max-w-[900px] overflow-x-scroll"
+            className={cn(
+              'relative flex max-w-[900px] overflow-x-auto',
+              !id && 'w-[calc(100vw-64px)]'
+            )}
           >
             <Plate
               editableProps={{
                 ...editableProps,
                 className: cn(
                   editableProps.className,
-                  'min-h-[calc(100vh-102px)] w-[900px]'
+                  !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
+                  id && 'px-8 pb-8 pt-2'
                 ),
               }}
             >
               <FloatingToolbar>
-                <FloatingToolbarButtons />
+                <FloatingToolbarButtons id={id} />
               </FloatingToolbar>
 
-              <MentionCombobox items={MENTIONABLES} />
+              {isEnabled('mention', id) && (
+                <MentionCombobox items={MENTIONABLES} />
+              )}
 
-              <CursorOverlay containerRef={containerRef} />
+              {isEnabled('cursoroverlay', id) && (
+                <CursorOverlay containerRef={containerRef} />
+              )}
             </Plate>
           </div>
 
-          <CommentsPopover />
+          {isEnabled('comment', id) && <CommentsPopover />}
         </CommentsProvider>
       </PlateProvider>
 
-      <SettingsPanel />
+      {!id && <SettingsPanel />}
     </div>
+    // </DndProvider>
   );
 }

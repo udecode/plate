@@ -23,7 +23,7 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { SearchHighlightToolbar } from '@/components/examples/FindReplaceApp';
+import { SearchHighlightToolbar } from '@/components/examples/FindReplaceDemo';
 import { Icons } from '@/components/icons';
 import { AlignDropdownMenu } from '@/components/plate-ui/align-dropdown-menu';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';

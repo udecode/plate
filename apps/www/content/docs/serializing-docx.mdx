@@ -1,15 +1,19 @@
 ---
-title: Docx
+title: Serializing Docx
 description: Copy paste from DOCX to Slate.
 ---
 
-The Deserialize Docx plugin allows you to copy and paste content from Microsoft Word documents directly into your Plate editor.
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="deserializedocx" />
+</ComponentExample>
 
-This functionality makes it easy to integrate formatted text and other content from Word documents into your editor without losing formatting or structure.
+### Features
 
-To see the Deserialize Docx plugin in action, simply copy content from a Microsoft Word document and paste it into your Plate editor.
+- Convert DOCX content to a Slate value. 
 
-The plugin will automatically preserve the formatting and structure of the pasted content.
+<Callout className="my-4">
+**Note**: Converting a Slate value to DOCX is not yet supported.
+</Callout>
 
 ### Installation
 
@@ -18,6 +22,8 @@ npm install @udecode/plate-serializer-docx @udecode/plate-juice
 ```
 
 ### Usage
+
+#### DOCX -> Slate
 
 ```tsx
 import React from 'react';

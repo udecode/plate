@@ -85,7 +85,12 @@ export default async function DocPage({ params }: DocPageProps) {
     notFound();
   }
 
+  // let toc: TableOfContents;
+  // if (params.slug?.[0] === 'api') {
+  //   toc = getAPITableOfContents(doc.body.raw);
+  // } else {
   const toc = await getTableOfContents(doc.body.raw);
+  // }
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
@@ -107,8 +112,18 @@ export default async function DocPage({ params }: DocPageProps) {
             </p>
           )}
         </div>
-        {doc.radix ? (
-          <div className="flex items-center space-x-2 pt-4">
+        {doc.radix || doc.docs ? (
+          <div className="flex flex-wrap items-center gap-1 pt-4">
+            {doc.radix?.shadcn && (
+              <Link
+                href={doc.radix.shadcn}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(badgeVariants({ variant: 'secondary' }))}
+              >
+                shadcn/ui
+              </Link>
+            )}
             {doc.radix?.link && (
               <Link
                 href={doc.radix.link}
@@ -130,6 +145,15 @@ export default async function DocPage({ params }: DocPageProps) {
                 API Reference
               </Link>
             )}
+            {doc.docs?.map((item) => (
+              <Link
+                key={item.route}
+                href={item.route as any}
+                className={cn(badgeVariants({ variant: 'secondary' }))}
+              >
+                {item.title}
+              </Link>
+            ))}
           </div>
         ) : null}
         <Separator className="my-4 md:my-6" />

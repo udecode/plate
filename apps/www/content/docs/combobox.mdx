@@ -1,19 +1,28 @@
 ---
 title: Combobox
 description: Select options from a predefined list.
+docs:
+  - route: /docs/components/combobox
+    title: Combobox
+  - route: /docs/components/emoji-combobox
+    title: Emoji Combobox
+  - route: /docs/components/mention-combobox
+    title: Mention Combobox
 ---
+
+### Features
 
 The Combobox plugin provides a combobox element that allows users to select an option from a list of predefined choices.
 
 Comboboxes are commonly used for mentions, tags, slash commands
 and other user interfaces to offer a quick and straightforward way for users to make a selection from a predefined set of options.
 
-Try out the Combobox plugin paired with the [Mention plugin](docs/plugins/mention).
+Try out the Combobox plugin paired with the [Mention plugin](/docs/mention).
 
 ### Installation
 
 ```bash
-npm install @udecode/plate-ui-combobox
+npm install @udecode/plate-combobox
 ```
 
 ### Usage
@@ -21,13 +30,16 @@ npm install @udecode/plate-ui-combobox
 ```tsx
 import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createMentionPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createComboboxPlugin(),
+    createMentionPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Combobox Store
@@ -99,6 +111,7 @@ export interface ComboboxItemData {
 `onChange`:
 
 #### For each combobox state:
+
 - if the selection is collapsed
 - if the cursor follows the trigger
 - if there is text without whitespaces after the trigger
@@ -107,6 +120,7 @@ export interface ComboboxItemData {
 #### `onKeyDown`
 
 If the combobox is open, handle:
+
 - down (next item)
 - up (previous item)
 - escape (reset combobox)

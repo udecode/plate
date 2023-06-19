@@ -2,11 +2,18 @@
 title: Table Dropdown Menu
 description: Table Dropdown Menu.
 component: true
+docs:
+  - route: /docs/table
+    title: Table
+  - route: /docs/components/dropdown-menu
+    title: Dropdown Menu
+  - route: /docs/components/tooltip
+    title: Tooltip
 ---
 
-[//]: # (<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">)
-[//]: # (  <PlaygroundDemo />)
-[//]: # (</ComponentExample>)
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="table" />
+</ComponentExample>
 
 ## Installation
 
@@ -19,20 +26,14 @@ npx plate-ui add table-dropdown-menu
     <AccordionTrigger>Manual Installation</AccordionTrigger>
     <AccordionContent>
 
-1. Install the `@udecode/plate-table` component from plate:
+      1. Install the following dependencies:
 
-```bash
-npm install @udecode/plate-table
-```
-      
-2. Install the `@radix-ui/react-dropdown-menu` component from radix-ui:
+      - [Table](/docs/table)
+      - [dropdown Menu](/docs/components/dropdown-menu)
+      - [Tooltip](/docs/components/tooltip)
 
-```bash
-npm install @radix-ui/react-dropdown-menu
-```
+2. Copy and paste the following code into your project.
 
-3. Copy and paste the following code into your project. 
-      
 - `components/plate-ui/table-dropdown-menu.tsx`
 
 <ComponentSource src="/src/components/plate-ui/table-dropdown-menu.tsx" />
@@ -44,11 +45,4 @@ npm install @radix-ui/react-dropdown-menu
 
 ## Usage
 
-```tsx
-import {
-  TableDropdownMenu,
-} from '@/components/plate-ui/table-dropdown-menu';
-```
-
-```tsx
-```
+<ComponentSource src="/src/components/plate-ui/fixed-toolbar-buttons.tsx" />

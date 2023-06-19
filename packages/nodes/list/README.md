@@ -4,7 +4,7 @@ This package implements the list plugin for Plate.
 
 ## Documentation
 
-Check out [List](https://plate.udecode.io/docs/plugins/list).
+Check out [List](https://plate.udecode.io/docs/list).
 
 ## API
 

@@ -78,19 +78,23 @@ export function CommandMenu({ ...props }: DialogProps) {
           </CommandGroup>
           {docsConfig.sidebarNav.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
-              {group.items.map((navItem) => (
-                <CommandItem
-                  key={navItem.href}
-                  onSelect={() => {
-                    runCommand(() => router.push(navItem.href as string));
-                  }}
-                >
-                  <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                    <Circle className="h-3 w-3" />
-                  </div>
-                  {navItem.title}
-                </CommandItem>
-              ))}
+              {group.items?.map((navItem) => {
+                return (
+                  <React.Fragment key={navItem.href}>
+                    <CommandItem
+                      onSelect={() => {
+                        runCommand(() => router.push(navItem.href as string));
+                      }}
+                    >
+                      <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                        <Circle className="h-3 w-3" />
+                      </div>
+                      {navItem.title}
+                    </CommandItem>
+                    {}
+                  </React.Fragment>
+                );
+              })}
             </CommandGroup>
           ))}
           <CommandSeparator />

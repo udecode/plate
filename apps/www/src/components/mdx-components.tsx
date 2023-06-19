@@ -11,7 +11,10 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
+import { APIItem, APIList, APISubList, APISubListItem } from './api-list';
+import { BadgeList, BadgePopover } from './badge-popover';
 import { Callout } from './callout';
+import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
@@ -98,10 +101,10 @@ const components = {
     />
   ),
   ul: ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className={cn('my-6 ml-6 list-disc', className)} {...props} />
+    <ul className={cn('my-0 ml-6 list-disc', className)} {...props} />
   ),
   ol: ({ className, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className={cn('my-6 ml-6 list-decimal', className)} {...props} />
+    <ol className={cn('my-0 ml-6 list-decimal', className)} {...props} />
   ),
   li: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <li className={cn('mt-2', className)} {...props} />
@@ -198,15 +201,7 @@ const components = {
       </>
     );
   },
-  code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
-    <code
-      className={cn(
-        'relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm',
-        className
-      )}
-      {...props}
-    />
-  ),
+  code: Code,
   Image,
   Callout,
   ComponentExample,
@@ -223,6 +218,12 @@ const components = {
       {...props}
     />
   ),
+  BadgeList,
+  BadgePopover,
+  APIList,
+  APISubList,
+  APISubListItem,
+  APIItem,
   ...examples,
 };
 

@@ -18,7 +18,7 @@ export function ComponentExample({
   className,
   extractClassname,
   extractedClassNames,
-  align = 'center',
+  align = 'start',
   src: _,
   ...props
 }: ComponentExampleProps) {
@@ -81,7 +81,7 @@ export function ComponentExample({
               'items-end': align === 'end',
             })}
           >
-            <div>{Example}</div>
+            <div className="w-full">{Example}</div>
           </div>
         </TabsContent>
         <TabsContent value="code">

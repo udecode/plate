@@ -1,13 +1,26 @@
 ---
 title: Link
 description: Insert and manage hyperlinks.
+docs:
+  - route: /docs/components/link-element
+    title: Link Element
+  - route: /docs/components/link-floating-toolbar
+    title: Link Floating Toolbar
+  - route: /docs/components/link-toolbar-button
+    title: Link Toolbar Button
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="link" />
+</ComponentExample>
+
+### Features
 
 The Link plugin for Plate provides comprehensive support for hyperlink insertion and management within the rich-text editor.
 
 It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs into functional links.
 
-[//]: # (It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.)
+[//]: # 'It offers a user-friendly interface for creating and editing links, and with the Autolink feature, it automatically converts typed or pasted URLs and email addresses into functional links.'
 
 To create a new link, use the Link toolbar button or press Ctrl/Cmd+K.
 Clicking on an existing link will activate the contextual toolbar,
@@ -17,7 +30,6 @@ where you can edit or unlink the link with ease.
 
 ```bash
 npm install @udecode/plate-link
-npm install @udecode/plate-ui-link
 ```
 
 ### Usage
@@ -25,14 +37,17 @@ npm install @udecode/plate-ui-link
 ```tsx
 import { createLinkPlugin, PlateFloatingLink } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createLinkPlugin({
-    renderAfterEditable: PlateFloatingLink,
-  })
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createLinkPlugin({
+      renderAfterEditable: PlateFloatingLink,
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options

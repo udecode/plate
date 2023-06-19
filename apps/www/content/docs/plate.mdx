@@ -5,7 +5,7 @@ description: Plate API
 
 `Plate` is the core component rendering the editor. It takes care of computing and passing `Slate` and `Editable` props from the `plugins`.
 
-`PlateProvider` is the component loading the Plate store. Any component rendered below can have access to the Plate store. If `Plate` does not find any parent `PlateProvider`, it will take care of including it (provider-less mode). 
+`PlateProvider` is the component loading the Plate store. Any component rendered below has access to the Plate store. If `Plate` does not find any parent `PlateProvider`, it will take care of creating one (provider-less mode).
 
 ## Plate Props
 
@@ -76,13 +76,13 @@ All the following props are optional.
 
 ### `initialValue`
 
-``V extends Value = Value``
+`V extends Value = Value`
 
 - Initial value of the editor.
 - Default is `[{ children: [{ text: '' }]}]`.
 
 ### `normalizeInitialValue`
- 
+
 `boolean`
 
 - When `true`, it will normalize the initial value passed to the `editor` once it gets created.
@@ -153,7 +153,7 @@ You can read the following to understand the internals of `Plate`, otherwise you
 #### Slate `key`
 
 - Each time the editor reference updates, a new random key is set
-to `Slate` to unmount and mount again the component.
+  to `Slate` to unmount and mount again the component.
 
 #### Slate `editor`
 
@@ -162,6 +162,7 @@ to `Slate` to unmount and mount again the component.
 #### Slate `onChange`
 
 Callback called by `Slate` on each change:
+
 1. The new value is stored in plate [store](/docs/store#value).
 2. Pipes `onChange` plugins.
 3. `onChange` prop is called if defined.
@@ -179,7 +180,7 @@ props if `editor` is defined.
 
 #### Editable `renderElement`
 
-- If plugin `isElement` is `true` and if plugin `type` equals `props.element.type`,  it will render an element using the following plugin properties:
+- If plugin `isElement` is `true` and if plugin `type` equals `props.element.type`, it will render an element using the following plugin properties:
   - `inject.props` to inject rendering props.
   - `component` to render the element.
   - `inject.aboveComponent` to inject a component above `component`.
@@ -189,7 +190,7 @@ props if `editor` is defined.
 
 #### Editable `renderLeaf`
 
-- If plugin `isLeaf` is `true` and if plugin `type` equals `props.leaf.type`,  it will render a leaf using the following plugin properties:
+- If plugin `isLeaf` is `true` and if plugin `type` equals `props.leaf.type`, it will render a leaf using the following plugin properties:
   - `inject.props` to inject rendering props.
   - `component` to render the leaf.
 - If no plugin is found for a node type, `editableProps.renderLeaf` is used if defined.

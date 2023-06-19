@@ -1,0 +1,56 @@
+---
+title: Code Leaf
+description: Component for table plugin.
+component: true
+docs:
+  - route: /docs/basic-elements
+    title: Code Block
+---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="basicnodes" />
+</ComponentExample>
+
+## Installation
+
+```bash
+npx plate-ui add code-leaf
+```
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="manual-installation">
+    <AccordionTrigger>Manual Installation</AccordionTrigger>
+    <AccordionContent>
+
+      1. Install the following dependencies:
+
+      - [Code Block](/docs/basic-elements)
+
+      2. Copy and paste the following code into your project.
+
+      - `components/plate-ui/code-leaf.tsx`
+
+      <ComponentSource src="/src/components/plate-ui/code-leaf.tsx" />
+
+    </AccordionContent>
+
+  </AccordionItem>
+</Accordion>
+
+## Usage
+
+### Plugins
+
+```tsx
+import { createCodePlugin } from '@udecode/plate-basic-marks';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCodePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+```

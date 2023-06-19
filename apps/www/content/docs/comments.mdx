@@ -1,7 +1,20 @@
 ---
 title: Comments
 description: Add comments to text as marks.
+docs:
+  - route: /docs/components/comment-leaf
+    title: Comment Leaf
+  - route: /docs/components/comment-toolbar-button
+    title: Comment Toolbar Button
+  - route: /docs/components/comments-popover
+    title: Comments Popover
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="comment" />
+</ComponentExample>
+
+### Features
 
 The Comments plugin allows users to add comments to text as marks.
 
@@ -18,23 +31,29 @@ To add a comment, select the text and:
 
 ```bash
 npm install @udecode/plate-comments
-npm install @udecode/plate-ui-comments
 ```
 
 ### Usage
 
 ```tsx
-import { createCommentsPlugin, MARK_COMMENT, PlateCommentLeaf } from '@udecode/plate';
+import {
+  createCommentsPlugin,
+  MARK_COMMENT,
+  PlateCommentLeaf,
+} from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createCommentsPlugin(),
-], {
-  components: {
-    ...createPlateUI(),
-    [MARK_COMMENT]: PlateCommentLeaf,
-  },
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createCommentsPlugin(),
+  ],
+  {
+    components: {
+      ...createPlateUI(),
+      [MARK_COMMENT]: PlateCommentLeaf,
+    },
+  }
+);
 ```
 
 #### Options

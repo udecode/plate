@@ -1,7 +1,16 @@
 ---
 title: Line Height
 description: Adjust the height between lines of text.
+docs:
+  - route: /docs/components/line-height-dropdown-menu
+    title: Line Height Dropdown Menu
 ---
+
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="lineheight" />
+</ComponentExample>
+
+### Features
 
 The Line Height plugin enables support for line height adjustments within your Plate editor.
 
@@ -13,7 +22,6 @@ To apply a custom line height, click within a paragraph or header and use the to
 
 ```bash
 npm install @udecode/plate-line-height
-npm install @udecode/plate-ui-line-height
 ```
 
 ### Usage
@@ -21,12 +29,15 @@ npm install @udecode/plate-ui-line-height
 ```tsx
 import { createLineHeightPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createLineHeightPlugin(lineHeightPlugin),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createLineHeightPlugin(lineHeightPlugin),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 ### Source Code

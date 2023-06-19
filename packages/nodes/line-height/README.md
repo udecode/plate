@@ -4,7 +4,7 @@ This package implements the line height plugin for Plate.
 
 ## Documentation
 
-Check out [Line height](https://plate.udecode.io/docs/plugins/line-height).
+Check out [Line height](https://plate.udecode.io/docs/line-height).
 
 ## API
 

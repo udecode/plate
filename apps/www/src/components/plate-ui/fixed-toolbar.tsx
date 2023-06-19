@@ -9,7 +9,7 @@ const FixedToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
       <Toolbar
         ref={ref}
         className={cn(
-          'sticky left-0 top-[57px] z-50 w-full justify-between overflow-x-scroll border-b border-b-border',
+          'sticky left-0 top-[57px] z-50 w-full justify-between overflow-x-auto border-b border-b-border',
           className
         )}
         {...props}

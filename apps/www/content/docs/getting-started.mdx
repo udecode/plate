@@ -1,0 +1,197 @@
+---
+title: Getting Started
+description: A quick tutorial to get you up and running with Plate.
+---
+
+<Steps>
+
+### Add dependencies
+
+Add the following dependencies to your project:
+
+```bash
+npm install @udecode/plate
+
+# required peer deps
+npm install slate slate-react slate-history slate-hyperscript react react-dom
+```
+
+Alternatively you can install only the packages you need.
+
+```bash
+# used by all plate packages
+npm install @udecode/plate-common
+
+# required peer deps
+npm install slate slate-react slate-history slate-hyperscript react react-dom
+
+# plugins
+npm install @udecode/plate-basic-elements
+# npm install @udecode/plate-...
+
+# if using @udecode/plate-dnd
+npm install react-dnd react-dnd-html5-backend
+```
+
+### Basic Editor
+
+Let's start with a minimal editor setup leveraging `Plate` and `editableProps`.
+
+```tsx showLineNumbers {1,3-5,9}
+import { Plate } from '@udecode/plate';
+
+const editableProps = {
+  placeholder: 'Type...',
+};
+
+export default function BasicEditor() {
+  return <Plate editableProps={editableProps} />;
+}
+```
+
+Simple and straightforward. Try it out:
+
+<ComponentPreview>
+  <BasicEditorDefaultDemo />
+</ComponentPreview>
+
+<Callout className="mt-4">
+  **Note**: The following examples are using these global styles:
+  <ComponentSource src="/src/styles/globals.scss" />
+</Callout>
+
+### Initializing Editor's Value
+
+Let's specify the initial content of the editor: a single paragraph.
+
+```tsx showLineNumbers {3-12,18}
+// ...
+
+const initialValue = [
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'This is editable plain text with react and history plugins, just like a <textarea>!',
+      },
+    ],
+  },
+];
+
+export default function BasicEditor() {
+  return <Plate editableProps={editableProps} initialValue={initialValue} />;
+}
+```
+
+<Callout className="mt-4">
+  **Note**: Plate uses the `type` property to enable plugins to render nodes by
+  type.
+</Callout>
+
+<ComponentPreview>
+  <BasicEditorValueDemo />
+</ComponentPreview>
+
+### Implementing Change Handler
+
+At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The `onChange` prop will serve this purpose.
+
+```tsx showLineNumbers {8-10}
+// ...
+
+export default function BasicEditor() {
+  return (
+    <Plate
+      editableProps={editableProps}
+      initialValue={initialValue}
+      onChange={(newValue) => {
+        // save newValue...
+      }}
+    />
+  );
+}
+```
+
+<ComponentPreview>
+  <BasicEditorHandlerDemo />
+</ComponentPreview>
+
+### Plugins
+
+Let's use the basic plugins for a rich-text editor.
+
+<ComponentPreview>
+  <BasicPluginsDefaultDemo />
+</ComponentPreview>
+
+The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a `div` and the default leaf component is a `span`.
+
+<Callout className="mt-4">
+  **Note**: You don't need to add core plugins such as `react` and `history` as
+  `Plate` already does it.
+</Callout>
+
+### Components
+
+<Callout className="mt-4">
+  **Note**: Plate plugins are packaged unstyled, implying that you have complete
+  control over markup and styling, hence you can integrate your own design
+  system or [Plate UI](/components).
+</Callout>
+
+To simultaneously plug-in all the components, `createPlugins` can be used:
+
+- use the first parameter for the `plugins`
+- use the second parameter for the `components`. In the following example, we'll call `createPlateUI()`, which returns all Plate components by plugin key.
+
+```tsx showLineNumbers {19-34, 39}
+// ...
+import {
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodePlugin,
+  createHeadingPlugin,
+  createItalicPlugin,
+  createParagraphPlugin,
+  createPlateUI,
+  createPlugins,
+  createStrikethroughPlugin,
+  createUnderlinePlugin,
+  Plate,
+} from '@udecode/plate';
+
+// Local components.
+import { createPlateUI } from '@/lib/createPlateUI';
+
+const plugins = createPlugins(
+  [
+    createParagraphPlugin(),
+    createBlockquotePlugin(),
+    createHeadingPlugin(),
+
+    createBoldPlugin(),
+    createItalicPlugin(),
+    createUnderlinePlugin(),
+    createStrikethroughPlugin(),
+    createCodePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
+
+export default function BasicEditor() {
+  return (
+    <Plate
+      plugins={plugins}
+      // ...
+    />
+  );
+}
+```
+
+<ComponentExample src="/src/components/examples/BasicPluginsComponentsDemo.tsx">
+  <BasicPluginsComponentsDemo />
+</ComponentExample>
+
+</Steps>

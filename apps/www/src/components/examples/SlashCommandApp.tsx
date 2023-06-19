@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-combobox';
 import { isDefined } from '@udecode/plate-common';
 
-import { Combobox } from '@/components/plate-ui/combobox';
+import { Combobox } from '@/components/plate-ui/combobox/combobox';
 
 // WIP
 

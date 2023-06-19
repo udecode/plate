@@ -1,9 +1,22 @@
 ---
 title: Emoji
 description: Enhance your text with emojis.
+docs:
+  - route: /docs/components/emoji-combobox
+    title: Emoji Combobox
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Dropdown Menu
+  - route: /docs/components/emoji-toolbar-dropdown
+    title: Emoji Toolbar Dropdown
 ---
 
-The emoji plugin is using the combobox plugin(/docs/plugins/combobox). The Emoji plugin enables users to effortlessly insert emojis into their text, enhancing the user experience by providing a simple and convenient way to add visual expression to content.
+<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
+  <PlaygroundDemo id="emoji" />
+</ComponentExample>
+
+### Features
+
+The emoji plugin is using the combobox plugin(/docs/combobox). The Emoji plugin enables users to effortlessly insert emojis into their text, enhancing the user experience by providing a simple and convenient way to add visual expression to content.
 
 To use the Emoji plugin, click the emoji icon on the toolbar or use the shortcut ":", followed by the emoji name, such as :apple: 🍎. Autocomplete suggestions will appear as you type, and you can select the desired emoji from the list.
 
@@ -12,8 +25,6 @@ To use the Emoji plugin, click the emoji icon on the toolbar or use the shortcut
 ```bash
 npm install @udecode/plate-combobox
 npm install @udecode/plate-emoji
-npm install @udecode/plate-ui-combobox
-npm install @udecode/plate-ui-emoji
 ```
 
 ### Usage
@@ -21,13 +32,16 @@ npm install @udecode/plate-ui-emoji
 ```tsx
 import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createEmojiPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createComboboxPlugin(),
+    createEmojiPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
