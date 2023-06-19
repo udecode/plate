@@ -13,7 +13,6 @@ import {
 
 export const useFloatingCommentsState = () => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
-  const comments = useCommentsSelectors().comments();
   const resetNewCommentValue = useResetNewCommentValue();
   const setActiveCommentId = useCommentsActions().activeCommentId()!;
   const editor = usePlateEditorRef();

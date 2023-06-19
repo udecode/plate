@@ -36,6 +36,9 @@ npm install @udecode/plate-ui-toolbar
 
 ```tsx
 import React from 'react';
+import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatItalic } from '@styled-icons/material/FormatItalic';
+import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import { TippyProps } from '@tippyjs/react';
 import {
   BalloonToolbar,
@@ -79,19 +82,19 @@ const MyBalloonToolbar = (
     <BalloonToolbar theme={theme} arrow={arrow} {...balloonToolbarProps}>
       <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
-        icon={<Icons.bold />}
+        icon={<FormatBold />}
         tooltip={boldTooltip}
         actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_ITALIC)}
-        icon={<Icons.italic />}
+        icon={<FormatItalic />}
         tooltip={italicTooltip}
         actionHandler="onMouseDown"
       />
       <MarkToolbarButton
         type={getPluginType(editor, MARK_UNDERLINE)}
-        icon={<Icons.underline />}
+        icon={<FormatUnderlined />}
         tooltip={underlineTooltip}
         actionHandler="onMouseDown"
       />
@@ -113,4 +116,4 @@ const MyBalloonToolbar = (
 ### Source Code
 
 - [packages/ui/toolbar](https://github.com/udecode/plate/tree/main/packages/ui/toolbar/src)
-- [Variables](https://github.com/udecode/plate/blob/main/apps/www/src)
+- [Variables](https://github.com/udecode/plate/blob/main/examples/src)

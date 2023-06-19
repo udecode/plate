@@ -13,7 +13,7 @@ import {
   serializeHtml,
   usePlateEditorState,
 } from '@udecode/plate';
-import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { createExcalidrawPlugin } from '@udecode/plate-ui-excalidraw';
 import { basicNodesPlugins } from './basic-nodes/basicNodesPlugins';
 import { editableProps } from './common/editableProps';
 import { plateUI } from './common/plateUI';

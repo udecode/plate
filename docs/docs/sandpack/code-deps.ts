@@ -15,7 +15,7 @@ export const plateTestUtilsDeps = {
 };
 
 export const excalidrawDeps = {
-  '@udecode/plate-excalidraw': excalidrawVersion,
+  '@udecode/plate-ui-excalidraw': excalidrawVersion,
 };
 
 export const juiceDeps = {

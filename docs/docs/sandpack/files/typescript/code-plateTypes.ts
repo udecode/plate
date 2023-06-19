@@ -77,7 +77,7 @@ export const plateTypesCode = `import {
 // import {
 //   ELEMENT_EXCALIDRAW,
 //   TExcalidrawElement,
-// } from '@udecode/plate-excalidraw';
+// } from '@udecode/plate-ui-excalidraw';
 import { CSSProperties } from 'styled-components';
 
 /**
