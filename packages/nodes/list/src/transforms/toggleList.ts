@@ -42,7 +42,9 @@ export const toggleList = <V extends Value>(
 
       if (res) {
         const { list } = res;
-        if (list[0].type !== type) {
+        if (list[0].type === type) {
+          unwrapList(editor);
+        } else {
           setElements(
             editor,
             { type },
@@ -53,8 +55,6 @@ export const toggleList = <V extends Value>(
               mode: 'lowest',
             }
           );
-        } else {
-          unwrapList(editor);
         }
       } else {
         const list = { type, children: [] };
@@ -99,7 +99,9 @@ export const toggleList = <V extends Value>(
         getListTypes(editor).includes(commonEntry[0].type) ||
         (commonEntry[0] as TElement).type === getPluginType(editor, ELEMENT_LI)
       ) {
-        if ((commonEntry[0] as TElement).type !== type) {
+        if ((commonEntry[0] as TElement).type === type) {
+          unwrapList(editor);
+        } else {
           const startList = findNode(editor, {
             at: Range.start(editor.selection),
             match: { type: getListTypes(editor) },
@@ -126,8 +128,6 @@ export const toggleList = <V extends Value>(
               mode: 'all',
             }
           );
-        } else {
-          unwrapList(editor);
         }
       } else {
         const rootPathLength = commonEntry[1].length;

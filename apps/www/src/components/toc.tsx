@@ -58,6 +58,7 @@ function useActiveItem(itemIds: string[]) {
     );
 
     itemIds?.forEach((id) => {
+      // eslint-disable-next-line unicorn/prefer-query-selector
       const element = document.getElementById(id);
 
       if (element) {
@@ -67,6 +68,7 @@ function useActiveItem(itemIds: string[]) {
 
     return () => {
       itemIds?.forEach((id) => {
+        // eslint-disable-next-line unicorn/prefer-query-selector
         const element = document.getElementById(id);
         if (element) {
           observer.unobserve(element);

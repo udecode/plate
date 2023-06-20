@@ -1,6 +1,6 @@
 import { isUrl } from '@udecode/plate-common';
 
-const imageExtensions = [
+const imageExtensions = new Set([
   'ase',
   'art',
   'bmp',
@@ -121,12 +121,12 @@ const imageExtensions = [
   'ras',
   'sun',
   'tga',
-];
+]);
 
 export const isImageUrl = (url: string) => {
   if (!isUrl(url)) return false;
 
   const ext = new URL(url).pathname.split('.').pop() as string;
 
-  return imageExtensions.includes(ext);
+  return imageExtensions.has(ext);
 };

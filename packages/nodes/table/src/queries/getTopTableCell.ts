@@ -25,8 +25,8 @@ export const getTopTableCell = <V extends Value>(
     if (!cellPath) return;
   }
 
-  const cellIndex = cellPath[cellPath.length - 1];
-  const rowIndex = cellPath[cellPath.length - 2];
+  const cellIndex = cellPath.at(-1)!;
+  const rowIndex = cellPath.at(-2)!;
 
   // If the current cell is in the first row, there is no cell above it
   if (rowIndex === 0) return;

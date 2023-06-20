@@ -67,7 +67,7 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
 
   hasFound(exact = false) {
     if (exact && this.input) {
-      return this.result.indexOf(this.input) !== -1;
+      return this.result.includes(this.input);
     }
 
     return this.result.length > 0;

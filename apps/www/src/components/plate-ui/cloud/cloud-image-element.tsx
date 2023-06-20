@@ -60,7 +60,19 @@ export function CloudImageElement({
           userSelect: 'none',
         }}
       >
-        {src !== '' ? (
+        {src === '' ? (
+          <div
+            className={cn(
+              'block rounded-lg',
+              focused && selected && 'shadow-[0_0_1px_3px_#60a5fa]'
+            )}
+            style={{
+              width: size.width,
+              height: size.height,
+              background: '#e0e0e0',
+            }}
+          />
+        ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className={cn(
@@ -72,18 +84,6 @@ export function CloudImageElement({
             width={size.width}
             height={size.height}
             alt=""
-          />
-        ) : (
-          <div
-            className={cn(
-              'block rounded-lg',
-              focused && selected && 'shadow-[0_0_1px_3px_#60a5fa]'
-            )}
-            style={{
-              width: size.width,
-              height: size.height,
-              background: '#e0e0e0',
-            }}
           />
         )}
         <div className="absolute inset-x-2 top-[50%] -mt-2">

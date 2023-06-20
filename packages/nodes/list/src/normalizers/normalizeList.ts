@@ -57,8 +57,8 @@ export const normalizeList = <V extends Value>(
     // remove empty list
     if (match(node, [], { type: getListTypes(editor) })) {
       if (
-        !node.children.length ||
-        !node.children.find((item) => item.type === liType)
+        node.children.length === 0 ||
+        !node.children.some((item) => item.type === liType)
       ) {
         return removeNodes(editor, { at: path });
       }
@@ -91,23 +91,24 @@ export const normalizeList = <V extends Value>(
       }
     }
 
-    if (node.type === getPluginType(editor, ELEMENT_LI)) {
-      if (
-        normalizeListItem(editor, {
-          listItem: [node, path],
-          validLiChildrenTypes,
-        })
-      ) {
-        return;
-      }
+    if (
+      node.type === getPluginType(editor, ELEMENT_LI) &&
+      normalizeListItem(editor, {
+        listItem: [node, path],
+        validLiChildrenTypes,
+      })
+    ) {
+      return;
     }
 
     // LIC should have LI parent. If not, set LIC to DEFAULT type.
-    if (node.type === licType && licType !== defaultType) {
-      if (getParentNode(editor, path)?.[0].type !== liType) {
-        setElements(editor, { type: defaultType }, { at: path });
-        return;
-      }
+    if (
+      node.type === licType &&
+      licType !== defaultType &&
+      getParentNode(editor, path)?.[0].type !== liType
+    ) {
+      setElements(editor, { type: defaultType }, { at: path });
+      return;
     }
 
     normalizeNode([node, path]);

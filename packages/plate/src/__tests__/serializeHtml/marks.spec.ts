@@ -1,8 +1,7 @@
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
-import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
-
+import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createBasicMarksPlugin } from '@/nodes/basic-marks/src/createBasicMarksPlugin';
+import { createHighlightPlugin } from '@/nodes/highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '@/nodes/kbd/src/createKbdPlugin';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
@@ -51,7 +50,7 @@ it('serialize highlight to html', () => {
           { text: ' part.' },
         ],
       })
-    ).getElementsByTagName('mark')[0].textContent
+    ).querySelectorAll('mark')[0].textContent
   ).toEqual('highlighted');
 });
 
@@ -65,7 +64,7 @@ it('serialize strikethrough to html', () => {
           { text: ' part.' },
         ],
       })
-    ).getElementsByClassName('slate-strikethrough')[0].textContent
+    ).querySelectorAll('.slate-strikethrough')[0].textContent
   ).toEqual('strikethrough');
 });
 
@@ -79,7 +78,7 @@ it('serialize code to html', () => {
           { text: ' part.' },
         ],
       })
-    ).getElementsByTagName('code')[0].textContent
+    ).querySelectorAll('code')[0].textContent
   ).toEqual('some code');
 });
 
@@ -93,7 +92,7 @@ it('serialize kbd to html', () => {
           { text: ' part.' },
         ],
       })
-    ).getElementsByTagName('kbd')[0].textContent
+    ).querySelectorAll('kbd')[0].textContent
   ).toEqual('keyboard shortcut');
 });
 

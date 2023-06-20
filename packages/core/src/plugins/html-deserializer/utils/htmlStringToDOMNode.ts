@@ -9,7 +9,7 @@ export const htmlStringToDOMNode = (
   node.innerHTML = rawHtml;
 
   if (stripWhitespace) {
-    node.innerHTML = node.innerHTML.replace(/(\r\n|\n|\r|\t)/gm, '');
+    node.innerHTML = node.innerHTML.replaceAll(/(\r\n|[\t\n\r])/g, '');
   }
 
   return node;

@@ -31,7 +31,7 @@ export const isBlockTextEmptyAfterSelection = <V extends Value>(
 
   const siblingNodes = getNextSiblingNodes(blockAbove, cursor.path);
 
-  if (siblingNodes.length) {
+  if (siblingNodes.length > 0) {
     for (const siblingNode of siblingNodes) {
       if (isText(siblingNode) && siblingNode.text) {
         return false;

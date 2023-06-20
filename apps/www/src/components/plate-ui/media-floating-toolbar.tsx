@@ -30,21 +30,7 @@ export function MediaFloatingToolbar({ pluginKey }: { pluginKey?: string }) {
 
   return (
     <div className={cn(popoverVariants(), 'w-auto p-1')}>
-      {!isEditing ? (
-        <div className="box-content flex h-9 items-center gap-1">
-          <FloatingMediaPrimitive.EditButton
-            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-          >
-            Edit link
-          </FloatingMediaPrimitive.EditButton>
-
-          <Separator orientation="vertical" className="my-1" />
-
-          <Button variant="ghost" size="sms" {...buttonProps}>
-            <Icons.delete className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
+      {isEditing ? (
         <div className="flex w-[330px] flex-col">
           <div className="flex items-center">
             <div className="flex items-center pl-3 text-muted-foreground">
@@ -59,6 +45,20 @@ export function MediaFloatingToolbar({ pluginKey }: { pluginKey?: string }) {
               }}
             />
           </div>
+        </div>
+      ) : (
+        <div className="box-content flex h-9 items-center gap-1">
+          <FloatingMediaPrimitive.EditButton
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
+            Edit link
+          </FloatingMediaPrimitive.EditButton>
+
+          <Separator orientation="vertical" className="my-1" />
+
+          <Button variant="ghost" size="sms" {...buttonProps}>
+            <Icons.delete className="h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>

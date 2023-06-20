@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from './createListPlugin';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -34,7 +32,7 @@ describe('li > lic * 2 with selection at second child start', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -74,7 +72,7 @@ describe('li with selection at start', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

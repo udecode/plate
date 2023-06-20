@@ -100,8 +100,6 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
             target: el.getAttribute('target') || '_blank',
           };
         }
-
-        return undefined;
       },
     },
   }),

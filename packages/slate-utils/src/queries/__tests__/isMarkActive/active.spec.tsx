@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { isMarkActive } from '@/slate-utils/src/queries/isMarkActive';
@@ -18,5 +17,5 @@ const input = (
 ) as any;
 
 it('should be', () => {
-  expect(isMarkActive(input, MARK_BOLD)).toEqual(true);
+  expect(isMarkActive(input, 'bold')).toEqual(true);
 });

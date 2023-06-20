@@ -23,7 +23,7 @@ export const indentListPluginPage: Partial<PlatePlugin<IndentListPlugin>> = {
             const node = getNode<TElement>(e, prevPagePath);
             if (!node) return;
 
-            const lastNode = node.children[node.children.length - 1];
+            const lastNode = node.children.at(-1);
             return [lastNode, prevPagePath.concat(node.children.length - 1)];
           }
 

@@ -17,7 +17,7 @@ export const pipeDecorate = <V extends Value>(
   if (decorateProp) {
     decorates.push(decorateProp);
   }
-  if (!decorates.length) return;
+  if (decorates.length === 0) return;
 
   return (entry) => {
     let ranges: Range[] = [];

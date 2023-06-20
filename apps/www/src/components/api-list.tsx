@@ -86,7 +86,7 @@ export function APIList({
   children: ReactNode;
 }) {
   const defaultValues = Array.from(
-    Array(React.Children.count(children)).keys()
+    Array.from({ length: React.Children.count(children) }).keys()
   ).map((i) => i.toString());
 
   const [values, setValues] = useState<string[]>(defaultValues);

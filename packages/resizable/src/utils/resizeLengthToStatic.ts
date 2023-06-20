@@ -5,7 +5,7 @@ export const resizeLengthToStatic = (
   parentLength: number
 ): ResizeLengthStatic => {
   if (typeof length === 'string') {
-    return (parentLength * parseFloat(length)) / 100;
+    return (parentLength * Number.parseFloat(length)) / 100;
   }
 
   return length;

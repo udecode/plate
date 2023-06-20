@@ -55,6 +55,7 @@ export function Tweet({
   useEffect(() => {
     if (tweetId !== previousTweetIDRef.current) {
       let isComponentMounted = true;
+      // eslint-disable-next-line unicorn/prefer-module
       const script = require('scriptjs');
       script(WIDGET_SCRIPT_URL, 'twitter-embed', () => {
         if (!window.twttr) {

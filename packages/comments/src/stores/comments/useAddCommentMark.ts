@@ -43,7 +43,7 @@ export const useAddCommentMark = () => {
 
     try {
       deselectEditor(editor);
-    } catch (err) {}
+    } catch {}
 
     setTimeout(() => {
       setActiveCommentId(id);

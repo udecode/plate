@@ -50,7 +50,7 @@ export const onDropNode = <V extends Value>(
     const nodePath = findNode(editor, { at: [], match: { id } })?.[1];
 
     if (!nodePath) return;
-    dropPath = [...nodePath.slice(0, -1), nodePath[nodePath.length - 1] - 1];
+    dropPath = [...nodePath.slice(0, -1), nodePath.at(-1)! - 1];
 
     if (Path.equals(dragPath, dropPath)) return;
   }

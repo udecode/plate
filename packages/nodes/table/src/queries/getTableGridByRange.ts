@@ -30,10 +30,10 @@ export const getTableGridByRange = <V extends Value>(
   const startCellPath = at.anchor.path;
   const endCellPath = at.focus.path;
 
-  const _startRowIndex = startCellPath[startCellPath.length - 2];
-  const _endRowIndex = endCellPath[endCellPath.length - 2];
-  const _startColIndex = startCellPath[startCellPath.length - 1];
-  const _endColIndex = endCellPath[endCellPath.length - 1];
+  const _startRowIndex = startCellPath.at(-2)!;
+  const _endRowIndex = endCellPath.at(-2)!;
+  const _startColIndex = startCellPath.at(-1)!;
+  const _endColIndex = endCellPath.at(-1)!;
 
   const startRowIndex = Math.min(_startRowIndex, _endRowIndex);
   const endRowIndex = Math.max(_startRowIndex, _endRowIndex);

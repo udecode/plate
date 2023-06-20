@@ -52,7 +52,7 @@ export const withInsertData = <
         data,
         dataTransfer,
       });
-      if (!fragment.length) return false;
+      if (fragment.length === 0) return false;
 
       pipeInsertFragment(editor, injectedPlugins, {
         fragment,

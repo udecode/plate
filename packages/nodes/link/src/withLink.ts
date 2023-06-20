@@ -163,19 +163,21 @@ export const withLink = <
     if (node.type === getPluginType(editor, ELEMENT_LINK)) {
       const range = editor.selection as Range | null;
 
-      if (range && isCollapsed(range)) {
-        if (isEndPoint(editor, range.focus, path)) {
-          const nextPoint = getNextNodeStartPoint(editor, path);
+      if (
+        range &&
+        isCollapsed(range) &&
+        isEndPoint(editor, range.focus, path)
+      ) {
+        const nextPoint = getNextNodeStartPoint(editor, path);
 
-          // select next text node if any
-          if (nextPoint) {
-            select(editor, nextPoint);
-          } else {
-            // insert text node then select
-            const nextPath = Path.next(path);
-            insertNodes(editor, { text: '' } as any, { at: nextPath });
-            select(editor, nextPath);
-          }
+        // select next text node if any
+        if (nextPoint) {
+          select(editor, nextPoint);
+        } else {
+          // insert text node then select
+          const nextPath = Path.next(path);
+          insertNodes(editor, { text: '' } as any, { at: nextPath });
+          select(editor, nextPath);
         }
       }
     }

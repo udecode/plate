@@ -11,5 +11,5 @@ export const toDOMNode = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toDOMNode(editor as any, node);
-  } catch (e) {}
+  } catch (error) {}
 };

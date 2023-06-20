@@ -42,8 +42,9 @@ export type AtomStoreApi<T, N extends string = ''> = {
 };
 
 const capitalizeFirstLetter = (str = '') =>
-  str.length ? str[0].toUpperCase() + str.slice(1) : '';
-const getStoreIndex = (name = '') => (name.length ? `${name}Store` : 'store');
+  str.length > 0 ? str[0].toUpperCase() + str.slice(1) : '';
+const getStoreIndex = (name = '') =>
+  name.length > 0 ? `${name}Store` : 'store';
 const getUseStoreIndex = (name = '') =>
   `use${capitalizeFirstLetter(name)}Store`;
 

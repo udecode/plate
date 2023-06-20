@@ -11,5 +11,5 @@ export const findEventRange = <V extends Value>(
 ) => {
   try {
     return ReactEditor.findEventRange(editor as any, event);
-  } catch (e) {}
+  } catch (error) {}
 };

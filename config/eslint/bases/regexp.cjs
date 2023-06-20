@@ -13,11 +13,12 @@ module.exports = {
   overrides: [
     {
       // To ensure best performance enable only on e2e test files
-      files: regexpPatterns.files,
       extends: ['plugin:regexp/recommended'],
+      files: regexpPatterns.files,
       rules: {
         'prefer-regex-literals': 'off',
         'regexp/prefer-result-array-groups': 'off',
+        'regexp/strict': 'off',
       },
     },
   ],

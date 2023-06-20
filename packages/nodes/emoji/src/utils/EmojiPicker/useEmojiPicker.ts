@@ -92,7 +92,7 @@ export const useEmojiPicker = ({
 
   const handleSearchInput = useCallback(
     (input: string) => {
-      const value = String(input).replace(/\s/g, '');
+      const value = String(input).replaceAll(/\s/g, '');
       if (!value && !input) {
         dispatch({ type: 'CLEAR_SEARCH' });
         return;

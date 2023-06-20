@@ -70,15 +70,20 @@ export function FailBar({
 export function StatusBar(props: { upload: Upload; children?: JSX.Element }) {
   const { upload, children } = props;
   switch (upload.status) {
-    case 'progress':
+    case 'progress': {
       return <ProgressBar upload={upload} />;
-    case 'error':
+    }
+    case 'error': {
       return <FailBar>Upload Failed</FailBar>;
-    case 'not-found':
+    }
+    case 'not-found': {
       return <FailBar>Uploading...</FailBar>;
-    case 'success':
+    }
+    case 'success': {
       return children || null;
-    default:
+    }
+    default: {
       throw new Error(`Should be unreachable`);
+    }
   }
 }

@@ -196,34 +196,57 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                   key={type}
                   className="min-w-[180px]"
                   onSelect={async () => {
-                    if (type === ELEMENT_CODE_BLOCK) {
-                      insertEmptyCodeBlock(editor);
-                    } else if (type === ELEMENT_IMAGE) {
-                      await insertMedia(editor, { type: ELEMENT_IMAGE });
-                    } else if (type === ELEMENT_MEDIA_EMBED) {
-                      await insertMedia(editor, { type: ELEMENT_MEDIA_EMBED });
-                    } else if (type === 'ul' || type === 'ol') {
-                      insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
-                        select: true,
-                        nextBlock: true,
-                      });
+                    switch (type) {
+                      case ELEMENT_CODE_BLOCK: {
+                        insertEmptyCodeBlock(editor);
 
-                      if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
-                        toggleIndentList(editor, {
-                          listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                        });
-                      } else if (settingsStore.get.checkedId('list')) {
-                        toggleList(editor, { type });
+                        break;
                       }
-                    } else if (type === ELEMENT_TABLE) {
-                      insertTable(editor);
-                    } else if (type === ELEMENT_LINK) {
-                      triggerFloatingLink(editor, { focused: true });
-                    } else {
-                      insertEmptyElement(editor, type, {
-                        select: true,
-                        nextBlock: true,
-                      });
+                      case ELEMENT_IMAGE: {
+                        await insertMedia(editor, { type: ELEMENT_IMAGE });
+
+                        break;
+                      }
+                      case ELEMENT_MEDIA_EMBED: {
+                        await insertMedia(editor, {
+                          type: ELEMENT_MEDIA_EMBED,
+                        });
+
+                        break;
+                      }
+                      case 'ul':
+                      case 'ol': {
+                        insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
+                          select: true,
+                          nextBlock: true,
+                        });
+
+                        if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
+                          toggleIndentList(editor, {
+                            listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                          });
+                        } else if (settingsStore.get.checkedId('list')) {
+                          toggleList(editor, { type });
+                        }
+
+                        break;
+                      }
+                      case ELEMENT_TABLE: {
+                        insertTable(editor);
+
+                        break;
+                      }
+                      case ELEMENT_LINK: {
+                        triggerFloatingLink(editor, { focused: true });
+
+                        break;
+                      }
+                      default: {
+                        insertEmptyElement(editor, type, {
+                          select: true,
+                          nextBlock: true,
+                        });
+                      }
                     }
 
                     focusEditor(editor);

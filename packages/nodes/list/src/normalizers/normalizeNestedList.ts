@@ -30,7 +30,7 @@ export const normalizeNestedList = <V extends Value>(
   let previousListItemPath: Path;
   try {
     previousListItemPath = Path.previous(path);
-  } catch (e) {
+  } catch (error) {
     return false;
   }
 

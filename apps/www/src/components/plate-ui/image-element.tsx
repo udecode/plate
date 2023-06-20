@@ -40,7 +40,7 @@ export function ImageElement({
   return (
     <ElementPopover
       content={
-        !readOnly ? <MediaFloatingToolbar pluginKey={ELEMENT_IMAGE} /> : null
+        readOnly ? null : <MediaFloatingToolbar pluginKey={ELEMENT_IMAGE} />
       }
       floatingOptions={mediaFloatingOptions}
     >

@@ -1,28 +1,30 @@
-import { createParagraphPlugin } from '@udecode/plate';
-import { createAlignPlugin } from '@udecode/plate-alignment/src/index';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/index';
-import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createHeadingPlugin } from '@udecode/plate-heading/src/index';
-import { createLinkPlugin } from '@udecode/plate-link/src/index';
-import { createListPlugin } from '@udecode/plate-list/src/index';
-import { createImagePlugin } from '@udecode/plate-media/src/index';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate';
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createListPlugin } from '@udecode/plate-list';
+import { createImagePlugin } from '@udecode/plate-media';
 import {
-  createTablePlugin,
+  createParagraphPlugin,
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate-paragraph';
+import { serializeHtml } from '@udecode/plate-serializer-html';
+import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '@udecode/plate-table/src/index';
+} from '@udecode/plate-table';
 
+import { TableCellElement } from '@/components/plate-ui/table-cell-element/table-cell-element';
+import { TableElement } from '@/components/plate-ui/table-element/table-element';
+import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize list to html', () => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: [createListPlugin()],
   });
 
@@ -38,7 +40,7 @@ it('serialize list to html', () => {
         },
       ],
     })
-  ).getElementsByTagName('ul')[0];
+  ).querySelectorAll('ul')[0];
   expect(render.children.length).toEqual(2);
   expect(render.children[0].outerHTML).toEqual(
     '<li class="slate-li">Item one</li>'
@@ -85,7 +87,7 @@ it('serialize blockquote to html', () => {
           },
         ],
       })
-    ).getElementsByTagName('blockquote')[0].textContent
+    ).querySelectorAll('blockquote')[0].textContent
   ).toEqual('Blockquoted text here...');
 });
 
@@ -105,7 +107,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
   });
 
   const node = htmlStringToDOMNode(html, false);
-  expect(node.getElementsByTagName('blockquote')[0].textContent).toEqual(
+  expect(node.querySelectorAll('blockquote')[0].textContent).toEqual(
     'Blockquoted text\nhere...'
   );
 });
@@ -133,9 +135,9 @@ it('serialize headings to html', () => {
       ],
     })
   );
-  expect(render.getElementsByTagName('h1')[0].textContent).toEqual('Heading 1');
-  expect(render.getElementsByTagName('h2')[0].textContent).toEqual('Heading 2');
-  expect(render.getElementsByTagName('h3')[0].textContent).toEqual('Heading 3');
+  expect(render.querySelectorAll('h1')[0].textContent).toEqual('Heading 1');
+  expect(render.querySelectorAll('h2')[0].textContent).toEqual('Heading 2');
+  expect(render.querySelectorAll('h3')[0].textContent).toEqual('Heading 3');
 });
 
 it('serialize paragraph to html', () => {
@@ -171,7 +173,7 @@ it('serialize image to html', () => {
           },
         ],
       })
-    ).getElementsByTagName('img')[0].src
+    ).querySelectorAll('img')[0].src
   ).toEqual('https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg');
 });
 
@@ -179,10 +181,10 @@ it('serialize table to html', () => {
   const editor = createPlateUIEditor({
     plugins: [createTablePlugin()],
     components: {
-      [ELEMENT_TABLE]: TableElement.Root,
-      [ELEMENT_TR]: TableRowElement.Root,
-      [ELEMENT_TD]: TableCellElement.Root,
-      [ELEMENT_TH]: TableCellElement.Root,
+      [ELEMENT_TABLE]: TableElement,
+      [ELEMENT_TR]: TableRowElement,
+      [ELEMENT_TD]: TableCellElement,
+      [ELEMENT_TH]: TableCellElement,
     },
   });
 
@@ -213,7 +215,7 @@ it('serialize table to html', () => {
         },
       ],
     })
-  ).getElementsByTagName('table')[0];
+  ).querySelectorAll('table')[0];
   expect(
     render.querySelector('table > tbody > tr:nth-child(1) > td:nth-child(1)')
       ?.textContent

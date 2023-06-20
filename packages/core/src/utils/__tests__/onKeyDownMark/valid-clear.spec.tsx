@@ -5,13 +5,13 @@ import {
   MARK_BOLD,
 } from '@udecode/plate-basic-marks/src/createBoldPlugin';
 import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils/src/plate/onKeyDownToggleMark';
 import * as isHotkey from 'is-hotkey';
 
 import { ToggleMarkPlugin } from '@/core/src/types/plugin/ToggleMarkPlugin';
 import { getPlugin } from '@/core/src/utils/getPlugin';
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -41,7 +41,7 @@ const output = (
   </editor>
 ) as any;
 
-const editor = createPlateUIEditor({
+const editor = createPlateEditor({
   editor: input,
   plugins: [
     createBoldPlugin({

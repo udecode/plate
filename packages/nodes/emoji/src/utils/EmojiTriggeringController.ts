@@ -64,7 +64,7 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
   }
 
   getText() {
-    return this.text.replace(/(^:)|(:$)/g, '');
+    return this.text.replaceAll(/(^:)|(:$)/g, '');
   }
 
   getTextSize() {

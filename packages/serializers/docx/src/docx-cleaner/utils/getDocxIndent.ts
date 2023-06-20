@@ -8,12 +8,12 @@ const DOCX_INDENT_STEP = 36;
 const extractNumber = (str: string) => {
   if (str[0] === '-') return 0;
 
-  let number = str.replace(/[^\d.,]+/, '');
+  let number = str.replace(/[^\d,.]+/, '');
 
   if (number[0] === '.') {
     number = `0${number}`;
   }
-  return parseFloat(number);
+  return Number.parseFloat(number);
 };
 
 const styleToIndent = (style: string, indentStep = DOCX_INDENT_STEP) => {

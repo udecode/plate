@@ -31,7 +31,7 @@ export function ScrollArea({
   placement,
   enabled = true,
   height = 100,
-  zIndex = 10000,
+  zIndex = 10_000,
   minStrength = 0.15,
   strengthMultiplier = 25,
   containerRef,

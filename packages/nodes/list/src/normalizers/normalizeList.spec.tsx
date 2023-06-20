@@ -1,7 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate/src';
-import { normalizeEditor, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  normalizeEditor,
+  PlateEditor,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createListPlugin } from '@/nodes/list/src/createListPlugin';
@@ -9,7 +12,7 @@ import { createListPlugin } from '@/nodes/list/src/createListPlugin';
 jsx;
 
 const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });

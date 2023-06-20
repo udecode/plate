@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const autoprefixer = require('autoprefixer');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
@@ -20,7 +20,7 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
   ? INPUT_FILE_PATH
   : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 const PKG_JSON = require(path.join(PACKAGE_ROOT_PATH, 'package.json'));
-const babelConfig = require('./babel.config');
+const babelConfig = require('./babel.config.cjs');
 
 const isUmd = false;
 

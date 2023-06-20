@@ -31,11 +31,7 @@ export const traverseHtmlNode = (node: Node, callback: Callback): void => {
       previousChild !== child.previousSibling &&
       child.parentNode
     ) {
-      if (previousChild) {
-        child = previousChild.nextSibling;
-      } else {
-        child = node.firstChild;
-      }
+      child = previousChild ? previousChild.nextSibling : node.firstChild;
     } else if (
       // A list was created. Need to compute the next child again.
       !currentChild.previousSibling &&
@@ -47,11 +43,9 @@ export const traverseHtmlNode = (node: Node, callback: Callback): void => {
       !child.parentNode
     ) {
       if (previousChild) {
-        if (previousChild.nextSibling) {
-          child = previousChild.nextSibling.nextSibling;
-        } else {
-          child = null;
-        }
+        child = previousChild.nextSibling
+          ? previousChild.nextSibling.nextSibling
+          : null;
       } else if (node.firstChild) {
         child = node.firstChild.nextSibling;
       }

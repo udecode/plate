@@ -38,15 +38,11 @@ export class FrequentEmojiStorage implements IFrequentEmojiStorage {
 
   get(): FrequentEmojis {
     const data = this.localStorage.get();
-    return Object.keys(data)
-      .sort((a, b) => data[b] - data[a])
-      .reduce(
-        (_sortedObj, key) => ({
-          ..._sortedObj,
-          [key]: data[key],
-        }),
-        {}
-      );
+    return Object.fromEntries(
+      Object.keys(data)
+        .sort((a, b) => data[b] - data[a])
+        .map((key) => [key, data[key]])
+    );
   }
 
   getList(): string[] {

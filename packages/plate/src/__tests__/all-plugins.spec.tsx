@@ -10,7 +10,6 @@ import {
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
 import { createPlugins, Plate } from '@udecode/plate-common';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createLinkPlugin } from '@udecode/plate-link';
@@ -43,7 +42,6 @@ function PlateContainer() {
     createAlignPlugin(),
     createHighlightPlugin(),
     createMentionPlugin(),
-    createFindReplacePlugin({ options: { search } }),
     createNodeIdPlugin(),
     createAutoformatPlugin(),
     createResetNodePlugin(),

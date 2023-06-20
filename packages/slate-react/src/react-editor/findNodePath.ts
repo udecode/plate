@@ -12,5 +12,5 @@ export const findNodePath = <V extends Value>(
 ): Path | undefined => {
   try {
     return ReactEditor.findPath(editor as any, node);
-  } catch (e) {}
+  } catch (error) {}
 };

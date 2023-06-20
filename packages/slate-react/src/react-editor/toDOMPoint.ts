@@ -12,5 +12,5 @@ export const toDOMPoint = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toDOMPoint(editor as any, point);
-  } catch (e) {}
+  } catch (error) {}
 };

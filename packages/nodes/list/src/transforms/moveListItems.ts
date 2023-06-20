@@ -39,7 +39,7 @@ export const moveListItems = <V extends Value>(
   // Get the selected lic
   const lics = Array.from(_nodes);
 
-  if (!lics.length) return;
+  if (lics.length === 0) return;
 
   const highestLicPaths: Path[] = [];
   const highestLicPathRefs: PathRef[] = [];

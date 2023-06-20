@@ -20,7 +20,7 @@ describe('when element is a body', () => {
     );
 
     const body = document.createElement('body');
-    body.appendChild(parseHtmlElement(`<p>test</p>`));
+    body.append(parseHtmlElement(`<p>test</p>`));
 
     expect(
       htmlBodyToFragment(

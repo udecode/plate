@@ -1,12 +1,8 @@
 import React, { createRef, useEffect } from 'react';
 import VanillaSelectionArea, {
-  ChangedElements,
-  SelectionEvent,
   SelectionEvents,
   SelectionOptions,
 } from '@viselect/vanilla';
-
-export type { SelectionEvent, ChangedElements };
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
@@ -79,3 +75,5 @@ export function SelectionArea({
     </div>
   );
 }
+
+export { type ChangedElements, type SelectionEvent } from '@viselect/vanilla';

@@ -12,5 +12,5 @@ export const toDOMRange = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toDOMRange(editor as any, range);
-  } catch (e) {}
+  } catch (error) {}
 };

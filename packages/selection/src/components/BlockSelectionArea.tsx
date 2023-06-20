@@ -24,7 +24,7 @@ export const useBlockSelectionArea = (
   };
 
   const onMove = ({ store: { changed } }: SelectionEvent) => {
-    if (!changed.added.length && !changed.removed.length) return;
+    if (changed.added.length === 0 && changed.removed.length === 0) return;
 
     blockSelectionActions.setSelectedIds(changed);
   };

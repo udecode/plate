@@ -25,7 +25,7 @@ export const getLeftTableCell = <V extends Value>(
     if (!cellPath) return;
   }
 
-  const cellIndex = cellPath[cellPath.length - 1];
+  const cellIndex = cellPath.at(-1);
   if (!cellIndex) return;
 
   const prevCellPath = Path.previous(cellPath);

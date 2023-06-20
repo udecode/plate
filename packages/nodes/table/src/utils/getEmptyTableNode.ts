@@ -16,7 +16,7 @@ export const getEmptyTableNode = <V extends Value>(
     newCellChildren,
   }: GetEmptyTableNodeOptions = {}
 ): TTableElement => {
-  const rows = Array(rowCount)
+  const rows = Array.from({ length: rowCount })
     .fill(rowCount)
     .map(() => getEmptyRowNode(editor, { header, colCount, newCellChildren }));
 

@@ -1,5 +1,4 @@
-import { createTodoListPlugin } from '@udecode/plate-list/src/todo-list/createTodoListPlugin';
-
+import { createTodoListPlugin } from '@/nodes/list/src/todo-list/createTodoListPlugin';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 

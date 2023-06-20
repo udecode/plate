@@ -85,10 +85,10 @@ export const withSetFragmentDataTable = <
 
           const cellElement = document.createElement('td');
           cellElement.innerHTML = data.getData('text/html');
-          rowElement.appendChild(cellElement);
+          rowElement.append(cellElement);
         });
 
-        tableElement.appendChild(rowElement);
+        tableElement.append(rowElement);
 
         textCsv += `${cellStrings.join(',')}\n`;
         textTsv += `${cellStrings.join('\t')}\n`;
@@ -97,7 +97,7 @@ export const withSetFragmentDataTable = <
       // select back original cells
       select(editor, initialSelection!);
 
-      divElement.appendChild(tableElement);
+      divElement.append(tableElement);
     });
 
     data.setData('text/csv', textCsv);

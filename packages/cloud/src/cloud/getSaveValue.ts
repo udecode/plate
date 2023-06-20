@@ -28,38 +28,38 @@ const _getSaveValue = (
 ): MaybeUploadNode[] => {
   const nextNodes: MaybeUploadNode[] = [];
   for (const node of nodes) {
-    if ('url' in node) {
+    if (
+      'url' in node &&
       /**
        * If the `node` has an `id` then we either
        *
        * - leave it alone and add it (it's already normalized)
        * - if found in lookup, replace the url and add it
        * - if not found in lookup, skip it
+       */ typeof node.url === 'string'
+    ) {
+      /**
+       * If the `url` isn't a reference to a store then leave it as it is.
        */
-      if (typeof node.url === 'string') {
+      if (isStoreRef(node.url)) {
         /**
-         * If the `url` isn't a reference to a store then leave it as it is.
+         * If the `url` is a key to the `uploads` lookup Record, then
+         * we do a lookup.
+         *
+         * If it returns a value for the `origin` and the `status` is
+         * `complete`, then we swap out the `id` with the `url`.
+         *
+         * If it's not found, we skip over it because we don't want it in our
+         * normalized value.
          */
-        if (!isStoreRef(node.url)) {
-          nextNodes.push(node);
-        } else {
-          /**
-           * If the `url` is a key to the `uploads` lookup Record, then
-           * we do a lookup.
-           *
-           * If it returns a value for the `origin` and the `status` is
-           * `complete`, then we swap out the `id` with the `url`.
-           *
-           * If it's not found, we skip over it because we don't want it in our
-           * normalized value.
-           */
-          const origin: Upload | undefined = uploads[node.url];
-          if (origin && origin.status === 'success') {
-            nextNodes.push({ ...node, url: origin.url });
-          }
+        const origin: Upload | undefined = uploads[node.url];
+        if (origin && origin.status === 'success') {
+          nextNodes.push({ ...node, url: origin.url });
         }
-        continue;
+      } else {
+        nextNodes.push(node);
       }
+      continue;
     }
     /**
      * If there wasn't an `id` but there is `children`, then we iterate

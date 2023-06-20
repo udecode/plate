@@ -22,8 +22,8 @@ export const withCloud = <
   let client: Client;
   try {
     client = createClient({ apiKey, authToken, apiOrigin });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
   }
 
   const uploadStore = createUploadStore({

@@ -20,7 +20,7 @@ const input = (
 const at = Range.start(input.selection as Range);
 
 const output = {
-  match: false,
+  match: null,
   range: undefined,
 };
 

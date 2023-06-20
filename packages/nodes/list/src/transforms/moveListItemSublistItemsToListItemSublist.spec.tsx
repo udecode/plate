@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
-import { findNode, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  findNode,
+  PlateEditor,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -66,7 +68,7 @@ describe('when there is toListItem sublist', () => {
   ) as any as PlateEditor;
 
   it('should', () => {
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
     });
 
@@ -128,7 +130,7 @@ describe('when there is no list in toListItem', () => {
   ) as any as PlateEditor;
 
   it('should', () => {
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
     });
 

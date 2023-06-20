@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path, { basename, dirname } from 'path';
+import fs from 'node:fs';
+import path, { basename, dirname } from 'node:path';
 import { components } from '../src/config/components';
 
 const payload = components

@@ -1,9 +1,9 @@
-import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
 import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 
+import { createBoldPlugin } from '@/nodes/basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '@/nodes/basic-marks/src/createItalicPlugin';
+import { createListPlugin } from '@/nodes/list/src/createListPlugin';
+import { createParagraphPlugin } from '@/nodes/paragraph/src/createParagraphPlugin';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
@@ -75,13 +75,13 @@ it('serialize complex example list with paragraphs to html', () => {
       ],
     })
   );
-  expect(render.getElementsByTagName('p').length).toEqual(3);
-  expect(render.getElementsByTagName('p')[0].outerHTML).toBe(
+  expect(render.querySelectorAll('p').length).toEqual(3);
+  expect(render.querySelectorAll('p')[0].outerHTML).toBe(
     '<p class="slate-p">Some paragraph that contains, <em class="slate-italic">italicized text</em> and <strong class="slate-bold">bolded text</strong> is first.</p>'
   );
-  expect(render.getElementsByTagName('ul').length).toEqual(1);
-  expect(render.getElementsByTagName('li').length).toEqual(2);
-  expect(render.getElementsByTagName('ul')[0].innerHTML).toBe(
+  expect(render.querySelectorAll('ul').length).toEqual(1);
+  expect(render.querySelectorAll('li').length).toEqual(2);
+  expect(render.querySelectorAll('ul')[0].innerHTML).toBe(
     '<li class="slate-li"><p class="slate-p">Item one in list</p></li><li class="slate-li"><p class="slate-p">Item two in list</p></li>'
   );
 });

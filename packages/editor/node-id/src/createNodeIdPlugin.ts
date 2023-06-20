@@ -38,7 +38,7 @@ export const createNodeIdPlugin = createPluginFactory<NodeIdPlugin>({
   withOverrides: withNodeId,
   options: {
     idKey: 'id',
-    idCreator: () => Math.random().toString(36).substring(2, 7),
+    idCreator: () => Math.random().toString(36).slice(2, 7),
     filterText: true,
     filter: () => true,
   },

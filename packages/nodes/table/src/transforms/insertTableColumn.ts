@@ -68,12 +68,12 @@ export const insertTableColumn = <V extends Value>(
 
   if (Path.isPath(at)) {
     nextCellPath = at;
-    nextColIndex = at[at.length - 1];
+    nextColIndex = at.at(-1)!;
   } else {
     nextCellPath = Path.next(cellPath);
-    nextColIndex = cellPath[cellPath.length - 1] + 1;
+    nextColIndex = cellPath.at(-1)! + 1;
   }
-  const currentRowIndex = cellPath[cellPath.length - 2];
+  const currentRowIndex = cellPath.at(-2);
 
   const { newCellChildren, initialTableWidth, minColumnWidth } =
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);

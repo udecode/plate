@@ -21,10 +21,8 @@ export const queryNode = <N extends TNode>(
     }
   }
 
-  if (maxLevel) {
-    if (path.length > maxLevel) {
-      return false;
-    }
+  if (maxLevel && path.length > maxLevel) {
+    return false;
   }
 
   if (filter && !filter(entry)) {
@@ -34,7 +32,7 @@ export const queryNode = <N extends TNode>(
   if (allow) {
     const allows = castArray(allow);
 
-    if (allows.length && !allows.includes(node.type as any)) {
+    if (allows.length > 0 && !allows.includes(node.type as any)) {
       return false;
     }
   }
@@ -42,7 +40,7 @@ export const queryNode = <N extends TNode>(
   if (exclude) {
     const excludes = castArray(exclude);
 
-    if (excludes.length && excludes.includes(node.type as any)) {
+    if (excludes.length > 0 && excludes.includes(node.type as any)) {
       return false;
     }
   }

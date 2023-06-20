@@ -34,7 +34,7 @@ export const usePlateLeaf = <T extends TText = TText>(
       ...attributes,
       ...rootProps,
       ...nodeProps,
-      ...(leafToAttributes?.(leaf as T) ?? {}),
+      ...leafToAttributes?.(leaf as T),
       className: clsx(props.className, nodeProps?.className),
     },
   };

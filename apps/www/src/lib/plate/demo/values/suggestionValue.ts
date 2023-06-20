@@ -20,15 +20,15 @@ export const usersData: Record<string, SuggestionUser> = {
 export const suggestionsData: Record<string, TSuggestion> = {
   1: {
     id: '1',
-    createdAt: 1663453625129,
+    createdAt: 1_663_453_625_129,
   },
   2: {
     id: '2',
-    createdAt: 1663453729191,
+    createdAt: 1_663_453_729_191,
   },
   3: {
     id: '3',
-    createdAt: 1663453740180,
+    createdAt: 1_663_453_740_180,
   },
 };
 

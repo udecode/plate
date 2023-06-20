@@ -35,7 +35,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
                 isElement: true,
                 getNode: (el) => ({
                   type: 'poll',
-                  id: el.getAttribute('data-id'),
+                  id: el.dataset.id,
                 }),
                 rules: [
                   {

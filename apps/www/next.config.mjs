@@ -1,11 +1,3 @@
-const path = require('path');
-
-const alias = require('../../config/aliases');
-
-Object.keys(alias).forEach((key) => {
-  alias[key] = path.resolve(__dirname, `../../packages/${alias[key]}/src`);
-});
-
 /** @type {import('next').NextConfig} */
 const config = {
   // Enable React strict mode.
@@ -66,4 +58,4 @@ const config = {
   // },
 };
 
-module.exports = config;
+export default config;

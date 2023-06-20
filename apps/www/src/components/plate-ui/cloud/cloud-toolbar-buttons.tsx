@@ -20,11 +20,11 @@ export function CloudToolbarButtons() {
   };
 
   const finishUploads = async () => {
-    const start = new Date().getTime();
+    const start = Date.now();
     // eslint-disable-next-line no-console
     console.info('start finishUploads');
     await editor.cloud.finishUploads();
-    const end = new Date().getTime();
+    const end = Date.now();
     // NOTE: We don't use backtick with curly brace replacement because it
     // doesn't work with gen:code script at time of writing.
     // eslint-disable-next-line no-console

@@ -83,7 +83,9 @@ export const autoformatBlock = <V extends Value>(
       preFormat(editor);
     }
 
-    if (!format) {
+    if (format) {
+      format(editor);
+    } else {
       setElements(
         editor,
         { type },
@@ -91,8 +93,6 @@ export const autoformatBlock = <V extends Value>(
           match: (n) => isBlock(editor, n),
         }
       );
-    } else {
-      format(editor);
     }
 
     return true;

@@ -41,12 +41,7 @@ export const getFindTriggeringInput =
     editor: PlateEditor<V>,
     emojiTriggeringController: IEmojiTriggeringController
   ) =>
-  (
-    { char = '', action = 'insert' }: FindTriggeringInputProps = {
-      char: '',
-      action: 'insert',
-    }
-  ) => {
+  ({ char = '', action = 'insert' }: FindTriggeringInputProps = {}) => {
     const { selection } = editor;
 
     if (!selection || !isCollapsed(selection) || isSpaceBreak(char)) {

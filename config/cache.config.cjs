@@ -10,7 +10,7 @@
 // @ts-check
 'use strict';
 
-const { resolve } = require('path');
+const { resolve } = require('node:path');
 
 const globalCachePath = resolve(`${__dirname}/../.cache`);
 
@@ -19,7 +19,7 @@ const globalCachePath = resolve(`${__dirname}/../.cache`);
  * @returns string
  */
 function sanitize(packageName) {
-  return packageName.replace('/', '.').replace(/[^a-z0-9.@_-]+/gi, '-');
+  return packageName.replace('/', '.').replaceAll(/[^\w.@-]+/g, '-');
 }
 
 /**

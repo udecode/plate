@@ -79,7 +79,9 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       const children = remarkTransformElementChildren(node, options);
 
       const paragraphType = getPluginType(options.editor, ELEMENT_PARAGRAPH);
-      const splitBlockTypes = [getPluginType(options.editor, ELEMENT_IMAGE)];
+      const splitBlockTypes = new Set([
+        getPluginType(options.editor, ELEMENT_IMAGE),
+      ]);
 
       const elements: TElement[] = [];
       let inlineNodes: TDescendant[] = [];
@@ -98,7 +100,7 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       children.forEach((child) => {
         const { type } = child;
 
-        if (type && splitBlockTypes.includes(type as string)) {
+        if (type && splitBlockTypes.has(type as string)) {
           flushInlineNodes();
           elements.push(child as TElement);
         } else {

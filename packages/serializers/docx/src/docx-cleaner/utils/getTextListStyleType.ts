@@ -5,7 +5,7 @@ export const getTextListStyleType = (
 ): ListStyleType | undefined => {
   text = text.trimStart();
 
-  if (text.match(/^\d+[\\.]/)?.[0]) {
+  if (text.match(/^\d+[.\\]/)?.[0]) {
     if (text[0] === '0') {
       return ListStyleType.DecimalLeadingZero;
     }
@@ -13,7 +13,7 @@ export const getTextListStyleType = (
     return ListStyleType.Decimal;
   }
 
-  if (text.match(/^[ivmcldx]+\./)?.[0]) {
+  if (text.match(/^[cdilmvx]+\./)?.[0]) {
     return ListStyleType.LowerRoman;
   }
 
@@ -21,7 +21,7 @@ export const getTextListStyleType = (
     return ListStyleType.LowerAlpha;
   }
 
-  if (text.match(/^[IVMCLDX]+\./)?.[0]) {
+  if (text.match(/^[CDILMVX]+\./)?.[0]) {
     return ListStyleType.UpperRoman;
   }
 

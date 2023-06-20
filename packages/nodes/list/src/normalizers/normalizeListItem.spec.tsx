@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate/src';
-import { getNode, PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, getNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createListPlugin } from '@/nodes/list/src/createListPlugin';
@@ -34,7 +33,7 @@ describe('clean up list items', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

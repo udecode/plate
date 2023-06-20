@@ -3,7 +3,7 @@ import { roundCellSizeToStep } from './roundCellSizeToStep';
 describe('roundCellSizeToStep', () => {
   describe('when step is not set', () => {
     it('returns the size', () => {
-      expect(roundCellSizeToStep(10.6, undefined)).toBe(10.6);
+      expect(roundCellSizeToStep(10.6)).toBe(10.6);
     });
   });
 

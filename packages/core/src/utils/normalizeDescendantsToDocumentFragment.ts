@@ -75,7 +75,7 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
 const normalizeEmptyChildren = <N extends TDescendant>(
   descendants: N[]
 ): N[] => {
-  if (!descendants.length) {
+  if (descendants.length === 0) {
     return [{ text: '' } as N];
   }
   return descendants;

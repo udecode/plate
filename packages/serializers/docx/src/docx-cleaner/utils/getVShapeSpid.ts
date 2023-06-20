@@ -1,7 +1,7 @@
 import { getVShapes } from './getVShapes';
 
 const normalizeSpid = (spid: string): string => {
-  const [, , id] = spid.split('_');
+  const id = spid.split('_')[2];
   return id;
 };
 
@@ -26,7 +26,7 @@ export const getVShapeSpid = (
     if (
       element.parentElement &&
       element.parentElement.parentElement &&
-      element.parentElement.parentElement.innerHTML.indexOf('msEquation') >= 0
+      element.parentElement.parentElement.innerHTML.includes('msEquation')
     ) {
       return null;
     }

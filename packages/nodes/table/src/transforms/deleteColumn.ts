@@ -48,7 +48,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       const [tableNode, tablePath] = tableEntry;
 
       const tdPath = tdEntry[1];
-      const colIndex = tdPath[tdPath.length - 1];
+      const colIndex = tdPath.at(-1)!;
 
       const pathToDelete = tdPath.slice();
       const replacePathPos = pathToDelete.length - 2;

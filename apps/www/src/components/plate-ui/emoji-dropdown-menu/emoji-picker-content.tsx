@@ -45,7 +45,7 @@ const Button = memo(
         data-index={index}
         onClick={() => onSelect(emoji)}
         onMouseEnter={() => onMouseOver(emoji)}
-        onMouseLeave={() => onMouseOver(undefined)}
+        onMouseLeave={() => onMouseOver()}
         className="group relative flex h-[36px] w-[36px] cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none"
       >
         <div

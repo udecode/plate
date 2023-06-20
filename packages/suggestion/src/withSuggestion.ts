@@ -152,15 +152,15 @@ export const withSuggestion = <
       }
 
       // Unset suggestion when there is no suggestion user id
-      if (!getSuggestionKeys(node).length) {
-        if (!node.suggestionDeletion) {
-          // Remove additions
-          removeNodes(editor, { at: path });
-        } else {
+      if (getSuggestionKeys(node).length === 0) {
+        if (node.suggestionDeletion) {
           // Unset deletions
           unsetNodes(editor, [MARK_SUGGESTION, KEY_SUGGESTION_ID], {
             at: path,
           });
+        } else {
+          // Remove additions
+          removeNodes(editor, { at: path });
         }
         return;
       }

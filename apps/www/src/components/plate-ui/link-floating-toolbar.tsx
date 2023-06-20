@@ -65,7 +65,9 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
     </div>
   );
 
-  const editContent = !isEditing ? (
+  const editContent = isEditing ? (
+    input
+  ) : (
     <div className="box-content flex h-9 items-center gap-1">
       <button
         type="button"
@@ -99,8 +101,6 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
         <Icons.unlink width={18} />
       </button>
     </div>
-  ) : (
-    input
   );
 
   return (

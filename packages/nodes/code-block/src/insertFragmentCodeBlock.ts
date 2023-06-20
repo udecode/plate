@@ -10,6 +10,10 @@ import {
 } from '@udecode/plate-common';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
+function extractCodeLinesFromCodeBlock(node: TElement) {
+  return node.children as TElement[];
+}
+
 export const insertFragmentCodeBlock = <V extends Value>(
   editor: PlateEditor<V>
 ) => {
@@ -22,10 +26,6 @@ export const insertFragmentCodeBlock = <V extends Value>(
       type: codeLineType,
       children: [{ text: getNodeString(node) }],
     };
-  }
-
-  function extractCodeLinesFromCodeBlock(node: TElement) {
-    return node.children as TElement[];
   }
 
   return (fragment: TDescendant[]) => {

@@ -49,7 +49,7 @@ export const overridePluginsByKey = <
   const { then } = plugin;
 
   if (then) {
-    if (typeof plugin._thenReplaced === 'undefined') {
+    if (plugin._thenReplaced === undefined) {
       plugin._thenReplaced = 0;
     }
     // Limit the number of times that `then` can be replaced.

@@ -65,19 +65,19 @@ export const normalizeListItem = <V extends Value>(
 ) => {
   let changed = false;
 
-  const allValidLiChildrenTypes = [
+  const allValidLiChildrenTypes = new Set([
     getPluginType(editor, ELEMENT_UL),
     getPluginType(editor, ELEMENT_OL),
     getPluginType(editor, ELEMENT_LIC),
     ...validLiChildrenTypes,
-  ];
+  ]);
 
   const [, liPath] = listItem;
   const liChildren = getChildren<TElement>(listItem);
 
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
-    .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
+    .filter(([child]) => !allValidLiChildrenTypes.has(child.type))
     .map(([, childPath]) => createPathRef(editor, childPath));
 
   const firstLiChild: TElementEntry | undefined = liChildren[0];
@@ -139,7 +139,7 @@ export const normalizeListItem = <V extends Value>(
 
   const licChildren = getChildren(firstLiChild);
 
-  if (licChildren.length) {
+  if (licChildren.length > 0) {
     const blockPathRefs: PathRef[] = [];
     const inlineChildren: TNodeEntry[] = [];
 
@@ -158,7 +158,7 @@ export const normalizeListItem = <V extends Value>(
       );
     }
 
-    const to = Path.next(licChildren[licChildren.length - 1]?.[1]);
+    const to = Path.next(licChildren.at(-1)![1]);
 
     // Move lic nested inline children to its children
     inlineChildren.reverse().forEach(([, path]) => {
@@ -178,7 +178,7 @@ export const normalizeListItem = <V extends Value>(
         });
     });
 
-    if (blockPathRefs.length) {
+    if (blockPathRefs.length > 0) {
       changed = true;
     }
   }
@@ -196,5 +196,5 @@ export const normalizeListItem = <V extends Value>(
       });
   });
 
-  return !!invalidLiChildrenPathRefs.length;
+  return invalidLiChildrenPathRefs.length > 0;
 };

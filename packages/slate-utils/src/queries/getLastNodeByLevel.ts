@@ -17,7 +17,7 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
 
   const { children } = node;
 
-  const lastNode = children[children.length - 1];
+  const lastNode = children.at(-1)!;
 
   return getLastChild(lastNode, level - 1) as N;
 };
@@ -34,7 +34,7 @@ export const getLastNodeByLevel = <
 ): TNodeEntry<N> | undefined => {
   const { children } = editor;
 
-  const lastNode = children[children.length - 1];
+  const lastNode = children.at(-1);
 
   if (!lastNode) return;
 

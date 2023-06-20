@@ -25,7 +25,7 @@ export interface ComboboxProps<TData = NoData>
    * Render combobox item.
    * @default text
    */
-  onRenderItem?: React.FC<ComboboxItemProps<TData>>;
+  onRenderItem?: React.FC<ComboboxItemProps<any>>;
 
   portalElement?: Element;
 }

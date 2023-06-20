@@ -49,7 +49,7 @@ export const getTextFromTrigger = <V extends Value>(
 
   return {
     range,
-    textAfterTrigger: text.substring(trigger.length),
+    textAfterTrigger: text.slice(trigger.length),
   };
 };
 

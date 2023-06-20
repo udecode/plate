@@ -275,15 +275,21 @@ describe('insertTableColumn', () => {
 
       it('should not shrink columns below minColumnsWidth', () => {
         const input = makeTableWithCols({
-          rowCols: [Array(10).fill(''), Array(10).fill('')],
+          rowCols: [
+            Array.from({ length: 10 }).fill(''),
+            Array.from({ length: 10 }).fill(''),
+          ],
           cursorPath: [0, 0],
-          colSizes: Array(10).fill(10), // total width is 100
+          colSizes: Array.from({ length: 10 }).fill(10), // total width is 100
         });
 
         const output = makeTableWithCols({
-          rowCols: [Array(11).fill(''), Array(11).fill('')],
+          rowCols: [
+            Array.from({ length: 11 }).fill(''),
+            Array.from({ length: 11 }).fill(''),
+          ],
           cursorPath: [1, 1],
-          colSizes: Array(11).fill(10), // cannot shrink below 10
+          colSizes: Array.from({ length: 11 }).fill(10), // cannot shrink below 10
         });
 
         const editor = createPlateEditor({

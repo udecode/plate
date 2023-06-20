@@ -43,25 +43,25 @@ export const getWithSelectionCaption =
 
         if (
           editor.currentKeyboardEvent &&
-          isHotkey('up', editor.currentKeyboardEvent)
+          isHotkey('up', editor.currentKeyboardEvent) &&
+          newSelection &&
+          isCollapsed(newSelection)
         ) {
-          if (newSelection && isCollapsed(newSelection)) {
-            const entry = getAboveNode<TMediaElement>(editor, {
-              at: newSelection,
-              match: { type: getPluginType(editor, pluginKey) },
-            });
+          const entry = getAboveNode<TMediaElement>(editor, {
+            at: newSelection,
+            match: { type: getPluginType(editor, pluginKey) },
+          });
 
-            if (entry) {
-              const [node] = entry;
+          if (entry) {
+            const [node] = entry;
 
-              if (
-                node.caption &&
-                getNodeString({ children: node.caption } as any).length
-              ) {
-                setTimeout(() => {
-                  captionGlobalStore.set.focusEndCaptionPath(entry[1]);
-                }, 0);
-              }
+            if (
+              node.caption &&
+              getNodeString({ children: node.caption } as any).length > 0
+            ) {
+              setTimeout(() => {
+                captionGlobalStore.set.focusEndCaptionPath(entry[1]);
+              }, 0);
             }
           }
         }

@@ -29,11 +29,9 @@ export const withComments = <
     const [node, path] = entry;
 
     // Unset MARK_COMMENT prop when there is no comments
-    if (node[MARK_COMMENT]) {
-      if (getCommentCount(node as any) < 1) {
-        unsetNodes(editor, MARK_COMMENT, { at: path });
-        return;
-      }
+    if (node[MARK_COMMENT] && getCommentCount(node as any) < 1) {
+      unsetNodes(editor, MARK_COMMENT, { at: path });
+      return;
     }
 
     normalizeNode(entry);

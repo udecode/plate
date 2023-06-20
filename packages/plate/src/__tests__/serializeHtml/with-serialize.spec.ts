@@ -1,11 +1,11 @@
 import React from 'react';
 import { createBoldPlugin } from '@udecode/plate';
-import { MARK_BOLD } from '@udecode/plate-basic-marks/src/index';
 import { createPlateEditor } from '@udecode/plate-core';
-import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { PlatePlugin } from '@udecode/plate-core/src/types/plugin/PlatePlugin';
-import { createImagePlugin } from '@udecode/plate-media/src/index';
 
+import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
+import { createImagePlugin } from '@/media/src/index';
+import { MARK_BOLD } from '@/nodes/basic-marks/src/index';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
@@ -58,11 +58,11 @@ it('custom serialize bold to html', () => {
   ).toEqual('Some paragraph of text with <b>bold</b> part.');
 });
 
-describe('multiple custom leaf serializers', () => {
-  function Bold({ children }: any): JSX.Element {
-    return React.createElement('b', {}, children);
-  }
+function Bold({ children }: any): JSX.Element {
+  return React.createElement('b', {}, children);
+}
 
+describe('multiple custom leaf serializers', () => {
   const normalizeHTML = (html: string): string =>
     new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
 

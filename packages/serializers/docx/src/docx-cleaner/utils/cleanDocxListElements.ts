@@ -10,7 +10,7 @@ export const cleanDocxListElements = (rootNode: Node): void => {
     if (styleAttribute) {
       element.setAttribute(
         'style',
-        styleAttribute.replace(/mso-list:\s*Ignore/gim, 'mso-list:Ignore')
+        styleAttribute.replaceAll(/mso-list:\s*ignore/gi, 'mso-list:Ignore')
       );
     }
 

@@ -33,7 +33,8 @@ export function Combobox<TData extends Data = NoData>({
   ...props
 }: ComboboxProps<TData>) {
   const storeItems = useComboboxSelectors.items();
-  const disabled = _disabled ?? (!storeItems.length && !props.items?.length);
+  const disabled =
+    _disabled ?? (storeItems.length === 0 && !props.items?.length);
 
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();

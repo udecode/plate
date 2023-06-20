@@ -1,7 +1,6 @@
-import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createLinkPlugin } from '@udecode/plate-link/src/index';
-import { createImagePlugin } from '@udecode/plate-media/src/index';
-
+import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createImagePlugin } from '@/media/src/index';
+import { createLinkPlugin } from '@/nodes/link/src/index';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
@@ -53,7 +52,7 @@ it('serialize image with alt to html', () => {
       serializeHtml(createPlateUIEditor({ plugins }), {
         nodes: [element],
       })
-    ).getElementsByTagName('img')[0].outerHTML
+    ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
     '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true" class="slate-ImageElement-img">'
   );

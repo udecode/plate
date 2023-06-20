@@ -45,7 +45,7 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
     setCommentIds(ids);
   }, [activeCommentId, comments, isActive, leaf]);
 
-  const lastCommentId = commentIds[commentIds.length - 1];
+  const lastCommentId = commentIds.at(-1)!;
 
   return {
     commentCount,

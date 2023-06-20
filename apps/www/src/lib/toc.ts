@@ -5,12 +5,12 @@ import { toc } from 'mdast-util-toc';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
-const textTypes = ['text', 'emphasis', 'strong', 'inlineCode'];
+const textTypes = new Set(['text', 'emphasis', 'strong', 'inlineCode']);
 
 function flattenNode(node) {
   const p = [];
   visit(node, (_node) => {
-    if (!textTypes.includes(_node.type)) return;
+    if (!textTypes.has(_node.type)) return;
     p.push(_node.value);
   });
   return p.join(``);

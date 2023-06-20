@@ -16,5 +16,5 @@ export const getTableRowIndex = <V extends Value>(
   const path = findNodePath(editor, cellNode);
   if (!path) return 0;
   const rowPath = Path.parent(path);
-  return rowPath[rowPath.length - 1];
+  return rowPath.at(-1)!;
 };

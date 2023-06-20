@@ -39,7 +39,7 @@ function CommentItemContent() {
 
         {isMyComment && (
           <div className="absolute -right-0.5 -top-0.5 flex space-x-1">
-            {!isReplyComment ? <CommentResolveButton /> : null}
+            {isReplyComment ? null : <CommentResolveButton />}
 
             <CommentMoreDropdown />
           </div>

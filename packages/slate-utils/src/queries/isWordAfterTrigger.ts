@@ -36,7 +36,7 @@ export const isWordAfterTrigger = <V extends Value>(
   );
 
   // Match regex on before text
-  const match = !!beforeText && beforeText.match(beforeRegex);
+  const match = beforeText ? beforeText.match(beforeRegex) : null;
 
   return {
     range: beforeRange,

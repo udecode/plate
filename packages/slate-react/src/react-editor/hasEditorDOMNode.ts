@@ -13,7 +13,7 @@ export const hasEditorDOMNode = <V extends Value>(
 ) => {
   try {
     return ReactEditor.hasDOMNode(editor as any, target, options);
-  } catch (e) {}
+  } catch (error) {}
 
   return false;
 };

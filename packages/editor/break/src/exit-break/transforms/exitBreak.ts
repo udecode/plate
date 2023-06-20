@@ -33,12 +33,7 @@ export const exitBreak = <V extends Value>(
     ? selectionPath.slice(0, -level)
     : selectionPath.slice(0, level + 1);
 
-  let insertPath;
-  if (before) {
-    insertPath = slicedPath;
-  } else {
-    insertPath = Path.next(slicedPath);
-  }
+  const insertPath = before ? slicedPath : Path.next(slicedPath);
 
   insertElements(
     editor,

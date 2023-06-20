@@ -91,7 +91,7 @@ export const useOnClickOutside = (
 
   useEffect(
     () => {
-      if (!refsOpt?.length && !refsState.length) return;
+      if (!refsOpt?.length && refsState.length === 0) return;
 
       const getEls = () => {
         const els: El[] = [];

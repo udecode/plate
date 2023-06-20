@@ -34,15 +34,15 @@ export const withGetFragmentTable = <
         const colCount = rows[0].children.length;
         const hasOneCell = rowCount <= 1 && colCount <= 1;
 
-        if (!hasOneCell) {
+        if (hasOneCell) {
+          newFragment.push(...(rows[0].children[0].children as TElement[]));
+          return;
+        } else {
           const subTable = getTableGridAbove(editor);
-          if (subTable.length) {
+          if (subTable.length > 0) {
             newFragment.push(subTable[0][0]);
             return;
           }
-        } else {
-          newFragment.push(...(rows[0].children[0].children as TElement[]));
-          return;
         }
       }
 

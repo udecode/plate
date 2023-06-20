@@ -12,5 +12,5 @@ export const toSlateNode = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toSlateNode(editor as any, domNode) as TNode;
-  } catch (e) {}
+  } catch (error) {}
 };

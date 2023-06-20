@@ -37,7 +37,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="https://files.portive.com/f/demo/6hndj3bdag7eqbpb2794s--1920x1440.jpg"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}
@@ -48,7 +48,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="#image-none"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}
@@ -59,7 +59,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="#image-half"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}
@@ -70,7 +70,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="#image-full"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}
@@ -81,7 +81,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="#image-error"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}
@@ -92,7 +92,7 @@ export const cloudValue: any = (
     <element
       type="cloud_image"
       url="#image-state-not-found"
-      bytes={654196}
+      bytes={654_196}
       width={160}
       height={120}
       maxWidth={1920}

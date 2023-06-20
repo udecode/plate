@@ -1,7 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate/src';
-import { getPluginType, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  getPluginType,
+  PlateEditor,
+} from '@udecode/plate-common';
 import { ELEMENT_IMAGE } from '@udecode/plate-media/src/index';
 import { jsx } from '@udecode/plate-test-utils';
 import { toggleList } from './toggleList';
@@ -34,7 +37,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -67,7 +70,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [
         createListPlugin({
@@ -112,7 +115,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -151,7 +154,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -202,7 +205,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [
         createListPlugin({
@@ -265,7 +268,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -318,7 +321,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -366,7 +369,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -422,7 +425,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -461,7 +464,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -516,7 +519,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [
         createListPlugin({
@@ -561,7 +564,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -605,7 +608,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -651,7 +654,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -701,7 +704,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

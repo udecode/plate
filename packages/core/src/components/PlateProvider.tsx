@@ -72,9 +72,10 @@ function PlateProviderContent<
       let currValue = initialValue ?? _value;
 
       if (!currValue) {
-        currValue = editor.children.length
-          ? editor.children
-          : (editor.childrenFactory() as V);
+        currValue =
+          editor.children.length > 0
+            ? editor.children
+            : (editor.childrenFactory() as V);
       }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);

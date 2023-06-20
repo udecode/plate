@@ -21,10 +21,7 @@ export const flattenDeepPlugins = <V extends Value>(
 
     if (p.enabled === false) return;
 
-    if (!editor.pluginsByKey[p.key]) {
-      editor.plugins.push(p);
-      editor.pluginsByKey[p.key] = p;
-    } else {
+    if (editor.pluginsByKey[p.key]) {
       const index = editor.plugins.indexOf(editor.pluginsByKey[p.key]);
 
       const mergedPlugin = defaultsDeep(p, editor.pluginsByKey[p.key]);
@@ -33,6 +30,9 @@ export const flattenDeepPlugins = <V extends Value>(
         editor.plugins[index] = mergedPlugin;
       }
       editor.pluginsByKey[p.key] = mergedPlugin;
+    } else {
+      editor.plugins.push(p);
+      editor.pluginsByKey[p.key] = p;
     }
 
     flattenDeepPlugins(editor, p.plugins!);

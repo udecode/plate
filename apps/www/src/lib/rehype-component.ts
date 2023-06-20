@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
@@ -46,7 +46,7 @@ export function rehypeComponent() {
         );
         if (
           extractClassname &&
-          typeof extractClassname.value !== 'undefined' &&
+          extractClassname.value !== undefined &&
           extractClassname.value !== 'false'
         ) {
           // Extract className from string

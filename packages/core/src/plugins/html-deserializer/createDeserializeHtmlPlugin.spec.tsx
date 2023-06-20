@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
 import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
@@ -8,7 +9,6 @@ import { jsx } from '@udecode/plate-test-utils';
 
 import { PlateEditor } from '@/core/src/types/PlateEditor';
 import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -53,7 +53,7 @@ describe('when inserting html', () => {
 
       const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins,
       });
@@ -85,7 +85,7 @@ describe('when inserting html', () => {
 
       const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins,
       });
@@ -118,7 +118,7 @@ describe('when inserting html', () => {
 
     const plugins: PlatePlugin[] = [createParagraphPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -160,7 +160,7 @@ describe('when inserting empty html', () => {
   it('should do nothing', () => {
     const plugins: PlatePlugin[] = [createBoldPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -200,7 +200,7 @@ describe('when inserting an iframe without src', () => {
   it('should do nothing', () => {
     const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -246,7 +246,7 @@ describe('when inserting link with href', () => {
       createLinkPlugin(),
     ];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -283,7 +283,7 @@ describe('when inserting plain text', () => {
   it('should run default insert', () => {
     jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [],
     });

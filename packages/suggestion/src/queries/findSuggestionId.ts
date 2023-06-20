@@ -24,7 +24,7 @@ export const findSuggestionId = <V extends Value>(
     let end: Point;
     try {
       [start, end] = getEdgePoints(editor, at);
-    } catch (err) {
+    } catch {
       return;
     }
 

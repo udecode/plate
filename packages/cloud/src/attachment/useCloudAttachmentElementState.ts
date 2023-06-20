@@ -17,7 +17,7 @@ export const useCloudAttachmentElementState = ({
 
   const upload = useUpload(element.url);
 
-  const url = upload.status !== 'not-found' ? upload.url : undefined;
+  const url = upload.status === 'not-found' ? undefined : upload.url;
 
   useEffect(() => {
     /**

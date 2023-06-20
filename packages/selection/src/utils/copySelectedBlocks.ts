@@ -44,7 +44,7 @@ export const copySelectedBlocks = <V extends Value>(editor: PlateEditor<V>) => {
           // get html text
           const divChild = document.createElement('div');
           divChild.innerHTML = data.getData('text/html');
-          div.appendChild(divChild);
+          div.append(divChild);
         });
 
         // deselect and select back selectedIds

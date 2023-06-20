@@ -1,14 +1,13 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-common';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
 describe('when element has a br', () => {
-  const editor = createPlateUIEditor({ plugins: [] });
+  const editor = createPlateEditor({ plugins: [] });
 
   const html = `<html><body>test<br /></body></html>`;
   const element = getHtmlDocument(html).body;

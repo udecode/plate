@@ -18,8 +18,8 @@ export const pasteSelectedBlocks = <V extends Value>(
 ) => {
   const entries = getSelectedBlocks(editor);
 
-  if (entries.length) {
-    const entry = entries[entries.length - 1];
+  if (entries.length > 0) {
+    const entry = entries.at(-1)!;
     const [node, path] = entry;
 
     focusEditor(editor, getStartPoint(editor, path));

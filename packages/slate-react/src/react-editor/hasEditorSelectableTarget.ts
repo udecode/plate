@@ -11,7 +11,7 @@ export const hasEditorSelectableTarget = <V extends Value>(
 ) => {
   try {
     return ReactEditor.hasSelectableTarget(editor as any, target);
-  } catch (e) {}
+  } catch (error) {}
 
   return false;
 };

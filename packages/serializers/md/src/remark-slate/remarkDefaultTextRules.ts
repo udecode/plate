@@ -7,5 +7,5 @@ export const remarkDefaultTextRules: RemarkTextRules<Value> = {
   emphasis: { mark: ({ editor }) => getPluginType(editor, MARK_ITALIC) },
   strong: { mark: ({ editor }) => getPluginType(editor, MARK_BOLD) },
   inlineCode: { mark: ({ editor }) => getPluginType(editor, MARK_CODE) },
-  html: { transform: (text: string) => text.replace(/<br>/g, '\n') },
+  html: { transform: (text: string) => text.replaceAll('<br>', '\n') },
 };

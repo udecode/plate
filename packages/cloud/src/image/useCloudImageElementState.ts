@@ -15,7 +15,7 @@ export const useCloudImageElementState = ({
   const editor = usePlateEditorRef();
   const upload = useUpload(element.url);
 
-  const url = upload.status !== 'not-found' ? upload.url : undefined;
+  const url = upload.status === 'not-found' ? undefined : upload.url;
 
   useEffect(() => {
     /**
@@ -58,7 +58,7 @@ export const useCloudImageElementState = ({
   const focused = useFocused();
 
   const { src, srcSet } = generateSrcAndSrcSet({
-    url: upload.status !== 'not-found' ? upload.url : undefined,
+    url: upload.status === 'not-found' ? undefined : upload.url,
     size: [element.width, element.height],
     maxSize: [element.maxWidth, element.maxHeight],
   });

@@ -46,7 +46,7 @@ it('autoformats a block with a single character trigger', () => {
             format: (editor) => {
               const linkInputRange = editor.selection!.focus.path;
               const linkInputText = getEditorString(editor, linkInputRange);
-              const [, text, url] = /\[(.+)\]\((.*)/.exec(linkInputText)!;
+              const [, text, url] = /\[(.+)]\((.*)/.exec(linkInputText)!;
               insertText(editor, text, { at: linkInputRange });
               wrapNodes(
                 editor,

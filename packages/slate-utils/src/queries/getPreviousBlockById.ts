@@ -52,7 +52,7 @@ export const getPreviousBlockById = <
     at: [],
   });
   const nodeEntries = Array.from(_nodes);
-  if (nodeEntries.length) {
+  if (nodeEntries.length > 0) {
     return nodeEntries[0];
   }
   if (!found) return;
@@ -66,10 +66,10 @@ export const getPreviousBlockById = <
   });
   const firstNodeEntry = Array.from(_entries);
 
-  if (firstNodeEntry.length) {
+  if (firstNodeEntry.length > 0) {
     const [, path] = firstNodeEntry[0];
 
-    path[path.length - 1] = path[path.length - 1] - 1;
+    path[path.length - 1] = path.at(-1)! - 1;
 
     return [null, path] as any;
   }

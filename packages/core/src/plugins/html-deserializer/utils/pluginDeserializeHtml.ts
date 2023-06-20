@@ -55,7 +55,7 @@ export const pluginDeserializeHtml = <V extends Value>(
 
           // Ignore if el nodeName is not included in rule validNodeNames (except *).
           if (
-            validNodeNames.length &&
+            validNodeNames.length > 0 &&
             !validNodeNames.includes(el.nodeName) &&
             validNodeName !== '*'
           )
@@ -130,7 +130,7 @@ export const pluginDeserializeHtml = <V extends Value>(
   }
 
   let node = getNode(el, {}) ?? {};
-  if (!Object.keys(node).length) return;
+  if (Object.keys(node).length === 0) return;
 
   const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
 
@@ -156,7 +156,7 @@ export const pluginDeserializeHtml = <V extends Value>(
       }
     }
 
-    if (Object.keys(elementAttributes).length) {
+    if (Object.keys(elementAttributes).length > 0) {
       node.attributes = elementAttributes;
     }
   }

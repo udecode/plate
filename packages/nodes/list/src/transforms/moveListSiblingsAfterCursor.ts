@@ -20,7 +20,7 @@ export const moveListSiblingsAfterCursor = <V extends Value>(
     to: Path;
   }
 ): number => {
-  const offset = at[at.length - 1];
+  const offset = at.at(-1)!;
   at = Path.parent(at);
   const listNode = getNode<TElement>(editor, at)!;
   const listEntry: TElementEntry = [listNode, at];

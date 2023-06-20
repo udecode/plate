@@ -59,12 +59,13 @@ export const withEmoji = <
     const searchText = emojiTriggeringController.getText();
 
     switch (operation.type) {
-      case 'set_selection':
+      case 'set_selection': {
         emojiTriggeringController.reset();
         comboboxActions.reset();
         break;
+      }
 
-      case 'insert_text':
+      case 'insert_text': {
         if (
           emojiTriggeringController.hasEnclosingTriggeringMark() &&
           emojiInlineIndexSearch.search(searchText).hasFound(true)
@@ -93,8 +94,9 @@ export const withEmoji = <
         emojiTriggeringController.reset();
         comboboxActions.reset();
         break;
+      }
 
-      case 'remove_text':
+      case 'remove_text': {
         if (
           emojiTriggeringController.isTriggering &&
           emojiInlineIndexSearch.search(searchText).hasFound()
@@ -113,6 +115,7 @@ export const withEmoji = <
         emojiTriggeringController.reset();
         comboboxActions.reset();
         break;
+      }
     }
   };
 

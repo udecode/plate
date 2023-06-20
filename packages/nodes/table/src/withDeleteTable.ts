@@ -37,8 +37,8 @@ export const preventDeleteTableCell = <V extends Value = Value>(
 ) => {
   const { selection } = editor;
 
-  const getPoint = !reverse ? getStartPoint : getEndPoint;
-  const getNextPoint = !reverse ? getPointBefore : getPointAfter;
+  const getPoint = reverse ? getEndPoint : getStartPoint;
+  const getNextPoint = reverse ? getPointAfter : getPointBefore;
 
   if (isCollapsed(selection)) {
     const cellEntry = getBlockAbove(editor, {
@@ -116,7 +116,7 @@ export const withDeleteTable = <
           // set back the selection
           select(editor, {
             anchor: getStartPoint(editor, cellEntries[0][1]),
-            focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
+            focus: getEndPoint(editor, cellEntries.at(-1)![1]),
           });
         });
 

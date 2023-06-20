@@ -85,10 +85,11 @@ export const moveListItemsToList = <V extends Value>(
 
     if (_to) to = _to;
     if (toList) {
-      if (toListIndex !== null) to = toList[1].concat([toListIndex]);
-      else {
+      if (toListIndex === null) {
         const lastChildPath = getLastChildPath(toList);
         to = Path.next(lastChildPath);
+      } else {
+        to = toList[1].concat([toListIndex]);
       }
     }
     if (!to) return;

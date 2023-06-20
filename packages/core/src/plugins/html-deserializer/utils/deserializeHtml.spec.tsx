@@ -12,6 +12,7 @@ import { createUnderlinePlugin } from '@udecode/plate-basic-marks/src/createUnde
 import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
 import { createSoftBreakPlugin } from '@udecode/plate-break/src/soft-break/createSoftBreakPlugin';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block/src/createCodeBlockPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace/src/createFindReplacePlugin';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
 import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
@@ -26,8 +27,6 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-
 jsx;
 
 describe('when stripWhitespace is false', () => {
@@ -37,7 +36,7 @@ describe('when stripWhitespace is false', () => {
   const expectedOutput = [{ text: 'test \n code' }];
 
   it('should have the break line', () => {
-    const convertedDocumentFragment = deserializeHtml(createPlateUIEditor(), {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
       element,
       stripWhitespace: false,
     });
@@ -58,7 +57,7 @@ describe('when element is a div', () => {
 
   it('should be a fragment of text', () => {
     expect(
-      deserializeHtml(createPlateUIEditor(), {
+      deserializeHtml(createPlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -76,7 +75,7 @@ describe('when element is 2 p', () => {
   it('should be a fragment of 2 paragraph nodes', () => {
     expect(
       deserializeHtml(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [createParagraphPlugin()],
         }),
         {
@@ -99,7 +98,7 @@ describe('when html is a text without tags', () => {
 
   it('should be a fragment of text', () => {
     expect(
-      deserializeHtml(createPlateUIEditor(), {
+      deserializeHtml(createPlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -220,7 +219,7 @@ describe('when deserializing all plugins', () => {
 
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins,
         }),
         element

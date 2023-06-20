@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate';
-import { HandlerReturnType } from '@udecode/plate-common';
+import { createPlateEditor, HandlerReturnType } from '@udecode/plate-common';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -19,7 +18,7 @@ describe('onChangeCombobox', () => {
   const createEditor = (state: JSX.Element) => {
     const plugins = [createParagraphPlugin(), createComboboxPlugin()];
 
-    return createPlateUIEditor({
+    return createPlateEditor({
       editor: (<editor>{state}</editor>) as any,
       plugins,
     });

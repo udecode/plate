@@ -11,7 +11,7 @@ export const hasEditorTarget = <V extends Value>(
 ): target is Node => {
   try {
     return ReactEditor.hasTarget(editor as any, target);
-  } catch (e) {}
+  } catch (error) {}
 
   return false;
 };

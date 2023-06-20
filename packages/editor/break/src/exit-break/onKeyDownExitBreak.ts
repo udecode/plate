@@ -22,11 +22,13 @@ export const onKeyDownExitBreak =
     if (!entry) return;
 
     rules.forEach(({ hotkey, ...rule }) => {
-      if (isHotkey(hotkey, event as any) && queryNode(entry, rule.query)) {
-        if (exitBreak(editor as any, rule)) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
+      if (
+        isHotkey(hotkey, event as any) &&
+        queryNode(entry, rule.query) &&
+        exitBreak(editor as any, rule)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
       }
     });
   };

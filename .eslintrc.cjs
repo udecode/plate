@@ -2,7 +2,9 @@ const {
   getDefaultIgnorePatterns,
 } = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
 
+/** @type {import("eslint").Linter.Config} */
 module.exports = {
+  root: true,
   extends: [
     'turbo',
 

@@ -13,7 +13,7 @@ export const sanitizeUrl = (
 
   try {
     parsedUrl = new URL(url);
-  } catch (error) {
+  } catch {
     return permitInvalid ? url : null;
   }
 

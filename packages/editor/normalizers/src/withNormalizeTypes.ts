@@ -20,7 +20,7 @@ export const withNormalizeTypes = <
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
-    if (!currentPath.length) {
+    if (currentPath.length === 0) {
       const endCurrentNormalizationPass = rules!.some(
         ({ strictType, type, path }) => {
           const node = getNode<TElement>(editor, path);
@@ -47,8 +47,8 @@ export const withNormalizeTypes = <
                 { at: path }
               );
               return true;
-            } catch (err) {
-              onError?.(err);
+            } catch (error) {
+              onError?.(error);
             }
           }
 

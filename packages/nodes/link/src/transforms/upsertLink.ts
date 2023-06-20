@@ -72,7 +72,7 @@ export const upsertLink = <V extends Value>(
 
   if (!skipValidation && !validateUrl(editor, url)) return;
 
-  if (isDefined(text) && !text.length) {
+  if (isDefined(text) && text.length === 0) {
     text = url;
   }
 

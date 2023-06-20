@@ -30,7 +30,7 @@ export const moveListItemDown = <V extends Value>(
 
   try {
     previousListItemPath = Path.previous(listItemPath);
-  } catch (e) {
+  } catch (error) {
     return;
   }
 

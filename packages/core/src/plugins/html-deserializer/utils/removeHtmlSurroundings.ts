@@ -6,7 +6,7 @@ const removeBeforeHtml = (html: string): string => {
   if (index === -1) {
     return html;
   }
-  return html.substring(index);
+  return html.slice(Math.max(0, index));
 };
 
 /**
@@ -17,7 +17,7 @@ const removeAfterHtml = (html: string): string => {
   if (index === -1) {
     return html;
   }
-  return html.substring(0, index + '</html>'.length);
+  return html.slice(0, Math.max(0, index + '</html>'.length));
 };
 
 /**

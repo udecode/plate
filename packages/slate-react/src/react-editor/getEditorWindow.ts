@@ -8,5 +8,5 @@ import { TReactEditor } from '../types/TReactEditor';
 export const getEditorWindow = <V extends Value>(editor: TReactEditor<V>) => {
   try {
     return ReactEditor.getWindow(editor as any);
-  } catch (e) {}
+  } catch (error) {}
 };

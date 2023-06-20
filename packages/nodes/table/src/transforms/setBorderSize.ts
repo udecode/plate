@@ -32,8 +32,8 @@ export const setBorderSize = <V extends Value>(
 
   const [cellNode, cellPath] = cellEntry;
 
-  const cellIndex = cellPath[cellPath.length - 1];
-  const rowIndex = cellPath[cellPath.length - 2];
+  const cellIndex = cellPath.at(-1);
+  const rowIndex = cellPath.at(-2);
 
   // Default hidden border style
   const borderStyle: BorderStyle = {

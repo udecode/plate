@@ -10,5 +10,5 @@ export const findEditorDocumentOrShadowRoot = <V extends Value>(
 ) => {
   try {
     return ReactEditor.findDocumentOrShadowRoot(editor as any);
-  } catch (e) {}
+  } catch (error) {}
 };

@@ -50,7 +50,7 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
     event: any
   ) => HandlerReturnType | undefined;
 
-  if (!pluginsHandlers.length && !propsHandler) return;
+  if (pluginsHandlers.length === 0 && !propsHandler) return;
 
   return (event: any) => {
     const eventIsHandled = pluginsHandlers.some((handler) =>

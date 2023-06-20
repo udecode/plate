@@ -262,11 +262,11 @@ export function TableCellElementResizable(
 
   const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
-  return !readOnly ? (
+  return readOnly ? null : (
     <>
       <ResizeHandle {...rightProps} />
       <ResizeHandle {...bottomProps} />
       {hasLeftHandle && <ResizeHandle {...leftProps} />}
     </>
-  ) : null;
+  );
 }

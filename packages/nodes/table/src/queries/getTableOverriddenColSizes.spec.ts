@@ -10,7 +10,7 @@ const makeTableElement = (
     children: [
       {
         type: 'tr',
-        children: Array(columnCount).fill({}),
+        children: Array.from({ length: columnCount }).fill({}),
       },
     ],
     colSizes,

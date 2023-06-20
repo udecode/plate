@@ -1,6 +1,5 @@
-import { deserializeHtml } from '@udecode/plate-core/src/plugins/html-deserializer/utils/deserializeHtml';
-import { htmlStringToDOMNode } from '@udecode/plate-core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-
+import { deserializeHtml } from '@/core/src/plugins/html-deserializer/utils/deserializeHtml';
+import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 

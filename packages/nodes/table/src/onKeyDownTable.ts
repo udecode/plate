@@ -38,17 +38,15 @@ export const onKeyDownTable =
     };
 
     Object.keys(isKeyDown).forEach((key) => {
-      if (isKeyDown[key]) {
-        // if many cells are selected
-        if (
-          moveSelectionFromCell(editor, {
-            reverse: key === 'shift+up',
-            edge: (keyShiftEdges as any)[key],
-          })
-        ) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
+      if (
+        isKeyDown[key] && // if many cells are selected
+        moveSelectionFromCell(editor, {
+          reverse: key === 'shift+up',
+          edge: (keyShiftEdges as any)[key],
+        })
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
       }
     });
 

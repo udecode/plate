@@ -20,7 +20,7 @@ export const commentsData: Record<string, TComment> = {
     id: '1',
     userId: '1',
     value: [{ type: 'p', children: [{ text: 'This is a comment.' }] }],
-    createdAt: 1663453625129,
+    createdAt: 1_663_453_625_129,
   },
   2: {
     id: '2',
@@ -28,28 +28,28 @@ export const commentsData: Record<string, TComment> = {
     value: [
       { type: 'p', children: [{ text: 'Can you review this one @12joan?' }] },
     ],
-    createdAt: 1663453729191,
+    createdAt: 1_663_453_729_191,
   },
   3: {
     id: '3',
     userId: '1',
     value: [{ type: 'p', children: [{ text: 'This is a resolved comment.' }] }],
     isResolved: true,
-    createdAt: 1663453740180,
+    createdAt: 1_663_453_740_180,
   },
   4: {
     id: '4',
     userId: '2',
     value: [{ type: 'p', children: [{ text: 'LGTM.' }] }],
     parentId: '2',
-    createdAt: 1663453740181,
+    createdAt: 1_663_453_740_181,
   },
   5: {
     id: '4',
     userId: '1',
     value: [{ type: 'p', children: [{ text: 'Thanks!' }] }],
     parentId: '2',
-    createdAt: 1663453740182,
+    createdAt: 1_663_453_740_182,
   },
 };
 

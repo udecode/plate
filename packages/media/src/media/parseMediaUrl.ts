@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { HTMLAttributes } from 'react';
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 import { MediaPlugin } from './types';
 
@@ -6,7 +6,7 @@ export type EmbedUrlData = {
   url?: string;
   provider?: string;
   id?: string;
-  component?: React.FC<EmbedUrlData>;
+  component?: React.FC<EmbedUrlData & HTMLAttributes<HTMLDivElement>>;
 };
 
 export const parseMediaUrl = <V extends Value>(

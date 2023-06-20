@@ -78,7 +78,7 @@ export const insertTableRow = <V extends Value>(
 
     const [, nextCellPath] = cellEntry;
     if (Path.isPath(at)) {
-      nextCellPath[nextCellPath.length - 2] = at[at.length - 2];
+      nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
     } else {
       nextCellPath[nextCellPath.length - 2] += 1;
     }

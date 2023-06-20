@@ -48,7 +48,21 @@ export const withSelectionTable = <
           match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
         });
 
-        if (!anchorEntry) {
+        if (anchorEntry) {
+          const [, anchorPath] = anchorEntry;
+
+          const isBackward = Range.isBackward(newSelection);
+
+          if (isBackward) {
+            op.newProperties.focus = getStartPoint(editor, anchorPath);
+          } else {
+            const pointBefore = getPointBefore(editor, anchorPath);
+            // if the table is the first block
+            if (pointBefore) {
+              op.newProperties.focus = getEndPoint(editor, anchorPath);
+            }
+          }
+        } else {
           const focusEntry = getBlockAbove(editor, {
             at: newSelection.focus,
             match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
@@ -65,20 +79,6 @@ export const withSelectionTable = <
               op.newProperties.focus = pointBefore ?? startPoint;
             } else {
               op.newProperties.focus = getEndPoint(editor, focusPath);
-            }
-          }
-        } else {
-          const [, anchorPath] = anchorEntry;
-
-          const isBackward = Range.isBackward(newSelection);
-
-          if (isBackward) {
-            op.newProperties.focus = getStartPoint(editor, anchorPath);
-          } else {
-            const pointBefore = getPointBefore(editor, anchorPath);
-            // if the table is the first block
-            if (pointBefore) {
-              op.newProperties.focus = getEndPoint(editor, anchorPath);
             }
           }
         }

@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from './createListPlugin';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -33,7 +31,7 @@ describe('p (empty) + list when selection not in list', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

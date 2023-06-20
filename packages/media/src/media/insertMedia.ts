@@ -22,16 +22,13 @@ export const insertMedia = async <V extends Value>(
     type = getPluginType(editor, ELEMENT_IMAGE),
   }: InsertMediaOptions = {}
 ) => {
-  let url;
-  if (getUrl) {
-    url = await getUrl();
-  } else {
-    url = window.prompt(
-      `Enter the URL of the ${
-        type === ELEMENT_IMAGE ? ELEMENT_IMAGE : ELEMENT_MEDIA_EMBED
-      }`
-    );
-  }
+  const url = getUrl
+    ? await getUrl()
+    : window.prompt(
+        `Enter the URL of the ${
+          type === ELEMENT_IMAGE ? ELEMENT_IMAGE : ELEMENT_MEDIA_EMBED
+        }`
+      );
   if (!url) return;
 
   if (type === getPluginType(editor, ELEMENT_IMAGE)) {

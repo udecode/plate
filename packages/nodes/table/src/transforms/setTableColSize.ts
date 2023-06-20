@@ -24,7 +24,7 @@ export const setTableColSize = <V extends Value>(
 
   const colSizes = tableNode.colSizes
     ? [...tableNode.colSizes]
-    : Array(getTableColumnCount(tableNode)).fill(0);
+    : Array.from({ length: getTableColumnCount(tableNode) }).fill(0);
 
   colSizes[colIndex] = width;
 

@@ -1,6 +1,5 @@
-const path = require('path');
+const path = require('node:path');
 
 module.exports = {
-  sandpackPath: '../../docs/docs/sandpack',
   inputPath: path.resolve(__dirname, '../../apps/www/src'),
 };

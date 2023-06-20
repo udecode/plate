@@ -5,7 +5,7 @@ export const isDocxList = (element: Element): boolean => {
     return false;
   }
 
-  const hasMsoListInStyle = /mso-list:\s*l/gim.test(styleAttribute);
+  const hasMsoListInStyle = /mso-list:\s*l/i.test(styleAttribute);
 
   if (!hasMsoListInStyle) {
     return false;

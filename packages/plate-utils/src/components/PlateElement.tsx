@@ -33,7 +33,7 @@ export const usePlateElement = <T extends TElement = TElement>(
       ...attributes,
       ...rootProps,
       ...nodeProps,
-      ...(elementToAttributes?.(element as T) ?? {}),
+      ...elementToAttributes?.(element as T),
       className: clsx(props.className, nodeProps?.className),
     },
   };

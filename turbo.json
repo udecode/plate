@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["CI"],
   "pipeline": {
     "dev": {
       "cache": false,
@@ -8,9 +9,9 @@
     "build": {
       "dependsOn": ["^build"],
       "env": [
-        "NODE_ENV",
-        "NEXT_PUBLIC_APP_URL",
         "COMPONENTS_BASE_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NODE_ENV",
         "npm_config_user_agent"
       ],
       "outputs": ["dist/**", ".next/**"]
@@ -27,11 +28,11 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": [],
+      "dependsOn": ["build"],
       "outputs": []
     },
     "lint:fix": {
-      "dependsOn": [],
+      "dependsOn": ["build"],
       "cache": true
     },
     "e2e-examples#lint:fix": {
@@ -41,12 +42,6 @@
     "www#lint:fix": {
       "dependsOn": [],
       "outputs": []
-    },
-    "lint:apps": {
-      "dependsOn": ["build"]
-    },
-    "lint:fix:apps": {
-      "dependsOn": ["build"]
     },
     "test": {
       "dependsOn": ["build"],

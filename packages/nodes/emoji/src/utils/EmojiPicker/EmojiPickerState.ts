@@ -43,7 +43,7 @@ export const EmojiPickerState = (): [
     const { type, payload } = action;
 
     switch (type) {
-      case 'CLEAR_SEARCH':
+      case 'CLEAR_SEARCH': {
         return {
           ...state,
           searchValue: '',
@@ -51,14 +51,16 @@ export const EmojiPickerState = (): [
           hasFound: false,
           focusedCategory: EmojiCategory.Frequent,
         };
-      case 'UPDATE_SEARCH_RESULT':
+      }
+      case 'UPDATE_SEARCH_RESULT': {
         return {
           ...state,
           ...payload,
           isSearching: true,
           focusedCategory: undefined,
         };
-      case 'SET_FOCUSED_CATEGORY':
+      }
+      case 'SET_FOCUSED_CATEGORY': {
         return {
           ...state,
           ...payload,
@@ -66,27 +68,32 @@ export const EmojiPickerState = (): [
           isSearching: false,
           hasFound: false,
         };
-      case 'SET_OPEN':
+      }
+      case 'SET_OPEN': {
         return {
           ...state,
           isOpen: true,
         };
-      case 'SET_CLOSE':
+      }
+      case 'SET_CLOSE': {
         return {
           ...state,
           emoji: undefined,
           isOpen: false,
         };
-      case 'UPDATE_FREQUENT_EMOJIS':
+      }
+      case 'UPDATE_FREQUENT_EMOJIS': {
         return {
           ...state,
           ...payload,
           emoji: undefined,
         };
+      }
       case 'SET_SEARCH':
       case 'SET_EMOJI':
-      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
+      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES': {
         return { ...state, ...payload };
+      }
       default: {
         throw new Error(`Unhandled action type: ${type}`);
       }

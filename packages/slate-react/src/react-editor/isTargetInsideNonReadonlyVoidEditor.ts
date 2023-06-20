@@ -11,7 +11,7 @@ export const isTargetInsideNonReadonlyVoid = <V extends Value>(
 ) => {
   try {
     return ReactEditor.isTargetInsideNonReadonlyVoid(editor as any, target);
-  } catch (e) {}
+  } catch (error) {}
 
   return false;
 };

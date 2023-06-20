@@ -35,7 +35,7 @@ export const onKeyDownCodeBlock =
       });
       const codeLines = Array.from(_codeLines);
 
-      if (codeLines.length) {
+      if (codeLines.length > 0) {
         e.preventDefault();
         const [, firstLinePath] = codeLines[0];
         const codeBlock = getParentNode<TElement>(editor, firstLinePath);

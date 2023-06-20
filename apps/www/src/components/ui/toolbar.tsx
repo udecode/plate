@@ -95,27 +95,8 @@ const ToolbarButton = React.forwardRef<
       setIsLoaded(true);
     }, []);
 
-    let content: JSX.Element;
-
-    if (typeof pressed !== 'boolean') {
-      content = (
-        <ToolbarPrimitive.Button
-          ref={ref}
-          className={cn(
-            toggleVariants({
-              variant,
-              size,
-            }),
-            isDropdown && 'pr-1',
-            className
-          )}
-          {...props}
-        >
-          {children}
-        </ToolbarPrimitive.Button>
-      );
-    } else {
-      content = (
+    const content =
+      typeof pressed === 'boolean' ? (
         <ToolbarToggleGroup
           type="single"
           value={pressed ? 'single' : undefined}
@@ -141,8 +122,22 @@ const ToolbarButton = React.forwardRef<
             </div>
           </ToolbarToggleItem>
         </ToolbarToggleGroup>
+      ) : (
+        <ToolbarPrimitive.Button
+          ref={ref}
+          className={cn(
+            toggleVariants({
+              variant,
+              size,
+            }),
+            isDropdown && 'pr-1',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </ToolbarPrimitive.Button>
       );
-    }
 
     return isLoaded && tooltip ? (
       <Tooltip>

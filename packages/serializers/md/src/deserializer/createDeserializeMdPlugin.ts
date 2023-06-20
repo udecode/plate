@@ -20,11 +20,11 @@ export const createDeserializeMdPlugin =
             if (htmlData) return false;
 
             const { files } = dataTransfer;
-            if (!files?.length) {
-              // if content is simply a URL pass through to not break LinkPlugin
-              if (isUrl(data)) {
-                return false;
-              }
+            if (
+              !files?.length && // if content is simply a URL pass through to not break LinkPlugin
+              isUrl(data)
+            ) {
+              return false;
             }
             return true;
           },

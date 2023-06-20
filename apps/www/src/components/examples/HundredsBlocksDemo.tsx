@@ -28,10 +28,12 @@ function WithPlate() {
 
 function Element({ attributes, children, element }: RenderElementProps) {
   switch ((element as TElement).type) {
-    case 'h1':
+    case 'h1': {
       return <h1 {...attributes}>{children}</h1>;
-    default:
+    }
+    default: {
       return <p {...attributes}>{children}</p>;
+    }
   }
 }
 
@@ -43,7 +45,7 @@ function WithoutPlate() {
   return (
     <Slate
       editor={editor}
-      value={value}
+      initialValue={value}
       onChange={useCallback((v) => setValue(v), [])}
     >
       <Editable renderElement={renderElement} {...(editableProps as any)} />

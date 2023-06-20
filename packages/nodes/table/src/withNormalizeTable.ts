@@ -69,7 +69,7 @@ export const withNormalizeTable = <
               });
             }
 
-            if (colSizes.length) {
+            if (colSizes.length > 0) {
               setNodes<TTableElement>(editor, { colSizes }, { at: path });
               return;
             }

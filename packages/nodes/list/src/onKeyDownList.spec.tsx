@@ -1,11 +1,14 @@
 /** @jsx jsx */
 
-import { getPlugin, HotkeyPlugin, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  getPlugin,
+  HotkeyPlugin,
+  PlateEditor,
+} from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownList } from './onKeyDownList';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 /*
@@ -53,7 +56,7 @@ it('should indent single list item (start of item)', () => {
   ) as any;
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -107,7 +110,7 @@ it('should indent single list item (end of item)', () => {
   ) as any;
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -175,7 +178,7 @@ it('should indent multiple list items (start/end)', () => {
   ) as any;
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -246,7 +249,7 @@ it('should un-indent multiple list items (start/end)', () => {
     shiftKey: true,
     key: 'Tab',
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -319,7 +322,7 @@ it('should un-indent multiple list items (start/out)', () => {
     shiftKey: true,
     key: 'Tab',
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -384,7 +387,7 @@ it('should unhang before indentation', () => {
   const event = new KeyboardEvent('keydown', {
     key: 'Tab',
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -403,7 +406,7 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
       </hp>
     </editor>
   ) as any;
-  const editor: PlateEditor<any> = createPlateUIEditor({
+  const editor: PlateEditor<any> = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });
@@ -475,7 +478,7 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
     key: 'Tab',
     shiftKey: true,
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
   });
@@ -524,7 +527,7 @@ it('should convert top-level (first) list item into body upon unindent if enable
     key: 'Tab',
     shiftKey: true,
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
   });
@@ -573,7 +576,7 @@ it('should convert top-level (last) list item into body upon unindent if enableR
     key: 'Tab',
     shiftKey: true,
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
   });
@@ -625,7 +628,7 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
     key: 'Tab',
     shiftKey: true,
   }) as any;
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });

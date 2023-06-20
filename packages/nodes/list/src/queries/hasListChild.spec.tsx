@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { findNode } from '@udecode/plate-common';
+import { createPlateEditor, findNode } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { hasListChild } from './hasListChild';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -31,7 +29,7 @@ describe('when there is a sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
     });
 
@@ -53,7 +51,7 @@ describe('when there is no sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
     });
 

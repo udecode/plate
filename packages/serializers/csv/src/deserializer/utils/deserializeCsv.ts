@@ -29,7 +29,7 @@ const isValidCsv = (
     data.length < 2 ||
     data[0].length < 2 ||
     data[1].length < 2 ||
-    (errors.length && errors.length > errorTolerance * data.length)
+    (errors.length > 0 && errors.length > errorTolerance * data.length)
   );
 };
 
@@ -106,7 +106,7 @@ export const deserializeCsv = <V extends Value>(
           children: [],
         });
         for (const cell of row) {
-          (ast.children[ast.children.length - 1] as TElement).children.push({
+          (ast.children.at(-1) as TElement).children.push({
             type: td,
             children: [{ type: paragraph, children: [{ text: cell }] }],
           });

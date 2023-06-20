@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate';
-import { PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
@@ -30,7 +29,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [
           createParagraphPlugin(),

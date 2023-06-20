@@ -17,6 +17,6 @@ export const getRtfImageSpid = (
   );
   const foundIndexes = indexes.filter((index) => index !== -1);
   const idLength = Math.min(imageData.length, ...foundIndexes);
-  const id = imageData.substring(0, idLength);
+  const id = imageData.slice(0, Math.max(0, idLength));
   return id ? `${spidPrefix}${id}` : null;
 };

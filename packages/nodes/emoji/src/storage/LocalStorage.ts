@@ -16,7 +16,7 @@ export class LocalStorage<T> implements ILocalStorage<T> {
     if (valueInLocalStorage) {
       try {
         value = JSON.parse(valueInLocalStorage);
-      } catch (error) {
+      } catch {
         window.localStorage.removeItem(this.key);
       }
     }

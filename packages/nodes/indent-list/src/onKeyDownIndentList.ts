@@ -32,11 +32,9 @@ export const onKeyDownIndentList =
     const listStyleType = node[KEY_LIST_STYLE_TYPE] as string | undefined;
     if (!listStyleType) return;
 
-    if (isHotkey('Enter', e)) {
-      if (isBlockAboveEmpty(editor) && node.indent) {
-        outdentList(editor);
-        e.stopPropagation();
-        e.preventDefault();
-      }
+    if (isHotkey('Enter', e) && isBlockAboveEmpty(editor) && node.indent) {
+      outdentList(editor);
+      e.stopPropagation();
+      e.preventDefault();
     }
   };

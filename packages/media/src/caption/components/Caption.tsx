@@ -33,7 +33,8 @@ export const useCaption = (state: ReturnType<typeof useCaptionState>) => {
     props: {
       style: { width },
     },
-    hidden: !state.captionString.length && (state.readOnly || !state.selected),
+    hidden:
+      state.captionString.length === 0 && (state.readOnly || !state.selected),
   };
 };
 

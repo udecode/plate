@@ -11,5 +11,5 @@ export const findNodeKey = <V extends Value>(
 ) => {
   try {
     return ReactEditor.findKey(editor as any, node);
-  } catch (e) {}
+  } catch (error) {}
 };

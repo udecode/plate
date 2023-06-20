@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
-import { findNode, PlateEditor } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  findNode,
+  PlateEditor,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { moveListItemsToList } from './moveListItemsToList';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -53,7 +55,7 @@ const output = (
 ) as any as PlateEditor;
 
 it('should', () => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: input,
   });
 

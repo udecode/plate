@@ -19,7 +19,7 @@ export function DocsSidebarNav({
   const isUI = pathname?.includes('/docs/components');
   const items = isUI ? componentItems : coreItems;
 
-  return items.length ? (
+  return items.length > 0 ? (
     <div className="w-full">
       {items.map((item, index) => (
         <div key={index} className={cn('pb-4')}>

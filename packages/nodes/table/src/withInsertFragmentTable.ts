@@ -66,7 +66,7 @@ export const withInsertFragmentTable = <
 
           select(editor, {
             anchor: getStartPoint(editor, cellEntries[0][1]),
-            focus: getEndPoint(editor, cellEntries[cellEntries.length - 1][1]),
+            focus: getEndPoint(editor, cellEntries.at(-1)![1]),
           });
           return;
         }
@@ -90,7 +90,7 @@ export const withInsertFragmentTable = <
             const [, startCellPath] = cellEntry;
             const cellPath = [...startCellPath];
 
-            const startColIndex = cellPath[cellPath.length - 1];
+            const startColIndex = cellPath.at(-1)!;
             let lastCellPath: Path | null = null;
 
             let initRow = true;
@@ -105,12 +105,12 @@ export const withInsertFragmentTable = <
                 cellPath[cellPath.length - 2] += 1;
 
                 if (!hasNode(editor, cellPath)) {
-                  if (!disableExpandOnInsert) {
+                  if (disableExpandOnInsert) {
+                    return;
+                  } else {
                     insertRow?.(editor, {
                       fromRow,
                     });
-                  } else {
-                    return;
                   }
                 }
               }
@@ -125,12 +125,12 @@ export const withInsertFragmentTable = <
                   cellPath[cellPath.length - 1] += 1;
 
                   if (!hasNode(editor, cellPath)) {
-                    if (!disableExpandOnInsert) {
+                    if (disableExpandOnInsert) {
+                      return;
+                    } else {
                       insertColumn?.(editor, {
                         fromCell,
                       });
-                    } else {
-                      return;
                     }
                   }
                 }

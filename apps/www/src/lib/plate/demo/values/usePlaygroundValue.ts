@@ -45,7 +45,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (valueId !== settingValues.playground.id) {
       const newValue = settingValues[valueId].value ?? [];
 
-      if (!newValue.length) {
+      if (newValue.length === 0) {
         return mapNodeId(value);
       }
       return mapNodeId(newValue);

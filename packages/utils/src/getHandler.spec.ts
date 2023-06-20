@@ -9,7 +9,7 @@ it('should be', () => {
 });
 
 it('should be', () => {
-  getHandler(undefined)();
+  getHandler()();
 
   expect(1).toBe(1);
 });

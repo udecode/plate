@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
-import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { TEditor } from '@udecode/slate';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 jsx;
@@ -18,13 +17,9 @@ describe('when selection is in the same block', () => {
             de noster , lotus acipenser.
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as TEditor;
 
-      const editor = createPlateUIEditor({
-        editor: input,
-      });
-
-      expect(isRangeAcrossBlocks(editor)).toEqual(false);
+      expect(isRangeAcrossBlocks(input)).toEqual(false);
     });
   });
 
@@ -42,14 +37,11 @@ describe('when selection is in the same block', () => {
             , lotus acipenser.
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as TEditor;
 
-      const editor = createPlateUIEditor({
-        editor: input,
-        plugins: [createLinkPlugin()],
-      });
+      input.isInline = (element) => element.type === 'a';
 
-      expect(isRangeAcrossBlocks(editor)).toEqual(false);
+      expect(isRangeAcrossBlocks(input)).toEqual(false);
     });
   });
 });

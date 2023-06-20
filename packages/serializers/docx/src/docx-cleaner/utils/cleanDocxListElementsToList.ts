@@ -9,7 +9,7 @@ export const cleanDocxListElementsToList = (rootNode: Node): void => {
     if (styleAttribute) {
       element.setAttribute(
         'style',
-        styleAttribute.replace(/mso-list:\s*Ignore/gim, 'mso-list:Ignore')
+        styleAttribute.replaceAll(/mso-list:\s*ignore/gi, 'mso-list:Ignore')
       );
     }
 
@@ -38,9 +38,9 @@ export const cleanDocxListElementsToList = (rootNode: Node): void => {
       : parentElement.firstChild;
 
     if (beforeElement) {
-      parentElement.insertBefore(list, beforeElement);
+      beforeElement.before(list);
     } else {
-      parentElement.appendChild(list);
+      parentElement.append(list);
     }
 
     return false;

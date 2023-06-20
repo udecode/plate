@@ -37,7 +37,7 @@ export const getSiblingListStyleType = <V extends Value = Value>(
   });
 
   return (
-    siblings.length
+    siblings.length > 0
       ? siblings[0][0][KEY_LIST_STYLE_TYPE]
       : entry[0][KEY_LIST_STYLE_TYPE]
   ) as ListStyleType;

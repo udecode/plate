@@ -49,19 +49,33 @@ export const moveSelectionFromCell = <V extends Value = Value>(
 
     if (cellEntries.length > minCell) {
       const [, firstCellPath] = cellEntries[0];
-      const [, lastCellPath] = cellEntries[cellEntries.length - 1];
+      const [, lastCellPath] = cellEntries.at(-1)!;
 
       const anchorPath = [...firstCellPath];
       const focusPath = [...lastCellPath];
 
-      if (edge === 'bottom') {
-        focusPath[focusPath.length - 2] += 1;
-      } else if (edge === 'top') {
-        anchorPath[anchorPath.length - 2] -= 1;
-      } else if (edge === 'right') {
-        focusPath[focusPath.length - 1] += 1;
-      } else if (edge === 'left') {
-        anchorPath[anchorPath.length - 1] -= 1;
+      switch (edge) {
+        case 'bottom': {
+          focusPath[focusPath.length - 2] += 1;
+
+          break;
+        }
+        case 'top': {
+          anchorPath[anchorPath.length - 2] -= 1;
+
+          break;
+        }
+        case 'right': {
+          focusPath[focusPath.length - 1] += 1;
+
+          break;
+        }
+        case 'left': {
+          anchorPath[anchorPath.length - 1] -= 1;
+
+          break;
+        }
+        // No default
       }
 
       if (hasNode(editor, anchorPath) && hasNode(editor, focusPath)) {

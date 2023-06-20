@@ -6,7 +6,7 @@ export const getVShapes = (document: Document): Record<string, string> => {
   return comments.reduce<Record<string, string>>((vShapesMap, comment) => {
     try {
       const xmlDocument = new DOMParser().parseFromString(comment, 'text/html');
-      const vShapes = Array.from(xmlDocument.getElementsByTagName('V:SHAPE'));
+      const vShapes = Array.from(xmlDocument.querySelectorAll('V:SHAPE'));
 
       vShapes.forEach((vShape) => {
         const { id } = vShape;

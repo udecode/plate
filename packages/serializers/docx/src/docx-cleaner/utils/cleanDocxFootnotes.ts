@@ -5,7 +5,7 @@ import { isDocxFootnote } from './isDocxFootnote';
  * Gets "4" from "[4]", "A" from "[A]", etc.
  */
 const extractFootnoteNumber = (footnote: Element): string => {
-  return (footnote.textContent || '').trim().replace(/[[\]]/g, '');
+  return (footnote.textContent || '').trim().replaceAll(/[[\]]/g, '');
 };
 
 /**

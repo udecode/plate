@@ -1,56 +1,45 @@
 module.exports = {
-  extends: ['airbnb', 'plugin:promise/recommended'],
-  plugins: ['simple-import-sort', 'import', 'unused-imports'],
+  extends: ['plugin:promise/recommended'],
+  plugins: [],
   rules: {
-    'promise/catch-or-return': 'off',
-    'promise/always-return': 'off',
-    'promise/no-callback-in-promise': 'off',
-    'prefer-promise-reject-errors': 'off',
-
     'babel/no-unused-expressions': 'off',
-
-    'no-use-before-define': 'off',
-    'max-classes-per-file': 'off',
-    'default-case': 'off',
-    'no-bitwise': 'off',
-    'no-constant-condition': 'off',
     camelcase: 'off',
-    'no-shadow': 'off',
-    'no-undef': 'off',
-    'no-unexpected-multiline': 'off',
-    'no-useless-constructor': 'off',
+    'class-methods-use-this': 'off',
+    'consistent-return': 'off',
+
+    'default-case': 'off',
 
     'default-param-last': 'off',
-    'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
-    // No unused imports
-    'unused-imports/no-unused-imports': 'warn',
-    // No unused variables
-    'unused-imports/no-unused-vars': [
-      'warn',
-      {
-        ignoreRestSiblings: true,
-        vars: 'all',
-        varsIgnorePattern: '^_',
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-      },
+    'func-names': 'off',
+    'global-require': 'off',
+    'linebreak-style': 'off',
+    'lines-between-class-members': [
+      'error',
+      'always',
+      { exceptAfterSingleLine: true },
     ],
+    'max-classes-per-file': 'off',
     'no-alert': 'off',
-    'no-continue': 'off',
-    'no-multi-assign': 'off',
     'no-await-in-loop': 'off',
-    'no-empty': 'off',
+    'no-bitwise': 'off',
     'no-console': [
       'warn',
       {
         allow: ['info', 'warn', 'error'],
       },
     ],
-    'no-nested-ternary': 'off', // short
-    'no-new': 'off', // exceptions
+
+    'no-constant-condition': 'off',
+    'no-continue': 'off', // or "@typescript-eslint/no-unused-vars": "off",
+    // No unused imports
+    'no-empty': 'off',
+    // No unused variables
+    'no-multi-assign': 'off',
+    'no-nested-ternary': 'off',
+    'no-new': 'off',
     'no-param-reassign': 'off',
-    'no-plusplus': 'off', // short
-    'no-prototype-builtins': 'off', // short
+    'no-plusplus': 'off',
+    'no-prototype-builtins': 'off',
     'no-restricted-syntax': [
       'error',
       {
@@ -68,77 +57,33 @@ module.exports = {
         message:
           '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
       },
-    ], // for..of OK (break)
+    ],
     'no-return-assign': 'off', // short
-    'no-underscore-dangle': 'off',
-    'no-unused-expressions': 'off',
+    'no-shadow': 'off', // exceptions
+    'no-undef': 'off',
+    'no-underscore-dangle': 'off', // short
+    'no-unexpected-multiline': 'off', // short
+    'no-unused-expressions': 'off', // for..of OK (break)
+    'no-unused-vars': 'off', // short
+    'no-use-before-define': 'off',
+    'no-useless-constructor': 'off',
 
-    'linebreak-style': 'off',
-    'lines-between-class-members': [
-      'error',
-      'always',
-      { exceptAfterSingleLine: true },
-    ],
+    'prefer-promise-reject-errors': 'off',
+    'promise/always-return': 'off',
 
-    'class-methods-use-this': 'off',
-    'consistent-return': 'off',
-    'func-names': 'off',
+    'promise/catch-or-return': 'off',
+    'promise/no-callback-in-promise': 'off',
+    'unused-imports/no-unused-imports': 'warn',
 
-    // https://github.com/benmosher/eslint-plugin-import/issues/1558
-    'import/extensions': [
-      'error',
-      'never',
+    'unused-imports/no-unused-vars': [
+      'warn',
       {
-        ts: 'never',
-        tsx: 'never',
-        js: 'never',
-        jsx: 'never',
-        json: 'always',
-        scss: 'always',
+        ignoreRestSiblings: true,
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
       },
     ],
-    'import/no-cycle': 'off',
-    'import/no-named-as-default': 'off',
-    'import/no-dynamic-require': 'off',
-    'import/no-extraneous-dependencies': 'off',
-    'import/no-named-as-default-member': 'off',
-    'import/no-unresolved': [
-      'error',
-      {
-        ignore: ['^@theme', '^@docusaurus', '^@generated', '^@/plate'],
-      },
-    ],
-    'import/prefer-default-export': 'off', // Allow single Named-export
-    'import/order': ['off', { 'newlines-between': 'always' }],
-    'simple-import-sort/imports': [
-      'error',
-      {
-        groups: [
-          [
-            // import "./setup": Side effect imports.
-            '^\\u0000',
-            // Node.js builtins.`
-            '^(assert|buffer|child_process|cluster|console|constants|crypto|dgram|dns|domain|events|fs|http|https|module|net|os|path|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|tty|url|util|vm|zlib|freelist|v8|process|async_hooks|http2|perf_hooks)(/.*|$)',
-            // import react from "react": Packages.
-            '^react',
-            // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
-            '^@?\\w',
-            // import a from "/a": Absolute imports and other imports.
-            // Anything that does not start with a dot.
-            '^(assets|components|config|hooks|plugins|store|styled|themes|utils|contexts)(/.*|$)',
-            // import a from "./a": Relative imports.
-            // Parent imports. Put `..` last.
-            '^\\.\\.(?!/?$)',
-            '^\\.\\./?$',
-            // Other relative imports. Put same-folder imports and `.` last.
-            '^\\./(?=.*/)(?!/?$)',
-            '^\\.(?!/?$)',
-            '^\\./?$',
-          ],
-        ],
-      },
-    ],
-
-    'global-require': 'off',
   },
 };

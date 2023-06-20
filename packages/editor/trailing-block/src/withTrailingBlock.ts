@@ -26,7 +26,7 @@ export const withTrailingBlock = <
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
-    if (!currentPath.length) {
+    if (currentPath.length === 0) {
       const lastChild = getLastNodeByLevel(editor, level!);
 
       const lastChildNode = lastChild?.[0];

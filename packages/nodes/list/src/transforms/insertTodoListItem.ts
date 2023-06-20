@@ -75,11 +75,7 @@ export const insertTodoListItem = <V extends Value>(
     /**
      * If not end, split the nodes
      */
-    if (!isEnd) {
-      withoutNormalizing(editor, () => {
-        splitNodes(editor);
-      });
-    } else {
+    if (isEnd) {
       /**
        * If end, insert a list item after and select it
        */
@@ -94,6 +90,10 @@ export const insertTodoListItem = <V extends Value>(
         { at: nextParagraphPath }
       );
       select(editor, nextParagraphPath);
+    } else {
+      withoutNormalizing(editor, () => {
+        splitNodes(editor);
+      });
     }
 
     success = true;

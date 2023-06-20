@@ -15,9 +15,9 @@ module.exports = {
       // @see https://github.com/playwright-community/eslint-plugin-playwright
       extends: ['plugin:playwright/recommended'],
       rules: {
+        '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-object-literal-type-assertion': 'off',
-        '@typescript-eslint/no-empty-function': 'off',
       },
     },
   ],

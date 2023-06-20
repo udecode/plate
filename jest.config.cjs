@@ -1,13 +1,11 @@
 const { pathsToModuleNameMapper } = require('ts-jest');
 const appRoot = require('app-root-path');
 
-const { getJestCachePath } = require(`${appRoot}/config/cache.config`);
+const { getJestCachePath } = require(`${appRoot}/config/cache.config.cjs`);
 
 const packageJson = require(`${process.cwd()}/package.json`);
 const packageName = packageJson.name ?? 'plate';
-const {
-  compilerOptions: baseTsConfig,
-} = require(`${process.cwd()}/tsconfig.json`);
+const { compilerOptions: baseTsConfig } = require(`${appRoot}/tsconfig.json`);
 
 // Take the paths from tsconfig automatically from base tsconfig.json
 // @link https://kulshekhar.github.io/ts-jest/docs/paths-mapping
@@ -44,26 +42,29 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
-  globals: {
-    'ts-jest': {
-      diagnostics: true,
-      tsconfig: '<rootDir>/config/tsconfig.test.json',
-    },
-  },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
-    '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.js',
+    // '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
     ...getTsConfigBasePaths(),
-    '^@udecode/plate-core$': '<rootDir>/packages/core/src',
+    // '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     ...modules,
   },
+  preset: 'ts-jest',
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
   testPathIgnorePatterns: ['/playwright/'],
   transform: {
-    '.*': ['<rootDir>/scripts/fileTransformer.js', 'ts-jest'],
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        diagnostics: true,
+        tsconfig: '<rootDir>/config/tsconfig.test.json',
+      },
+    ],
   },
-  transformIgnorePatterns: ['/node_modules/(?!react-dnd|dnd-core|@react-dnd)'],
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd)/)',
+  ],
 };

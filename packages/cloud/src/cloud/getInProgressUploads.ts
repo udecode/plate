@@ -17,36 +17,36 @@ const _getInProgressUploads = (
   progressUploads: UploadProgress[]
 ): UploadProgress[] => {
   for (const node of nodes) {
-    if ('url' in node) {
+    if (
+      'url' in node &&
       /**
        * If the `node` has a `url` then we either
        *
        * - leave it alone and add it (it's already an actual URL)
        * - if found in the store lookup, replace the store ref with a URL
        * - if not found in lookup, skip it
+       */ typeof node.url === 'string'
+    ) {
+      /**
+       * If the `url` is a ref (i.e. starts with a `#`)
        */
-      if (typeof node.url === 'string') {
+      if (isStoreRef(node.url)) {
         /**
-         * If the `url` is a ref (i.e. starts with a `#`)
+         * If the `url` is a reference to the `uploads` lookup Record, then
+         * we do a lookup.
+         *
+         * If found returns a value for the `upload` and the `status` is
+         * `complete`, then we swap out the reference with an actual `url`.
+         *
+         * If it's not found, we skip over it because we don't want it in our
+         * normalized value.
          */
-        if (isStoreRef(node.url)) {
-          /**
-           * If the `url` is a reference to the `uploads` lookup Record, then
-           * we do a lookup.
-           *
-           * If found returns a value for the `upload` and the `status` is
-           * `complete`, then we swap out the reference with an actual `url`.
-           *
-           * If it's not found, we skip over it because we don't want it in our
-           * normalized value.
-           */
-          const origin: Upload | undefined = uploads[node.url];
-          if (origin && origin.status === 'progress') {
-            progressUploads.push(origin);
-          }
+        const origin: Upload | undefined = uploads[node.url];
+        if (origin && origin.status === 'progress') {
+          progressUploads.push(origin);
         }
-        continue;
       }
+      continue;
     }
     /**
      * If there wasn't a `url` but there is `children`, then we iterate

@@ -82,7 +82,21 @@ export const insertListItem = <V extends Value>(
     /**
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
-    if (!isEnd) {
+    if (isEnd) {
+      /**
+       * If end, insert a list item after and select it
+       */
+      const marks = getMarks(editor) || {};
+      insertElements(
+        editor,
+        {
+          type: liType,
+          children: [{ type: licType, children: [{ text: '', ...marks }] }],
+        },
+        { at: nextListItemPath }
+      );
+      select(editor, nextListItemPath);
+    } else {
       withoutNormalizing(editor, () => {
         splitNodes(editor);
         wrapNodes<TElement>(
@@ -102,20 +116,6 @@ export const insertListItem = <V extends Value>(
           edge: 'start',
         });
       });
-    } else {
-      /**
-       * If end, insert a list item after and select it
-       */
-      const marks = getMarks(editor) || {};
-      insertElements(
-        editor,
-        {
-          type: liType,
-          children: [{ type: licType, children: [{ text: '', ...marks }] }],
-        },
-        { at: nextListItemPath }
-      );
-      select(editor, nextListItemPath);
     }
 
     /**

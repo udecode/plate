@@ -29,21 +29,21 @@ export const onKeyDownResetNode =
 
     if (isCollapsed(editor.selection)) {
       rules!.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
-        if (hotkey && isHotkey(hotkey, event as any)) {
-          if (
-            predicate(editor as any) &&
-            someNode(editor, { match: { type: types } })
-          ) {
-            event.preventDefault?.();
+        if (
+          hotkey &&
+          isHotkey(hotkey, event as any) &&
+          predicate(editor as any) &&
+          someNode(editor, { match: { type: types } })
+        ) {
+          event.preventDefault?.();
 
-            setElements(editor, { type: defaultType });
+          setElements(editor, { type: defaultType });
 
-            if (onReset) {
-              onReset(editor as any);
-            }
-
-            reset = true;
+          if (onReset) {
+            onReset(editor as any);
           }
+
+          reset = true;
         }
       });
     }

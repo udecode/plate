@@ -7,11 +7,11 @@ export const formatHTML = (html: string) => {
   const pre: Record<string, string>[] = [];
 
   html = html
-    .replace(new RegExp('<pre>((.|\\t|\\n|\\r)+)?</pre>'), (x) => {
+    .replace(new RegExp('<pre>((.|[\\n\\r])+)?</pre>'), (x) => {
       pre.push({ indent: '', tag: x });
       return '<--TEMPPRE' + i++ + '/-->';
     })
-    .replace(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
+    .replaceAll(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
       let ret;
       const tag = new RegExp(`<\\/?([^\\s/>]+)`).exec(x)?.[1];
       const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);
@@ -37,31 +37,31 @@ export const formatHTML = (html: string) => {
           'source',
           'track',
           'wbr',
-        ].indexOf(tag!) >= 0
+        ].includes(tag!)
       )
         // self closing tag
         ret = indent + x;
-      else if (x.indexOf('</') < 0) {
-        // open tag
-        if (x.charAt(x.length - 1) !== '>')
-          ret =
-            indent +
-            x.substr(0, x.length - 1) +
-            indent +
-            tab +
-            x.substr(x.length - 1, x.length);
-        else ret = indent + x;
-        !p && (indent += tab);
-      } else {
+      else if (x.includes('</')) {
         // close tag
-        indent = indent.substr(0, indent.length - 1);
-        if (x.charAt(x.length - 1) !== '>')
-          ret =
-            indent +
-            x.substr(0, x.length - 1) +
-            indent +
-            x.substr(x.length - 1, x.length);
-        else ret = indent + x;
+        indent = indent.slice(0, Math.max(0, indent.length - 1));
+        ret =
+          x.at(-1) === '>'
+            ? indent + x
+            : indent +
+              x.slice(0, Math.max(0, x.length - 1)) +
+              indent +
+              x.slice(-1, x.length - 1 + x.length);
+      } else {
+        // open tag
+        ret =
+          x.at(-1) === '>'
+            ? indent + x
+            : indent +
+              x.slice(0, Math.max(0, x.length - 1)) +
+              indent +
+              tab +
+              x.slice(-1, x.length - 1 + x.length);
+        !p && (indent += tab);
       }
       return ret;
     });
@@ -82,6 +82,6 @@ export const formatHTML = (html: string) => {
   return html.charAt(0) ===
     `
 `
-    ? html.substr(1, html.length - 1)
+    ? html.slice(1, 1 + html.length - 1)
     : html;
 };

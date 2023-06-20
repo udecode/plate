@@ -47,7 +47,7 @@ export const useTableElementState = ({
   }
 
   // add a last col to fill the remaining space
-  if (!colSizes.some((size) => size === 0)) {
+  if (!colSizes.includes(0)) {
     colSizes.push('100%' as any);
   }
 

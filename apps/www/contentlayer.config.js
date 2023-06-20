@@ -1,10 +1,10 @@
-import fs from 'fs';
-import path from 'path';
 import {
   defineDocumentType,
   defineNestedType,
   makeSource,
 } from 'contentlayer/source-files';
+import fs from 'node:fs';
+import path from 'node:path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
@@ -130,13 +130,13 @@ export default makeSource({
             dark: JSON.parse(
               fs.readFileSync(
                 path.resolve('./src/lib/themes/dark.json'),
-                'utf-8'
+                'utf8'
               )
             ),
             light: JSON.parse(
               fs.readFileSync(
                 path.resolve('./src/lib/themes/light.json'),
-                'utf-8'
+                'utf8'
               )
             ),
           },

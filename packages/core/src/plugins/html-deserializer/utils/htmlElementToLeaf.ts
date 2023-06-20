@@ -26,7 +26,7 @@ export const htmlElementToLeaf = <V extends Value>(
       if (!child) return arr;
 
       if (isElement(child)) {
-        if (Object.keys(node).length) {
+        if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
             node: child,
             source: node,

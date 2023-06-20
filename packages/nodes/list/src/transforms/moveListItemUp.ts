@@ -41,7 +41,7 @@ export const moveListItemUp = <V extends Value>(
       let toListPath;
       try {
         toListPath = Path.next(listPath);
-      } catch (err) {
+      } catch (error) {
         return;
       }
 
@@ -79,7 +79,7 @@ export const moveListItemUp = <V extends Value>(
         // Move next lis to the new list
         moveListItemsToList(editor, {
           fromList: list,
-          fromStartIndex: liPath[liPath.length - 1] + 1,
+          fromStartIndex: liPath.at(-1)! + 1,
           toList: [toListNode, toListPath],
           deleteFromList: false,
         });
@@ -115,7 +115,7 @@ export const moveListItemUp = <V extends Value>(
       moveListItemsToList(editor, {
         fromListItem: liParent,
         toList: [toListNode, toListPath],
-        fromStartIndex: liPath[liPath.length - 1] + 1,
+        fromStartIndex: liPath.at(-1)! + 1,
         deleteFromList: false,
       });
     }
