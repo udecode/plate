@@ -1,389 +1,6 @@
 ---
 title: Store
-description: Plate Store API
----
-
-### `deserializeHtml`
-
-`DeserializeHtml | DeserializeHtml[]`
-
-- Properties used by the HTML deserializer core plugin for each HTML element.
-
-```tsx
-type DeserializeHtml = {
-  /**
-   * List of HTML attribute names to store their values in `node.attributes`.
-   */
-  attributeNames?: string[];
-
-  /**
-   * Deserialize an element.
-   * Use this instead of plugin.isElement if you don't want the plugin to renderElement.
-   * @default plugin.isElement
-   */
-  isElement?: boolean;
-
-  /**
-   * Deserialize a leaf.
-   * Use this instead of plugin.isLeaf if you don't want the plugin to renderLeaf.
-   * @default plugin.isLeaf
-   */
-  isLeaf?: boolean;
-
-  /**
-   * Deserialize html element to slate node.
-   */
-  getNode?: (element: HTMLElement) => AnyObject | undefined;
-
-  query?: (element: HTMLElement) => boolean;
-
-  /**
-   * Deserialize an element:
-   * - if this option (string) is in the element attribute names.
-   * - if this option (object) values match the element attributes.
-   */
-  validAttribute?: string | { [key: string]: string | string[] };
-
-  /**
-   * Valid element `className`.
-   */
-  validClassName?: string;
-
-  /**
-   * Valid element `nodeName`.
-   * Set '*' to allow any node name.
-   */
-  validNodeName?: string | string[];
-
-  /**
-   * Valid element style values.
-   * Can be a list of string (only one match is needed).
-   */
-  validStyle?: Partial<
-    Record<keyof CSSStyleDeclaration, string | string[] | undefined>
-  >;
-
-  /**
-   * Whether or not to include deserialized children on this node
-   */
-  withoutChildren?: boolean;
-};
-```
-
-### `editor.insertData`
-
-- Properties used by the `insertData` core plugin to deserialize inserted data to a slate fragment.
-- The fragment will be inserted to the editor if not empty.
-
-```tsx
-type PlatePluginInsertDataOptions = {
-  data: string;
-  dataTransfer: DataTransfer;
-};
-
-type PlatePluginInsertData<V extends Value = Value> = {
-  /**
-   * Format to get data. Example data types are text/plain and text/uri-list.
-   */
-  format?: string;
-
-  /**
-   * Query to skip this plugin.
-   */
-  query?: (options: PlatePluginInsertDataOptions) => boolean;
-
-  /**
-   * Deserialize data to fragment
-   */
-  getFragment?: (
-    options: PlatePluginInsertDataOptions
-  ) => EElementOrText<V>[] | undefined;
-
-  // injected
-
-  /**
-   * Function called on `editor.insertData` just before `editor.insertFragment`.
-   * Default: if the block above the selection is empty and the first fragment node type is not inline,
-   * set the selected node type to the first fragment node type.
-   * @return if true, the next handlers will be skipped.
-   */
-  preInsert?: (
-    fragment: EElementOrText<V>[],
-    options: PlatePluginInsertDataOptions
-  ) => HandlerReturnType;
-
-  /**
-   * Transform the inserted data.
-   */
-  transformData?: (
-    data: string,
-    options: { dataTransfer: DataTransfer }
-  ) => string;
-
-  /**
-   * Transform the fragment to insert.
-   */
-  transformFragment?: (
-    fragment: EElementOrText<V>[],
-    options: PlatePluginInsertDataOptions
-  ) => EElementOrText<V>[];
-};
-```
-
-### `handlers`
-
-- Handlers called whenever the corresponding event occurs in the editor.
-- Handlers can also be passed as `Plate` props. These are called after the plugins handlers.
-- Event handlers can return a boolean flag to specify whether the event can be treated as being handled.
-  - If it returns `true`, the next handlers will not be called.
-
-```tsx
-const plugin = {
-  handlers: {
-    onKeyDown: (event, editor, next) => {
-      // Implement custom event logic...
-      // When no value is returned, the next handlers will be executed when
-      // isPropagationStopped was not set on the event
-    },
-    onDrop: (event, editor, next) => {
-      // Implement custom event logic...
-
-      // No matter the state of the event, treat it as being handled by returning
-      // true here, the next handlers will be skipped
-      return true;
-    },
-    onDragStart: (event, editor, next) => {
-      // Implement custom event logic...
-
-      // No matter the status of the event, treat event as *not* being handled by
-      // returning false, the next handlers will be executed afterward
-      return false;
-    },
-  },
-};
-```
-
-This property extends most `textarea` handlers like:
-
-- `onCopy`,
-- `onPaste`,
-- `onFocus`,
-- `onBlur`,
-- `onDOMBeforeInput`,
-- `onKeyDown`,
-- ...
-
-The type of each handler is:
-
-```ts
-type Handler<
-  P = PluginOptions,
-  V extends Value,
-  E extends PlateEditor<V> = PlateEditor<V>
-> = (
-  editor: E,
-  plugin: WithPlatePlugin<P, V, E>
-) => (event: Event) => boolean | void;
-```
-
-### `inject.aboveComponent`
-
-- Property used by Plate to inject a component above other plugins `component`.
-
-### `inject.belowComponent`
-
-- Property used by Plate to inject a component below other plugins `component`, i.e. above its `children`.
-
-### `inject.pluginsByKey`
-
-- Property that can be used by a plugin to allow other plugins to inject code.
-- Differs from `overrideByKey` as this is not overriding any plugin.
-- For example, if multiple plugins have defined
-  `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
-  `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
-
-### `inject.props`
-
-- Properties used by Plate to inject props into any node `component`.
-
-```tsx
-{
-  /**
-   * Object whose keys are node values and values are classNames which will be extended.
-   */
-  classNames?: AnyObject;
-
-  /**
-   * Default node value.
-   * The node key would be unset if the node value = defaultNodeValue.
-   */
-  defaultNodeValue?: any;
-
-  /**
-   * Node key to map to the styles.
-   */
-  nodeKey?: string;
-
-  /**
-   * Style key to override.
-   * @default nodeKey
-   */
-  styleKey?: keyof CSSProperties;
-
-  /**
-   * Transform the className.
-   * @default clsx(className, classNames[value])
-   */
-  transformClassName?: (options: TransformOptions<V>) => any;
-
-  /**
-   * Transform the node value for the style or className.
-   * @default nodeValue
-   */
-  transformNodeValue?: (options: TransformOptions<V>) => any;
-
-  /**
-   * Transform the style.
-   * @default { ...style, [styleKey]: value }
-   */
-  transformStyle?: (options: TransformOptions<V>) => CSSProperties;
-
-  /**
-   * List of supported node values.
-   */
-  validNodeValues?: any[];
-
-  /**
-   * Node types required to inject the props.
-   * @default [ELEMENT_DEFAULT]
-   */
-  validTypes?: string[];
-};
-```
-
-- If you want more semantics in your content, use CSS classes instead of inline styles.
-- You can then adjust the CSS in the style sheets of your application.
-- Example:
-
-```ts
-createIndentPlugin({
-  inject: {
-    props: {
-      classNames: {
-        1: 'slate-indent-1',
-        2: 'slate-indent-2',
-        3: 'slate-indent-3',
-      },
-    },
-  },
-});
-```
-
-```css
-.slate-indent-1 {
-  margin-left: 10%;
-}
-
-.slate-indent-2 {
-  margin-left: 20%;
-}
-
-.slate-indent-3 {
-  margin-left: 30%;
-}
-```
-
-### `isElement`
-
-- Property used by Plate to render nodes of this `type` as elements, i.e. `renderElement`.
-
-### `isInline`
-
-- Property used by `inlineVoid` core plugin to set elements of this `type` as inline.
-
-### `isLeaf`
-
-- Property used by Plate to render nodes of this `type` as leaves, i.e. `renderLeaf`.
-
-### `isVoid`
-
-- Property used by `inlineVoid` core plugin to set elements of this `type` as void.
-
-### `normalizeInitialValue`
-
-- Normalize value before passing it into the editor.
-
-### `options`
-
-- Extended properties used by any plugin as options.
-- Its type is the second generic type of `PlatePlugin`.
-
-### `overrideByKey`
-
-- Property used by Plate to deeply override plugins by key.
-
-### `plugins`
-
-- Recursive plugin support to allow having multiple plugins in a single plugin.
-- Plate eventually flattens all the plugins into the editor.
-
-### `props`
-
-- Property used by Plate to override node `component` props.
-- If function, its returning value will be shallow merged to the old props, with the old props as parameter.
-- If object, its value will be shallow merged to the old props.
-
-### `renderAboveEditable`
-
-- Render a component above `Editable`.
-
-### `renderAboveSlate`
-
-- Render a component above `Slate`.
-
-### `renderAfterEditable`
-
-- Render a component after `Editable`.
-
-### `renderBeforeEditable`
-
-- Render a component before `Editable`.
-
-### `serializeHtml`
-
-- Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
-
-### `then`
-
-```tsx
-(
-  editor: E,
-  plugin: WithPlatePlugin<P, V, E>
-) => Partial<PlatePlugin<P, V, E>> | void;
-```
-
-- Recursive plugin merging.
-- Can be used to derive plugin fields from `editor` and `plugin`.
-- The returned value will be deeply merged to the plugin.
-
-### `type`
-
-- Property used by Plate to render a node by type.
-- It requires slate element properties to have a `type` property with the plugin `type` as value.
-  - Example: `{ type: 'p' }` where plugin `type` is `'p'`.
-- It requires slate leaf properties to have the plugin `type` value as key and `true` as value.
-  - Example: `{ bold: true }` where plugin `type` is `'bold'`.
-- Default is plugin `key`.
-
-### `useHooks`
-
-- Use any React hooks here. Each plugin `useHooks` will be called in a React component.
-
-### `withOverrides`
-
-- Editor method overriders.
-- See https://docs.slatejs.org/concepts/08-plugins
-
+description: Plate Store
 ---
 
 `Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
@@ -397,95 +14,156 @@ createIndentPlugin({
 
 Plate Store is a jotai store that implements the following [state](#state):
 
-## State
+<APIList type="object" description={
+  <>
+    Plate Store is a jotai store that implements the following [state](#state):
+  </>
+}
+>
 
-### [`decorate`](/docs/plate#editable-decorate)
+<APIItem name="State" type="object">
+  <APISubList>
+    <APISubListItem parent="State" name="decorate" type="object">
+      <APISubList>
+        <APISubListItem parent="State.decorate" name="fn" type="function">
+          ```ts
+          fn: NonNullable<TEditableProps['decorate']>
+          ```
+        </APISubListItem>
+      </APISubList>
+      [Editable Decorate](/docs/plate#editable-decorate)
+    </APISubListItem>
+    <APISubListItem parent="State" name="editableProps" type="object">
+      [Editable Props](/docs/plate#editable-editableprops)
+    </APISubListItem>
+    <APISubListItem parent="State" name="editor" type="object">
+      [Editor](/docs/plate#editor)
+    </APISubListItem>
+    <APISubListItem parent="State" name="isRendered" type="boolean">
+      Whether `Editable` is rendered so slate DOM is resolvable.
+    </APISubListItem>
+    <APISubListItem parent="State" name="keyEditor" type="object">
+      A random key updated on each editor change.
+    </APISubListItem>
+    <APISubListItem parent="State" name="keySelection" type="object">
+      A random key updated on each `editor.selection` change.
+    </APISubListItem>
+    <APISubListItem parent="State" name="onChange" type="object">
+      [Slate Onchange](/docs/plate#slate-onchange)
+    </APISubListItem>
+    <APISubListItem parent="State" name="plugins" type="object">
+      [Plugins](/docs/plate#plugins)
+    </APISubListItem>
+    <APISubListItem parent="State" name="renderElement" type="object">
+      [Editable RenderElement](/docs/plate#editable-renderelement)
+    </APISubListItem>
+    <APISubListItem parent="State" name="renderLeaf" type="object">
+      [Editable RenderLeaf](/docs/plate#editable-renderleaf)
+    </APISubListItem>
+    <APISubListItem parent="State" name="value" type="object">
+      [Value](/docs/plate#value)
+    </APISubListItem>
 
-### [`editableProps`](/docs/plate#editable-editableprops)
-
-### [`editor`](/docs/plate#editor)
-
-### `isRendered`
-
-`boolean`
-
-- Whether `Editable` is rendered so slate DOM is resolvable.
-
-### `keyEditor`
-
-- A random key updated on each editor change.
-
-### `keySelection`
-
-- A random key updated on each `editor.selection` change.
-
-### [`onChange`](/docs/plate#slate-onchange)
-
-### [`plugins`](/docs/plate#plugins)
-
-### [`renderElement`](/docs/plate#editable-renderelement)
-
-### [`renderLeaf`](/docs/plate#editable-renderleaf)
-
-### [`value`](/docs/plate#value)
+  </APISubList>
+</APIItem>
 
 ## Selectors
 
-- Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
-- Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
-- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+    Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+    - Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
+    - It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
 ## Actions
 
-- Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
-- Example: `const setValue = usePlateActions(id).value()`.
-- It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
+    Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
+    - Example: `const setValue = usePlateActions(id).value()`.
+    - It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
 
 ## Actions
 
-- Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
-- Example: `const [value, setValue] = usePlateStates(id).value()`.
-- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+    Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+    - Example: `const [value, setValue] = usePlateStates(id).value()`.
+    - It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
 
-### `useRedecorate()`
+## useRedecorate()
 
-- Redecorate the editor.
+    <APIList
+      type="function"
+      description={
+        <>
+          Redecorate the editor.
+        </>
+      }
+      returns={
+        <>
+        </>
+      }
+    >
+      <APIItem name="key" type="string">
 
-### `useResetPlateEditor()`
+      </APIItem>
 
-- Set a new editor with plate.
+    </APIList>
+
+## useResetPlateEditor()
+
+    <APIList
+      type="function"
+      description={
+        <>
+          Set a new editor with plate.
+        </>
+      }
+      returns={
+        <>
+        </>
+      }
+    >
+      <APIItem name="key" type="string">
+
+      </APIItem>
+
+    </APIList>
+
+</APIList>
 
 # Event Editor Store
 
-This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
-This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+<APIList type="object" description={
+  <>
+    This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
+    This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
 
-One of the core plugins of [Plate](Plate) will store the following events.
+    One of the core plugins of [Plate](Plate) will store the following events.
 
-## State
+  </>
+}>
+ <APIItem name="State" type="object">
+   <APISubList>
+     <APISubListItem parent="State" name="focus" type="object">
+       The last focused editor id.
+     </APISubListItem>
+     <APISubListItem parent="State" name="blur" type="object">
+       The last blurred editor id (sets `focus` to `null`).
+     </APISubListItem>
+     <APISubListItem parent="State" name="last" type="object">
+       The last defined editor id.
+     </APISubListItem>
 
-### `focus`
-
-- the last focused editor id
-
-### `blur`
-
-- the last blurred editor id (sets `focus` to `null`)
-
-### `last`
-
-- the last defined editor id
-
-## Hooks
-
-### `useEventEditorSelectors`
-
-- Hook selectors
-- Example: `useEventEditorSelectors().focus()` will get the last focused editor id.
-- See [zustood hooks](https://github.com/udecode/zustood#hooks)
-
-### `useEventPlateId`
-
-- Get the context plate id if called in a `PlateProvider`.
-- If not defined, it returns the last event editor id: focus, blur or last.
-- If not defined, `PLATE_SCOPE` is returned.
+   </APISubList>
+ </APIItem>
+  <APIItem name="Hooks" type="object">
+    <APISubList>
+      <APISubListItem parent="Hooks" name="useEventEditorSelectors" type="object">
+        Hook selectors
+        - Example: `useEventEditorSelectors().focus()` will get the last focused editor id.
+        - See [zustood hooks](https://github.com/udecode/zustood#hooks)
+      </APISubListItem>
+      <APISubListItem parent="Hooks" name="useEventPlateId" type="object">
+        Get the context plate id if called in a `PlateProvider`.
+        - If not defined, it returns the last event editor id: focus, blur or last.
+        - If not defined, `PLATE_SCOPE` is returned.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIList>
