@@ -28,14 +28,27 @@
       "outputs": []
     },
     "lint": {
+      "cache": false,
       "dependsOn": ["build"],
       "outputs": []
     },
     "lint:fix": {
-      "dependsOn": ["build"],
-      "cache": true
+      "cache": false,
+      "dependsOn": ["build"]
+    },
+    "e2e-examples#lint": {
+      "dependsOn": [],
+      "outputs": []
     },
     "e2e-examples#lint:fix": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "e2e-examples#typecheck": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#lint": {
       "dependsOn": [],
       "outputs": []
     },
@@ -43,12 +56,16 @@
       "dependsOn": [],
       "outputs": []
     },
+    "www#typecheck": {
+      "dependsOn": [],
+      "outputs": []
+    },
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "outputs": []
     },
     "test:watch": {
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "cache": false,
       "persistent": true
     },

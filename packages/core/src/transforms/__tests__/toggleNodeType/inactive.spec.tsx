@@ -3,8 +3,8 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { toggleNodeType } from '@/core/src/transforms/toggleNodeType';
-import { PlateEditor } from '@/core/src/types/PlateEditor';
+import { toggleNodeType } from '@/packages/core/src/transforms/toggleNodeType';
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 
 jsx;
 

@@ -1,6 +1,6 @@
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
 
-import { TTableElement } from '@/nodes/table/src/types';
+import { TTableElement } from '@/packages/nodes/table/src/types';
 
 const makeTableElement = (
   columnCount: number,

@@ -19,7 +19,7 @@ import { withReact } from 'slate-react';
 import {
   AutoformatPlugin,
   withAutoformat,
-} from '@/editor/autoformat/src/index';
+} from '@/packages/editor/autoformat/src/index';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 

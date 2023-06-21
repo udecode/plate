@@ -22,7 +22,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["packages/*"],
+      "@/packages/*": ["packages/*"],
       "@/plate/*": ["apps/www/src/lib/plate/*"],
       "@/lib/*": ["apps/www/src/lib/*"],
       "@/types/*": ["apps/www/src/types/*"],

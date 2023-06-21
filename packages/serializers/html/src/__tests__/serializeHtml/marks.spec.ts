@@ -1,9 +1,9 @@
-import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createBasicMarksPlugin } from '@/nodes/basic-marks/src/createBasicMarksPlugin';
-import { createHighlightPlugin } from '@/nodes/highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '@/nodes/kbd/src/createKbdPlugin';
+import { htmlStringToDOMNode } from '@/packages/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createBasicMarksPlugin } from '@/packages/nodes/basic-marks/src/createBasicMarksPlugin';
+import { createHighlightPlugin } from '@/packages/nodes/highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '@/packages/nodes/kbd/src/createKbdPlugin';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [
   createBasicMarksPlugin(),

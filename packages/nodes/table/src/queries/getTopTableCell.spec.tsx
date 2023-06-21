@@ -8,7 +8,7 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { getTopTableCell } from './getTopTableCell';
 
-import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
+import { createTablePlugin } from '@/packages/nodes/table/src/createTablePlugin';
 
 jsx;
 

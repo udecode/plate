@@ -4,7 +4,7 @@ import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 
-import { onKeyDownSoftBreak } from '@/editor/break/src/soft-break/onKeyDownSoftBreak';
+import { onKeyDownSoftBreak } from '@/packages/editor/break/src/soft-break/onKeyDownSoftBreak';
 
 jsx;
 

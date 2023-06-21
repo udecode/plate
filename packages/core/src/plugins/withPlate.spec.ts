@@ -11,8 +11,8 @@ import { KEY_NODE_FACTORY } from './createNodeFactoryPlugin';
 import { KEY_PREV_SELECTION } from './createPrevSelectionPlugin';
 import { withPlate } from './withPlate';
 
-import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
-import { getPlugin } from '@/core/src/utils/getPlugin';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
+import { getPlugin } from '@/packages/core/src/utils/getPlugin';
 
 const coreKeys = [
   'react',

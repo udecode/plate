@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { selectEditor } from './selectEditor';
 
-import { PlateEditor } from '@/core/src/types/PlateEditor';
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 
 jsx;
 

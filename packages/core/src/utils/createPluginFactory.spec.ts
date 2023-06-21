@@ -1,8 +1,12 @@
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createLinkPlugin, ELEMENT_LINK } from '@udecode/plate-link';
 import { createPlateEditor } from './createPlateEditor';
 import { createPluginFactory } from './createPluginFactory';
 import { getPlugin } from './getPlugin';
+
+import { createBasicElementsPlugin } from '@/packages/nodes/basic-elements/src/index';
+import {
+  createLinkPlugin,
+  ELEMENT_LINK,
+} from '@/packages/nodes/link/src/index';
 
 describe('createPluginFactory', () => {
   const createPlugin = createPluginFactory({ key: 'a', type: 'a' });

@@ -1,3 +1,4 @@
+import React from 'react';
 import { LucideProps } from 'lucide-react';
 
 export function Logo({

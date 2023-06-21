@@ -4,8 +4,8 @@ import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 
-import { onKeyDownExitBreak } from '@/editor/break/src/exit-break/onKeyDownExitBreak';
-import { ELEMENT_H1 } from '@/nodes/heading/src/constants';
+import { onKeyDownExitBreak } from '@/packages/editor/break/src/exit-break/onKeyDownExitBreak';
+import { ELEMENT_H1 } from '@/packages/nodes/heading/src/constants';
 
 jsx;
 

@@ -5,7 +5,7 @@ import { createPlateEditor, TEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { insertTableColumn } from './insertTableColumn';
 
-import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
+import { createTablePlugin } from '@/packages/nodes/table/src/createTablePlugin';
 
 jsx;
 
@@ -276,20 +276,20 @@ describe('insertTableColumn', () => {
       it('should not shrink columns below minColumnsWidth', () => {
         const input = makeTableWithCols({
           rowCols: [
-            Array.from({ length: 10 }).fill(''),
-            Array.from({ length: 10 }).fill(''),
+            Array.from<string>({ length: 10 }).fill(''),
+            Array.from<string>({ length: 10 }).fill(''),
           ],
           cursorPath: [0, 0],
-          colSizes: Array.from({ length: 10 }).fill(10), // total width is 100
+          colSizes: Array.from<number>({ length: 10 }).fill(10), // total width is 100
         });
 
         const output = makeTableWithCols({
           rowCols: [
-            Array.from({ length: 11 }).fill(''),
-            Array.from({ length: 11 }).fill(''),
+            Array.from<string>({ length: 11 }).fill(''),
+            Array.from<string>({ length: 11 }).fill(''),
           ],
           cursorPath: [1, 1],
-          colSizes: Array.from({ length: 11 }).fill(10), // cannot shrink below 10
+          colSizes: Array.from<number>({ length: 11 }).fill(10), // cannot shrink below 10
         });
 
         const editor = createPlateEditor({

@@ -1,9 +1,9 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 
-import { PlateProvider } from '@/core/src/components';
-import { usePlateSelectors } from '@/core/src/stores';
-import { PlatePlugin } from '@/core/src/types';
+import { PlateProvider } from '@/packages/core/src/components';
+import { usePlateSelectors } from '@/packages/core/src/stores';
+import { PlatePlugin } from '@/packages/core/src/types';
 
 describe('normalizeInitialValue', () => {
   describe('defined', () => {

@@ -3,7 +3,7 @@ import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import {
   createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
-} from '@/decorators/find-replace/src/createFindReplacePlugin';
+} from '@/packages/decorators/find-replace/src/createFindReplacePlugin';
 
 it('should be', () => {
   const editor = createPlateEditor({

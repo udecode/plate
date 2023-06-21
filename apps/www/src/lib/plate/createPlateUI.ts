@@ -128,7 +128,7 @@ export const createPlateUI = <T extends string = string>(
 
   if (overrideByKey) {
     Object.keys(overrideByKey).forEach((key) => {
-      components[key] = overrideByKey[key];
+      (components as any)[key] = (overrideByKey as any)[key];
     });
   }
 

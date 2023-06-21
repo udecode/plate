@@ -1,10 +1,7 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
+import { PlateEditor, toggleNodeType } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-
-import { toggleNodeType } from '@/core/src/transforms/toggleNodeType';
-import { PlateEditor } from '@/core/src/types/PlateEditor';
 
 jsx;
 
@@ -27,7 +24,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleNodeType(input, { activeType: ELEMENT_BLOCKQUOTE });
+  toggleNodeType(input, { activeType: 'blockquote' });
 
   expect(input.children).toEqual(output.children);
 });

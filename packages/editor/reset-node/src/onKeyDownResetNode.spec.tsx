@@ -2,24 +2,24 @@
 
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
-import { mockPlugin } from '@/core/src/index';
+import { mockPlugin } from '@/packages/core/src/index';
 import {
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
-} from '@/nodes/code-block/src/index';
-import { unwrapList } from '@/nodes/list/src/index';
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
+} from '@/packages/nodes/code-block/src/index';
+import { unwrapList } from '@/packages/nodes/list/src/index';
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-} from '@/slate-utils/src/index';
+} from '@/packages/slate-utils/src/index';
 
 jsx;
 
@@ -68,7 +68,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -100,7 +100,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -159,7 +159,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -199,7 +199,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -235,7 +235,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -275,7 +275,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -328,7 +328,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 
@@ -372,7 +372,7 @@ describe('onKeyDownResetNode', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
       });
 

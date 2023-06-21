@@ -3,8 +3,8 @@
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createAlignPlugin } from '@/nodes/alignment/src/createAlignPlugin';
-import { setAlign } from '@/nodes/alignment/src/transforms/setAlign';
+import { createAlignPlugin } from '@/packages/nodes/alignment/src/createAlignPlugin';
+import { setAlign } from '@/packages/nodes/alignment/src/transforms/setAlign';
 
 jsx;
 

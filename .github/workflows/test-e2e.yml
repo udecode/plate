@@ -91,10 +91,10 @@ jobs:
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
-        run: yarn g:build
+        run: yarn build
 
       - name: Run Playwright tests
-        run: yarn g:playwright
+        run: yarn playwright
 
       - uses: actions/upload-artifact@v3
         if: always()

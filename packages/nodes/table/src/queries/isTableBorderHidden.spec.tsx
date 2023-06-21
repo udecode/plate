@@ -4,7 +4,7 @@ import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
-import { createTablePlugin } from '@/nodes/table/src/createTablePlugin';
+import { createTablePlugin } from '@/packages/nodes/table/src/createTablePlugin';
 
 jsx;
 

@@ -45,7 +45,7 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
-    // '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
+    '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
     ...getTsConfigBasePaths(),
     // '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     ...modules,

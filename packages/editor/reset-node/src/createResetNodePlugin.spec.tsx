@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createResetNodePlugin } from './createResetNodePlugin';
-
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 jsx;
 
@@ -32,7 +31,7 @@ describe('createResetNodePlugin', () => {
     ) as any;
 
     it('should reset', () => {
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createResetNodePlugin()],
       });
@@ -67,7 +66,7 @@ describe('createResetNodePlugin', () => {
     ) as any;
 
     it('should reset', () => {
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createResetNodePlugin()],
       });
@@ -98,7 +97,7 @@ describe('createResetNodePlugin', () => {
     ) as any;
 
     it('should reset', () => {
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createResetNodePlugin()],
       });

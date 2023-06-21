@@ -81,18 +81,13 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
-      # Build packages that have changed (--include & --since), assuming that
-      # apps build are done already. Otherwise --from & --since
-      - name: Build
-        run: yarn g:build
-
       # Lint packages that have changed (--include & --since)
       - name: Lint
-        run: yarn g:lint
+        run: yarn lint
 
       # Typecheck packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:typecheck
+        run: yarn typecheck
 
   notify:
     name: Discord Notification

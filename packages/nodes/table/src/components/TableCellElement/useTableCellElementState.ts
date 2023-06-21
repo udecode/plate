@@ -52,7 +52,7 @@ export const useTableCellElementState = ({
     rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
 
   const isFirstCell = colIndex === 0;
-  const isFirstRow = tableElement.children[0] === rowElement;
+  const isFirstRow = tableElement.children?.[0] === rowElement;
 
   const borders = getTableCellBorders(cellElement, {
     isFirstCell,

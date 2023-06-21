@@ -1,11 +1,10 @@
-import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
-
-import { createBoldPlugin } from '@/nodes/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '@/nodes/basic-marks/src/createItalicPlugin';
-import { createListPlugin } from '@/nodes/list/src/createListPlugin';
-import { createParagraphPlugin } from '@/nodes/paragraph/src/createParagraphPlugin';
+import { htmlStringToDOMNode, Value } from '@/packages/common/src/index';
+import { createBoldPlugin } from '@/packages/nodes/basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '@/packages/nodes/basic-marks/src/createItalicPlugin';
+import { createListPlugin } from '@/packages/nodes/list/src/createListPlugin';
+import { createParagraphPlugin } from '@/packages/nodes/paragraph/src/createParagraphPlugin';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [

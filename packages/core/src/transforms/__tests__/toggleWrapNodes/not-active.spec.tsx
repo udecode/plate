@@ -2,7 +2,7 @@
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block/src/constants';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { toggleWrapNodes } from '@/slate-utils/src/index';
+import { toggleWrapNodes } from '@/packages/slate-utils/src/index';
 
 jsx;
 

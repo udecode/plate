@@ -4,8 +4,8 @@ import { Range } from 'slate';
 import {
   createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
-} from '@/decorators/find-replace/src/createFindReplacePlugin';
-import { decorateFindReplace } from '@/decorators/find-replace/src/decorateFindReplace';
+} from '@/packages/decorators/find-replace/src/createFindReplacePlugin';
+import { decorateFindReplace } from '@/packages/decorators/find-replace/src/decorateFindReplace';
 
 const output: Range[] = [];
 

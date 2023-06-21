@@ -64,7 +64,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -103,7 +103,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -158,7 +158,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -214,7 +214,7 @@ describe('list + list when selection is at the end of the first list', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

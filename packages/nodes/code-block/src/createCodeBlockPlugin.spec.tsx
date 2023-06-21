@@ -74,7 +74,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
       });
@@ -114,7 +114,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
       });

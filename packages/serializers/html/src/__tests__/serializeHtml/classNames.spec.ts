@@ -3,12 +3,12 @@ import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate-common';
 
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
+import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 it('serialize with slate className', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [createParagraphPlugin()],
   });
 
@@ -25,7 +25,7 @@ it('serialize with slate className', () => {
 });
 
 it('serialize with slate classNames: a+slate', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -48,7 +48,7 @@ it('serialize with slate classNames: a+slate', () => {
 });
 
 it('serialize with slate classNames: slate+b', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -71,7 +71,7 @@ it('serialize with slate classNames: slate+b', () => {
 });
 
 it('serialize with classNames: a+slate+b', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -94,7 +94,7 @@ it('serialize with classNames: a+slate+b', () => {
 });
 
 it('serialize with classNames: a+slate+b+slate', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -117,7 +117,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
 });
 
 it('serialize with slate classNames: multiple tags', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -146,7 +146,7 @@ it('serialize with slate classNames: multiple tags', () => {
 });
 
 it('serialize with custom preserved classname: a+custom', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -170,7 +170,7 @@ it('serialize with custom preserved classname: a+custom', () => {
 });
 
 it('serialize nested with custom preserved classname: a+custom', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {
@@ -205,7 +205,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
 });
 
 it('serialize with multiple custom classname: a+custom+slate', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin({
         props: {

@@ -2,12 +2,12 @@ import React from 'react';
 import { createBoldPlugin } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate-core';
 
-import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
-import { createImagePlugin } from '@/media/src/index';
-import { MARK_BOLD } from '@/nodes/basic-marks/src/index';
+import { htmlStringToDOMNode } from '@/packages/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
+import { createImagePlugin } from '@/packages/media/src/index';
+import { MARK_BOLD } from '@/packages/nodes/basic-marks/src/index';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [
   createImagePlugin({

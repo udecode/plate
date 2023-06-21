@@ -7,8 +7,8 @@ import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/cre
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { PlateEditor } from '@/core/src/types/PlateEditor';
-import { PlatePlugin } from '@/core/src/types/plugin/PlatePlugin';
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
 
 jsx;
 

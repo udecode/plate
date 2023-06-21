@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 
-import { createPlateEditor } from '@/core/src/utils/createPlateEditor';
+import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 
 jsx;
 

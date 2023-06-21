@@ -7,7 +7,7 @@ import { upsertLink } from './upsertLink';
 import {
   createLinkPlugin,
   LinkPlugin,
-} from '@/nodes/link/src/createLinkPlugin';
+} from '@/packages/nodes/link/src/createLinkPlugin';
 
 jsx;
 

@@ -3,8 +3,8 @@
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createRemoveEmptyNodesPlugin } from '@/editor/normalizers/src/createRemoveEmptyNodesPlugin';
-import { ELEMENT_LINK } from '@/nodes/link/src/createLinkPlugin';
+import { createRemoveEmptyNodesPlugin } from '@/packages/editor/normalizers/src/createRemoveEmptyNodesPlugin';
+import { ELEMENT_LINK } from '@/packages/nodes/link/src/createLinkPlugin';
 
 jsx;
 

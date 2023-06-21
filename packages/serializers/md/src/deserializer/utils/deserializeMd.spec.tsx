@@ -1,17 +1,16 @@
 /** @jsx jsx */
 
-// import { PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 import { deserializeMd } from './deserializeMd';
 
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { ELEMENT_HR } from '@/plate/dist';
-import { createDeserializeMdPlugin } from '@/serializers/md/src/deserializer/createDeserializeMdPlugin';
+import { createDeserializeMdPlugin } from '@/packages/serializers/md/src/deserializer/createDeserializeMdPlugin';
 
 jsx;
 
 describe('deserializeMd', () => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: [createDeserializeMdPlugin() as any],
   });
 

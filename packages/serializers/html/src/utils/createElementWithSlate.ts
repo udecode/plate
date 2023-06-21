@@ -20,7 +20,7 @@ export const createElementWithSlate = (slateProps?: Partial<SlateProps>) => {
     Slate,
     {
       editor,
-      value,
+      initialValue: value,
       onChange,
       ...props,
     } as any,

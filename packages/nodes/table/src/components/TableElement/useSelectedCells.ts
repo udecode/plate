@@ -33,5 +33,5 @@ export const useSelectedCells = () => {
     } else if (selectedCells) {
       setSelectedCells(null);
     }
-  }, [editor, editor.selection, readOnly, selectedCells, setSelectedCells]);
+  }, [editor, editor?.selection, readOnly, selectedCells, setSelectedCells]);
 };

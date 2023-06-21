@@ -1,6 +1,11 @@
 /** @jsx jsx */
 
-import { getNode, PlateEditor, TNode } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  getNode,
+  PlateEditor,
+  TNode,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import {
   findTabDestination,
@@ -8,12 +13,10 @@ import {
 } from './findTabDestination';
 import { TabbableEntry } from './types';
 
-import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-
 jsx;
 
 describe('findTabDestination', () => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     editor: (
       <editor>
         <hp>Line 1</hp>

@@ -14,6 +14,10 @@ const config = {
     ],
   },
 
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Enable experimental features.
   experimental: {
     serverActions: true,

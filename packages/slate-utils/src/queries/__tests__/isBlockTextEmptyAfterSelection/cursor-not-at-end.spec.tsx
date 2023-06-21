@@ -5,7 +5,7 @@ import { createPlateEditor } from '@udecode/plate-core/src/utils/createPlateEdit
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { isBlockTextEmptyAfterSelection } from '@/slate-utils/src/queries/isBlockTextEmptyAfterSelection';
+import { isBlockTextEmptyAfterSelection } from '@/packages/slate-utils/src/queries/isBlockTextEmptyAfterSelection';
 
 jsx;
 

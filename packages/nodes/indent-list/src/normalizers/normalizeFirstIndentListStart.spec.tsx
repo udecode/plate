@@ -4,8 +4,8 @@ import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createIndentListPlugin } from '@/nodes/indent-list/src/createIndentListPlugin';
-import { createParagraphPlugin } from '@/nodes/paragraph/src/createParagraphPlugin';
+import { createIndentListPlugin } from '@/packages/nodes/indent-list/src/createIndentListPlugin';
+import { createParagraphPlugin } from '@/packages/nodes/paragraph/src/createParagraphPlugin';
 
 jsx;
 

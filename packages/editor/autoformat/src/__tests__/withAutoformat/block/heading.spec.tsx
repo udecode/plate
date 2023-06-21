@@ -5,7 +5,7 @@ import { ELEMENT_H1 } from '@udecode/plate-heading/src/constants';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
-import { withAutoformat } from '@/editor/autoformat/src/withAutoformat';
+import { withAutoformat } from '@/packages/editor/autoformat/src/withAutoformat';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 

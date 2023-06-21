@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import { onKeyDownSingleLine } from '@/editor/break/src/single-line/onKeyDownSingleLine';
+import { onKeyDownSingleLine } from '@/packages/editor/break/src/single-line/onKeyDownSingleLine';
 
 jsx;
 

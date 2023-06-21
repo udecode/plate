@@ -10,14 +10,14 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 import { createIndentListPlugin } from './createIndentListPlugin';
 
-import { createPlateEditor } from '@/core/src/index';
-import { createBasicElementsPlugin } from '@/nodes/basic-elements/src/index';
-import { createHorizontalRulePlugin } from '@/nodes/horizontal-rule/src/index';
-import { createLineHeightPlugin } from '@/nodes/line-height/src/index';
-import { createLinkPlugin } from '@/nodes/link/src/index';
+import { createPlateEditor } from '@/packages/core/src/index';
+import { createBasicElementsPlugin } from '@/packages/nodes/basic-elements/src/index';
+import { createHorizontalRulePlugin } from '@/packages/nodes/horizontal-rule/src/index';
+import { createLineHeightPlugin } from '@/packages/nodes/line-height/src/index';
+import { createLinkPlugin } from '@/packages/nodes/link/src/index';
+import { createDeserializeDocxPlugin } from '@/packages/serializers/docx/src/index';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
-import { createDeserializeDocxPlugin } from '@/serializers/docx/src/index';
 
 jsx;
 

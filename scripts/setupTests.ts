@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom/extend-expect';
 import 'slate-test-utils/dist/cjs/mocks';
+import { TextEncoder } from 'node:util';
+
+global.TextEncoder = TextEncoder;
 
 jest.spyOn(global.console, 'warn').mockImplementation(() => jest.fn());
 jest.spyOn(global.console, 'error').mockImplementation(() => jest.fn());

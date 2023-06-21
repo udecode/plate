@@ -1,8 +1,8 @@
-import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createImagePlugin } from '@/media/src/index';
-import { createLinkPlugin } from '@/nodes/link/src/index';
+import { htmlStringToDOMNode } from '@/packages/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createImagePlugin } from '@/packages/media/src/index';
+import { createLinkPlugin } from '@/packages/nodes/link/src/index';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serialize link to html with attributes', () => {
   const plugins = [
@@ -33,7 +33,7 @@ it('serialize link to html with attributes', () => {
       }
     )
   ).toBe(
-    'Some paragraph of text with <a target="_blank" rel="noopener nofollow" class="slate-a" href="https://theuselessweb.com/">link</a> part.'
+    `Some paragraph of text with <a class="slate-a" href="https://theuselessweb.com/" target="_blank" rel="noopener nofollow">link</a> part.`
   );
 });
 
@@ -54,6 +54,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true" class="slate-ImageElement-img">'
+    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true">'
   );
 });

@@ -1,7 +1,7 @@
-import { deserializeHtml } from '@/core/src/plugins/html-deserializer/utils/deserializeHtml';
-import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { deserializeHtml } from '@/packages/core/src/plugins/html-deserializer/utils/deserializeHtml';
+import { htmlStringToDOMNode } from '@/packages/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 it('serializes with edge case where input is non-rich text', () => {
   const input = htmlStringToDOMNode('Some non-rich text here.');

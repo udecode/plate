@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import { isSelectionExpanded } from '@/slate-utils/src/queries/index';
+import { isSelectionExpanded } from '@/packages/slate-utils/src/queries/index';
 
 jsx;
 

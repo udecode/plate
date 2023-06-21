@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 
-import { mergeDeepToNodes } from '@/core/src/utils/mergeDeepToNodes';
+import { mergeDeepToNodes } from '@/packages/core/src/utils/mergeDeepToNodes';
 
 jsx;
 

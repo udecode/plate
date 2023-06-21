@@ -3,8 +3,8 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '@/editor/normalizers/src/createNormalizeTypesPlugin';
-import { ELEMENT_H1 } from '@/nodes/heading/src/constants';
+import { createNormalizeTypesPlugin } from '@/packages/editor/normalizers/src/createNormalizeTypesPlugin';
+import { ELEMENT_H1 } from '@/packages/nodes/heading/src/constants';
 
 jsx;
 

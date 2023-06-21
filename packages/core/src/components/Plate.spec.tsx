@@ -5,8 +5,8 @@ import { setNodes } from '@udecode/slate/src/interfaces/transforms/setNodes';
 import { isEqual, memoize } from 'lodash';
 import { Plate } from './Plate';
 
-import { PlatePlugin } from '@/core/src/types';
-import { createPlateEditor } from '@/core/src/utils/createPlateEditor';
+import { PlatePlugin } from '@/packages/core/src/types';
+import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {

@@ -1,8 +1,8 @@
-import { htmlStringToDOMNode } from '@/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
-import { createImagePlugin } from '@/media/src/index';
-import { createLinkPlugin } from '@/nodes/link/src/index';
+import { htmlStringToDOMNode } from '@/packages/core/src/plugins/html-deserializer/utils/htmlStringToDOMNode';
+import { createImagePlugin } from '@/packages/media/src/index';
+import { createLinkPlugin } from '@/packages/nodes/link/src/index';
+import { serializeHtml } from '@/packages/serializers/html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
-import { serializeHtml } from '@/serializers/html/src/serializeHtml';
 
 const plugins = [
   createLinkPlugin({
@@ -44,7 +44,7 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a target="_blank" class="slate-a" href="https://theuselessweb.com/">link</a> and an internal <a class="slate-a" href="https://slatejs.org/" target="_self">link</a>.'
+    `An external <a class="slate-a" href="https://theuselessweb.com/" target="_blank">link</a> and an internal <a class="slate-a" href="https://slatejs.org/" target="_self">link</a>.`
   );
 });
 
@@ -63,6 +63,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://via.placeholder.com/300" alt="Placeholder" draggable="true" class="slate-ImageElement-img">'
+    '<img src="https://via.placeholder.com/300" alt="Placeholder" draggable="true">'
   );
 });

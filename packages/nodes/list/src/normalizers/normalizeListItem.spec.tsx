@@ -3,7 +3,7 @@
 import { createPlateEditor, getNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from '@/nodes/list/src/createListPlugin';
+import { createListPlugin } from '@/packages/nodes/list/src/createListPlugin';
 
 jsx;
 

@@ -1,30 +1,30 @@
 import { createTablePlugin } from '@udecode/plate';
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createListPlugin } from '@udecode/plate-list';
-import { createImagePlugin } from '@udecode/plate-media';
+
+import { TableCellElement } from '@/components/plate-ui/table-cell-element/table-cell-element';
+import { TableElement } from '@/components/plate-ui/table-element/table-element';
+import { TableRowElement } from '@/components/plate-ui/table-row-element';
+import { htmlStringToDOMNode } from '@/packages/common/src/index';
+import { createImagePlugin } from '@/packages/media/src/index';
+import { createAlignPlugin } from '@/packages/nodes/alignment/src/index';
+import { createBlockquotePlugin } from '@/packages/nodes/block-quote/src/index';
+import { createHeadingPlugin } from '@/packages/nodes/heading/src/index';
+import { createLinkPlugin } from '@/packages/nodes/link/src/index';
+import { createListPlugin } from '@/packages/nodes/list/src/index';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-} from '@udecode/plate-paragraph';
-import { serializeHtml } from '@udecode/plate-serializer-html';
+} from '@/packages/nodes/paragraph/src/index';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '@udecode/plate-table';
-
-import { TableCellElement } from '@/components/plate-ui/table-cell-element/table-cell-element';
-import { TableElement } from '@/components/plate-ui/table-element/table-element';
-import { TableRowElement } from '@/components/plate-ui/table-row-element';
+} from '@/packages/nodes/table/src/index';
+import { serializeHtml } from '@/packages/serializers/html/src/index';
 import { createPlateUIEditor } from '@/plate/createPlateUIEditor';
 
 it('serialize list to html', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     plugins: [createListPlugin()],
   });
 
@@ -292,7 +292,6 @@ it('serialize image and paragraph to html', () => {
       },
     ],
   });
-  const result =
-    '<p class="slate-p">I am centered text!</p><div class="slate-img"><figure class="slate-ImageElement-figure" contenteditable="false"><div style="position:relative"><div style="width:0;min-width:92px;max-width:100%;position:relative" class="slate-ImageElement-resizable"><div style="cursor:ew-resize" class="slate-ImageElement-handleLeft"></div><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" class="slate-ImageElement-img"/><div style="cursor:ew-resize" class="slate-ImageElement-handleRight"></div></div></div></figure></div>';
+  const result = `<p class="slate-p">I am centered text!</p><div class="slate-img"><figure  contenteditable="false"><div style="position:relative"><div style="width:0;min-width:92px;max-width:100%;position:relative" ><div style="cursor:ew-resize" ></div><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" /><div style="cursor:ew-resize" ></div></div></div></figure></div>`;
   expect(render).toBe(result);
 });

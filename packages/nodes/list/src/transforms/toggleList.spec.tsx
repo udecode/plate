@@ -13,7 +13,7 @@ import {
   createListPlugin,
   ELEMENT_OL,
   ELEMENT_UL,
-} from '@/nodes/list/src/createListPlugin';
+} from '@/packages/nodes/list/src/createListPlugin';
 
 jsx;
 

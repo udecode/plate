@@ -6,12 +6,12 @@ import { jsx } from '@udecode/plate-test-utils';
 import {
   createAutoformatPlugin,
   KEY_AUTOFORMAT,
-} from '@/editor/autoformat/src/createAutoformatPlugin';
-import { onKeyDownAutoformat } from '@/editor/autoformat/src/onKeyDownAutoformat';
-import { AutoformatPlugin } from '@/editor/autoformat/src/types';
-import { MARK_BOLD } from '@/nodes/basic-marks/src/createBoldPlugin';
-import { MARK_ITALIC } from '@/nodes/basic-marks/src/createItalicPlugin';
-import { MARK_UNDERLINE } from '@/nodes/basic-marks/src/createUnderlinePlugin';
+} from '@/packages/editor/autoformat/src/createAutoformatPlugin';
+import { onKeyDownAutoformat } from '@/packages/editor/autoformat/src/onKeyDownAutoformat';
+import { AutoformatPlugin } from '@/packages/editor/autoformat/src/types';
+import { MARK_BOLD } from '@/packages/nodes/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '@/packages/nodes/basic-marks/src/createItalicPlugin';
+import { MARK_UNDERLINE } from '@/packages/nodes/basic-marks/src/createUnderlinePlugin';
 
 jsx;
 

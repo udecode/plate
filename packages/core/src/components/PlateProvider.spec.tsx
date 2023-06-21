@@ -6,8 +6,8 @@ import {
   PLATE_SCOPE,
   usePlateEditorRef,
   usePlateSelectors,
-} from '@/core/src/stores';
-import { createPlateEditor } from '@/core/src/utils';
+} from '@/packages/core/src/stores';
+import { createPlateEditor } from '@/packages/core/src/utils';
 
 describe('PlateProvider', () => {
   describe('usePlateEditorRef()', () => {

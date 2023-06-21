@@ -44,7 +44,7 @@ export const usePlateLeaf = <T extends TText = TText>(
  * Headless leaf component.
  */
 const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
-  ({ className, ...props }: PlateLeafProps, ref) => {
+  (props: PlateLeafProps, ref) => {
     const { ref: rootRef, props: rootProps } = usePlateLeaf({ ...props, ref });
 
     return <Text {...rootProps} ref={rootRef} />;

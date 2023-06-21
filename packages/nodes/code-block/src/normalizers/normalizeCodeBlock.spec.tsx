@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate/src';
-import { getNode, PlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, getNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '@/nodes/code-block/src/createCodeBlockPlugin';
+import { createCodeBlockPlugin } from '@/packages/nodes/code-block/src/createCodeBlockPlugin';
 
 jsx;
 
@@ -28,7 +27,7 @@ describe('clean up code block', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createCodeBlockPlugin()],
     });
