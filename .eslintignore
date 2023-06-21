@@ -1,4 +1,3 @@
 node_modules
 **/dist
 **/sandpack/files
-apps/www/src/pages/api/components.json
