@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-media",
-  "version": "21.3.5",
+  "version": "21.4.0",
   "description": "Media embed UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -21,10 +21,10 @@
   "dependencies": {
     "@udecode/plate-common": "21.3.2",
     "@udecode/plate-floating": "21.3.2",
-    "@udecode/plate-link": "21.3.2",
+    "@udecode/plate-link": "21.4.0",
     "@udecode/plate-media": "21.3.4",
     "@udecode/plate-styled-components": "21.3.2",
-    "@udecode/plate-ui-link": "21.3.5",
+    "@udecode/plate-ui-link": "21.4.0",
     "@udecode/plate-ui-toolbar": "21.3.5",
     "js-video-url-parser": "0.5.1"
   },

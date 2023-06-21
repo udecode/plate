@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 21.4.0
+
+### Minor Changes
+
+- [#2441](https://github.com/udecode/plate/pull/2441) by [@vevsindre](https://github.com/vevsindre) – Added option to skip link sanitation
+
 ## 21.3.2
 
 ## 21.3.0
