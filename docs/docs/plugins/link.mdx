@@ -79,6 +79,12 @@ interface LinkPlugin {
   allowedSchemes?: string[];
 
   /**
+   * Skips sanitation of links.
+   * @default false
+   */
+  dangerouslySkipSanitization?: boolean;
+
+  /**
    * Default HTML attributes for link elements.
    * @default {}
    */

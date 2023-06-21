@@ -37,6 +37,12 @@ export interface LinkPlugin {
   allowedSchemes?: string[];
 
   /**
+   * Skips sanitation of links.
+   * @default false
+   */
+  dangerouslySkipSanitization?: boolean;
+
+  /**
    * Default HTML attributes for link elements.
    * @default {}
    */
@@ -71,6 +77,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   withOverrides: withLink,
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    dangerouslySkipSanitization: false,
     defaultLinkAttributes: {},
     isUrl,
     rangeBeforeOptions: {
