@@ -27,7 +27,7 @@ Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
 
 </APIItem>
   
-<APIItem name="component" type="RenderFunction">
+<APIItem name="component" type="RenderFunction" optional>
 
 Property used by Plate to render a slate element or leaf.
 
@@ -35,7 +35,7 @@ Property used by Plate to render a slate element or leaf.
 
 </APIItem>
   
-<APIItem name="decorate" type="Decorate" >
+<APIItem name="decorate" type="Decorate" optional>
 
 Property used by Plate to decorate editor ranges.
 
@@ -50,22 +50,105 @@ Property used by Plate to decorate editor ranges.
 
 </APIItem>
   
-<APIItem name="deserializeHtml" type="object">
+<APIItem name="deserializeHtml" type="object" optional>
   Properties used by the HTML deserializer core plugin for each HTML element.
 
   <APISubList>
-    <APISubListItem optional parent="deserializeHtml" name="attributeNames" type="string[]">
+    <APISubListItem parent="deserializeHtml" name="attributeNames" type="string[]" optional>
       List of HTML attribute names to store their values in `node.attributes`.
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="isElement" type="boolean" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="isLeaf" type="boolean" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="getNode" type="function" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="query" type="function" optional>
+      ...
+      ```ts
+      (element: HTMLElement) => boolean
+      ```
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="validAttribute" type="string | object" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="validClassName" type="string" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="validNodeName" type="string | string[]" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="validStyle" type="object" optional>
+      ...
+    </APISubListItem>
+    <APISubListItem parent="deserializeHtml" name="withoutChildren" type="boolean" optional>
+      ...
+    </APISubListItem>
+
+  </APISubList>
+</APIItem>
+
+<APIItem name="editor" type="object" optional>
+...
+  <APISubList>
+    <APISubListItem parent="editor" name="insertData" type="object" optional>
+      ...
+
       <APISubList>
-        <APISubListItem parent="deserializeHtml.attributeNames" name="test" type="string[]">
-          List of HTML attribute names to store their values in `node.attributes`.
+        <APISubListItem parent="editor.insertData" name="format" type="string" optional>
+          ...
         </APISubListItem>
-        <APISubListItem parent="deserializeHtml.attributeNames" name="test" type="string[]">
-          List of HTML attribute names to store their values in `node.attributes`.
-        </APISubListItem>
+
+
       </APISubList>
     </APISubListItem>
+
   </APISubList>
+
+```ts
+type PlatePluginInsertDataOptions = {
+  data: string;
+  dataTransfer: DataTransfer;
+};
+```
+
+</APIItem>
+
+<APIItem name="handlers" type="object" optional>
+  ...
+  <APISubList>
+    <APISubListItem parent="handlers" name="onKeyDown" type="function" optional>
+      ...
+    </APISubListItem>
+
+  </APISubList>
+
+This attribute extends most `textarea` handlers like:
+
+- `onCopy`,
+- `onPaste`,
+- `onFocus`,
+- `onBlur`,
+- `onDOMBeforeInput`,
+- `onKeyDown`,
+- ...
+
+The type of each handler is:
+
+```ts
+type Handler<
+  P = PluginOptions,
+  V extends Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> = (
+  editor: E,
+  plugin: WithPlatePlugin<P, V, E>
+) => (event: Event) => boolean | void;
+```
+
 </APIItem>
 
 </APIList>
