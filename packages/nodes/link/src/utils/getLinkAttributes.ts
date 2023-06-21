@@ -14,12 +14,12 @@ export const getLinkAttributes = <V extends Value>(
   const {
     allowedSchemes,
     defaultLinkAttributes,
-    skipSanitation,
+    skipSanitization,
   } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
 
   const attributes = { ...defaultLinkAttributes };
 
-  const href = skipSanitation
+  const href = skipSanitization
     ? link.url
     : sanitizeUrl(link.url, { allowedSchemes }) || undefined;
 
