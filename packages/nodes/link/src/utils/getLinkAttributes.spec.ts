@@ -64,7 +64,7 @@ describe('getLinkAttributes', () => {
 
   describe('when url is invalid and skipSanitization is true', () => {
     const editorWithSkipSanitization = createEditor({
-      skipSanitization: true,
+      dangerouslySkipSanitization: true,
     });
 
     const link: TLinkElement = {

@@ -10,15 +10,16 @@ export const validateUrl = <V extends Value>(
   editor: PlateEditor<V>,
   url: string
 ): boolean => {
-  const { allowedSchemes, isUrl, skipSanitization } = getPluginOptions<
-    LinkPlugin,
-    V
-  >(editor, ELEMENT_LINK);
+  const {
+    allowedSchemes,
+    isUrl,
+    dangerouslySkipSanitization,
+  } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
 
   if (isUrl && !isUrl(url)) return false;
 
   if (
-    !skipSanitization &&
+    !dangerouslySkipSanitization &&
     !sanitizeUrl(url, {
       allowedSchemes,
       permitInvalid: true,
