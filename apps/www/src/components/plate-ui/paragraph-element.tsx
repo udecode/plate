@@ -9,12 +9,11 @@ const ParagraphElement = React.forwardRef<
 >(({ className, children, ...props }: PlateElementProps, ref) => {
   return (
     <PlateElement
-      asChild
       ref={ref}
       className={cn('m-0 px-0 py-1', className)}
       {...props}
     >
-      <p>{children}</p>
+      {children}
     </PlateElement>
   );
 });

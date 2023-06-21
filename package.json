@@ -111,7 +111,6 @@
     "babel-plugin-prismjs": "^2.1.0",
     "barrelsby": "^2.8.0",
     "change-case": "^4.1.2",
-    "concurrently": "^8.2.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "eslint": "8.43.0",

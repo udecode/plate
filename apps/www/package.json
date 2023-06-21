@@ -6,7 +6,7 @@
   "scripts": {
     "build": "contentlayer build && yarn build:components && next build",
     "build:components": "ts-node --esm --project ./scripts/tsconfig.scripts.json ./scripts/build-components.ts",
-    "dev": "concurrently \"contentlayer dev\" \"next dev\"",
+    "dev": "contentlayer build && concurrently \"contentlayer dev\" \"next dev\"",
     "start": "next start",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn lint --fix",
@@ -134,6 +134,7 @@
   "devDependencies": {
     "@types/react-color": "^3.0.6",
     "autoprefixer": "^10.4.14",
+    "concurrently": "^8.2.0",
     "mdast-util-toc": "^6.1.1",
     "postcss": "^8.4.24",
     "rehype": "^12.0.1",
