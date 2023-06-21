@@ -62,9 +62,9 @@ describe('getLinkAttributes', () => {
     });
   });
 
-  describe('when url is invalid and skipLinkSanitation is true', () => {
-    const editorWithSkipLinkSanitation = createEditor({
-      skipLinkSanitation: true,
+  describe('when url is invalid and skipSanitation is true', () => {
+    const editorWithSkipSanitation = createEditor({
+      skipSanitation: true,
     });
 
     const link: TLinkElement = {
@@ -74,7 +74,7 @@ describe('getLinkAttributes', () => {
     };
 
     it('href should be defined', () => {
-      expect(getLinkAttributes(editorWithSkipLinkSanitation, link)).toEqual({
+      expect(getLinkAttributes(editorWithSkipSanitation, link)).toEqual({
         href: 'pageKey',
         target: '_self',
         rel: 'noopener noreferrer',
