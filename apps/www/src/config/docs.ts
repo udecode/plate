@@ -289,10 +289,40 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'PlatePlugin',
-          href: '/docs/api/plate-plugin',
+          title: 'Core',
+          href: '/docs/api/core',
           items: [],
           headings: ['createPlugins'],
+        },
+        {
+          title: 'Common',
+          href: '/docs/api/common',
+          items: [],
+          headings: [],
+        },
+        {
+          title: 'Slate',
+          href: '/docs/api/slate',
+          items: [],
+          headings: [],
+        },
+        {
+          title: 'Slate React',
+          href: '/docs/api/slate-react',
+          items: [],
+          headings: [],
+        },
+        {
+          title: 'Slate Utils',
+          href: '/docs/api/slate-utils',
+          items: [],
+          headings: [],
+        },
+        {
+          title: 'Utils',
+          href: '/docs/api/utils',
+          items: [],
+          headings: [],
         },
         {
           title: 'Store',

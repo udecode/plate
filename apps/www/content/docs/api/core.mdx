@@ -1,11 +1,11 @@
 ---
-title: PlatePlugin
-description: PlatePlugin API.
+title: Core
+description: API reference for @udecode/plate-core.
 ---
 
 - [Plugins guide](/docs/plugins)
 
-## `PlatePlugin`
+### `PlatePlugin`
 
 <APIList
   type="object"
@@ -153,7 +153,7 @@ type Handler<
 
 </APIList>
 
-## `createPlugins`
+### `createPlugins`
 
 <APIList
   type="function"
@@ -182,3 +182,37 @@ Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
 </APIItem>
   
 </APIList>
+
+[createAtomStore.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fatoms%2FcreateAtomStore.ts)
+[useElement.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fatoms%2FuseElement.ts)
+[PlateProvider.tsx](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fcomponents%2FPlateProvider.tsx)
+[useEditorRef.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fhooks%2FuseEditorRef.ts)
+[useEditorState.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fhooks%2FuseEditorState.ts)
+[usePlateEditorRef.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fstores%2Fplate%2Fselectors%2FusePlateEditorRef.ts)
+[usePlateEditorState.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fstores%2Fplate%2Fselectors%2FusePlateEditorState.ts)
+[usePlateReadOnly.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fstores%2Fplate%2Fselectors%2FusePlateReadOnly.ts)
+[usePlateSelection.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fstores%2Fplate%2Fselectors%2FusePlateSelection.ts)
+[toggleNodeType.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Ftransforms%2FtoggleNodeType.ts)
+[PlateEditor.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Ftypes%2FPlateEditor.ts)
+[createPlateEditor.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FcreatePlateEditor.ts)
+[createPluginFactory.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FcreatePluginFactory.ts)
+[createPlugins.tsx](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FcreatePlugins.tsx)
+[getPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FgetPlugin.ts)
+[getPluginInjectProps.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FgetPluginInjectProps.ts)
+[getPluginOptions.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FgetPluginOptions.ts)
+[getPluginType.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Futils%2FgetPluginType.ts)
+Hotkeys
+
+core plugins:
+[createDeserializeAstPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateDeserializeAstPlugin.ts)
+[createDeserializeHtmlPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2Fhtml-deserializer%2FcreateDeserializeHtmlPlugin.ts)
+[createEditorProtocolPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateEditorProtocolPlugin.ts)
+[createEventEditorPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateEventEditorPlugin.ts)
+[createHistoryPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateHistoryPlugin.ts)
+[createInlineVoidPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateInlineVoidPlugin.ts)
+[createInsertDataPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateInsertDataPlugin.ts)
+[createNodeFactoryPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateNodeFactoryPlugin.ts)
+[createPrevSelectionPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreatePrevSelectionPlugin.ts)
+[createReactPlugin.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FcreateReactPlugin.ts)
+[withPlate.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FwithPlate.ts)
+[withTReact.ts](..%2F..%2F..%2F..%2F..%2Fpackages%2Fcore%2Fsrc%2Fplugins%2FwithTReact.ts)

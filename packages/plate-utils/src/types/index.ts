@@ -3,4 +3,4 @@
  */
 
 export * from './ErrorHandler';
-export * from './react-types';
+export * from './ClassNames';
