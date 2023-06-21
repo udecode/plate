@@ -43,7 +43,7 @@ jobs:
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
       - name: Prepare Release
-        run: yarn g:prerelease
+        run: yarn prerelease
 
       # https://github.com/changesets/action
       - name: Create release pull request

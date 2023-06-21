@@ -119,7 +119,7 @@
     "slate": "0.94.1",
     "slate-history": "0.93.0",
     "slate-hyperscript": "0.77.0",
-    "slate-react": "0.97.0",
+    "slate-react": "0.97.1",
     "slate-test-utils": "1.3.2",
     "tailwind-merge": "^1.13.2",
     "unist-builder": "3.0.0",
