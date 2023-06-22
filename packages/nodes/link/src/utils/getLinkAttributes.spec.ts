@@ -9,18 +9,26 @@ const baseLink = {
   children: [{ text: 'Link text' }],
 };
 
-describe('getLinkAttributes', () => {
-  const editor = createPlateEditor({
+const defaultOptions: LinkPlugin = {
+  defaultLinkAttributes: {
+    rel: 'noopener noreferrer',
+  },
+};
+
+const createEditor = (options: LinkPlugin = {}) =>
+  createPlateEditor({
     plugins: [
       createLinkPlugin({
         options: {
-          defaultLinkAttributes: {
-            rel: 'noopener noreferrer',
-          },
+          ...defaultOptions,
+          ...options,
         },
       }),
     ],
   });
+
+describe('getLinkAttributes', () => {
+  const editor = createEditor();
 
   describe('when url is valid', () => {
     const link: TLinkElement = {
@@ -49,6 +57,26 @@ describe('getLinkAttributes', () => {
     it('href should be undefined', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: undefined,
+        target: '_self',
+        rel: 'noopener noreferrer',
+      });
+    });
+  });
+
+  describe('when url is invalid and skipSanitization is true', () => {
+    const editorWithSkipSanitization = createEditor({
+      dangerouslySkipSanitization: true,
+    });
+
+    const link: TLinkElement = {
+      ...baseLink,
+      url: 'pageKey',
+      target: '_self',
+    };
+
+    it('href should be defined', () => {
+      expect(getLinkAttributes(editorWithSkipSanitization, link)).toEqual({
+        href: 'pageKey',
         target: '_self',
         rel: 'noopener noreferrer',
       });
