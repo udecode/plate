@@ -31,7 +31,6 @@ import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
-import { SettingsToggle } from '@/components/settings-toggle';
 import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -179,7 +178,6 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
         <ToolbarGroup noSeparator>
           {isEnabled('comment', id) && <CommentToolbarButton />}
           <ModeDropdownMenu />
-          {!id && <SettingsToggle />}
         </ToolbarGroup>
       </div>
     </div>
