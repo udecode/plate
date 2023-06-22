@@ -30,7 +30,7 @@ import {
   createExitBreakPlugin,
   ExitBreakPlugin,
   KEYS_HEADING,
-  PlatePlugin
+  PlatePlugin,
 } from '@udecode/plate';
 
 const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
@@ -57,13 +57,15 @@ const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
   },
 };
 
-
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createExitBreakPlugin(exitBreakPlugin),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createExitBreakPlugin(exitBreakPlugin),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
@@ -107,6 +109,11 @@ export interface ExitBreakPlugin {
   rules?: ExitBreakRule[];
 }
 ```
+
+### Hotkeys
+
+- `mod+enter`: Move to the end of the current block and start a new block.
+- `mod+shift+enter`: Move to the end of the previous block and start a new block before it.
 
 ### Source Code
 

@@ -26,26 +26,34 @@ npm install @udecode/plate-break
 ### Usage
 
 ```tsx
-import { createSoftBreakPlugin, ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD } from '@udecode/plate';
+import {
+  createSoftBreakPlugin,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_TD,
+} from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createSoftBreakPlugin({
-    options: {
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createSoftBreakPlugin({
+      options: {
+        rules: [
+          { hotkey: 'shift+enter' },
+          {
+            hotkey: 'enter',
+            query: {
+              allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+            },
           },
-        },
-      ],
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+        ],
+      },
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
@@ -64,6 +72,10 @@ export interface SoftBreakPlugin {
   rules?: SoftBreakRule[];
 }
 ```
+
+### Hotkeys
+
+- `shift+enter`: Insert a line break within a block of text without starting a new block.
 
 ### Source Code
 
