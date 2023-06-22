@@ -12,15 +12,9 @@ description: Plate Store
 
 # Plate Store
 
-<APIList
-  type="object"
-  description={
-    <>
-      The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
-    </>
-  }
->
+The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's id, its current value, its plugins, and other settings.
 
+<APIAttributes>
   <APIItem name="id" type="PlateId">
 
     A unique id used as a provider scope. Use it if you have multiple `PlateProvider` in the same React tree.
@@ -120,68 +114,45 @@ description: Plate Store
 
 ## Selectors
 
-    Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
-    - Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
-    - It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+
+- Example: `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
 ## Actions
 
-    Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
-    - Example: `const setValue = usePlateActions(id).value()`.
-    - It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
+Use `usePlateActions(id).<state property>()` when you need to update the value of a store property.
+
+- Example: `const setValue = usePlateActions(id).value()`.
+- It's using [useUpdateAtom](https://jotai.org/docs/utils/use-update-atom) under the hood.
 
 ## Actions
 
-    Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
-    - Example: `const [value, setValue] = usePlateStates(id).value()`.
-    - It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+
+- Example: `const [value, setValue] = usePlateStates(id).value()`.
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
 
 ## useRedecorate()
 
-    <APIList
-      type="function"
-      description={
-        <>
-          Redecorate the editor.
-        </>
-      }
-      returns={
-        <>
-        </>
-      }
-    >
-      <APIItem name="key" type="string">
+Redecorate the editor.
 
-      </APIItem>
-
-    </APIList>
+<APIParameters>
+  <APIItem name="id" type="string"></APIItem>
+</APIParameters>
 
 ## useResetPlateEditor()
 
-    <APIList
-      type="function"
-      description={
-        <>
-          Set a new editor with plate.
-        </>
-      }
-      returns={
-        <>
-        </>
-      }
-    >
-      <APIItem name="key" type="string">
+Set a new editor with plate.
 
-      </APIItem>
-
-    </APIList>
+<APIParameters></APIParameters>
 
 ## Event Editor Store
 
-      This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
-      - This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
 
-      - One of the core plugins of [Plate](Plate) will store the following events.
+- This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+- One of the core plugins of [Plate](Plate) will store the following events.
 
 <APIAttributes>
   <APIItem name="blur" type="PlateId | null">
@@ -205,26 +176,20 @@ description: Plate Store
 
 ## `useEventEditorSelectors`
 
-      Hook selectors. Example: `useEventEditorSelectors().focus()` will get the
-      last focused editor id. See zustood hooks.
+Hook selectors. Example: `useEventEditorSelectors().focus()` will get the
+last focused editor id. See zustood hooks.
 
-<APIList
-  type="function"
-  returns={<>An object with selectors for the event editor state.</>}
-/>
+<APIParameters></APIParameters>
+<APIReturns>An object with selectors for the event editor state.</APIReturns>
 
 ## `useEventPlateId`
 
-      Get the context plate id if called in a PlateProvider. If not defined, it
-      returns the last event editor id: `focus`, `blur`, or `last`. If still not
-      defined, `PLATE_SCOPE` is returned.
+Get the context plate id if called in a PlateProvider. If not defined, it
+returns the last event editor id: `focus`, `blur`, or `last`. If still not
+defined, `PLATE_SCOPE` is returned.
 
-<APIList
-  type="function"
-  returns={
-    <>
-      The PlateId from the context if available, otherwise the last event editor
-      id or `PLATE_SCOPE`.
-    </>
-  }
-/>
+<APIParameters></APIParameters>
+<APIReturns>
+  The PlateId from the context if available, otherwise the last event editor id
+  or `PLATE_SCOPE`.
+</APIReturns>

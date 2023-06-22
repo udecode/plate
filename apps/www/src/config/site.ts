@@ -1,9 +1,9 @@
 export const siteConfig = {
   name: 'Plate',
-  url: 'https://plate.udecode.io',
-  ogImage: 'https://ui.shadcn.com/og.jpg',
+  url: 'https://platejs.org',
+  ogImage: 'https://platejs.org/og.png',
   author: 'zbeyens',
-  description: 'Rich-text editor plugin system for Slate & React.',
+  description: 'Rich-text editor plugin system for React.',
   links: {
     twitter: 'https://twitter.com/zbeyens',
     github: 'https://github.com/udecode/plate',

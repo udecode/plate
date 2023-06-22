@@ -6,26 +6,28 @@ Plate
 <div align="center">
   <a href="https://www.npmjs.com/package/@udecode/plate-core"><img src="https://img.shields.io/npm/dm/@udecode/plate-core.svg" alt="Total Downloads"></a>
   <a target="_blank" href="https://github.com/udecode/plate/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/plate" /></a>
-  <a target="_blank" href="https://plate.udecode.io/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>
   <a target="_blank" href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
-  <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
+  <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
 <div align="center">
 <a href="https://vercel.com/?utm_source=udecode&utm_campaign=oss"><img height="32" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
 </div>
 </p>
 
-Welcome to Plate, a rich-text editor framework designed for simplicity and efficiency. Plate consists of four main parts:
+![hero](apps/www/public/og.png)
 
-1. **Core**: This is the heart of Plate. It's a special plugin system just for `slate-react`. We've made sure everything is neat and tidy, so it's easier for you to develop your project.
-2. **Plugins**: We give you a big selection of plugin packages. They help make editor behaviors, hooks, serialization, and normalization better, among other things.
-3. **Primitives**: Besides the headless plugins, we also provide primitive hooks and components built on top of [Radix UI](https://www.radix-ui.com/). These are **unstyled** and accessible parts for making great design systems. 
-4. **Components**: We know a good-looking start is important. So, we give you components created with Plate CLI and [shadcn/ui](https://ui.shadcn.com/). Use these as a starting point to create your own component library. 
+[//]: # '  <a target="_blank" href="https://plate.udecode.io/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>'
+[//]: # 'Welcome to Plate, a rich-text editor framework designed for simplicity and efficiency. Plate consists of four main parts:'
+[//]: #
+[//]: # "1. **Core**: This is the heart of Plate. It's a special plugin system just for `slate-react`. We've made sure everything is neat and tidy, so it's easier for you to develop your project."
+[//]: # '2. **Plugins**: We give you a big selection of plugin packages. They help make editor behaviors, hooks, serialization, and normalization better, among other things.'
+[//]: # '3. **Primitives**: Besides the headless plugins, we also provide primitive hooks and components built on top of [Radix UI](https://www.radix-ui.com/). These are **unstyled** and accessible parts for making great design systems.'
+[//]: # '4. **Components**: We know a good-looking start is important. So, we give you components created with Plate CLI and [shadcn/ui](https://ui.shadcn.com/). Use these as a starting point to create your own component library.'
 
 ## Documentation
 
-You can learn more about Plate by checking out our [documentation](https://platejs.org/docs). 
+You can learn more about Plate by checking out our [documentation](https://platejs.org/docs).
 
 ## Contributing
 
@@ -39,15 +41,3 @@ place for bringing opinions and contributions. Your feedback and contributions a
 We'd love for you to join us! Whether it's through giving us a 🌟 star, making a 📥 pull request, or **sharing your plugins**, your help is always appreciated.
 
 To get started, check out our [contributing guide](CONTRIBUTING.md). Need more help? Join us on [Discord](https://discord.gg/mAZRuBzGM3). We're always here to guide you.
-
-### Author's Note
-
-> As the author of @udecode/plate, I understand the challenges of building an app with an editor. I spent months working on this project and realized that many other developers were facing the same difficulties. That's why I decided to open-source this work and invite others to collaborate.
-> 
-> Open-source is a long-term investment that can help us create a bug-free product and reduce technical debt. By working together, we can build a fully-featured editor that will benefit us all. I encourage you to join this collaboration and contribute to the project. Together, we can create something truly great.
-
-#### [Become a Sponsor!](https://github.com/sponsors/zbeyens)
-
-## License
-
-Licensed under the [MIT license](LICENSE).

@@ -34,7 +34,7 @@ export function APIItem({
 }: Item) {
   return (
     <AccordionItem value={value ?? name} className="select-text">
-      <AccordionTrigger className="group">
+      <AccordionTrigger className="group hover:no-underline">
         <li id={name} className="scroll-mt-[56px]">
           <h4 className="relative py-2 font-semibold leading-none tracking-tight">
             <a
@@ -48,18 +48,17 @@ export function APIItem({
                 <Icons.pragma className="h-4 w-4 text-muted-foreground" />
               </div>
             </a>
-            <span className="font-mono font-semibold leading-none">{name}</span>
+            <span className="font-mono font-semibold leading-none group-hover:underline">
+              {name}
+            </span>
             {required && (
-              <span className="ml-2 font-mono text-xs leading-none text-orange-500">
-                REQUIRED
+              <span className="font-mono text-xs leading-none text-orange-500">
+                {' '}
+                REQUIRED{' '}
               </span>
             )}
-            {!required && optional && (
-              <span className="ml-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground">
-                optional
-              </span>
-            )}
-            <span className="ml-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
+            <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground">
+              {!required && optional && ' optional '}
               {type}
             </span>
           </h4>
@@ -70,81 +69,96 @@ export function APIItem({
   );
 }
 
-// export function ComponentSourceBadgeList() {
-//
-// }
+export function APIAttributes({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="attributes" {...props}>
+      {children}
+    </APIList>
+  );
+}
 
-export function APIList({
-  type = 'function',
-  description,
-  returns,
-  children,
-}: {
+export function APIReturns({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="returns" {...props}>
+      {children}
+    </APIList>
+  );
+}
+
+export function APIParameters({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="parameters" {...props}>
+      {children}
+    </APIList>
+  );
+}
+
+type APIListProps = {
   type?: string;
-  description?: string;
-  returns?: string;
   children: ReactNode;
-}) {
+};
+
+export function APIList({ type = 'parameters', children }: APIListProps) {
+  const childCount = React.Children.count(children);
   const defaultValues = Array.from(
-    Array.from({ length: React.Children.count(children) }).keys()
+    Array.from({ length: childCount }).keys()
   ).map((i) => i.toString());
 
   const [values, setValues] = useState<string[]>(defaultValues);
   const [expanded, setExpanded] = useState(true);
 
-  const childCount = React.Children.count(children);
+  if (type === 'returns' && !childCount) return null;
 
   return (
     <section className="flex w-full flex-col items-center">
       <div className="w-full">
-        {!!description && <p className="mt-10">{description}</p>}
-
         <div className="mt-10 pb-3 ">
           <div className="mt-5 flex items-center justify-between pb-4">
             <h3 className="text-lg font-medium leading-none tracking-tight">
-              {type === 'function' && <span>Parameters</span>}
-              {type === 'object' && <span>Attributes</span>}
+              {type === 'parameters' && 'Parameters'}
+              {type === 'attributes' && 'Attributes'}
+              {type === 'returns' && 'Returns'}
             </h3>
-            <div
-              className="cursor-pointer select-none text-sm text-muted-foreground"
-              onClick={() => {
-                values.length === childCount
-                  ? setValues([])
-                  : setValues(defaultValues);
-                setExpanded(!expanded);
-              }}
-            >
-              {values.length === childCount ? 'Collapse all' : 'Expand all'}
-            </div>
+
+            {type !== 'returns' && childCount > 0 && (
+              <div
+                className="cursor-pointer select-none text-sm text-muted-foreground"
+                onClick={() => {
+                  values.length === childCount
+                    ? setValues([])
+                    : setValues(defaultValues);
+                  setExpanded(!expanded);
+                }}
+              >
+                {values.length === childCount ? 'Collapse all' : 'Expand all'}
+              </div>
+            )}
           </div>
 
           <ul className="m-0 list-none p-0">
             <Separator />
 
-            <Accordion
-              type="multiple"
-              value={values}
-              onValueChange={setValues}
-              className="w-full"
-            >
-              {React.Children.map(children, (child, i) =>
-                React.cloneElement(child as any, { value: i.toString() })
-              )}
-            </Accordion>
+            {type !== 'returns' &&
+              (childCount > 0 ? (
+                <Accordion
+                  type="multiple"
+                  value={values}
+                  onValueChange={setValues}
+                  className="w-full"
+                >
+                  {React.Children.map(children, (child, i) =>
+                    React.cloneElement(child as any, { value: i.toString() })
+                  )}
+                </Accordion>
+              ) : (
+                <div className="py-4 text-sm text-muted-foreground">
+                  No parameters.
+                </div>
+              ))}
+
+            {type === 'returns' && <div className="py-4">{children}</div>}
           </ul>
         </div>
-
-        {!!returns && (
-          <div className="mt-5 pt-6">
-            <h3 className="pb-4 text-lg font-medium leading-none tracking-tight">
-              Returns
-            </h3>
-
-            <Separator />
-
-            <p className="mt-5">{returns}</p>
-          </div>
-        )}
       </div>
     </section>
   );
@@ -182,16 +196,13 @@ export function APISubListItem({
         </span>
         <span className="font-semibold leading-none">{name}</span>
         {required && (
-          <span className="ml-2 font-mono text-xs leading-none text-orange-500">
-            REQUIRED
+          <span className="ml-1 font-mono text-xs leading-none text-orange-500">
+            {' '}
+            REQUIRED{' '}
           </span>
         )}
-        {!required && optional && (
-          <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
-            optional
-          </span>
-        )}
-        <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
+        <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
+          {!required && optional && ' optional '}
           {type}
         </span>
       </h4>
@@ -213,7 +224,7 @@ export function APISubList({ children }: { children: ReactNode }) {
         onValueChange={setValue}
       >
         <AccordionItem value="1" className="border-none">
-          <AccordionTrigger iconVariant="plus" className="px-3">
+          <AccordionTrigger iconVariant="plus" className="group px-3">
             {value ? 'Hide' : 'Show'} child attributes
           </AccordionTrigger>
           <AccordionContent>{children}</AccordionContent>
