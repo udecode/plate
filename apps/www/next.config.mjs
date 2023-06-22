@@ -18,6 +18,8 @@ const config = {
     ignoreBuildErrors: true,
   },
 
+  staticPageGenerationTimeout: 1200,
+
   // Enable experimental features.
   experimental: {
     serverActions: true,

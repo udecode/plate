@@ -2,9 +2,7 @@
   {
     "component": "button",
     "name": "Button",
-    "dependencies": [
-      "@radix-ui/react-slot"
-    ],
+    "dependencies": ["@radix-ui/react-slot"],
     "files": [
       {
         "name": "button.tsx",

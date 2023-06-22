@@ -55,7 +55,7 @@ export function APIItem({
               </span>
             )}
             {!required && optional && (
-              <span className="ml-2 text-left text-sm font-medium leading-none text-muted-foreground">
+              <span className="ml-2 text-left font-mono text-sm font-medium leading-none text-muted-foreground">
                 optional
               </span>
             )}
