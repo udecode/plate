@@ -7244,7 +7244,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-link@npm:21.3.2, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/nodes/link":
+"@udecode/plate-link@npm:21.4.0, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/nodes/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-link@workspace:packages/nodes/link"
   dependencies:
@@ -7449,7 +7449,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:21.3.2, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializers/md":
+"@udecode/plate-serializer-md@npm:21.4.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializers/md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializers/md"
   dependencies:
@@ -7457,7 +7457,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-heading": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-list": "npm:21.3.2"
     "@udecode/plate-paragraph": "npm:21.3.2"
     remark-parse: "npm:^9.0.0"
@@ -7582,7 +7582,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:21.3.2"
     "@udecode/plate-kbd": "npm:21.3.2"
     "@udecode/plate-line-height": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-list": "npm:21.3.2"
     "@udecode/plate-media": "npm:21.3.4"
     "@udecode/plate-mention": "npm:21.3.5"
@@ -7594,7 +7594,7 @@ __metadata:
     "@udecode/plate-serializer-csv": "npm:21.3.4"
     "@udecode/plate-serializer-docx": "npm:21.3.4"
     "@udecode/plate-serializer-html": "npm:21.3.2"
-    "@udecode/plate-serializer-md": "npm:21.3.2"
+    "@udecode/plate-serializer-md": "npm:21.4.0"
     "@udecode/plate-suggestion": "npm:21.3.2"
     "@udecode/plate-tabbable": "npm:21.3.2"
     "@udecode/plate-table": "npm:21.3.4"
