@@ -54,12 +54,11 @@ export function APIItem({
             {required && (
               <span className="font-mono text-xs leading-none text-orange-500">
                 {' '}
-                REQUIRED{' '}
+                REQUIRED
               </span>
             )}
             <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground">
-              {!required && optional && ' optional '}
-              {type}
+              {!required && optional && ' optional'} {type}
             </span>
           </h4>
         </li>
@@ -120,7 +119,7 @@ export function APIList({ type = 'parameters', children }: APIListProps) {
               {type === 'returns' && 'Returns'}
             </h3>
 
-            {type !== 'returns' && childCount > 0 && (
+            {childCount > 0 && (
               <div
                 className="cursor-pointer select-none text-sm text-muted-foreground"
                 onClick={() => {
@@ -138,25 +137,25 @@ export function APIList({ type = 'parameters', children }: APIListProps) {
           <ul className="m-0 list-none p-0">
             <Separator />
 
-            {type !== 'returns' &&
-              (childCount > 0 ? (
-                <Accordion
-                  type="multiple"
-                  value={values}
-                  onValueChange={setValues}
-                  className="w-full"
-                >
-                  {React.Children.map(children, (child, i) =>
-                    React.cloneElement(child as any, { value: i.toString() })
-                  )}
-                </Accordion>
-              ) : (
-                <div className="py-4 text-sm text-muted-foreground">
-                  No parameters.
-                </div>
-              ))}
-
-            {type === 'returns' && <div className="py-4">{children}</div>}
+            {childCount > 0 ? (
+              <Accordion
+                type="multiple"
+                value={values}
+                onValueChange={setValues}
+                className="w-full"
+              >
+                {React.Children.map(children, (child, i) =>
+                  React.cloneElement(child as any, {
+                    value: i.toString(),
+                    className: 'pt-4',
+                  })
+                )}
+              </Accordion>
+            ) : (
+              <div className="py-4 text-sm text-muted-foreground">
+                No parameters.
+              </div>
+            )}
           </ul>
         </div>
       </div>

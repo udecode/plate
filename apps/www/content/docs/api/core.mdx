@@ -68,7 +68,7 @@ Deserialize a leaf.
 <APISubListItem parent="deserializeHtml" name="getNode" type="function" optional>
 Deserialize html element to slate node.
 ```ts
-(element: HTMLElement) => AnyObject | undefined
+(element: HTMLElement, node: AnyObject) => AnyObject | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="deserializeHtml" name="query" type="function" optional>
@@ -76,7 +76,14 @@ Deserialize html element to slate node.
 (element: HTMLElement) => boolean
 ```
 </APISubListItem>
-<APISubListItem parent="deserializeHtml" name="validAttribute" type="string | object" optional>
+
+<APISubListItem parent="deserializeHtml" name="rules" type="object[]" optional>
+
+A list of rules to deserialize an element.
+
+<APISubList>
+
+<APISubListItem parent="deserializeHtml.rules" name="validAttribute" type="string | object" optional>
 Deserialize an element:
 - if this option (string) is in the element attribute names.
 - if this option (object) values match the element attributes.
@@ -84,21 +91,24 @@ Deserialize an element:
 string | { [key: string]: string | string[] }
 ```
 </APISubListItem>
-<APISubListItem parent="deserializeHtml" name="validClassName" type="string" optional>
+<APISubListItem parent="deserializeHtml.rules" name="validClassName" type="string" optional>
 Valid element `className`.
 </APISubListItem>
-<APISubListItem parent="deserializeHtml" name="validNodeName" type="string | string[]" optional>
+<APISubListItem parent="deserializeHtml.rules" name="validNodeName" type="string | string[]" optional>
 Valid element `nodeName`.
 - Set `'*'` to allow any node name.
 </APISubListItem>
-<APISubListItem parent="deserializeHtml" name="validStyle" type="object" optional>
+<APISubListItem parent="deserializeHtml.rules" name="validStyle" type="object" optional>
 Valid element style values.
 - Can be a list of string (only one match is needed).
 </APISubListItem>
+</APISubList>
+
+</APISubListItem>
+
 <APISubListItem parent="deserializeHtml" name="withoutChildren" type="boolean" optional>
 Whether or not to include deserialized children on this node.
 </APISubListItem>
-
 </APISubList>
 
 </APIItem>
@@ -357,11 +367,18 @@ Property used by Plate to deeply override plugins by key.
 Recursive plugin support to allow having multiple plugins in a single plugin.
 - Plate eventually flattens all the plugins into the editor.
 </APIItem>
-<APIItem name="props" type="PlatePluginProps" optional>
+<APIItem name="props" type="object | function" optional>
 Property used by Plate to override node `component` props.
 - If function, its returning value will be shallow merged to the old props, with the old props as
 parameter.
 - If object, its value will be shallow merged to the old props.
+
+```tsx
+object |
+  ((props: PlateRenderElementProps & PlateRenderLeafProps) =>
+    object | undefined);
+```
+
 </APIItem>
 <APIItem name="renderAboveEditable" type="FC<{children: ReactNode}>" optional>
 Render a component above `Editable`.
@@ -369,10 +386,10 @@ Render a component above `Editable`.
 <APIItem name="renderAboveSlate" type="FC<{children: ReactNode}>" optional>
 Render a component above `Slate`.
 </APIItem>
-<APIItem name="renderAfterEditable" type="RenderAfterEditable" optional>
+<APIItem name="renderAfterEditable" type="React.FC<TEditableProps>" optional>
 Render a component after `Editable`.
 </APIItem>
-<APIItem name="renderBeforeEditable" type="RenderAfterEditable" optional>
+<APIItem name="renderBeforeEditable" type="React.FC<TEditableProps>" optional>
 Render a component before `Editable`.
 </APIItem>
 <APIItem name="serializeHtml" type="function" optional>
@@ -467,4 +484,18 @@ Plugins to override by plugin key.
 
 <APIReturns>
   An array of plugins with overridden components or properties.
+</APIReturns>
+
+<APIReturns>
+  An object containing the following properties:
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the nodeType mark is active in the current
+    selection.
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    The type of the node.
+  </APIItem>
+  <APIItem name="clear" type="string | string[]">
+    Type or types of the node to clear.
+  </APIItem>
 </APIReturns>
