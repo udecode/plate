@@ -25,7 +25,7 @@ description: Plate Store
 
     A unique id used as a provider scope. Use it if you have multiple `PlateProvider` in the same React tree.
 
-    - Default: `PLATE_SCOPE`.
+    - **Default:** `PLATE_SCOPE`.
 
   </APIItem>
 
@@ -33,7 +33,7 @@ description: Plate Store
     - [Editor](/docs/plate#editor)
     - Slate editor reference.
 
-    - Default: `pipe(createTEditor(), withPlate({ id, plugins, options, components }))`
+    - **Default:** `pipe(createTEditor(), withPlate({ id, plugins, options, components }))`
 
   </APIItem>
 
@@ -59,7 +59,7 @@ description: Plate Store
     - [Value](/docs/plate#value)
     - Value of the editor.
 
-    - Default: `[{ type: 'p', children: [{ text: '' }]}]`
+    - **Default:** `[{ type: 'p', children: [{ text: '' }]}]`
 
   </APIItem>
 
@@ -116,7 +116,7 @@ description: Plate Store
   </APISubList>
 
 </APIItem>
-</APIList>
+</APIAttributes>
 
 ## Selectors
 
@@ -183,8 +183,7 @@ description: Plate Store
 
       - One of the core plugins of [Plate](Plate) will store the following events.
 
-<APIList type="object">
-
+<APIAttributes>
   <APIItem name="blur" type="PlateId | null">
 
     Last editor id that has been blurred.
@@ -202,8 +201,7 @@ description: Plate Store
     Last editor id.
 
   </APIItem>
-
-</APIList>
+</APIAttributes>
 
 ## `useEventEditorSelectors`
 
