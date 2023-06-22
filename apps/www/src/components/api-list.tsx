@@ -197,12 +197,11 @@ export function APISubListItem({
         {required && (
           <span className="ml-1 font-mono text-xs leading-none text-orange-500">
             {' '}
-            REQUIRED{' '}
+            REQUIRED
           </span>
         )}
         <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
-          {!required && optional && ' optional '}
-          {type}
+          {!required && optional && ' optional'} {type}
         </span>
       </h4>
       <div>{children}</div>

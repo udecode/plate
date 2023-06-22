@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -48,26 +49,49 @@ export function DocsSidebarNavItems({
     <div className="grid grid-flow-row auto-rows-max text-sm">
       {items.map((item, index) =>
         item.href && !item.disabled ? (
-          <Link
-            key={index}
-            href={item.href}
-            className={cn(
-              'group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline',
-              item.disabled && 'cursor-not-allowed opacity-60',
-              pathname === item.href
-                ? 'font-medium text-foreground'
-                : 'text-muted-foreground'
-            )}
-            target={item.external ? '_blank' : ''}
-            rel={item.external ? 'noreferrer' : ''}
-          >
-            {item.title}
-            {item.label && (
-              <span className="ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
-                {item.label}
-              </span>
-            )}
-          </Link>
+          <React.Fragment key={index}>
+            <Link
+              href={item.href}
+              className={cn(
+                'group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline',
+                item.disabled && 'cursor-not-allowed opacity-60',
+                pathname === item.href
+                  ? 'font-medium text-foreground'
+                  : 'text-muted-foreground'
+              )}
+              target={item.external ? '_blank' : ''}
+              rel={item.external ? 'noreferrer' : ''}
+            >
+              {item.title}
+              {item.label && (
+                <span className="ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                  {item.label}
+                </span>
+              )}
+            </Link>
+            {item.items?.map((subItem, subIndex) => (
+              <Link
+                key={subIndex}
+                href={subItem.href!}
+                className={cn(
+                  'group flex w-full items-center rounded-md border border-transparent px-6 py-1 hover:underline',
+                  subItem.disabled && 'cursor-not-allowed opacity-60',
+                  pathname === subItem.href
+                    ? 'font-medium text-foreground'
+                    : 'text-muted-foreground'
+                )}
+                target={subItem.external ? '_blank' : ''}
+                rel={subItem.external ? 'noreferrer' : ''}
+              >
+                {subItem.title}
+                {subItem.label && (
+                  <span className="ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                    {subItem.label}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </React.Fragment>
         ) : (
           <span
             key={index}

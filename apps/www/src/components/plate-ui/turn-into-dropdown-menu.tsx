@@ -121,7 +121,8 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
     }
   }
 
-  const selectedItem = items.find((item) => item.value === value) ?? defaultItem;
+  const selectedItem =
+    items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
   return (
@@ -133,7 +134,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           isDropdown
           className="sm:min-w-[140px]"
         >
-          <SelectedItemIcon className="w-5 h-5 sm:hidden" />
+          <SelectedItemIcon className="h-5 w-5 sm:hidden" />
           <span className="max-sm:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>

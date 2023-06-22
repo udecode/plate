@@ -33,8 +33,8 @@ import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { ValueId } from '@/config/setting-values';
-import { isEnabled } from '@/plate/demo/is-enabled';
 import { cn } from '@/lib/utils';
+import { isEnabled } from '@/plate/demo/is-enabled';
 
 interface ToolbarGroupProps {
   noSeparator?: boolean;
@@ -52,7 +52,7 @@ function ToolbarGroup({
   return (
     <div
       className={cn(
-        'flex gap-1 pl-1 border-l border-border',
+        'flex gap-1 border-l border-border pl-1',
         noSeparator && 'border-transparent',
         className
       )}
@@ -67,7 +67,7 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
   return (
-    <div className="overflow-hidden w-full">
+    <div className="w-full overflow-hidden">
       <div
         className="flex flex-wrap gap-1"
         style={{
@@ -121,7 +121,9 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
                     nodeType={MARK_BG_COLOR}
                     tooltip="Highlight Color"
                   >
-                    <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                    <Icons.bg
+                      className={iconVariants({ variant: 'toolbar' })}
+                    />
                   </ColorDropdownMenu>
                 </>
               )}

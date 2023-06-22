@@ -1,0 +1,205 @@
+---
+title: Store
+description: Plate Store
+---
+
+`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
+
+<Callout className="my-4">
+  **Note**: To use the store hooks in a component, it needs to be rendered
+  inside `PlateProvider` or `Plate`.
+</Callout>
+
+## Plate Store
+
+### State
+
+The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's id, its current value, its plugins, and other settings.
+
+<APIAttributes>
+<APIItem name="id" type="PlateId">
+
+A unique id used as a provider scope. Use it if you have multiple `PlateProvider` in the same React tree.
+
+- **Default:** `PLATE_SCOPE`
+
+</APIItem>
+
+<APIItem name="editor" type="PlateEditor">
+
+Slate editor reference.
+
+- See [`editor`](/docs/api/core/plate#editor).
+- **Default:** `pipe(createTEditor(), withPlate({ id, plugins, options, components }))`
+
+</APIItem>
+
+<APIItem name="readOnly" type="boolean">
+
+Whether the editor is read-only.
+
+- **Default:** `false`
+
+</APIItem>
+
+<APIItem name="plugins" type="WithPlatePlugin[]">
+
+Editor plugins.
+
+- See [`plugins`](/docs/api/core/plate#plugins).
+- **Default:** `[]`
+
+</APIItem>
+
+<APIItem name="value" type="Value">
+
+Value of the `editor`.
+
+- See [`value`](/docs/api/core/plate#value).
+- **Default:** `[{ type: 'p', children: [{ text: '' }]}]`
+
+</APIItem>
+
+<APIItem name="keyEditor" type="string">
+
+A random key updated on each `editor` change.
+
+</APIItem>
+
+<APIItem name="keySelection" type="string">
+
+A random key updated on each `editor.selection` change.
+
+</APIItem>
+
+<APIItem name="keyDecorate" type="string">
+
+A random key updated when calling `redecorate`. This is a dependency of the `decorate` function.
+
+</APIItem>
+
+<APIItem name="onChange" type="object">
+<APISubList>
+<APISubListItem parent="onChange" name="fn" type="function">
+- See [`onChange`](/docs/api/core/plate#slate-onchange).
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+
+<APIItem name="decorate" type="object" >
+<APISubList>
+<APISubListItem parent="decorate" name="fn" type="function" >
+- See [`decorate`](/docs/api/core/plate#editable-decorate).
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+
+<APIItem name="renderElement" type="object" >
+<APISubList>
+<APISubListItem parent="renderElement" name="fn" type="function" >
+- See [`renderElement`](/docs/api/core/plate#editable-renderelement).
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+
+<APIItem name="renderLeaf" type="object" >
+<APISubList>
+<APISubListItem parent="renderLeaf" name="fn" type="function" >
+- See [`renderLeaf`](/docs/api/core/plate#editable-renderleaf).
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIAttributes>
+
+## Selectors
+
+Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+
+- **Example:** `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+
+## Actions
+
+Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+
+- **Example:** `const [value, setValue] = usePlateStates(id).value()`
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+
+### `useRedecorate`
+
+Redecorate the editor.
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    Editor id.
+  </APIItem>
+</APIParameters>
+
+### `useResetPlateEditor`
+
+Reset an editor with the same plugins.
+
+<APIParameters>
+  
+<APIItem name="id" type="string" optional>
+Editor id.
+</APIItem>
+
+</APIParameters>
+
+## Event Editor Store
+
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
+
+- This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+- One of the core plugins of [Plate](Plate) will store the following events.
+
+### State
+
+<APIAttributes>
+<APIItem name="blur" type="PlateId | null">
+
+Last editor id that has been blurred.
+
+</APIItem>
+
+<APIItem name="focus" type="PlateId | null">
+
+Editor id that is currently being focused.
+
+</APIItem>
+
+<APIItem name="last" type="PlateId | null">
+
+Last editor id.
+
+</APIItem>
+</APIAttributes>
+
+### `useEventEditorSelectors`
+
+Hook selectors.
+
+- **Example:** `useEventEditorSelectors().focus()` will get the
+  last focused editor id.
+
+### `useEventPlateId`
+
+Get the last event editor id.
+
+<APIParameters>
+<APIItem name="id" type="PlateId | null">
+
+Returned id if defined.
+
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  The `PlateId` from the context if available, otherwise the last event editor
+  id or `PLATE_SCOPE`.
+</APIReturns>

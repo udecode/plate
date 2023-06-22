@@ -284,14 +284,25 @@ export const docsConfig: DocsConfig = {
       title: 'API',
       items: [
         {
-          title: 'Plate',
-          href: '/docs/api/plate',
-          items: [],
-        },
-        {
           title: 'Core',
           href: '/docs/api/core',
-          items: [],
+          items: [
+            {
+              title: 'Plate',
+              href: '/docs/api/core/plate',
+              items: [],
+            },
+            {
+              title: 'PlatePlugin',
+              href: '/docs/api/core/plate-plugin',
+              items: [],
+            },
+            {
+              title: 'Store',
+              href: '/docs/api/core/store',
+              items: [],
+            },
+          ],
           headings: ['createPlugins'],
         },
         {
@@ -323,11 +334,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/api/utils',
           items: [],
           headings: [],
-        },
-        {
-          title: 'Store',
-          href: '/docs/api/store',
-          items: [],
         },
       ],
     },
