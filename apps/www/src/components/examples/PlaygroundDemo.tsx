@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -39,6 +39,7 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
+import { usePlateSelectors, usePlateActions, createPlateEditor } from '@udecode/plate-core';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
   createImagePlugin,
@@ -66,6 +67,7 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { SettingsPanel } from '@/components/settings-panel';
+import { SettingsToggle } from '@/components/settings-toggle';
 import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { createPlateUI } from '@/plate/createPlateUI';
@@ -220,6 +222,23 @@ export const usePlaygroundPlugins = ({
   );
 };
 
+export interface ResetPluginsEffectProps {
+  plugins: any;
+}
+
+export function ResetPluginsEffect({
+  plugins,
+}: ResetPluginsEffectProps) {
+  const editor = usePlateSelectors().editor();
+  const setEditor = usePlateActions().editor();
+
+  useEffect(() => {
+    setEditor(createPlateEditor({ id: editor.id, plugins }));
+  }, [plugins, setEditor, editor.id]);
+
+  return null;
+}
+
 export function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
 
@@ -240,52 +259,65 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
     // <DndProvider backend={HTML5Backend}>
     <div className="relative">
       <PlateProvider<MyValue>
-        key={settingsStore.use.key()}
         initialValue={initialValue}
         plugins={plugins}
         normalizeInitialValue
       >
+        <ResetPluginsEffect plugins={plugins} />
+
         <FixedToolbar>
           <FixedToolbarButtons id={id} />
         </FixedToolbar>
 
-        <CommentsProvider>
-          <div
-            ref={containerRef}
-            className={cn(
-              'relative flex max-w-[900px] overflow-x-auto',
-              !id && 'w-[calc(100vw-64px)]'
-            )}
-          >
-            <Plate
-              editableProps={{
-                ...editableProps,
-                className: cn(
-                  editableProps.className,
-                  !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
-                  id && 'px-8 pb-8 pt-2'
-                ),
-              }}
+        <div className="flex">
+          <CommentsProvider>
+            <div
+              ref={containerRef}
+              className={cn(
+                'relative flex max-w-[900px] overflow-x-auto',
+                !id && 'w-[calc(100vw-64px)]'
+              )}
             >
-              <FloatingToolbar>
-                <FloatingToolbarButtons id={id} />
-              </FloatingToolbar>
+              <Plate
+                editableProps={{
+                  ...editableProps,
+                    className: cn(
+                  editableProps.className,
+                    !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
+                    id && 'px-8 pb-8 pt-2'
+                ),
+                }}
+              >
+                <FloatingToolbar>
+                  <FloatingToolbarButtons id={id} />
+                </FloatingToolbar>
 
-              {isEnabled('mention', id) && (
-                <MentionCombobox items={MENTIONABLES} />
-              )}
+                {isEnabled('mention', id) && (
+                  <MentionCombobox items={MENTIONABLES} />
+                )}
 
-              {isEnabled('cursoroverlay', id) && (
-                <CursorOverlay containerRef={containerRef} />
-              )}
-            </Plate>
-          </div>
+                {isEnabled('cursoroverlay', id) && (
+                  <CursorOverlay containerRef={containerRef} />
+                )}
+              </Plate>
+            </div>
 
-          {isEnabled('comment', id) && <CommentsPopover />}
-        </CommentsProvider>
+            {isEnabled('comment', id) && <CommentsPopover />}
+          </CommentsProvider>
+
+          {!id && (
+            <>
+              <div className="sticky top-full z-10 h-0 w-0">
+                <div className="-translate-x-[200%] -translate-y-full p-5">
+                  <SettingsToggle />
+                </div>
+              </div>
+
+              <SettingsPanel />
+            </>
+          )}
+        </div>
       </PlateProvider>
-
-      {!id && <SettingsPanel />}
     </div>
     // </DndProvider>
   );

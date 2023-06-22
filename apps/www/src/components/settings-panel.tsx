@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { useDebounce } from './hooks/use-debounce';
+import { useViewport } from './hooks/use-viewport';
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +17,13 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ScrollArea } from './ui/scroll-area';
 import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import {
+  BottomSheet,
+  BottomSheetContainer,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetBackdrop,
+} from './ui/bottom-sheet';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
@@ -176,56 +184,96 @@ export function SettingsEffect() {
   return null;
 }
 
+export interface SettingsPanelWrapperProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+export function SettingsPanelStaticWrapper({
+  isOpen,
+  children,
+}: SettingsPanelWrapperProps) {
+  return isOpen ? (
+    <div className="grow shrink-0 border-l border-l-border w-[433px]">
+      {children}
+    </div>
+  ) : null;
+}
+
+export function SettingsPanelSheetWrapper({
+  isOpen,
+  onClose,
+  children,
+}: SettingsPanelWrapperProps) {
+  return (
+    <BottomSheet isOpen={isOpen} onClose={onClose}>
+      <BottomSheetContainer>
+        <BottomSheetHeader
+          className="cursor-pointer"
+          onTap={onClose}
+        />
+
+        <BottomSheetContent>
+          {isOpen ? children : null}
+        </BottomSheetContent>
+      </BottomSheetContainer>
+
+      <BottomSheetBackdrop onTap={onClose} />
+    </BottomSheet>
+  );
+}
+
 export function SettingsPanel() {
   const showSettings = settingsStore.use.showSettings();
+  const { width: viewportWidth } = useViewport();
 
-  if (!showSettings) return null;
+  const isSheet = viewportWidth < 1024;
+  const Wrapper = isSheet ? SettingsPanelSheetWrapper : SettingsPanelStaticWrapper;
+
+  useLayoutEffect(() => {
+    settingsStore.set.showSettings(!isSheet);
+  }, [isSheet]);
 
   return (
-    <div className="absolute right-0 top-[44px] z-40 h-full">
+    <Wrapper isOpen={showSettings} onClose={() => settingsStore.set.showSettings(false)}>
       <SettingsEffect />
 
-      <div className="sticky right-0 top-[102px] grow border-l border-l-border bg-background">
-        <ScrollArea className="relative h-[calc(100vh-102px)] overflow-hidden">
-          <div className="w-[433px]">
-            {/* <h3 className="px-6 py-4 text-lg font-semibold">Value</h3> */}
-            {/* <h3 className="px-6 py-4 text-lg font-semibold">Plugins</h3> */}
-            <div className="flex justify-between pl-6 pr-3.5 pt-5">
-              <SettingsCombobox />
-            </div>
-            <div className="flex items-center gap-2 px-6 pb-1 pt-5">
-              <Switch
-                id="allPlugins"
-                defaultChecked
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    settingsStore.set.reset();
-                  } else {
-                    settingsStore.set.checkedPluginsNext({} as any);
-                  }
-                }}
-              />
-              <Label htmlFor="allPlugins">All plugins</Label>
-            </div>
-            <Accordion type="multiple" defaultValue={categoryIds}>
-              {settingPlugins.map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
-                  <AccordionTrigger className="px-6 py-4">
-                    {item.label}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex flex-col gap-2 pl-6 pr-3.5">
-                      {item.children.map((child) => (
-                        <SettingsSwitch key={child.id} {...child} />
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </ScrollArea>
+      <div className="flex justify-between pl-6 pr-3.5 pt-5">
+        <SettingsCombobox />
       </div>
-    </div>
+
+      <div className="flex items-center gap-2 px-6 pb-1 pt-5">
+        <Switch
+          id="allPlugins"
+          defaultChecked
+          onCheckedChange={(checked) => {
+            if (checked) {
+              settingsStore.set.reset();
+          } else {
+            settingsStore.set.checkedPluginsNext({} as any);
+          }
+          }}
+        />
+        <Label htmlFor="allPlugins">All plugins</Label>
+      </div>
+
+      <Accordion type="multiple" defaultValue={categoryIds}>
+        {settingPlugins.map((item) => (
+          <AccordionItem key={item.id} value={item.id}>
+            <AccordionTrigger className="px-6 py-4">
+              {item.label}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col gap-2 pl-6 pr-3.5">
+                {item.children.map((child) => (
+                  <SettingsSwitch key={child.id} {...child} />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </Wrapper>
   );
 }
