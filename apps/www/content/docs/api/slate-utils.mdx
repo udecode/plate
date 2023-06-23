@@ -9,53 +9,422 @@ description: API reference for @udecode/slate-utils.
 
 ### `findDescendant`
 
+Iterates through all nodes in the editor and returns the first match. If no match is found, returns undefined.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for the descendant node.
+  </APIItem>
+  <APIItem name="options" type="FindNodeOptions">
+    The options to find the node. It can contain match condition, starting
+    location, whether to traverse in reverse, and whether to include voids.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the first node entry matching the condition or `undefined` if no match
+  is found.
+</APIReturns>
+
 ### `getBlockAbove`
+
+Returns the block above a specified location
+
+- **Default:** Selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for the block.
+  </APIItem>
+  <APIItem name="options" type="GetAboveNodeOptions">
+    The options to find the block above a location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns the block above the specified location.
+
+</APIReturns>
 
 ### `getChildren`
 
+Returns the children node entries of a node entry.
+
+<APIParameters>
+  <APIItem name="nodeEntry" type="TNodeEntry">
+    The node entry to get its children.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns an array of the children node entries.
+
+</APIReturns>
+
 ### `getEdgeBlocksAbove`
+
+Returns the edge blocks above a specified location.
+
+- **Default:** Selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for the edge blocks.
+  </APIItem>
+  <APIItem name="options" type="GetAboveNodeOptions">
+    The options to find the edge blocks above a location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array containing the start block and end block above the specified
+  location, or `null` if not found.
+</APIReturns>
 
 ### `getLastChild`
 
+Returns the last child of a node or null if no children.
+
+<APIParameters>
+  <APIItem name="nodeEntry" type="TNodeEntry">
+    The node entry to get its last child.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the last child of a node or `null` if no children.
+</APIReturns>
+
 ### `getLastNodeByLevel`
+
+Retrieves the last node at a specified level in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for the last node.
+  </APIItem>
+  <APIItem name="level" type="number">
+    The level at which to find the last node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the last node entry at the specified level or `undefined` if no node
+  is found.
+</APIReturns>
 
 ### `getMark`
 
+Retrieves the value of the selection mark by key in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where the selection mark is located.
+  </APIItem>
+  <APIItem name="key" type="string">
+    The key of the selection mark to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the value of the selection mark or `undefined` if the editor or the
+  mark is not found.
+</APIReturns>
+
 ### `getNextNodeStartPoint`
+
+Retrieves the start point of the next node at a specified path in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for the next node.
+  </APIItem>
+  <APIItem name="at" type="Path">
+    The path at which to find the next node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the start point of the next node or `undefined` if the next node is
+  not found.
+</APIReturns>
 
 ### `getNextSiblingNodes`
 
+Retrieves the sibling nodes following a specified path in the ancestor node.
+
+<APIParameters>
+  <APIItem name="ancestorEntry" type="EAncestorEntry">
+    The ancestor node of the sibling nodes.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the reference node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array of sibling nodes after the path or an empty array if no
+  sibling nodes are found.
+</APIReturns>
+
 ### `getOperations`
+
+Retrieves the operations of the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to get its operations.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the operations of the editor as `TOperation` array.
+</APIReturns>
 
 ### `getPointBeforeLocation`
 
+Returns the point before a location, with additional options to customize the behavior. If no options are provided or neither **`match`** nor **`matchString`** are defined, it will default to using **`getPointBefore`**.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where to find the point before a location.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location where to start.
+  </APIItem>
+  <APIItem name="options" type="PointBeforeOptions">
+    The options to define how the search is performed.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the point before a location. If not found, returns `undefined`.
+</APIReturns>
+
 ### `getPointFromLocation`
+
+Returns the point from a location (default: selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where to find the point.
+  </APIItem>
+  <APIItem name="options" type="Object">
+    An object with optional parameters: - `at` (Location | null): The location
+    where to get the point. Default is the editor's selection. - `focus`
+    (boolean): If true, returns the focus point. Otherwise, returns the anchor
+    point.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns the point from the location.
+
+</APIReturns>
 
 ### `getPointNextToVoid`
 
+If the start point is inside an inline void, returns the point before or after it.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where to find the point next to the void.
+  </APIItem>
+  <APIItem name="options" type="Object">
+    An object with parameters: - `at` (Point): The point from where to start. -
+    `after` (boolean): If true, gets the point after the void node. Otherwise,
+    gets the point before.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns the point next to the void.
+
+</APIReturns>
+
 ### `getPreviousBlockById`
+
+Finds the block before a block by ID. If not found, it finds the first block by ID and returns **`[null, its previous path]`**.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where to find the previous block.
+  </APIItem>
+  <APIItem name="id" type="string">
+    The ID of the block.
+  </APIItem>
+  <APIItem name="query" type="QueryNodeOptions">
+    The options for the node query.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the node entry of the previous block if found, otherwise undefined.
+</APIReturns>
 
 ### `getPreviousNodeEndPoint`
 
+Gets the end point of the previous node.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor where to find the previous node's end point.
+  </APIItem>
+  <APIItem name="at" type="Path">
+    The path where to start the search.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the end point of the previous node if found, otherwise undefined.
+</APIReturns>
+
 ### `getPreviousPath`
+
+Generates the previous path based on the given path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The previous path or undefined if there is no previous path.
+</APIReturns>
 
 ### `getPreviousSiblingNode`
 
+Gets the previous sibling node from the given path.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An array containing the previous sibling node and its path, or undefined if
+  there is no previous sibling.
+</APIReturns>
+
 ### `getRangeBefore`
+
+Gets the range from the point before a given location to the end point of the location.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location to consider.
+  </APIItem>
+  <APIItem name="options" type="RangeBeforeOptions" optional>
+    Options for getting the point before the location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The range from the point before the location to the end point of the location,
+  or undefined if no such point exists.
+</APIReturns>
 
 ### `getRangeFromBlockStart`
 
+Gets the range from the start of the block above a location to the location.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="Omit<GetAboveNodeOptions, 'match'>" optional>
+    Options for getting the block above the location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The range from the start of the block above the location to the location, or
+  undefined if no such block exists.
+</APIReturns>
+
 ### `getSelectionText`
+
+Gets the selected text from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The selected text, or an empty string if no text is selected.
+</APIReturns>
 
 ### `isAncestorEmpty`
 
+Checks whether an ancestor node is empty (has empty text and no inline children).
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="node" type="TAncestor">
+    The ancestor node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the ancestor node is empty, false otherwise.
+
+</APIReturns>
+
 ### `isBlockAboveEmpty`
+
+Checks whether the block above the selection is empty.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the block above the selection is empty, false otherwise.
+
+</APIReturns>
 
 ### `isBlockTextEmptyAfterSelection`
 
+Checks whether the text in the block after the selection is empty.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the text in the block after the selection is empty, false otherwise.
+
+</APIReturns>
+
 ### `isDocumentEnd`
 
+Checks whether the selection is at the end of the document.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the selection is at the end of the document, false otherwise.
+
+</APIReturns>
+
 ### `isFirstChild`
+
+Checks whether a node is the first child of its parent.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path of the node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the node is the first child of its parent, false otherwise.
+
+</APIReturns>
 
 ### `isMarkActive`
 
