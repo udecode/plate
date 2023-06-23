@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -23,6 +23,11 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 import { PlatePluginComponent } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  usePlateActions,
+  usePlateSelectors,
+} from '@udecode/plate-core';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
@@ -39,7 +44,6 @@ import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
-import { usePlateSelectors, usePlateActions, createPlateEditor } from '@udecode/plate-core';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
 import {
   createImagePlugin,
@@ -59,13 +63,6 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { CommentsPopover } from '@/components/plate-ui/comments-popover/comments-popover';
-import { CursorOverlay } from '@/components/plate-ui/cursor-overlay/cursor-overlay';
-import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
-import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { SettingsPanel } from '@/components/settings-panel';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { ValueId } from '@/config/setting-values';
@@ -91,6 +88,13 @@ import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { createMyPlugins, MyValue } from '@/plate/plate-types';
+import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover/comments-popover';
+import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay/cursor-overlay';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
+import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -226,9 +230,7 @@ export interface ResetPluginsEffectProps {
   plugins: any;
 }
 
-export function ResetPluginsEffect({
-  plugins,
-}: ResetPluginsEffectProps) {
+export function ResetPluginsEffect({ plugins }: ResetPluginsEffectProps) {
   const editor = usePlateSelectors().editor();
   const setEditor = usePlateActions().editor();
 
@@ -281,11 +283,11 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
               <Plate
                 editableProps={{
                   ...editableProps,
-                    className: cn(
-                  editableProps.className,
+                  className: cn(
+                    editableProps.className,
                     !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
                     id && 'px-8 pb-8 pt-2'
-                ),
+                  ),
                 }}
               >
                 <FloatingToolbar>

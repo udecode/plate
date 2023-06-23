@@ -1,29 +1,6 @@
-import React, { use, useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { categoryIds, settingsStore } from './context/settings-store';
-import { useDebounce } from './hooks/use-debounce';
-import { useViewport } from './hooks/use-viewport';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from './ui/accordion';
-import { Badge } from './ui/badge';
-import { buttonVariants } from './ui/button';
-import { Checkbox } from './ui/checkbox';
-import { Label } from './ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { ScrollArea } from './ui/scroll-area';
-import { Switch } from './ui/switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import {
-  BottomSheet,
-  BottomSheetContainer,
-  BottomSheetContent,
-  BottomSheetHeader,
-  BottomSheetBackdrop,
-} from './ui/bottom-sheet';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
@@ -34,7 +11,37 @@ import {
   settingPluginItems,
   settingPlugins,
 } from '@/config/setting-plugins';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useViewport } from '@/hooks/use-viewport';
 import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/registry/default/ui/accordion';
+import { Badge } from '@/registry/default/ui/badge';
+import {
+  BottomSheet,
+  BottomSheetBackdrop,
+  BottomSheetContainer,
+  BottomSheetContent,
+  BottomSheetHeader,
+} from '@/registry/default/ui/bottom-sheet';
+import { buttonVariants } from '@/registry/default/ui/button';
+import { Checkbox } from '@/registry/default/ui/checkbox';
+import { Label } from '@/registry/default/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/registry/default/ui/popover';
+import { Switch } from '@/registry/default/ui/switch';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/registry/default/ui/tooltip';
 
 export function SettingsSwitch({
   id,
@@ -195,7 +202,7 @@ export function SettingsPanelStaticWrapper({
   children,
 }: SettingsPanelWrapperProps) {
   return isOpen ? (
-    <div className="grow shrink-0 border-l border-l-border w-[433px]">
+    <div className="w-[433px] shrink-0 grow border-l border-l-border">
       {children}
     </div>
   ) : null;
@@ -209,14 +216,9 @@ export function SettingsPanelSheetWrapper({
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose}>
       <BottomSheetContainer>
-        <BottomSheetHeader
-          className="cursor-pointer"
-          onTap={onClose}
-        />
+        <BottomSheetHeader className="cursor-pointer" onTap={onClose} />
 
-        <BottomSheetContent>
-          {isOpen ? children : null}
-        </BottomSheetContent>
+        <BottomSheetContent>{isOpen ? children : null}</BottomSheetContent>
       </BottomSheetContainer>
 
       <BottomSheetBackdrop onTap={onClose} />
@@ -229,14 +231,19 @@ export function SettingsPanel() {
   const { width: viewportWidth } = useViewport();
 
   const isSheet = viewportWidth < 1024;
-  const Wrapper = isSheet ? SettingsPanelSheetWrapper : SettingsPanelStaticWrapper;
+  const Wrapper = isSheet
+    ? SettingsPanelSheetWrapper
+    : SettingsPanelStaticWrapper;
 
   useLayoutEffect(() => {
     settingsStore.set.showSettings(!isSheet);
   }, [isSheet]);
 
   return (
-    <Wrapper isOpen={showSettings} onClose={() => settingsStore.set.showSettings(false)}>
+    <Wrapper
+      isOpen={showSettings}
+      onClose={() => settingsStore.set.showSettings(false)}
+    >
       <SettingsEffect />
 
       <div className="flex justify-between pl-6 pr-3.5 pt-5">
@@ -250,9 +257,9 @@ export function SettingsPanel() {
           onCheckedChange={(checked) => {
             if (checked) {
               settingsStore.set.reset();
-          } else {
-            settingsStore.set.checkedPluginsNext({} as any);
-          }
+            } else {
+              settingsStore.set.checkedPluginsNext({} as any);
+            }
           }}
         />
         <Label htmlFor="allPlugins">All plugins</Label>

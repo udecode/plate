@@ -9,19 +9,19 @@ import {
   PageHeaderHeading,
 } from '@/components/page-header';
 import { StyleSwitcher } from '@/components/style-switcher';
-import { buttonVariants } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/registry/default/ui/button';
+import { Separator } from '@/registry/default/ui/separator';
 
 export default function IndexPage() {
   return (
-    <div className="container relative pb-10">
+    <div className="container relative">
       <StyleSwitcher />
-      <PageHeader>
+      <PageHeader className="pb-8">
         <Link
           // TODO:
-          href="/docs"
+          href="/docs/components"
           className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
         >
           🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Plate is
@@ -57,7 +57,7 @@ export default function IndexPage() {
       {/* </section> */}
 
       <section className="relative">
-        <div className="max-w-[1336px] border bg-background shadow-xl rounded-lg">
+        <div className="max-w-[1336px] rounded-lg border bg-background shadow">
           <PlaygroundDemo />
         </div>
       </section>

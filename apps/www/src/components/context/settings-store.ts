@@ -1,6 +1,5 @@
 import { createStore } from '@udecode/plate-common';
 
-import { toast } from '@/components/ui/use-toast';
 import {
   CheckedId,
   SettingPlugin,
@@ -8,6 +7,7 @@ import {
   settingPlugins,
 } from '@/config/setting-plugins';
 import { settingValues } from '@/config/setting-values';
+import { toast } from '@/registry/default/ui/use-toast';
 
 export const categoryIds = settingPlugins.map((item) => item.id);
 

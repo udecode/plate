@@ -12,7 +12,8 @@
         "COMPONENTS_BASE_URL",
         "NEXT_PUBLIC_APP_URL",
         "NODE_ENV",
-        "npm_config_user_agent"
+        "npm_config_user_agent",
+        "https_proxy"
       ],
       "outputs": ["dist/**", ".next/**"]
     },

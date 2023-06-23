@@ -1,14 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Button } from './ui/button';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/registry/default/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from './ui/collapsible';
-
-import { cn } from '@/lib/utils';
+} from '@/registry/default/ui/collapsible';
 
 interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
   expandButtonTitle?: string;
@@ -42,7 +42,7 @@ export function CodeBlockWrapper({
         </CollapsibleContent>
         <div
           className={cn(
-            'absolute flex items-center justify-center bg-gradient-to-b from-background/30 to-muted/90 p-2',
+            'absolute flex items-center justify-center bg-gradient-to-b from-zinc-700/30 to-zinc-950/90 p-2',
             isOpened ? 'inset-x-0 bottom-0 h-12' : 'inset-0'
           )}
         >

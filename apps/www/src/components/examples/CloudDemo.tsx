@@ -8,16 +8,16 @@ import {
 } from '@udecode/plate-cloud';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 
-import { CloudAttachmentElement } from '@/components/plate-ui/cloud/cloud-attachment-element';
-import { CloudImageElement } from '@/components/plate-ui/cloud/cloud-image-element';
-import { CloudToolbarButtons } from '@/components/plate-ui/cloud/cloud-toolbar-buttons';
-import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
 import { createMyPlugins, MyValue } from '@/plate/plate-types';
+import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud/cloud-attachment-element';
+import { CloudImageElement } from '@/registry/default/plate-ui/cloud/cloud-image-element';
+import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud/cloud-toolbar-buttons';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 const plugins = createMyPlugins(
   [

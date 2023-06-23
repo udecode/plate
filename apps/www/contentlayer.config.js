@@ -3,7 +3,6 @@ import {
   defineNestedType,
   makeSource,
 } from 'contentlayer/source-files';
-import fs from 'node:fs';
 import path from 'node:path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -88,6 +87,11 @@ export const Doc = defineDocumentType(() => ({
       default: false,
       required: false,
     },
+    toc: {
+      type: 'boolean',
+      default: true,
+      required: false,
+    },
   },
   computedFields,
 }));
@@ -120,32 +124,19 @@ export default makeSource({
 
             node.__rawString__ = codeEl.children?.[0].value;
             node.__src__ = node.properties?.__src__;
+            node.__style__ = node.properties?.__style__;
           }
         });
       },
       [
         rehypePrettyCode,
         {
-          theme: {
-            dark: JSON.parse(
-              fs.readFileSync(
-                path.resolve('./src/lib/themes/dark.json'),
-                'utf8'
-              )
-            ),
-            light: JSON.parse(
-              fs.readFileSync(
-                path.resolve('./src/lib/themes/light.json'),
-                'utf8'
-              )
-            ),
+          getHighlighter: async () => {
+            const theme = await loadTheme(
+              path.join(process.cwd(), '/src/lib/themes/dark.json')
+            );
+            return await getHighlighter({ theme });
           },
-          // getHighlighter: async () => {
-          //   const theme = await loadTheme(
-          //     path.join(process.cwd(), "lib/vscode-theme.json")
-          //   )
-          //   return await getHighlighter({ theme })
-          // },
           onVisitLine(node) {
             // Prevent lines from collapsing in `display: grid` mode, and allow empty
             // lines to be copy/pasted
@@ -183,6 +174,10 @@ export default makeSource({
 
             if (node.__event__) {
               preElement.properties.__event__ = node.__event__;
+            }
+
+            if (node.__style__) {
+              preElement.properties['__style__'] = node.__style__;
             }
           }
         });

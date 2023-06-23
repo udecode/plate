@@ -1,6 +1,11 @@
 import React, { ReactNode } from 'react';
-import { Badge } from './ui/badge';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
+
+import { Badge } from '@/registry/default/ui/badge';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/registry/default/ui/hover-card';
 
 export function BadgeList({ children }) {
   return <div className="flex gap-2">{children}</div>;

@@ -3,12 +3,12 @@ import { Plate } from '@udecode/plate-common';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { Icons } from '@/components/icons';
-import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { createMyPlugins, MyValue } from '@/plate/plate-types';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 export interface SearchHighlightToolbarProps {
   icon: any;

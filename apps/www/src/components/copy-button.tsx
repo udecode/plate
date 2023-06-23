@@ -2,16 +2,17 @@
 
 import * as React from 'react';
 import { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
+import { Icons } from './icons';
+
+import { Event, trackEvent } from '@/lib/events';
+import { cn } from '@/lib/utils';
+import { Button } from '@/registry/default/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Icons } from './icons';
-
-import { Event, trackEvent } from '@/lib/events';
-import { cn } from '@/lib/utils';
+} from '@/registry/default/ui/dropdown-menu';
 import { NpmCommands } from '@/types/unist';
 
 interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
@@ -43,10 +44,11 @@ export function CopyButton({
   }, [hasCopied]);
 
   return (
-    <button
-      type="button"
+    <Button
+      size="icon"
+      variant="ghost"
       className={cn(
-        'relative z-20 inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-sm font-medium transition-all hover:bg-muted focus:outline-none',
+        'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
         className
       )}
       onClick={() => {
@@ -71,7 +73,7 @@ export function CopyButton({
       ) : (
         <Icons.copy className="h-3 w-3" />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -102,19 +104,22 @@ export function CopyWithClassNames({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(
-          'relative z-20 inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-sm font-medium transition-all hover:bg-muted focus:outline-none',
-          className
-        )}
-        {...props}
-      >
-        {hasCopied ? (
-          <Icons.check className="h-3 w-3" />
-        ) : (
-          <Icons.copy className="h-3 w-3" />
-        )}
-        <span className="sr-only">Copy</span>
+      <DropdownMenuTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className={cn(
+            'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
+            className
+          )}
+        >
+          {hasCopied ? (
+            <Icons.check className="h-3 w-3" />
+          ) : (
+            <Icons.copy className="h-3 w-3" />
+          )}
+          <span className="sr-only">Copy</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => copyToClipboard(value)}>
@@ -163,38 +168,38 @@ export function CopyNpmCommandButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(
-          'relative z-20 inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-sm font-medium transition-all hover:bg-muted focus:outline-none',
-          className
-        )}
-        {...props}
-      >
-        {hasCopied ? (
-          <Icons.check className="h-3 w-3" />
-        ) : (
-          <Icons.copy className="h-3 w-3" />
-        )}
-        <span className="sr-only">Copy</span>
+      <DropdownMenuTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className={cn(
+            'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
+            className
+          )}
+        >
+          {hasCopied ? (
+            <Icons.check className="h-3 w-3" />
+          ) : (
+            <Icons.copy className="h-3 w-3" />
+          )}
+          <span className="sr-only">Copy</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => copyCommand(commands.__npmCommand__, 'npm')}
         >
-          <Icons.npm className="mr-2 h-4 w-4" />
-          <span>npm</span>
+          npm
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => copyCommand(commands.__yarnCommand__, 'yarn')}
         >
-          <Icons.yarn className="mr-2 h-4 w-4" />
-          <span>yarn</span>
+          yarn
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => copyCommand(commands.__pnpmCommand__, 'pnpm')}
         >
-          <Icons.pnpm className="mr-2 h-4 w-4" />
-          <span>pnpm</span>
+          pnpm
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

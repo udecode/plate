@@ -10,12 +10,11 @@ import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
-import { badgeVariants } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
 import { getTableOfContents } from '@/lib/toc';
 import { absoluteUrl, cn } from '@/lib/utils';
+import { badgeVariants } from '@/registry/default/ui/badge';
+import { ScrollArea } from '@/registry/default/ui/scroll-area';
 
 interface DocPageProps {
   params: {
@@ -156,18 +155,23 @@ export default async function DocPage({ params }: DocPageProps) {
             ))}
           </div>
         ) : null}
-        <Separator className="my-4 md:my-6" />
-        <Mdx code={doc.body.code} />
-        <Separator className="my-4 md:my-6" />
+
+        <div className="pb-12 pt-8">
+          <Mdx code={doc.body.code} />
+        </div>
+
         <DocsPager doc={doc} />
       </div>
-      <div className="hidden text-sm xl:block">
-        <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] overflow-hidden pt-6">
-          <ScrollArea className="pb-10">
-            <DashboardTableOfContents toc={toc} />
-          </ScrollArea>
+
+      {doc.toc && (
+        <div className="hidden text-sm xl:block">
+          <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] overflow-hidden pt-6">
+            <ScrollArea className="pb-10">
+              <DashboardTableOfContents toc={toc} />
+            </ScrollArea>
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

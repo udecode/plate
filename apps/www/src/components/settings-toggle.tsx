@@ -2,9 +2,14 @@
 
 import React from 'react';
 import { settingsStore } from './context/settings-store';
-import { Toggle } from './ui/toggle';
 import { Icons } from './icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+
+import { Toggle } from '@/registry/default/ui/toggle';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/registry/default/ui/tooltip';
 
 export function SettingsToggle() {
   const showSettings = settingsStore.use.showSettings();
@@ -22,9 +27,7 @@ export function SettingsToggle() {
         </Toggle>
       </TooltipTrigger>
 
-      <TooltipContent>
-        {showSettings ? 'Hide' : 'Show'} settings
-      </TooltipContent>
+      <TooltipContent>{showSettings ? 'Hide' : 'Show'} settings</TooltipContent>
     </Tooltip>
   );
 }

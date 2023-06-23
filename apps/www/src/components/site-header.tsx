@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { buttonVariants } from './ui/button';
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { MainNav } from './main-nav';
@@ -8,6 +7,7 @@ import { ModeToggle } from './mode-toggle';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/registry/default/ui/button';
 
 export function SiteHeader() {
   return (
@@ -15,11 +15,11 @@ export function SiteHeader() {
       <div className="container flex h-14 items-center">
         <MainNav />
         <MobileNav />
-        <div className="flex flex-1 items-center justify-between space-x-2 sm:space-x-4 md:justify-end">
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div>
-          <nav className="flex items-center space-x-1">
+          <nav className="flex items-center">
             <Link
               href={siteConfig.links.github}
               target="_blank"
@@ -28,13 +28,12 @@ export function SiteHeader() {
               <div
                 className={cn(
                   buttonVariants({
-                    size: 'sm',
                     variant: 'ghost',
                   }),
                   'w-9 px-0'
                 )}
               >
-                <Icons.gitHub className="h-5 w-5" />
+                <Icons.gitHub className="h-4 w-4" />
                 <span className="sr-only">GitHub</span>
               </div>
             </Link>
@@ -46,13 +45,12 @@ export function SiteHeader() {
               <div
                 className={cn(
                   buttonVariants({
-                    size: 'sm',
                     variant: 'ghost',
                   }),
                   'w-9 px-0'
                 )}
               >
-                <Icons.discord className="h-5 w-5 fill-current" />
+                <Icons.discord className="h-4 w-4 fill-current" />
                 <span className="sr-only">Discord</span>
               </div>
             </Link>

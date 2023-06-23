@@ -1,5 +1,7 @@
+import { createContentlayerPlugin } from 'next-contentlayer';
+
 /** @type {import('next').NextConfig} */
-const config = {
+const nextConfig = {
   // Enable React strict mode.
   // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
   reactStrictMode: true,
@@ -64,4 +66,8 @@ const config = {
   // },
 };
 
-export default config;
+const withContentlayer = createContentlayerPlugin({
+  // Additional Contentlayer config options
+});
+
+export default withContentlayer(nextConfig);

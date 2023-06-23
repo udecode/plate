@@ -1,16 +1,16 @@
-[data-theme="light"] {
+[data-theme='light'] {
   display: block;
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   display: none;
 }
 
-.dark [data-theme="light"] {
+.dark [data-theme='light'] {
   display: none;
 }
 
-.dark [data-theme="dark"] {
+.dark [data-theme='dark'] {
   display: block;
 }
 
@@ -25,7 +25,7 @@
 }
 
 [data-rehype-pretty-code-fragment] .line {
-  @apply px-4 min-h-[1rem] py-0.5 w-full inline-block;
+  @apply inline-block min-h-[1rem] w-full px-4 py-0.5;
 }
 
 [data-rehype-pretty-code-fragment] [data-line-numbers] .line {
@@ -33,7 +33,7 @@
 }
 
 [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
-  @apply text-muted-foreground/40 text-xs;
+  @apply text-xs text-zinc-50/40;
   counter-increment: line;
   content: counter(line);
   display: inline-block;
@@ -43,7 +43,7 @@
 }
 
 [data-rehype-pretty-code-fragment] .line--highlighted {
-  @apply bg-muted;
+  @apply bg-zinc-700/50;
 }
 
 [data-rehype-pretty-code-fragment] .line-highlighted span {
@@ -51,7 +51,7 @@
 }
 
 [data-rehype-pretty-code-fragment] .word--highlighted {
-  @apply rounded-md bg-muted border-muted border p-1;
+  @apply rounded-md border-zinc-700/70 bg-zinc-700/50 p-1;
 }
 
 .dark [data-rehype-pretty-code-fragment] .word--highlighted {
@@ -59,7 +59,7 @@
 }
 
 [data-rehype-pretty-code-title] {
-  @apply mt-2 pt-6 px-4 text-sm font-medium;
+  @apply mt-2 px-4 pt-6 text-sm font-medium;
 }
 
 [data-rehype-pretty-code-title] + pre {

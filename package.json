@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn g:build",
+    "build:registry": "yarn workspace www build:registry",
     "brl": "yarn g:brl",
     "check:install": "yarn dlx @yarnpkg/doctor@4.0.0-rc.10 --configFileName config/.ncurc.yml packages",
     "deps:check": "yarn dlx npm-check-updates@latest --configFileName config/.ncurc.yml --deep --mergeConfig",

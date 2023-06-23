@@ -3,15 +3,17 @@ import React from 'react';
 import { Metadata } from 'next';
 
 import { Analytics } from '@/components/analytics';
-import { Providers } from '@/components/context/Providers';
+import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { StyleSwitcher } from '@/components/style-switcher';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { Toaster } from '@/components/ui/toaster';
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
+import {
+  Toaster as DefaultToaster,
+  Toaster as NewYorkToaster,
+} from '@/registry/default/ui/toaster';
 
 export const metadata: Metadata = {
   title: {
@@ -96,9 +98,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </div>
           <TailwindIndicator />
         </Providers>
-        <StyleSwitcher />
         <Analytics />
-        <Toaster />
+
+        <NewYorkToaster />
+        <DefaultToaster />
       </body>
     </html>
   );
