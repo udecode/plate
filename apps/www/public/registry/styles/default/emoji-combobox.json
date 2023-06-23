@@ -1,0 +1,17 @@
+{
+  "name": "emoji-combobox",
+  "isFolder": true,
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "emoji-combobox.tsx",
+      "content": "import React from 'react';\nimport {\n  EmojiItemData,\n  KEY_EMOJI,\n  TEmojiCombobox,\n  useEmojiComboboxState,\n} from '@udecode/plate-emoji';\nimport { EmojiComboboxItem } from './emoji-combobox-item';\n\nimport { Combobox } from '@/registry/default/ui/combobox/combobox';\n\nexport function EmojiCombobox<TData extends EmojiItemData = EmojiItemData>({\n  pluginKey = KEY_EMOJI,\n  id = pluginKey,\n  ...props\n}: TEmojiCombobox<TData>) {\n  const { trigger, onSelectItem } = useEmojiComboboxState({ pluginKey });\n\n  return (\n    <Combobox\n      id={id}\n      trigger={trigger}\n      controlled\n      onSelectItem={onSelectItem}\n      onRenderItem={EmojiComboboxItem}\n      {...props}\n    />\n  );\n}\n"
+    },
+    {
+      "name": "emoji-combobox-item.tsx",
+      "content": "import React from 'react';\nimport { ComboboxItemProps } from '@udecode/plate-combobox';\nimport { EmojiItemData } from '@udecode/plate-emoji';\n\nexport function EmojiComboboxItem({\n  item,\n}: ComboboxItemProps<EmojiItemData>): JSX.Element {\n  const {\n    data: { id, emoji },\n  } = item;\n\n  return (\n    <div>\n      {emoji} :{id}:\n    </div>\n  );\n}\n"
+    }
+  ],
+  "type": "components:ui"
+}

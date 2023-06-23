@@ -1,0 +1,12 @@
+{
+  "name": "comment-leaf",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "comment-leaf.tsx",
+      "content": "'use client';\n\nimport React from 'react';\nimport {\n  TCommentText,\n  useCommentLeaf,\n  useCommentLeafState,\n} from '@udecode/plate-comments';\nimport { PlateLeaf, PlateLeafProps, Value } from '@udecode/plate-common';\n\nexport function CommentLeaf({\n  className,\n  ...props\n}: PlateLeafProps<Value, TCommentText>) {\n  const { children, nodeProps, leaf } = props;\n\n  const state = useCommentLeafState({ leaf });\n  const { props: rootProps } = useCommentLeaf(state);\n\n  // hide resolved comments\n  if (!state.commentCount) return <>{children}</>;\n\n  let aboveChildren = <>{children}</>;\n\n  const backgroundColor = state.isActive\n    ? 'rgb(255, 212, 0)'\n    : 'rgba(255, 212, 0, 0.14)';\n\n  if (!state.isActive) {\n    for (let i = 1; i < state.commentCount; i++) {\n      aboveChildren = (\n        <span\n          style={{\n            backgroundColor: 'rgba(255, 212, 0, 0.14)',\n          }}\n        >\n          {aboveChildren}\n        </span>\n      );\n    }\n  }\n\n  return (\n    <PlateLeaf\n      {...props}\n      nodeProps={{\n        ...rootProps,\n        style: {\n          backgroundColor,\n          borderBottom: '2px solid rgb(255, 212, 0)',\n        },\n        ...nodeProps,\n      }}\n    >\n      {aboveChildren}\n    </PlateLeaf>\n  );\n}\n"
+    }
+  ],
+  "type": "components:ui"
+}

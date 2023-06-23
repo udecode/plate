@@ -1,0 +1,12 @@
+{
+  "name": "fixed-toolbar",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "fixed-toolbar.tsx",
+      "content": "import React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { Toolbar, ToolbarProps } from '@/registry/default/ui/toolbar';\n\nconst FixedToolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(\n  ({ className, ...props }: ToolbarProps, ref) => {\n    return (\n      <Toolbar\n        ref={ref}\n        className={cn(\n          'supports-backdrop-blur:bg-background/60 sticky left-0 top-[57px] z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 backdrop-blur',\n          className\n        )}\n        {...props}\n      />\n    );\n  }\n);\nFixedToolbar.displayName = 'FixedToolbar';\n\nexport { FixedToolbar };\n"
+    }
+  ],
+  "type": "components:ui"
+}

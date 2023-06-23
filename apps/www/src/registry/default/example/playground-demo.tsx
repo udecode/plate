@@ -227,16 +227,22 @@ export const usePlaygroundPlugins = ({
 };
 
 export interface ResetPluginsEffectProps {
+  initialValue: any;
   plugins: any;
 }
 
-export function ResetPluginsEffect({ plugins }: ResetPluginsEffectProps) {
+export function ResetPluginsEffect({
+  initialValue,
+  plugins,
+}: ResetPluginsEffectProps) {
   const editor = usePlateSelectors().editor();
   const setEditor = usePlateActions().editor();
 
   useEffect(() => {
-    setEditor(createPlateEditor({ id: editor.id, plugins }));
-  }, [plugins, setEditor, editor.id]);
+    const newEditor = createPlateEditor({ id: editor.id, plugins });
+    newEditor.children = initialValue ?? editor.children;
+    setEditor(newEditor);
+  }, [plugins, setEditor, editor.id, editor.children, initialValue]);
 
   return null;
 }
@@ -265,7 +271,7 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
         plugins={plugins}
         normalizeInitialValue
       >
-        <ResetPluginsEffect plugins={plugins} />
+        <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
 
         <FixedToolbar>
           <FixedToolbarButtons id={id} />
@@ -310,7 +316,7 @@ export function PlaygroundDemo({ id }: { id?: ValueId }) {
           {!id && (
             <>
               <div className="sticky top-full z-10 h-0 w-0">
-                <div className="-translate-x-[200%] -translate-y-full p-5">
+                <div className="-translate-y-full translate-x-[-200%] p-5">
                   <SettingsToggle />
                 </div>
               </div>

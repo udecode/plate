@@ -1,0 +1,12 @@
+{
+  "name": "indent-list-toolbar-button",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "indent-list-toolbar-button.tsx",
+      "content": "import React from 'react';\nimport {\n  ListStyleType,\n  useIndentListToolbarButton,\n  useIndentListToolbarButtonState,\n} from '@udecode/plate-indent-list';\n\nimport { Icons } from '@/components/icons';\nimport {\n  ToolbarButton,\n  ToolbarButtonProps,\n} from '@/registry/default/ui/toolbar';\n\nexport function IndentListToolbarButton({\n  nodeType = ListStyleType.Disc,\n}: ToolbarButtonProps & { nodeType?: ListStyleType }) {\n  const state = useIndentListToolbarButtonState({ nodeType });\n  const { props } = useIndentListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      tooltip={\n        nodeType === ListStyleType.Disc ? 'Bulleted List' : 'Numbered List'\n      }\n      {...props}\n    >\n      {nodeType === ListStyleType.Disc ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n}\n"
+    }
+  ],
+  "type": "components:ui"
+}

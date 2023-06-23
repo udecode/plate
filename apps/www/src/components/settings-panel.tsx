@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { categoryIds, settingsStore } from './context/settings-store';

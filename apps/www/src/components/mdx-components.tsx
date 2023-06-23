@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { config } from 'dotenv';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 import {
@@ -30,7 +29,9 @@ import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { StyleWrapper } from './style-wrapper';
 
+import { useConfig } from '@/hooks/use-config';
 import { Event } from '@/lib/events';
 import { cn } from '@/lib/utils';
 import { Style } from '@/registry/styles';
@@ -294,6 +295,7 @@ interface MdxProps {
 }
 
 export function Mdx({ code }: MdxProps) {
+  const [config] = useConfig();
   const Component = useMDXComponent(code, {
     style: config.style,
   });

@@ -48,11 +48,14 @@ for (const style of styles) {
       name: "${item.name}",
       type: "${item.type}",
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
-      component: React.lazy(() => import("@/registry/${style.name}/${type}/${
-      item.name
-    }")),
-      files: [${resolveFiles.map((file) => `"${file}"`)}],
-    },`;
+      files: [${resolveFiles.map((file) => `"${file}"`)}],${
+      item.isFolder
+        ? `
+    },`
+        : `
+      component: React.lazy(() => import("@/registry/${style.name}/${type}/${item.name}")),
+    },`
+    }`;
   }
 
   index += `
@@ -64,23 +67,25 @@ index += `
 `;
 
 // Write style index.
-const indexPath = path.join(process.cwd(), '__registry__/index.tsx');
-rimraf.sync(indexPath);
-if (fs.existsSync(path.dirname(indexPath))) {
-  fs.mkdirSync(path.dirname(indexPath), { recursive: true });
-}
-fs.writeFileSync(indexPath, index);
+const indexPath = path.join(process.cwd(), 'src/__registry__/index.tsx');
+
+const writeFile: typeof fs.writeFileSync = (filePath, ...args) => {
+  const dirPath = path.dirname(filePath);
+
+  rimraf.sync(filePath);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  fs.writeFileSync(filePath, ...args);
+};
+
+writeFile(indexPath, index);
 
 // ----------------------------------------------------------------------------
 // Build registry/styles/[style]/[name].json.
 // ----------------------------------------------------------------------------
 for (const style of styles) {
   const targetPath = path.join(REGISTRY_PATH, 'styles', style.name);
-
-  // Create directory if it doesn't exist.
-  if (!fs.existsSync(targetPath)) {
-    fs.mkdirSync(targetPath, { recursive: true });
-  }
 
   for (const item of result.data) {
     if (item.type !== 'components:ui') {
@@ -89,7 +94,7 @@ for (const style of styles) {
 
     const files = item.files?.map((file) => {
       const content = fs.readFileSync(
-        path.join(process.cwd(), 'registry', style.name, file),
+        path.join(process.cwd(), 'src/registry', style.name, file),
         'utf8'
       );
 
@@ -104,7 +109,7 @@ for (const style of styles) {
       files,
     };
 
-    fs.writeFileSync(
+    writeFile(
       path.join(targetPath, `${item.name}.json`),
       JSON.stringify(payload, null, 2),
       'utf8'
@@ -116,28 +121,19 @@ for (const style of styles) {
 // Build registry/styles/index.json.
 // ----------------------------------------------------------------------------
 const stylesJson = JSON.stringify(styles, null, 2);
-fs.writeFileSync(
-  path.join(REGISTRY_PATH, 'styles/index.json'),
-  stylesJson,
-  'utf8'
-);
+writeFile(path.join(REGISTRY_PATH, 'styles/index.json'), stylesJson, 'utf8');
 
 // ----------------------------------------------------------------------------
 // Build registry/index.json.
 // ----------------------------------------------------------------------------
 const names = result.data.filter((item) => item.type === 'components:ui');
 const registryJson = JSON.stringify(names, null, 2);
-rimraf.sync(path.join(REGISTRY_PATH, 'index.json'));
-fs.writeFileSync(path.join(REGISTRY_PATH, 'index.json'), registryJson, 'utf8');
+writeFile(path.join(REGISTRY_PATH, 'index.json'), registryJson, 'utf8');
 
 // ----------------------------------------------------------------------------
 // Build registry/colors/index.json.
 // ----------------------------------------------------------------------------
 const colorsTargetPath = path.join(REGISTRY_PATH, 'colors');
-rimraf.sync(colorsTargetPath);
-if (!fs.existsSync(colorsTargetPath)) {
-  fs.mkdirSync(colorsTargetPath, { recursive: true });
-}
 
 const colorsData: Record<string, any> = {};
 for (const [color, value] of Object.entries(colors)) {
@@ -171,7 +167,7 @@ for (const [color, value] of Object.entries(colors)) {
   }
 }
 
-fs.writeFileSync(
+writeFile(
   path.join(colorsTargetPath, 'index.json'),
   JSON.stringify(colorsData, null, 2),
   'utf8'
@@ -296,7 +292,7 @@ for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone', 'lime']) {
     colors: base['cssVars'],
   });
 
-  fs.writeFileSync(
+  writeFile(
     path.join(REGISTRY_PATH, `colors/${baseColor}.json`),
     JSON.stringify(base, null, 2),
     'utf8'
@@ -381,10 +377,6 @@ for (const theme of themes) {
   );
 }
 
-fs.writeFileSync(
-  path.join(REGISTRY_PATH, `themes.css`),
-  themeCSS.join('\n'),
-  'utf8'
-);
+writeFile(path.join(REGISTRY_PATH, `themes.css`), themeCSS.join('\n'), 'utf8');
 
 console.info('✅ Done!');

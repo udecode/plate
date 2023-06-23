@@ -1,0 +1,12 @@
+{
+  "name": "mention-element",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "mention-element.tsx",
+      "content": "import React, { forwardRef } from 'react';\nimport {\n  getHandler,\n  PlateElement,\n  PlateElementProps,\n  Value,\n} from '@udecode/plate-common';\nimport { TMentionElement } from '@udecode/plate-mention';\nimport { useFocused, useSelected } from 'slate-react';\n\nimport { cn } from '@/lib/utils';\n\nexport interface MentionElementProps\n  extends PlateElementProps<Value, TMentionElement> {\n  /**\n   * Prefix rendered before mention\n   */\n  prefix?: string;\n  onClick?: (mentionNode: any) => void;\n  renderLabel?: (mentionable: TMentionElement) => string;\n}\n\nconst MentionElement = forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  MentionElementProps\n>(({ prefix, renderLabel, className, onClick, ...props }, ref) => {\n  const { children, element } = props;\n\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement\n      ref={ref}\n      className={cn(\n        'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-0.5 align-baseline text-[0.9em]',\n        selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',\n        className\n      )}\n      data-slate-value={element.value}\n      contentEditable={false}\n      onClick={getHandler(onClick, element)}\n      {...props}\n    >\n      {prefix}\n      {renderLabel ? renderLabel(element) : element.value}\n      {children}\n    </PlateElement>\n  );\n});\n\nMentionElement.displayName = 'MentionElement';\n\nexport { MentionElement };\n"
+    }
+  ],
+  "type": "components:ui"
+}

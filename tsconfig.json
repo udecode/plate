@@ -27,7 +27,9 @@
       "@/lib/*": ["apps/www/src/lib/*"],
       "@/types/*": ["apps/www/src/types/*"],
       "@/components/*": ["apps/www/src/components/*"],
-      "@/styles/*": ["apps/www/src/styles/*"],
+      "@/registry/*": ["apps/www/src/registry/*"],
+      "@/__registry__/*": ["apps/www/src/__registry__/*"],
+      "@/hooks/*": ["apps/www/src/hooks/*"],
       "@/config/*": ["apps/www/src/config/*"],
       "contentlayer/generated": ["apps/www/.contentlayer/generated"]
     }

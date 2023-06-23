@@ -17,10 +17,11 @@ const toggleVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-transparent hover:bg-muted data-[state=on]:bg-accent hover:text-muted-foreground data-[state=on]:text-accent-foreground',
+        default:
+          'bg-transparent hover:bg-muted hover:text-muted-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground',
         outline:
           'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
-        floating: 'bg-primary text-primary-foreground rounded-full',
+        floating: 'rounded-full bg-primary text-primary-foreground',
       },
       size: {
         default: 'h-10 px-3',

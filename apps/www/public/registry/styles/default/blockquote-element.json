@@ -1,0 +1,12 @@
+{
+  "name": "blockquote-element",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "blockquote-element.tsx",
+      "content": "'use client';\n\nimport React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nconst BlockquoteElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps\n>(({ className, children, ...props }, ref) => {\n  return (\n    <PlateElement\n      asChild\n      ref={ref}\n      className={cn(\n        'mx-0 my-2 border-l-2 py-2.5 pl-4 pr-5',\n        'border-[#ddd] text-[#aaa]',\n        className\n      )}\n      {...props}\n    >\n      <blockquote>{children}</blockquote>\n    </PlateElement>\n  );\n});\nBlockquoteElement.displayName = 'BlockquoteElement';\n\nexport { BlockquoteElement };\n"
+    }
+  ],
+  "type": "components:ui"
+}

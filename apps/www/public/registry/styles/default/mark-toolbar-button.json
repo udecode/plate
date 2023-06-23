@@ -1,0 +1,12 @@
+{
+  "name": "mark-toolbar-button",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "mark-toolbar-button.tsx",
+      "content": "'use client';\n\nimport React from 'react';\nimport {\n  useMarkToolbarButton,\n  useMarkToolbarButtonState,\n} from '@udecode/plate-common';\n\nimport {\n  ToolbarButton,\n  ToolbarButtonProps,\n} from '@/registry/default/ui/toolbar';\n\nexport interface MarkToolbarButtonProps\n  extends Pick<ToolbarButtonProps, 'tooltip' | 'children'> {\n  nodeType: string;\n  clear?: string | string[];\n}\n\n/**\n * Toolbar button to toggle the mark of the leaves in selection.\n */\nexport function MarkToolbarButton({\n  clear,\n  nodeType,\n  ...props\n}: MarkToolbarButtonProps) {\n  const state = useMarkToolbarButtonState({ clear, nodeType });\n  const { props: buttonProps } = useMarkToolbarButton(state);\n\n  return <ToolbarButton {...buttonProps} {...props} />;\n}\n"
+    }
+  ],
+  "type": "components:ui"
+}

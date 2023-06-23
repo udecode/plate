@@ -1,3 +1,4 @@
 node_modules
 **/dist
 **/sandpack/files
+apps/www/src/__registry__/index.tsx

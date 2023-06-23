@@ -16,9 +16,9 @@ const nextConfig = {
     ],
   },
 
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
 
   staticPageGenerationTimeout: 1200,
 

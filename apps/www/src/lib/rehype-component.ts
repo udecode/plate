@@ -1,10 +1,12 @@
+/* eslint-disable @dword-design/import-alias/prefer-alias */
 import fs from 'node:fs';
 import path from 'node:path';
-import { UnistNode, UnistTree } from 'types/unist';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 import { Index } from '../__registry__';
 import { styles } from '../registry/styles';
+
+import { UnistNode, UnistTree } from '@/types/unist';
 
 export function rehypeComponent() {
   return async (tree: UnistTree) => {
@@ -239,16 +241,16 @@ function getNodeAttributeByName(node: UnistNode, name: string) {
   return node.attributes?.find((attribute) => attribute.name === name);
 }
 
-function getComponentSourceFileContent(node: UnistNode) {
-  const src = getNodeAttributeByName(node, 'src')?.value as string;
-
-  if (!src) {
-    return null;
-  }
-
-  // Read the source file.
-  const filePath = path.join(process.cwd(), src);
-  const source = fs.readFileSync(filePath, 'utf8');
-
-  return source;
-}
+// function getComponentSourceFileContent(node: UnistNode) {
+//   const src = getNodeAttributeByName(node, 'src')?.value as string;
+//
+//   if (!src) {
+//     return null;
+//   }
+//
+//   // Read the source file.
+//   const filePath = path.join(process.cwd(), src);
+//   const source = fs.readFileSync(filePath, 'utf8');
+//
+//   return source;
+// }

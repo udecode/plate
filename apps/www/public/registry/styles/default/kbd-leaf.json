@@ -1,0 +1,12 @@
+{
+  "name": "kbd-leaf",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "kbd-leaf.tsx",
+      "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function KbdLeaf({ className, children, ...props }: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      asChild\n      className={cn(\n        'whitespace-pre-wrap border border-black bg-background',\n        'mr-[0.2em] rounded-[3px] px-[0.4em] py-[0.2em] text-[75%] leading-[normal] shadow-[2px_2px_3px_0_rgba(0,_0,_0.75)]',\n        \"font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_Courier,_monospace]\",\n        className\n      )}\n      {...props}\n    >\n      <kbd>{children}</kbd>\n    </PlateLeaf>\n  );\n}\n"
+    }
+  ],
+  "type": "components:ui"
+}

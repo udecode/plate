@@ -3,6 +3,7 @@ import * as z from 'zod';
 export const registrySchema = z.array(
   z.object({
     name: z.string(),
+    isFolder: z.boolean().optional(),
     dependencies: z.array(z.string()).optional(),
     registryDependencies: z.array(z.string()).optional(),
     files: z.array(z.string()),

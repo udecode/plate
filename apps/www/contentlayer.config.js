@@ -9,6 +9,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { codeImport } from 'remark-code-import';
 import remarkGfm from 'remark-gfm';
+import { getHighlighter, loadTheme } from 'shiki';
 import { visit } from 'unist-util-visit';
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';

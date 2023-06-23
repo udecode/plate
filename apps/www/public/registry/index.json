@@ -1,0 +1,612 @@
+[
+  {
+    "name": "cloud",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/cloud/cloud-attachment-element.tsx",
+      "ui/cloud/cloud-image-element.tsx",
+      "ui/cloud/cloud-resize-controls.tsx",
+      "ui/cloud/cloud-status-bar.tsx",
+      "ui/cloud/cloud-toolbar-buttons.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "code-block-element",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/code-block-element/code-block-element.css",
+      "ui/code-block-element/code-block-element.tsx",
+      "ui/code-block-element/code-block-select-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "color-dropdown-menu",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/color-dropdown-menu/color-constants.ts",
+      "ui/color-dropdown-menu/color-dropdown-menu.tsx",
+      "ui/color-dropdown-menu/color-dropdown-menu-items.tsx",
+      "ui/color-dropdown-menu/color-input.tsx",
+      "ui/color-dropdown-menu/color-picker.tsx",
+      "ui/color-dropdown-menu/colors-custom.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "combobox",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/combobox/combobox.tsx",
+      "ui/combobox/combobox-content.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "comments-popover",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/comments-popover/comment-avatar.tsx",
+      "ui/comments-popover/comment-create-form.tsx",
+      "ui/comments-popover/comment-item.tsx",
+      "ui/comments-popover/comment-more-dropdown.tsx",
+      "ui/comments-popover/comment-reply-items.tsx",
+      "ui/comments-popover/comment-resolve-button.tsx",
+      "ui/comments-popover/comment-value.tsx",
+      "ui/comments-popover/comments-popover.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "cursor-overlay",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/cursor-overlay/cursor.tsx",
+      "ui/cursor-overlay/cursor-overlay.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "draggables",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/draggables/draggable.tsx",
+      "ui/draggables/with-draggables.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "emoji-combobox",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/emoji-combobox/emoji-combobox.tsx",
+      "ui/emoji-combobox/emoji-combobox-item.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "emoji-dropdown-menu",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/emoji-dropdown-menu/emoji-dropdown-menu.tsx",
+      "ui/emoji-dropdown-menu/emoji-icons.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker-content.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker-navigation.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker-preview.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker-search-and-clear.tsx",
+      "ui/emoji-dropdown-menu/emoji-picker-search-bar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "table-cell-element",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-cell-element/table-cell-element.tsx",
+      "ui/table-cell-element/table-cell-header-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "table-element",
+    "isFolder": true,
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-element/table-borders.tsx",
+      "ui/table-element/table-element.tsx",
+      "ui/table-element/table-floating-toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "align-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/align-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "avatar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/avatar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "blockquote-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/blockquote-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "code-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/code-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "code-line-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/code-line-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "code-syntax-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/code-syntax-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "comment-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/comment-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "comment-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/comment-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "emoji-toolbar-dropdown",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/emoji-toolbar-dropdown.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "excalidraw-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/excalidraw-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "fixed-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/fixed-toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "fixed-toolbar-buttons",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/fixed-toolbar-buttons.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/floating-toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "floating-toolbar-buttons",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/floating-toolbar-buttons.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "heading-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/heading-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "highlight-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/highlight-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "hr-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/hr-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "image-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/image-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "indent-list-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/indent-list-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "indent-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/indent-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "input",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/input.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "insert-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/insert-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "kbd-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/kbd-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "line-height-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/line-height-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "link-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/link-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "link-floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/link-floating-toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "link-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/link-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "list-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/list-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "list-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/list-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "mark-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/mark-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "media-embed-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/media-embed-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "media-floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/media-floating-toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "media-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/media-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "mention-combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/mention-combobox.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "mention-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/mention-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "mention-input-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/mention-input-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "mode-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/mode-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "more-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/more-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "outdent-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/outdent-toolbar-button.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "paragraph-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/paragraph-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "placeholders",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/placeholders.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "popover",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/popover.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "search-highlight-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/search-highlight-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "table-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "table-row-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-row-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "todo-list-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/todo-list-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "toggle",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/toggle.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/toolbar.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "tooltip",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/tooltip.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "turn-into-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/turn-into-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  }
+]

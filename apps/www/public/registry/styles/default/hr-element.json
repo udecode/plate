@@ -1,0 +1,12 @@
+{
+  "name": "hr-element",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "hr-element.tsx",
+      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { useFocused, useSelected } from 'slate-react';\n\nimport { cn } from '@/lib/utils';\n\nconst HrElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps\n>(({ className, nodeProps, ...props }, ref) => {\n  const { children } = props;\n\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement ref={ref} {...props}>\n      <hr\n        contentEditable={false}\n        {...nodeProps}\n        className={cn(\n          'my-6 box-content h-0.5 cursor-pointer border-none bg-gray-200 bg-clip-content py-1',\n          'rounded-[1px]',\n          selected && focused && 'bg-blue-500',\n          className\n        )}\n      />\n      {children}\n    </PlateElement>\n  );\n});\nHrElement.displayName = 'HrElement';\n\nexport { HrElement };\n"
+    }
+  ],
+  "type": "components:ui"
+}

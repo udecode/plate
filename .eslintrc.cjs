@@ -63,6 +63,9 @@ module.exports = {
             alias: {
               '@/plate': './apps/www/src/lib/plate',
               '@/components': './apps/www/src/components',
+              '@/hooks': './apps/www/src/hooks',
+              '@/__registry__': './apps/www/src/__registry__',
+              '@/registry': './apps/www/src/registry',
               '@/styles': './apps/www/src/styles',
               '@/lib': './apps/www/src/lib',
             },

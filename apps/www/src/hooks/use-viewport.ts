@@ -1,9 +1,19 @@
-import { useState, useEffect } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 
-export const getViewport = () => ({
-  width: window.innerWidth,
-  height: window.innerHeight,
-});
+export const getViewport = () => {
+  if (typeof window === 'undefined') {
+    return {
+      width: 0,
+      height: 0,
+    };
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+};
 
 export const useViewport = () => {
   const [viewport, setViewport] = useState(getViewport);
