@@ -1,17 +1,17 @@
 'use client';
 
 import React, { ReactNode, useState } from 'react';
-import { Icons } from './icons';
-
-import { cn } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/registry/default/ui/accordion';
-import { Card } from '@/registry/default/ui/card';
-import { Separator } from '@/registry/default/ui/separator';
+} from './ui/accordion';
+import { Card } from './ui/card';
+import { Separator } from './ui/separator';
+import { Icons } from './icons';
+
+import { cn } from '@/lib/utils';
 
 type Item = {
   name: string;

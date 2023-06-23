@@ -3,12 +3,12 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { useTableBordersDropdownMenuContentState } from '@udecode/plate-table';
 
 import { Icons, iconVariants } from '@/components/icons';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
 } from '@/registry/default/ui/dropdown-menu';
-import { Separator } from '@/registry/default/ui/separator';
 
 const TableBordersDropdownMenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,

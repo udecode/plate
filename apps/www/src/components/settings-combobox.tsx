@@ -2,12 +2,6 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { settingsStore } from './context/settings-store';
-import { Icons } from './icons';
-
-import { settingPluginItems } from '@/config/setting-plugins';
-import { settingValues } from '@/config/setting-values';
-import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/registry/default/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -15,7 +9,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/ui/command';
+} from './ui/command';
+import { Icons } from './icons';
+
+import { settingPluginItems } from '@/config/setting-plugins';
+import { settingValues } from '@/config/setting-values';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/registry/default/ui/button';
 import {
   Popover,
   PopoverContent,

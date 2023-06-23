@@ -7,11 +7,11 @@ import {
 } from '@udecode/plate-media';
 
 import { Icons } from '@/components/icons';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/registry/default/ui/button';
 import { inputVariants } from '@/registry/default/ui/input';
 import { popoverVariants } from '@/registry/default/ui/popover';
-import { Separator } from '@/registry/default/ui/separator';
 
 export const mediaFloatingOptions: PopoverProps['floatingOptions'] = {
   middleware: [

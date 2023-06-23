@@ -1,8 +1,4 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/registry/default/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 interface CalloutProps {
   icon?: string;

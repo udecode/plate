@@ -5,10 +5,6 @@ import { DialogProps } from '@radix-ui/react-alert-dialog';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-
-import { docsConfig } from '@/config/docs';
-import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,7 +13,11 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@/registry/default/ui/command';
+} from './ui/command';
+
+import { docsConfig } from '@/config/docs';
+import { cn } from '@/lib/utils';
+import { Button } from '@/registry/default/ui/button';
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter();

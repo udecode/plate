@@ -1,6 +1,23 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { categoryIds, settingsStore } from './context/settings-store';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from './ui/accordion';
+import { Badge } from './ui/badge';
+import {
+  BottomSheet,
+  BottomSheetBackdrop,
+  BottomSheetContainer,
+  BottomSheetContent,
+  BottomSheetHeader,
+} from './ui/bottom-sheet';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
+import { Switch } from './ui/switch';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
 
@@ -14,29 +31,12 @@ import {
 import { useDebounce } from '@/hooks/use-debounce';
 import { useViewport } from '@/hooks/use-viewport';
 import { cn } from '@/lib/utils';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/registry/default/ui/accordion';
-import { Badge } from '@/registry/default/ui/badge';
-import {
-  BottomSheet,
-  BottomSheetBackdrop,
-  BottomSheetContainer,
-  BottomSheetContent,
-  BottomSheetHeader,
-} from '@/registry/default/ui/bottom-sheet';
 import { buttonVariants } from '@/registry/default/ui/button';
-import { Checkbox } from '@/registry/default/ui/checkbox';
-import { Label } from '@/registry/default/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/ui/popover';
-import { Switch } from '@/registry/default/ui/switch';
 import {
   Tooltip,
   TooltipContent,

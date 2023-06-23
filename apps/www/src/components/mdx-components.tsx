@@ -5,6 +5,15 @@ import { config } from 'dotenv';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from './ui/accordion';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { AspectRatio } from './ui/aspect-ratio';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import {
   APIAttributes,
   APIItem,
   APIList,
@@ -24,24 +33,6 @@ import { CopyButton, CopyNpmCommandButton } from './copy-button';
 
 import { Event } from '@/lib/events';
 import { cn } from '@/lib/utils';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/registry/default/ui/accordion';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/registry/default/ui/alert';
-import { AspectRatio } from '@/registry/default/ui/aspect-ratio';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/registry/default/ui/tabs';
 import { Style } from '@/registry/styles';
 import { NpmCommands } from '@/types/unist';
 

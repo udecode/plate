@@ -7,13 +7,13 @@ import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { siteConfig } from '@/config/site';
-import { fontSans } from '@/lib/fonts';
-import { cn } from '@/lib/utils';
 import {
   Toaster as DefaultToaster,
   Toaster as NewYorkToaster,
-} from '@/registry/default/ui/toaster';
+} from '@/components/ui/toaster';
+import { siteConfig } from '@/config/site';
+import { fontSans } from '@/lib/fonts';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: {

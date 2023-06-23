@@ -11,11 +11,11 @@ import {
 } from '@udecode/plate-link';
 
 import { Icons } from '@/components/icons';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/ui/button';
 import { inputVariants } from '@/registry/default/ui/input';
 import { popoverVariants } from '@/registry/default/ui/popover';
-import { Separator } from '@/registry/default/ui/separator';
 
 export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();

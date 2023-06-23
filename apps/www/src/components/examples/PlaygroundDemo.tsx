@@ -22,9 +22,9 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
-import { PlatePluginComponent } from '@udecode/plate-core';
 import {
   createPlateEditor,
+  PlatePluginComponent,
   usePlateActions,
   usePlateSelectors,
 } from '@udecode/plate-core';
@@ -88,13 +88,13 @@ import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { createMyPlugins, MyValue } from '@/plate/plate-types';
-import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover/comments-popover';
-import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay/cursor-overlay';
-import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
-import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
+import { CommentsPopover } from '@/registry/default/ui/comments-popover/comments-popover';
+import { CursorOverlay } from '@/registry/default/ui/cursor-overlay/cursor-overlay';
+import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/registry/default/ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/registry/default/ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/registry/default/ui/floating-toolbar-buttons';
+import { MentionCombobox } from '@/registry/default/ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
   id,

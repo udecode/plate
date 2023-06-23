@@ -64,8 +64,12 @@ index += `
 `;
 
 // Write style index.
-rimraf.sync(path.join(process.cwd(), '__registry__/index.tsx'));
-fs.writeFileSync(path.join(process.cwd(), '__registry__/index.tsx'), index);
+const indexPath = path.join(process.cwd(), '__registry__/index.tsx');
+rimraf.sync(indexPath);
+if (fs.existsSync(path.dirname(indexPath))) {
+  fs.mkdirSync(path.dirname(indexPath), { recursive: true });
+}
+fs.writeFileSync(indexPath, index);
 
 // ----------------------------------------------------------------------------
 // Build registry/styles/[style]/[name].json.

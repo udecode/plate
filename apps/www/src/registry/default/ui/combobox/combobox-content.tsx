@@ -15,8 +15,8 @@ import {
 } from '@udecode/plate-combobox';
 import { PortalBody } from '@udecode/plate-common';
 
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/registry/default/ui/scroll-area';
 
 export function ComboboxItem<TData extends Data = NoData>({
   combobox,

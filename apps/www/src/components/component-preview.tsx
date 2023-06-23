@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { StyleSwitcher } from './style-switcher';
 import { ThemeWrapper } from './theme-wrapper';
@@ -9,12 +10,6 @@ import { ThemeWrapper } from './theme-wrapper';
 import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/registry/default/ui/tabs';
 import { styles } from '@/registry/styles';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {

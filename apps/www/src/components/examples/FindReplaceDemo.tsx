@@ -8,7 +8,7 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { createMyPlugins, MyValue } from '@/plate/plate-types';
-import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
+import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
 
 export interface SearchHighlightToolbarProps {
   icon: any;
