@@ -108,7 +108,6 @@
     "framer-motion": "10.12.16",
     "lodash.template": "^4.5.0",
     "lucide-react": "^0.246.0",
-    "markdown-wasm": "^1.2.0",
     "next": "^13.4.6",
     "next-contentlayer": "0.3.3",
     "next-themes": "^0.2.1",

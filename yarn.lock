@@ -16201,13 +16201,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-wasm@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "markdown-wasm@npm:1.2.0"
-  checksum: 5c39dcad7d359df959ee8d7b6013a7a1591f5ae4af26d45cc2b5d03dd76a053dbcd434bf0dee45b904ca291b85e55fd9e44ff35f5fb513959e2f52d2705844e0
-  languageName: node
-  linkType: hard
-
 "marked@npm:^4.0.10":
   version: 4.3.0
   resolution: "marked@npm:4.3.0"
@@ -24479,7 +24472,6 @@ __metadata:
     framer-motion: "npm:10.12.16"
     lodash.template: "npm:^4.5.0"
     lucide-react: "npm:^0.246.0"
-    markdown-wasm: "npm:^1.2.0"
     mdast-util-toc: "npm:^6.1.1"
     next: "npm:^13.4.6"
     next-contentlayer: "npm:0.3.3"
