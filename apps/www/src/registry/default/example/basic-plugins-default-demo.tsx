@@ -11,7 +11,7 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { basicEditorValue } from './BasicPluginsComponentsDemo';
+import { basicEditorValue } from './basic-plugins-components-demo';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { MyPlatePlugin, MyValue } from '@/plate/plate-types';

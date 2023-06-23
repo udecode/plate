@@ -1,7 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-import { PlaygroundDemo } from '@/components/examples/PlaygroundDemo';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
@@ -12,6 +11,7 @@ import { StyleSwitcher } from '@/components/style-switcher';
 import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+import { PlaygroundDemo } from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/ui/button';
 
 export default function IndexPage() {

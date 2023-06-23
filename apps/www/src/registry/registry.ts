@@ -486,7 +486,7 @@ const ui: Registry = [
 
 const example: Registry = [
   {
-    name: 'accordion-demo',
+    name: 'playground-demo',
     type: 'components:example',
     registryDependencies: ['accordion'],
     files: ['example/accordion-demo.tsx'],

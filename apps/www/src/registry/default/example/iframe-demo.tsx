@@ -4,7 +4,7 @@ import { Plate } from '@udecode/plate-common';
 import {
   createEditableVoidPlugin,
   EditableVoidElement,
-} from './EditableVoidsDemo';
+} from './editable-voids-demo';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
