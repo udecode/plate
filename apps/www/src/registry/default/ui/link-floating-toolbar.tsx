@@ -9,13 +9,13 @@ import {
   useFloatingLinkInsertState,
   useFloatingLinkSelectors,
 } from '@udecode/plate-link';
+import { buttonVariants } from './button';
+import { inputVariants } from './input';
+import { popoverVariants } from './popover';
+import { Separator } from './separator';
 
 import { Icons } from '@/components/icons';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { inputVariants } from '@/registry/default/ui/input';
-import { popoverVariants } from '@/registry/default/ui/popover';
 
 export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();

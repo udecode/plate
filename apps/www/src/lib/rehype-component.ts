@@ -21,6 +21,11 @@ export function rehypeComponent() {
         try {
           for (const style of styles) {
             const component = Index[style.name][name];
+
+            if (!component) {
+              throw new Error(`Component ${name} not found in ${style.name}`);
+            }
+
             const src = component.files[0];
 
             // Read the source file.
@@ -83,6 +88,11 @@ export function rehypeComponent() {
         try {
           for (const style of styles) {
             const component = Index[style.name][name];
+
+            if (!component) {
+              throw new Error(`Component ${name} not found in ${style.name}`);
+            }
+
             const src = component.files[0];
 
             // Read the source file.

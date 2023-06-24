@@ -450,11 +450,25 @@ const ui: Registry = [
     files: ['ui/popover.tsx'],
   },
   {
+    name: 'scroll-area',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/scroll-area.tsx'],
+  },
+  {
     name: 'search-highlight-leaf',
     type: 'components:ui',
     dependencies: [],
     registryDependencies: [],
     files: ['ui/search-highlight-leaf.tsx'],
+  },
+  {
+    name: 'separator',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/separator.tsx'],
   },
   {
     name: 'table-cell-element',

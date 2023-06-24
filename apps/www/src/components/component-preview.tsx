@@ -25,7 +25,7 @@ export function ComponentPreview({
   className,
   extractClassname,
   extractedClassNames,
-  align = 'center',
+  align = 'start',
   ...props
 }: ComponentPreviewProps) {
   const [config] = useConfig();
@@ -84,40 +84,43 @@ export function ComponentPreview({
           </TabsList>
         </div>
         <TabsContent value="preview" className="relative rounded-md border">
-          <div className="flex items-center justify-between p-4">
-            {styles.length > 1 && <StyleSwitcher />}
-            {extractedClassNames ? (
-              <CopyWithClassNames
-                value={codeString}
-                classNames={extractedClassNames}
-              />
-            ) : (
-              codeString && <CopyButton value={codeString} />
-            )}
-          </div>
-          <ThemeWrapper>
-            <div
-              // eslint-disable-next-line tailwindcss/no-custom-classname
-              className={cn(
-                'preview flex min-h-[350px] w-full justify-center p-10',
-                {
-                  'items-center': align === 'center',
-                  'items-start': align === 'start',
-                  'items-end': align === 'end',
-                }
+          {styles.length > 1 && (
+            <div className="flex items-center justify-between p-4">
+              <StyleSwitcher />
+              {extractedClassNames ? (
+                <CopyWithClassNames
+                  value={codeString}
+                  classNames={extractedClassNames}
+                />
+              ) : (
+                codeString && <CopyButton value={codeString} />
               )}
-            >
-              <React.Suspense
-                fallback={
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </div>
-                }
-              >
-                {Preview}
-              </React.Suspense>
             </div>
+          )}
+          <ThemeWrapper>
+            <React.Suspense
+              fallback={
+                // eslint-disable-next-line tailwindcss/no-custom-classname
+                <div className="preview flex min-h-[350px] w-full items-center justify-center p-10 text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </div>
+              }
+            >
+              <div
+                // eslint-disable-next-line tailwindcss/no-custom-classname
+                className={cn(
+                  'preview relative flex h-full min-h-[350px] w-full flex-col p-10',
+                  {
+                    'items-center': align === 'center',
+                    'items-start': align === 'start',
+                    'items-end': align === 'end',
+                  }
+                )}
+              >
+                <div className="h-full w-full grow">{Preview}</div>
+              </div>
+            </React.Suspense>
           </ThemeWrapper>
         </TabsContent>
         <TabsContent value="code">

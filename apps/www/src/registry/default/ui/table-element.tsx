@@ -26,9 +26,9 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { Popover, PopoverContent, popoverVariants } from './popover';
+import { Separator } from './separator';
 
 import { Icons, iconVariants } from '@/components/icons';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const TableBordersDropdownMenuContent = forwardRef<

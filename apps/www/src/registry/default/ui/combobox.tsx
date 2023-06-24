@@ -21,8 +21,8 @@ import {
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
+import { ScrollArea } from './scroll-area';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 export function ComboboxItem<TData extends Data = NoData>({

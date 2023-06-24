@@ -547,11 +547,29 @@
     "type": "components:ui"
   },
   {
+    "name": "scroll-area",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/scroll-area.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "search-highlight-leaf",
     "dependencies": [],
     "registryDependencies": [],
     "files": [
       "ui/search-highlight-leaf.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "separator",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/separator.tsx"
     ],
     "type": "components:ui"
   },

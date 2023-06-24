@@ -1,6 +1,7 @@
-import { template } from 'lodash';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+// @ts-nocheck
+import template from 'lodash.template';
+import fs from 'node:fs';
+import path from 'node:path';
 import { rimraf } from 'rimraf';
 import { colorMapping, colors } from '../src/registry/colors';
 import { registry } from '../src/registry/registry';
@@ -37,8 +38,8 @@ for (const style of styles) {
     //   continue
     // }
 
-    const resolveFiles = item.files.map(
-      (file) => `registry/${style.name}/${file}`
+    const resolveFiles = item.files.map((file) =>
+      item.external ? `${file}` : `registry/${style.name}/${file}`
     );
 
     const type = item.type.split(':')[1];
@@ -73,7 +74,7 @@ for (const style of styles) {
       name: '${subItem}',
       type: '${item.type}',
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
-      files: ['${item.files[subIndex]}'],
+      files: ['${resolveFiles[subIndex]}'],
       component: React.lazy(() => import('@/registry/${style.name}/${type}/${
           item.name
         }/${subItem}')),

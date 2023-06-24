@@ -8,10 +8,10 @@ import {
   AccordionTrigger,
 } from './ui/accordion';
 import { Card } from './ui/card';
-import { Separator } from './ui/separator';
 import { Icons } from './icons';
 
 import { cn } from '@/lib/utils';
+import { Separator } from '@/registry/default/ui/separator';
 
 type Item = {
   name: string;

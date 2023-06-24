@@ -23,7 +23,7 @@ export function DocsPager({ doc }: DocsPagerProps) {
       {pager?.prev?.href && (
         <Link
           href={pager.prev.href}
-          className={cn(buttonVariants({ variant: 'outline' }), 'ml-auto')}
+          className={cn(buttonVariants({ variant: 'outline' }))}
         >
           <Icons.chevronLeft className="mr-2 h-4 w-4" />
           {pager.prev.title}

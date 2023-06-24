@@ -5,13 +5,13 @@ import {
   FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media';
+import { Button, buttonVariants } from './button';
+import { inputVariants } from './input';
+import { popoverVariants } from './popover';
+import { Separator } from './separator';
 
 import { Icons } from '@/components/icons';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/registry/default/ui/button';
-import { inputVariants } from '@/registry/default/ui/input';
-import { popoverVariants } from '@/registry/default/ui/popover';
 
 export const mediaFloatingOptions: PopoverProps['floatingOptions'] = {
   middleware: [

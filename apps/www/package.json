@@ -6,8 +6,7 @@
   "scripts": {
     "build": "contentlayer build && yarn build:registry && next build",
     "build:registry": "ts-node --esm --project ./scripts/tsconfig.scripts.json ./scripts/build-registry.ts",
-    "dev": "next dev",
-    "dev2": "concurrently \"contentlayer dev\" \"next dev\"",
+    "dev": "concurrently \"contentlayer dev\" \"next dev\"",
     "start": "next start",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn lint --fix",

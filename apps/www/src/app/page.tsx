@@ -8,11 +8,11 @@ import {
   PageHeaderHeading,
 } from '@/components/page-header';
 import { StyleSwitcher } from '@/components/style-switcher';
-import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/ui/button';
+import { Separator } from '@/registry/default/ui/separator';
 
 export default function IndexPage() {
   return (
