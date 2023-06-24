@@ -7,7 +7,6 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
-import { StyleSwitcher } from '@/components/style-switcher';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
@@ -17,7 +16,6 @@ import { Separator } from '@/registry/default/ui/separator';
 export default function IndexPage() {
   return (
     <div className="container relative">
-      <StyleSwitcher />
       <PageHeader className="pb-8">
         <Link
           // TODO:
