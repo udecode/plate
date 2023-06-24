@@ -49,8 +49,8 @@ export function ComponentPreview({
       );
     }
 
-    return <Component />;
-  }, [name, config.style]);
+    return <Component {...props} />;
+  }, [config.style, name, props]);
 
   const codeString = React.useMemo(() => {
     if (Code?.props['data-rehype-pretty-code-fragment'] !== undefined) {
@@ -85,7 +85,7 @@ export function ComponentPreview({
         </div>
         <TabsContent value="preview" className="relative rounded-md border">
           <div className="flex items-center justify-between p-4">
-            <StyleSwitcher />
+            {styles.length > 1 && <StyleSwitcher />}
             {extractedClassNames ? (
               <CopyWithClassNames
                 value={codeString}

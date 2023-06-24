@@ -247,7 +247,7 @@ export function ResetPluginsEffect({
   return null;
 }
 
-export function PlaygroundDemo({ id }: { id?: ValueId }) {
+export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
 
   const initialValue = usePlaygroundValue(id);

@@ -55,7 +55,7 @@ const DocProperties = defineNestedType(() => ({
 
 export const Doc = defineDocumentType(() => ({
   name: 'Doc',
-  filePathPattern: `**/docs/**/*.mdx`,
+  filePathPattern: `docs/**/*.mdx`,
   contentType: 'mdx',
   fields: {
     title: {

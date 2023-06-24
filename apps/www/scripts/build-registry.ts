@@ -1,7 +1,6 @@
-// @ts-nocheck
-import template from 'lodash.template';
-import fs from 'node:fs';
-import path, { basename } from 'node:path';
+import { template } from 'lodash';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { rimraf } from 'rimraf';
 import { colorMapping, colors } from '../src/registry/colors';
 import { registry } from '../src/registry/registry';
@@ -14,7 +13,7 @@ const REGISTRY_PATH = path.join(process.cwd(), 'public/registry');
 const result = registrySchema.safeParse(registry);
 
 if (!result.success) {
-  console.error(result.error);
+  console.error((result as any).error);
   // eslint-disable-next-line unicorn/no-process-exit
   process.exit(1);
 }
@@ -67,12 +66,8 @@ for (const style of styles) {
 
     if (item.items) {
       // If 'items' is defined
+      // @ts-ignore
       for (const [subIndex, subItem] of item.items.entries()) {
-        // Loop through each item in 'items'
-        const resolveSubItemFiles = item.files
-          .filter((file) => file.includes(subItem))
-          .map((file) => `registry/${style.name}/${file}`);
-
         index += `
     '${item.name}/${subItem}': {
       name: '${subItem}',
@@ -99,9 +94,9 @@ index += `
 const indexPath = path.join(process.cwd(), 'src/__registry__/index.tsx');
 
 const writeFile: typeof fs.writeFileSync = (filePath, ...args) => {
-  const dirPath = path.dirname(filePath);
+  const dirPath = path.dirname(filePath as string);
 
-  rimraf.sync(filePath);
+  rimraf.sync(filePath as string);
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
@@ -128,7 +123,7 @@ for (const style of styles) {
       );
 
       return {
-        name: basename(file),
+        name: path.basename(file),
         content,
       };
     });
@@ -299,7 +294,10 @@ for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone', 'lime']) {
     base['cssVars'][mode] = {};
     for (const [key, value] of Object.entries(values)) {
       if (typeof value === 'string') {
-        const resolvedColor = value.replaceAll('{{base}}-', `${baseColor}-`);
+        const resolvedColor = (value as any).replaceAll(
+          '{{base}}-',
+          `${baseColor}-`
+        );
         base['inlineColors'][mode][key] = resolvedColor;
 
         const [resolvedBase, scale] = resolvedColor.split('-');
