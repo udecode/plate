@@ -194,7 +194,7 @@ Returns the point before a location, with additional options to customize the be
 
 ### `getPointFromLocation`
 
-Returns the point from a location (default: selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
+Returns the point from a location (**Default:** selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -428,54 +428,394 @@ True if the node is the first child of its parent, false otherwise.
 
 ### `isMarkActive`
 
+Checks whether a node is the first child of its parent.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path of the node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the node is the first child of its parent, false otherwise.
+</APIReturns>
+
 ### `isPointAtWordEnd`
+
+Checks whether a point is at the end of a word.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Point">
+    The point to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the point is at the end of a word, false otherwise.
+</APIReturns>
 
 ### `isRangeAcrossBlocks`
 
+Determines whether the range (**Default:** selection) is across blocks.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Range | null" optional>
+    The range to check. If not provided, the selection range is used.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is across blocks, false if it's within a single block, or
+  undefined if the block was not found.
+</APIReturns>
+
 ### `isRangeInSameBlock`
+
+Determines whether the range is within the same block.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Range | null" optional>
+    The range to check. If not provided, the selection range is used.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is within the same block, false otherwise.
+</APIReturns>
 
 ### `isRangeInSingleText`
 
+Checks whether a range is within a single text path.
+
+<APIParameters>
+  <APIItem name="at" type="Range">
+    The range to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is within a single text path, false otherwise.
+</APIReturns>
+
 ### `isSelectionAtBlockEnd`
+
+Checks whether the selection focus is at the end of its parent block.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetAboveNodeOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the selection focus is at the end of its parent block, false
+  otherwise.
+</APIReturns>
 
 ### `isSelectionAtBlockStart`
 
+Checks whether the selection anchor or focus is at the start of its parent block.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetAboveNodeOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the selection anchor or focus is at the start of its parent block,
+  false otherwise.
+</APIReturns>
+
 ### `isSelectionExpanded`
+
+Checks whether the selection is expanded.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the selection is expanded, false otherwise.
+
+</APIReturns>
 
 ### `isTextByPath`
 
+Checks whether the node at a given path is a text node.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the node is a text node, false otherwise.
+
+</APIReturns>
+
 ### `isWordAfterTrigger`
 
+Checks whether the word at a given point is after a trigger (punctuation character).
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Point">
+    The point to check.
+  </APIItem>
+  <APIItem name="trigger" type="string">
+    The trigger character to check for.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An object containing the range from the point before the start of the previous
+  word to the given point, and a match if the text at the range starts with the
+  trigger and ends with word characters.
+</APIReturns>
+
 ### `queryEditor`
+
+Queries the editor state.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="QueryEditorOptions" optional>
+    The options object, which can include a filter function,
+    selectionAtBlockStart, selectionAtBlockEnd, allow, exclude, and at
+    properties.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the editor state matches the query, false otherwise.
+</APIReturns>
 
 ## Transforms
 
 ### `insertElements`
 
+Inserts nodes at a location in the document.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodes" type="TElement | TElement[]">
+    The nodes to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+
 ### `insertEmptyElement`
+
+Inserts an empty element at a location in the document.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The type of the element to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
 
 ### `moveChildren`
 
+Moves the children of a node to a path.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="MoveChildrenOptions">
+    The options object, which includes at, to, match, and fromStartIndex
+    properties.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+The number of children moved.
+
+</APIReturns>
+
 ### `removeMark`
+
+Removes a mark and triggers onChange if the selection is collapsed.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="RemoveMarkOptions">
+    The options object, which includes key, at, and shouldChange properties.
+  </APIItem>
+</APIParameters>
 
 ### `removeNodeChildren`
 
+Removes all children of a node.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node to remove children from.
+  </APIItem>
+  <APIItem name="options" type="RemoveNodesOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+
 ### `removeSelectionMark`
+
+Removes all marks from the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
 
 ### `replaceNodeChildren`
 
+Replaces the children of a node: removes then inserts them.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodeChildrenOptions">
+    The options object, which includes at, nodes, insertOptions, and
+    removeOptions properties.
+  </APIItem>
+</APIParameters>
+
 ### `selectEndOfBlockAboveSelection`
+
+Selects the end point of the block above the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
 
 ### `setMarks`
 
+Sets marks to selected text.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="marks" type="EMarks">
+    The marks to set.
+  </APIItem>
+  <APIItem name="clear" type="string | string[]" optional>
+    Marks to clear.
+  </APIItem>
+</APIParameters>
+
 ### `toggleMark`
+
+Adds or removes marks in the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="ToggleMarkOptions">
+    The options object, which includes key and clear properties.
+  </APIItem>
+</APIParameters>
 
 ### `toggleWrapNodes`
 
+Unwraps a node if the node type is in selection, otherwise wraps it.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The type of the node.
+  </APIItem>
+</APIParameters>
+
 ### `wrapNodeChildren`
+
+Wraps the children of a node into a single element.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="element" type="N">
+    The new parent element.
+  </APIItem>
+  <APIItem name="options" type="WrapNodesOptions">
+    The options object, which includes at property.
+  </APIItem>
+</APIParameters>
 
 ## Utils
 
 ### `createDocumentNode`
 
+Creates a new document node.
+
+<APIParameters>
+  <APIItem name="type" type="string" optional>
+    The type of the node. Default is 'p'.
+  </APIItem>
+  <APIItem name="text" type="string" optional>
+    The text for the node. Default is an empty string.
+  </APIItem>
+  <APIItem name="remaining" type="TDescendant[]" optional>
+    The remaining nodes. Default is an empty array.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An array of TDescendant nodes, starting with the newly created node.
+</APIReturns>
+
 ### `createNode`
+
+Creates a new node.
+
+<APIParameters>
+  <APIItem name="type" type="string" optional>
+    The type of the node. Default is 'p'.
+  </APIItem>
+  <APIItem name="text" type="string" optional>
+    The text for the node. Default is an empty string.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A new TElement node.
+
+</APIReturns>
