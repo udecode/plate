@@ -145,7 +145,7 @@ export const settingValues = {
   //   id: 'dnd',
   //   label: 'Drag & Drop',
   //   value: [],
-  //   route: '/docs/components/draggables',
+  //   route: '/docs/components/draggable',
   //   plugins: [KEY_DND],
   // },
   emoji: {

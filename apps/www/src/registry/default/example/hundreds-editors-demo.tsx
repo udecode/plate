@@ -4,7 +4,7 @@ import { Plate } from '@udecode/plate-common';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
-import { MyValue } from '@/plate/plate-types';
+import { MyValue } from '@/types/plate-types';
 
 const initialValues = createMultiEditorsValue();
 

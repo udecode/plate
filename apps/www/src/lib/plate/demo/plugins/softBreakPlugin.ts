@@ -3,7 +3,7 @@ import { SoftBreakPlugin } from '@udecode/plate-break';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { ELEMENT_TD } from '@udecode/plate-table';
 
-import { MyPlatePlugin } from '@/plate/plate-types';
+import { MyPlatePlugin } from '@/types/plate-types';
 
 export const softBreakPlugin: Partial<MyPlatePlugin<SoftBreakPlugin>> = {
   options: {

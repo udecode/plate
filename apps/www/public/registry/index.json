@@ -1,7 +1,6 @@
 [
   {
     "name": "cloud",
-    "isFolder": true,
     "dependencies": [],
     "registryDependencies": [],
     "files": [
@@ -11,99 +10,95 @@
       "ui/cloud/cloud-status-bar.tsx",
       "ui/cloud/cloud-toolbar-buttons.tsx"
     ],
+    "items": [
+      "cloud-attachment-element",
+      "cloud-image-element",
+      "cloud-resize-controls",
+      "cloud-status-bar",
+      "cloud-toolbar-buttons"
+    ],
     "type": "components:ui"
   },
   {
     "name": "code-block-element",
-    "isFolder": true,
     "dependencies": [],
     "registryDependencies": [],
     "files": [
-      "ui/code-block-element/code-block-element.css",
       "ui/code-block-element/code-block-element.tsx",
+      "ui/code-block-element/code-block-element.css",
       "ui/code-block-element/code-block-select-element.tsx"
+    ],
+    "items": [
+      "code-block-element",
+      "code-block-element.css",
+      "code-block-select-element"
     ],
     "type": "components:ui"
   },
   {
     "name": "color-dropdown-menu",
-    "isFolder": true,
     "dependencies": [],
     "registryDependencies": [],
     "files": [
-      "ui/color-dropdown-menu/color-constants.ts",
       "ui/color-dropdown-menu/color-dropdown-menu.tsx",
+      "ui/color-dropdown-menu/color-constants.ts",
       "ui/color-dropdown-menu/color-dropdown-menu-items.tsx",
       "ui/color-dropdown-menu/color-input.tsx",
       "ui/color-dropdown-menu/color-picker.tsx",
       "ui/color-dropdown-menu/colors-custom.tsx"
     ],
-    "type": "components:ui"
-  },
-  {
-    "name": "combobox",
-    "isFolder": true,
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/combobox/combobox.tsx",
-      "ui/combobox/combobox-content.tsx"
+    "items": [
+      "color-dropdown-menu",
+      "color-constants",
+      "color-dropdown-menu-items",
+      "color-input",
+      "color-picker",
+      "colors-custom"
     ],
     "type": "components:ui"
   },
   {
     "name": "comments-popover",
-    "isFolder": true,
     "dependencies": [],
     "registryDependencies": [],
     "files": [
+      "ui/comments-popover/comments-popover.tsx",
       "ui/comments-popover/comment-avatar.tsx",
       "ui/comments-popover/comment-create-form.tsx",
       "ui/comments-popover/comment-item.tsx",
       "ui/comments-popover/comment-more-dropdown.tsx",
       "ui/comments-popover/comment-reply-items.tsx",
       "ui/comments-popover/comment-resolve-button.tsx",
-      "ui/comments-popover/comment-value.tsx",
-      "ui/comments-popover/comments-popover.tsx"
+      "ui/comments-popover/comment-value.tsx"
+    ],
+    "items": [
+      "comments-popover",
+      "comment-avatar",
+      "comment-create-form",
+      "comment-item",
+      "comment-more-dropdown",
+      "comment-reply-items",
+      "comment-resolve-button",
+      "comment-value"
     ],
     "type": "components:ui"
   },
   {
-    "name": "cursor-overlay",
-    "isFolder": true,
+    "name": "draggable",
     "dependencies": [],
     "registryDependencies": [],
     "files": [
-      "ui/cursor-overlay/cursor.tsx",
-      "ui/cursor-overlay/cursor-overlay.tsx"
+      "ui/draggable/draggable.tsx",
+      "ui/draggable/with-draggables.tsx"
     ],
-    "type": "components:ui"
-  },
-  {
-    "name": "draggables",
-    "isFolder": true,
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/draggables/draggable.tsx",
-      "ui/draggables/with-draggables.tsx"
-    ],
-    "type": "components:ui"
-  },
-  {
-    "name": "emoji-combobox",
-    "isFolder": true,
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/emoji-combobox/emoji-combobox.tsx",
-      "ui/emoji-combobox/emoji-combobox-item.tsx"
+    "items": [
+      "draggable",
+      "with-draggables"
     ],
     "type": "components:ui"
   },
   {
     "name": "emoji-dropdown-menu",
-    "isFolder": true,
     "dependencies": [],
     "registryDependencies": [],
     "files": [
@@ -116,28 +111,15 @@
       "ui/emoji-dropdown-menu/emoji-picker-search-and-clear.tsx",
       "ui/emoji-dropdown-menu/emoji-picker-search-bar.tsx"
     ],
-    "type": "components:ui"
-  },
-  {
-    "name": "table-cell-element",
-    "isFolder": true,
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/table-cell-element/table-cell-element.tsx",
-      "ui/table-cell-element/table-cell-header-element.tsx"
-    ],
-    "type": "components:ui"
-  },
-  {
-    "name": "table-element",
-    "isFolder": true,
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/table-element/table-borders.tsx",
-      "ui/table-element/table-element.tsx",
-      "ui/table-element/table-floating-toolbar.tsx"
+    "items": [
+      "emoji-dropdown-menu",
+      "emoji-icons",
+      "emoji-picker",
+      "emoji-picker-content",
+      "emoji-picker-navigation",
+      "emoji-picker-preview",
+      "emoji-picker-search-and-clear",
+      "emoji-picker-search-bar"
     ],
     "type": "components:ui"
   },
@@ -205,6 +187,15 @@
     "type": "components:ui"
   },
   {
+    "name": "combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/combobox.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "comment-leaf",
     "dependencies": [],
     "registryDependencies": [],
@@ -223,11 +214,29 @@
     "type": "components:ui"
   },
   {
+    "name": "cursor-overlay",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/cursor-overlay.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "dropdown-menu",
     "dependencies": [],
     "registryDependencies": [],
     "files": [
       "ui/dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "emoji-combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/emoji-combobox.tsx"
     ],
     "type": "components:ui"
   },
@@ -547,11 +556,29 @@
     "type": "components:ui"
   },
   {
+    "name": "table-cell-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-cell-element.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "table-dropdown-menu",
     "dependencies": [],
     "registryDependencies": [],
     "files": [
       "ui/table-dropdown-menu.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "table-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/table-element.tsx"
     ],
     "type": "components:ui"
   },

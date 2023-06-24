@@ -12,7 +12,7 @@ import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { createPlateUI } from '@/plate/createPlateUI';
-import { MyValue } from '@/plate/plate-types';
+import { MyValue } from '@/types/plate-types';
 
 const plugins = createPlugins<MyValue>(
   [

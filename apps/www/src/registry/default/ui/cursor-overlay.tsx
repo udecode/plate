@@ -1,7 +1,17 @@
 import React from 'react';
-import { CursorData, CursorProps } from '@udecode/plate-cursor';
+import { createStore } from '@udecode/plate-common';
+import {
+  CursorData,
+  CursorOverlay as CursorOverlayPrimitive,
+  CursorOverlayProps,
+  CursorProps,
+} from '@udecode/plate-cursor';
 
 import { cn } from '@/lib/utils';
+
+export const cursorStore = createStore('cursor')({
+  cursors: {},
+});
 
 export function Cursor({
   data,
@@ -43,5 +53,19 @@ export function Cursor({
         />
       )}
     </>
+  );
+}
+
+export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
+  const dynamicCursors = cursorStore.use.cursors();
+
+  const allCursors = { ...cursors, ...dynamicCursors };
+
+  return (
+    <CursorOverlayPrimitive
+      {...props}
+      cursors={allCursors}
+      onRenderCursor={Cursor}
+    />
   );
 }

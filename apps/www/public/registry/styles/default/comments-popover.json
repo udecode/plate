@@ -1,9 +1,12 @@
 {
   "name": "comments-popover",
-  "isFolder": true,
   "dependencies": [],
   "registryDependencies": [],
   "files": [
+    {
+      "name": "comments-popover.tsx",
+      "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentProvider,\n  CommentsPositioner,\n  SCOPE_ACTIVE_COMMENT,\n  useFloatingCommentsContentState,\n  useFloatingCommentsState,\n} from '@udecode/plate-comments';\nimport { PortalBody } from '@udecode/plate-common';\nimport { CommentCreateForm } from './comment-create-form';\nimport { CommentItem } from './comment-item';\nimport { CommentReplyItems } from './comment-reply-items';\n\nimport { cn } from '@/lib/utils';\nimport { popoverVariants } from '@/registry/default/ui/popover';\n\nexport type FloatingCommentsContentProps = {\n  disableForm?: boolean;\n};\n\nexport function CommentsPopoverContent(props: FloatingCommentsContentProps) {\n  const { disableForm } = props;\n\n  const { ref, activeCommentId, hasNoComment, myUserId } =\n    useFloatingCommentsContentState();\n\n  return (\n    <CommentProvider\n      key={activeCommentId}\n      id={activeCommentId}\n      scope={SCOPE_ACTIVE_COMMENT}\n    >\n      <div ref={ref} className={cn(popoverVariants(), 'relative w-[310px]')}>\n        {!hasNoComment && (\n          <>\n            <CommentItem key={activeCommentId} commentId={activeCommentId} />\n\n            <CommentReplyItems />\n          </>\n        )}\n\n        {!!myUserId && !disableForm && <CommentCreateForm />}\n      </div>\n    </CommentProvider>\n  );\n}\n\nexport function CommentsPopover() {\n  const { loaded, activeCommentId } = useFloatingCommentsState();\n\n  if (!loaded || !activeCommentId) return null;\n\n  return (\n    <PortalBody>\n      <CommentsPositioner className=\"absolute z-50 w-[418px] pb-4\">\n        <CommentsPopoverContent />\n      </CommentsPositioner>\n    </PortalBody>\n  );\n}\n"
+    },
     {
       "name": "comment-avatar.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport { useUserById } from '@udecode/plate-comments';\n\nimport {\n  Avatar,\n  AvatarFallback,\n  AvatarImage,\n} from '@/registry/default/ui/avatar';\n\nexport function CommentAvatar({ userId }: { userId: string | null }) {\n  const user = useUserById(userId);\n  if (!user) return null;\n\n  return (\n    <Avatar className=\"h-5 w-5\">\n      <AvatarImage src={user.avatarUrl} alt={user.name} />\n      <AvatarFallback>{user.name?.[0]}</AvatarFallback>\n    </Avatar>\n  );\n}\n"
@@ -31,11 +34,17 @@
     {
       "name": "comment-value.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentEditActions,\n  CommentEditTextarea,\n  useCommentValue,\n} from '@udecode/plate-comments';\n\nimport { cn } from '@/lib/utils';\nimport { buttonVariants } from '@/registry/default/ui/button';\nimport { inputVariants } from '@/registry/default/ui/input';\n\nexport function CommentValue() {\n  const { textareaRef } = useCommentValue();\n\n  return (\n    <div className=\"my-2 flex flex-col items-end gap-2\">\n      <CommentEditTextarea\n        ref={textareaRef}\n        className={cn(inputVariants(), 'min-h-[60px]')}\n      />\n\n      <div className=\"flex space-x-2\">\n        <CommentEditActions.CancelButton\n          className={buttonVariants({ variant: 'outline', size: 'xs' })}\n        >\n          Cancel\n        </CommentEditActions.CancelButton>\n\n        <CommentEditActions.SaveButton\n          className={buttonVariants({ variant: 'default', size: 'xs' })}\n        >\n          Save\n        </CommentEditActions.SaveButton>\n      </div>\n    </div>\n  );\n}\n"
-    },
-    {
-      "name": "comments-popover.tsx",
-      "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentProvider,\n  CommentsPositioner,\n  SCOPE_ACTIVE_COMMENT,\n  useFloatingCommentsContentState,\n  useFloatingCommentsState,\n} from '@udecode/plate-comments';\nimport { PortalBody } from '@udecode/plate-common';\nimport { CommentCreateForm } from './comment-create-form';\nimport { CommentItem } from './comment-item';\nimport { CommentReplyItems } from './comment-reply-items';\n\nimport { cn } from '@/lib/utils';\nimport { popoverVariants } from '@/registry/default/ui/popover';\n\nexport type FloatingCommentsContentProps = {\n  disableForm?: boolean;\n};\n\nexport function CommentsPopoverContent(props: FloatingCommentsContentProps) {\n  const { disableForm } = props;\n\n  const { ref, activeCommentId, hasNoComment, myUserId } =\n    useFloatingCommentsContentState();\n\n  return (\n    <CommentProvider\n      key={activeCommentId}\n      id={activeCommentId}\n      scope={SCOPE_ACTIVE_COMMENT}\n    >\n      <div ref={ref} className={cn(popoverVariants(), 'relative w-[310px]')}>\n        {!hasNoComment && (\n          <>\n            <CommentItem key={activeCommentId} commentId={activeCommentId} />\n\n            <CommentReplyItems />\n          </>\n        )}\n\n        {!!myUserId && !disableForm && <CommentCreateForm />}\n      </div>\n    </CommentProvider>\n  );\n}\n\nexport function CommentsPopover() {\n  const { loaded, activeCommentId } = useFloatingCommentsState();\n\n  if (!loaded || !activeCommentId) return null;\n\n  return (\n    <PortalBody>\n      <CommentsPositioner className=\"absolute z-50 w-[418px] pb-4\">\n        <CommentsPopoverContent />\n      </CommentsPositioner>\n    </PortalBody>\n  );\n}\n"
     }
+  ],
+  "items": [
+    "comments-popover",
+    "comment-avatar",
+    "comment-create-form",
+    "comment-item",
+    "comment-more-dropdown",
+    "comment-reply-items",
+    "comment-resolve-button",
+    "comment-value"
   ],
   "type": "components:ui"
 }

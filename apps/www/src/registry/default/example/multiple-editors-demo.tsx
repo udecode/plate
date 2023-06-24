@@ -7,9 +7,9 @@ import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
-import { MyValue } from '@/plate/plate-types';
 import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
 import { TurnIntoDropdownMenu } from '@/registry/default/ui/turn-into-dropdown-menu';
+import { MyValue } from '@/types/plate-types';
 
 function Editor(props: PlateProps<MyValue>) {
   return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;

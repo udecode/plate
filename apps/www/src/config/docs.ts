@@ -459,8 +459,8 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Draggables',
-          href: '/docs/components/draggables',
+          title: 'Draggable',
+          href: '/docs/components/draggable',
           items: [],
         },
         {

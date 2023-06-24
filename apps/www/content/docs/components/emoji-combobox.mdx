@@ -9,9 +9,7 @@ docs:
     title: Emoji
 ---
 
-<ComponentExample src="/src/components/examples/PlaygroundDemo.tsx">
-  <PlaygroundDemo id="emoji" />
-</ComponentExample>
+<ComponentPreview name="playground-demo" id="emoji" />
 
 ## Installation
 
@@ -20,32 +18,23 @@ npx plate-ui add emoji-combobox
 ```
 
 <Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+<AccordionItem value="manual-installation">
+<AccordionTrigger>Manual Installation</AccordionTrigger>
+<AccordionContent>
 
-      1. Install the following dependencies:
+1. Install the following dependencies:
 
-      - [Combobox](/docs/combobox)
+- [Combobox](/docs/combobox)
 
+2. Copy and paste the following code into your project.
 
-      2. Copy and paste the following code into your project.
+- `components/plate-ui/emoji-combobox/emoji-combobox.tsx`
 
+<ComponentSource name="emoji-combobox" />
 
-      - `components/plate-ui/emoji-combobox/emoji-combobox.tsx`
+</AccordionContent>
 
-
-      <ComponentSource src="/src/components/plate-ui/emoji-combobox/emoji-combobox.tsx" />
-
-      - `components/plate-ui/emoji-combobox/emoji-combobox-item.tsx`
-
-
-      <ComponentSource src="/src/components/plate-ui/emoji-combobox/emoji-combobox-item.tsx" />
-
-
-    </AccordionContent>
-
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Usage
@@ -56,7 +45,7 @@ npx plate-ui add emoji-combobox
 import { RenderAfterEditable } from '@udecode/plate-common';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 
-import { EmojiCombobox } from '@/components/plate-ui/emoji-combobox/emoji-combobox';
+import { EmojiCombobox } from '@/components/plate-ui/emoji-combobox';
 import { MyPlatePlugin, MyValue } from '@/plate/plate-types';
 
 export const emojiPlugin: Partial<MyPlatePlugin<EmojiPlugin>> = {

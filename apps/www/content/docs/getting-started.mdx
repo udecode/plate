@@ -51,13 +51,11 @@ export default function BasicEditor() {
 
 Simple and straightforward. Try it out:
 
-<ComponentPreview>
-  <BasicEditorDefaultDemo />
-</ComponentPreview>
+<ComponentPreview name="basic-editor-default-demo" />
 
 <Callout className="mt-4">
   **Note**: The following examples are using these global styles:
-  <ComponentSource src="/src/styles/globals.scss" />
+  <ComponentSource name="globals" />
 </Callout>
 
 ### Initializing Editor's Value
@@ -88,9 +86,7 @@ export default function BasicEditor() {
   type.
 </Callout>
 
-<ComponentPreview>
-  <BasicEditorValueDemo />
-</ComponentPreview>
+<ComponentPreview name="basic-editor-value-demo" />
 
 ### Implementing Change Handler
 
@@ -112,17 +108,13 @@ export default function BasicEditor() {
 }
 ```
 
-<ComponentPreview>
-  <BasicEditorHandlerDemo />
-</ComponentPreview>
+<ComponentPreview name="basic-editor-handler-demo" />
 
 ### Plugins
 
 Let's use the basic plugins for a rich-text editor.
 
-<ComponentPreview>
-  <BasicPluginsDefaultDemo />
-</ComponentPreview>
+<ComponentPreview name="basic-plugins-default-demo" />
 
 The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a `div` and the default leaf component is a `span`.
 
@@ -190,8 +182,6 @@ export default function BasicEditor() {
 }
 ```
 
-<ComponentExample src="/src/components/examples/BasicPluginsComponentsDemo.tsx">
-  <BasicPluginsComponentsDemo />
-</ComponentExample>
+<ComponentPreview name="basic-plugins-components-demo" />
 
 </Steps>

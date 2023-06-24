@@ -1,6 +1,5 @@
 {
   "name": "emoji-dropdown-menu",
-  "isFolder": true,
   "dependencies": [],
   "registryDependencies": [],
   "files": [
@@ -36,6 +35,16 @@
       "name": "emoji-picker-search-bar.tsx",
       "content": "import React, { ReactNode } from 'react';\nimport { UseEmojiPickerType } from '@udecode/plate-emoji';\n\nexport type EmojiPickerSearchBarProps = {\n  children: ReactNode;\n} & Pick<UseEmojiPickerType, 'i18n' | 'searchValue' | 'setSearch'>;\n\nexport function EmojiPickerSearchBar({\n  i18n,\n  searchValue,\n  setSearch,\n  children,\n}: EmojiPickerSearchBarProps) {\n  return (\n    <div className=\"flex items-center px-2\">\n      <div className=\"relative flex grow\">\n        <input\n          type=\"text\"\n          placeholder={i18n.search}\n          autoComplete=\"off\"\n          aria-label=\"Search\"\n          className=\"block w-full appearance-none rounded-lg border-0 bg-gray-100 px-8 py-2 outline-none\"\n          onChange={(event) => setSearch(event.target.value)}\n          value={searchValue}\n        />\n        {children}\n      </div>\n    </div>\n  );\n}\n"
     }
+  ],
+  "items": [
+    "emoji-dropdown-menu",
+    "emoji-icons",
+    "emoji-picker",
+    "emoji-picker-content",
+    "emoji-picker-navigation",
+    "emoji-picker-preview",
+    "emoji-picker-search-and-clear",
+    "emoji-picker-search-bar"
   ],
   "type": "components:ui"
 }

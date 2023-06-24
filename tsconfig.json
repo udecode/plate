@@ -26,6 +26,7 @@
       "@/plate/*": ["apps/www/src/lib/plate/*"],
       "@/lib/*": ["apps/www/src/lib/*"],
       "@/types/*": ["apps/www/src/types/*"],
+      "@/styles/*": ["apps/www/src/styles/*"],
       "@/components/*": ["apps/www/src/components/*"],
       "@/registry/*": ["apps/www/src/registry/*"],
       "@/__registry__/*": ["apps/www/src/__registry__/*"],

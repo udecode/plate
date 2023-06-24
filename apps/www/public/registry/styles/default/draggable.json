@@ -1,5 +1,5 @@
 {
-  "name": "draggables",
+  "name": "draggable",
   "dependencies": [],
   "registryDependencies": [],
   "files": [
@@ -13,6 +13,7 @@
     }
   ],
   "items": [
+    "draggable",
     "with-draggables"
   ],
   "type": "components:ui"

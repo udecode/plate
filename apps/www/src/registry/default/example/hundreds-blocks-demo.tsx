@@ -12,7 +12,7 @@ import {
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { MyValue } from '@/plate/plate-types';
+import { MyValue } from '@/types/plate-types';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 

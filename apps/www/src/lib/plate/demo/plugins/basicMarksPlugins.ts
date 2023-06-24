@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 
 import { plateUI } from '@/plate/demo/plateUI';
-import { createMyPlugins } from '@/plate/plate-types';
+import { createMyPlugins } from '@/types/plate-types';
 
 export const basicMarksPlugins = createMyPlugins(
   [

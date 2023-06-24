@@ -11,7 +11,7 @@ import {
 import { IndentPlugin } from '@udecode/plate-indent';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin } from '@/plate/plate-types';
+import { MyPlatePlugin } from '@/types/plate-types';
 
 export const indentPlugin: Partial<MyPlatePlugin<IndentPlugin>> = {
   inject: {

@@ -14,7 +14,7 @@ import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { basicEditorValue } from './basic-plugins-components-demo';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { MyPlatePlugin, MyValue } from '@/plate/plate-types';
+import { MyPlatePlugin, MyValue } from '@/types/plate-types';
 
 const plugins: MyPlatePlugin[] = [
   createParagraphPlugin(),

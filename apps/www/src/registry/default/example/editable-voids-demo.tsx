@@ -21,7 +21,7 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { createMyPlugins, MyEditor, MyValue } from '@/plate/plate-types';
+import { createMyPlugins, MyEditor, MyValue } from '@/types/plate-types';
 
 export const ELEMENT_EDITABLE_VOID = 'editable-void';
 

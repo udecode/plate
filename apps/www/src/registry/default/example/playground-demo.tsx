@@ -87,14 +87,14 @@ import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { createMyPlugins, MyValue } from '@/plate/plate-types';
 import { CommentsPopover } from '@/registry/default/ui/comments-popover/comments-popover';
-import { CursorOverlay } from '@/registry/default/ui/cursor-overlay/cursor-overlay';
+import { CursorOverlay } from '@/registry/default/ui/cursor-overlay';
 import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/registry/default/ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/registry/default/ui/mention-combobox';
+import { createMyPlugins, MyValue } from '@/types/plate-types';
 
 export const usePlaygroundPlugins = ({
   id,

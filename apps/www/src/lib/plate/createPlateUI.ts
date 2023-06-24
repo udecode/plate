@@ -71,9 +71,11 @@ import { MentionInputElement } from '@/registry/default/ui/mention-input-element
 import { ParagraphElement } from '@/registry/default/ui/paragraph-element';
 import { withPlaceholders } from '@/registry/default/ui/placeholders';
 import { SearchHighlightLeaf } from '@/registry/default/ui/search-highlight-leaf';
-import { TableCellElement } from '@/registry/default/ui/table-cell-element/table-cell-element';
-import { TableCellHeaderElement } from '@/registry/default/ui/table-cell-element/table-cell-header-element';
-import { TableElement } from '@/registry/default/ui/table-element/table-element';
+import {
+  TableCellElement,
+  TableCellHeaderElement,
+} from '@/registry/default/ui/table-cell-element';
+import { TableElement } from '@/registry/default/ui/table-element';
 import { TableRowElement } from '@/registry/default/ui/table-row-element';
 import { TodoListElement } from '@/registry/default/ui/todo-list-element';
 

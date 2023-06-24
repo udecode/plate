@@ -1,6 +1,5 @@
 {
   "name": "cloud",
-  "isFolder": true,
   "dependencies": [],
   "registryDependencies": [],
   "files": [
@@ -24,6 +23,13 @@
       "name": "cloud-toolbar-buttons.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport { PlateCloudEditor } from '@udecode/plate-cloud';\nimport { usePlateEditorRef } from '@udecode/plate-core';\n\nconst buttonStyle: React.CSSProperties = {\n  marginRight: 4,\n  background: '#f0f0f0',\n  border: 'none',\n  padding: 8,\n  cursor: 'pointer',\n};\n\nexport function CloudToolbarButtons() {\n  const editor = usePlateEditorRef() as PlateCloudEditor;\n  const getSaveValue = () => {\n    console.info('editor.children', editor.children);\n    console.info('editor.cloud.getSaveValue()', editor.cloud.getSaveValue());\n  };\n\n  const finishUploads = async () => {\n    const start = Date.now();\n    // eslint-disable-next-line no-console\n    console.info('start finishUploads');\n    await editor.cloud.finishUploads();\n    const end = Date.now();\n    // NOTE: We don't use backtick with curly brace replacement because it\n    // doesn't work with gen:code script at time of writing.\n    // eslint-disable-next-line no-console\n    console.info(`end finishUploads in ms:`, end - start);\n  };\n\n  return (\n    <>\n      <button type=\"button\" style={buttonStyle} onClick={getSaveValue}>\n        Get Save Value\n      </button>\n      <button type=\"button\" style={buttonStyle} onClick={finishUploads}>\n        Await Finish Uploads\n      </button>\n      <span>\n        Note: After clicking a button, output will be shown in console.\n      </span>\n    </>\n  );\n}\n"
     }
+  ],
+  "items": [
+    "cloud-attachment-element",
+    "cloud-image-element",
+    "cloud-resize-controls",
+    "cloud-status-bar",
+    "cloud-toolbar-buttons"
   ],
   "type": "components:ui"
 }
