@@ -90,8 +90,6 @@ export function rehypeComponent() {
             const component = Index[style.name][name];
             const src = component.files[0];
 
-            console.log(component, src);
-
             // Read the source file.
             const filePath = path.join(process.cwd(), src);
             let source = fs.readFileSync(filePath, 'utf8');
