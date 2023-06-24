@@ -172,14 +172,15 @@ Selects an editor at a target location or an edge (start, end).
     The editor to be selected.
   </APIItem>
   <APIItem name="at" type="Location" optional>
-    Specific location to select. If `edge` is not defined, this option is
-    considered.
+    Specific location to select.
+    - If `edge` is not defined, this option is considered.
   </APIItem>
   <APIItem name="edge" type="'start' | 'end'" optional>
-    Select the start or end of the editor. Overrides `at` option if defined.
+    Select the start or end of the editor.
+    - Overrides `at` option if defined.
   </APIItem>
   <APIItem name="focus" type="boolean" optional>
-    If true, focuses the React editor before selecting. markdown Copy code
+    If true, focuses the React editor before selecting markdown Copy code.
 
     - **Default:** `false`
 
@@ -304,12 +305,14 @@ A new component that includes the additional props.
 
 ### `withProviders`
 
-A function that wraps a component into multiple providers. It's useful when you want to encapsulate a component within various context providers.
+A function that wraps a component into multiple providers.
 
 <APIParameters>
   <APIItem name="providers" type="any[]">
-    Providers with which to wrap the component. If there are any props that you
-    want a provider to receive, you can simply pass an array.
+    Providers with which to wrap the component.
+
+    -If there are any props that you want a provider to receive, you can simply pass an array.
+
   </APIItem>
   <APIItem name="WrappedComponent" type="FunctionComponent<T>">
     The component to be wrapped.
