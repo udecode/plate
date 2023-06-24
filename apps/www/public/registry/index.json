@@ -84,20 +84,6 @@
     "type": "components:ui"
   },
   {
-    "name": "draggable",
-    "dependencies": [],
-    "registryDependencies": [],
-    "files": [
-      "ui/draggable/draggable.tsx",
-      "ui/draggable/with-draggables.tsx"
-    ],
-    "items": [
-      "draggable",
-      "with-draggables"
-    ],
-    "type": "components:ui"
-  },
-  {
     "name": "emoji-dropdown-menu",
     "dependencies": [],
     "registryDependencies": [],

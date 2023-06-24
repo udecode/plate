@@ -14,6 +14,7 @@ import { Icons } from './icons';
 
 import { settingPluginItems } from '@/config/setting-plugins';
 import { settingValues } from '@/config/setting-values';
+import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/registry/default/ui/button';
 import {
@@ -72,21 +73,25 @@ export function SettingsCombobox() {
   const [open, setOpen] = React.useState(false);
   const valueId = settingsStore.use.valueId();
 
+  const loaded = useFixHydration();
+
   const route = settingValues[valueId]?.route;
 
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-[220px] justify-between"
-          >
-            {settingValues[valueId]?.label ?? 'Select a value...'}
-            <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
+          {loaded && (
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-[220px] justify-between"
+            >
+              {settingValues[valueId]?.label ?? 'Select a value...'}
+              <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          )}
         </PopoverTrigger>
         <PopoverContent className="w-[220px] p-0">
           <Command defaultValue={valueId}>

@@ -85,14 +85,14 @@ const ui: Registry = [
       'comment-value',
     ],
   },
-  {
-    name: 'draggable',
-    type: 'components:ui',
-    dependencies: [],
-    registryDependencies: [],
-    files: ['ui/draggable/draggable.tsx', 'ui/draggable/with-draggables.tsx'],
-    items: ['draggable', 'with-draggables'],
-  },
+  // {
+  //   name: 'draggable',
+  //   type: 'components:ui',
+  //   dependencies: [],
+  //   registryDependencies: [],
+  //   files: ['ui/draggable/draggable.tsx', 'ui/draggable/with-draggables.tsx'],
+  //   items: ['draggable', 'with-draggables'],
+  // },
   {
     name: 'emoji-dropdown-menu',
     type: 'components:ui',

@@ -30,6 +30,7 @@ import {
   settingPlugins,
 } from '@/config/setting-plugins';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { useViewport } from '@/hooks/use-viewport';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/ui/button';
@@ -239,6 +240,10 @@ export function SettingsPanel() {
   useLayoutEffect(() => {
     settingsStore.set.showSettings(!isSheet);
   }, [isSheet]);
+
+  const loaded = useFixHydration();
+
+  if (!loaded) return null;
 
   return (
     <Wrapper

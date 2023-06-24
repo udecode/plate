@@ -182,26 +182,6 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/comments-popover/comment-value.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/comments-popover/comment-value')),
     },
-    'draggable': {
-      name: 'draggable',
-      type: 'components:ui',
-      registryDependencies: [],
-      items: ['draggable','with-draggables'],
-    },
-    'draggable/draggable': {
-      name: 'draggable',
-      type: 'components:ui',
-      registryDependencies: [],
-      files: ['registry/default/ui/draggable/draggable.tsx'],
-      component: React.lazy(() => import('@/registry/default/ui/draggable/draggable')),
-    },
-    'draggable/with-draggables': {
-      name: 'with-draggables',
-      type: 'components:ui',
-      registryDependencies: [],
-      files: ['registry/default/ui/draggable/with-draggables.tsx'],
-      component: React.lazy(() => import('@/registry/default/ui/draggable/with-draggables')),
-    },
     'emoji-dropdown-menu': {
       name: 'emoji-dropdown-menu',
       type: 'components:ui',
