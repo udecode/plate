@@ -8,32 +8,45 @@ component: true
 
 ## Installation
 
-```bash
-npx plate-ui add cursor-overlay
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-<AccordionItem value="manual-installation">
-<AccordionTrigger>Manual Installation</AccordionTrigger>
-<AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-1. Install the following dependencies:
+    ```bash
+    npx plate-ui add cursor-overlay
+    ```
 
-```bash
-npm install @udecode/plate-cursor
-```
+  </TabsContent>
 
-2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-- `components/plate-ui/cursor-overlay.tsx`
+    <Steps>
 
-<ComponentSource name="cursor-overlay" />
+      <Step>
 
+        Install the following dependencies:
 
-</AccordionContent>
+        ```bash
+        npm install @udecode/plate-cursor
+        ```
 
-</AccordionItem>
-</Accordion>
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
+
+      <ComponentSource name="cursor-overlay" />
+
+      <Step>Update the import paths to match your project setup.</Step>
+
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

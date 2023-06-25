@@ -18,37 +18,48 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add draggables
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-1. Install the following dependencies:
+    ```bash
+    npx plate-ui add draggables
+    ```
 
-```bash
-npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
-```
+  </TabsContent>
 
-- [Tooltip](/docs/components/tooltip)
+  <TabsContent value="manual">
 
-2. Copy and paste the following code into your project.
+    <Steps>
 
-- `components/plate-ui/draggable/draggable.tsx`
+      <Step>
 
-[//]: # '<ComponentSource name="draggable/draggable" />'
+        Install the following dependencies:
 
-- `components/plate-ui/draggable/with-draggables.tsx`
+        ```bash
+        npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
+        ```
 
-[//]: # '<ComponentSource name="draggable/with-draggables" />'
+        - [Tooltip](/docs/components/tooltip)
 
-    </AccordionContent>
+      </Step>
 
-  </AccordionItem>
-</Accordion>
+      <Step>Copy and paste the following code into your project.</Step>
+
+      [//]: # '<ComponentSource name="draggable/draggable" />'
+      [//]: # '<ComponentSource name="draggable/with-draggables" />'
+
+      <Step>Update the import paths to match your project setup.</Step>
+
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

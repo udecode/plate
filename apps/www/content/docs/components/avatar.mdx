@@ -1,5 +1,5 @@
 ---
-title: Avatar
+title: Avatars
 description: An image element with a fallback for representing the user.
 component: true
 radix:
@@ -9,28 +9,42 @@ radix:
 
 ## Installation
 
-```bash
-npx plate-ui add avatar
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the `@radix-ui/react-avatar` component from radix-ui:
+    ```bash
+    npx plate-ui add avatar
+    ```
+
+  </TabsContent>
+
+  <TabsContent value="manual">
+
+    <Steps>
+
+      <Step>
+
+        Install the `@radix-ui/react-avatar` component from radix-ui:
 
         ```bash
-      npm install @radix-ui/react-avatar
-      ```
+        npm install @radix-ui/react-avatar
+        ```
 
-      2. Copy and paste the following code into your project.
+      </Step>
 
-      - `components/ui/avatar.tsx`
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="avatar" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>

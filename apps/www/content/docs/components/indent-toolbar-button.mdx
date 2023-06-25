@@ -13,30 +13,44 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add indent-toolbar-button
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add indent-toolbar-button
+    ```
 
-      - [Indent](/docs/indent)
-      - [Toolbar](/docs/components/toolbar)
+  </TabsContent>
 
-      2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-      - `components/plate-ui/indent-toolbar-button.tsx`
+    <Steps>
+
+      <Step>
+
+        Install the following dependencies:
+
+        - [Indent](/docs/indent)
+        - [Toolbar](/docs/components/toolbar)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="indent-toolbar-button" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

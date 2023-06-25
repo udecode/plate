@@ -11,46 +11,47 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add cloud
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add cloud
+    ```
 
-      - [Cloud](/docs/cloud)
+  </TabsContent>
 
-      2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-      - `components/plate-ui/cloud/cloud-attachment-element.tsx`
+    <Steps>
+
+      <Step>
+
+        Install the following dependencies:
+
+        - [Cloud](/docs/cloud)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="cloud/cloud-attachment-element" />
-
-      - `components/plate-ui/cloud/cloud-image-element.tsx`
-
       <ComponentSource name="cloud/cloud-image-element" />
-
-      - `components/plate-ui/cloud/resize-controls.tsx`
-
       <ComponentSource name="cloud/cloud-resize-controls" />
-
-      - `components/plate-ui/cloud/cloud-status-bar.tsx`
-
       <ComponentSource name="cloud/cloud-status-bar" />
-
-      - `components/plate-ui/cloud/cloud-toolbar-buttons.tsx`
-
       <ComponentSource name="cloud/cloud-toolbar-buttons" />
 
+      <Step>Update the import paths to match your project setup.</Step>
 
-    </AccordionContent>
+    </Steps>
 
-  </AccordionItem>
-</Accordion>
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

@@ -9,29 +9,42 @@ radix:
 
 ## Installation
 
-```bash
-npx plate-ui add separator
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the `@radix-ui/react-separator` component from radix-ui:
+    ```bash
+    npx plate-ui add separator
+    ```
 
-            ```bash
-            npm install @radix-ui/react-separator
-            ```
+  </TabsContent>
 
+  <TabsContent value="manual">
 
-      2. Copy and paste the following code into your project.
+    <Steps>
 
-      - `components/plate-ui/separator.tsx`
+      <Step>
+
+        Install the `@radix-ui/react-separator` component from radix-ui:
+
+        ```bash
+        npm install @radix-ui/react-separator
+        ```
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="separator" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>

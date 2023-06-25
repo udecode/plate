@@ -11,30 +11,43 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add search-highlight-leaf
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add search-highlight-leaf
+    ```
 
-      - [Highlight](/docs/highlight)
+  </TabsContent>
 
+  <TabsContent value="manual">
 
-      2. Copy and paste the following code into your project.
+    <Steps>
 
-      - `components/plate-ui/search-highlight-leaf.tsx`
+      <Step>
+
+        Install the following dependencies:
+
+        - [Highlight](/docs/highlight)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="search-highlight-leaf" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

@@ -7,36 +7,47 @@ docs:
     title: Code Block
 ---
 
-<ComponentPreview
-  name="playground-demo"
-  id="basicnodes"
-/>
+<ComponentPreview name="playground-demo" id="basicnodes" />
 
 ## Installation
 
-```bash
-npx plate-ui add code-syntax-leaf
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add code-syntax-leaf
+    ```
 
-      - [Code Block](/docs/basic-elements)
+  </TabsContent>
 
-      2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-      - `components/plate-ui/code-syntax-leaf.tsx`
+    <Steps>
+
+      <Step>
+
+        Install the following dependencies:
+
+        - [Code Block](/docs/basic-elements)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="code-syntax-leaf" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 
