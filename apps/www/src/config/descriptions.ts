@@ -15,7 +15,6 @@ import {
   KEY_SINGLE_LINE,
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -50,7 +49,7 @@ import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin'
 
 export const descriptions: Record<CheckedId, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
-  [ELEMENT_CODE_BLOCK]: 'Encapsulate blocks of code.',
+  code_block: 'Encapsulate blocks of code.',
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',
   [ELEMENT_HR]: 'Insert horizontal lines.',
   [ELEMENT_IMAGE]: 'Embed images into your document.',
