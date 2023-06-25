@@ -282,8 +282,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             <div
               ref={containerRef}
               className={cn(
-                'relative flex max-w-[900px] overflow-x-auto',
-                !id && 'w-[calc(100vw-64px)]'
+                'relative flex max-w-[900px] overflow-x-auto'
+                // !id && 'w-[calc(100vw-64px)]'
               )}
             >
               <Plate
@@ -291,8 +291,9 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   ...editableProps,
                   className: cn(
                     editableProps.className,
-                    !id && 'min-h-[920px] w-[900px] px-[96px] pb-[20vh] pt-4',
-                    id && 'px-8 pb-8 pt-2'
+                    !id &&
+                      'min-h-[920px] w-[900px] px-4 pb-[20vh] pt-4 md:px-[96px]',
+                    id && 'px-4 pb-8 pt-2 md:px-8'
                   ),
                 }}
               >
@@ -315,8 +316,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
 
           {!id && (
             <>
-              <div className="sticky top-full z-10 h-0 w-0">
-                <div className="-translate-y-full translate-x-[-200%] p-5">
+              <div className="fixed right-0 top-full z-[100]">
+                <div className="-translate-y-full p-4">
                   <SettingsToggle />
                 </div>
               </div>

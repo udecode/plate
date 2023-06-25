@@ -99,6 +99,9 @@ type APIListProps = {
 
 export function APIList({ type = 'parameters', children }: APIListProps) {
   const childCount = React.Children.count(children);
+  const hasItems = React.Children.toArray(children).some(
+    (child) => (child as any)?.type?.name === 'APIItem'
+  );
   const defaultValues = Array.from(
     Array.from({ length: childCount }).keys()
   ).map((i) => i.toString());
@@ -119,7 +122,7 @@ export function APIList({ type = 'parameters', children }: APIListProps) {
               {type === 'returns' && 'Returns'}
             </h3>
 
-            {childCount > 0 && (
+            {hasItems && (
               <div
                 className="cursor-pointer select-none text-sm text-muted-foreground"
                 onClick={() => {
@@ -137,20 +140,22 @@ export function APIList({ type = 'parameters', children }: APIListProps) {
           <ul className="m-0 list-none p-0">
             <Separator />
 
-            {childCount > 0 ? (
+            {hasItems ? (
               <Accordion
                 type="multiple"
                 value={values}
                 onValueChange={setValues}
                 className="w-full"
               >
-                {React.Children.map(children, (child, i) =>
-                  React.cloneElement(child as any, {
+                {React.Children.map(children, (child, i) => {
+                  return React.cloneElement(child as any, {
                     value: i.toString(),
                     className: 'pt-4',
-                  })
-                )}
+                  });
+                })}
               </Accordion>
+            ) : childCount > 0 ? (
+              children
             ) : (
               <div className="py-4 text-sm text-muted-foreground">
                 No parameters.
@@ -218,7 +223,9 @@ export function APISubList({ children }: { children: ReactNode }) {
         type="single"
         collapsible
         className="w-full"
-        defaultValue="1"
+        defaultValue=""
+        // DEBUG:
+        // defaultValue="1"
         onValueChange={setValue}
       >
         <AccordionItem value="1" className="border-none">

@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import * as React from 'react';
 import { DialogProps } from '@radix-ui/react-alert-dialog';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
@@ -12,12 +13,93 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from './ui/command';
 
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/ui/button';
+import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
+
+export function CommandItems({
+  item,
+  runCommand,
+  children,
+}: {
+  children?: ReactNode;
+  item: NavItemWithChildren;
+  runCommand: any;
+}) {
+  const router = useRouter();
+
+  return (
+    <React.Fragment key={item.href}>
+      <CommandItem
+        onSelect={() => {
+          runCommand(() => router.push(item.href as string));
+        }}
+      >
+        <div className="mr-2 flex h-4 w-4 items-center justify-center">
+          <Circle className="h-3 w-3" />
+        </div>
+        {item.title}
+      </CommandItem>
+      {item.headings?.map((heading) => {
+        return (
+          <CommandItem
+            key={heading}
+            onSelect={() => {
+              runCommand(() =>
+                router.push(
+                  (item.href +
+                    '#' +
+                    heading.replaceAll(' ', '').toLowerCase()) as string
+                )
+              );
+            }}
+          >
+            <div className="mr-2 flex h-4 w-4 items-center justify-center">
+              <Circle className="h-3 w-3" />
+            </div>
+            {item.title} – {heading}
+          </CommandItem>
+        );
+      })}
+
+      {children}
+    </React.Fragment>
+  );
+}
+
+export function CommandMenuGroup({
+  runCommand,
+  ...group
+}: {
+  runCommand: any;
+} & SidebarNavItem) {
+  return (
+    <CommandGroup heading={group.title}>
+      {group.items?.map((navItem) => {
+        return (
+          <CommandItems
+            key={navItem.title}
+            item={navItem}
+            runCommand={runCommand}
+          >
+            {navItem.items?.map((item) => {
+              return (
+                <CommandItems
+                  key={item.title}
+                  item={item}
+                  runCommand={runCommand}
+                />
+              );
+            })}
+          </CommandItems>
+        );
+      })}
+    </CommandGroup>
+  );
+}
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter();
@@ -76,28 +158,25 @@ export function CommandMenu({ ...props }: DialogProps) {
                 </CommandItem>
               ))}
           </CommandGroup>
-          {docsConfig.sidebarNav.map((group) => (
-            <CommandGroup key={group.title} heading={group.title}>
-              {group.items?.map((navItem) => {
-                return (
-                  <React.Fragment key={navItem.href}>
-                    <CommandItem
-                      onSelect={() => {
-                        runCommand(() => router.push(navItem.href as string));
-                      }}
-                    >
-                      <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                        <Circle className="h-3 w-3" />
-                      </div>
-                      {navItem.title}
-                    </CommandItem>
-                    {}
-                  </React.Fragment>
-                );
-              })}
-            </CommandGroup>
+          {docsConfig.sidebarNav.map((group) => {
+            if (group.title === 'API') return null;
+
+            return (
+              <CommandMenuGroup
+                key={group.title}
+                runCommand={runCommand}
+                {...group}
+              />
+            );
+          })}
+          {docsConfig.componentsNav.map((group) => (
+            <CommandMenuGroup
+              key={group.title}
+              runCommand={runCommand}
+              {...group}
+            />
           ))}
-          <CommandSeparator />
+
           <CommandGroup heading="Theme">
             <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
               <SunMedium className="mr-2 h-4 w-4" />
@@ -112,6 +191,19 @@ export function CommandMenu({ ...props }: DialogProps) {
               System
             </CommandItem>
           </CommandGroup>
+
+          {docsConfig.sidebarNav.map((group) => {
+            // API is last
+            if (group.title !== 'API') return null;
+
+            return (
+              <CommandMenuGroup
+                key={group.title}
+                runCommand={runCommand}
+                {...group}
+              />
+            );
+          })}
         </CommandList>
       </CommandDialog>
     </>
