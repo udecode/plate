@@ -5,6 +5,7 @@ import {
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list';
+import { Checkbox } from './checkbox';
 
 import { cn } from '@/lib/utils';
 
@@ -20,7 +21,7 @@ export function TodoListElement({
 }: TodoListElementProps) {
   const { element } = props;
   const state = useTodoListElementState({ element });
-  const { inputProps } = useTodoListElement(state);
+  const { checkboxProps } = useTodoListElement(state);
 
   return (
     <PlateElement className={cn('flex flex-row py-1', className)} {...props}>
@@ -28,12 +29,12 @@ export function TodoListElement({
         className="mr-1.5 flex select-none items-center justify-center"
         contentEditable={false}
       >
-        <input className="m-0 h-4 w-4" type="checkbox" {...inputProps} />
+        <Checkbox {...checkboxProps} />
       </div>
       <span
         className={cn(
           'flex-1 focus:outline-none',
-          state.checked && 'line-through opacity-[0.666]'
+          state.checked && 'text-muted-foreground line-through'
         )}
         contentEditable={!state.readOnly}
         suppressContentEditableWarning

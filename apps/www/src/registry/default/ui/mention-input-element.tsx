@@ -30,8 +30,8 @@ const MentionInputElement = React.forwardRef<
       ref={ref}
       data-slate-value={element.value}
       className={cn(
-        'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-2 align-baseline text-[0.9em]',
-        selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',
+        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',
+        selected && focused && 'ring-2 ring-ring',
         className
       )}
       onClick={getHandler(onClick, element)}

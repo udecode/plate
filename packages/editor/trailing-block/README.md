@@ -5,7 +5,7 @@ This package implements the trailing-block plugin for Plate.
 ## Documentation
 
 Check out
-[Playground](https://plate.udecode.io/docs/playground).
+[Playground](https://platejs.org/docs/playground).
 
 ## API
 

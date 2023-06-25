@@ -22,8 +22,8 @@ export const docsConfig: DocsConfig = {
       external: true,
     },
     {
-      title: 'Twitter',
-      href: 'https://twitter.com/zbeyens',
+      title: 'Discord',
+      href: 'https://discord.gg/mAZRuBzGM3',
       external: true,
     },
   ],
@@ -411,11 +411,6 @@ export const docsConfig: DocsConfig = {
         {
           title: 'CLI',
           href: '/docs/components/cli',
-          items: [],
-        },
-        {
-          title: 'Typography',
-          href: '/docs/components/typography',
           items: [],
         },
       ],

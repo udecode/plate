@@ -11,8 +11,6 @@ import {
   useSuggestionActions,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
-
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +18,10 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { Icons } from '@/components/icons';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();
@@ -40,19 +40,19 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
     editing: (
       <>
         <Icons.editing className="mr-2 h-5 w-5" />
-        Editing
+        <span className="hidden lg:inline">Editing</span>
       </>
     ),
     suggesting: (
       <>
         <Icons.suggesting className="mr-2 h-5 w-5" />
-        Suggesting
+        <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
       <>
         <Icons.viewing className="mr-2 h-5 w-5" />
-        Viewing
+        <span className="hidden lg:inline">Viewing</span>
       </>
     ),
   };
@@ -64,7 +64,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
           pressed={openState.open}
           tooltip="Editing mode"
           isDropdown
-          className="min-w-[140px]"
+          className="min-w-[auto] lg:min-w-[130px]"
         >
           {item[value]}
         </ToolbarButton>

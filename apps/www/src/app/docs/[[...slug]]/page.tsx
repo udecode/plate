@@ -78,6 +78,8 @@ export async function generateStaticParams(): Promise<
 }
 
 export default async function DocPage({ params }: DocPageProps) {
+  const isUI = params.slug?.[0] === 'components';
+
   const doc = await getDocFromParams({ params });
 
   if (!doc) {
@@ -96,7 +98,7 @@ export default async function DocPage({ params }: DocPageProps) {
       <div className="mx-auto w-full min-w-0">
         <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
           <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-            Docs
+            {isUI ? 'Components' : 'Docs'}
           </div>
           <ChevronRight className="h-4 w-4" />
           <div className="font-medium text-foreground">{doc.title}</div>

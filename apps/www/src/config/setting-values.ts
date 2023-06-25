@@ -13,6 +13,7 @@ import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
+import { MARK_KBD } from '@udecode/plate-kbd';
 import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { ELEMENT_TODO_LI } from '@udecode/plate-list';
@@ -51,6 +52,7 @@ import { highlightValue } from '@/plate/demo/values/highlightValue';
 import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
 import { indentListValue } from '@/plate/demo/values/indentListValue';
 import { indentValue } from '@/plate/demo/values/indentValue';
+import { kbdValue } from '@/plate/demo/values/kbdValue';
 import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
 import { linkValue } from '@/plate/demo/values/linkValue';
 import { listValue, todoListValue } from '@/plate/demo/values/listValue';
@@ -203,6 +205,13 @@ export const settingValues = {
     value: indentValue,
     route: '/docs/indent',
     plugins: [KEY_INDENT],
+  },
+  kbd: {
+    id: 'kbd',
+    label: 'Keyboard Input',
+    value: kbdValue,
+    route: '/docs/kbd',
+    plugins: [MARK_KBD],
   },
   lineheight: {
     id: 'lineheight',

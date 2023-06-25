@@ -6,7 +6,7 @@ default block of your editor.
 ## Documentation
 
 Check out
-[Basic Elements](https://plate.udecode.io/docs/basic-elements).
+[Basic Elements](https://platejs.org/docs/basic-elements).
 
 ## API
 

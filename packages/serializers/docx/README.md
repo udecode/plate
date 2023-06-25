@@ -4,7 +4,7 @@ This package implements the docx deserializer for Plate.
 
 ## Documentation
 
-[comment]: <> (Check out [Serializing HTML]&#40;https://plate.udecode.io/docs/serializing-html&#41;.)
+[comment]: <> (Check out [Serializing HTML]&#40;https://platejs.org/docs/serializing-html&#41;.)
 
 ## API
 

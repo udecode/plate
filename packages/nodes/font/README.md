@@ -6,7 +6,7 @@ This package implements the following font plugins:
 
 ## Documentation
 
-Check out [Font](https://plate.udecode.io/docs/font).
+Check out [Font](https://platejs.org/docs/font).
 
 ## API
 

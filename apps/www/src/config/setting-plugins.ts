@@ -193,7 +193,7 @@ export const settingPluginItems = {
     id: MARK_KBD,
     label: 'Keyboard Input',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.kbd.route,
   },
   [MARK_STRIKETHROUGH]: {
     id: MARK_STRIKETHROUGH,

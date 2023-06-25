@@ -7,7 +7,7 @@ import {
   useCodeBlockElementState,
 } from '@udecode/plate-code-block';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-import { CodeBlockSelectElement } from './code-block-select-element';
+import { CodeBlockCombobox } from './code-block-combobox';
 
 import { cn } from '@/lib/utils';
 
@@ -22,19 +22,19 @@ const CodeBlockElement = forwardRef<
   return (
     <PlateElement
       ref={ref}
-      className={cn('relative', state.className, className)}
+      className={cn('relative py-1', state.className, className)}
       {...props}
     >
-      <pre className="overflow-x-auto rounded-[3px] bg-[rgb(247,246,243)] px-4 py-3 font-[SFMono-Regular,_Consolas,_Monaco,_'Liberation_Mono',_Menlo,_Courier,_monospace] text-[16px] leading-[normal] [tab-size:2]">
+      <pre className="overflow-x-auto rounded-md bg-muted px-6 py-8 font-mono text-sm leading-[normal] [tab-size:2]">
         <code>{children}</code>
       </pre>
 
       {state.syntax && (
         <div
-          className="absolute right-0 top-0 z-10 select-none px-4 py-3"
+          className="absolute right-2 top-2 z-10 select-none"
           contentEditable={false}
         >
-          <CodeBlockSelectElement />
+          <CodeBlockCombobox />
         </div>
       )}
     </PlateElement>

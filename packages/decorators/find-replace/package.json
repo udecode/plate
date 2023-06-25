@@ -3,7 +3,7 @@
   "version": "21.3.2",
   "description": "Find and replace plugin for Plate",
   "license": "MIT",
-  "homepage": "https://plate.udecode.io",
+  "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",

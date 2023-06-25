@@ -6,7 +6,7 @@ drop blocks using a grabber.
 ## Documentation
 
 Check out
-[Drag & Drop](https://plate.udecode.io/docs/components/dnd).
+[Drag & Drop](https://platejs.org/docs/components/dnd).
 
 ## API
 

@@ -28,7 +28,7 @@ export function EmojiToolbarDropdown({
       </div>
 
       {open && (
-        <div ref={refs.setFloating} className="!z-20" style={styles}>
+        <div ref={refs.setFloating} className="!z-[100]" style={styles}>
           {children}
         </div>
       )}

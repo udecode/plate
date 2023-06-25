@@ -5,7 +5,7 @@ setting a list of element types to select on backspace.
 
 ## Documentation
 
-Check out [Playground](https://plate.udecode.io/docs/playground).
+Check out [Playground](https://platejs.org/docs/playground).
 
 ## API
 

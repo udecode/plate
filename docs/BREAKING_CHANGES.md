@@ -444,7 +444,7 @@
 
 **Define your custom types**
 
-- Follow https://plate.udecode.io/docs/typescript example.
+- Follow https://platejs.org/docs/typescript example.
 
 **Slate types**
 

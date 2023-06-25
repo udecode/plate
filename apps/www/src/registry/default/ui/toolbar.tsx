@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 // PLATE:
 
 const toolbarVariants = cva(
-  'relative flex select-none items-stretch gap-1 bg-background p-1'
+  'relative flex select-none items-stretch gap-1 bg-background'
 );
 
 export const linkVariants = cva('font-medium underline underline-offset-4');
@@ -113,7 +113,7 @@ const ToolbarButton = React.forwardRef<
                 variant,
                 size,
               }),
-              isDropdown && 'justify-between pr-1',
+              isDropdown && 'my-1 justify-between pr-1',
               className
             )}
             value="single"

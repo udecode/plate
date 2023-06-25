@@ -17,7 +17,7 @@ Plate
 
 ![hero](apps/www/public/og.png)
 
-[//]: # '  <a target="_blank" href="https://plate.udecode.io/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>'
+[//]: # '  <a target="_blank" href="https://platejs.org/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>'
 [//]: # 'Welcome to Plate, a rich-text editor framework designed for simplicity and efficiency. Plate consists of four main parts:'
 [//]: #
 [//]: # "1. **Core**: This is the heart of Plate. It's a special plugin system just for `slate-react`. We've made sure everything is neat and tidy, so it's easier for you to develop your project."

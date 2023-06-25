@@ -4,7 +4,7 @@ This package implements the emoji plugin for Plate.
 
 ## Documentation
 
-Check out [Emoji](https://plate.udecode.io/docs/emoji).
+Check out [Emoji](https://platejs.org/docs/emoji).
 
 ## API
 

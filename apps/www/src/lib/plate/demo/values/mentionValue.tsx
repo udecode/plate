@@ -12,7 +12,7 @@ export const mentionValue: any = (
       @-mentions.
     </hp>
     <hp>
-      Try mentioning
+      Try mentioning{' '}
       <hmention value="R2-D2">
         <htext />
       </hmention>{' '}

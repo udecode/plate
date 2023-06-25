@@ -26,6 +26,7 @@ import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
+import { Separator } from './separator';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
@@ -46,17 +47,18 @@ function ToolbarGroup({
   className,
   children,
 }: ToolbarGroupProps) {
-  if (React.Children.count(children) === 0) return null;
+  const childArr = React.Children.map(children, (c) => c);
+  if (!childArr || childArr.length === 0) return null;
 
   return (
-    <div
-      className={cn(
-        'flex gap-1 border-l border-border pl-1',
-        noSeparator && 'border-transparent',
-        className
+    <div className={cn('flex', className)}>
+      {!noSeparator && (
+        <div className="h-full py-1">
+          <Separator orientation="vertical" />
+        </div>
       )}
-    >
-      {children}
+
+      <div className="mx-1 flex items-center gap-1">{children}</div>
     </div>
   );
 }
@@ -68,15 +70,15 @@ export function FixedToolbarButtons({ id }: { id?: ValueId }) {
   return (
     <div className="w-full overflow-hidden">
       <div
-        className="flex flex-wrap gap-1"
+        className="flex flex-wrap"
         style={{
           // Conceal the first separator on each line using overflow
-          transform: 'translateX(calc(-0.25rem - 1px))',
+          transform: 'translateX(calc(-1px))',
         }}
       >
         {!readOnly && (
           <>
-            <ToolbarGroup>
+            <ToolbarGroup noSeparator>
               <InsertDropdownMenu />
               {isEnabled('basicnodes', id) && <TurnIntoDropdownMenu />}
             </ToolbarGroup>

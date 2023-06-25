@@ -9,7 +9,7 @@ export function HighlightLeaf({
   ...props
 }: PlateLeafProps) {
   return (
-    <PlateLeaf asChild className={cn('bg-[#FEF3B7]', className)} {...props}>
+    <PlateLeaf asChild className={cn('bg-yellow-200', className)} {...props}>
       <mark>{children}</mark>
     </PlateLeaf>
   );

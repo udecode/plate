@@ -5,7 +5,7 @@ unique id to all nodes, which is useful for features like drag & drop.
 
 ## Documentation
 
-Check out [Playground](https://plate.udecode.io/docs/playground).
+Check out [Playground](https://platejs.org/docs/playground).
 
 ## API
 

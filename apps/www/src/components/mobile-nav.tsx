@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { SidebarOpen } from 'lucide-react';
 import Link, { LinkProps } from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Icons } from './icons';
 
@@ -14,6 +14,10 @@ import { Button } from '@/registry/default/ui/button';
 import { ScrollArea } from '@/registry/default/ui/scroll-area';
 
 export function MobileNav() {
+  const pathname = usePathname();
+  const isUI = pathname?.startsWith('/docs/components');
+  const navItems = isUI ? docsConfig.componentsNav : docsConfig.sidebarNav;
+
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -38,8 +42,8 @@ export function MobileNav() {
         </MobileLink>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
           <div className="flex flex-col space-y-3">
-            {docsConfig.mainNav?.map(
-              (item) =>
+            {docsConfig.mainNav?.map((item) => {
+              return (
                 item.href && (
                   <MobileLink
                     key={item.href}
@@ -49,10 +53,11 @@ export function MobileNav() {
                     {item.title}
                   </MobileLink>
                 )
-            )}
+              );
+            })}
           </div>
           <div className="flex flex-col space-y-2">
-            {docsConfig.sidebarNav.map((item, index) => (
+            {navItems.map((item, index) => (
               <div key={index} className="flex flex-col space-y-3 pt-6">
                 <h4 className="font-medium">{item.title}</h4>
                 {item?.items?.length &&
@@ -61,7 +66,7 @@ export function MobileNav() {
                       {!_item.disabled &&
                         (_item.href ? (
                           <MobileLink
-                            href={item.href!}
+                            href={_item.href}
                             onOpenChange={setOpen}
                             className="text-muted-foreground"
                           >
@@ -95,6 +100,7 @@ function MobileLink({
   ...props
 }: MobileLinkProps) {
   const router = useRouter();
+
   return (
     <Link
       href={href}

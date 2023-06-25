@@ -5,7 +5,7 @@ This package programmatically corrects the tab order for tabbable elements insid
 ## Documentation
 
 Check out
-[Tabbable](https://plate.udecode.io/docs/tabbable).
+[Tabbable](https://platejs.org/docs/tabbable).
 
 ## API
 

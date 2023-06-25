@@ -17,7 +17,7 @@ Includes:
 
 ## Documentation
 
-- Check out [Plate Cloud](https://plate.udecode.io/docs/guides/cloud).
+- Check out [Plate Cloud](https://platejs.org/docs/guides/cloud).
 
 ## API
 

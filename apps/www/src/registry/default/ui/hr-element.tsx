@@ -15,16 +15,16 @@ const HrElement = React.forwardRef<
 
   return (
     <PlateElement ref={ref} {...props}>
-      <hr
-        contentEditable={false}
-        {...nodeProps}
-        className={cn(
-          'my-6 box-content h-0.5 cursor-pointer border-none bg-gray-200 bg-clip-content py-1',
-          'rounded-[1px]',
-          selected && focused && 'bg-blue-500',
-          className
-        )}
-      />
+      <div className="py-6" contentEditable={false}>
+        <hr
+          {...nodeProps}
+          className={cn(
+            'h-0.5 cursor-pointer rounded-sm border-none bg-muted bg-clip-content',
+            selected && focused && 'ring-2 ring-ring ring-offset-2',
+            className
+          )}
+        />
+      </div>
       {children}
     </PlateElement>
   );

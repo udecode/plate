@@ -27,9 +27,5 @@ export const basicMarksValue: any = (
       Write code snippets with inline <htext code>code</htext> formatting for
       easy readability.
     </hp>
-    <hp>
-      Press <htext kbd>⌘+B</htext> to apply bold mark or <htext kbd>⌘+I</htext>{' '}
-      for italic mark.
-    </hp>
   </fragment>
 );

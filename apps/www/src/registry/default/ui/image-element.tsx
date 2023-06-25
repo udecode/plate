@@ -57,9 +57,9 @@ export function ImageElement({
                   {...htmlProps}
                   className={cn(
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
-                    'after:flex after:h-16 after:bg-gray-400  after:opacity-0 after:group-hover:opacity-100',
+                    'after:flex after:h-16 after:bg-ring after:opacity-0 after:group-hover:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    'hover:after:bg-blue-500 focus:after:bg-blue-500 active:after:bg-blue-500',
+                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant left
                     '-left-3 -ml-3 pl-3'
@@ -71,9 +71,9 @@ export function ImageElement({
                   {...htmlProps}
                   className={cn(
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
-                    'after:flex after:h-16 after:bg-gray-400 after:opacity-0 after:group-hover:opacity-100',
+                    'after:flex after:h-16 after:bg-ring after:opacity-0 after:group-hover:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    'hover:after:bg-blue-500 focus:after:bg-blue-500 active:after:bg-blue-500',
+                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant right
                     '-right-3 -mr-3 items-end pr-3'
@@ -89,8 +89,8 @@ export function ImageElement({
               {...nodeProps}
               className={cn(
                 'block w-full max-w-full cursor-pointer object-cover px-0',
-                'rounded-[3px]',
-                focused && selected && 'shadow-[0_0_1px_rgb(59,130,249)]',
+                'rounded-sm',
+                focused && selected && 'ring-2 ring-ring ring-offset-2',
                 nodeProps?.className
               )}
             />

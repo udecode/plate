@@ -239,6 +239,7 @@ export function ResetPluginsEffect({
   const setEditor = usePlateActions().editor();
 
   useEffect(() => {
+    console.log(initialValue);
     const newEditor = createPlateEditor({ id: editor.id, plugins });
     newEditor.children = initialValue ?? editor.children;
     setEditor(newEditor);
@@ -293,7 +294,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     editableProps.className,
                     !id &&
                       'min-h-[920px] w-[900px] px-4 pb-[20vh] pt-4 md:px-[96px]',
-                    id && 'px-4 pb-8 pt-2 md:px-8'
+                    id && 'px-4 pb-8 pt-2'
                   ),
                 }}
               >

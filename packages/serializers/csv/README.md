@@ -4,7 +4,7 @@ This package implements the CSV serializer for Plate.
 
 ## Documentation
 
-Check out [Playground](https://plate.udecode.io/docs/playground).
+Check out [Playground](https://platejs.org/docs/playground).
 
 ## API
 

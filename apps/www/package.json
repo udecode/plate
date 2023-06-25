@@ -6,7 +6,7 @@
   "scripts": {
     "build": "contentlayer build && yarn build:registry && next build",
     "build:registry": "ts-node --esm --project ./scripts/tsconfig.scripts.json ./scripts/build-registry.ts",
-    "dev": "concurrently \"contentlayer dev\" \"next dev\"",
+    "dev": "concurrently \"contentlayer dev\" \"NODE_OPTIONS=--max-old-space-size=16192 next dev\"",
     "start": "next start",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn lint --fix",
@@ -108,7 +108,7 @@
     "framer-motion": "10.12.16",
     "lodash.template": "^4.5.0",
     "lucide-react": "^0.246.0",
-    "next": "^13.4.6",
+    "next": "^13.4.7",
     "next-contentlayer": "0.3.3",
     "next-themes": "^0.2.1",
     "prism-react-renderer": "^1.3.5",

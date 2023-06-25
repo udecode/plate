@@ -6,6 +6,10 @@ import { DialogProps } from '@radix-ui/react-alert-dialog';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+
+import { docsConfig } from '@/config/docs';
+import { cn } from '@/lib/utils';
+import { Button } from '@/registry/default/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,11 +17,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './ui/command';
-
-import { docsConfig } from '@/config/docs';
-import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
+} from '@/registry/default/ui/command';
 import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 
 export function CommandItems({
@@ -128,14 +128,14 @@ export function CommandMenu({ ...props }: DialogProps) {
       <Button
         variant="outline"
         className={cn(
-          'relative w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64'
+          'relative flex w-full items-center justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64'
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
         <span className="inline-flex lg:hidden">Search...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute right-[9px] top-[9px] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>

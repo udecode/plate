@@ -6,7 +6,7 @@ styling text by typing sequences like **bold**.
 ## Documentation
 
 Check out
-[Autoformat](https://plate.udecode.io/docs/autoformat).
+[Autoformat](https://platejs.org/docs/autoformat).
 
 ## API
 

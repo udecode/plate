@@ -11,6 +11,14 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   APIAttributes,
@@ -240,6 +248,41 @@ const components = {
       {...props}
     />
   ),
+  KeyTable: ({ className, ...props }: React.ComponentProps<typeof Table>) => {
+    const items = [
+      {
+        hotkey: '⌘ + K',
+        description: 'Open command palette',
+      },
+      {
+        hotkey: '⌘ + K',
+        description: 'Open command palette',
+      },
+    ];
+
+    return (
+      <Table className={cn('my-4', className)} {...props}>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Key</TableHead>
+            <TableHead>Description</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <TableRow key={item.hotkey}>
+              <TableCell>
+                <kbd className="inline-flex min-w-[8px] items-center justify-center rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
+                  {item.hotkey}
+                </kbd>
+              </TableCell>
+              <TableCell>{item.description}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  },
   Tabs: ({ className, ...props }: React.ComponentProps<typeof Tabs>) => (
     <Tabs className={cn('relative mt-6 w-full', className)} {...props} />
   ),

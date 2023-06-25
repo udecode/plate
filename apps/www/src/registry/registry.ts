@@ -29,12 +29,12 @@ const ui: Registry = [
     files: [
       'ui/code-block-element/code-block-element.tsx',
       'ui/code-block-element/code-block-element.css',
-      'ui/code-block-element/code-block-select-element.tsx',
+      'ui/code-block-element/code-block-combobox.tsx',
     ],
     items: [
       'code-block-element',
       'code-block-element.css',
-      'code-block-select-element',
+      'code-block-combobox',
     ],
   },
   {

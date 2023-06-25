@@ -30,16 +30,16 @@ export const useTodoListElement = (
   const editor = usePlateEditorRef();
 
   return {
-    inputProps: {
+    checkboxProps: {
       checked: !!checked,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      onCheckedChange: (value: boolean) => {
         if (readOnly) return;
         const path = findNodePath(editor, element);
         if (!path) return;
 
         setNodes<TTodoListItemElement>(
           editor,
-          { checked: e.target.checked },
+          { checked: value },
           {
             at: path,
           }

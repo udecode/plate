@@ -4,7 +4,7 @@ This package implements the keyboard input plugin for Plate.
 
 ## Documentation
 
-Check out [Keyboard Input](https://plate.udecode.io/docs/kbd).
+Check out [Keyboard Input](https://platejs.org/docs/kbd).
 
 ## API
 

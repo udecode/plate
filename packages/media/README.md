@@ -14,8 +14,8 @@ Includes:
 
 ## Documentation
 
-- Check out [Image](https://plate.udecode.io/docs/image).
-- Check out [Media Embed](https://plate.udecode.io/docs/media-embed).
+- Check out [Image](https://platejs.org/docs/image).
+- Check out [Media Embed](https://platejs.org/docs/media-embed).
 
 ## API
 

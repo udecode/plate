@@ -5,7 +5,7 @@ This package implements a cursor overlay for Plate.
 ## Documentation
 
 Check out
-[Cursor Overlay](https://plate.udecode.io/docs/components/cursor-overlay).
+[Cursor Overlay](https://platejs.org/docs/components/cursor-overlay).
 
 ## API
 

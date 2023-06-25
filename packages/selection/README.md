@@ -5,7 +5,7 @@ Plugin that allows you to select blocks in the drag area using the mouse or touc
 ## Documentation
 
 Check out
-[Block Selection](https://plate.udecode.io/docs/block-selection).
+[Block Selection](https://platejs.org/docs/block-selection).
 
 
 ## API

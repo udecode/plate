@@ -20,11 +20,10 @@ export const mediaValue: any = (
     {imageValue}
 
     <hh2>📺 Embed</hh2>
-    <hp>Embed various types of content, such as videos:</hp>
+    <hp>Embed various types of content, such as videos and tweets:</hp>
     <hmediaembed url="https://www.youtube.com/watch?v=MyiBAziEWUA">
       <htext />
     </hmediaembed>
-    <hp>And tweets:</hp>
     <hmediaembed url="https://twitter.com/zbeyens/status/1572197541097410560">
       <htext />
     </hmediaembed>

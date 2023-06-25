@@ -7,7 +7,7 @@ because the list structure has no children.
 
 ## Documentation
 
-Check out [Indent List](https://plate.udecode.io/docs/indent-list).
+Check out [Indent List](https://platejs.org/docs/indent-list).
 
 ## API
 

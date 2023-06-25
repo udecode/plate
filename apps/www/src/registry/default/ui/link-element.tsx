@@ -14,13 +14,7 @@ const LinkElement = React.forwardRef<
     <PlateElement
       asChild
       ref={ref}
-      className={cn(
-        'text-[#0078d4] no-underline',
-        'hover:text-[#004578] hover:underline',
-        'visited:hover:text-[#004578] visited:hover:underline',
-        'visited:text-[#0078d4]',
-        className
-      )}
+      className={cn('font-medium underline underline-offset-4', className)}
       {...linkProps}
       {...(props as any)}
     >

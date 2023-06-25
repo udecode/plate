@@ -4,7 +4,7 @@ This package implements the horizontal rule plugin for Plate.
 
 ## Documentation
 
-Check out [Horizontal Rule](https://plate.udecode.io/docs/horizontal-rule).
+Check out [Horizontal Rule](https://platejs.org/docs/horizontal-rule).
 
 ## API
 

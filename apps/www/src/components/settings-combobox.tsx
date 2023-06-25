@@ -2,6 +2,13 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { settingsStore } from './context/settings-store';
+import { Icons } from './icons';
+
+import { SettingPlugin, settingPluginItems } from '@/config/setting-plugins';
+import { settingValues } from '@/config/setting-values';
+import { useFixHydration } from '@/hooks/use-fix-hydration';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/registry/default/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -9,14 +16,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './ui/command';
-import { Icons } from './icons';
-
-import { settingPluginItems } from '@/config/setting-plugins';
-import { settingValues } from '@/config/setting-values';
-import { useFixHydration } from '@/hooks/use-fix-hydration';
-import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/registry/default/ui/button';
+} from '@/registry/default/ui/command';
 import {
   Popover,
   PopoverContent,
@@ -113,8 +113,11 @@ export function SettingsCombobox() {
                             settingValues[newId]?.plugins ?? [];
 
                           valuePlugins.forEach((pluginKey) => {
-                            const deps =
-                              settingPluginItems[pluginKey]?.dependencies;
+                            const deps = (
+                              settingPluginItems[pluginKey] as
+                                | SettingPlugin
+                                | undefined
+                            )?.dependencies;
 
                             deps?.forEach((dep) => {
                               settingsStore.set.setCheckedIdNext(dep, true);

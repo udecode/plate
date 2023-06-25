@@ -33,8 +33,8 @@ const MentionElement = forwardRef<
     <PlateElement
       ref={ref}
       className={cn(
-        'mx-px my-0 inline-block rounded-[4px] bg-[#eee] p-[3px] pb-0.5 align-baseline text-[0.9em]',
-        selected && focused && 'shadow-[0_0_0_2px_#B4D5FF]',
+        'inline-block cursor-pointer rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
+        selected && focused && 'ring-2 ring-ring',
         className
       )}
       data-slate-value={element.value}

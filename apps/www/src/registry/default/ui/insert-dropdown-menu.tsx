@@ -35,9 +35,6 @@ import {
 } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { ELEMENT_TABLE, insertTable } from '@udecode/plate-table';
-
-import { settingsStore } from '@/components/context/settings-store';
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,8 +43,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { settingsStore } from '@/components/context/settings-store';
+import { Icons } from '@/components/icons';
 
 const items = [
   {

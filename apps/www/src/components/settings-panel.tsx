@@ -16,7 +16,6 @@ import {
   BottomSheetContent,
   BottomSheetHeader,
 } from './ui/bottom-sheet';
-import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Icons } from './icons';
@@ -34,6 +33,7 @@ import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { useViewport } from '@/hooks/use-viewport';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/ui/button';
+import { Checkbox } from '@/registry/default/ui/checkbox';
 import {
   Popover,
   PopoverContent,

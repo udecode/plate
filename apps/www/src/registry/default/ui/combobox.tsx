@@ -68,7 +68,7 @@ export function ComboboxContent<TData extends Data = NoData>(
         {...menuProps}
         ref={menuRef}
         className={cn(
-          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-b-[2px] bg-background p-0 shadow-[rgba(0,0,0,0.133)_0_3.2px_7.2px_0,rgba(0,0,0,0.11)_0_0.6px_1.8px_0]'
+          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-md bg-popover p-0 shadow-md'
         )}
       >
         {Component ? Component({ store: activeComboboxStore }) : null}

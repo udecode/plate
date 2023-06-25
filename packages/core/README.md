@@ -6,8 +6,8 @@ glues everything together.
 ## Documentation
 
 Check out:
-- [Basic Editor](https://plate.udecode.io/docs/basic-editor)
-- [Plate](https://plate.udecode.io/docs/Plate) and the following guides.
+- [Basic Editor](https://platejs.org/docs/basic-editor)
+- [Plate](https://platejs.org/docs/Plate) and the following guides.
 
 ## API
 

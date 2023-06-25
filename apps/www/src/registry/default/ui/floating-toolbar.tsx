@@ -4,9 +4,9 @@ import {
   useFloatingToolbar,
   UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
+import { Toolbar, ToolbarProps } from './toolbar';
 
 import { cn } from '@/lib/utils';
-import { Toolbar, ToolbarProps } from '@/registry/default/ui/toolbar';
 
 export interface FloatingToolbarProps extends ToolbarProps {
   children: ReactNode;
@@ -40,7 +40,7 @@ export function FloatingToolbar({
     <PortalBody element={portalElement}>
       <Toolbar
         className={cn(
-          'absolute z-50 whitespace-nowrap border bg-popover opacity-100 shadow-md'
+          'absolute z-50 whitespace-nowrap border bg-popover px-1 opacity-100 shadow-md'
         )}
         ref={refs.setFloating}
         style={style}

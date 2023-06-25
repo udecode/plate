@@ -3,5 +3,5 @@
  */
 
 export * from './useCodeBlockElement';
-export * from './useCodeBlockSelectElement';
+export * from './useCodeBlockCombobox';
 export * from './useCodeSyntaxLeaf';

@@ -42,21 +42,17 @@ const TableCellElement = React.forwardRef<
         hideBorder && 'before:border-none',
         !hideBorder &&
           cn(
-            isHeader && 'text-left',
-            isHeader && 'before:bg-[rgb(244,245,247)] [&_>_*]:m-0',
+            isHeader && 'text-left [&_>_*]:m-0',
             'before:h-full before:w-full',
-            selected && 'before:z-10 before:border-blue-500 before:bg-blue-50',
+            selected && 'before:z-10 before:bg-muted',
             "before:absolute before:box-border before:select-none before:content-['']",
             borders &&
               cn(
                 borders.bottom?.size &&
-                  `before:border-b before:border-b-[rgb(209_213_219)]`,
-                borders.right?.size &&
-                  `before:border-r before:border-r-[rgb(209_213_219)]`,
-                borders.left?.size &&
-                  `before:border-l before:border-l-[rgb(209_213_219)]`,
-                borders.top?.size &&
-                  `before:border-t before:border-t-[rgb(209_213_219)]`
+                  `before:border-b before:border-b-border`,
+                borders.right?.size && `before:border-r before:border-r-border`,
+                borders.left?.size && `before:border-l before:border-l-border`,
+                borders.top?.size && `before:border-t before:border-t-border`
               )
           ),
         className
@@ -87,7 +83,7 @@ const TableCellElement = React.forwardRef<
           {!readOnly && hovered && (
             <div
               className={cn(
-                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
                 'right-[-1.5px]'
               )}
             />
@@ -96,7 +92,7 @@ const TableCellElement = React.forwardRef<
           {!readOnly && hoveredLeft && (
             <div
               className={cn(
-                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-blue-500',
+                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
                 'left-[-1.5px]'
               )}
             />

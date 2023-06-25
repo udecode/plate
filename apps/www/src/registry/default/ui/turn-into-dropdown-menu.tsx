@@ -26,9 +26,6 @@ import {
 } from '@udecode/plate-indent-list';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-
-import { settingsStore } from '@/components/context/settings-store';
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,8 +34,11 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { settingsStore } from '@/components/context/settings-store';
+import { Icons } from '@/components/icons';
 
 const items = [
   {
@@ -132,10 +132,10 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           pressed={openState.open}
           tooltip="Turn into"
           isDropdown
-          className="sm:min-w-[140px]"
+          className="lg:min-w-[130px]"
         >
-          <SelectedItemIcon className="h-5 w-5 sm:hidden" />
-          <span className="max-sm:hidden">{selectedItemLabel}</span>
+          <SelectedItemIcon className="h-5 w-5 lg:hidden" />
+          <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 

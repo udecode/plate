@@ -133,7 +133,7 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
             <div
               className={cn(
                 'absolute inset-x-0 h-0.5 opacity-100',
-                'bg-[#B4D5FF]',
+                'bg-muted',
                 dropLine === 'top' && '-top-px',
                 dropLine === 'bottom' && '-bottom-px',
                 classNames.dropLine
