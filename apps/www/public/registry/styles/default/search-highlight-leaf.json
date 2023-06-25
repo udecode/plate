@@ -5,7 +5,7 @@
   "files": [
     {
       "name": "search-highlight-leaf.tsx",
-      "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function SearchHighlightLeaf({ className, ...props }: PlateLeafProps) {\n  return <PlateLeaf className={cn('bg-[#fff59d]', className)} {...props} />;\n}\n"
+      "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function SearchHighlightLeaf({ className, ...props }: PlateLeafProps) {\n  return <PlateLeaf className={cn('bg-yellow-100', className)} {...props} />;\n}\n"
     }
   ],
   "type": "components:ui"

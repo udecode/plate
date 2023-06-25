@@ -5,7 +5,7 @@
   "files": [
     {
       "name": "code-leaf.tsx",
-      "content": "'use client';\n\nimport React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function CodeLeaf({ className, children, ...props }: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      asChild\n      className={cn(\n        'whitespace-pre-wrap',\n        \"rounded-[3px] bg-[rgba(135,131,120,0.15)] px-[0.4em] py-[0.2em] font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_Courier,_monospace] text-[85%] leading-[normal]\",\n        className\n      )}\n      {...props}\n    >\n      <code>{children}</code>\n    </PlateLeaf>\n  );\n}\n"
+      "content": "'use client';\n\nimport React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function CodeLeaf({ className, children, ...props }: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      asChild\n      className={cn(\n        'whitespace-pre-wrap',\n        'rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm',\n        className\n      )}\n      {...props}\n    >\n      <code>{children}</code>\n    </PlateLeaf>\n  );\n}\n"
     }
   ],
   "type": "components:ui"

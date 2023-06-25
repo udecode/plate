@@ -67,7 +67,7 @@ export const settingPluginItems = {
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
   },
-  [ELEMENT_CODE_BLOCK]: {
+  code_block: {
     id: ELEMENT_CODE_BLOCK,
     label: 'Code block',
     badges: [settingBadges.element],

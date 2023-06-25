@@ -65,11 +65,11 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/code-block-element/code-block-element.css'],
       component: React.lazy(() => import('@/registry/default/ui/code-block-element/code-block-element.css')),
     },
-    'code-block-element/code-block-select-element': {
-      name: 'code-block-select-element',
+    'code-block-element/code-block-combobox': {
+      name: 'code-block-combobox',
       type: 'components:ui',
       registryDependencies: [],
-      files: ['registry/default/ui/code-block-element/code-block-select-element.tsx'],
+      files: ['registry/default/ui/code-block-element/code-block-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/code-block-element/code-block-combobox')),
     },
     'color-dropdown-menu': {

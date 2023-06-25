@@ -5,7 +5,7 @@
   "files": [
     {
       "name": "highlight-leaf.tsx",
-      "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function HighlightLeaf({\n  className,\n  children,\n  ...props\n}: PlateLeafProps) {\n  return (\n    <PlateLeaf asChild className={cn('bg-[#FEF3B7]', className)} {...props}>\n      <mark>{children}</mark>\n    </PlateLeaf>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function HighlightLeaf({\n  className,\n  children,\n  ...props\n}: PlateLeafProps) {\n  return (\n    <PlateLeaf asChild className={cn('bg-yellow-200', className)} {...props}>\n      <mark>{children}</mark>\n    </PlateLeaf>\n  );\n}\n"
     }
   ],
   "type": "components:ui"

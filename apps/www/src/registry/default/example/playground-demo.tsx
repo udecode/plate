@@ -237,13 +237,14 @@ export function ResetPluginsEffect({
 }: ResetPluginsEffectProps) {
   const editor = usePlateSelectors().editor();
   const setEditor = usePlateActions().editor();
+  const setValue = usePlateActions().value();
 
   useEffect(() => {
-    console.log(initialValue);
     const newEditor = createPlateEditor({ id: editor.id, plugins });
     newEditor.children = initialValue ?? editor.children;
+    setValue(initialValue);
     setEditor(newEditor);
-  }, [plugins, setEditor, editor.id, editor.children, initialValue]);
+  }, [plugins, setEditor, editor.id, editor.children, initialValue, setValue]);
 
   return null;
 }

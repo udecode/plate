@@ -86,7 +86,7 @@ export const settingValues = {
     id: 'basicnodes',
     label: 'Basic Nodes',
     value: [...basicElementsValue, ...basicMarksValue],
-    route: '/docs/basic-nodes',
+    route: '/docs/basic-elements',
     plugins: [],
   },
   blockselection: {
@@ -210,7 +210,7 @@ export const settingValues = {
     id: 'kbd',
     label: 'Keyboard Input',
     value: kbdValue,
-    route: '/docs/kbd',
+    route: '/docs/components/kbd-leaf',
     plugins: [MARK_KBD],
   },
   lineheight: {

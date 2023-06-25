@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import * as React from 'react';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer/hooks';
@@ -248,18 +249,29 @@ const components = {
       {...props}
     />
   ),
-  KeyTable: ({ className, ...props }: React.ComponentProps<typeof Table>) => {
-    const items = [
-      {
-        hotkey: '⌘ + K',
-        description: 'Open command palette',
-      },
-      {
-        hotkey: '⌘ + K',
-        description: 'Open command palette',
-      },
-    ];
-
+  KeyTableItem: ({
+    hotkey,
+    children,
+  }: {
+    hotkey: string;
+    children: ReactNode;
+  }) => {
+    return (
+      <TableRow>
+        <TableCell>
+          <kbd className="inline-flex min-w-[8px] items-center justify-center whitespace-nowrap rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
+            {hotkey}
+          </kbd>
+        </TableCell>
+        <TableCell>{children}</TableCell>
+      </TableRow>
+    );
+  },
+  KeyTable: ({
+    className,
+    children,
+    ...props
+  }: React.ComponentProps<typeof Table>) => {
     return (
       <Table className={cn('my-4', className)} {...props}>
         <TableHeader>
@@ -268,18 +280,7 @@ const components = {
             <TableHead>Description</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.hotkey}>
-              <TableCell>
-                <kbd className="inline-flex min-w-[8px] items-center justify-center rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
-                  {item.hotkey}
-                </kbd>
-              </TableCell>
-              <TableCell>{item.description}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+        <TableBody>{children}</TableBody>
       </Table>
     );
   },
