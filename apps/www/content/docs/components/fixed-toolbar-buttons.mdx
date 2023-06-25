@@ -45,52 +45,64 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add fixed-toolbar-buttons
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add fixed-toolbar-buttons
+    ```
 
-      - [Basic Marks](/docs/basic-marks)
-      - [Font](/docs/font)
-      - [Indent List](/docs/indent-list)
-      - [List](/docs/list)
-      - [Media](/docs/media)
-      - [Toolbar](/docs/components/toolbar)
-      - [Color Dropdown Menu](/docs/components/color-dropdown-menu)
-      - [Emoji Dropdown Menu](/docs/components/emoji-dropdown-menu)
-      - [Align Dropdown Menu](/docs/components/align-dropdown-menu)
-      - [Comment Toolbar Button](/docs/components/comment-toolbar-button)
-      - [Indent List Toolbar Button](/docs/components/indent-list-toolbar-button)
-      - [Indent Toolbar Button](/docs/components/indent-toolbar-button)
-      - [Insert Dropdown Menu](/docs/components/insert-dropdown-menu)
-      - [Line Height Dropdown Menu](/docs/components/line-height-dropdown-menu)
-      - [Link Toolbar Button](/docs/components/link-toolbar-button)
-      - [List Toolbar Button](/docs/components/list-toolbar-button)
-      - [Mark Toolbar Button](/docs/components/mark-toolbar-button)
-      - [Media Toolbar Button](/docs/components/media-toolbar-button)
-      - [Mode Dropdown Menu](/docs/components/mode-dropdown-menu)
-      - [More Dropdown Menu](/docs/components/more-dropdown-menu)
-      - [Outdent Toolbar Button](/docs/components/outdent-toolbar-button)
-      - [Table Dropdown Menu](/docs/components/table-dropdown-menu)
-      - [Turn Into Dropdown Menu](/docs/components/turn-into-dropdown-menu)
+  </TabsContent>
 
+  <TabsContent value="manual">
 
-      2. Copy and paste the following code into your project.
+    <Steps>
 
-      - `components/plate-ui/fixed-toolbar.tsx`
+      <Step>
+
+        Install the following dependencies:
+
+        - [Basic Marks](/docs/basic-marks)
+        - [Font](/docs/font)
+        - [Indent List](/docs/indent-list)
+        - [List](/docs/list)
+        - [Media](/docs/media)
+        - [Toolbar](/docs/components/toolbar)
+        - [Color Dropdown Menu](/docs/components/color-dropdown-menu)
+        - [Emoji Dropdown Menu](/docs/components/emoji-dropdown-menu)
+        - [Align Dropdown Menu](/docs/components/align-dropdown-menu)
+        - [Comment Toolbar Button](/docs/components/comment-toolbar-button)
+        - [Indent List Toolbar Button](/docs/components/indent-list-toolbar-button)
+        - [Indent Toolbar Button](/docs/components/indent-toolbar-button)
+        - [Insert Dropdown Menu](/docs/components/insert-dropdown-menu)
+        - [Line Height Dropdown Menu](/docs/components/line-height-dropdown-menu)
+        - [Link Toolbar Button](/docs/components/link-toolbar-button)
+        - [List Toolbar Button](/docs/components/list-toolbar-button)
+        - [Mark Toolbar Button](/docs/components/mark-toolbar-button)
+        - [Media Toolbar Button](/docs/components/media-toolbar-button)
+        - [Mode Dropdown Menu](/docs/components/mode-dropdown-menu)
+        - [More Dropdown Menu](/docs/components/more-dropdown-menu)
+        - [Outdent Toolbar Button](/docs/components/outdent-toolbar-button)
+        - [Table Dropdown Menu](/docs/components/table-dropdown-menu)
+        - [Turn Into Dropdown Menu](/docs/components/turn-into-dropdown-menu)
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="fixed-toolbar-buttons" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

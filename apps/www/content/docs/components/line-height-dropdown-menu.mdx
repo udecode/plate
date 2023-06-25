@@ -15,31 +15,45 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add line-height-dropdown-menu
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add line-height-dropdown-menu
+    ```
 
-      - [Line Height](/docs/line-height)
-      - [Toolbar](/docs/components/toolbar)
-      - [Dropdown Menu](/docs/components/dropdown-menu)
+  </TabsContent>
 
-      2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-      - `components/plate-ui/line-height-dropdown-menu.tsx`
+    <Steps>
+
+      <Step>
+
+        Install the following dependencies:
+
+        - [Line Height](/docs/line-height)
+        - [Toolbar](/docs/components/toolbar)
+        - [Dropdown Menu](/docs/components/dropdown-menu)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="line-height-dropdown-menu" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

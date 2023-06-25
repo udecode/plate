@@ -8,31 +8,45 @@ component: true
 
 ## Installation
 
-```bash
-npx plate-ui add emoji-toolbar-dropdown
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add emoji-toolbar-dropdown
+    ```
 
-      ```bash
-      npm install @udecode/plate-floating
-      ```
+  </TabsContent>
 
-      2. Copy and paste the following code into your project.
+  <TabsContent value="manual">
 
-      - `components/plate-ui/emoji-toolbar-dropdown.tsx`
+    <Steps>
+
+      <Step>
+
+        Install the following dependencies:
+
+        ```bash
+        npm install @udecode/plate-floating
+        ```
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="emoji-toolbar-dropdown" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

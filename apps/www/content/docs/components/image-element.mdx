@@ -13,35 +13,48 @@ docs:
 
 ## Installation
 
-```bash
-npx plate-ui add image-element
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-      1. Install the following dependencies:
+    ```bash
+    npx plate-ui add image-element
+    ```
 
-      ```bash
-      npm install @udecode/plate-floating
-      ```
+  </TabsContent>
 
-      - [Media](/docs/media)
-      - [Media Floating Toolbar](/docs/components/media-floating-toolbar)
+  <TabsContent value="manual">
 
+    <Steps>
 
-      2. Copy and paste the following code into your project.
+      <Step>
 
-      - `components/plate-ui/image-element.tsx`
+        Install the following dependencies:
+
+        ```bash
+        npm install @udecode/plate-floating
+        ```
+
+        - [Media](/docs/media)
+        - [Media Floating Toolbar](/docs/components/media-floating-toolbar)
+
+      </Step>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="image-element" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
 
 ## Usage
 

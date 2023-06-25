@@ -8,38 +8,43 @@ component: true
 
 ## Installation
 
-```bash
-npx plate-ui add kbd-leaf
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-  <AccordionItem value="manual-installation">
+    ```bash
+    npx plate-ui add kbd-leaf
+    ```
 
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
+  </TabsContent>
 
-    <AccordionContent>
+  <TabsContent value="manual">
 
+    <Steps>
 
-      1. Install the following dependencies:
+      <Step>
+
+        Install the following dependencies:
 
       - `@udecode/plate-kbd`
 
+      </Step>
 
-      2. Copy and paste the following code into your project.
-
-
-      - `components/plate-ui/kbd-leaf.tsx`
-
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="kbd-leaf" />
 
+      <Step>Update the import paths to match your project setup.</Step>
 
-    </AccordionContent>
+    </Steps>
 
-  </AccordionItem>
+  </TabsContent>
 
-</Accordion>
+</Tabs>
 
 ## Usage
 

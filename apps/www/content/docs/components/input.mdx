@@ -8,22 +8,32 @@ radix:
 
 ## Installation
 
-```bash
-npx plate-ui add input
-```
+<Tabs defaultValue="cli">
 
-<Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+  <TabsList>
+    <TabsTrigger value="cli">CLI</TabsTrigger>
+    <TabsTrigger value="manual">Manual</TabsTrigger>
+  </TabsList>
+  <TabsContent value="cli">
 
-     1. Copy and paste the following code into your project.
+    ```bash
+    npx plate-ui add input
+    ```
 
-      - `components/plate-ui/input.tsx`
+  </TabsContent>
+
+  <TabsContent value="manual">
+
+    <Steps>
+
+      <Step>Copy and paste the following code into your project.</Step>
 
       <ComponentSource name="input" />
 
-    </AccordionContent>
+      <Step>Update the import paths to match your project setup.</Step>
 
-  </AccordionItem>
-</Accordion>
+    </Steps>
+
+  </TabsContent>
+
+</Tabs>
