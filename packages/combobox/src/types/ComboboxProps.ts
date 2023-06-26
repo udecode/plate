@@ -8,7 +8,7 @@ import {
 } from '..';
 
 export interface ComboboxProps<TData = NoData>
-  extends Partial<Pick<ComboboxState<TData>, 'items' | 'floatingOptions'>>,
+  extends Partial<Pick<ComboboxState<TData>, 'items'>>,
     ComboboxStateById<TData> {
   /**
    * Render this component when the combobox is open (useful to inject hooks).
@@ -27,5 +27,5 @@ export interface ComboboxProps<TData = NoData>
    */
   onRenderItem?: React.FC<ComboboxItemProps<any>>;
 
-  portalElement?: Element;
+  portalElement?: HTMLElement;
 }

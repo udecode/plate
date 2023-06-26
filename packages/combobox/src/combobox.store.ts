@@ -1,5 +1,4 @@
 import { createStore, StateActions, StoreApi } from '@udecode/plate-common';
-import { UseVirtualFloatingOptions } from '@udecode/plate-floating';
 import { Range } from 'slate';
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 
@@ -83,11 +82,6 @@ export type ComboboxState<TData = NoData> = {
   highlightedIndex: number;
 
   /**
-   * Overrides `useFloating` options.
-   */
-  floatingOptions: Partial<UseVirtualFloatingOptions>;
-
-  /**
    * Range from the trigger to the cursor.
    */
   targetRange: Range | null;
@@ -104,7 +98,6 @@ const createComboboxStore = (state: ComboboxStateById) =>
 export const comboboxStore = createStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
-  floatingOptions: {},
   highlightedIndex: 0,
   items: [],
   filteredItems: [],
