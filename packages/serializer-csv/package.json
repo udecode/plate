@@ -1,0 +1,57 @@
+{
+  "name": "@udecode/plate-serializer-csv",
+  "version": "21.3.4",
+  "description": "CSV serializer plugin for Plate",
+  "license": "MIT",
+  "homepage": "https://platejs.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/serializer-csv"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@udecode/plate-common": "21.3.2",
+    "@udecode/plate-table": "21.3.4",
+    "papaparse": "^5.4.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.94.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.95.0"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.7"
+  },
+  "keywords": [
+    "csv",
+    "plate",
+    "plugin",
+    "serializer",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

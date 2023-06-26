@@ -7,7 +7,7 @@ This is **NOT** a component library. It's a collection of re-usable components t
 
 **What do you mean by not a component library?**
 
-I mean you do not install it as a dependency. It is not available or distributed via npm.
+We mean you do not install it as a dependency. It is not available or distributed via npm.
 
 Pick the components you need. Copy and paste the code into your project and customize to your needs. The code is yours.
 
@@ -17,11 +17,30 @@ _Use this as a reference to build your own component libraries._
 
 <Accordion type="multiple">
 
+<AccordionItem value="faq-0">
+<AccordionTrigger>
+
+Is it a replacement to shadcn/ui?
+
+</AccordionTrigger>
+<AccordionContent>
+
+No, it's not a replacement to [shadcn/ui](https://ui.shadcn.com/).
+Instead, Plate UI an extended collection of components built on top of [shadcn/ui](https://ui.shadcn.com/) and [Radix UI](https://www.radix-ui.com/), specifically designed for **rich-text editor** design. For other parts of your app, you should continue to use other components such as [shadcn/ui](https://ui.shadcn.com/).
+
+Plate UI adheres to the same conventions, usage, and patterns as [shadcn/ui](https://ui.shadcn.com/), meaning you can seamlessly integrate it with your existing [shadcn/ui](https://ui.shadcn.com/) components rather than replacing them.
+
+Next to [shadcn/ui](https://ui.shadcn.com/), Plate UI is the first published component registry. [Our discussion with shadcn](https://twitter.com/zbeyens/status/1672184848121823237) led us to hope that this work will contribute to the development of an open platform for sharing headless components. We aim to constantly improve and refine our work, addressing any flaws to provide a superior user experience.
+
+</AccordionContent>
+
+</AccordionItem>
+
 <AccordionItem value="faq-1">
-	<AccordionTrigger>
-		Why copy/paste and not packaged as a dependency?
-	</AccordionTrigger>
-	<AccordionContent>
+<AccordionTrigger>
+Why copy/paste and not packaged as a dependency?
+</AccordionTrigger>
+<AccordionContent>
 The idea behind this is to give you ownership and control over the code, allowing you to decide how the components are built and styled.
 
 Start with some sensible defaults, then customize the components to your needs.
@@ -37,7 +56,7 @@ One of the drawback of packaging the components in an npm package is that the st
     Do you plan to publish it as an npm package?
   </AccordionTrigger>
   <AccordionContent>
-    No. I have no plans to publish it as an npm package.
+    No. We have no plans to publish it as an npm package.
   </AccordionContent>
 </AccordionItem>
 <AccordionItem value="faq-3">

@@ -7,10 +7,10 @@ description: Copy paste from DOCX to Slate.
 
 ### Features
 
-- Convert DOCX content to a Slate value. 
+- Convert DOCX content to a Slate value.
 
 <Callout className="my-4">
-**Note**: Converting a Slate value to DOCX is not yet supported.
+  **Note**: Converting a Slate value to DOCX is not yet supported.
 </Callout>
 
 ### Installation
@@ -43,31 +43,33 @@ import {
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createImagePlugin(),
-  createHorizontalRulePlugin(),
-  createLineHeightPlugin(),
-  createTablePlugin(),
-  createAlignPlugin(),
-  createFontBackgroundColorPlugin(),
-  createFontFamilyPlugin(),
-  createFontColorPlugin(),
-  createFontSizePlugin(),
-  createFontWeightPlugin(),
-  createIndentListPlugin(),
-  createIndentPlugin(),
-  createTextIndentPlugin(),
-  createDeserializeDocxPlugin(),
-  createJuicePlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createImagePlugin(),
+    createHorizontalRulePlugin(),
+    createLineHeightPlugin(),
+    createTablePlugin(),
+    createAlignPlugin(),
+    createFontBackgroundColorPlugin(),
+    createFontFamilyPlugin(),
+    createFontColorPlugin(),
+    createFontSizePlugin(),
+    createFontWeightPlugin(),
+    createIndentListPlugin(),
+    createIndentPlugin(),
+    createTextIndentPlugin(),
+    createDeserializeDocxPlugin(),
+    createJuicePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
 
-
 ### Source Code
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/docx/src/deserializer/createDeserializeDocxPlugin.ts)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializer-docx/src/deserializer/createDeserializeDocxPlugin.ts)

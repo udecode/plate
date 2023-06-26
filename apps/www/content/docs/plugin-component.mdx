@@ -3,15 +3,13 @@ title: Plugin Component
 description: Markup and styling.
 ---
 
-Plate plugins are headless so you'll need to register React components to each plugin.
+Plate plugins are headless so you'll need to register a React component to each plugin.
 
 ## Create Components
 
 ### Plate UI
 
-To get started, you can use Plate UI: a set of components that you can use to build your own editor UI.
-
-See [Components](/docs/components) for more information.
+To get started, you can use [Plate UI](/docs/components): a collection of re-usable components (not a library!) that you can copy and paste into your apps.
 
 ### Custom Components
 
@@ -23,13 +21,17 @@ Creating a custom component is straightforward:
 import React from 'react';
 import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 
-export function BlockquoteElement(({ className, children, ...props }: PlateElementProps) {
+export function BlockquoteElement({
+  className,
+  children,
+  ...props
+}: PlateElementProps) {
   return (
     <PlateElement asChild className={className} {...props}>
       <blockquote>{children}</blockquote>
     </PlateElement>
   );
-};
+}
 ```
 
 #### Leaf
@@ -74,8 +76,8 @@ It's an object whose property keys are plugin keys and whose property values are
 ```tsx
 const plugins = createPlugins(plugins, {
   components: {
-    [ELEMENT_PARAGRAPH]: ParagraphElement,
-    [ELEMENT_LINK]: LinkElement,
+    p: ParagraphElement,
+    a: LinkElement,
     // ...other components
   },
 });

@@ -604,6 +604,11 @@ const example: Registry = [
     files: ['example/iframe-demo.tsx'],
   },
   {
+    name: 'mode-toggle',
+    type: 'components:example',
+    files: ['example/mode-toggle.tsx'],
+  },
+  {
     name: 'multiple-editors-demo',
     type: 'components:example',
     registryDependencies: [],

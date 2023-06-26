@@ -21,13 +21,15 @@ npm install @udecode/plate-tabbable
 import React from 'react';
 import { createTabbablePlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createTabbablePlugin(),
-],
-{
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createTabbablePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Conflicts with other plugins
@@ -131,10 +133,13 @@ export interface TabbablePlugin<V extends Value = Value> {
    * Determine whether an element should be included in the tabbable list.
    * @default: (editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)
    */
-  isTabbable?: (editor: PlateEditor<V>, tabbableEntry: TabbableEntry) => boolean;
+  isTabbable?: (
+    editor: PlateEditor<V>,
+    tabbableEntry: TabbableEntry
+  ) => boolean;
 }
 ```
 
 ### Source Code
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/tabbable/src/createTabbablePlugin.ts)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/tabbable/src/createTabbablePlugin.ts)

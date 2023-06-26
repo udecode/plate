@@ -24,15 +24,11 @@ npm install @udecode/plate-break
 ```tsx
 import { createSingleLinePlugin } from '@udecode/plate';
 
-const plugins = createPlugins([
-  ...otherPlugins,
-  createSingleLinePlugin(),
-], {
+const plugins = createPlugins([...otherPlugins, createSingleLinePlugin()], {
   components: createPlateUI(),
 });
 ```
 
-
 ### Source Code
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/single-line/createSingleLinePlugin.ts)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/break/src/single-line/createSingleLinePlugin.ts)

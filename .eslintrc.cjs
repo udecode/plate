@@ -21,7 +21,12 @@ module.exports = {
 
     './config/eslint/bases/prettier.cjs',
   ],
-  ignorePatterns: [...getDefaultIgnorePatterns(), '.next', '.out'],
+  ignorePatterns: [
+    ...getDefaultIgnorePatterns(),
+    '.next',
+    '.out',
+    '**/__registry__',
+  ],
   env: {
     browser: true,
     es6: true,

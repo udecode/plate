@@ -1,4 +1,3 @@
 module.exports = (plop) => {
-  require('./plop-version')(plop);
-  require('./plop-package')(plop);
+  require('./plop-package.cjs')(plop);
 };

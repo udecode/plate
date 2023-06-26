@@ -734,6 +734,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/example/iframe-demo.tsx'],
       component: React.lazy(() => import('@/registry/default/example/iframe-demo')),
     },
+    'mode-toggle': {
+      name: 'mode-toggle',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/mode-toggle.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/mode-toggle')),
+    },
     'multiple-editors-demo': {
       name: 'multiple-editors-demo',
       type: 'components:example',

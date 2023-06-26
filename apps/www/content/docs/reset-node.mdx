@@ -25,7 +25,7 @@ npm install @udecode/plate-reset-node
 ### Usage
 
 ```tsx
-import { createResetNodePlugin, } from '@udecode/plate';
+import { createResetNodePlugin } from '@udecode/plate';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
@@ -65,18 +65,24 @@ export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
   },
 };
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createResetNodePlugin(resetBlockTypePlugin),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createResetNodePlugin(resetBlockTypePlugin),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
 
 ```tsx
-export interface ResetNodePluginRule<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>> extends HotkeyPlugin {
+export interface ResetNodePluginRule<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> extends HotkeyPlugin {
   defaultType?: string;
 
   /**
@@ -95,11 +101,14 @@ export interface ResetNodePluginRule<V extends Value = Value, E extends PlateEdi
   onReset?: (editor: E) => void;
 }
 
-export interface ResetNodePlugin<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>> {
+export interface ResetNodePlugin<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+> {
   rules?: ResetNodePluginRule<V, E>[];
 }
 ```
 
 ### Source Code
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/reset-node/src/createResetNodePlugin.ts)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/reset-node/src/createResetNodePlugin.ts)

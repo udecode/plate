@@ -37,7 +37,7 @@ const languages: { value: string; label: string }[] = [
 
 export function CodeBlockCombobox() {
   const state = useCodeBlockComboboxState();
-  const { commandProps, commandItemProps } = useCodeBlockCombobox(state);
+  const { commandItemProps } = useCodeBlockCombobox(state);
 
   const [open, setOpen] = useState(false);
 

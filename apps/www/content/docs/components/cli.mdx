@@ -1,0 +1,131 @@
+---
+title: CLI
+description: Use the CLI to add components to your project.
+---
+
+## init
+
+Use the `init` command to initialize configuration and dependencies for a new project.
+
+The `init` command installs dependencies, adds the `cn` util, configures `tailwind.config.js`, and CSS variables for the project.
+
+```bash
+npx plate-ui init
+```
+
+You will be asked a few questions to configure `components.json`:
+
+```txt showLineNumbers
+Which style would you like to use? › Default
+Which color would you like to use as base color? › Slate
+Where is your global CSS file? › › app/globals.css
+Do you want to use CSS variables for colors? › no / yes
+Where is your tailwind.config.js located? › tailwind.config.js
+Configure the import alias for components: › @/components
+Configure the import alias for utils: › @/lib/utils
+Are you using React Server Components? › no / yes
+```
+
+### Options
+
+```txt
+Usage: plate-ui init [options]
+
+initialize your project and install dependencies
+
+Options:
+  -y, --yes        skip confirmation prompt. (default: false)
+  -c, --cwd <cwd>  the working directory. defaults to the current directory.
+  -h, --help       display help for command
+```
+
+## add
+
+Use the `add` command to add components and dependencies to your project.
+
+```bash
+npx plate-ui add [component]
+```
+
+You will be presented with a list of components to choose from:
+
+```txt
+Which components would you like to add? › Space to select. Return to submit.
+
+◯  align-dropdown-menu
+◯  avatar
+◯  blockquote-element
+◯  button
+◯  checkbox
+◯  code-leaf
+◯  code-line-element
+◯  code-syntax-leaf
+◯  combobox
+```
+
+### Options
+
+```txt
+Usage: plate-ui add [options] [components...]
+
+add a component to your project
+
+Arguments:
+  components         the components to add
+
+Options:
+  -y, --yes          skip confirmation prompt. (default: false)
+  -o, --overwrite    overwrite existing files. (default: false)
+  -c, --cwd <cwd>    the working directory. defaults to the current directory.
+  -p, --path <path>  the path to add the component to.
+  -h, --help         display help for command
+```
+
+## diff (experimental)
+
+You can use the diff command to check for updates against the registry.
+
+Run the following command to get a list of components that have updates available:
+
+```bash
+npx plate-ui diff
+```
+
+```txt
+The following components have updates available:
+- blockquote-element
+  - /path/to/my-app/components/ui/blockquote-element.tsx
+- button
+  - /path/to/my-app/components/ui/button.tsx
+- combobox
+  - /path/to/my-app/components/ui/combobox.ts
+```
+
+Then run `diff [component]` to see the changes:
+
+```bash
+npx plate-ui diff blockquote-element
+```
+
+```diff /pl-6/
+      ref={ref}
+    - className={cn('my-1 border-l-2 pl-4 italic', className)}
+    + className={cn('my-1 border-l-2 pl-6 italic', className)}
+      {...props}
+```
+
+### Options
+
+```txt
+Usage: plate-ui diff [options] [component]
+
+check for updates against the registry
+
+Arguments:
+  component        the component name
+
+Options:
+  -y, --yes        skip confirmation prompt. (default: false)
+  -c, --cwd <cwd>  the working directory. defaults to the current directory.
+  -h, --help       display help for command
+```

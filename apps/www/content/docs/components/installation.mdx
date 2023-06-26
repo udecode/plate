@@ -14,25 +14,25 @@ description: How to install dependencies and structure your app.
   
 </Alert>
 
-## New Project
-
-Run the following command to create a new Next.js project using the `next-template` template:
-
-```bash
-npx create-next-app -e https://github.com/shadcn/next-template
-```
-
-This creates a new Next.js 13 project with the following features:
-
-- [Next.js App directory](https://nextjs.org)
-- [Tailwind CSS](https://tailwindcss.com)
-- [TypeScript](https://www.typescriptlang.org)
-- [ESLint](https://eslint.org)
-- [Prettier](https://prettier.io)
+[//]: # '## New Project'
+[//]: #
+[//]: # 'Run the following command to create a new Next.js project using the `next-template` template:'
+[//]: #
+[//]: # '```bash'
+[//]: # 'npx create-next-app -e https://github.com/plate/next-template'
+[//]: # '```'
+[//]: #
+[//]: # 'This creates a new Next.js 13 project with the following features:'
+[//]: #
+[//]: # '- [Next.js App directory](https://nextjs.org)'
+[//]: # '- [Tailwind CSS](https://tailwindcss.com)'
+[//]: # '- [TypeScript](https://www.typescriptlang.org)'
+[//]: # '- [ESLint](https://eslint.org)'
+[//]: # '- [Prettier](https://prettier.io)'
 
 ## create-next-app
 
-If you have created a project using `create-next-app`, you can use the `shadcn-ui` CLI to initialize the project.
+If you have created a project using `create-next-app`, you can use the `plate-ui` CLI to initialize the project.
 
 <Steps>
 
@@ -45,7 +45,7 @@ npx create-next-app my-app
 ### Run the CLI
 
 ```bash
-npx shadcn-ui init
+npx plate-ui init
 ```
 
 This will install dependencies, setup Tailwind CSS, and configure the `cn` utils for you.
@@ -66,7 +66,7 @@ npm install tailwindcss-animate class-variance-authority clsx tailwind-merge luc
 
 ### Path Aliases
 
-I use the `@` alias to make it easier to import components. This is how I configure it in `tsconfig.json`:
+We use the `@` alias to make it easier to import components. This is how we configure it in `tsconfig.json`:
 
 ```json title="tsconfig.json"
 {
@@ -83,85 +83,92 @@ If you use a different alias such as `~`, you'll need to update `import` stateme
 
 ### Configure tailwind.config.js
 
-Here's what my `tailwind.config.js` file looks like:
+Here's what our `tailwind.config.js` file looks like:
 
 ```js title="tailwind.config.js"
-const { fontFamily } = require("tailwindcss/defaultTheme")
+const { fontFamily } = require('tailwindcss/defaultTheme');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
-  content: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
+  darkMode: ['class'],
+  content: ['**/src/**/*.{ts,tsx}'],
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: '2rem',
       screens: {
-        "2xl": "1400px",
+        '2xl': '1400px',
       },
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
         },
       },
       borderRadius: {
         lg: `var(--radius)`,
         md: `calc(var(--radius) - 2px)`,
-        sm: "calc(var(--radius) - 4px)",
+        sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
+        sans: ['var(--font-sans)', ...fontFamily.sans],
+        heading: ['var(--font-heading)', ...fontFamily.sans],
       },
       keyframes: {
-        "accordion-down": {
+        'accordion-down': {
           from: { height: 0 },
-          to: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: 0 },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    plugin(({ addVariant }) => {
+      addVariant('all', '& *');
+    }),
+  ],
+};
 ```
 
 ### Configure styles
@@ -176,68 +183,66 @@ Add the following to your `styles/globals.css` file. You can learn more about us
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    --foreground: 240 10% 3.9%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 240 10% 3.9%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: ;
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --ring: 215 20.2% 65.1%;
+    --ring: 240 5% 64.9%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
+    --border: 240 3.7% 25%;
+    --input: 240 3.7% 25%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: ;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
 
-    --ring: 216 34% 17%;
-
-    --radius: 0.5rem;
+    --ring: 240 3.7% 25%;
   }
 }
 
@@ -247,21 +252,36 @@ Add the following to your `styles/globals.css` file. You can learn more about us
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  kbd {
+    font-size: inherit;
+  }
+
+  [data-slate-editor] {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+      'Apple Color Emoji', 'Segoe UI Emoji', Segoe UI Symbol, 'Noto Color Emoji';
+  }
+
+  .slate-selection-area {
+    background: #4f90f22d;
+    border: 1px solid #4f90f2;
   }
 }
 ```
 
 ### Add a cn helper
 
-I use a `cn` helper to make it easier to conditionally add Tailwind CSS classes. Here's how I define it in `lib/utils.ts`:
+We use a `cn` helper to make it easier to conditionally add Tailwind CSS classes. Here's how we define it in `lib/utils.ts`:
 
 ```ts title="lib/utils.ts"
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 ```
 
@@ -269,30 +289,31 @@ export function cn(...inputs: ClassValue[]) {
 
 ## Icons
 
-I use icons from [Lucide](https://lucide.dev). You can use any icon library.
+We use icons from [Lucide](https://lucide.dev). You can use any icon library.
 
 ## App structure
 
-Here's how I structure my app. I use Next.js, but this is not required.
+Here's how we structure our app. We use Next.js, but this is not required.
 
 ```txt {6-10,14-15}
 .
-├── app
-│   ├── layout.tsx
-│   └── page.tsx
-├── components
-│   ├── ui
-│   │   ├── alert-dialog.tsx
-│   │   ├── button.tsx
-│   │   ├── dropdown-menu.tsx
+├── src
+│   ├── app
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │   components
+│   │   ├── ui
+│   │   │   ├── alert-dialog.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   └── ...
+│   │   ├── main-nav.tsx
+│   │   ├── page-header.tsx
 │   │   └── ...
-│   ├── main-nav.tsx
-│   ├── page-header.tsx
-│   └── ...
-├── lib
-│   └── utils.ts
-├── styles
-│   └── globals.css
+│   │   lib
+│   │   └── utils.ts
+│   │   styles
+│   │   └── globals.css
 ├── next.config.js
 ├── package.json
 ├── postcss.config.js
@@ -300,9 +321,11 @@ Here's how I structure my app. I use Next.js, but this is not required.
 └── tsconfig.json
 ```
 
-- I place the UI components in the `components/ui` folder.
+- We place the UI components in the `components/ui` folder. If you already have one and want to keep them separated, you could use `components/plate-ui`.
 - The rest of the components such as `<PageHeader />` and `<MainNav />` are placed in the `components` folder.
-- The `lib` folder contains all the utility functions. I have a `utils.ts` where I define the `cn` helper.
+- The `lib` folder contains all the utility functions. We have a `utils.ts` where we define the `cn` helper.
 - The `styles` folder contains the global CSS.
 
 That's it. You can now start adding components to your project.
+
+[How to register plugin components](/docs/plugin-component#register-components).

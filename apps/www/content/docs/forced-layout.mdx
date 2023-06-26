@@ -33,17 +33,20 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
 
-const plugins = createPlugins([
-  ...basicNodesPlugins,
-  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH }}),
-  createNormalizeTypesPlugin({
-    options: {
-      rules: [{ path: [0], strictType: ELEMENT_H1 }],
-    },
-  }),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    ...basicNodesPlugins,
+    createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH } }),
+    createNormalizeTypesPlugin({
+      options: {
+        rules: [{ path: [0], strictType: ELEMENT_H1 }],
+      },
+    }),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 #### Options
@@ -93,5 +96,5 @@ export interface NormalizeTypesPlugin extends ErrorHandler {
 
 ### Source Code
 
-- [Trailing Block Plugin](https://github.com/udecode/plate/blob/main/packages/editor/trailing-block/src/createTrailingBlockPlugin.ts)
-- [Normalize Types Plugin](https://github.com/udecode/plate/blob/main/packages/editor/normalizers/src/createNormalizeTypesPlugin.ts)
+- [Trailing Block Plugin](https://github.com/udecode/plate/blob/main/packages/trailing-block/src/createTrailingBlockPlugin.ts)
+- [Normalize Types Plugin](https://github.com/udecode/plate/blob/main/packages/normalizers/src/createNormalizeTypesPlugin.ts)

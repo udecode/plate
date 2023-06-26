@@ -19,9 +19,9 @@ const nextConfig = {
   // typescript: {
   //   ignoreBuildErrors: true,
   // },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
 
   staticPageGenerationTimeout: 1200,
 
@@ -71,7 +71,7 @@ const nextConfig = {
 };
 
 // const withContentlayer = createContentlayerPlugin({
-  // Additional Contentlayer config options
+// Additional Contentlayer config options
 // });
 
-export default nextConfig
+export default nextConfig;

@@ -3,10 +3,10 @@ import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
-import { ModeToggle } from './mode-toggle';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+import ModeToggle from '@/registry/default/example/mode-toggle';
 import { buttonVariants } from '@/registry/default/ui/button';
 
 export function SiteHeader() {

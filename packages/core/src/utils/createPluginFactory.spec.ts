@@ -2,11 +2,8 @@ import { createPlateEditor } from './createPlateEditor';
 import { createPluginFactory } from './createPluginFactory';
 import { getPlugin } from './getPlugin';
 
-import { createBasicElementsPlugin } from '@/packages/nodes/basic-elements/src/index';
-import {
-  createLinkPlugin,
-  ELEMENT_LINK,
-} from '@/packages/nodes/link/src/index';
+import { createBasicElementsPlugin } from '@/packages/basic-elements/src/index';
+import { createLinkPlugin, ELEMENT_LINK } from '@/packages/link/src/index';
 
 describe('createPluginFactory', () => {
   const createPlugin = createPluginFactory({ key: 'a', type: 'a' });
