@@ -90,6 +90,13 @@ export const settingValues = {
     route: '/docs/basic-elements',
     plugins: [],
   },
+  basicmarks: {
+    id: 'basicmarks',
+    label: 'Basic Marks',
+    value: [...basicElementsValue, ...basicMarksValue],
+    route: '/docs/basic-marks',
+    plugins: [],
+  },
   blockselection: {
     id: 'blockselection',
     label: 'Block Selection',
