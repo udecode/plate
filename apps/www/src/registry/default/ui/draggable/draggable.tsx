@@ -123,17 +123,14 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
           </div>
         </div>
 
-        <div
-          className={cn('overflow-auto', classNames.blockWrapper)}
-          ref={previewRef}
-        >
+        <div className={cn('', classNames.blockWrapper)} ref={previewRef}>
           {children}
 
           {!!dropLine && (
             <div
               className={cn(
                 'absolute inset-x-0 h-0.5 opacity-100',
-                'bg-muted',
+                'bg-ring',
                 dropLine === 'top' && '-top-px',
                 dropLine === 'bottom' && '-bottom-px',
                 classNames.dropLine

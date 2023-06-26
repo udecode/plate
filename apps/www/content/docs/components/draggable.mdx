@@ -1,73 +1,59 @@
 ---
 title: Draggables
-description: Allows movement of blocks, such as images or tables, within the editor.
+description: Allows movement of blocks, such as paragraph or tables, within the editor.
 component: true
 docs:
+  - route: /docs/dnd
+    title: Drag & Drop
   - route: /docs/components/tooltip
     title: Tooltip
 ---
 
-<Callout type="warning">
-  <p>
-    The demo is not yet working due to ESM requirements using latest version of
-    Next and React. We're working on a fix. See this
-    [sandbox](https://codesandbox.io/s/ph7q8d?file=/App.tsx&from-sandpack=true)
-    for a working example.
-  </p>
-</Callout>
-
-[//]: # '<ComponentPreview name="playground-demo" id="basicnodes" />'
+<ComponentPreview name="playground-demo" id="dnd" />
 
 ## Installation
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add draggables
-    ```
+```bash
+npx plate-ui add draggable
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        ```bash
-        npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
-        ```
+- [Drag & Drop](/docs/dnd)
+- [Tooltip](/docs/components/tooltip)
 
-        - [Tooltip](/docs/components/tooltip)
+</Step>
 
-      </Step>
+<Step>Copy and paste the following code into your project.</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<ComponentSource name="draggable/draggable" />
+<ComponentSource name="draggable/with-draggables" />
 
-      [//]: # '<ComponentSource name="draggable/draggable" />'
-      [//]: # '<ComponentSource name="draggable/with-draggables" />'
+<Step>Update the import paths to match your project setup.</Step>
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Steps>
 
-    </Steps>
-
-  </TabsContent>
+</TabsContent>
 
 </Tabs>
 
 ## Usage
-
-### Components
-
-<ComponentSource name="createPlateUI" />
 
 ### Plugins
 
@@ -83,12 +69,18 @@ const plugins = createPlugins(
     createDndPlugin({ options: { enableScroller: true } }),
   ],
   {
-    components: createPlateUI(),
+    components: withDraggables(createPlateUI()),
   }
 );
 ```
 
+As done in `createPlateUI`:
+
+<ComponentSource name="createPlateUI" />
+
 ### Provider
+
+Wrap `Plate` with `DndProvider` from `react-dnd`.
 
 ```tsx
 import { DndProvider } from 'react-dnd';
@@ -98,3 +90,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
   <Plate plugins={plugins} />
 </DndProvider>;
 ```
+
+As done in the playground:
+
+<ComponentSource name="playground-demo" />

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -28,6 +30,7 @@ import {
   usePlateActions,
   usePlateSelectors,
 } from '@udecode/plate-core';
+import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
@@ -168,10 +171,10 @@ export const usePlaygroundPlugins = ({
             enabled: id === 'blockselection' || !!enabled.blockSelection,
           }),
           createComboboxPlugin({ enabled: !!enabled.combobox }),
-          // createDndPlugin({
-          //   options: { enableScroller: true },
-          //   enabled: !!enabled.dnd,
-          // }),
+          createDndPlugin({
+            options: { enableScroller: true },
+            enabled: !!enabled.dnd,
+          }),
           createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
@@ -258,79 +261,80 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
       {},
       {
         placeholder: isEnabled('placeholder', id),
-        // draggable: isEnabled('dnd', id),
+        draggable: isEnabled('dnd', id),
       }
     ),
   });
 
   return (
-    // <DndProvider backend={HTML5Backend}>
-    <div className="relative">
-      <PlateProvider<MyValue>
-        initialValue={initialValue}
-        plugins={plugins}
-        normalizeInitialValue
-      >
-        <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
+    <DndProvider backend={HTML5Backend}>
+      <div className="relative">
+        <PlateProvider<MyValue>
+          initialValue={initialValue}
+          plugins={plugins}
+          normalizeInitialValue
+        >
+          <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
 
-        <FixedToolbar>
-          <FixedToolbarButtons id={id} />
-        </FixedToolbar>
+          <FixedToolbar>
+            <FixedToolbarButtons id={id} />
+          </FixedToolbar>
 
-        <div className="flex">
-          <CommentsProvider>
-            <div
-              ref={containerRef}
-              className={cn(
-                'relative flex max-w-[900px] overflow-x-auto',
-                '[&_.slate-start-area-top]:!h-4',
-                '[&_.slate-start-area-left]:!w-4 [&_.slate-start-area-right]:!w-4',
-                !id &&
-                  'md:[&_.slate-start-area-left]:!w-[96px] md:[&_.slate-start-area-right]:!w-[96px]'
-              )}
-            >
-              <Plate
-                editableProps={{
-                  ...editableProps,
-                  className: cn(
-                    editableProps.className,
-                    !id &&
-                      'min-h-[920px] w-[900px] px-4 pb-[20vh] pt-4 md:px-[96px]',
-                    id && 'px-4 pb-8 pt-2'
-                  ),
-                }}
+          <div className="flex">
+            <CommentsProvider>
+              <div
+                ref={containerRef}
+                className={cn(
+                  'relative flex max-w-[900px] overflow-x-auto',
+                  '[&_.slate-start-area-top]:!h-4',
+                  '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
+                  !id &&
+                    'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
+                )}
               >
-                <FloatingToolbar>
-                  <FloatingToolbarButtons id={id} />
-                </FloatingToolbar>
+                <Plate
+                  editableProps={{
+                    ...editableProps,
+                    className: cn(
+                      editableProps.className,
+                      'px-8',
+                      !id &&
+                        'min-h-[920px] w-[900px] pb-[20vh] pt-4 md:px-[96px]',
+                      id && 'pb-8 pt-2'
+                    ),
+                  }}
+                >
+                  <FloatingToolbar>
+                    <FloatingToolbarButtons id={id} />
+                  </FloatingToolbar>
 
-                {isEnabled('mention', id) && (
-                  <MentionCombobox items={MENTIONABLES} />
-                )}
+                  {isEnabled('mention', id) && (
+                    <MentionCombobox items={MENTIONABLES} />
+                  )}
 
-                {isEnabled('cursoroverlay', id) && (
-                  <CursorOverlay containerRef={containerRef} />
-                )}
-              </Plate>
-            </div>
-
-            {isEnabled('comment', id) && <CommentsPopover />}
-          </CommentsProvider>
-
-          {!id && (
-            <>
-              <div className="fixed right-0 top-full z-[100]">
-                <div className="-translate-y-full p-4">
-                  <SettingsToggle />
-                </div>
+                  {isEnabled('cursoroverlay', id) && (
+                    <CursorOverlay containerRef={containerRef} />
+                  )}
+                </Plate>
               </div>
 
-              <SettingsPanel />
-            </>
-          )}
-        </div>
-      </PlateProvider>
-    </div>
-    // </DndProvider>
+              {isEnabled('comment', id) && <CommentsPopover />}
+            </CommentsProvider>
+
+            {!id && (
+              <>
+                <div className="fixed right-0 top-full z-[100]">
+                  <div className="-translate-y-full p-4">
+                    <SettingsToggle />
+                  </div>
+                </div>
+
+                <SettingsPanel />
+              </>
+            )}
+          </div>
+        </PlateProvider>
+      </div>
+    </DndProvider>
   );
 }

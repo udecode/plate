@@ -116,6 +116,11 @@ export const docsConfig: DocsConfig = {
           label: 'Leaf',
         },
         {
+          title: 'Drag & Drop',
+          href: '/docs/dnd',
+          items: [],
+        },
+        {
           title: 'Emoji',
           href: '/docs/emoji',
           items: [],
@@ -484,6 +489,11 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
+          title: 'Command',
+          href: '/docs/components/command',
+          items: [],
+        },
+        {
           title: 'Comment',
           href: '/docs/components/comment-leaf',
           items: [],
@@ -502,6 +512,11 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Cursor Overlay',
           href: '/docs/components/cursor-overlay',
+          items: [],
+        },
+        {
+          title: 'Dialog',
+          href: '/docs/components/dialog',
           items: [],
         },
         {

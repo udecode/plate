@@ -12,7 +12,7 @@ docs:
 
 <ComponentPreview name="playground-demo" id="comment" />
 
-### Features
+## Features
 
 The Comments plugin allows users to add comments to text as marks.
 
@@ -25,13 +25,13 @@ To add a comment, select the text and:
 - Click on the comment button to add a comment
 - Alternatively, use the hotkey **`⌘+⇧+M`**
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-comments
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import {
@@ -54,7 +54,7 @@ const plugins = createPlugins(
 );
 ```
 
-#### Options
+### Options
 
 ```ts
 interface CommentsPlugin {
@@ -66,7 +66,7 @@ interface CommentsPlugin {
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/comments/src/createCommentsPlugin.ts)
 
-# API Reference
+## API
 
 [CommentNewTextarea.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentNewTextarea.tsx)
 [useCommentItemContent.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentItemContent.ts)
@@ -161,6 +161,6 @@ export interface CommentsPlugin {
 export const MARK_COMMENT = 'comment';
 ```
 
-### Keyboard Interactions
+## Keyboard Interactions
 
 - `meta+shift+m, ctrl+shift+m`: Add or remove a comment on the selected text.

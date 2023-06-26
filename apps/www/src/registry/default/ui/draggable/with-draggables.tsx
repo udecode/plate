@@ -38,7 +38,7 @@ export const withDraggables = (components: any) => {
       key: ELEMENT_H1,
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-[2em] px-0 pb-1 text-[1.875em]',
+          gutterLeft: 'px-0 pb-1 text-[1.875em]',
           blockToolbarWrapper: 'h-[1.3em]',
         },
       },
@@ -47,7 +47,7 @@ export const withDraggables = (components: any) => {
       key: ELEMENT_H2,
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-[1.4em] px-0 pb-1 text-[1.5em]',
+          gutterLeft: 'px-0 pb-1 text-[1.5em]',
           blockToolbarWrapper: 'h-[1.3em]',
         },
       },
@@ -56,25 +56,33 @@ export const withDraggables = (components: any) => {
       key: ELEMENT_H3,
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-[1em] px-0 pb-1 text-[1.25em]',
+          gutterLeft: 'pt-[2px] px-0 pb-1 text-[1.25em]',
           blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
-      keys: [ELEMENT_H4, ELEMENT_H5, ELEMENT_H6],
+      keys: [ELEMENT_H4, ELEMENT_H5],
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-[0.75em] px-0 pb-0 text-[1.1em]',
+          gutterLeft: 'pt-[3px] px-0 pb-0 text-[1.1em]',
           blockToolbarWrapper: 'h-[1.3em]',
         },
       },
     },
     {
-      keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+      keys: [ELEMENT_PARAGRAPH],
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-1 px-0 pb-0',
+          gutterLeft: 'pt-[3px] px-0 pb-0',
+        },
+      },
+    },
+    {
+      keys: [ELEMENT_H6, ELEMENT_UL, ELEMENT_OL],
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'px-0 pb-0',
         },
       },
     },
@@ -82,7 +90,7 @@ export const withDraggables = (components: any) => {
       key: ELEMENT_BLOCKQUOTE,
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-[18px] px-0 pb-0',
+          gutterLeft: 'px-0 pb-0',
         },
       },
     },
@@ -90,7 +98,7 @@ export const withDraggables = (components: any) => {
       key: ELEMENT_CODE_BLOCK,
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-3 px-0 pb-0',
+          gutterLeft: 'pt-8 px-0 pb-0',
         },
       },
     },

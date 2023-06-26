@@ -85,14 +85,14 @@ const ui: Registry = [
       'comment-value',
     ],
   },
-  // {
-  //   name: 'draggable',
-  //   type: 'components:ui',
-  //   dependencies: [],
-  //   registryDependencies: [],
-  //   files: ['ui/draggable/draggable.tsx', 'ui/draggable/with-draggables.tsx'],
-  //   items: ['draggable', 'with-draggables'],
-  // },
+  {
+    name: 'draggable',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/draggable/draggable.tsx', 'ui/draggable/with-draggables.tsx'],
+    items: ['draggable', 'with-draggables'],
+  },
   {
     name: 'emoji-dropdown-menu',
     type: 'components:ui',
@@ -183,6 +183,13 @@ const ui: Registry = [
     files: ['ui/combobox.tsx'],
   },
   {
+    name: 'command',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/command.tsx'],
+  },
+  {
     name: 'comment-leaf',
     type: 'components:ui',
     dependencies: [],
@@ -202,6 +209,13 @@ const ui: Registry = [
     dependencies: [],
     registryDependencies: [],
     files: ['ui/cursor-overlay.tsx'],
+  },
+  {
+    name: 'dialog',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/dialog.tsx'],
   },
   {
     name: 'dropdown-menu',

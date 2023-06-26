@@ -6,9 +6,9 @@ docs:
     title: Cloud
 ---
 
-<ComponentPreview name="cloud-demo" />
+<ComponentPreview name="cloud-demo" padding="md" />
 
-### Features
+## Features
 
 Plate Cloud is the official Plate plugin and cloud service for image and attachment uploads, automatic server-side image resizing, and future Plate cloud services.
 
@@ -24,19 +24,19 @@ Your usage of Plate Cloud supports the development of Plate.
 
 You can start by [getting a free Portive API key](https://admin.portive.com/).
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-cloud
 ```
 
-### Usage
+## Usage
 
 To use Plate Cloud, you will need to [get a free Portive API key](https://www.portive.com/).
 
 To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
 
-#### Options
+### Options
 
 ```tsx
 /**
@@ -84,7 +84,7 @@ export type CloudImagePlugin = {
 - [Cloud Image Plugin](https://github.com/udecode/plate/blob/main/packages/cloud/src/image/createCloudImagePlugin.ts)
 - [packages/cloud](https://github.com/udecode/plate/tree/main/packages/cloud)
 
-## API Reference
+## API
 
 [createCloudAttachmentPlugin.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fattachment%2FcreateCloudAttachmentPlugin.ts)
 

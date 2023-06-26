@@ -19821,7 +19821,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dnd@npm:^15.1.2":
+"react-dnd@npm:15.1.2":
   version: 15.1.2
   resolution: "react-dnd@npm:15.1.2"
   dependencies:
@@ -19843,6 +19843,31 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 81024b30eba682f1a994b7d6dfdd3080dfa6c619bdf700d7a690314f4269813650fac810a40c2814457a233444bee0ea3831ddf9f31ed3d1042a7b96288d2913
+  languageName: node
+  linkType: hard
+
+"react-dnd@patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch":
+  version: 15.1.2
+  resolution: "react-dnd@patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch::version=15.1.2&hash=b9133b"
+  dependencies:
+    "@react-dnd/invariant": "npm:3.0.1"
+    "@react-dnd/shallowequal": "npm:3.0.1"
+    dnd-core: "npm:15.1.2"
+    fast-deep-equal: "npm:^3.1.3"
+    hoist-non-react-statics: "npm:^3.3.2"
+  peerDependencies:
+    "@types/hoist-non-react-statics": ">= 3.3.1"
+    "@types/node": ">= 12"
+    "@types/react": ">= 16"
+    react: ">= 16.14"
+  peerDependenciesMeta:
+    "@types/hoist-non-react-statics":
+      optional: true
+    "@types/node":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 3c4c2a4ed50bcd1de5501216eb2742277f248f9f6628617af5895ca6205d1d5b53918f4b337ed0e4a47f7eb6a58b8a0d9650ad8bf76101d23f8c71210a969d44
   languageName: node
   linkType: hard
 
@@ -21158,7 +21183,7 @@ __metadata:
     prettier: "npm:^2.8.8"
     prettier-plugin-tailwindcss: "npm:^0.3.0"
     react: "npm:^18.2.0"
-    react-dnd: "npm:^15.1.2"
+    react-dnd: "patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch"
     react-dnd-html5-backend: "npm:^15.1.3"
     react-dnd-test-backend: "npm:^15.1.2"
     react-dom: "npm:^18.2.0"
@@ -24431,7 +24456,7 @@ __metadata:
     postcss: "npm:^8.4.24"
     prism-react-renderer: "npm:^1.3.5"
     react: "npm:^18.2.0"
-    react-dnd: "npm:^15.1.2"
+    react-dnd: "patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch"
     react-dnd-html5-backend: "npm:^15.1.3"
     react-dom: "npm:^18.2.0"
     react-modal-sheet: "npm:1.10.2"

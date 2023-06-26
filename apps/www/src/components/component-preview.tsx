@@ -17,6 +17,7 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   extractClassname?: boolean;
   extractedClassNames?: string;
   align?: 'center' | 'start' | 'end';
+  padding?: 'md';
 }
 
 export function ComponentPreview({
@@ -26,6 +27,7 @@ export function ComponentPreview({
   extractClassname,
   extractedClassNames,
   align = 'start',
+  padding,
   ...props
 }: ComponentPreviewProps) {
   const [config] = useConfig();
@@ -101,7 +103,7 @@ export function ComponentPreview({
             <React.Suspense
               fallback={
                 // eslint-disable-next-line tailwindcss/no-custom-classname
-                <div className="preview flex min-h-[350px] w-full items-center justify-center p-4 text-sm text-muted-foreground md:p-10">
+                <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
                 </div>
@@ -110,7 +112,8 @@ export function ComponentPreview({
               <div
                 // eslint-disable-next-line tailwindcss/no-custom-classname
                 className={cn(
-                  'preview relative flex h-full min-h-[350px] w-full flex-col p-4 md:p-10',
+                  'preview relative flex h-full min-h-[350px] w-full flex-col p-0',
+                  padding === 'md' && 'p-4',
                   {
                     'items-center': align === 'center',
                     'items-start': align === 'start',

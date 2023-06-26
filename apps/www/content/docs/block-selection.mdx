@@ -5,14 +5,14 @@ description: Select and manipulate entire text blocks.
 
 <ComponentPreview name="playground-demo" id="blockselection" />
 
-### Features
+## Features
 
-The Block Selection plugin enhances user productivity by enabling the selection and manipulation of entire text blocks, as opposed to individual words or characters.
-This streamlined approach facilitates efficient editing of large text sections and simplifies copying and pasting of content blocks.
+- Select entire blocks, as opposed to individual words or characters.
+- To select an entire block, mouse down outside the text area and then move the cursor into the block. Once it is selected, you'll see a background color.
+- Keep moving down or up to select multiple blocks.
+- Once selected, the available actions are: copy, cut, and delete.
 
-To experience the block selection feature, initiate your selection outside the text area and then move the cursor into the text to select an entire block.
-
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-selection
@@ -20,43 +20,38 @@ npm install @udecode/plate-selection
 npm install @udecode/plate-node-id
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import { createNodeIdPlugin } from '@udecode/plate';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
-const plugins = createPlugins([
-  // ...otherPlugins,
-  createNodeIdPlugin(),
-  createBlockSelectionPlugin(),
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createNodeIdPlugin(),
+    createBlockSelectionPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 ```
 
 Note: the Selection plugin needs `id` property on each selectable block. You can use `createNodeIdPlugin()` to add it automatically.
 
+[//]: # '### Styling'
+[//]: #
+[//]: # 'You can style the selection area by using the `slate-selection-area` class:'
+[//]: #
+[//]: # '```css'
+[//]: # '.slate-selection-area {'
+[//]: # '  background: #4f90f22d;'
+[//]: # '  border: 1px solid #4f90f2;'
+[//]: # '}'
+[//]: # '```'
 
-[//]: # (### Styling)
-
-[//]: # ()
-[//]: # (You can style the selection area by using the `slate-selection-area` class:)
-
-[//]: # ()
-[//]: # (```css)
-
-[//]: # (.slate-selection-area {)
-
-[//]: # (  background: #4f90f22d;)
-
-[//]: # (  border: 1px solid #4f90f2;)
-
-[//]: # (})
-
-[//]: # (```)
-
-#### Options
+### Options
 
 ```tsx
 export interface BlockSelectionPlugin {

@@ -5,17 +5,17 @@ description: Maintain a consistent tab order for tabbable elements.
 
 <ComponentPreview name="playground-demo" id="tabbable" />
 
-### Features
+## Features
 
 The Tabbable plugin ensures a consistent tab order between tabbable elements when navigating inside the editor.
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-tabbable
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import React from 'react';
@@ -32,7 +32,7 @@ const plugins = createPlugins(
 );
 ```
 
-#### Conflicts with other plugins
+### Conflicts with other plugins
 
 The Tabbable plugin may cause issues with other plugins that handle the `Tab` key, such as:
 
@@ -58,7 +58,7 @@ query: (editor) => !!findNode(editor, {
 }),
 ```
 
-#### Non-void Slate nodes
+### Non-void Slate nodes
 
 One `TabbableEntry` will be created for each tabbable DOM element in the editor, as determined using the [`tabbable` NPM package](https://www.npmjs.com/package/tabbable). The list of tabbables is then filtered using `isTabbable`.
 
@@ -72,7 +72,7 @@ isTabbable: (editor, tabbableEntry) => (
 ),
 ```
 
-#### DOM elements outside the editor
+### DOM elements outside the editor
 
 In some circumstances, you may want to allow users to tab from the editor to a DOM element rendered outside the editor, such as an interactive popover.
 
@@ -96,7 +96,7 @@ insertTabbableEntries: (editor) => {
 },
 ```
 
-#### Options
+### Options
 
 ```tsx
 export type TabbableEntry = {

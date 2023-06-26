@@ -6,6 +6,7 @@ import {
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_BG_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
@@ -143,13 +144,13 @@ export const settingValues = {
     route: '/docs/serializing-markdown',
     plugins: [KEY_DESERIALIZE_MD],
   },
-  // dnd: {
-  //   id: 'dnd',
-  //   label: 'Drag & Drop',
-  //   value: [],
-  //   route: '/docs/components/draggable',
-  //   plugins: [KEY_DND],
-  // },
+  dnd: {
+    id: 'dnd',
+    label: 'Drag & Drop',
+    value: [],
+    route: '/docs/components/draggable',
+    plugins: [KEY_DND],
+  },
   emoji: {
     id: 'emoji',
     label: 'Emoji',

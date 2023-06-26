@@ -12,17 +12,17 @@ docs:
 
 <ComponentPreview name="playground-demo" id="list" />
 
-### Features
+## Features
 
 The List plugin allows you to create both ordered (numbered) and unordered (bulleted) lists within your Plate editor.
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-list
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate';
@@ -38,7 +38,7 @@ const plugins = createPlugins(
 );
 ```
 
-#### Options
+### Options
 
 ```tsx
 export interface ListPlugin extends HotkeyPlugin {
@@ -49,7 +49,7 @@ export interface ListPlugin extends HotkeyPlugin {
 }
 ```
 
-### Keyboard Interactions
+## Keyboard Interactions
 
 - `mod+opt+4, mod+shift+4`: Insert a numbered list.
 
@@ -57,13 +57,13 @@ export interface ListPlugin extends HotkeyPlugin {
 
 <ComponentPreview name="playground-demo" id="list" />
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-list
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import { createTodoListPlugin } from '@udecode/plate';
@@ -79,7 +79,7 @@ const plugins = createPlugins(
 );
 ```
 
-#### Options
+### Options
 
 ```tsx
 export interface TodoListPlugin extends HotkeyPlugin {
@@ -96,7 +96,7 @@ By default, its value is set to `false`.
 It takes on the checkbox state of the current todo item when a new one is made below it.
 By default, its value is set to `false`.
 
-### Keyboard Interactions
+## Keyboard Interactions
 
 - `mod+opt+4, mod+shift+4`: Insert a numbered list.
 - `backspace` : Delete backward.

@@ -113,7 +113,7 @@
     "next-themes": "^0.2.1",
     "prism-react-renderer": "^1.3.5",
     "react": "^18.2.0",
-    "react-dnd": "^15.1.2",
+    "react-dnd": "patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch",
     "react-dnd-html5-backend": "^15.1.3",
     "react-dom": "^18.2.0",
     "react-modal-sheet": "1.10.2",
