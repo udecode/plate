@@ -161,13 +161,11 @@ export const usePlaygroundPlugins = ({
           createBlockSelectionPlugin({
             options: {
               sizes: {
-                left: id === 'blockselection' ? 32 : 76,
                 top: 0,
-                right: id === 'blockselection' ? 32 : 76,
                 bottom: 0,
               },
             },
-            enabled: id === 'blockselection' && !!enabled.blockSelection,
+            enabled: id === 'blockselection' || !!enabled.blockSelection,
           }),
           createComboboxPlugin({ enabled: !!enabled.combobox }),
           // createDndPlugin({
@@ -284,8 +282,11 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             <div
               ref={containerRef}
               className={cn(
-                'relative flex max-w-[900px] overflow-x-auto'
-                // !id && 'w-[calc(100vw-64px)]'
+                'relative flex max-w-[900px] overflow-x-auto',
+                '[&_.slate-start-area-top]:!h-4',
+                '[&_.slate-start-area-left]:!w-4 [&_.slate-start-area-right]:!w-4',
+                !id &&
+                  'md:[&_.slate-start-area-left]:!w-[96px] md:[&_.slate-start-area-right]:!w-[96px]'
               )}
             >
               <Plate

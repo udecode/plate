@@ -2,11 +2,9 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
-import { mapNodeId } from '@/plate/demo/mapNodeId';
-
 jsx;
 
-export const basicElementsValue: any = mapNodeId(
+export const basicElementsValue: any = (
   <fragment>
     <hh1>🌳 Blocks</hh1>
     <hp>
