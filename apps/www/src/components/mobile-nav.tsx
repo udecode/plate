@@ -4,8 +4,8 @@ import * as React from 'react';
 import { SidebarOpen } from 'lucide-react';
 import Link, { LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { Logo } from './icons/Logo';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { Icons } from './icons';
 
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
@@ -37,7 +37,7 @@ export function MobileNav() {
           className="flex items-center"
           onOpenChange={setOpen}
         >
-          <Icons.logo className="mr-2 h-4 w-4" />
+          <Logo className="mr-2 h-4 w-4" />
           <span className="font-bold">{siteConfig.name}</span>
         </MobileLink>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">

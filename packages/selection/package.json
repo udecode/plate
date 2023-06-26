@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.3.2",
-    "@viselect/vanilla": "3.2.7",
+    "@viselect/vanilla": "3.2.5",
     "copy-to-clipboard": "^3.3.3"
   },
   "peerDependencies": {

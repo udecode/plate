@@ -148,6 +148,13 @@ const ui: Registry = [
     files: ['ui/button.tsx'],
   },
   {
+    name: 'checkbox',
+    type: 'components:ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['ui/checkbox.tsx'],
+  },
+  {
     name: 'code-leaf',
     type: 'components:ui',
     dependencies: [],

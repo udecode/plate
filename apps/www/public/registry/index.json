@@ -146,6 +146,15 @@
     "type": "components:ui"
   },
   {
+    "name": "checkbox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/checkbox.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "code-leaf",
     "dependencies": [],
     "registryDependencies": [],

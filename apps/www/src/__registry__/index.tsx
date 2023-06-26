@@ -272,6 +272,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/button.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/button')),
     },
+    'checkbox': {
+      name: 'checkbox',
+      type: 'components:ui',
+      registryDependencies: [],
+      files: ['registry/default/ui/checkbox.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/checkbox')),
+    },
     'code-leaf': {
       name: 'code-leaf',
       type: 'components:ui',

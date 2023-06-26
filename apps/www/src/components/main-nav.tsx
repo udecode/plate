@@ -3,8 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Logo } from './icons/Logo';
 import { Badge } from './ui/badge';
-import { Icons } from './icons';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link href="/" className="mr-6 flex items-center space-x-2">
-        <Icons.logo className="h-6 w-6" />
+        <Logo className="h-6 w-6" />
         <span className="hidden items-center font-bold sm:inline-flex">
           {siteConfig.name}
           <div className="flex w-8 items-center">
