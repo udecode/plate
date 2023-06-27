@@ -1,5 +1,7 @@
 # @udecode/plate-reset-node
 
+## 21.4.1
+
 ## 21.3.2
 
 ## 21.3.0
