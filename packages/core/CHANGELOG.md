@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 21.4.1
+
 ## 21.3.2
 
 ### Patch Changes

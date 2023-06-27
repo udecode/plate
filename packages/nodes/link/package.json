@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "21.4.0",
+  "version": "21.4.1",
   "description": "Link plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,9 +19,9 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-button": "21.3.2",
-    "@udecode/plate-common": "21.3.2",
-    "@udecode/plate-normalizers": "21.3.2"
+    "@udecode/plate-button": "21.4.1",
+    "@udecode/plate-common": "21.4.1",
+    "@udecode/plate-normalizers": "21.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

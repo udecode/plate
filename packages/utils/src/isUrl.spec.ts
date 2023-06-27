@@ -90,6 +90,10 @@ describe('is-url', () => {
     it('http://localhost:342/a/path', () => {
       expect(isUrl('http://localhost:342/a/path')).toBeTruthy();
     });
+
+    it('mailto:sample-mail@gmail.com', () => {
+      expect(isUrl('mailto:sample-mail@gmail.com')).toBeTruthy();
+    });
   });
 
   describe('invalid', () => {
@@ -131,6 +135,10 @@ describe('is-url', () => {
 
     it('re', () => {
       expect(!isUrl(/abc/)).toBeTruthy();
+    });
+
+    it('mailto:', () => {
+      expect(!isUrl('mailto:')).toBeTruthy();
     });
   });
 
