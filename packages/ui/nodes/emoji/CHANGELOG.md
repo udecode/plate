@@ -1,5 +1,7 @@
 # @udecode/plate-ui-emoji
 
+## 21.4.1
+
 ## 21.3.5
 
 ## 21.3.3

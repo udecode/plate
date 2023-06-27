@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-line-height",
-  "version": "21.3.5",
+  "version": "21.4.1",
   "description": "Line height UI for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,10 +19,10 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.3.2",
-    "@udecode/plate-line-height": "21.3.2",
-    "@udecode/plate-styled-components": "21.3.2",
-    "@udecode/plate-ui-toolbar": "21.3.5"
+    "@udecode/plate-common": "21.4.1",
+    "@udecode/plate-line-height": "21.4.1",
+    "@udecode/plate-styled-components": "21.4.1",
+    "@udecode/plate-ui-toolbar": "21.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
