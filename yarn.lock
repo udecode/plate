@@ -6718,11 +6718,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-emoji@npm:21.3.5, @udecode/plate-emoji@workspace:packages/nodes/emoji":
-=======
-"@udecode/plate-emoji@npm:21.3.3, @udecode/plate-emoji@workspace:packages/nodes/emoji":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/nodes/emoji"
   dependencies:
@@ -6796,11 +6792,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
-"@udecode/plate-headless@npm:21.3.5, @udecode/plate-headless@workspace:packages/headless":
-=======
-"@udecode/plate-headless@npm:21.3.4, @udecode/plate-headless@workspace:packages/headless":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
+"@udecode/plate-headless@npm:21.4.0, @udecode/plate-headless@workspace:packages/headless":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-headless@workspace:packages/headless"
   dependencies:
@@ -6815,7 +6807,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:21.3.2"
     "@udecode/plate-comments": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
-    "@udecode/plate-emoji": "npm:21.3.3"
+    "@udecode/plate-emoji": "npm:21.3.5"
     "@udecode/plate-find-replace": "npm:21.3.2"
     "@udecode/plate-floating": "npm:21.3.2"
     "@udecode/plate-font": "npm:21.3.2"
@@ -6826,14 +6818,10 @@ __metadata:
     "@udecode/plate-indent-list": "npm:21.3.2"
     "@udecode/plate-kbd": "npm:21.3.2"
     "@udecode/plate-line-height": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-list": "npm:21.3.2"
     "@udecode/plate-media": "npm:21.3.4"
-<<<<<<< HEAD
     "@udecode/plate-mention": "npm:21.3.5"
-=======
-    "@udecode/plate-mention": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
     "@udecode/plate-node-id": "npm:21.3.2"
     "@udecode/plate-normalizers": "npm:21.3.2"
     "@udecode/plate-paragraph": "npm:21.3.2"
@@ -6842,7 +6830,7 @@ __metadata:
     "@udecode/plate-serializer-csv": "npm:21.3.4"
     "@udecode/plate-serializer-docx": "npm:21.3.4"
     "@udecode/plate-serializer-html": "npm:21.3.2"
-    "@udecode/plate-serializer-md": "npm:21.3.2"
+    "@udecode/plate-serializer-md": "npm:21.4.0"
     "@udecode/plate-suggestion": "npm:21.3.2"
     "@udecode/plate-tabbable": "npm:21.3.2"
     "@udecode/plate-table": "npm:21.3.4"
@@ -6959,7 +6947,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-link@npm:21.3.2, @udecode/plate-link@workspace:packages/nodes/link":
+"@udecode/plate-link@npm:21.4.0, @udecode/plate-link@workspace:packages/nodes/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-link@workspace:packages/nodes/link"
   dependencies:
@@ -7008,11 +6996,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-mention@npm:21.3.5, @udecode/plate-mention@workspace:packages/nodes/mention":
-=======
-"@udecode/plate-mention@npm:21.3.2, @udecode/plate-mention@workspace:packages/nodes/mention":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-mention@workspace:packages/nodes/mention"
   dependencies:
@@ -7169,7 +7153,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:21.3.2, @udecode/plate-serializer-md@workspace:packages/serializers/md":
+"@udecode/plate-serializer-md@npm:21.4.0, @udecode/plate-serializer-md@workspace:packages/serializers/md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializers/md"
   dependencies:
@@ -7177,7 +7161,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-heading": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-list": "npm:21.3.2"
     "@udecode/plate-paragraph": "npm:21.3.2"
     remark-parse: "npm:^9.0.0"
@@ -7277,22 +7261,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-alignment@npm:21.3.5, @udecode/plate-ui-alignment@workspace:packages/ui/nodes/alignment":
-=======
-"@udecode/plate-ui-alignment@npm:21.3.2, @udecode/plate-ui-alignment@workspace:packages/ui/nodes/alignment":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-alignment@workspace:packages/ui/nodes/alignment"
   dependencies:
     "@udecode/plate-alignment": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7320,11 +7296,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-button@npm:21.3.5, @udecode/plate-ui-button@workspace:packages/ui/button":
-=======
-"@udecode/plate-ui-button@npm:21.3.2, @udecode/plate-ui-button@workspace:packages/ui/button":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-button@workspace:packages/ui/button"
   dependencies:
@@ -7359,22 +7331,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-code-block@npm:21.3.5, @udecode/plate-ui-code-block@workspace:packages/ui/nodes/code-block":
-=======
-"@udecode/plate-ui-code-block@npm:21.3.2, @udecode/plate-ui-code-block@workspace:packages/ui/nodes/code-block":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-code-block@workspace:packages/ui/nodes/code-block"
   dependencies:
     "@udecode/plate-code-block": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7403,24 +7367,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-comments@npm:21.3.5, @udecode/plate-ui-comments@workspace:packages/ui/comments":
-=======
-"@udecode/plate-ui-comments@npm:21.3.2, @udecode/plate-ui-comments@workspace:packages/ui/comments":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-comments@workspace:packages/ui/comments"
   dependencies:
     "@udecode/plate-comments": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-button": "npm:21.3.5"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-button": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7467,27 +7422,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-emoji@npm:21.3.5, @udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
-=======
-"@udecode/plate-ui-emoji@npm:21.3.3, @udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-emoji@workspace:packages/ui/nodes/emoji"
   dependencies:
     "@udecode/plate-combobox": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-emoji": "npm:21.3.5"
     "@udecode/plate-styled-components": "npm:21.3.2"
     "@udecode/plate-ui-combobox": "npm:21.3.2"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-emoji": "npm:21.3.3"
-    "@udecode/plate-styled-components": "npm:21.3.2"
-    "@udecode/plate-ui-combobox": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7505,11 +7449,7 @@ __metadata:
     "@excalidraw/excalidraw": "npm:0.12.0"
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7520,22 +7460,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-find-replace@npm:21.3.5, @udecode/plate-ui-find-replace@workspace:packages/ui/find-replace":
-=======
-"@udecode/plate-ui-find-replace@npm:21.3.2, @udecode/plate-ui-find-replace@workspace:packages/ui/find-replace":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-find-replace@workspace:packages/ui/find-replace"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-find-replace": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7546,24 +7478,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-font@npm:21.3.5, @udecode/plate-ui-font@workspace:packages/ui/nodes/font":
-=======
-"@udecode/plate-ui-font@npm:21.3.2, @udecode/plate-ui-font@workspace:packages/ui/nodes/font":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-font@workspace:packages/ui/nodes/font"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-font": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-button": "npm:21.3.5"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-button": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7590,22 +7513,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-line-height@npm:21.3.5, @udecode/plate-ui-line-height@workspace:packages/ui/nodes/line-height":
-=======
-"@udecode/plate-ui-line-height@npm:21.3.2, @udecode/plate-ui-line-height@workspace:packages/ui/nodes/line-height":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-line-height@workspace:packages/ui/nodes/line-height"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-line-height": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7616,24 +7531,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
-"@udecode/plate-ui-link@npm:21.3.5, @udecode/plate-ui-link@workspace:packages/ui/nodes/link":
-=======
-"@udecode/plate-ui-link@npm:21.3.2, @udecode/plate-ui-link@workspace:packages/ui/nodes/link":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
+"@udecode/plate-ui-link@npm:21.4.0, @udecode/plate-ui-link@workspace:packages/ui/nodes/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-link@workspace:packages/ui/nodes/link"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-button": "npm:21.3.5"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-button": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7644,22 +7550,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-list@npm:21.3.5, @udecode/plate-ui-list@workspace:packages/ui/nodes/list":
-=======
-"@udecode/plate-ui-list@npm:21.3.2, @udecode/plate-ui-list@workspace:packages/ui/nodes/list":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-list@workspace:packages/ui/nodes/list"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-list": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7670,26 +7568,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
-"@udecode/plate-ui-media@npm:21.3.5, @udecode/plate-ui-media@workspace:packages/ui/nodes/media":
-=======
-"@udecode/plate-ui-media@npm:21.3.4, @udecode/plate-ui-media@workspace:packages/ui/nodes/media":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
+"@udecode/plate-ui-media@npm:21.4.0, @udecode/plate-ui-media@workspace:packages/ui/nodes/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-media@workspace:packages/ui/nodes/media"
   dependencies:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-floating": "npm:21.3.2"
-    "@udecode/plate-link": "npm:21.3.2"
+    "@udecode/plate-link": "npm:21.4.0"
     "@udecode/plate-media": "npm:21.3.4"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
-    "@udecode/plate-ui-link": "npm:21.3.5"
+    "@udecode/plate-ui-link": "npm:21.4.0"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-link": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
     js-video-url-parser: "npm:0.5.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7701,21 +7590,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-mention@npm:21.3.5, @udecode/plate-ui-mention@workspace:packages/ui/nodes/mention":
-=======
-"@udecode/plate-ui-mention@npm:21.3.2, @udecode/plate-ui-mention@workspace:packages/ui/nodes/mention":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-mention@workspace:packages/ui/nodes/mention"
   dependencies:
     "@udecode/plate-combobox": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-mention": "npm:21.3.5"
-=======
-    "@udecode/plate-mention": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
     "@udecode/plate-styled-components": "npm:21.3.2"
     "@udecode/plate-ui-combobox": "npm:21.3.2"
   peerDependencies:
@@ -7744,11 +7625,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-table@npm:21.3.5, @udecode/plate-ui-table@workspace:packages/ui/nodes/table":
-=======
-"@udecode/plate-ui-table@npm:21.3.4, @udecode/plate-ui-table@workspace:packages/ui/nodes/table":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-table@workspace:packages/ui/nodes/table"
   dependencies:
@@ -7756,13 +7633,8 @@ __metadata:
     "@udecode/plate-floating": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
     "@udecode/plate-table": "npm:21.3.4"
-<<<<<<< HEAD
     "@udecode/plate-ui-button": "npm:21.3.5"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-button": "npm:21.3.2"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7773,11 +7645,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
 "@udecode/plate-ui-toolbar@npm:21.3.5, @udecode/plate-ui-toolbar@workspace:packages/ui/toolbar":
-=======
-"@udecode/plate-ui-toolbar@npm:21.3.2, @udecode/plate-ui-toolbar@workspace:packages/ui/toolbar":
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui-toolbar@workspace:packages/ui/toolbar"
   dependencies:
@@ -7785,11 +7653,7 @@ __metadata:
     "@udecode/plate-common": "npm:21.3.2"
     "@udecode/plate-floating": "npm:21.3.2"
     "@udecode/plate-styled-components": "npm:21.3.2"
-<<<<<<< HEAD
     "@udecode/plate-ui-button": "npm:21.3.5"
-=======
-    "@udecode/plate-ui-button": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
     react-use: "npm:^17.3.2"
   peerDependencies:
     react: ">=16.8.0"
@@ -7801,12 +7665,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-<<<<<<< HEAD
-"@udecode/plate-ui@npm:21.3.5, @udecode/plate-ui@workspace:packages/ui/plate":
+"@udecode/plate-ui@npm:21.4.0, @udecode/plate-ui@workspace:packages/ui/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
   dependencies:
-    "@udecode/plate-headless": "npm:21.3.5"
+    "@udecode/plate-headless": "npm:21.4.0"
     "@udecode/plate-styled-components": "npm:21.3.2"
     "@udecode/plate-ui-alignment": "npm:21.3.5"
     "@udecode/plate-ui-block-quote": "npm:21.3.2"
@@ -7819,39 +7682,13 @@ __metadata:
     "@udecode/plate-ui-find-replace": "npm:21.3.5"
     "@udecode/plate-ui-font": "npm:21.3.5"
     "@udecode/plate-ui-line-height": "npm:21.3.5"
-    "@udecode/plate-ui-link": "npm:21.3.5"
+    "@udecode/plate-ui-link": "npm:21.4.0"
     "@udecode/plate-ui-list": "npm:21.3.5"
-    "@udecode/plate-ui-media": "npm:21.3.5"
+    "@udecode/plate-ui-media": "npm:21.4.0"
     "@udecode/plate-ui-mention": "npm:21.3.5"
     "@udecode/plate-ui-placeholder": "npm:21.3.2"
     "@udecode/plate-ui-table": "npm:21.3.5"
     "@udecode/plate-ui-toolbar": "npm:21.3.5"
-=======
-"@udecode/plate-ui@npm:21.3.4, @udecode/plate-ui@workspace:packages/ui/plate":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-ui@workspace:packages/ui/plate"
-  dependencies:
-    "@udecode/plate-headless": "npm:21.3.4"
-    "@udecode/plate-styled-components": "npm:21.3.2"
-    "@udecode/plate-ui-alignment": "npm:21.3.2"
-    "@udecode/plate-ui-block-quote": "npm:21.3.2"
-    "@udecode/plate-ui-button": "npm:21.3.2"
-    "@udecode/plate-ui-code-block": "npm:21.3.2"
-    "@udecode/plate-ui-combobox": "npm:21.3.2"
-    "@udecode/plate-ui-comments": "npm:21.3.2"
-    "@udecode/plate-ui-cursor": "npm:21.3.2"
-    "@udecode/plate-ui-emoji": "npm:21.3.3"
-    "@udecode/plate-ui-find-replace": "npm:21.3.2"
-    "@udecode/plate-ui-font": "npm:21.3.2"
-    "@udecode/plate-ui-line-height": "npm:21.3.2"
-    "@udecode/plate-ui-link": "npm:21.3.2"
-    "@udecode/plate-ui-list": "npm:21.3.2"
-    "@udecode/plate-ui-media": "npm:21.3.4"
-    "@udecode/plate-ui-mention": "npm:21.3.2"
-    "@udecode/plate-ui-placeholder": "npm:21.3.2"
-    "@udecode/plate-ui-table": "npm:21.3.4"
-    "@udecode/plate-ui-toolbar": "npm:21.3.2"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
     use-context-selector: "npm:1.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7889,13 +7726,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-<<<<<<< HEAD
-    "@udecode/plate-headless": "npm:21.3.5"
-    "@udecode/plate-ui": "npm:21.3.5"
-=======
-    "@udecode/plate-headless": "npm:21.3.4"
-    "@udecode/plate-ui": "npm:21.3.4"
->>>>>>> Debug "Uncaught Invariant Violation: Expected drag drop context"
+    "@udecode/plate-headless": "npm:21.4.0"
+    "@udecode/plate-ui": "npm:21.4.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
