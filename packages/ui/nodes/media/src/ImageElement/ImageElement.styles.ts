@@ -67,6 +67,9 @@ export const getCaptionCss = ({
     figcaption: [
       align === 'center' && tw`mx-auto`,
       align === 'right' && tw`ml-auto`,
+      css`
+        max-width: 100%;
+      `,
     ],
     caption: [
       tw`w-full border-none focus:outline-none mt-2 p-0 resize-none`,
