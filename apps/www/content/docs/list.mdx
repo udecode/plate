@@ -51,8 +51,10 @@ export interface ListPlugin extends HotkeyPlugin {
 
 ## Keyboard Interactions
 
-- `mod+opt+4, mod+shift+4`: Insert a numbered list.
-
+<KeyTable>
+  <KeyTableItem hotkey="⌘ + ⌥ + 4">Insert a numbered list.</KeyTableItem>
+  <KeyTableItem hotkey="⌘ + ⇧ + 4">Insert a numbered list.</KeyTableItem>
+</KeyTable>
 ## Todo List
 
 <ComponentPreview name="playground-demo" id="list" />
@@ -98,8 +100,12 @@ By default, its value is set to `false`.
 
 ## Keyboard Interactions
 
-- `mod+opt+4, mod+shift+4`: Insert a numbered list.
-- `backspace` : Delete backward.
+<KeyTable>
+  <KeyTableItem hotkey="⌘ + ⌥ + 4, ⌘ + ⇧ + 4">
+    Insert a numbered list.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Backspace">Delete backward.</KeyTableItem>
+</KeyTable>
 
 ### Source Code
 
