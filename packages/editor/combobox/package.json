@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-combobox",
-  "version": "21.3.2",
+  "version": "21.4.1",
   "description": "Combobox for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,8 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.3.2",
-    "@udecode/plate-floating": "21.3.2",
+    "@udecode/plate-common": "21.4.1",
+    "@udecode/plate-floating": "21.4.1",
     "downshift": "^6.1.7"
   },
   "peerDependencies": {
