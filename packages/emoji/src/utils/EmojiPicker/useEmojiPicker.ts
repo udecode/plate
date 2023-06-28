@@ -37,7 +37,7 @@ export type UseEmojiPickerProps = {
 
 export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
   isOpen: boolean;
-  onToggle: () => void;
+  setIsOpen: (isOpen: boolean) => void;
   i18n: i18nProps;
   searchValue: string;
   setSearch: (value: string) => void;
@@ -70,11 +70,11 @@ export const useEmojiPicker = ({
     content: createRef<HTMLDivElement>(),
   });
 
-  const onToggle = useCallback(() => {
+  const setIsOpen = useCallback((isOpen: boolean) => {
     dispatch({
-      type: state.isOpen ? 'SET_CLOSE' : 'SET_OPEN',
+      type: isOpen ? 'SET_OPEN' : 'SET_CLOSE',
     });
-  }, [dispatch, state.isOpen]);
+  }, [dispatch]);
 
   const setFocusedAndVisibleSections =
     useCallback<SetFocusedAndVisibleSectionsType>(
@@ -200,11 +200,14 @@ export const useEmojiPicker = ({
 
   useEffect(() => {
     if (state.isOpen && !state.isSearching) {
-      observeCategories({
-        ancestorRef: refs.current.contentRoot,
-        emojiLibrary,
-        setFocusedAndVisibleSections,
-      });
+      // Timeout to allow the category element refs to populate
+      setTimeout(() => {
+        observeCategories({
+          ancestorRef: refs.current.contentRoot,
+          emojiLibrary,
+          setFocusedAndVisibleSections,
+        });
+      }, 0);
     }
   }, [
     emojiLibrary,
@@ -214,7 +217,7 @@ export const useEmojiPicker = ({
   ]);
 
   return {
-    onToggle,
+    setIsOpen,
     i18n,
     setSearch,
     clearSearch,

@@ -1,37 +1,28 @@
 import React, { ReactNode } from 'react';
-import { useDropdownControls } from '@udecode/plate-floating';
+import * as Popover from '@radix-ui/react-popover';
 
 type EmojiToolbarDropdownProps = {
   control: ReactNode;
-  open: boolean;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
   children: ReactNode;
-  onOpen?: () => void;
-  onClose?: (ev: MouseEvent) => void;
 };
 
 export function EmojiToolbarDropdown({
   control,
+  isOpen,
+  setIsOpen,
   children,
-  open,
-  onOpen,
-  onClose,
 }: EmojiToolbarDropdownProps) {
-  const { styles, refs } = useDropdownControls({
-    open,
-    onClose,
-  });
-
   return (
-    <>
-      <div ref={refs.setReference} onMouseDown={onOpen}>
-        {control}
-      </div>
+    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+      <Popover.Trigger asChild>{control}</Popover.Trigger>
 
-      {open && (
-        <div ref={refs.setFloating} className="!z-[100]" style={styles}>
+      <Popover.Portal>
+        <Popover.Content className="z-[100]">
           {children}
-        </div>
-      )}
-    </>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

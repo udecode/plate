@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-import { usePlateEditorState } from '@udecode/plate-common';
+import { usePlateEditorState, useStableMemo } from '@udecode/plate-common';
 import {
   EmojiFloatingIndexSearch,
   EmojiFloatingLibrary,
@@ -19,33 +18,32 @@ export function useEmojiDropdownMenuState({
   closeOnSelect = true,
 }: EmojiDropdownMenuOptions = {}) {
   const editor = usePlateEditorState();
-  const emojiFloatingLibraryRef = useRef<EmojiFloatingLibrary>();
-  const emojiFloatingIndexSearchRef = useRef<EmojiFloatingIndexSearch>();
 
-  const { onToggle, isOpen, ...emojiPickerState } = useEmojiPicker({
-    closeOnSelect,
-    editor,
-    emojiLibrary: emojiFloatingLibraryRef.current!,
-    indexSearch: emojiFloatingIndexSearchRef.current!,
-  });
-
-  useEffect(() => {
+  const [emojiLibrary, indexSearch] = useStableMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({
       limit: settings.showFrequent.limit,
     });
-    emojiFloatingLibraryRef.current = EmojiFloatingLibrary.getInstance(
+
+    const emojiLibrary = EmojiFloatingLibrary.getInstance(
       settings,
       frequentEmojiStorage
     );
 
-    emojiFloatingIndexSearchRef.current = EmojiFloatingIndexSearch.getInstance(
-      emojiFloatingLibraryRef.current
-    );
+    const indexSearch = EmojiFloatingIndexSearch.getInstance(emojiLibrary);
+
+    return [emojiLibrary, indexSearch] as const;
   }, [settings]);
+
+  const { isOpen, setIsOpen, ...emojiPickerState } = useEmojiPicker({
+    closeOnSelect,
+    editor,
+    emojiLibrary,
+    indexSearch,
+  });
 
   return {
     isOpen,
-    onToggle,
+    setIsOpen,
     emojiPickerState,
   };
 }
