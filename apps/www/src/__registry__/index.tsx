@@ -182,6 +182,26 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/comments-popover/comment-value.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/comments-popover/comment-value')),
     },
+    'draggable': {
+      name: 'draggable',
+      type: 'components:ui',
+      registryDependencies: [],
+      items: ['draggable','with-draggables'],
+    },
+    'draggable/draggable': {
+      name: 'draggable',
+      type: 'components:ui',
+      registryDependencies: [],
+      files: ['registry/default/ui/draggable/draggable.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/draggable/draggable')),
+    },
+    'draggable/with-draggables': {
+      name: 'with-draggables',
+      type: 'components:ui',
+      registryDependencies: [],
+      files: ['registry/default/ui/draggable/with-draggables.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/draggable/with-draggables')),
+    },
     'emoji-dropdown-menu': {
       name: 'emoji-dropdown-menu',
       type: 'components:ui',
@@ -307,6 +327,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/combobox')),
     },
+    'command': {
+      name: 'command',
+      type: 'components:ui',
+      registryDependencies: [],
+      files: ['registry/default/ui/command.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/command')),
+    },
     'comment-leaf': {
       name: 'comment-leaf',
       type: 'components:ui',
@@ -327,6 +354,13 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ['registry/default/ui/cursor-overlay.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/cursor-overlay')),
+    },
+    'dialog': {
+      name: 'dialog',
+      type: 'components:ui',
+      registryDependencies: [],
+      files: ['registry/default/ui/dialog.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/dialog')),
     },
     'dropdown-menu': {
       name: 'dropdown-menu',

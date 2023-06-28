@@ -57,8 +57,8 @@
     "typedoc": "npx typedoc --tsconfig packages/plate/tsconfig.json --options config/typedoc.json"
   },
   "workspaces": [
-    "packages/**",
-    "apps/**"
+    "packages/*",
+    "apps/*"
   ],
   "resolutions": {
     "terser": "4.8.0",

@@ -84,6 +84,20 @@
     "type": "components:ui"
   },
   {
+    "name": "draggable",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/draggable/draggable.tsx",
+      "ui/draggable/with-draggables.tsx"
+    ],
+    "items": [
+      "draggable",
+      "with-draggables"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "emoji-dropdown-menu",
     "dependencies": [],
     "registryDependencies": [],
@@ -191,6 +205,15 @@
     "type": "components:ui"
   },
   {
+    "name": "command",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/command.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
     "name": "comment-leaf",
     "dependencies": [],
     "registryDependencies": [],
@@ -214,6 +237,15 @@
     "registryDependencies": [],
     "files": [
       "ui/cursor-overlay.tsx"
+    ],
+    "type": "components:ui"
+  },
+  {
+    "name": "dialog",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "ui/dialog.tsx"
     ],
     "type": "components:ui"
   },
