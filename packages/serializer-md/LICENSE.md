@@ -3,9 +3,7 @@ The MIT License (MIT)
 Ziad Beyens
 Dylan Schiemann
 Joe Anderson
-
-Unless otherwise specified in a LICENSE file within an individual package directory,
-this license applies to all files in this repository outside of those package directories.
+Jack Hanford
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
