@@ -92,7 +92,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       afterMatch: true,
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
-    pasteLinkAsUrlValue: true,
+    pasteLinkAsUrlValue: false,
   },
   then: (editor, { type }) => ({
     props: ({ element }) => ({
