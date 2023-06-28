@@ -25,4 +25,10 @@ module.exports = {
     // TypeScript doesn't like the for-of loop this rule fixes to
     'unicorn/prevent-abbreviations': 'off',
   },
+  overrides: [{
+    files: ['packages/**/*'],
+    rules: {
+      'unicorn/prefer-node-protocol': 'off'
+    }
+  }]
 };

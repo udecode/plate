@@ -1,5 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+packages/cli/components
+
 .yarn/*
 !.yarn/cache
 !.yarn/patches
@@ -122,3 +124,4 @@ config/typedoc/
 /playwright-report/
 /playwright/.cache/
 .turbo
+packages/*/.turbo
