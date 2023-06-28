@@ -12,7 +12,7 @@ import {
   stylesSchema,
 } from './schema';
 
-const baseUrl = process.env.COMPONENTS_REGISTRY_URL ?? 'https://ui.shadcn.com';
+const baseUrl = process.env.COMPONENTS_REGISTRY_URL ?? 'https://platejs.org';
 const agent = process.env.https_proxy
   ? new HttpsProxyAgent(process.env.https_proxy)
   : undefined;
