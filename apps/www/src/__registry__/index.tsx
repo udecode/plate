@@ -814,8 +814,8 @@ export const Index: Record<string, any> = {
       name: 'globals',
       type: 'components:component',
       registryDependencies: [],
-      files: ['styles/globals.scss'],
-      component: React.lazy(() => import('@/styles/globals.scss')),
+      files: ['styles/globals.css'],
+      component: React.lazy(() => import('@/styles/globals.css')),
     },
     'plate-types': {
       name: 'plate-types',

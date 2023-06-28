@@ -657,7 +657,7 @@ const example: Registry = [
     name: 'globals',
     type: 'components:component',
     external: true,
-    files: ['styles/globals.scss'],
+    files: ['styles/globals.css'],
   },
   {
     name: 'plate-types',
