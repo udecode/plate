@@ -49,10 +49,10 @@ export interface LinkPlugin {
   defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
 
   /**
-   * Paste link as url value.
-   * @default false
+   * Keeps selected text on pasting links by default.
+   * @default true
    */
-  pasteLinkAsUrlValue?: boolean;
+  keepSelectedTextOnPaste?: boolean;
 
   /**
    * Callback to validate an url.
@@ -92,7 +92,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       afterMatch: true,
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
-    pasteLinkAsUrlValue: false,
+    keepSelectedTextOnPaste: true,
   },
   then: (editor, { type }) => ({
     props: ({ element }) => ({

@@ -451,7 +451,38 @@ describe('withLink', () => {
       });
     });
 
-    describe('when pasteLinkAsUrlValue is true, allows inserting link as url', () => {
+    describe('pasting a link keeps the selected text but turns it into a link', () => {
+      const input = (
+        <editor>
+          <hp>
+            start <anchor />
+            of regular text
+            <focus />
+          </hp>
+        </editor>
+      ) as any;
+
+      const data: any = { getData: () => 'https://google.com' };
+
+      const output = (
+        <editor>
+          <hp>
+            start <ha url="https://google.com">of regular text</ha>
+            <htext />
+          </hp>
+        </editor>
+      ) as any;
+
+      it('should insert link', () => {
+        const editor = createEditor(input);
+
+        editor.insertData(data);
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
+
+    describe('pasting a link do not keep the selected text and turns it into a link', () => {
       const input = (
         <editor>
           <hp>
@@ -474,7 +505,14 @@ describe('withLink', () => {
       ) as any;
 
       it('should insert link', () => {
-        const editor = createEditor(input);
+        const createModifiedEditor = (editor: any) =>
+          createPlateEditor({
+            editor,
+            plugins: [
+              createLinkPlugin({ options: { keepSelectedTextOnPaste: false } }),
+            ],
+          });
+        const editor = createModifiedEditor(input);
 
         editor.insertData(data);
 
