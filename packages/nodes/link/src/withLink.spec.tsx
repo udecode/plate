@@ -450,5 +450,36 @@ describe('withLink', () => {
         expect(input.children).toEqual(output.children);
       });
     });
+
+    describe('when pasteLinkAsUrlValue is true, allows inserting link as url', () => {
+      const input = (
+        <editor>
+          <hp>
+            start <anchor />
+            of regular text
+            <focus />
+          </hp>
+        </editor>
+      ) as any;
+
+      const data: any = { getData: () => 'https://google.com' };
+
+      const output = (
+        <editor>
+          <hp>
+            start <ha url="https://google.com">https://google.com</ha>
+            <htext />
+          </hp>
+        </editor>
+      ) as any;
+
+      it('should insert link', () => {
+        const editor = createEditor(input);
+
+        editor.insertData(data);
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
   });
 });

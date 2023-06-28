@@ -41,7 +41,7 @@ export const withLink = <
   editor: E,
   {
     type,
-    options: { isUrl, getUrlHref, rangeBeforeOptions },
+    options: { isUrl, getUrlHref, rangeBeforeOptions, pasteLinkAsUrlValue },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
   const { insertData, insertText, apply, normalizeNode, insertBreak } = editor;
@@ -111,8 +111,10 @@ export const withLink = <
     const textHref = getUrlHref?.(text);
 
     if (text) {
+      const value = textHref || text;
       const inserted = upsertLink(editor, {
-        url: textHref || text,
+        text: pasteLinkAsUrlValue ? value : undefined,
+        url: value,
         insertTextInLink: true,
       });
       if (inserted) return;

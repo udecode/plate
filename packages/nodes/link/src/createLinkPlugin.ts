@@ -49,6 +49,12 @@ export interface LinkPlugin {
   defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
 
   /**
+   * Paste link as url value.
+   * @default false
+   */
+  pasteLinkAsUrlValue?: boolean;
+
+  /**
    * Callback to validate an url.
    * @default isUrl
    */
@@ -86,6 +92,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       afterMatch: true,
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
+    pasteLinkAsUrlValue: true,
   },
   then: (editor, { type }) => ({
     props: ({ element }) => ({
