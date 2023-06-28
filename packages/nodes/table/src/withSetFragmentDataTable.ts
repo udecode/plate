@@ -8,9 +8,11 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { serializeHtml } from '@udecode/plate-serializer-html';
 import { Path } from 'slate';
 import { ELEMENT_TH } from './createTablePlugin';
 import { getTableGridAbove } from './queries';
+import { TTableCellElement, TTableElement, TTableRowElement } from './types';
 
 export const withSetFragmentDataTable = <
   V extends Value = Value,
@@ -27,6 +29,9 @@ export const withSetFragmentDataTable = <
     const tableEntry = getTableGridAbove(editor, {
       format: 'table',
     })?.[0];
+    const selectedCellEntries = getTableGridAbove(editor, {
+      format: 'cell',
+    });
 
     const initialSelection = editor.selection;
 
@@ -56,6 +61,53 @@ export const withSetFragmentDataTable = <
 
     const divElement = document.createElement('div');
     const tableElement = document.createElement('table');
+
+    /**
+     * Cover single cell copy | cut operation. In this case, copy cell content instead of table structure.
+     */
+    // setFragmentData from slate actually returns updated data
+    const newData = (setFragmentData(data) as unknown) as
+      | DataTransfer
+      | undefined;
+    if (
+      tableEntry &&
+      initialSelection &&
+      selectedCellEntries.length === 1 &&
+      (originEvent === 'copy' || originEvent === 'cut') &&
+      newData
+    ) {
+      const plainData = data.getData('text/plain');
+      newData.setData('text/csv', plainData);
+      newData.setData('text/tsv', plainData);
+      newData.setData('text/plain', plainData);
+
+      let plateTable = null;
+      try {
+        const slateFragment = data.getData('application/x-slate-fragment');
+        const [tN]: [TTableElement] = JSON.parse(
+          decodeURIComponent(window.atob(slateFragment))
+        );
+        plateTable = tN;
+      } catch (e) {}
+
+      if (plateTable?.type === 'table') {
+        const rowElem = plateTable.children?.[0] as TTableRowElement;
+        const cellElem = rowElem.children?.[0] as TTableCellElement;
+
+        const serialized = serializeHtml(editor, {
+          nodes: cellElem.children as any,
+        });
+        newData.setData('text/html', serialized);
+
+        // set slate fragment
+        const selectedFragmentStr = JSON.stringify(cellElem.children);
+        const encodedFragment = window.btoa(
+          encodeURIComponent(selectedFragmentStr)
+        );
+        newData.setData('application/x-slate-fragment', encodedFragment);
+      }
+      return;
+    }
 
     withoutNormalizing(editor, () => {
       tableRows.forEach((row, rowIndex) => {

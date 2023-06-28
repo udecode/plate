@@ -20,6 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@udecode/plate-common": "21.4.1",
+    "@udecode/plate-serializer-html": "21.4.1",
     "@udecode/resizable": "20.5.1"
   },
   "peerDependencies": {
