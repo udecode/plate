@@ -1,5 +1,39 @@
 # @udecode/plate-serializer-html
 
+## 21.4.2
+
+### Patch Changes
+
+- [#2450](https://github.com/udecode/plate/pull/2450) by [@chandreshpatidar](https://github.com/chandreshpatidar) – Fix html serializer: expected dnd context
+
+  When we want to serialize plate value in html with DnD support, it throws `Uncaught Invariant Violation: Expected drag drop context` error
+
+  ```tsx
+  const Serialized = () => {
+    const editor = usePlateEditorState();
+    const html = serializeHtml(editor, {
+      nodes: editor.children,
+      dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
+    });
+
+    return <HighlightHTML code={html} />;
+  };
+
+  export default () => (
+    <DndProvider backend={HTML5Backend}>
+      <Plate<MyValue>
+        editableProps={editableProps}
+        plugins={plugins}
+        initialValue={deserializeHtmlValue}
+      >
+        <Serialized />
+      </Plate>
+    </DndProvider>
+  );
+  ```
+
+  We can now serialize plate value in html with DnD support with above code
+
 ## 21.4.1
 
 ## 21.3.2

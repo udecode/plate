@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 21.4.2
+
 ## 21.4.1
 
 ## 21.3.5
