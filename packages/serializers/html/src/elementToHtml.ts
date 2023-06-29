@@ -1,3 +1,4 @@
+import { ComponentClass, FunctionComponent } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   pipeInjectProps,
@@ -17,10 +18,12 @@ export const elementToHtml = <V extends Value>(
     props,
     slateProps,
     preserveClassNames,
+    dndWrapper,
   }: {
     props: PlateRenderElementProps<V>;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
+    dndWrapper?: string | FunctionComponent | ComponentClass;
   }
 ) => {
   let html = `<div>${props.children}</div>`;
@@ -44,12 +47,16 @@ export const elementToHtml = <V extends Value>(
     // Render element using picked plugins renderElement function and ReactDOM
     html = decode(
       renderToStaticMarkup(
-        createElementWithSlate({
-          ...slateProps,
-          children:
-            plugin.serializeHtml?.(props as any) ??
-            pluginRenderElement(editor, plugin)(props),
-        })
+        createElementWithSlate(
+          {
+            ...slateProps,
+
+            children:
+              plugin.serializeHtml?.(props as any) ??
+              pluginRenderElement(editor, plugin)(props),
+          },
+          dndWrapper
+        )
       )
     );
 

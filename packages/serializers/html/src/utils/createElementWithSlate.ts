@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentClass, FunctionComponent } from 'react';
 import { createTEditor, SlateProps, withTReact } from '@udecode/plate-common';
 import { Slate } from 'slate-react';
 
@@ -7,7 +7,10 @@ import { Slate } from 'slate-react';
  * By default, it will use an empty editor.
  * TODO: allow other providers
  */
-export const createElementWithSlate = (slateProps?: Partial<SlateProps>) => {
+export const createElementWithSlate = (
+  slateProps?: Partial<SlateProps>,
+  dndWrapper?: string | FunctionComponent | ComponentClass
+) => {
   const {
     editor = withTReact(createTEditor()),
     value = [],
@@ -15,6 +18,23 @@ export const createElementWithSlate = (slateProps?: Partial<SlateProps>) => {
     children,
     ...props
   } = slateProps || {};
+
+  if (dndWrapper) {
+    return React.createElement(
+      dndWrapper,
+      null,
+      React.createElement(
+        Slate,
+        {
+          editor,
+          value,
+          onChange,
+          ...props,
+        } as any,
+        children
+      )
+    );
+  }
 
   return React.createElement(
     Slate,
