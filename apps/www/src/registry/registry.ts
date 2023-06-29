@@ -7,6 +7,7 @@ const ui: Registry = [
     dependencies: [],
     registryDependencies: [],
     files: [
+      'plate-ui/cloud.tsx',
       'plate-ui/cloud-attachment-element.tsx',
       'plate-ui/cloud-image-element.tsx',
       'plate-ui/cloud-resize-controls.tsx',

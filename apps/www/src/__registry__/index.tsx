@@ -8,7 +8,7 @@ export const Index: Record<string, any> = {
       name: 'cloud',
       type: 'components:plate-ui',
       registryDependencies: [],
-      files: ['registry/default/plate-ui/cloud-attachment-element.tsx','registry/default/plate-ui/cloud-image-element.tsx','registry/default/plate-ui/cloud-resize-controls.tsx','registry/default/plate-ui/cloud-status-bar.tsx','registry/default/plate-ui/cloud-toolbar-buttons.tsx'],
+      files: ['registry/default/plate-ui/cloud.tsx','registry/default/plate-ui/cloud-attachment-element.tsx','registry/default/plate-ui/cloud-image-element.tsx','registry/default/plate-ui/cloud-resize-controls.tsx','registry/default/plate-ui/cloud-status-bar.tsx','registry/default/plate-ui/cloud-toolbar-buttons.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/cloud')),
     },
     'code-block-element': {
