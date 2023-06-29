@@ -1,6 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 packages/cli/components
+tsconfig.tsbuildinfo
 
 .yarn/*
 !.yarn/cache
@@ -124,4 +125,3 @@ config/typedoc/
 /playwright-report/
 /playwright/.cache/
 .turbo
-packages/*/.turbo

@@ -22,8 +22,8 @@ export default function IndexPage() {
           href="/docs/components"
           className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
         >
-          🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Plate is
-          now headless
+          🎉 <Separator className="mx-2 h-4" orientation="vertical" />{' '}
+          Introducing Plate UI, a new CLI and more.
           <ChevronRight className="ml-1 h-4 w-4" />
         </Link>
         <PageHeaderHeading>Build your rich-text editor.</PageHeaderHeading>
