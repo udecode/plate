@@ -1,5 +1,11 @@
 # @udecode/plate-ui-media
 
+## 21.4.2
+
+### Patch Changes
+
+- [#2448](https://github.com/udecode/plate/pull/2448) by [@dimaanj](https://github.com/dimaanj) – Fixes caption width when viewport gets resized.
+
 ## 21.4.1
 
 ## 21.4.0

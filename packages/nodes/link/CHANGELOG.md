@@ -1,5 +1,12 @@
 # @udecode/plate-link
 
+## 21.4.2
+
+### Patch Changes
+
+- [#2453](https://github.com/udecode/plate/pull/2453) by [@dimaanj](https://github.com/dimaanj) – `LinkPlugin` - new option:
+  - `keepSelectedTextOnPaste`: Allow pasting links as urls
+
 ## 21.4.1
 
 ## 21.4.0

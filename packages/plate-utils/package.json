@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "21.4.1",
+  "version": "21.4.2",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -20,7 +20,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.1",
-    "@udecode/plate-core": "21.4.1",
+    "@udecode/plate-core": "21.4.2",
     "@udecode/slate": "21.4.1",
     "@udecode/slate-react": "21.4.1",
     "@udecode/slate-utils": "21.4.1",
