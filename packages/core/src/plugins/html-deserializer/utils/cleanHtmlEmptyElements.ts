@@ -1,6 +1,6 @@
 import { traverseHtmlElements } from './traverseHtmlElements';
 
-const ALLOWED_EMPTY_ELEMENTS = ['BR', 'IMG'];
+const ALLOWED_EMPTY_ELEMENTS = ['BR', 'IMG', 'TH', 'TD'];
 
 const isEmpty = (element: Element): boolean => {
   return (
