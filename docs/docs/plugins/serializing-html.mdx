@@ -7,11 +7,9 @@ The **`@udecode/plate-serializer-html`** plugin provides functionality to conver
 
 ### Demo
 
-
-import { SerializingHtmlSandpack } from "./SerializingHtmlSandpack";
+import { SerializingHtmlSandpack } from './SerializingHtmlSandpack';
 
 <SerializingHtmlSandpack />
-
 
 ### Installation
 
@@ -32,6 +30,18 @@ import { serializeHtml } from '@udecode/plate';
 
 const html = serializeHtml(editor, {
   nodes: editor.children,
+});
+```
+
+3. Use `serializeHtml` with `DnD` support:
+
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+const html = serializeHtml(editor, {
+  nodes: editor.children,
+  dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
 });
 ```
 
