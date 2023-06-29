@@ -126,7 +126,7 @@ for (const style of styles) {
       );
 
       return {
-        name: file.slice(Math.max(0, file.indexOf('/') + 1)),
+        name: path.basename(file),
         content,
       };
     });
