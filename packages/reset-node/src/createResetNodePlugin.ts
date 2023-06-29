@@ -1,4 +1,5 @@
 import {
+  TElement,
   createPluginFactory,
   getEndPoint,
   getNode,
@@ -7,11 +8,11 @@ import {
   isCollapsed,
   resetEditorChildren,
   setNodes,
-  TElement,
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
+
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 import { ResetNodePlugin } from './types';
 

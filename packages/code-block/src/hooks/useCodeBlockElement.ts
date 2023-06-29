@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';
+
 import {
   CodeBlockPlugin,
   ELEMENT_CODE_BLOCK,

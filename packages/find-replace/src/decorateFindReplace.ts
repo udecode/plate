@@ -1,11 +1,12 @@
 import {
   DecorateEntry,
-  isText,
   PlateEditor,
   Value,
   WithPlatePlugin,
+  isText,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
 import { FindReplacePlugin } from './types';
 
 export const decorateFindReplace =

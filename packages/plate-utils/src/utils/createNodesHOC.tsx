@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import { AnyObject } from '@udecode/utils';
 import { castArray } from 'lodash';
 import merge from 'lodash/merge';
+
 import { createNodeHOC } from './createNodeHOC';
 
 export type CreateHOCOptions<T> = Partial<T> &

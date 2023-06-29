@@ -16,9 +16,10 @@ import {
   useResizeHandleState,
 } from '@udecode/resizable';
 import { useReadOnly } from 'slate-react';
+
 import { TMediaElement } from '../media/types';
-import { useResizableStore } from './resizableStore';
 import { TResizableElement } from './TResizableElement';
+import { useResizableStore } from './resizableStore';
 
 export interface ResizableOptions {
   /**

@@ -1,4 +1,5 @@
 import { Editor, Location } from 'slate';
+
 import { TEditor, Value } from './TEditor';
 
 /**

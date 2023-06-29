@@ -1,4 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
+
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 import { SoftBreakPlugin } from './types';
 

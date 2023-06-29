@@ -1,4 +1,5 @@
 import { Editor, Location } from 'slate';
+
 import { ENodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
 

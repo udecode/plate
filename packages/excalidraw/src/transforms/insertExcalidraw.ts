@@ -1,12 +1,13 @@
 import {
-  getParentNode,
-  insertNodes,
   InsertNodesOptions,
   PlateEditor,
   PlatePluginKey,
   TNodeProps,
   Value,
+  getParentNode,
+  insertNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
 import { TExcalidrawElement } from '../types';
 

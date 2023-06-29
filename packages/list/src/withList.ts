@@ -1,10 +1,11 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
-import { normalizeList } from './normalizers/index';
+
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
 import { deleteFragmentList } from './deleteFragmentList';
 import { insertBreakList } from './insertBreakList';
 import { insertFragmentList } from './insertFragmentList';
+import { normalizeList } from './normalizers/index';
 import { ListPlugin } from './types';
 
 export const withList = <

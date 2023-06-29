@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { ScrollArea, ScrollAreaProps } from './ScrollArea';
 
 export type ScrollerProps = Omit<ScrollAreaProps, 'placement'>;

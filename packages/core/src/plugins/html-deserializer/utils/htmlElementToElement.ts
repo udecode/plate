@@ -1,5 +1,6 @@
 import { EDescendant, TDescendant, Value } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
+
 import { PlateEditor } from '../../../types/PlateEditor';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';

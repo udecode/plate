@@ -1,27 +1,26 @@
 /** @jsx jsx */
 
 import {
-  ELEMENT_CODE_BLOCK,
-  insertEmptyCodeBlock,
-} from '@udecode/plate-code-block';
-import {
-  ELEMENT_DEFAULT,
-  getEditorString,
-  getPluginType,
-  getRangeFromBlockStart,
-  mockPlugin,
-  PlateEditor,
-} from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { Range } from 'slate';
-import { withReact } from 'slate-react';
-
-import {
   AutoformatPlugin,
   withAutoformat,
 } from '@/packages/autoformat/src/index';
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
+import {
+  ELEMENT_CODE_BLOCK,
+  insertEmptyCodeBlock,
+} from '@udecode/plate-code-block';
+import {
+  ELEMENT_DEFAULT,
+  PlateEditor,
+  getEditorString,
+  getPluginType,
+  getRangeFromBlockStart,
+  mockPlugin,
+} from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
+import { Range } from 'slate';
+import { withReact } from 'slate-react';
 
 jsx;
 

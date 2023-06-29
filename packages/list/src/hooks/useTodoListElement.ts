@@ -4,6 +4,7 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
+
 import { TTodoListItemElement } from '../index';
 
 export const useTodoListElementState = ({

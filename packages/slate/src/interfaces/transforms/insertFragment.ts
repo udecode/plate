@@ -1,5 +1,6 @@
 import { Transforms } from 'slate';
 import { TextInsertFragmentOptions } from 'slate/dist/interfaces/transforms/text';
+
 import { TEditor, Value } from '../editor/TEditor';
 import { EElementOrText } from '../element/TElement';
 

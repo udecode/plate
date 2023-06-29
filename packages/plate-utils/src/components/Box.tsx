@@ -1,4 +1,5 @@
 import { ComponentPropsWithRef } from 'react';
+
 import { createSlotComponent } from '../utils/createSlotComponent';
 
 export const Box = createSlotComponent('div');

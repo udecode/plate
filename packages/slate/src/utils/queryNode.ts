@@ -1,4 +1,5 @@
 import castArray from 'lodash/castArray';
+
 import { TNode, TNodeEntry } from '../interfaces';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 

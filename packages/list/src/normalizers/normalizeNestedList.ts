@@ -1,14 +1,15 @@
 import {
-  getNodeEntry,
-  getParentNode,
-  match,
-  moveNodes,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
+  getNodeEntry,
+  getParentNode,
+  match,
+  moveNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getListTypes } from '../queries/index';
 
 // When pasting from e.g. Google Docs, the structure of nested lists like "ul -> ul"

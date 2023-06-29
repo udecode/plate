@@ -1,9 +1,10 @@
 import {
-  findNode,
   FindNodeOptions,
   PlateEditor,
   Value,
+  findNode,
 } from '@udecode/plate-common';
+
 import { MARK_SUGGESTION } from '../constants';
 import { TSuggestionText } from '../types';
 

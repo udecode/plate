@@ -1,10 +1,11 @@
 import {
-  getPluginType,
   PlateEditor,
   Value,
-  wrapNodes,
   WrapNodesOptions,
+  getPluginType,
+  wrapNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 

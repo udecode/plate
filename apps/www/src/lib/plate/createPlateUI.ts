@@ -80,16 +80,14 @@ import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 
-export const createPlateUI = <T extends string = string>(
-  overrideByKey?: Partial<
-    Record<DefaultPlatePluginKey | T, PlatePluginComponent>
-  >,
+export const createPlateUI = (
+  overrideByKey?: Partial<Record<string, PlatePluginComponent>>,
   {
     draggable,
     placeholder,
   }: { placeholder?: boolean; draggable?: boolean } = {}
 ) => {
-  let components = {
+  let components: Record<string, PlatePluginComponent> = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
@@ -142,7 +140,7 @@ export const createPlateUI = <T extends string = string>(
     components = withDraggables(components);
   }
 
-  return components as Record<DefaultPlatePluginKey | T, PlatePluginComponent>;
+  return components;
 };
 
 export type DefaultPlatePluginKey =

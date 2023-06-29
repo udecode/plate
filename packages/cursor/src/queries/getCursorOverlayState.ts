@@ -1,4 +1,5 @@
 import { UnknownObject } from '@udecode/plate-common';
+
 import { CursorOverlayProps } from '../components';
 import { FROZEN_EMPTY_ARRAY } from '../hooks';
 import { CursorOverlayState, SelectionRect } from '../types';

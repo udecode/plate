@@ -1,6 +1,7 @@
 import { Modify } from '@udecode/utils';
 import { Editor } from 'slate';
 import { EditorAboveOptions } from 'slate/dist/interfaces/editor';
+
 import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { EAncestor, TAncestor } from '../node/TAncestor';
 import { TNodeEntry } from '../node/TNodeEntry';

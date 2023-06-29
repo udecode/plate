@@ -1,12 +1,13 @@
-import { DropTargetMonitor } from 'react-dnd';
 import {
+  TReactEditor,
+  Value,
   findNode,
   focusEditor,
   moveNodes,
-  TReactEditor,
-  Value,
 } from '@udecode/plate-common';
+import { DropTargetMonitor } from 'react-dnd';
 import { Path } from 'slate';
+
 import { UseDropNodeOptions } from '../hooks';
 import { DragItemNode } from '../types';
 import { getHoverDirection } from '../utils';

@@ -1,11 +1,12 @@
 import { usePlateEditorRef } from '@udecode/plate-common';
+
 import {
   ComboboxControls,
-  comboboxSelectors,
   Data,
-  getComboboxStoreById,
   NoData,
   TComboboxItem,
+  comboboxSelectors,
+  getComboboxStoreById,
   useComboboxSelectors,
 } from '..';
 import { ComboboxContentProps } from './useComboboxContent';

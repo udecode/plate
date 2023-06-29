@@ -1,9 +1,10 @@
 import {
-  isExpanded,
-  isStartPoint,
   PlateEditor,
   Value,
+  isExpanded,
+  isStartPoint,
 } from '@udecode/plate-common';
+
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /**

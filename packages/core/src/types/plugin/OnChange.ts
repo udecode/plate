@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../PlateEditor';
 import { HandlerReturnType } from './DOMHandlers';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';

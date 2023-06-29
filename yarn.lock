@@ -7181,7 +7181,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-common@npm:21.3.2, @udecode/plate-common@workspace:^, @udecode/plate-common@workspace:packages/common":
+"@udecode/plate-common@npm:21.3.2, @udecode/plate-common@workspace:*, @udecode/plate-common@workspace:^, @udecode/plate-common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-common@workspace:packages/common"
   dependencies:
@@ -11956,15 +11956,6 @@ __metadata:
   peerDependencies:
     eslint: ">=6.0.0"
   checksum: 26dfddeea4f3590bba0f1497cfccc8dd7765bc2d6e8f2bf26b18c2b0185ad41de5ddefad1b884d9d67da9fa3adcde6ed96723d66c3f9de337d3aea1c78af9f9f
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-simple-import-sort@npm:7.0.0":
-  version: 7.0.0
-  resolution: "eslint-plugin-simple-import-sort@npm:7.0.0"
-  peerDependencies:
-    eslint: ">=5.0.0"
-  checksum: d21380bfe5456fccc607aa43d4ee3888ba948946c513ef1e66cbe670a783d1e38f3a28e4f87b5dd051939379cd80416ed59cae957f9ddd6704de5d91e2bee7a8
   languageName: node
   linkType: hard
 
@@ -17984,6 +17975,7 @@ __metadata:
     "@types/react": "npm:^18.2.13"
     "@types/react-dom": "npm:^18.2.6"
     "@typescript-eslint/parser": "npm:^5.60.0"
+    "@udecode/plate-common": "workspace:*"
     autoprefixer: "npm:^10.4.14"
     class-variance-authority: "npm:0.6.1"
     clsx: "npm:1.2.1"
@@ -21835,6 +21827,7 @@ __metadata:
     "@changesets/parse": "npm:^0.3.16"
     "@changesets/types": "npm:^5.2.1"
     "@dword-design/eslint-plugin-import-alias": "npm:^4.0.7"
+    "@ianvs/prettier-plugin-sort-imports": "npm:^3.7.2"
     "@playwright/test": "npm:1.35.1"
     "@tailwindcss/typography": "npm:^0.5.9"
     "@testing-library/jest-dom": "npm:^5.16.5"
@@ -21884,7 +21877,6 @@ __metadata:
     eslint-plugin-react: "npm:^7.32.2"
     eslint-plugin-react-hooks: "npm:^4.6.0"
     eslint-plugin-regexp: "npm:^1.15.0"
-    eslint-plugin-simple-import-sort: "npm:7.0.0"
     eslint-plugin-tailwindcss: "npm:^3.12.1"
     eslint-plugin-testing-library: "npm:^5.11.0"
     eslint-plugin-unicorn: "npm:^47.0.0"

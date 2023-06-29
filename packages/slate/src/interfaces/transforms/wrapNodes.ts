@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
+
 import { NodeMatchOption } from '../../types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
 import { unhangRange } from '../editor/unhangRange';

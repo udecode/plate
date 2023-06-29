@@ -4,6 +4,7 @@ import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
 import { findNode } from '@udecode/slate/src/queries/findNode';
 import { Path } from 'slate';
+
 import { moveChildren } from './moveChildren';
 
 jsx;

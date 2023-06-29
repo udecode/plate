@@ -1,17 +1,18 @@
 import {
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
   getAboveNode,
   getNode,
   getPluginType,
   insertElements,
   isLastChild,
   moveNodes,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';

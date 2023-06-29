@@ -1,10 +1,11 @@
 import {
   EElementOrText,
-  insertNode,
   Value,
   WithPlatePlugin,
+  insertNode,
 } from '@udecode/plate-common';
 import Defer from 'p-defer';
+
 import { PlateCloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
 import { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';

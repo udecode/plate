@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
 import { getTodoListItemEntry } from './queries/getTodoListItemEntry';
 import { insertTodoListItem } from './transforms/insertTodoListItem';
 import { TodoListPlugin } from './types';

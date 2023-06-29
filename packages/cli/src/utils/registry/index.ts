@@ -4,6 +4,7 @@ import path from 'path';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import fetch from 'node-fetch';
 import * as z from 'zod';
+
 import { Config } from '../get-config';
 import {
   registryBaseColorSchema,

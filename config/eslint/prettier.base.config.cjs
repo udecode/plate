@@ -23,43 +23,44 @@ module.exports = {
   trailingComma: 'es5',
 
   // Define the order in which imports should be sorted, with specific patterns for React, Next.js, third-party modules, local modules, and relative imports.
-  // importOrder: [
-  //   '^(react/(.*)$)|^(react$)',
-  //   '^(next/(.*)$)|^(next$)',
-  //   '<THIRD_PARTY_MODULES>',
-  //   '',
-  //   '^types$',
-  //   '^@/types/(.*)$',
-  //   '^@/config/(.*)$',
-  //   '^@/lib/(.*)$',
-  //   '^@/components/hooks/(.*)$',
-  //   '^@/components/ui/(.*)$',
-  //   '^@/components/(.*)$',
-  //   '^@/styles/(.*)$',
-  //   '^@/app/(.*)$',
-  //   '',
-  //   '^[./]',
-  // ],
-  //
-  // // Do not separate imports by empty lines.
-  // importOrderSeparation: false,
-  //
-  // // Sort import specifiers alphabetically.
-  // importOrderSortSpecifiers: true,
-  //
-  // // Move built-in modules to the top of the import list.
-  // importOrderBuiltinModulesToTop: true,
-  //
-  // // Specify the parser plugins to use for import sorting.
-  // importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
-  //
-  // // Merge duplicate imports into a single statement.
-  // importOrderMergeDuplicateImports: true,
-  //
-  // // Combine type-only imports with value imports.
-  // importOrderCombineTypeAndValueImports: true,
+  importOrder: [
+    '^(react/(.*)$)|^(react$)',
+    '^(next/(.*)$)|^(next$)',
+    '<THIRD_PARTY_MODULES>',
+    '',
+    '^types$',
+    '^@/types/(.*)$',
+    '^@/config/(.*)$',
+    '^@/lib/(.*)$',
+    '^@/hooks/(.*)$',
+    '^@/components/ui/(.*)$',
+    '^@/components/(.*)$',
+    '^@/registry/(.*)$',
+    '^@/styles/(.*)$',
+    '^@/app/(.*)$',
+    '',
+    '^[./]',
+  ],
+
+  // Do not separate imports by empty lines.
+  importOrderSeparation: false,
+
+  // Sort import specifiers alphabetically.
+  importOrderSortSpecifiers: true,
+
+  // Move built-in modules to the top of the import list.
+  importOrderBuiltinModulesToTop: true,
+
+  // Specify the parser plugins to use for import sorting.
+  importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
+
+  // Merge duplicate imports into a single statement.
+  importOrderMergeDuplicateImports: true,
+
+  // Combine type-only imports with value imports.
+  importOrderCombineTypeAndValueImports: true,
 
   // Use the `@ianvs/prettier-plugin-sort-imports` plugin to sort imports.
   // https://github.com/ianvs/prettier-plugin-sort-imports
-  // plugins: ['@ianvs/prettier-plugin-sort-imports'],
+  plugins: ['@ianvs/prettier-plugin-sort-imports'],
 };

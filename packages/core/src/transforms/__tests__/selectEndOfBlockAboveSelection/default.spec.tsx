@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/plate-test-utils';
-
 import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 import { selectEndOfBlockAboveSelection } from '@/packages/slate-utils/src/index';
+import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
+
 import {
   useCommentActions,
   useEditingCommentText,

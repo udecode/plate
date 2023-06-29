@@ -2,6 +2,7 @@
 
 import { createPlateEditor } from '@udecode/plate-common';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 jsx;

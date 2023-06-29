@@ -1,4 +1,5 @@
 import { Editor, Location, Node, Path, Range, Text, Transforms } from 'slate';
+
 import { getRange } from '../interfaces';
 import { TEditor, Value } from '../interfaces/editor/TEditor';
 

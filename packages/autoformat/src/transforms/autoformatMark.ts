@@ -1,14 +1,15 @@
 import {
+  TEditor,
+  Value,
   collapseSelection,
   deleteText,
   getEditorString,
   removeMark,
   select,
-  TEditor,
-  Value,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';
+
 import { AutoformatMarkRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';

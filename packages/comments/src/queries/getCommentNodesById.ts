@@ -1,4 +1,5 @@
-import { getNodeEntries, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, getNodeEntries } from '@udecode/plate-common';
+
 import { isCommentNodeById } from '../utils/isCommentNodeById';
 
 export const getCommentNodesById = <V extends Value>(

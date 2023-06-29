@@ -1,4 +1,5 @@
 import { Node } from 'slate';
+
 import { TNode, TNodeProps } from './TNode';
 
 /**

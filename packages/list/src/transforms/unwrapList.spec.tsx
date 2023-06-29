@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { unwrapList } from './unwrapList';
-
 import { createListPlugin } from '@/packages/list/src/createListPlugin';
+import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { unwrapList } from './unwrapList';
 
 jsx;
 

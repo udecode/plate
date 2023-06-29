@@ -1,10 +1,10 @@
-import Link from "next/link"
+import Link from 'next/link';
 
-import { siteConfig } from "@/config/site"
-import { buttonVariants } from "@/components/plate-ui/button"
-import { Icons } from "@/components/icons"
-import { MainNav } from "@/components/main-nav"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { siteConfig } from '@/config/site';
+import { Icons } from '@/components/icons';
+import { MainNav } from '@/components/main-nav';
+import { buttonVariants } from '@/components/plate-ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function SiteHeader() {
   return (
@@ -20,8 +20,8 @@ export function SiteHeader() {
             >
               <div
                 className={buttonVariants({
-                  size: "sm",
-                  variant: "ghost",
+                  size: 'sm',
+                  variant: 'ghost',
                 })}
               >
                 <Icons.gitHub className="h-5 w-5" />
@@ -35,8 +35,8 @@ export function SiteHeader() {
             >
               <div
                 className={buttonVariants({
-                  size: "sm",
-                  variant: "ghost",
+                  size: 'sm',
+                  variant: 'ghost',
                 })}
               >
                 <Icons.twitter className="h-5 w-5 fill-current" />
@@ -48,5 +48,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

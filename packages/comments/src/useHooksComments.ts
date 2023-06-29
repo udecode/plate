@@ -1,10 +1,11 @@
 import {
-  isExpanded,
   PlateEditor,
-  useHotkeys,
   Value,
   WithPlatePlugin,
+  isExpanded,
+  useHotkeys,
 } from '@udecode/plate-common';
+
 import { useAddCommentMark, useCommentsActions } from './stores/index';
 import { CommentsPlugin } from './types';
 

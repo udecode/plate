@@ -1,9 +1,9 @@
 import {
   useComment,
   useCommentSelectors,
-  useCommentsSelectors,
   useCommentText,
   useCommentUser,
+  useCommentsSelectors,
 } from '..';
 
 export const useCommentItemContentState = () => {

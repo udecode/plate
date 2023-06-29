@@ -1,11 +1,13 @@
 /** @jsx jsx */
+
+import { createJuicePlugin } from '@/packages/juice/src/createJuicePlugin';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/createBasicElementsPlugin';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
 import {
-  createPlateEditor,
   OverrideByKey,
   PlatePlugin,
+  createPlateEditor,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -22,10 +24,9 @@ import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
+
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
-
-import { createJuicePlugin } from '@/packages/juice/src/createJuicePlugin';
 
 jsx;
 

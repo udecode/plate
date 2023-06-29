@@ -1,11 +1,11 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsx */
 
-import { createPlateEditor, TEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { insertTableColumn } from './insertTableColumn';
-
 import { createTablePlugin } from '@/packages/table/src/createTablePlugin';
+import { TEditor, createPlateEditor } from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { insertTableColumn } from './insertTableColumn';
 
 jsx;
 

@@ -1,6 +1,6 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  createPluginFactory,
   getPluginType,
   mapInjectPropsToPlugin,
 } from '@udecode/plate-common';

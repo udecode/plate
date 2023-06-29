@@ -1,19 +1,19 @@
 /** @jsx jsx */
 
 import {
+  ELEMENT_OL,
+  ELEMENT_UL,
+  createListPlugin,
+} from '@/packages/list/src/createListPlugin';
+import {
+  PlateEditor,
   createPlateEditor,
   getPluginType,
-  PlateEditor,
 } from '@udecode/plate-common';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
-import { toggleList } from './toggleList';
 
-import {
-  createListPlugin,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '@/packages/list/src/createListPlugin';
+import { toggleList } from './toggleList';
 
 jsx;
 

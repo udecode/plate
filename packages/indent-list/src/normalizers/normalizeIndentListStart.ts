@@ -1,13 +1,14 @@
 import {
   EElement,
   EElementEntry,
-  getNode,
-  setElements,
   TEditor,
   TNodeEntry,
   Value,
+  getNode,
+  setElements,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import {
   KEY_LIST_RESTART,
   KEY_LIST_START,

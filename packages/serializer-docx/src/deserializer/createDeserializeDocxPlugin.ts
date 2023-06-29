@@ -1,8 +1,8 @@
 import {
-  createPluginFactory,
   DeserializeHtml,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
+  createPluginFactory,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -16,6 +16,7 @@ import { KEY_INDENT, KEY_TEXT_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import {
   getDocxIndent,

@@ -1,6 +1,7 @@
 import { resizeIn } from '@portive/client';
-import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
+import { Value, WithPlatePlugin, insertNode } from '@udecode/plate-common';
 import Defer from 'p-defer';
+
 import { PlateCloudEditor } from '../cloud';
 import { UploadError, UploadSuccess } from '../upload';
 import {

@@ -1,11 +1,12 @@
 import {
-  getPoint,
-  getPointAfter,
   PlateEditor,
   Value,
+  getPoint,
+  getPointAfter,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
-import { TabbableEntry, TabDestination } from './types';
+
+import { TabDestination, TabbableEntry } from './types';
 
 export interface FindTabDestinationOptions {
   tabbableEntries: TabbableEntry[];

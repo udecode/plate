@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
+import { getPointBeforeLocation } from '@/packages/slate-utils/src/queries/getPointBeforeLocation';
 import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-
-import { getPointBeforeLocation } from '@/packages/slate-utils/src/queries/getPointBeforeLocation';
 
 jsx;
 

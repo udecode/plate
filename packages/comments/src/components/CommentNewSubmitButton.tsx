@@ -1,4 +1,5 @@
 import { createPrimitiveComponent, nanoid } from '@udecode/plate-common';
+
 import {
   SCOPE_ACTIVE_COMMENT,
   useComment,

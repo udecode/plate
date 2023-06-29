@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
 import { floatingLinkSelectors } from '../components/index';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';

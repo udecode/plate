@@ -1,4 +1,7 @@
 /** @jsx jsx */
+
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
 import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
 import { createPlateEditor } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
@@ -6,9 +9,6 @@ import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-
-import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
-import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
 
 jsx;
 

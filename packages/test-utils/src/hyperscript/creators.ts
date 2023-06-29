@@ -1,20 +1,21 @@
 import {
-  createEditor as makeEditor,
   Descendant,
   Editor,
   Element,
   Node,
   Range,
   Text,
+  createEditor as makeEditor,
 } from 'slate';
+
 import {
-  addAnchorToken,
-  addFocusToken,
   AnchorToken,
   FocusToken,
+  Token,
+  addAnchorToken,
+  addFocusToken,
   getAnchorOffset,
   getFocusOffset,
-  Token,
 } from './tokens';
 
 /**

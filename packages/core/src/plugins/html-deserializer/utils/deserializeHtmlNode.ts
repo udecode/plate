@@ -1,4 +1,5 @@
 import { EDescendant, Value } from '@udecode/slate';
+
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
 import { htmlBodyToFragment } from './htmlBodyToFragment';

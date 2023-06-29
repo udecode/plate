@@ -1,11 +1,12 @@
 import {
-  isRangeAcrossBlocks,
-  isRangeInSameBlock,
   PlateEditor,
   TRange,
   Value,
+  isRangeAcrossBlocks,
+  isRangeInSameBlock,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
 import { keyShiftEdges } from '../constants';
 import { getCellTypes } from '../utils/index';
 import { moveSelectionFromCell } from './index';

@@ -1,4 +1,7 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
@@ -6,16 +9,14 @@ import {
   getTEditor,
   isElement,
   isText,
-  PlateEditor,
   setNodes,
-  TElement,
   unwrapNodes,
-  Value,
   wrapNodeChildren,
 } from '@udecode/plate-common';
-import { getCellTypes } from './utils/index';
+
 import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
-import { TablePlugin, TTableElement } from './types';
+import { TTableElement, TablePlugin } from './types';
+import { getCellTypes } from './utils/index';
 
 /**
  * Normalize table:

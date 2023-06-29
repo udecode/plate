@@ -1,16 +1,17 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  KEY_DESERIALIZE_HTML,
+  TElement,
+  createPluginFactory,
   getPluginType,
   isHtmlBlockElement,
-  KEY_DESERIALIZE_HTML,
   postCleanHtml,
-  TElement,
   traverseHtmlElements,
 } from '@udecode/plate-common';
-import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
+
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
+import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import { ListStyleType } from './types';
 import { withIndentList } from './withIndentList';
 

@@ -1,4 +1,4 @@
-import { getMarks, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getMarks } from '@udecode/slate';
 
 /**
  * Get selection mark value by key.

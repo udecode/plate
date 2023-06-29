@@ -1,11 +1,12 @@
 import {
-  deleteText,
-  insertText,
   PlateEditor,
   Value,
+  deleteText,
+  insertText,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';
+
 import { AutoformatTextRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';

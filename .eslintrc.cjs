@@ -121,8 +121,6 @@ module.exports = {
       files: '**/*.mdx',
       rules: {
         'prettier/prettier': 'off',
-        'simple-import-sort/imports': 'off',
-        'import/order': 'off',
       },
     },
   ],

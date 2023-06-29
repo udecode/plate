@@ -1,27 +1,28 @@
 import {
-  comboboxActions,
   ComboboxOnSelectItem,
-  comboboxSelectors,
   Data,
   NoData,
   TComboboxItem,
+  comboboxActions,
+  comboboxSelectors,
 } from '@udecode/plate-combobox';
 import {
+  PlatePluginKey,
+  TNodeProps,
   getBlockAbove,
   getPlugin,
   insertNodes,
   insertText,
   isEndPoint,
   moveSelection,
-  PlatePluginKey,
   removeNodes,
   select,
-  TNodeProps,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { isNodeMentionInput } from './queries/isNodeMentionInput';
+
 import { ELEMENT_MENTION } from './createMentionPlugin';
+import { isNodeMentionInput } from './queries/isNodeMentionInput';
 import { MentionPlugin, TMentionElement } from './types';
 
 export interface CreateMentionNode<TData extends Data> {

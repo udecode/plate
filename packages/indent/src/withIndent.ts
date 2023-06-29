@@ -1,10 +1,11 @@
 import {
   PlateEditor,
-  setElements,
-  unsetNodes,
   Value,
   WithPlatePlugin,
+  setElements,
+  unsetNodes,
 } from '@udecode/plate-common';
+
 import { IndentPlugin, TIndentElement } from './types';
 
 /**

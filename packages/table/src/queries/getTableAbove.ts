@@ -1,10 +1,11 @@
 import {
   GetAboveNodeOptions,
-  getBlockAbove,
-  getPluginType,
   PlateEditor,
   Value,
+  getBlockAbove,
+  getPluginType,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
 export const getTableAbove = <V extends Value = Value>(

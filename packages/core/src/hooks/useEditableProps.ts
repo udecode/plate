@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
+
 import { PlateId, usePlateSelectors } from '../stores';
 import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
 import { DOM_HANDLERS } from '../types/misc/dom-attributes';

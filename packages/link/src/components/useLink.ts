@@ -1,4 +1,5 @@
 import { usePlateEditorRef } from '@udecode/plate-common';
+
 import { TLinkElement } from '../types';
 import { getLinkAttributes } from '../utils/index';
 

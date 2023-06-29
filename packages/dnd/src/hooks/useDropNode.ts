@@ -1,5 +1,6 @@
-import { DropTargetHookSpec, DropTargetMonitor, useDrop } from 'react-dnd';
 import { TEditor, TReactEditor, Value } from '@udecode/plate-common';
+import { DropTargetHookSpec, DropTargetMonitor, useDrop } from 'react-dnd';
+
 import { onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
 import { DragItemNode, DropLineDirection } from '../types';

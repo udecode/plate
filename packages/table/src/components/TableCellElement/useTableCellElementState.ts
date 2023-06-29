@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
+
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';

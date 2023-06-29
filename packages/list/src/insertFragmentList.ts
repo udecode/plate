@@ -1,15 +1,5 @@
 import {
-  findNode,
-  getCommonNode,
-  getNode,
-  getNodes,
-  getNodeString,
-  getNodeTexts,
-  getPlugin,
-  insertElements,
-  isElement,
   PlateEditor,
-  removeNodes,
   TAncestor,
   TAncestorEntry,
   TDescendant,
@@ -19,14 +9,25 @@ import {
   TText,
   Value,
   WithPlatePlugin,
+  findNode,
+  getCommonNode,
+  getNode,
+  getNodeString,
+  getNodeTexts,
+  getNodes,
+  getPlugin,
+  insertElements,
+  isElement,
+  removeNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
+import { ELEMENT_LI } from './createListPlugin';
 import {
   getListItemContentType,
   getListItemType,
   isListRoot,
 } from './queries/index';
-import { ELEMENT_LI } from './createListPlugin';
 
 export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const { insertFragment } = editor;

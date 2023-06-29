@@ -1,14 +1,15 @@
 import {
-  createPathRef,
-  getNodeEntries,
   GetNodeEntriesOptions,
-  getParentNode,
-  getPluginType,
   PlateEditor,
   Value,
+  createPathRef,
+  getNodeEntries,
+  getParentNode,
+  getPluginType,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, PathRef } from 'slate';
+
 import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';

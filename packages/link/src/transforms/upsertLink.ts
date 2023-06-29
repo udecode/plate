@@ -1,20 +1,21 @@
 import {
+  InsertNodesOptions,
+  PlateEditor,
+  UnwrapNodesOptions,
+  Value,
+  WrapNodesOptions,
   findNode,
   getAboveNode,
   getEditorString,
   getNodeLeaf,
   getNodeProps,
   getPluginType,
-  InsertNodesOptions,
   isDefined,
   isExpanded,
-  PlateEditor,
   removeNodes,
   setNodes,
-  UnwrapNodesOptions,
-  Value,
-  WrapNodesOptions,
 } from '@udecode/plate-common';
+
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';
 import { CreateLinkNodeOptions, validateUrl } from '../utils/index';

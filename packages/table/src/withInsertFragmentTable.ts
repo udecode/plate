@@ -1,22 +1,23 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
+  WithPlatePlugin,
   getEndPoint,
   getPluginType,
   getStartPoint,
   getTEditor,
   hasNode,
-  PlateEditor,
   replaceNodeChildren,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
+
+import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableAbove } from './queries/getTableAbove';
 import { getTableGridAbove } from './queries/getTableGridAbove';
-import { ELEMENT_TABLE } from './createTablePlugin';
 import { TablePlugin } from './types';
 
 /**

@@ -6,14 +6,14 @@ import {
   EDescendant,
   ENodeEntry,
   FindNodeOptions,
+  TEditor,
+  TNodeEntry,
+  Value,
   getNodeDescendants,
   getNodeEntry,
   getPath,
   isVoid,
   match,
-  TEditor,
-  TNodeEntry,
-  Value,
 } from '@udecode/slate';
 import { Path, Range, Span } from 'slate';
 

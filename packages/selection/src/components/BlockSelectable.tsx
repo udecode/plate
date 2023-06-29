@@ -1,12 +1,13 @@
 import React, { HTMLAttributes, useMemo } from 'react';
 import {
+  TElement,
   findNodePath,
   getPluginOptions,
   isInline,
   queryNode,
-  TElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
   BlockSelectionPlugin,

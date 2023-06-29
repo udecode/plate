@@ -1,9 +1,10 @@
 import {
-  focusEditor,
   PlateEditor,
   TElement,
   Value,
+  focusEditor,
 } from '@udecode/plate-common';
+
 import { isTableBorderHidden } from '../../queries/index';
 import { setBorderSize } from '../../transforms/index';
 import { BorderDirection } from '../../types';

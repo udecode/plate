@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { TEditor, usePlateEditorRef } from '@udecode/plate-common';
 import { DropTargetMonitor } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { TEditor, usePlateEditorRef } from '@udecode/plate-common';
+
 import { DragItemNode, DropLineDirection } from '../types';
-import { useDragNode, UseDragNodeOptions } from './useDragNode';
-import { useDropNode, UseDropNodeOptions } from './useDropNode';
+import { UseDragNodeOptions, useDragNode } from './useDragNode';
+import { UseDropNodeOptions, useDropNode } from './useDropNode';
 
 export interface UseDndNodeOptions
   extends Pick<UseDropNodeOptions, 'id' | 'nodeRef'>,

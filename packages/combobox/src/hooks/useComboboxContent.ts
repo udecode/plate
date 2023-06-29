@@ -7,15 +7,16 @@ import {
   shift,
   useVirtualFloating,
 } from '@udecode/plate-floating';
-import { ComboboxProps } from '../types/ComboboxProps';
+
 import {
-  comboboxActions,
   ComboboxControls,
   Data,
   NoData,
+  comboboxActions,
   useActiveComboboxStore,
   useComboboxSelectors,
 } from '..';
+import { ComboboxProps } from '../types/ComboboxProps';
 
 export type ComboboxContentProps<TData extends Data = NoData> = Omit<
   ComboboxProps<TData>,

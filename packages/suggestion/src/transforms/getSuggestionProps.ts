@@ -1,4 +1,5 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, getPluginOptions } from '@udecode/plate-common';
+
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { SuggestionPlugin } from '../types';
 import { getSuggestionKey } from '../utils/index';

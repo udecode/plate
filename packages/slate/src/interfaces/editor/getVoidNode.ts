@@ -1,4 +1,5 @@
 import { Editor, EditorVoidOptions } from 'slate';
+
 import { EElement } from '../element/TElement';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';

@@ -2,6 +2,7 @@ import {
   createPluginFactory,
   onKeyDownToggleElement,
 } from '@udecode/plate-common';
+
 import { TodoListPlugin } from '../types';
 import { withTodoList } from '../withTodoList';
 

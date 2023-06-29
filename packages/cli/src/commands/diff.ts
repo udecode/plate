@@ -2,8 +2,9 @@ import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { type Change, diffLines } from 'diff';
+import { diffLines, type Change } from 'diff';
 import * as z from 'zod';
+
 import { Config, getConfig } from '../utils/get-config';
 import { handleError } from '../utils/handle-error';
 import { logger } from '../utils/logger';

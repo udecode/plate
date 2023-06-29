@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { createPluginFactory } from '../utils/createPluginFactory';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';

@@ -1,4 +1,5 @@
 import { Editor, Location } from 'slate';
+
 import { EElementOrText } from '../element/TElement';
 import { TEditor, Value } from './TEditor';
 

@@ -1,14 +1,15 @@
 import { CSSProperties, MutableRefObject, useRef, useState } from 'react';
 import { ClientRectObject } from '@floating-ui/core';
 import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
+
 import { createVirtualElement } from '../createVirtualElement';
 import {
-  autoUpdate,
   ReferenceType,
-  useFloating,
   UseFloatingProps,
   UseFloatingReturn,
   VirtualElement,
+  autoUpdate,
+  useFloating,
 } from '../libs/floating-ui';
 import { getSelectionBoundingClientRect } from '../utils/index';
 

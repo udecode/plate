@@ -1,12 +1,13 @@
 import {
   ELEMENT_DEFAULT,
+  PlateEditor,
+  Value,
   getPluginType,
   insertElements,
   isBlockAboveEmpty,
   isExpanded,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
+
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
 

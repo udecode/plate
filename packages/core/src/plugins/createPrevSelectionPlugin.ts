@@ -1,4 +1,5 @@
 import { TRange } from '@udecode/slate';
+
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_PREV_SELECTION = 'prevSelection';

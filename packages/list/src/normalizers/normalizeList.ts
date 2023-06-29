@@ -1,5 +1,9 @@
 import {
   ELEMENT_DEFAULT,
+  PlateEditor,
+  TElement,
+  TNodeEntry,
+  Value,
   getChildren,
   getNode,
   getParentNode,
@@ -7,15 +11,12 @@ import {
   getPreviousPath,
   isElement,
   match,
-  PlateEditor,
   removeNodes,
   setElements,
-  TElement,
-  TNodeEntry,
-  Value,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';
 import { moveListItemsToList } from '../transforms/index';

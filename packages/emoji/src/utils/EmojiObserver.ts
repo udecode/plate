@@ -1,4 +1,5 @@
 import { MutableRefObject } from 'react';
+
 import { EmojiCategoryList } from '../types';
 import { IEmojiFloatingLibrary } from './EmojiLibrary/index';
 import { MapEmojiCategoryList } from './EmojiPicker/index';

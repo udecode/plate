@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
+import {
+  LinkPlugin,
+  createLinkPlugin,
+} from '@/packages/link/src/createLinkPlugin';
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { upsertLink } from './upsertLink';
 
-import {
-  createLinkPlugin,
-  LinkPlugin,
-} from '@/packages/link/src/createLinkPlugin';
+import { upsertLink } from './upsertLink';
 
 jsx;
 

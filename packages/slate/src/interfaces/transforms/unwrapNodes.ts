@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
+
 import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { TEditor, Value } from '../editor/TEditor';
 

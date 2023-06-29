@@ -1,9 +1,10 @@
 import {
-  getPluginOptions,
   PlateEditor,
-  sanitizeUrl,
   Value,
+  getPluginOptions,
+  sanitizeUrl,
 } from '@udecode/plate-common';
+
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
 
 export const validateUrl = <V extends Value>(

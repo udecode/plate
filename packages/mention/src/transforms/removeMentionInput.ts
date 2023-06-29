@@ -1,12 +1,13 @@
 import {
+  PlateEditor,
+  Value,
   getNode,
   insertText,
-  PlateEditor,
   unwrapNodes,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { TMentionInputElement } from '../types';
 
 export const removeMentionInput = <V extends Value>(

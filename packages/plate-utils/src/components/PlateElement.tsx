@@ -2,6 +2,7 @@ import React, { ReactElement, RefAttributes } from 'react';
 import { PlateRenderElementProps } from '@udecode/plate-core';
 import { EElement, TElement, Value } from '@udecode/slate';
 import { clsx } from 'clsx';
+
 import { Box, BoxProps, useComposedRef } from '..';
 
 export type PlateElementProps<

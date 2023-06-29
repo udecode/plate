@@ -1,4 +1,5 @@
 import { ComponentPropsWithRef } from 'react';
+
 import { createSlotComponent } from '../utils';
 
 export const Text = createSlotComponent('span');

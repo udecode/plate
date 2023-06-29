@@ -1,5 +1,6 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
+
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 
 export function DefaultLeaf<V extends Value>({

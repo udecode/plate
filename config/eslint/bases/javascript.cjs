@@ -74,7 +74,6 @@ module.exports = {
     'promise/catch-or-return': 'off',
     'promise/no-callback-in-promise': 'off',
     'unused-imports/no-unused-imports': 'warn',
-
     'unused-imports/no-unused-vars': [
       'warn',
       {

@@ -8,8 +8,8 @@ import { execa } from 'execa';
 import ora from 'ora';
 import prompts from 'prompts';
 import * as z from 'zod';
+
 import {
-  type Config,
   DEFAULT_COMPONENTS,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
@@ -17,6 +17,7 @@ import {
   getConfig,
   rawConfigSchema,
   resolveConfigPaths,
+  type Config,
 } from '../utils/get-config';
 import { getPackageManager } from '../utils/get-package-manager';
 import { handleError } from '../utils/handle-error';

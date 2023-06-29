@@ -1,25 +1,26 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   getNode,
   getPointAfter,
   getPointBefore,
-  PlateEditor,
   removeNodes,
   setNodes,
   unsetNodes,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
+
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
-import { getSuggestionId, getSuggestionKeys } from './utils/index';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import {
   SuggestionEditorProps,
   SuggestionPlugin,
   TSuggestionText,
 } from './types';
+import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
 export const withSuggestion = <
   V extends Value = Value,

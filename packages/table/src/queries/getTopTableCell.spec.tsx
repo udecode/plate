@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
+import { createTablePlugin } from '@/packages/table/src/createTablePlugin';
 import {
-  createPlateEditor,
   PlateEditor,
   TElement,
+  createPlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { getTopTableCell } from './getTopTableCell';
 
-import { createTablePlugin } from '@/packages/table/src/createTablePlugin';
+import { getTopTableCell } from './getTopTableCell';
 
 jsx;
 

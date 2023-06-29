@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { jsx } from '@udecode/plate-test-utils';
-import { toggleIndentList } from './toggleIndentList';
-
 import { indentListPluginPage } from '@/packages/indent-list/src/__tests__/indentListPluginPage';
 import { createIndentListPlugin } from '@/packages/indent-list/src/createIndentListPlugin';
+import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { createIndentPlugin } from '@udecode/plate-indent';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { toggleIndentList } from './toggleIndentList';
 
 jsx;
 

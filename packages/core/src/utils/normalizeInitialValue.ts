@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
 import { cloneDeep } from 'lodash';
 import isEqual from 'lodash/isEqual';
+
 import { PlateEditor } from '../types';
 
 /**

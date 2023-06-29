@@ -1,4 +1,5 @@
 import { Node } from 'slate';
+
 import { ChildOf } from './TDescendant';
 import { TNode } from './TNode';
 

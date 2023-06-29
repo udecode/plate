@@ -3,6 +3,7 @@ import defaultsDeep from 'lodash/defaultsDeep';
 import keyBy from 'lodash/keyBy';
 import merge from 'lodash/merge';
 import values from 'lodash/values';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 

@@ -9,6 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
+
 import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
 import { TabbableEntry, TabbablePlugin } from './types';

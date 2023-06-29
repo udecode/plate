@@ -8,10 +8,11 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import {
-  getSelectionBoundingClientRect,
   UseVirtualFloatingOptions,
+  getSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
+
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import {

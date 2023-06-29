@@ -1,5 +1,6 @@
 import { Editor, Location } from 'slate';
 import { EditorLeafOptions } from 'slate/dist/interfaces/editor';
+
 import { ETextEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
 

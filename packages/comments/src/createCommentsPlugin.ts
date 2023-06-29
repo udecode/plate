@@ -1,4 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
+
 import { MARK_COMMENT } from './constants';
 import { CommentsPlugin } from './types';
 import { useHooksComments } from './useHooksComments';

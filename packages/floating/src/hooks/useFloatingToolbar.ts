@@ -8,11 +8,12 @@ import {
   usePlateEditorState,
 } from '@udecode/plate-common';
 import { useFocused } from 'slate-react';
+
 import {
-  getSelectionBoundingClientRect,
-  useVirtualFloating,
   UseVirtualFloatingOptions,
   UseVirtualFloatingReturn,
+  getSelectionBoundingClientRect,
+  useVirtualFloating,
 } from '..';
 
 export const useFloatingToolbar = ({

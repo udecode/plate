@@ -5,6 +5,7 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
 import { CursorOverlayProps } from '../components/CursorOverlay';
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';
 import { getSelectionRects } from '../queries/getSelectionRects';

@@ -2,6 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { findNode } from './findNode';
 
 jsx;

@@ -1,8 +1,8 @@
 import { TEditor, Value } from '../editor/TEditor';
-import { isElement } from '../element/isElement';
 import { ElementOf, TElement } from '../element/TElement';
+import { isElement } from '../element/isElement';
+import { TText, TextOf } from '../text/TText';
 import { isText } from '../text/isText';
-import { TextOf, TText } from '../text/TText';
 import { TNode } from './TNode';
 
 /**

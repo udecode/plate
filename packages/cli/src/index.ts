@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+
 import { add } from './commands/add';
 import { diff } from './commands/diff';
 import { init } from './commands/init';

@@ -1,12 +1,13 @@
 import {
   ELEMENT_DEFAULT,
+  PlateEditor,
+  Value,
   getPath,
   getPluginType,
   insertElements,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 import { ExitBreakRule } from '../types';
 

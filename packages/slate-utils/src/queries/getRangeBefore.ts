@@ -1,8 +1,9 @@
-import { getPoint, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getPoint } from '@udecode/slate';
 import { Location, Range } from 'slate';
+
 import {
-  getPointBeforeLocation,
   PointBeforeOptions,
+  getPointBeforeLocation,
 } from './getPointBeforeLocation';
 
 export interface RangeBeforeOptions extends PointBeforeOptions {}

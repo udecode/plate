@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { TElement } from '@udecode/slate';
 // eslint-disable-next-line import/no-unresolved
 import { Scope } from 'jotai/core/atom';
+
 import { JotaiProvider, JotaiProviderProps } from '../libs';
 import { createAtomStore } from './createAtomStore';
 

@@ -1,10 +1,10 @@
 import {
-  isAncestor,
   NodeOf,
-  queryNode,
   QueryNodeOptions,
   TNode,
   TNodeEntry,
+  isAncestor,
+  queryNode,
 } from '@udecode/slate';
 import { Path } from 'slate';
 

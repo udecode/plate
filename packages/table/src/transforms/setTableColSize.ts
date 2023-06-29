@@ -1,10 +1,11 @@
 import {
-  findNode,
   GetAboveNodeOptions,
-  setNodes,
   TEditor,
   Value,
+  findNode,
+  setNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 import { TTableElement } from '../types';

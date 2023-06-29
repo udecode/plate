@@ -1,35 +1,36 @@
 import { Value } from '@udecode/slate';
+
 import { PlateProps } from '../components/Plate';
-import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
+import { KEY_PREV_SELECTION, createPrevSelectionPlugin } from '../plugins';
 import {
-  createDeserializeAstPlugin,
   KEY_DESERIALIZE_AST,
+  createDeserializeAstPlugin,
 } from '../plugins/createDeserializeAstPlugin';
 import {
-  createEditorProtocolPlugin,
   KEY_EDITOR_PROTOCOL,
+  createEditorProtocolPlugin,
 } from '../plugins/createEditorProtocolPlugin';
 import {
-  createEventEditorPlugin,
   KEY_EVENT_EDITOR,
+  createEventEditorPlugin,
 } from '../plugins/createEventEditorPlugin';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import {
-  createInlineVoidPlugin,
   KEY_INLINE_VOID,
+  createInlineVoidPlugin,
 } from '../plugins/createInlineVoidPlugin';
 import {
-  createInsertDataPlugin,
   KEY_INSERT_DATA,
+  createInsertDataPlugin,
 } from '../plugins/createInsertDataPlugin';
 import {
-  createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
+  createNodeFactoryPlugin,
 } from '../plugins/createNodeFactoryPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import {
-  createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
+  createDeserializeHtmlPlugin,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';

@@ -1,25 +1,26 @@
 import {
-  deleteMerge,
   ELEMENT_DEFAULT,
+  PlateEditor,
+  Value,
+  deleteMerge,
   getPluginType,
   isFirstChild,
   isSelectionAtBlockStart,
   mockPlugin,
-  PlateEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  onKeyDownResetNode,
   ResetNodePlugin,
   SIMULATE_BACKSPACE,
+  onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
+
+import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
-import { ELEMENT_LI } from './createListPlugin';
 
 export const deleteBackwardList = <V extends Value>(
   editor: PlateEditor<V>,

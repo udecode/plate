@@ -1,8 +1,9 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
+import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries/index';
 import { indentCodeLine } from './transforms/index';
-import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 
 export const withCodeBlock = <
   V extends Value = Value,

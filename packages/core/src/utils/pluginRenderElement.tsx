@@ -1,10 +1,11 @@
 import React, { ReactNode } from 'react';
 import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
+
 import { ElementProvider } from '../atoms';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { RenderElement } from '../types/RenderElement';
+import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**

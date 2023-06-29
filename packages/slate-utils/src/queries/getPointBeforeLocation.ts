@@ -1,14 +1,15 @@
 /* eslint-disable no-constant-condition */
 import {
+  TEditor,
+  Value,
   getEditorString,
   getPoint,
   getPointBefore,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';
 import { Location, Point } from 'slate';
+
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {

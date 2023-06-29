@@ -1,12 +1,13 @@
 import {
-  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
   Value,
+  getPluginType,
 } from '@udecode/plate-common';
-import { getTableGridAbove } from './queries/getTableGridAbove';
+
 import { ELEMENT_TABLE } from './createTablePlugin';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /**
  * If selection is in a table, get subtable above.

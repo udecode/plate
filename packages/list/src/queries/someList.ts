@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
 import { getListItemEntry } from '../index';
 
 export const someList = <V extends Value>(

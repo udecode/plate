@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
 import {
   blockSelectionActions,
   blockSelectionSelectors,

@@ -1,13 +1,14 @@
 /** @jsx jsx */
 
 import {
-  createPlateEditor,
-  getPlugin,
   HotkeyPlugin,
   PlateEditor,
+  createPlateEditor,
+  getPlugin,
 } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;
