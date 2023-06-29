@@ -1,6 +1,11 @@
 import { isHtmlBlockElement } from './isHtmlBlockElement';
 import { traverseHtmlElements } from './traverseHtmlElements';
 
+const isTableElement = (element: Element) => {
+  const tableRegex = /^(table)$/i;
+  return tableRegex.test(element.nodeName);
+};
+
 /**
  * Set HTML blocks mark styles to a new child span element if any.
  * This allows Plate to use block marks.
@@ -12,7 +17,7 @@ export const copyBlockMarksToSpanChild = (rootNode: Node) => {
     const styleAttribute = element.getAttribute('style');
     if (!styleAttribute) return true;
 
-    if (isHtmlBlockElement(el)) {
+    if (isHtmlBlockElement(el) && !isTableElement(el)) {
       const {
         style: {
           backgroundColor,
