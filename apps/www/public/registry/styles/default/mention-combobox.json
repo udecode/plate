@@ -8,5 +8,5 @@
       "content": "import React from 'react';\nimport { ComboboxProps, Data, NoData } from '@udecode/plate-combobox';\nimport { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';\nimport {\n  ELEMENT_MENTION,\n  getMentionOnSelectItem,\n  MentionPlugin,\n} from '@udecode/plate-mention';\nimport { Combobox } from './combobox';\n\nexport interface MentionComboboxProps<TData extends Data = NoData>\n  extends Partial<ComboboxProps<TData>> {\n  pluginKey?: string;\n}\n\nexport function MentionCombobox<TData extends Data = NoData>({\n  pluginKey = ELEMENT_MENTION,\n  id = pluginKey,\n  ...props\n}: MentionComboboxProps<TData>) {\n  const editor = usePlateEditorRef();\n\n  const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);\n\n  return (\n    <Combobox\n      id={id}\n      trigger={trigger!}\n      controlled\n      onSelectItem={getMentionOnSelectItem({\n        key: pluginKey,\n      })}\n      {...props}\n    />\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

@@ -34,7 +34,7 @@ for (const style of styles) {
 
   // Build style index.
   for (const item of result.data) {
-    // if (item.type === "components:ui") {
+    // if (item.type === "components:plate-ui") {
     //   continue
     // }
 
@@ -113,7 +113,7 @@ for (const style of styles) {
   const targetPath = path.join(REGISTRY_PATH, 'styles', style.name);
 
   for (const item of result.data) {
-    if (item.type !== 'components:ui') {
+    if (item.type !== 'components:plate-ui') {
       continue;
     }
 
@@ -151,7 +151,7 @@ writeFile(path.join(REGISTRY_PATH, 'styles/index.json'), stylesJson, 'utf8');
 // ----------------------------------------------------------------------------
 // Build registry/index.json.
 // ----------------------------------------------------------------------------
-const names = result.data.filter((item) => item.type === 'components:ui');
+const names = result.data.filter((item) => item.type === 'components:plate-ui');
 const registryJson = JSON.stringify(names, null, 2);
 writeFile(path.join(REGISTRY_PATH, 'index.json'), registryJson, 'utf8');
 

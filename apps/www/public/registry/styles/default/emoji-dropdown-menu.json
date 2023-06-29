@@ -5,7 +5,7 @@
   "files": [
     {
       "name": "emoji-dropdown-menu.tsx",
-      "content": "import React from 'react';\nimport {\n  EmojiDropdownMenuOptions,\n  useEmojiDropdownMenuState,\n} from '@udecode/plate-emoji';\nimport { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';\nimport { EmojiPicker } from './emoji-picker';\n\nimport { Icons } from '@/components/icons';\nimport { EmojiToolbarDropdown } from '@/registry/default/ui/emoji-toolbar-dropdown';\nimport {\n  ToolbarButton,\n  ToolbarButtonProps,\n} from '@/registry/default/ui/toolbar';\n\ntype EmojiDropdownMenuProps = {\n  options?: EmojiDropdownMenuOptions;\n} & ToolbarButtonProps;\n\nexport function EmojiDropdownMenu({\n  options,\n  ...props\n}: EmojiDropdownMenuProps) {\n  const { isOpen, onToggle, emojiPickerState } =\n    useEmojiDropdownMenuState(options);\n\n  return (\n    <EmojiToolbarDropdown\n      control={\n        <ToolbarButton pressed={isOpen} isDropdown tooltip=\"Emoji\" {...props}>\n          <Icons.emoji />\n        </ToolbarButton>\n      }\n      open={isOpen}\n      onOpen={onToggle}\n      onClose={onToggle}\n    >\n      <EmojiPicker\n        {...emojiPickerState}\n        isOpen={isOpen}\n        onToggle={onToggle}\n        icons={{\n          categories: emojiCategoryIcons,\n          search: emojiSearchIcons,\n        }}\n        settings={options?.settings}\n      />\n    </EmojiToolbarDropdown>\n  );\n}\n"
+      "content": "import React from 'react';\nimport {\n  EmojiDropdownMenuOptions,\n  useEmojiDropdownMenuState,\n} from '@udecode/plate-emoji';\nimport { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';\nimport { EmojiPicker } from './emoji-picker';\n\nimport { Icons } from '@/components/icons';\nimport { EmojiToolbarDropdown } from '@/registry/default/plate-ui/emoji-toolbar-dropdown';\nimport {\n  ToolbarButton,\n  ToolbarButtonProps,\n} from '@/registry/default/plate-ui/toolbar';\n\ntype EmojiDropdownMenuProps = {\n  options?: EmojiDropdownMenuOptions;\n} & ToolbarButtonProps;\n\nexport function EmojiDropdownMenu({\n  options,\n  ...props\n}: EmojiDropdownMenuProps) {\n  const { isOpen, onToggle, emojiPickerState } =\n    useEmojiDropdownMenuState(options);\n\n  return (\n    <EmojiToolbarDropdown\n      control={\n        <ToolbarButton pressed={isOpen} isDropdown tooltip=\"Emoji\" {...props}>\n          <Icons.emoji />\n        </ToolbarButton>\n      }\n      open={isOpen}\n      onOpen={onToggle}\n      onClose={onToggle}\n    >\n      <EmojiPicker\n        {...emojiPickerState}\n        isOpen={isOpen}\n        onToggle={onToggle}\n        icons={{\n          categories: emojiCategoryIcons,\n          search: emojiSearchIcons,\n        }}\n        settings={options?.settings}\n      />\n    </EmojiToolbarDropdown>\n  );\n}\n"
     },
     {
       "name": "emoji-icons.tsx",
@@ -46,5 +46,5 @@
     "emoji-picker-search-and-clear",
     "emoji-picker-search-bar"
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

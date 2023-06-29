@@ -1,1 +1,684 @@
-[]
+[
+  {
+    "name": "cloud",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/cloud/cloud-attachment-element.tsx",
+      "plate-ui/cloud/cloud-image-element.tsx",
+      "plate-ui/cloud/cloud-resize-controls.tsx",
+      "plate-ui/cloud/cloud-status-bar.tsx",
+      "plate-ui/cloud/cloud-toolbar-buttons.tsx"
+    ],
+    "items": [
+      "cloud-attachment-element",
+      "cloud-image-element",
+      "cloud-resize-controls",
+      "cloud-status-bar",
+      "cloud-toolbar-buttons"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "code-block-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/code-block-element/code-block-element.tsx",
+      "plate-ui/code-block-element/code-block-element.css",
+      "plate-ui/code-block-element/code-block-combobox.tsx"
+    ],
+    "items": [
+      "code-block-element",
+      "code-block-element.css",
+      "code-block-combobox"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "color-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/color-dropdown-menu/color-dropdown-menu.tsx",
+      "plate-ui/color-dropdown-menu/color-constants.ts",
+      "plate-ui/color-dropdown-menu/color-dropdown-menu-items.tsx",
+      "plate-ui/color-dropdown-menu/color-input.tsx",
+      "plate-ui/color-dropdown-menu/color-picker.tsx",
+      "plate-ui/color-dropdown-menu/colors-custom.tsx"
+    ],
+    "items": [
+      "color-dropdown-menu",
+      "color-constants",
+      "color-dropdown-menu-items",
+      "color-input",
+      "color-picker",
+      "colors-custom"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "comments-popover",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/comments-popover/comments-popover.tsx",
+      "plate-ui/comments-popover/comment-avatar.tsx",
+      "plate-ui/comments-popover/comment-create-form.tsx",
+      "plate-ui/comments-popover/comment-item.tsx",
+      "plate-ui/comments-popover/comment-more-dropdown.tsx",
+      "plate-ui/comments-popover/comment-reply-items.tsx",
+      "plate-ui/comments-popover/comment-resolve-button.tsx",
+      "plate-ui/comments-popover/comment-value.tsx"
+    ],
+    "items": [
+      "comments-popover",
+      "comment-avatar",
+      "comment-create-form",
+      "comment-item",
+      "comment-more-dropdown",
+      "comment-reply-items",
+      "comment-resolve-button",
+      "comment-value"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "draggable",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/draggable/draggable.tsx",
+      "plate-ui/draggable/with-draggables.tsx"
+    ],
+    "items": [
+      "draggable",
+      "with-draggables"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "emoji-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/emoji-dropdown-menu/emoji-dropdown-menu.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-icons.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker-content.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker-navigation.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker-preview.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker-search-and-clear.tsx",
+      "plate-ui/emoji-dropdown-menu/emoji-picker-search-bar.tsx"
+    ],
+    "items": [
+      "emoji-dropdown-menu",
+      "emoji-icons",
+      "emoji-picker",
+      "emoji-picker-content",
+      "emoji-picker-navigation",
+      "emoji-picker-preview",
+      "emoji-picker-search-and-clear",
+      "emoji-picker-search-bar"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "align-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/align-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "avatar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/avatar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "blockquote-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/blockquote-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "checkbox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/checkbox.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "code-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/code-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "code-line-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/code-line-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "code-syntax-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/code-syntax-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/combobox.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "command",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/command.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "comment-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/comment-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "comment-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/comment-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "cursor-overlay",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/cursor-overlay.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "dialog",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/dialog.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "emoji-combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/emoji-combobox.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "emoji-toolbar-dropdown",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/emoji-toolbar-dropdown.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "excalidraw-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/excalidraw-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "fixed-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/fixed-toolbar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "fixed-toolbar-buttons",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/fixed-toolbar-buttons.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/floating-toolbar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "floating-toolbar-buttons",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/floating-toolbar-buttons.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "heading-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/heading-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "highlight-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/highlight-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "hr-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/hr-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "image-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/image-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "indent-list-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/indent-list-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "indent-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/indent-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "input",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/input.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "insert-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/insert-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "kbd-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/kbd-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "line-height-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/line-height-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "link-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/link-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "link-floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/link-floating-toolbar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "link-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/link-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "list-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/list-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "list-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/list-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "mark-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/mark-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "media-embed-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/media-embed-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "media-floating-toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/media-floating-toolbar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "media-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/media-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "mention-combobox",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/mention-combobox.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "mention-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/mention-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "mention-input-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/mention-input-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "mode-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/mode-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "more-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/more-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "outdent-toolbar-button",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/outdent-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "paragraph-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/paragraph-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "placeholders",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/placeholders.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "popover",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/popover.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "scroll-area",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/scroll-area.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "search-highlight-leaf",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/search-highlight-leaf.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "separator",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/separator.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "table-cell-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/table-cell-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "table-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/table-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "table-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/table-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "table-row-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/table-row-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "todo-list-element",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/todo-list-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "toggle",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/toggle.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "toolbar",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/toolbar.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "tooltip",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/tooltip.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "turn-into-dropdown-menu",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/turn-into-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  }
+]

@@ -8,5 +8,5 @@
       "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nconst ParagraphElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps\n>(({ className, children, ...props }: PlateElementProps, ref) => {\n  return (\n    <PlateElement\n      ref={ref}\n      className={cn('m-0 px-0 py-1', className)}\n      {...props}\n    >\n      {children}\n    </PlateElement>\n  );\n});\nParagraphElement.displayName = 'ParagraphElement';\n\nexport { ParagraphElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

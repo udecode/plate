@@ -31,5 +31,5 @@
     "cloud-status-bar",
     "cloud-toolbar-buttons"
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

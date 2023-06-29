@@ -5,8 +5,8 @@
   "files": [
     {
       "name": "indent-toolbar-button.tsx",
-      "content": "import React from 'react';\nimport { useIndentButton } from '@udecode/plate-indent';\n\nimport { Icons } from '@/components/icons';\nimport { ToolbarButton } from '@/registry/default/ui/toolbar';\n\nexport function IndentToolbarButton() {\n  const { props } = useIndentButton();\n\n  return (\n    <ToolbarButton tooltip=\"Indent\" {...props}>\n      <Icons.indent />\n    </ToolbarButton>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { useIndentButton } from '@udecode/plate-indent';\nimport { ToolbarButton } from './toolbar';\n\nimport { Icons } from '@/components/icons';\n\nexport function IndentToolbarButton() {\n  const { props } = useIndentButton();\n\n  return (\n    <ToolbarButton tooltip=\"Indent\" {...props}>\n      <Icons.indent />\n    </ToolbarButton>\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

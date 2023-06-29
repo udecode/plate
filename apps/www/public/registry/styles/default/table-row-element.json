@@ -8,5 +8,5 @@
       "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport interface PlateTableRowElementProps extends PlateElementProps {\n  hideBorder?: boolean;\n}\n\nconst TableRowElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateTableRowElementProps\n>(({ hideBorder, children, ...props }, ref) => {\n  return (\n    <PlateElement\n      asChild\n      ref={ref}\n      className={cn('h-full', hideBorder && 'border-none')}\n      {...props}\n    >\n      <tr>{children}</tr>\n    </PlateElement>\n  );\n});\nTableRowElement.displayName = 'TableRowElement';\n\nexport { TableRowElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

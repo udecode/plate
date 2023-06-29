@@ -8,5 +8,5 @@
       "content": "'use client';\n\nimport React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nconst BlockquoteElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps\n>(({ className, children, ...props }, ref) => {\n  return (\n    <PlateElement\n      asChild\n      ref={ref}\n      className={cn('my-1 border-l-2 pl-6 italic', className)}\n      {...props}\n    >\n      <blockquote>{children}</blockquote>\n    </PlateElement>\n  );\n});\nBlockquoteElement.displayName = 'BlockquoteElement';\n\nexport { BlockquoteElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

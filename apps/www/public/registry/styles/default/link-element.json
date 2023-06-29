@@ -8,5 +8,5 @@
       "content": "import React from 'react';\nimport { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';\nimport { TLinkElement, useLink } from '@udecode/plate-link';\n\nimport { cn } from '@/lib/utils';\n\nconst LinkElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps<Value, TLinkElement>\n>(({ className, children, ...props }, ref) => {\n  const { props: linkProps } = useLink({ element: props.element });\n\n  return (\n    <PlateElement\n      asChild\n      ref={ref}\n      className={cn('font-medium underline underline-offset-4', className)}\n      {...linkProps}\n      {...(props as any)}\n    >\n      <a>{children}</a>\n    </PlateElement>\n  );\n});\nLinkElement.displayName = 'LinkElement';\n\nexport { LinkElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }
