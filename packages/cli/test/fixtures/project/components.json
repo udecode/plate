@@ -3,6 +3,6 @@
   "importPaths": {
     "styles": "~/styles/globals.css",
     "utils:cn": "~/lib/cn.ts",
-    "components:ui": "~/components/ui"
+    "components:plate-ui": "~/components/plate-ui"
   }
 }

@@ -120,7 +120,7 @@ export async function getItemTargetPath(
   override?: string
 ) {
   // Allow overrides for all items but ui.
-  if (override && item.type !== 'components:ui') {
+  if (override && item.type !== 'components:plate-ui') {
     return override;
   }
 
