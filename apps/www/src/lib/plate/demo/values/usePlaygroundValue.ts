@@ -1,4 +1,10 @@
 import { useMemo } from 'react';
+import { mapNodeId } from '@/plate/demo/mapNodeId';
+
+import { MyValue } from '@/types/plate-types';
+import { ValueId, settingValues } from '@/config/setting-values';
+import { settingsStore } from '@/components/context/settings-store';
+
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
@@ -26,11 +32,6 @@ import { mentionValue } from './mentionValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableValue } from './tableValue';
-
-import { settingsStore } from '@/components/context/settings-store';
-import { settingValues, ValueId } from '@/config/setting-values';
-import { mapNodeId } from '@/plate/demo/mapNodeId';
-import { MyValue } from '@/types/plate-types';
 
 export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();

@@ -1,14 +1,15 @@
 'use client';
 
 import React from 'react';
-import { TColor } from './color-dropdown-menu';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
-import { ColorsCustom } from './colors-custom';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
 import { Separator } from '@/registry/default/plate-ui/separator';
+
+import { TColor } from './color-dropdown-menu';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import { ColorsCustom } from './colors-custom';
 
 type ColorPickerProps = {
   color?: string;

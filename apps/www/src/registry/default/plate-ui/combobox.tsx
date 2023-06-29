@@ -2,13 +2,13 @@
 
 import React, { useEffect } from 'react';
 import {
-  comboboxActions,
   ComboboxContentItemProps,
   ComboboxContentProps,
   ComboboxProps,
   Data,
   NoData,
   TComboboxItem,
+  comboboxActions,
   useActiveComboboxStore,
   useComboboxContent,
   useComboboxContentState,
@@ -21,9 +21,10 @@ import {
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
-import { ScrollArea } from './scroll-area';
 
 import { cn } from '@/lib/utils';
+
+import { ScrollArea } from './scroll-area';
 
 export function ComboboxItem<TData extends Data = NoData>({
   combobox,

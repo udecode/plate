@@ -15,12 +15,13 @@ import {
   useMediaEmbed,
   useMediaState,
 } from '@udecode/plate-media';
-import {
-  mediaFloatingOptions,
-  MediaFloatingToolbar,
-} from './media-floating-toolbar';
 
 import { cn } from '@/lib/utils';
+
+import {
+  MediaFloatingToolbar,
+  mediaFloatingOptions,
+} from './media-floating-toolbar';
 
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,

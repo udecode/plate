@@ -5,9 +5,10 @@ import {
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list';
-import { Checkbox } from './checkbox';
 
 import { cn } from '@/lib/utils';
+
+import { Checkbox } from './checkbox';
 
 export type TodoListElementProps = PlateElementProps<
   Value,

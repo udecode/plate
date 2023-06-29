@@ -3,9 +3,10 @@ import { ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
 import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';
 import {
   ELEMENT_MENTION,
-  getMentionOnSelectItem,
   MentionPlugin,
+  getMentionOnSelectItem,
 } from '@udecode/plate-mention';
+
 import { Combobox } from './combobox';
 
 export interface MentionComboboxProps<TData extends Data = NoData>

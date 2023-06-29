@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
-import { TColor } from './color-dropdown-menu';
 
-import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
 import {
@@ -13,6 +12,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
+
+import { TColor } from './color-dropdown-menu';
 
 type ColorDropdownMenuItemProps = {
   value: string;

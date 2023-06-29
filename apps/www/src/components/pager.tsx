@@ -1,11 +1,12 @@
-import { Doc } from 'contentlayer/generated';
 import Link from 'next/link';
-import { Icons } from './icons';
+import { Doc } from 'contentlayer/generated';
 
+import { NavItem, NavItemWithChildren } from '@/types/nav';
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { NavItem, NavItemWithChildren } from '@/types/nav';
+
+import { Icons } from './icons';
 
 interface DocsPagerProps {
   doc: Doc;

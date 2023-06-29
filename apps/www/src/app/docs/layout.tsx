@@ -1,5 +1,5 @@
-import { DocsSidebarNav } from '@/components/sidebar-nav';
 import { docsConfig } from '@/config/docs';
+import { DocsSidebarNav } from '@/components/sidebar-nav';
 import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 interface DocsLayoutProps {

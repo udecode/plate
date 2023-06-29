@@ -2,12 +2,12 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
+  TElement,
   collapseSelection,
   findNode,
   focusEditor,
   isBlock,
   isCollapsed,
-  TElement,
   toggleNodeType,
   useEventPlateId,
 } from '@udecode/plate-common';
@@ -26,6 +26,10 @@ import {
 } from '@udecode/plate-indent-list';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+
+import { settingsStore } from '@/components/context/settings-store';
+import { Icons } from '@/components/icons';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,9 +40,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import { settingsStore } from '@/components/context/settings-store';
-import { Icons } from '@/components/icons';
 
 const items = [
   {

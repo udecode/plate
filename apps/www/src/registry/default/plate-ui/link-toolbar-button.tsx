@@ -3,9 +3,10 @@ import {
   useLinkToolbarButton,
   useLinkToolbarButtonState,
 } from '@udecode/plate-link';
-import { ToolbarButton } from './toolbar';
 
 import { Icons } from '@/components/icons';
+
+import { ToolbarButton } from './toolbar';
 
 export function LinkToolbarButton() {
   const state = useLinkToolbarButtonState();

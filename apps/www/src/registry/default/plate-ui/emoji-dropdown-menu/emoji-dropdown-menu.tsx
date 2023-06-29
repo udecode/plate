@@ -3,8 +3,6 @@ import {
   EmojiDropdownMenuOptions,
   useEmojiDropdownMenuState,
 } from '@udecode/plate-emoji';
-import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
-import { EmojiPicker } from './emoji-picker';
 
 import { Icons } from '@/components/icons';
 import { EmojiToolbarDropdown } from '@/registry/default/plate-ui/emoji-toolbar-dropdown';
@@ -12,6 +10,9 @@ import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '@/registry/default/plate-ui/toolbar';
+
+import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
+import { EmojiPicker } from './emoji-picker';
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;

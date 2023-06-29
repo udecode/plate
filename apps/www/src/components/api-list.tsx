@@ -1,6 +1,11 @@
 'use client';
 
 import React, { ReactNode, useState } from 'react';
+
+import { cn } from '@/lib/utils';
+import { Separator } from '@/registry/default/plate-ui/separator';
+
+import { Icons } from './icons';
 import {
   Accordion,
   AccordionContent,
@@ -8,10 +13,6 @@ import {
   AccordionTrigger,
 } from './ui/accordion';
 import { Card } from './ui/card';
-import { Icons } from './icons';
-
-import { cn } from '@/lib/utils';
-import { Separator } from '@/registry/default/plate-ui/separator';
 
 type Item = {
   name: string;

@@ -7,14 +7,10 @@ import {
 } from '@udecode/plate-code-block';
 import { TCommentText } from '@udecode/plate-comments';
 import {
-  createPlateEditor,
   CreatePlateEditorOptions,
-  createPluginFactory,
-  createPlugins,
-  createTEditor,
+  DOMHandler,
   Decorate,
   DecorateEntry,
-  DOMHandler,
   EDescendant,
   EElement,
   EElementEntry,
@@ -24,7 +20,6 @@ import {
   ENodeEntry,
   EText,
   ETextEntry,
-  getTEditor,
   InjectComponent,
   InjectProps,
   KeyboardHandler,
@@ -43,6 +38,12 @@ import {
   TElement,
   TNodeEntry,
   TReactEditor,
+  WithOverride,
+  createPlateEditor,
+  createPluginFactory,
+  createPlugins,
+  createTEditor,
+  getTEditor,
   useEditorRef,
   useEditorState,
   usePlateActions,
@@ -50,7 +51,6 @@ import {
   usePlateEditorState,
   usePlateSelectors,
   usePlateStates,
-  WithOverride,
 } from '@udecode/plate-common';
 import {
   ELEMENT_EXCALIDRAW,

@@ -3,7 +3,11 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { cva, VariantProps } from 'class-variance-authority';
+import { VariantProps, cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
+
 import { ToggleProps, toggleVariants } from './toggle';
 import {
   Tooltip,
@@ -11,9 +15,6 @@ import {
   TooltipPortal,
   TooltipTrigger,
 } from './tooltip';
-
-import { Icons } from '@/components/icons';
-import { cn } from '@/lib/utils';
 
 // PLATE:
 

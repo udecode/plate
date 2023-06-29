@@ -5,6 +5,7 @@ import {
   SCOPE_ACTIVE_COMMENT,
   useCommentReplies,
 } from '@udecode/plate-comments';
+
 import { CommentItem } from './comment-item';
 
 export function CommentReplyItems() {

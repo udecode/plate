@@ -1,8 +1,8 @@
 import React from 'react';
 import {
+  PlaceholderProps,
   createNodeHOC,
   createNodesHOC,
-  PlaceholderProps,
   usePlaceholderState,
 } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';

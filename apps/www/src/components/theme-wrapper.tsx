@@ -1,7 +1,7 @@
 'use client';
 
-import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
+import { useConfig } from '@/hooks/use-config';
 
 export function ThemeWrapper({ children }: React.ComponentProps<'div'>) {
   const [config] = useConfig();

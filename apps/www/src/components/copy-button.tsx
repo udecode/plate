@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
-import { Icons } from './icons';
 
+import { NpmCommands } from '@/types/unist';
 import { Event, trackEvent } from '@/lib/events';
 import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
@@ -13,7 +13,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/registry/default/plate-ui/dropdown-menu';
-import { NpmCommands } from '@/types/unist';
+
+import { Icons } from './icons';
 
 interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   value: string;

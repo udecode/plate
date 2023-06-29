@@ -11,6 +11,9 @@ import {
   useSuggestionActions,
   useSuggestionSelectors,
 } from '@udecode/plate-suggestion';
+
+import { Icons } from '@/components/icons';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +23,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import { Icons } from '@/components/icons';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();

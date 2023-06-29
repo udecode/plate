@@ -1,23 +1,23 @@
 import React from 'react';
-import {
-  createCloudAttachmentPlugin,
-  createCloudImagePlugin,
-  createCloudPlugin,
-  ELEMENT_CLOUD_ATTACHMENT,
-  ELEMENT_CLOUD_IMAGE,
-} from '@udecode/plate-cloud';
-import { Plate, PlateProvider } from '@udecode/plate-common';
-
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
+import {
+  ELEMENT_CLOUD_ATTACHMENT,
+  ELEMENT_CLOUD_IMAGE,
+  createCloudAttachmentPlugin,
+  createCloudImagePlugin,
+  createCloudPlugin,
+} from '@udecode/plate-cloud';
+import { Plate, PlateProvider } from '@udecode/plate-common';
+
+import { MyValue, createMyPlugins } from '@/types/plate-types';
 import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud/cloud-attachment-element';
 import { CloudImageElement } from '@/registry/default/plate-ui/cloud/cloud-image-element';
 import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud/cloud-toolbar-buttons';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { createMyPlugins, MyValue } from '@/types/plate-types';
 
 const plugins = createMyPlugins(
   [

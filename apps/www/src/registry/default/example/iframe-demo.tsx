@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Plate } from '@udecode/plate-common';
-import {
-  createEditableVoidPlugin,
-  EditableVoidElement,
-} from './editable-voids-demo';
-
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { createMyPlugins, MyValue } from '@/types/plate-types';
+import { Plate } from '@udecode/plate-common';
+import { createPortal } from 'react-dom';
+
+import { MyValue, createMyPlugins } from '@/types/plate-types';
+
+import {
+  EditableVoidElement,
+  createEditableVoidPlugin,
+} from './editable-voids-demo';
 
 const plugins = createMyPlugins(
   [

@@ -8,8 +8,8 @@ import {
   useCommentEditButtonState,
 } from '@udecode/plate-comments';
 
-import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,

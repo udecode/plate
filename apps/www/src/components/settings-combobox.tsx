@@ -1,13 +1,11 @@
 import React from 'react';
-import { Check } from 'lucide-react';
 import Link from 'next/link';
-import { settingsStore } from './context/settings-store';
-import { Icons } from './icons';
+import { Check } from 'lucide-react';
 
 import { SettingPlugin, settingPluginItems } from '@/config/setting-plugins';
 import { settingValues } from '@/config/setting-values';
-import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { cn } from '@/lib/utils';
+import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {
   Command,
@@ -22,6 +20,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
+
+import { settingsStore } from './context/settings-store';
+import { Icons } from './icons';
 
 const categories = [
   {

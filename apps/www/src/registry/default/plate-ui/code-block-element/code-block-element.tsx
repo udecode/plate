@@ -7,9 +7,10 @@ import {
   useCodeBlockElementState,
 } from '@udecode/plate-code-block';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-import { CodeBlockCombobox } from './code-block-combobox';
 
 import { cn } from '@/lib/utils';
+
+import { CodeBlockCombobox } from './code-block-combobox';
 
 const CodeBlockElement = forwardRef<
   HTMLDivElement,

@@ -9,12 +9,13 @@ import {
   useFloatingCommentsState,
 } from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-common';
-import { CommentCreateForm } from './comment-create-form';
-import { CommentItem } from './comment-item';
-import { CommentReplyItems } from './comment-reply-items';
 
 import { cn } from '@/lib/utils';
 import { popoverVariants } from '@/registry/default/plate-ui/popover';
+
+import { CommentCreateForm } from './comment-create-form';
+import { CommentItem } from './comment-item';
+import { CommentReplyItems } from './comment-reply-items';
 
 export type FloatingCommentsContentProps = {
   disableForm?: boolean;

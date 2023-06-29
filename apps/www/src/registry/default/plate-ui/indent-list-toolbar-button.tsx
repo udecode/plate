@@ -4,9 +4,10 @@ import {
   useIndentListToolbarButton,
   useIndentListToolbarButtonState,
 } from '@udecode/plate-indent-list';
-import { ToolbarButton, ToolbarButtonProps } from './toolbar';
 
 import { Icons } from '@/components/icons';
+
+import { ToolbarButton, ToolbarButtonProps } from './toolbar';
 
 export function IndentListToolbarButton({
   nodeType = ListStyleType.Disc,

@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { useColorsCustom, useColorsCustomState } from '@udecode/plate-font';
-import { TColor } from './color-dropdown-menu';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
-import { ColorInput } from './color-input';
 
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
+
+import { TColor } from './color-dropdown-menu';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import { ColorInput } from './color-input';
 
 type ColorsCustomProps = {
   color?: string;

@@ -3,11 +3,11 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { cva, VariantProps } from 'class-variance-authority';
+import { VariantProps, cva } from 'class-variance-authority';
 import { Check, ChevronRight } from 'lucide-react';
 
-import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 

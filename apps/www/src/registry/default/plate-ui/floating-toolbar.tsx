@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react';
 import { PortalBody } from '@udecode/plate-common';
 import {
-  useFloatingToolbar,
   UseVirtualFloatingOptions,
+  useFloatingToolbar,
 } from '@udecode/plate-floating';
-import { Toolbar, ToolbarProps } from './toolbar';
 
 import { cn } from '@/lib/utils';
+
+import { Toolbar, ToolbarProps } from './toolbar';
 
 export interface FloatingToolbarProps extends ToolbarProps {
   children: ReactNode;

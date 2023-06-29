@@ -3,14 +3,17 @@ import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { focusEditor, someNode } from '@udecode/plate-common';
 import { usePlateEditorState } from '@udecode/plate-core';
 import {
+  ELEMENT_TABLE,
   deleteColumn,
   deleteRow,
   deleteTable,
-  ELEMENT_TABLE,
   insertTable,
   insertTableColumn,
   insertTableRow,
 } from '@udecode/plate-table';
+
+import { Icons, iconVariants } from '@/components/icons';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +25,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import { Icons, iconVariants } from '@/components/icons';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();

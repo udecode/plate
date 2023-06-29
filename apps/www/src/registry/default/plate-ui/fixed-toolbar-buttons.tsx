@@ -1,4 +1,5 @@
 import React from 'react';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -11,10 +12,16 @@ import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
-import { ColorDropdownMenu } from './color-dropdown-menu/color-dropdown-menu';
-import { EmojiDropdownMenu } from './emoji-dropdown-menu/emoji-dropdown-menu';
+
+import { ValueId } from '@/config/setting-values';
+import { cn } from '@/lib/utils';
+import { settingsStore } from '@/components/context/settings-store';
+import { Icons, iconVariants } from '@/components/icons';
+
 import { AlignDropdownMenu } from './align-dropdown-menu';
+import { ColorDropdownMenu } from './color-dropdown-menu/color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
+import { EmojiDropdownMenu } from './emoji-dropdown-menu/emoji-dropdown-menu';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
@@ -29,12 +36,6 @@ import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { Separator } from './separator';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
-
-import { settingsStore } from '@/components/context/settings-store';
-import { Icons, iconVariants } from '@/components/icons';
-import { ValueId } from '@/config/setting-values';
-import { cn } from '@/lib/utils';
-import { isEnabled } from '@/plate/demo/is-enabled';
 
 interface ToolbarGroupProps {
   noSeparator?: boolean;

@@ -1,8 +1,10 @@
 // @ts-nocheck
-import template from 'lodash.template';
+
 import fs from 'node:fs';
 import path from 'node:path';
+import template from 'lodash.template';
 import { rimraf } from 'rimraf';
+
 import { colorMapping, colors } from '../src/registry/colors';
 import { registry } from '../src/registry/registry';
 import { registrySchema } from '../src/registry/schema';

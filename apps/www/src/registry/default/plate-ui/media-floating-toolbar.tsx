@@ -1,17 +1,18 @@
 import React from 'react';
 import { useElement, useRemoveNodeButton } from '@udecode/plate-common';
-import { flip, offset, PopoverProps, shift } from '@udecode/plate-floating';
+import { PopoverProps, flip, offset, shift } from '@udecode/plate-floating';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media';
+
+import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
+
 import { Button, buttonVariants } from './button';
 import { inputVariants } from './input';
 import { popoverVariants } from './popover';
 import { Separator } from './separator';
-
-import { Icons } from '@/components/icons';
-import { cn } from '@/lib/utils';
 
 export const mediaFloatingOptions: PopoverProps['floatingOptions'] = {
   middleware: [

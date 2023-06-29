@@ -6,8 +6,8 @@ import {
   useComment,
 } from '@udecode/plate-comments';
 
-import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 
 export function CommentResolveButton() {

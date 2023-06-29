@@ -1,19 +1,6 @@
 'use client';
 
 import React, { CSSProperties, useState } from 'react';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import {
-  createExitBreakPlugin,
-  createSoftBreakPlugin,
-} from '@udecode/plate-break';
-import {
-  createPluginFactory,
-  Plate,
-  PlateRenderElementProps,
-  TElement,
-} from '@udecode/plate-common';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
-
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -21,7 +8,20 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { createMyPlugins, MyEditor, MyValue } from '@/types/plate-types';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import {
+  createExitBreakPlugin,
+  createSoftBreakPlugin,
+} from '@udecode/plate-break';
+import {
+  Plate,
+  PlateRenderElementProps,
+  TElement,
+  createPluginFactory,
+} from '@udecode/plate-common';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
+
+import { MyEditor, MyValue, createMyPlugins } from '@/types/plate-types';
 
 export const ELEMENT_EDITABLE_VOID = 'editable-void';
 

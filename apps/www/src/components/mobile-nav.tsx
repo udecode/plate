@@ -1,17 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import { SidebarOpen } from 'lucide-react';
 import Link, { LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Logo } from './icons/Logo';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { SidebarOpen } from 'lucide-react';
 
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
 import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
+
+import { Logo } from './icons/Logo';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 export function MobileNav() {
   const pathname = usePathname();

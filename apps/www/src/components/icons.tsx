@@ -1,7 +1,6 @@
 import React from 'react';
 import { cva } from 'class-variance-authority';
 import {
-  type Icon as LucideIcon,
   AlignCenter,
   AlignJustify,
   AlignLeft,
@@ -77,6 +76,7 @@ import {
   Unlink,
   WrapText,
   X,
+  type Icon as LucideIcon,
 } from 'lucide-react';
 
 export type Icon = LucideIcon;

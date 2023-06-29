@@ -3,6 +3,7 @@
 import React from 'react';
 import { useCommentAddButton } from '@udecode/plate-comments';
 import { MessageSquarePlus } from 'lucide-react';
+
 import { ToolbarButton } from './toolbar';
 
 export function CommentToolbarButton() {

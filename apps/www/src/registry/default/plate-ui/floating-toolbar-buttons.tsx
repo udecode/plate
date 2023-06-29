@@ -1,4 +1,5 @@
 import React from 'react';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -7,16 +8,16 @@ import {
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
 import { usePlateReadOnly } from '@udecode/plate-common';
+
+import { ValueId } from '@/config/setting-values';
+import { Icons } from '@/components/icons';
+
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { ToolbarSeparator } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
-
-import { Icons } from '@/components/icons';
-import { ValueId } from '@/config/setting-values';
-import { isEnabled } from '@/plate/demo/is-enabled';
 
 export function FloatingToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();

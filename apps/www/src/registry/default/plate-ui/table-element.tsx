@@ -2,9 +2,9 @@ import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
-  isCollapsed,
   PlateElement,
   PlateElementProps,
+  isCollapsed,
   useElement,
   usePlateEditorState,
   useRemoveNodeButton,
@@ -17,6 +17,10 @@ import {
 } from '@udecode/plate-table';
 import { someNode } from '@udecode/slate';
 import { useReadOnly } from 'slate-react';
+
+import { cn } from '@/lib/utils';
+import { Icons, iconVariants } from '@/components/icons';
+
 import { Button } from './button';
 import {
   DropdownMenu,
@@ -27,9 +31,6 @@ import {
 } from './dropdown-menu';
 import { Popover, PopoverContent, popoverVariants } from './popover';
 import { Separator } from './separator';
-
-import { Icons, iconVariants } from '@/components/icons';
-import { cn } from '@/lib/utils';
 
 const TableBordersDropdownMenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,

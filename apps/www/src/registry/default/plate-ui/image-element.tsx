@@ -16,12 +16,13 @@ import {
   useMediaState,
 } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
-import {
-  mediaFloatingOptions,
-  MediaFloatingToolbar,
-} from './media-floating-toolbar';
 
 import { cn } from '@/lib/utils';
+
+import {
+  MediaFloatingToolbar,
+  mediaFloatingOptions,
+} from './media-floating-toolbar';
 
 const align = 'center';
 

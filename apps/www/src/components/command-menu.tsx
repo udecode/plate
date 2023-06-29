@@ -2,11 +2,12 @@
 
 import { ReactNode } from 'react';
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { DialogProps } from '@radix-ui/react-alert-dialog';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 
+import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
@@ -18,7 +19,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/registry/default/plate-ui/command';
-import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 
 export function CommandItems({
   item,

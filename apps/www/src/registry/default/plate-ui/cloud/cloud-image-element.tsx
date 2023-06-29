@@ -6,10 +6,11 @@ import {
   useCloudImageElementState,
 } from '@udecode/plate-cloud';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-import { ResizeControls } from './cloud-resize-controls';
-import { StatusBar } from './cloud-status-bar';
 
 import { cn } from '@/lib/utils';
+
+import { ResizeControls } from './cloud-resize-controls';
+import { StatusBar } from './cloud-status-bar';
 
 export interface CloudImageElementProps
   extends PlateElementProps<Value, TCloudImageElement> {}

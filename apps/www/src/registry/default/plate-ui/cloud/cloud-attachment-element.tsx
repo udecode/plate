@@ -6,10 +6,11 @@ import {
   useCloudAttachmentElementState,
 } from '@udecode/plate-cloud';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-import { StatusBar } from './cloud-status-bar';
 
-import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
+
+import { StatusBar } from './cloud-status-bar';
 
 export interface CloudAttachmentElementProps
   extends PlateElementProps<Value, TCloudAttachmentElement> {}

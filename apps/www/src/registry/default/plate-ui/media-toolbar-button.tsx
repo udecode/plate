@@ -4,9 +4,10 @@ import {
   ELEMENT_MEDIA_EMBED,
   useMediaToolbarButton,
 } from '@udecode/plate-media';
-import { ToolbarButton } from './toolbar';
 
 import { Icons } from '@/components/icons';
+
+import { ToolbarButton } from './toolbar';
 
 export function MediaToolbarButton({
   nodeType,

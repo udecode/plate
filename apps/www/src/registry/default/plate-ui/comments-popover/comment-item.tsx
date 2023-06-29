@@ -7,6 +7,7 @@ import {
   useCommentItemContentState,
 } from '@udecode/plate-comments';
 import { formatDistance } from 'date-fns';
+
 import { CommentAvatar } from './comment-avatar';
 import { CommentMoreDropdown } from './comment-more-dropdown';
 import { CommentResolveButton } from './comment-resolve-button';

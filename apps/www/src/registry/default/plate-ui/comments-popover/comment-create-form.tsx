@@ -6,11 +6,12 @@ import {
   CommentNewTextarea,
   useCommentsSelectors,
 } from '@udecode/plate-comments';
-import { CommentAvatar } from './comment-avatar';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { inputVariants } from '@/registry/default/plate-ui/input';
+
+import { CommentAvatar } from './comment-avatar';
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();

@@ -1,14 +1,14 @@
-import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
+import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
-import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';

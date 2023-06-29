@@ -1,16 +1,17 @@
 'use client';
 
 import * as React from 'react';
+import { Index } from '@/__registry__';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+
+import { cn } from '@/lib/utils';
+import { useConfig } from '@/hooks/use-config';
+import { styles } from '@/registry/styles';
+
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { StyleSwitcher } from './style-switcher';
 import { ThemeWrapper } from './theme-wrapper';
-
-import { Index } from '@/__registry__';
-import { useConfig } from '@/hooks/use-config';
-import { cn } from '@/lib/utils';
-import { styles } from '@/registry/styles';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
