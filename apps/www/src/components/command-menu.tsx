@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes';
 
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
+import { Button } from '@/registry/default/plate-ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,7 +17,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/ui/command';
+} from '@/registry/default/plate-ui/command';
 import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 
 export function CommandItems({

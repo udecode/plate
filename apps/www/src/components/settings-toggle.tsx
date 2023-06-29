@@ -4,12 +4,12 @@ import React from 'react';
 import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 
-import { Toggle } from '@/registry/default/ui/toggle';
+import { Toggle } from '@/registry/default/plate-ui/toggle';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/registry/default/ui/tooltip';
+} from '@/registry/default/plate-ui/tooltip';
 
 export function SettingsToggle() {
   const showSettings = settingsStore.use.showSettings();

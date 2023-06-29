@@ -6,13 +6,13 @@ import { TColor } from './color-dropdown-menu';
 
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { DropdownMenuItem } from '@/registry/default/ui/dropdown-menu';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/registry/default/ui/tooltip';
+} from '@/registry/default/plate-ui/tooltip';
 
 type ColorDropdownMenuItemProps = {
   value: string;

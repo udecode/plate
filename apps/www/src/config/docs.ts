@@ -66,6 +66,13 @@ export const docsConfig: DocsConfig = {
           href: '/docs/typescript',
           items: [],
         },
+        {
+          title: 'CLI',
+          href: '/docs/cli',
+          disabled: true,
+          label: 'Soon',
+          items: [],
+        },
       ],
     },
     {

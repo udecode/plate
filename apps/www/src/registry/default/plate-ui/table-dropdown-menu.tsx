@@ -11,8 +11,6 @@ import {
   insertTableColumn,
   insertTableRow,
 } from '@udecode/plate-table';
-
-import { Icons, iconVariants } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +20,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { Icons, iconVariants } from '@/components/icons';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();

@@ -10,19 +10,19 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
+import { Button } from '@/registry/default/plate-ui/button';
 import {
   Command,
   CommandEmpty,
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/ui/command';
+} from '@/registry/default/plate-ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/registry/default/ui/popover';
+} from '@/registry/default/plate-ui/popover';
 
 const languages: { value: string; label: string }[] = [
   { value: 'text', label: 'Plain Text' },

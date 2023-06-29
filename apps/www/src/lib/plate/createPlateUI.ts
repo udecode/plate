@@ -51,34 +51,34 @@ import {
   ELEMENT_TR,
 } from '@udecode/plate-table';
 
-import { BlockquoteElement } from '@/registry/default/ui/blockquote-element';
-import { CodeBlockElement } from '@/registry/default/ui/code-block-element/code-block-element';
-import { CodeLeaf } from '@/registry/default/ui/code-leaf';
-import { CodeLineElement } from '@/registry/default/ui/code-line-element';
-import { CodeSyntaxLeaf } from '@/registry/default/ui/code-syntax-leaf';
-import { CommentLeaf } from '@/registry/default/ui/comment-leaf';
-import { withDraggables } from '@/registry/default/ui/draggable/with-draggables';
-import { ExcalidrawElement } from '@/registry/default/ui/excalidraw-element';
-import { HeadingElement } from '@/registry/default/ui/heading-element';
-import { HighlightLeaf } from '@/registry/default/ui/highlight-leaf';
-import { HrElement } from '@/registry/default/ui/hr-element';
-import { ImageElement } from '@/registry/default/ui/image-element';
-import { KbdLeaf } from '@/registry/default/ui/kbd-leaf';
-import { LinkElement } from '@/registry/default/ui/link-element';
-import { ListElement } from '@/registry/default/ui/list-element';
-import { MediaEmbedElement } from '@/registry/default/ui/media-embed-element';
-import { MentionElement } from '@/registry/default/ui/mention-element';
-import { MentionInputElement } from '@/registry/default/ui/mention-input-element';
-import { ParagraphElement } from '@/registry/default/ui/paragraph-element';
-import { withPlaceholders } from '@/registry/default/ui/placeholders';
-import { SearchHighlightLeaf } from '@/registry/default/ui/search-highlight-leaf';
+import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
+import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element/code-block-element';
+import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
+import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
+import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
+import { withDraggables } from '@/registry/default/plate-ui/draggable/with-draggables';
+import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
+import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
+import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
+import { HrElement } from '@/registry/default/plate-ui/hr-element';
+import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
+import { LinkElement } from '@/registry/default/plate-ui/link-element';
+import { ListElement } from '@/registry/default/plate-ui/list-element';
+import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MentionElement } from '@/registry/default/plate-ui/mention-element';
+import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
+import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
+import { withPlaceholders } from '@/registry/default/plate-ui/placeholders';
+import { SearchHighlightLeaf } from '@/registry/default/plate-ui/search-highlight-leaf';
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from '@/registry/default/ui/table-cell-element';
-import { TableElement } from '@/registry/default/ui/table-element';
-import { TableRowElement } from '@/registry/default/ui/table-row-element';
-import { TodoListElement } from '@/registry/default/ui/todo-list-element';
+} from '@/registry/default/plate-ui/table-cell-element';
+import { TableElement } from '@/registry/default/plate-ui/table-element';
+import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 
 export const createPlateUI = <T extends string = string>(
   overrideByKey?: Partial<

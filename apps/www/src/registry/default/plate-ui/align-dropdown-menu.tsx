@@ -6,8 +6,6 @@ import {
   useAlignDropdownMenu,
   useAlignDropdownMenuState,
 } from '@udecode/plate-alignment';
-
-import { Icons, iconVariants } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +13,10 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { Icons, iconVariants } from '@/components/icons';
 
 const items = [
   {

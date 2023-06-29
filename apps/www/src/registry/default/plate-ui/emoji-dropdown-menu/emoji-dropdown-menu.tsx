@@ -7,11 +7,11 @@ import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
 import { EmojiPicker } from './emoji-picker';
 
 import { Icons } from '@/components/icons';
-import { EmojiToolbarDropdown } from '@/registry/default/ui/emoji-toolbar-dropdown';
+import { EmojiToolbarDropdown } from '@/registry/default/plate-ui/emoji-toolbar-dropdown';
 import {
   ToolbarButton,
   ToolbarButtonProps,
-} from '@/registry/default/ui/toolbar';
+} from '@/registry/default/plate-ui/toolbar';
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;

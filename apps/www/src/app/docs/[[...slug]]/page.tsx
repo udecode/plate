@@ -14,7 +14,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { siteConfig } from '@/config/site';
 import { getTableOfContents } from '@/lib/toc';
 import { absoluteUrl, cn } from '@/lib/utils';
-import { ScrollArea } from '@/registry/default/ui/scroll-area';
+import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 interface DocPageProps {
   params: {

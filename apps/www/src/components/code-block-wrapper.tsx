@@ -8,7 +8,7 @@ import {
 } from './ui/collapsible';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
+import { Button } from '@/registry/default/plate-ui/button';
 
 interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
   expandButtonTitle?: string;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { useOutdentButton } from '@udecode/plate-indent';
+import { ToolbarButton } from './toolbar';
 
 import { Icons } from '@/components/icons';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
 
 export function OutdentToolbarButton() {
   const { props } = useOutdentButton();

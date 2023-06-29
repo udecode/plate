@@ -6,8 +6,8 @@ import { TColor } from './color-dropdown-menu';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
 
-import { buttonVariants } from '@/registry/default/ui/button';
-import { DropdownMenuItem } from '@/registry/default/ui/dropdown-menu';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
 
 type ColorsCustomProps = {
   color?: string;

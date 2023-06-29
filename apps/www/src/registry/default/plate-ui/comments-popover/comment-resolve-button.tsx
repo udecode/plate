@@ -8,7 +8,7 @@ import {
 
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
 
 export function CommentResolveButton() {
   const comment = useComment()!;

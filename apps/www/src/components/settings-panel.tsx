@@ -32,18 +32,18 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { useViewport } from '@/hooks/use-viewport';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { Checkbox } from '@/registry/default/ui/checkbox';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/registry/default/ui/popover';
+} from '@/registry/default/plate-ui/popover';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/registry/default/ui/tooltip';
+} from '@/registry/default/plate-ui/tooltip';
 
 export function SettingsSwitch({
   id,

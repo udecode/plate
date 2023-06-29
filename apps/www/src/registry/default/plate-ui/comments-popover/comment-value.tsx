@@ -8,8 +8,8 @@ import {
 } from '@udecode/plate-comments';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { inputVariants } from '@/registry/default/ui/input';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { inputVariants } from '@/registry/default/plate-ui/input';
 
 export function CommentValue() {
   const { textareaRef } = useCommentValue();

@@ -15,7 +15,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/registry/default/ui/tooltip';
+} from '@/registry/default/plate-ui/tooltip';
 
 export interface DraggableProps
   extends PlateElementProps,

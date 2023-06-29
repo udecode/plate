@@ -11,7 +11,7 @@ import { Card } from './ui/card';
 import { Icons } from './icons';
 
 import { cn } from '@/lib/utils';
-import { Separator } from '@/registry/default/ui/separator';
+import { Separator } from '@/registry/default/plate-ui/separator';
 
 type Item = {
   name: string;

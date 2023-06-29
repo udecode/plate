@@ -6,13 +6,13 @@ import { Icons } from './icons';
 
 import { Event, trackEvent } from '@/lib/events';
 import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
+import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/registry/default/ui/dropdown-menu';
+} from '@/registry/default/plate-ui/dropdown-menu';
 import { NpmCommands } from '@/types/unist';
 
 interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {

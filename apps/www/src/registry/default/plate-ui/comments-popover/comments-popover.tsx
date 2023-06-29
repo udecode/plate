@@ -14,7 +14,7 @@ import { CommentItem } from './comment-item';
 import { CommentReplyItems } from './comment-reply-items';
 
 import { cn } from '@/lib/utils';
-import { popoverVariants } from '@/registry/default/ui/popover';
+import { popoverVariants } from '@/registry/default/plate-ui/popover';
 
 export type FloatingCommentsContentProps = {
   disableForm?: boolean;

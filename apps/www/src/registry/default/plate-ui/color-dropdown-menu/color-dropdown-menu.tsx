@@ -13,8 +13,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from '@/registry/default/plate-ui/dropdown-menu';
+import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 
 export type TColor = {
   name: string;

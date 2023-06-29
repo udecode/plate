@@ -10,8 +10,8 @@ import {
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { Separator } from '@/registry/default/ui/separator';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { Separator } from '@/registry/default/plate-ui/separator';
 
 export default function IndexPage() {
   return (

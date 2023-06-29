@@ -7,7 +7,7 @@ import { MobileNav } from './mobile-nav';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import ModeToggle from '@/registry/default/example/mode-toggle';
-import { buttonVariants } from '@/registry/default/ui/button';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
 
 export function SiteHeader() {
   return (

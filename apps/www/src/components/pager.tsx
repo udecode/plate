@@ -4,7 +4,7 @@ import { Icons } from './icons';
 
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { NavItem, NavItemWithChildren } from '@/types/nav';
 
 interface DocsPagerProps {

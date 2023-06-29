@@ -8,7 +8,7 @@ import { SettingPlugin, settingPluginItems } from '@/config/setting-plugins';
 import { settingValues } from '@/config/setting-values';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/registry/default/ui/button';
+import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {
   Command,
   CommandEmpty,
@@ -16,12 +16,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/ui/command';
+} from '@/registry/default/plate-ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/registry/default/ui/popover';
+} from '@/registry/default/plate-ui/popover';
 
 const categories = [
   {

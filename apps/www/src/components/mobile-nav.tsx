@@ -10,8 +10,8 @@ import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
-import { Button } from '@/registry/default/ui/button';
-import { ScrollArea } from '@/registry/default/ui/scroll-area';
+import { Button } from '@/registry/default/plate-ui/button';
+import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 export function MobileNav() {
   const pathname = usePathname();

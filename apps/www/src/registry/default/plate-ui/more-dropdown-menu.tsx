@@ -9,16 +9,16 @@ import {
 import { usePlateEditorState } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { MARK_KBD } from '@udecode/plate-kbd';
-
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   useOpenState,
-} from '@/registry/default/ui/dropdown-menu';
-import { ToolbarButton } from '@/registry/default/ui/toolbar';
+} from './dropdown-menu';
+import { ToolbarButton } from './toolbar';
+
+import { Icons } from '@/components/icons';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();

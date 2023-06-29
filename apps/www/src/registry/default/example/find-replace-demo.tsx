@@ -7,7 +7,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { createMyPlugins, MyValue } from '@/types/plate-types';
 
 export interface SearchHighlightToolbarProps {
