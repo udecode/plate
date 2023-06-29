@@ -6,9 +6,7 @@ Fix html serializer: expected dnd context
 
 When we want to serialize plate value in html with DnD support, it throws `Uncaught Invariant Violation: Expected drag drop context` error
 
-We can now serialize plate value in html with DnD support with below code
-
-```
+```tsx
 const Serialized = () => {
   const editor = usePlateEditorState();
   const html = serializeHtml(editor, {
@@ -32,3 +30,5 @@ export default () => (
   </DndProvider>
 );
 ```
+
+We can now serialize plate value in html with DnD support with above code
