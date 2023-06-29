@@ -65,47 +65,13 @@ export const withSetFragmentDataTable = <
     /**
      * Cover single cell copy | cut operation. In this case, copy cell content instead of table structure.
      */
-    // setFragmentData from slate actually returns updated data
-    const newData = (setFragmentData(data) as unknown) as
-      | DataTransfer
-      | undefined;
     if (
       tableEntry &&
       initialSelection &&
       selectedCellEntries.length === 1 &&
-      (originEvent === 'copy' || originEvent === 'cut') &&
-      newData
+      (originEvent === 'copy' || originEvent === 'cut')
     ) {
-      const plainData = data.getData('text/plain');
-      newData.setData('text/csv', plainData);
-      newData.setData('text/tsv', plainData);
-      newData.setData('text/plain', plainData);
-
-      let plateTable = null;
-      try {
-        const slateFragment = data.getData('application/x-slate-fragment');
-        const [tN]: [TTableElement] = JSON.parse(
-          decodeURIComponent(window.atob(slateFragment))
-        );
-        plateTable = tN;
-      } catch (e) {}
-
-      if (plateTable?.type === 'table') {
-        const rowElem = plateTable.children?.[0] as TTableRowElement;
-        const cellElem = rowElem.children?.[0] as TTableCellElement;
-
-        const serialized = serializeHtml(editor, {
-          nodes: cellElem.children as any,
-        });
-        newData.setData('text/html', serialized);
-
-        // set slate fragment
-        const selectedFragmentStr = JSON.stringify(cellElem.children);
-        const encodedFragment = window.btoa(
-          encodeURIComponent(selectedFragmentStr)
-        );
-        newData.setData('application/x-slate-fragment', encodedFragment);
-      }
+      setFragmentData(data);
       return;
     }
 
