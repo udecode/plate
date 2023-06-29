@@ -96,7 +96,9 @@ export function ImageElement({
             />
           </Resizable>
 
-          <Caption className={cn(align === 'center' && 'mx-auto')}>
+          <Caption
+            className={cn('max-w-full', align === 'center' && 'mx-auto')}
+          >
             <CaptionTextarea
               className={cn(
                 'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',

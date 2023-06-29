@@ -1,4 +1,4 @@
-/* eslint-disable turbo/no-undeclared-env-vars */
+/* eslint-disable turbo/no-undeclared-env-vars,no-console */
 import path from 'path';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import fetch from 'node-fetch';
@@ -79,7 +79,7 @@ export async function resolveTree(
   const tree: z.infer<typeof registryIndexSchema> = [];
 
   for (const name of names) {
-    const entry = index.find((entry) => entry.name === name);
+    const entry = index.find((e) => e.name === name);
 
     if (!entry) {
       continue;
@@ -94,8 +94,8 @@ export async function resolveTree(
   }
 
   return tree.filter(
-    (component, index, self) =>
-      self.findIndex((c) => c.name === component.name) === index
+    (component, i, self) =>
+      self.findIndex((c) => c.name === component.name) === i
   );
 }
 
@@ -137,8 +137,8 @@ export async function getItemTargetPath(
 async function fetchRegistry(paths: string[]) {
   try {
     const results = await Promise.all(
-      paths.map(async (path) => {
-        const response = await fetch(`${baseUrl}/registry/${path}`, {
+      paths.map(async (p) => {
+        const response = await fetch(`${baseUrl}/registry/${p}`, {
           agent,
         });
         return await response.json();

@@ -4,6 +4,15 @@ import { loadConfig } from 'tsconfig-paths';
 import * as z from 'zod';
 import { resolveImport } from './resolve-import';
 
+/**
+ * This module is primarily concerned with loading and validating a project's
+ * configuration. It makes use of `cosmiconfig` to find and load a configuration
+ * file, in this case, it's looking for a `components.json` file in the root
+ * directory of your project. The schema for this config file is defined with
+ * the `zod` library. In case there's no configuration file available, it
+ * provides a set of default paths and configuration options.
+ */
+
 export const DEFAULT_STYLE = 'default';
 export const DEFAULT_COMPONENTS = '@/components';
 export const DEFAULT_UTILS = '@/lib/utils';

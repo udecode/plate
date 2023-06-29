@@ -1,7 +1,12 @@
-import { existsSync } from "fs"
-import path from "path"
-import fs from "fs-extra"
+import { existsSync } from 'fs';
+import path from 'path';
+import fs from 'fs-extra';
 
+/**
+ * This file contains utility functions for retrieving project-level
+ * information, such as checking if certain directories exist and getting the
+ * contents of tsconfig.json.
+ */
 export async function getProjectInfo() {
   const info = {
     tsconfig: null,
@@ -9,36 +14,36 @@ export async function getProjectInfo() {
     appDir: false,
     srcComponentsUiDir: false,
     componentsUiDir: false,
-  }
+  };
 
   try {
-    const tsconfig = await getTsConfig()
+    const tsconfig = await getTsConfig();
 
     return {
       tsconfig,
-      srcDir: existsSync(path.resolve("./src")),
+      srcDir: existsSync(path.resolve('./src')),
       appDir:
-        existsSync(path.resolve("./app")) ||
-        existsSync(path.resolve("./src/app")),
-      srcComponentsUiDir: existsSync(path.resolve("./src/components/ui")),
-      componentsUiDir: existsSync(path.resolve("./components/ui")),
-    }
+        existsSync(path.resolve('./app')) ||
+        existsSync(path.resolve('./src/app')),
+      srcComponentsUiDir: existsSync(path.resolve('./src/components/ui')),
+      componentsUiDir: existsSync(path.resolve('./components/ui')),
+    };
   } catch (error) {
-    return info
+    return info;
   }
 }
 
 export async function getTsConfig() {
   try {
-    const tsconfigPath = path.join("tsconfig.json")
-    const tsconfig = await fs.readJSON(tsconfigPath)
+    const tsconfigPath = path.join('tsconfig.json');
+    const tsconfig = await fs.readJSON(tsconfigPath);
 
     if (!tsconfig) {
-      throw new Error("tsconfig.json is missing")
+      throw new Error('tsconfig.json is missing');
     }
 
-    return tsconfig
+    return tsconfig;
   } catch (error) {
-    return null
+    return null;
   }
 }
