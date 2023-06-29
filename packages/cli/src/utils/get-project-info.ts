@@ -25,8 +25,8 @@ export async function getProjectInfo() {
       appDir:
         existsSync(path.resolve('./app')) ||
         existsSync(path.resolve('./src/app')),
-      srcComponentsUiDir: existsSync(path.resolve('./src/components/ui')),
-      componentsUiDir: existsSync(path.resolve('./components/ui')),
+      srcComponentsUiDir: existsSync(path.resolve('./src/components/plate-ui')),
+      componentsUiDir: existsSync(path.resolve('./components/plate-ui')),
     };
   } catch (error) {
     return info;

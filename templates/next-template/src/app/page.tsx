@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
-import { buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/plate-ui/button"
 
 export default function IndexPage() {
   return (
