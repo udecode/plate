@@ -2,6 +2,7 @@
 
 packages/cli/components
 tsconfig.tsbuildinfo
+apps/www/tsconfig.tsbuildinfo
 
 .yarn/*
 !.yarn/cache
