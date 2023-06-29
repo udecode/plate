@@ -19,9 +19,9 @@ import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 
 import { AlignDropdownMenu } from './align-dropdown-menu';
-import { ColorDropdownMenu } from './color-dropdown-menu/color-dropdown-menu';
+import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
-import { EmojiDropdownMenu } from './emoji-dropdown-menu/emoji-dropdown-menu';
+import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';

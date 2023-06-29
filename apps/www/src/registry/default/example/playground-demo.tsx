@@ -91,7 +91,7 @@ import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { SettingsPanel } from '@/components/settings-panel';
 import { SettingsToggle } from '@/components/settings-toggle';
-import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover/comments-popover';
+import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';

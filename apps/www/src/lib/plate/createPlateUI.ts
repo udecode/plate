@@ -52,12 +52,11 @@ import {
 } from '@udecode/plate-table';
 
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
-import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element/code-block-element';
+import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
 import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
-import { withDraggables } from '@/registry/default/plate-ui/draggable/with-draggables';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
@@ -79,6 +78,7 @@ import {
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
+import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
 export const createPlateUI = (
   overrideByKey?: Partial<Record<string, PlatePluginComponent>>,

@@ -4,47 +4,37 @@
   "registryDependencies": [],
   "files": [
     {
-      "name": "comments-popover/comments-popover.tsx",
+      "name": "comments-popover.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentProvider,\n  CommentsPositioner,\n  SCOPE_ACTIVE_COMMENT,\n  useFloatingCommentsContentState,\n  useFloatingCommentsState,\n} from '@udecode/plate-comments';\nimport { PortalBody } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\nimport { popoverVariants } from '@/registry/default/plate-ui/popover';\n\nimport { CommentCreateForm } from './comment-create-form';\nimport { CommentItem } from './comment-item';\nimport { CommentReplyItems } from './comment-reply-items';\n\nexport type FloatingCommentsContentProps = {\n  disableForm?: boolean;\n};\n\nexport function CommentsPopoverContent(props: FloatingCommentsContentProps) {\n  const { disableForm } = props;\n\n  const { ref, activeCommentId, hasNoComment, myUserId } =\n    useFloatingCommentsContentState();\n\n  return (\n    <CommentProvider\n      key={activeCommentId}\n      id={activeCommentId}\n      scope={SCOPE_ACTIVE_COMMENT}\n    >\n      <div ref={ref} className={cn(popoverVariants(), 'relative w-[310px]')}>\n        {!hasNoComment && (\n          <>\n            <CommentItem key={activeCommentId} commentId={activeCommentId} />\n\n            <CommentReplyItems />\n          </>\n        )}\n\n        {!!myUserId && !disableForm && <CommentCreateForm />}\n      </div>\n    </CommentProvider>\n  );\n}\n\nexport function CommentsPopover() {\n  const { loaded, activeCommentId } = useFloatingCommentsState();\n\n  if (!loaded || !activeCommentId) return null;\n\n  return (\n    <PortalBody>\n      <CommentsPositioner className=\"absolute z-50 w-[418px] pb-4\">\n        <CommentsPopoverContent />\n      </CommentsPositioner>\n    </PortalBody>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-avatar.tsx",
+      "name": "comment-avatar.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport { useUserById } from '@udecode/plate-comments';\n\nimport {\n  Avatar,\n  AvatarFallback,\n  AvatarImage,\n} from '@/registry/default/plate-ui/avatar';\n\nexport function CommentAvatar({ userId }: { userId: string | null }) {\n  const user = useUserById(userId);\n  if (!user) return null;\n\n  return (\n    <Avatar className=\"h-5 w-5\">\n      <AvatarImage src={user.avatarUrl} alt={user.name} />\n      <AvatarFallback>{user.name?.[0]}</AvatarFallback>\n    </Avatar>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-create-form.tsx",
+      "name": "comment-create-form.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentNewSubmitButton,\n  CommentNewTextarea,\n  useCommentsSelectors,\n} from '@udecode/plate-comments';\n\nimport { cn } from '@/lib/utils';\nimport { buttonVariants } from '@/registry/default/plate-ui/button';\nimport { inputVariants } from '@/registry/default/plate-ui/input';\n\nimport { CommentAvatar } from './comment-avatar';\n\nexport function CommentCreateForm() {\n  const myUserId = useCommentsSelectors().myUserId();\n\n  return (\n    <div className=\"flex w-full space-x-2\">\n      <CommentAvatar userId={myUserId} />\n\n      <div className=\"flex grow flex-col items-end gap-2\">\n        <CommentNewTextarea className={inputVariants()} />\n\n        <CommentNewSubmitButton\n          className={cn(buttonVariants({ size: 'sm' }), 'w-[90px]')}\n        >\n          Comment\n        </CommentNewSubmitButton>\n      </div>\n    </div>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-item.tsx",
+      "name": "comment-item.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentProvider,\n  useCommentById,\n  useCommentItemContentState,\n} from '@udecode/plate-comments';\nimport { formatDistance } from 'date-fns';\n\nimport { CommentAvatar } from './comment-avatar';\nimport { CommentMoreDropdown } from './comment-more-dropdown';\nimport { CommentResolveButton } from './comment-resolve-button';\nimport { CommentValue } from './comment-value';\n\ntype PlateCommentProps = {\n  commentId: string;\n};\n\nfunction CommentItemContent() {\n  const {\n    comment,\n    isMyComment,\n    isReplyComment,\n    user,\n    editingValue,\n    commentText,\n  } = useCommentItemContentState();\n\n  return (\n    <div>\n      <div className=\"relative flex items-center gap-2\">\n        <CommentAvatar userId={comment.userId} />\n\n        <h4 className=\"text-sm font-semibold leading-none\">{user?.name}</h4>\n\n        <div className=\"text-xs leading-none text-muted-foreground\">\n          {formatDistance(comment.createdAt, Date.now())} ago\n        </div>\n\n        {isMyComment && (\n          <div className=\"absolute -right-0.5 -top-0.5 flex space-x-1\">\n            {isReplyComment ? null : <CommentResolveButton />}\n\n            <CommentMoreDropdown />\n          </div>\n        )}\n      </div>\n\n      <div className=\"mb-4 pl-7 pt-0.5\">\n        {editingValue ? (\n          <CommentValue />\n        ) : (\n          <div className=\"whitespace-pre-wrap text-sm\">{commentText}</div>\n        )}\n      </div>\n    </div>\n  );\n}\n\nexport function CommentItem({ commentId }: PlateCommentProps) {\n  const comment = useCommentById(commentId);\n  if (!comment) return null;\n\n  return (\n    <CommentProvider key={commentId} id={commentId}>\n      <CommentItemContent />\n    </CommentProvider>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-more-dropdown.tsx",
+      "name": "comment-more-dropdown.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  useCommentDeleteButton,\n  useCommentDeleteButtonState,\n  useCommentEditButton,\n  useCommentEditButtonState,\n} from '@udecode/plate-comments';\n\nimport { cn } from '@/lib/utils';\nimport { Icons } from '@/components/icons';\nimport { Button } from '@/registry/default/plate-ui/button';\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n} from '@/registry/default/plate-ui/dropdown-menu';\n\nexport function CommentMoreDropdown() {\n  const editButtonState = useCommentEditButtonState();\n  const editProps = useCommentEditButton(editButtonState);\n  const deleteButtonState = useCommentDeleteButtonState();\n  const deleteProps = useCommentDeleteButton(deleteButtonState);\n\n  return (\n    <DropdownMenu modal={false}>\n      <DropdownMenuTrigger asChild>\n        <Button variant=\"ghost\" className={cn('h-6 p-1 text-muted-foreground')}>\n          <Icons.more className=\"h-4 w-4\" />\n        </Button>\n      </DropdownMenuTrigger>\n      <DropdownMenuContent>\n        <DropdownMenuItem {...(editProps as any)}>\n          Edit comment\n        </DropdownMenuItem>\n        <DropdownMenuItem {...(deleteProps as any)}>\n          Delete comment\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-reply-items.tsx",
+      "name": "comment-reply-items.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  SCOPE_ACTIVE_COMMENT,\n  useCommentReplies,\n} from '@udecode/plate-comments';\n\nimport { CommentItem } from './comment-item';\n\nexport function CommentReplyItems() {\n  const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);\n\n  return (\n    <>\n      {Object.keys(commentReplies).map((id) => (\n        <CommentItem key={id} commentId={id} />\n      ))}\n    </>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-resolve-button.tsx",
+      "name": "comment-resolve-button.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentResolveButton as CommentResolveButtonPrimitive,\n  useComment,\n} from '@udecode/plate-comments';\n\nimport { cn } from '@/lib/utils';\nimport { Icons } from '@/components/icons';\nimport { buttonVariants } from '@/registry/default/plate-ui/button';\n\nexport function CommentResolveButton() {\n  const comment = useComment()!;\n\n  return (\n    <CommentResolveButtonPrimitive\n      className={cn(\n        buttonVariants({ variant: 'ghost' }),\n        'h-6 p-1 text-muted-foreground'\n      )}\n    >\n      {comment.isResolved ? (\n        <Icons.refresh className=\"h-4 w-4\" />\n      ) : (\n        <Icons.check className=\"h-4 w-4\" />\n      )}\n    </CommentResolveButtonPrimitive>\n  );\n}\n"
     },
     {
-      "name": "comments-popover/comment-value.tsx",
+      "name": "comment-value.tsx",
       "content": "'use client';\n\nimport React from 'react';\nimport {\n  CommentEditActions,\n  CommentEditTextarea,\n  useCommentValue,\n} from '@udecode/plate-comments';\n\nimport { cn } from '@/lib/utils';\nimport { buttonVariants } from '@/registry/default/plate-ui/button';\nimport { inputVariants } from '@/registry/default/plate-ui/input';\n\nexport function CommentValue() {\n  const { textareaRef } = useCommentValue();\n\n  return (\n    <div className=\"my-2 flex flex-col items-end gap-2\">\n      <CommentEditTextarea\n        ref={textareaRef}\n        className={cn(inputVariants(), 'min-h-[60px]')}\n      />\n\n      <div className=\"flex space-x-2\">\n        <CommentEditActions.CancelButton\n          className={buttonVariants({ variant: 'outline', size: 'xs' })}\n        >\n          Cancel\n        </CommentEditActions.CancelButton>\n\n        <CommentEditActions.SaveButton\n          className={buttonVariants({ variant: 'default', size: 'xs' })}\n        >\n          Save\n        </CommentEditActions.SaveButton>\n      </div>\n    </div>\n  );\n}\n"
     }
-  ],
-  "items": [
-    "comments-popover",
-    "comment-avatar",
-    "comment-create-form",
-    "comment-item",
-    "comment-more-dropdown",
-    "comment-reply-items",
-    "comment-resolve-button",
-    "comment-value"
   ],
   "type": "components:plate-ui"
 }

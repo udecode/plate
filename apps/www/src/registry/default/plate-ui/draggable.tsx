@@ -11,11 +11,8 @@ import { DropTargetMonitor } from 'react-dnd';
 
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 export interface DraggableProps
   extends PlateElementProps,

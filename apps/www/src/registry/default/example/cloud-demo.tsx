@@ -14,9 +14,9 @@ import {
 import { Plate, PlateProvider } from '@udecode/plate-common';
 
 import { MyValue, createMyPlugins } from '@/types/plate-types';
-import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud/cloud-attachment-element';
-import { CloudImageElement } from '@/registry/default/plate-ui/cloud/cloud-image-element';
-import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud/cloud-toolbar-buttons';
+import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud-attachment-element';
+import { CloudImageElement } from '@/registry/default/plate-ui/cloud-image-element';
+import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud-toolbar-buttons';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 const plugins = createMyPlugins(
