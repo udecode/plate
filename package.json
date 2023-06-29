@@ -26,6 +26,7 @@
     "g:clean": "turbo --filter \"./packages/**\" clean",
     "gen:package": "yarn plop --plopfile scripts/plop/plopfile.cjs package",
     "g:dev": "turbo --filter=www dev",
+    "g:dev:cli": "turbo --filter=plate-ui dev",
     "g:lint": "turbo --filter \"./packages/**\" lint && yarn g:lint:apps",
     "g:lint:fix": "turbo --filter \"./packages/**\" lint:fix && yarn g:lint:apps:fix",
     "g:lint:apps": "turbo --filter=www lint && turbo --filter=e2e-examples lint",
