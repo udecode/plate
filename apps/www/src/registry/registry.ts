@@ -88,8 +88,12 @@ const ui: Registry = [
   {
     name: 'draggable',
     type: 'components:plate-ui',
-    dependencies: [],
-    registryDependencies: [],
+    dependencies: [
+      '@udecode/plate-dnd',
+      'react-dnd',
+      'react-dnd-html5-backend',
+    ],
+    registryDependencies: ['tooltip'],
     files: [
       'plate-ui/draggable/draggable.tsx',
       'plate-ui/draggable/with-draggables.tsx',
