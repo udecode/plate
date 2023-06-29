@@ -73,7 +73,7 @@ for (const style of styles) {
       for (const [subIndex, subItem] of item.items.entries()) {
         index += `
     '${item.name}/${subItem}': {
-      name: '${subItem}',
+      name: '${item.name}/${subItem}',
       type: '${item.type}',
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: ['${resolveFiles[subIndex]}'],
@@ -126,7 +126,7 @@ for (const style of styles) {
       );
 
       return {
-        name: path.basename(file),
+        name: file.slice(Math.max(0, file.indexOf('/') + 1)),
         content,
       };
     });
