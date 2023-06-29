@@ -7536,7 +7536,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-paragraph@npm:21.3.2, @udecode/plate-paragraph@workspace:^, @udecode/plate-paragraph@workspace:packages/paragraph":
+"@udecode/plate-paragraph@npm:21.3.2, @udecode/plate-paragraph@workspace:*, @udecode/plate-paragraph@workspace:^, @udecode/plate-paragraph@workspace:packages/paragraph":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-paragraph@workspace:packages/paragraph"
   dependencies:
@@ -17976,6 +17976,7 @@ __metadata:
     "@types/react-dom": "npm:^18.2.6"
     "@typescript-eslint/parser": "npm:^5.60.0"
     "@udecode/plate-common": "workspace:*"
+    "@udecode/plate-paragraph": "workspace:*"
     autoprefixer: "npm:^10.4.14"
     class-variance-authority: "npm:0.6.1"
     clsx: "npm:1.2.1"
@@ -17984,6 +17985,7 @@ __metadata:
     eslint-config-prettier: "npm:^8.8.0"
     eslint-plugin-react: "npm:^7.32.2"
     eslint-plugin-tailwindcss: "npm:^3.12.1"
+    eslint-plugin-unused-imports: "npm:^2.0.0"
     lucide-react: "npm:0.256.0"
     next: "npm:^13.4.7"
     next-themes: "npm:^0.2.1"

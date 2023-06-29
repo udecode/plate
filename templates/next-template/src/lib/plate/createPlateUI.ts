@@ -1,4 +1,7 @@
 import { PlatePluginComponent } from '@udecode/plate-common';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+
+import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
 
 export const createPlateUI = () => {
   let components: Record<string, PlatePluginComponent> = {
@@ -21,7 +24,7 @@ export const createPlateUI = () => {
     // [ELEMENT_MENTION_INPUT]: MentionInputElement,
     // [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
     // [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
-    // [ELEMENT_PARAGRAPH]: ParagraphElement,
+    [ELEMENT_PARAGRAPH]: ParagraphElement,
     // [ELEMENT_TABLE]: TableElement,
     // [ELEMENT_TD]: TableCellElement,
     // [ELEMENT_TH]: TableCellHeaderElement,

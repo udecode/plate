@@ -455,7 +455,7 @@ const ui: Registry = [
   {
     name: 'paragraph-element',
     type: 'components:plate-ui',
-    dependencies: [],
+    dependencies: ['@udecode/plate-paragraph'],
     registryDependencies: [],
     files: ['plate-ui/paragraph-element.tsx'],
   },

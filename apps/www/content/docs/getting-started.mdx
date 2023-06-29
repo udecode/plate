@@ -7,30 +7,16 @@ description: A quick tutorial to get you up and running with Plate.
 
 ### Add dependencies
 
-Add the following dependencies to your project:
+Install the core and the plugins you need. You need at least:
 
 ```bash
-npm install @udecode/plate
-
-# required peer deps
-npm install slate slate-react slate-history slate-hyperscript react react-dom
+npm install @udecode/plate-common slate slate-react slate-history slate-hyperscript react react-dom
 ```
 
-Alternatively you can install only the packages you need.
+Alternatively you can install `@udecode/plate` that contains all the packages excluding the ones with additional dependencies (e.g. `@udecode/plate-dnd`).
 
 ```bash
-# used by all plate packages
-npm install @udecode/plate-common
-
-# required peer deps
-npm install slate slate-react slate-history slate-hyperscript react react-dom
-
-# plugins
-npm install @udecode/plate-basic-elements
-# npm install @udecode/plate-...
-
-# if using @udecode/plate-dnd
-npm install react-dnd react-dnd-html5-backend
+npm install @udecode/plate slate slate-react slate-history slate-hyperscript react react-dom
 ```
 
 ### Basic Editor

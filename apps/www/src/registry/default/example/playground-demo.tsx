@@ -295,9 +295,10 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 <Plate
                   editableProps={{
                     ...editableProps,
+                    placeholder: '',
                     className: cn(
                       editableProps.className,
-                      'px-8',
+                      'px-8 outline-none',
                       !id &&
                         'min-h-[920px] w-[900px] pb-[20vh] pt-4 md:px-[96px]',
                       id && 'pb-8 pt-2'

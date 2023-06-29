@@ -548,7 +548,9 @@
   },
   {
     "name": "paragraph-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-paragraph"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/paragraph-element.tsx"

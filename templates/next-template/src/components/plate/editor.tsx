@@ -2,7 +2,10 @@
 
 import React, { useRef } from 'react';
 import { Plate, PlateProvider, createPlugins } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import {
+  ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
+} from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -11,6 +14,13 @@ import { cn } from '@/lib/utils';
 
 export default function Editor() {
   const containerRef = useRef(null);
+
+  const initialValue = [
+    {
+      type: ELEMENT_PARAGRAPH,
+      children: [{ text: 'Hello, World!' }],
+    },
+  ];
 
   const plugins = createPlugins(
     [
@@ -88,7 +98,7 @@ export default function Editor() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <PlateProvider plugins={plugins} normalizeInitialValue>
+        <PlateProvider plugins={plugins} initialValue={initialValue}>
           {/*<FixedToolbar>*/}
           {/*  <FixedToolbarButtons />*/}
           {/*</FixedToolbar>*/}
@@ -105,10 +115,10 @@ export default function Editor() {
             >
               <Plate
                 editableProps={{
-                  placeholder: 'Type…',
+                  autoFocus: true,
                   className: cn(
                     'relative max-w-full leading-[1.4] outline-none [&_strong]:font-bold',
-                    'min-h-[600px] w-[900px] px-[96px] py-16'
+                    '!min-h-[600px] w-[900px] px-[96px] py-16'
                   ),
                 }}
               >

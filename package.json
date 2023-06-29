@@ -21,6 +21,7 @@
     "typecheck": "yarn g:typecheck",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
+    "g:build:registry": "yarn workspace www build:registry",
     "g:build:watch": "turbo --filter \"./packages/**\" build:watch --concurrency 100",
     "g:changeset": "changeset",
     "g:clean": "turbo --filter \"./packages/**\" clean",

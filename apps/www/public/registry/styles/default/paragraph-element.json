@@ -1,6 +1,8 @@
 {
   "name": "paragraph-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-paragraph"
+  ],
   "registryDependencies": [],
   "files": [
     {

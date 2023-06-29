@@ -14,6 +14,7 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@udecode/plate-common": "workspace:*",
+    "@udecode/plate-paragraph": "workspace:*",
     "class-variance-authority": "0.6.1",
     "clsx": "1.2.1",
     "lucide-react": "0.256.0",
@@ -26,7 +27,6 @@
     "tailwindcss-animate": "1.0.6"
   },
   "devDependencies": {
-    "eslint-plugin-unused-imports": "^2.0.0",
     "@ianvs/prettier-plugin-sort-imports": "^3.7.2",
     "@types/node": "^17.0.45",
     "@types/react": "^18.2.13",
@@ -38,6 +38,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-tailwindcss": "^3.12.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
     "tailwindcss": "^3.3.2",
