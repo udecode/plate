@@ -27,7 +27,7 @@
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
     "start": "node dist/index.js",
-    "test": "yarn p:test",
+    "test": "vitest run",
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
@@ -52,7 +52,8 @@
     "@types/fs-extra": "^11.0.1",
     "@types/prompts": "^2.4.2",
     "tsup": "^6.6.3",
-    "type-fest": "^3.8.0"
+    "type-fest": "^3.8.0",
+    "vitest": "^0.31.1"
   },
   "keywords": [
     "components",

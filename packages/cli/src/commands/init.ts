@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-process-exit */
+
 import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
