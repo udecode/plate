@@ -8,11 +8,9 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { serializeHtml } from '@udecode/plate-serializer-html';
 import { Path } from 'slate';
 import { ELEMENT_TH } from './createTablePlugin';
 import { getTableGridAbove } from './queries';
-import { TTableCellElement, TTableElement, TTableRowElement } from './types';
 
 export const withSetFragmentDataTable = <
   V extends Value = Value,
