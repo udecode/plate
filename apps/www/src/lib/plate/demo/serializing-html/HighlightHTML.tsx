@@ -6,6 +6,7 @@ import { formatHTML } from './formatHTML';
 
 export function HighlightHTML({ code }: { code: string }) {
   return (
+    // @ts-ignore
     <Highlight
       {...defaultProps}
       theme={theme}
