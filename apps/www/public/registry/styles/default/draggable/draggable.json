@@ -1,5 +1,5 @@
 {
-  "name": "draggable",
+  "name": "draggable/draggable",
   "dependencies": [
     "@udecode/plate-dnd",
     "react-dnd",

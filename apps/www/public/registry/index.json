@@ -85,8 +85,14 @@
   },
   {
     "name": "draggable",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-dnd",
+      "react-dnd",
+      "react-dnd-html5-backend"
+    ],
+    "registryDependencies": [
+      "tooltip"
+    ],
     "files": [
       "plate-ui/draggable/draggable.tsx",
       "plate-ui/draggable/with-draggables.tsx"
@@ -667,7 +673,9 @@
   },
   {
     "name": "tooltip",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-tooltip"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/tooltip.tsx"

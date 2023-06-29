@@ -551,7 +551,7 @@ const ui: Registry = [
   {
     name: 'tooltip',
     type: 'components:plate-ui',
-    dependencies: [],
+    dependencies: ['@radix-ui/react-tooltip'],
     registryDependencies: [],
     files: ['plate-ui/tooltip.tsx'],
   },

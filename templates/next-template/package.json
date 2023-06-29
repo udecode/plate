@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tooltip": "1.0.6",
     "@udecode/plate-common": "workspace:*",
+    "@udecode/plate-dnd": "workspace:*",
     "@udecode/plate-paragraph": "workspace:*",
     "class-variance-authority": "0.6.1",
     "clsx": "1.2.1",
@@ -21,6 +23,8 @@
     "next": "^13.4.7",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
+    "react-dnd": "16.0.1",
+    "react-dnd-html5-backend": "16.0.1",
     "react-dom": "^18.2.0",
     "sharp": "^0.32.1",
     "tailwind-merge": "1.13.2",

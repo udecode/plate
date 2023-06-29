@@ -185,20 +185,20 @@ export const Index: Record<string, any> = {
     'draggable': {
       name: 'draggable',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["tooltip"],
       items: ['draggable','with-draggables'],
     },
     'draggable/draggable': {
       name: 'draggable',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["tooltip"],
       files: ['registry/default/plate-ui/draggable/draggable.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/draggable/draggable')),
     },
     'draggable/with-draggables': {
       name: 'with-draggables',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["tooltip"],
       files: ['registry/default/plate-ui/draggable/with-draggables.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/draggable/with-draggables')),
     },
