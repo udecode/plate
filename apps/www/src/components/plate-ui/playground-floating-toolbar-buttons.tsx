@@ -11,13 +11,13 @@ import { usePlateReadOnly } from '@udecode/plate-common';
 
 import { ValueId } from '@/config/setting-values';
 import { Icons } from '@/components/icons';
-import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
+import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
+import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
+import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
+import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
+import { ToolbarSeparator } from '@/registry/default/plate-ui/toolbar';
 
-import { CommentToolbarButton } from '../../registry/default/plate-ui/comment-toolbar-button';
-import { LinkToolbarButton } from '../../registry/default/plate-ui/link-toolbar-button';
-import { MarkToolbarButton } from '../../registry/default/plate-ui/mark-toolbar-button';
-import { MoreDropdownMenu } from '../../registry/default/plate-ui/more-dropdown-menu';
-import { ToolbarSeparator } from '../../registry/default/plate-ui/toolbar';
+import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
