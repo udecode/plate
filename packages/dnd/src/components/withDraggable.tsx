@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { AnyObject, PlateRenderElementProps } from '@udecode/plate-common';
-import { useWithDraggable, WithDraggableOptions } from './useWithDraggable';
+
+import { WithDraggableOptions, useWithDraggable } from './useWithDraggable';
 
 export const withDraggable = <T extends AnyObject = AnyObject>(
   Draggable: React.FC<any>,

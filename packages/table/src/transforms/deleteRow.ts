@@ -1,11 +1,12 @@
 import {
+  PlateEditor,
+  Value,
   getAboveNode,
   getPluginType,
-  PlateEditor,
   removeNodes,
   someNode,
-  Value,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { TTableElement } from '../types';
 

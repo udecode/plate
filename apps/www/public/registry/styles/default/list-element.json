@@ -5,8 +5,8 @@
   "files": [
     {
       "name": "list-element.tsx",
-      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { cva, VariantProps } from 'class-variance-authority';\n\nimport { cn } from '@/lib/utils';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n      ol: 'list-decimal',\n    },\n  },\n});\n\nexport function ListElement({\n  className,\n  children,\n  variant = 'ul',\n  ...props\n}: PlateElementProps & VariantProps<typeof listVariants>) {\n  const Element = variant!;\n\n  return (\n    <PlateElement\n      asChild\n      className={cn(listVariants({ variant }), className)}\n      {...props}\n    >\n      <Element>{children}</Element>\n    </PlateElement>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { VariantProps, cva } from 'class-variance-authority';\n\nimport { cn } from '@/lib/utils';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n      ol: 'list-decimal',\n    },\n  },\n});\n\nexport function ListElement({\n  className,\n  children,\n  variant = 'ul',\n  ...props\n}: PlateElementProps & VariantProps<typeof listVariants>) {\n  const Element = variant!;\n\n  return (\n    <PlateElement\n      asChild\n      className={cn(listVariants({ variant }), className)}\n      {...props}\n    >\n      <Element>{children}</Element>\n    </PlateElement>\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Value } from '@udecode/slate';
 import { SlateProps } from '@udecode/slate-react';
+
 import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
 import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
 import { pipeOnChange } from '../utils/pipeOnChange';

@@ -1,9 +1,9 @@
-import { isOlSymbol } from './isOlSymbol';
-
 import {
   NO_BREAK_SPACE,
   SPACE,
 } from '@/packages/core/src/plugins/html-deserializer/constants';
+
+import { isOlSymbol } from './isOlSymbol';
 
 describe('isOlSymbol', () => {
   it('Recognizes symbols of unordered lists', () => {

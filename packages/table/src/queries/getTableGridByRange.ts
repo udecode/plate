@@ -1,11 +1,12 @@
 import {
-  getNode,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
+  getNode,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
 import { TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 

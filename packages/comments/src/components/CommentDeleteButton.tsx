@@ -2,6 +2,7 @@ import {
   createPrimitiveComponent,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,

@@ -1,14 +1,13 @@
 /** @jsx jsx */
 
+import { withAutoformat } from '@/packages/autoformat/src/withAutoformat';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { MARK_BOLD } from '@udecode/plate-basic-marks/src/createBoldPlugin';
 import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
 import { MARK_UNDERLINE } from '@udecode/plate-basic-marks/src/createUnderlinePlugin';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-
-import { withAutoformat } from '@/packages/autoformat/src/withAutoformat';
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 
 jsx;
 

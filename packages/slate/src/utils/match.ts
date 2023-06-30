@@ -1,6 +1,7 @@
 import { castArray } from 'lodash';
-import { isBlock } from '../interfaces/editor/isBlock';
+
 import { TEditor, Value } from '../interfaces/editor/TEditor';
+import { isBlock } from '../interfaces/editor/isBlock';
 import { ENode, TNode } from '../interfaces/node/TNode';
 import { TPath } from '../types/interfaces';
 

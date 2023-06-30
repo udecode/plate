@@ -1,13 +1,14 @@
-import { renderToStaticMarkup } from 'react-dom/server';
 import {
-  pipeInjectProps,
   PlateEditor,
   PlateRenderElementProps,
-  pluginRenderElement,
   SlateProps,
   Value,
+  pipeInjectProps,
+  pluginRenderElement,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
+import { renderToStaticMarkup } from 'react-dom/server';
+
 import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 

@@ -1,4 +1,5 @@
 import { useHotkeys, usePlateEditorRef } from '@udecode/plate-common';
+
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
 import { useFloatingLinkSelectors } from './floatingLinkStore';
 

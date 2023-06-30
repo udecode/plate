@@ -1,12 +1,13 @@
 import {
-  getNodeString,
-  isElement,
   PlateEditor,
-  removeNodes,
   Value,
   WithPlatePlugin,
+  getNodeString,
+  isElement,
+  removeNodes,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
+
 import { RemoveEmptyNodesPlugin } from './createRemoveEmptyNodesPlugin';
 
 /**

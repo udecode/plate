@@ -1,8 +1,8 @@
 import {
-  getEditorString,
-  getRangeBefore,
   TEditor,
   Value,
+  getEditorString,
+  getRangeBefore,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
 

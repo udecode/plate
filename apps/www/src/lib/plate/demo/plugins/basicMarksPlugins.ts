@@ -1,3 +1,4 @@
+import { plateUI } from '@/plate/demo/plateUI';
 import {
   createBoldPlugin,
   createCodePlugin,
@@ -8,7 +9,6 @@ import {
   createUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 
-import { plateUI } from '@/plate/demo/plateUI';
 import { createMyPlugins } from '@/types/plate-types';
 
 export const basicMarksPlugins = createMyPlugins(

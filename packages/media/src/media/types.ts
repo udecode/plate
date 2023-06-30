@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { TCaptionElement } from '../caption/index';
 import { TResizableElement } from '../resizable/index';
 import { EmbedUrlData } from './parseMediaUrl';

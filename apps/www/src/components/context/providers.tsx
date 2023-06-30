@@ -1,8 +1,8 @@
 'use client';
 
-import { ThemeProvider } from './theme-provider';
+import { TooltipProvider } from '@/registry/default/plate-ui/tooltip';
 
-import { TooltipProvider } from '@/registry/default/ui/tooltip';
+import { ThemeProvider } from './theme-provider';
 
 export function Providers({ children }) {
   return (

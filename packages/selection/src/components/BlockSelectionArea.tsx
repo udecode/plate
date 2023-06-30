@@ -1,5 +1,6 @@
 import React from 'react';
 import { deselectEditor, usePlateEditorRef } from '@udecode/plate-common';
+
 import { blockSelectionActions } from '../blockSelectionStore';
 import {
   SelectionArea,

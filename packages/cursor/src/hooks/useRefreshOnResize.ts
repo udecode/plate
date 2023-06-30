@@ -1,5 +1,6 @@
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Range } from 'slate';
+
 import { CursorOverlayProps } from '../components';
 import { SelectionRect } from '../types';
 import { useRequestReRender } from './useRequestReRender';

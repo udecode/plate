@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
+
 import { excalidrawInitialData } from './excalidrawInitialData';
 
 jsx;

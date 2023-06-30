@@ -2,6 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { TEditor } from '@udecode/slate';
+
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 jsx;

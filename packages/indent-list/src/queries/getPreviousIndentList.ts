@@ -1,15 +1,16 @@
 import {
   EElement,
   EElementEntry,
-  getNode,
-  getPreviousPath,
   TEditor,
   TNodeEntry,
   Value,
+  getNode,
+  getPreviousPath,
 } from '@udecode/plate-common';
+
 import {
-  getSiblingIndentList,
   GetSiblingIndentListOptions,
+  getSiblingIndentList,
 } from './getSiblingIndentList';
 
 /**

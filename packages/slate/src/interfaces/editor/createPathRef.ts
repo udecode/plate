@@ -1,5 +1,6 @@
 import { Editor, Path } from 'slate';
 import { EditorPathRefOptions } from 'slate/dist/interfaces/editor';
+
 import { TEditor, Value } from './TEditor';
 
 /**

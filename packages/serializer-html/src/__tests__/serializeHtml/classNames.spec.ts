@@ -1,11 +1,10 @@
+import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import {
+  ELEMENT_PARAGRAPH,
   createBoldPlugin,
   createParagraphPlugin,
-  ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
 import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
-
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 
 it('serialize with slate className', () => {
   const editor = createPlateUIEditor({

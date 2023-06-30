@@ -1,11 +1,12 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
 import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 import {
-  moveSelectionByOffset,
   MoveSelectionByOffsetOptions,
+  moveSelectionByOffset,
 } from './moveSelectionByOffset';
 
 export const mentionOnKeyDownHandler: <V extends Value>(

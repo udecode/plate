@@ -1,7 +1,8 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
+
 import { insertImage } from './transforms/insertImage';
-import { isImageUrl } from './utils/isImageUrl';
 import { ImagePlugin } from './types';
+import { isImageUrl } from './utils/isImageUrl';
 
 /**
  * If inserted text is image url, insert image instead.

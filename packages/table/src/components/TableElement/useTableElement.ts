@@ -4,9 +4,10 @@ import {
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { useTableStore } from '../../stores/tableStore';
-import { TablePlugin, TTableElement } from '../../types';
+import { TTableElement, TablePlugin } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
 import { useTableColSizes } from './useTableColSizes';
 

@@ -4,6 +4,7 @@ import {
   usePlateEditorRef,
   usePlateSelectors,
 } from '@udecode/plate-common';
+
 import { MARK_COMMENT } from '../constants';
 import {
   useCommentsActions,

@@ -1,15 +1,16 @@
 import {
   EElement,
-  getAboveNode,
-  getParentNode,
-  isElement,
   PlateEditor,
-  someNode,
   TElement,
   TNodeEntry,
   Value,
+  getAboveNode,
+  getParentNode,
+  isElement,
+  someNode,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
+
 import { getCodeLineType } from '../options/index';
 
 /**

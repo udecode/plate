@@ -1,4 +1,4 @@
-import { PlateEditor, removeNodes, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, removeNodes } from '@udecode/plate-common';
 
 export const withSingleLine = <
   V extends Value = Value,

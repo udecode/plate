@@ -1,5 +1,6 @@
 import { GetAboveNodeOptions, TEditor, Value } from '@udecode/slate';
 import { Path, Range } from 'slate';
+
 import { getBlockAbove } from './getBlockAbove';
 
 /**

@@ -1,15 +1,16 @@
 import {
-  deleteText,
-  findDescendant,
-  getLastChildPath,
-  moveChildren,
   MoveChildrenOptions,
   PlateEditor,
   TElementEntry,
   Value,
+  deleteText,
+  findDescendant,
+  getLastChildPath,
+  moveChildren,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions<V extends Value = Value> {

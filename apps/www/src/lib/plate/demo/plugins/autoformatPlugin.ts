@@ -1,7 +1,8 @@
 import { AutoformatPlugin } from '@udecode/plate-autoformat';
-import { autoformatRules } from './autoformatRules';
 
 import { MyEditor, MyPlatePlugin, MyValue } from '@/types/plate-types';
+
+import { autoformatRules } from './autoformatRules';
 
 export const autoformatPlugin: Partial<
   MyPlatePlugin<AutoformatPlugin<MyValue, MyEditor>>

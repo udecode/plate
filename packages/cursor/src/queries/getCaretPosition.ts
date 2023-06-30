@@ -1,4 +1,5 @@
 import { Range } from 'slate';
+
 import { CaretPosition, SelectionRect } from '../types';
 
 /**

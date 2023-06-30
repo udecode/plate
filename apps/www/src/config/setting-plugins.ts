@@ -1,3 +1,4 @@
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -48,7 +49,6 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { SettingBadge, settingBadges } from '@/config/setting-badges';
 import { settingValues } from '@/config/setting-values';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export type CheckedId = keyof typeof settingPluginItems;
 

@@ -1,20 +1,20 @@
 import '@/styles/mdx.css';
-import Balancer from 'react-wrap-balancer';
-import { allDocs } from 'contentlayer/generated';
-import { ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { allDocs } from 'contentlayer/generated';
+import { ChevronRight } from 'lucide-react';
+import Balancer from 'react-wrap-balancer';
 
+import { siteConfig } from '@/config/site';
+import { getTableOfContents } from '@/lib/toc';
+import { absoluteUrl, cn } from '@/lib/utils';
+import { badgeVariants } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
-import { badgeVariants } from '@/components/ui/badge';
-import { siteConfig } from '@/config/site';
-import { getTableOfContents } from '@/lib/toc';
-import { absoluteUrl, cn } from '@/lib/utils';
-import { ScrollArea } from '@/registry/default/ui/scroll-area';
+import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 interface DocPageProps {
   params: {

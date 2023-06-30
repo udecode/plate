@@ -12,10 +12,11 @@ import {
   usePlateSelectors,
 } from '@udecode/plate-common';
 import {
+  UseVirtualFloatingOptions,
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
-  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
+
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
 import { unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';

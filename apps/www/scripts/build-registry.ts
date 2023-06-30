@@ -1,8 +1,10 @@
 // @ts-nocheck
-import template from 'lodash.template';
+
 import fs from 'node:fs';
 import path from 'node:path';
+import template from 'lodash.template';
 import { rimraf } from 'rimraf';
+
 import { colorMapping, colors } from '../src/registry/colors';
 import { registry } from '../src/registry/registry';
 import { registrySchema } from '../src/registry/schema';
@@ -34,7 +36,7 @@ for (const style of styles) {
 
   // Build style index.
   for (const item of result.data) {
-    // if (item.type === "components:ui") {
+    // if (item.type === "components:plate-ui") {
     //   continue
     // }
 
@@ -71,7 +73,7 @@ for (const style of styles) {
       for (const [subIndex, subItem] of item.items.entries()) {
         index += `
     '${item.name}/${subItem}': {
-      name: '${subItem}',
+      name: '${item.name}/${subItem}',
       type: '${item.type}',
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: ['${resolveFiles[subIndex]}'],
@@ -113,7 +115,7 @@ for (const style of styles) {
   const targetPath = path.join(REGISTRY_PATH, 'styles', style.name);
 
   for (const item of result.data) {
-    if (item.type !== 'components:ui') {
+    if (item.type !== 'components:plate-ui') {
       continue;
     }
 
@@ -151,7 +153,7 @@ writeFile(path.join(REGISTRY_PATH, 'styles/index.json'), stylesJson, 'utf8');
 // ----------------------------------------------------------------------------
 // Build registry/index.json.
 // ----------------------------------------------------------------------------
-const names = result.data.filter((item) => item.type === 'components:ui');
+const names = result.data.filter((item) => item.type === 'components:plate-ui');
 const registryJson = JSON.stringify(names, null, 2);
 writeFile(path.join(REGISTRY_PATH, 'index.json'), registryJson, 'utf8');
 
@@ -234,7 +236,7 @@ export const BASE_STYLES_WITH_VARIABLES = `@tailwind base;
     --secondary-foreground: <%- colors.light["secondary-foreground"] %>;
  
     --accent: <%- colors.light["accent"] %>;
-    --accent-foreground: <%- colors.light["accent-foregrond"] %>;
+    --accent-foreground: <%- colors.light["accent-foreground"] %>;
  
     --destructive: <%- colors.light["destructive"] %>;
     --destructive-foreground: <%- colors.light["destructive-foreground"] %>;
@@ -267,7 +269,7 @@ export const BASE_STYLES_WITH_VARIABLES = `@tailwind base;
     --secondary-foreground: <%- colors.dark["secondary-foreground"] %>;
  
     --accent: <%- colors.dark["accent"] %>;
-    --accent-foreground: <%- colors.dark["accent-foregrond"] %>;
+    --accent-foreground: <%- colors.dark["accent-foreground"] %>;
  
     --destructive: <%- colors.dark["destructive"] %>;
     --destructive-foreground: <%- colors.dark["destructive-foreground"] %>;
@@ -354,7 +356,7 @@ export const THEME_STYLES_WITH_VARIABLES = `
     --secondary-foreground: <%- colors.light["secondary-foreground"] %>;
  
     --accent: <%- colors.light["accent"] %>;
-    --accent-foreground: <%- colors.light["accent-foregrond"] %>;
+    --accent-foreground: <%- colors.light["accent-foreground"] %>;
  
     --destructive: <%- colors.light["destructive"] %>;
     --destructive-foreground: <%- colors.light["destructive-foreground"] %>;
@@ -387,7 +389,7 @@ export const THEME_STYLES_WITH_VARIABLES = `
     --secondary-foreground: <%- colors.dark["secondary-foreground"] %>;
  
     --accent: <%- colors.dark["accent"] %>;
-    --accent-foreground: <%- colors.dark["accent-foregrond"] %>;
+    --accent-foreground: <%- colors.dark["accent-foreground"] %>;
  
     --destructive: <%- colors.dark["destructive"] %>;
     --destructive-foreground: <%- colors.dark["destructive-foreground"] %>;

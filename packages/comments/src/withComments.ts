@@ -1,13 +1,14 @@
 import {
   PlateEditor,
-  unsetNodes,
   Value,
   WithPlatePlugin,
+  unsetNodes,
 } from '@udecode/plate-common';
-import { removeCommentMark } from './transforms/removeCommentMark';
-import { getCommentCount } from './utils/getCommentCount';
+
 import { MARK_COMMENT } from './constants';
+import { removeCommentMark } from './transforms/removeCommentMark';
 import { CommentsPlugin } from './types';
+import { getCommentCount } from './utils/getCommentCount';
 
 export const withComments = <
   V extends Value = Value,

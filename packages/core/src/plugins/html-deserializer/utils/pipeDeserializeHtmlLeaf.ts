@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
+
 import { PlateEditor } from '../../../types/PlateEditor';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 

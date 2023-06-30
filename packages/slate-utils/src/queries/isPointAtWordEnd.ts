@@ -1,9 +1,9 @@
 import {
+  TEditor,
+  Value,
   getEditorString,
   getPointAfter,
   getRange,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import { Point } from 'slate';
 

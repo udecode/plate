@@ -1,4 +1,5 @@
 import { Node, NodeLevelsOptions, Path } from 'slate';
+
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';
 

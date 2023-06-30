@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+
 import {
+  TCommentText,
   getCommentKeyId,
   isCommentKey,
-  TCommentText,
   useCommentsActions,
   useCommentsSelectors,
 } from '..';

@@ -1,10 +1,11 @@
 import {
-  collapseSelection,
-  isExpanded,
   PlateEditor,
   Value,
   WithPlatePlugin,
+  collapseSelection,
+  isExpanded,
 } from '@udecode/plate-common';
+
 import { getTableAbove, getTableGridAbove } from './queries/index';
 import { TablePlugin } from './types';
 

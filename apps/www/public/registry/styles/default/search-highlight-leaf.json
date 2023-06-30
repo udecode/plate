@@ -8,5 +8,5 @@
       "content": "import React from 'react';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@/lib/utils';\n\nexport function SearchHighlightLeaf({ className, ...props }: PlateLeafProps) {\n  return <PlateLeaf className={cn('bg-yellow-100', className)} {...props} />;\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

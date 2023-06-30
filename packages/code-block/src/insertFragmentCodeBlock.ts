@@ -1,13 +1,14 @@
 import {
   EElement,
-  findNode,
-  getNodeString,
-  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
   Value,
+  findNode,
+  getNodeString,
+  getPluginType,
 } from '@udecode/plate-common';
+
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
 function extractCodeLinesFromCodeBlock(node: TElement) {

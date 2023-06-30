@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
+import { createDeserializeMdPlugin } from '@/packages/serializer-md/src/deserializer/createDeserializeMdPlugin';
 import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
-import { deserializeMd } from './deserializeMd';
 
-import { createDeserializeMdPlugin } from '@/packages/serializer-md/src/deserializer/createDeserializeMdPlugin';
+import { deserializeMd } from './deserializeMd';
 
 jsx;
 

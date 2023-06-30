@@ -1,4 +1,5 @@
 import { Editor, EditorNodeOptions, Location } from 'slate';
+
 import { ENode } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';

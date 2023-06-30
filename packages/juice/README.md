@@ -9,10 +9,6 @@ Given inserted HTML, [juice](https://www.npmjs.com/package/juice) will inline th
 Check out
 [Serializing HTML](https://platejs.org/docs/serializing-html).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html).
-
 ## License
 
 [MIT](../../LICENSE)

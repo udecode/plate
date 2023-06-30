@@ -1,11 +1,12 @@
 import {
   EDescendant,
-  isElement,
-  isText,
   TDescendant,
   Value,
+  isElement,
+  isText,
 } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
+
 import { PlateEditor } from '../../../types';
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';

@@ -1,8 +1,15 @@
-# Plate NextJS
+# Documentation
 
-This example demonstrates a Plate setup with NextJS.
+This is the documentation for the Plate project.
+
+## Usage
+
+Anytime you make a change in the `registry` folder, run:
 
 ```bash
-yarn install
-yarn dev
+yarn build:registry
 ```
+
+## License
+
+[MIT](./LICENSE)

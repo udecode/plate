@@ -1,7 +1,35 @@
 'use client';
+
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
+
+import { descriptions } from '@/config/descriptions';
+import {
+  CheckedId,
+  SettingPlugin,
+  settingPluginItems,
+  settingPlugins,
+} from '@/config/setting-plugins';
+import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useFixHydration } from '@/hooks/use-fix-hydration';
+import { useViewport } from '@/hooks/use-viewport';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { Checkbox } from '@/registry/default/plate-ui/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/registry/default/plate-ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/registry/default/plate-ui/tooltip';
+
 import { categoryIds, settingsStore } from './context/settings-store';
+import { Icons } from './icons';
+import { SettingsCombobox } from './settings-combobox';
 import {
   Accordion,
   AccordionContent,
@@ -18,32 +46,6 @@ import {
 } from './ui/bottom-sheet';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { Icons } from './icons';
-import { SettingsCombobox } from './settings-combobox';
-
-import { descriptions } from '@/config/descriptions';
-import {
-  CheckedId,
-  SettingPlugin,
-  settingPluginItems,
-  settingPlugins,
-} from '@/config/setting-plugins';
-import { useDebounce } from '@/hooks/use-debounce';
-import { useFixHydration } from '@/hooks/use-fix-hydration';
-import { useViewport } from '@/hooks/use-viewport';
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/ui/button';
-import { Checkbox } from '@/registry/default/ui/checkbox';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/registry/default/ui/popover';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/registry/default/ui/tooltip';
 
 export function SettingsSwitch({
   id,

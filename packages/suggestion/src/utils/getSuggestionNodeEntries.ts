@@ -1,9 +1,10 @@
 import {
-  getNodeEntries,
   GetNodeEntriesOptions,
   PlateEditor,
   Value,
+  getNodeEntries,
 } from '@udecode/plate-common';
+
 import { TSuggestionText } from '../types';
 
 export const getSuggestionNodeEntries = <V extends Value = Value>(

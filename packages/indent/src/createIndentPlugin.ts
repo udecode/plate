@@ -1,8 +1,9 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  createPluginFactory,
   getPluginType,
 } from '@udecode/plate-common';
+
 import { onKeyDownIndent } from './onKeyDownIndent';
 import { IndentPlugin } from './types';
 import { withIndent } from './withIndent';

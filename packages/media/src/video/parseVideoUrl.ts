@@ -1,5 +1,6 @@
 import { isUrl } from '@udecode/plate-common';
 import videoParser from 'js-video-url-parser';
+
 import { EmbedUrlData } from '../media/parseMediaUrl';
 
 const YOUTUBE_PREFIX = 'https://www.youtube.com/embed/';

@@ -1,10 +1,11 @@
 import {
-  createPlateEditor,
   CreatePlateEditorOptions,
   PlateEditor,
   TEditor,
   Value,
+  createPlateEditor,
 } from '@udecode/plate-common';
+
 import { createPlateUI } from './createPlateUI';
 
 /**

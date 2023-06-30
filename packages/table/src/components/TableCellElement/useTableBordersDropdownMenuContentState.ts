@@ -1,4 +1,5 @@
 import { usePlateEditorState } from '@udecode/plate-common';
+
 import { isTableBorderHidden } from '../../queries/index';
 import { useTableStore } from '../../stores/index';
 import { getOnSelectTableBorderFactory } from './getOnSelectTableBorderFactory';

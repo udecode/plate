@@ -1,5 +1,6 @@
 import { Editor, Range } from 'slate';
 import { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
+
 import { TEditor, Value } from './TEditor';
 
 /**

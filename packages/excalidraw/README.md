@@ -7,10 +7,6 @@ This package implements the excalidraw plugin for Plate.
 Check out
 [Excalidraw](https://platejs.org/docs/excalidraw).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

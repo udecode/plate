@@ -1,5 +1,6 @@
 import { Editor, Point } from 'slate';
 import { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
+
 import { TEditor, Value } from './TEditor';
 
 /**

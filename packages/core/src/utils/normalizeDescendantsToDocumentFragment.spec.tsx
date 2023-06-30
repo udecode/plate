@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+
 import {
   createPlateEditor,
   normalizeDescendantsToDocumentFragment,

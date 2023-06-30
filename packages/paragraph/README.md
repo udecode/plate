@@ -8,10 +8,6 @@ default block of your editor.
 Check out
 [Basic Elements](https://platejs.org/docs/basic-elements).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

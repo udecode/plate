@@ -1,5 +1,6 @@
-import { createTEditor, normalizeEditor, TEditor, Value } from '@udecode/slate';
-import { withPlate, WithPlateOptions } from '../plugins/withPlate';
+import { TEditor, Value, createTEditor, normalizeEditor } from '@udecode/slate';
+
+import { WithPlateOptions, withPlate } from '../plugins/withPlate';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';

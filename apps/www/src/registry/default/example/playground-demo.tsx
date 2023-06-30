@@ -1,8 +1,26 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { createPlateUI } from '@/plate/createPlateUI';
+import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
+import { editableProps } from '@/plate/demo/editableProps';
+import { isEnabled } from '@/plate/demo/is-enabled';
+import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
+import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
+import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { MENTIONABLES } from '@/plate/demo/values/mentionables';
+import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -25,8 +43,8 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider } from '@udecode/plate-common';
 import {
-  createPlateEditor,
   PlatePluginComponent,
+  createPlateEditor,
   usePlateActions,
   usePlateSelectors,
 } from '@udecode/plate-core';
@@ -64,40 +82,22 @@ import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
+import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { ValueId } from '@/config/setting-values';
+import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { SettingsPanel } from '@/components/settings-panel';
 import { SettingsToggle } from '@/components/settings-toggle';
-import { ValueId } from '@/config/setting-values';
-import { cn } from '@/lib/utils';
-import { createPlateUI } from '@/plate/createPlateUI';
-import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
-import { editableProps } from '@/plate/demo/editableProps';
-import { isEnabled } from '@/plate/demo/is-enabled';
-import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
-import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
-import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
-import { indentPlugin } from '@/plate/demo/plugins/indentPlugin';
-import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
-import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
-import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
-import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
-import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { MENTIONABLES } from '@/plate/demo/values/mentionables';
-import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { CommentsPopover } from '@/registry/default/ui/comments-popover/comments-popover';
-import { CursorOverlay } from '@/registry/default/ui/cursor-overlay';
-import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/registry/default/ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/registry/default/ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/registry/default/ui/floating-toolbar-buttons';
-import { MentionCombobox } from '@/registry/default/ui/mention-combobox';
-import { createMyPlugins, MyValue } from '@/types/plate-types';
+import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
+import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
+import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -295,9 +295,10 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 <Plate
                   editableProps={{
                     ...editableProps,
+                    placeholder: '',
                     className: cn(
                       editableProps.className,
-                      'px-8',
+                      'px-8 outline-none',
                       !id &&
                         'min-h-[920px] w-[900px] pb-[20vh] pt-4 md:px-[96px]',
                       id && 'pb-8 pt-2'

@@ -1,18 +1,19 @@
 import {
-  deleteText,
   ELEMENT_DEFAULT,
+  PlateEditor,
+  Value,
+  deleteText,
   getEditorString,
   getRangeBefore,
   getRangeFromBlockStart,
   isBlock,
   isVoid,
-  PlateEditor,
   setElements,
   someNode,
-  Value,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Range } from 'slate';
+
 import { AutoformatBlockRule } from '../types';
 import { getMatchRange } from '../utils/getMatchRange';
 

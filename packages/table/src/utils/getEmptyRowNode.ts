@@ -1,6 +1,7 @@
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, getPluginType } from '@udecode/plate-common';
+
 import { ELEMENT_TR } from '../createTablePlugin';
-import { getEmptyCellNode, GetEmptyCellNodeOptions } from './getEmptyCellNode';
+import { GetEmptyCellNodeOptions, getEmptyCellNode } from './getEmptyCellNode';
 
 export interface GetEmptyRowNodeOptions extends GetEmptyCellNodeOptions {
   colCount?: number;

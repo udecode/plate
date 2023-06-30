@@ -1,13 +1,14 @@
 import {
-  isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
-  setElements,
-  someNode,
   Value,
   WithPlatePlugin,
+  isCollapsed,
+  setElements,
+  someNode,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
 import { ResetNodePlugin } from './types';
 
 export const SIMULATE_BACKSPACE: any = {

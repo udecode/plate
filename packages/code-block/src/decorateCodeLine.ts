@@ -1,15 +1,15 @@
-/* eslint-disable unused-imports/no-unused-imports,unused-imports/no-unused-vars,simple-import-sort/imports */
+/* eslint-disable unused-imports/no-unused-imports,unused-imports/no-unused-vars */
 import {
   DecorateEntry,
+  PlateEditor,
+  Value,
   getNodeString,
   getParentNode,
   getPlugin,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
-
 // noinspection ES6UnusedImports
-import Prism, { languages, Token, tokenize } from 'prismjs';
+import Prism, { Token, languages, tokenize } from 'prismjs';
+
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-c';
@@ -58,6 +58,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
 import { Range } from 'slate';
+
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,

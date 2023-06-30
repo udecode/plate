@@ -9,7 +9,7 @@ export const registrySchema = z.array(
     items: z.array(z.string()).optional(),
     external: z.boolean().optional(),
     type: z.enum([
-      'components:ui',
+      'components:plate-ui',
       'components:component',
       'components:example',
     ]),

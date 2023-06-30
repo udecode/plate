@@ -5,8 +5,8 @@
   "files": [
     {
       "name": "comment-toolbar-button.tsx",
-      "content": "'use client';\n\nimport React from 'react';\nimport { useCommentAddButton } from '@udecode/plate-comments';\nimport { MessageSquarePlus } from 'lucide-react';\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const { props } = useCommentAddButton();\n\n  return (\n    <ToolbarButton tooltip=\"Comment (⌘+⇧+M)\" {...props}>\n      <MessageSquarePlus />\n    </ToolbarButton>\n  );\n}\n"
+      "content": "'use client';\n\nimport React from 'react';\nimport { useCommentAddButton } from '@udecode/plate-comments';\nimport { MessageSquarePlus } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const { props } = useCommentAddButton();\n\n  return (\n    <ToolbarButton tooltip=\"Comment (⌘+⇧+M)\" {...props}>\n      <MessageSquarePlus />\n    </ToolbarButton>\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

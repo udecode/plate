@@ -1,15 +1,16 @@
 import React, {
-  cloneElement,
   ComponentPropsWithoutRef,
   ReactNode,
+  cloneElement,
 } from 'react';
+
 import {
+  UseFloatingProps,
   autoUpdate,
   flip,
   offset,
   shift,
   useFloating,
-  UseFloatingProps,
   useInteractions,
 } from '../libs/floating-ui';
 

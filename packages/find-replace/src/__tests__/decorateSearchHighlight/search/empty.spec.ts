@@ -1,11 +1,10 @@
-import { createPlateEditor } from '@udecode/plate-common';
-import { Range } from 'slate';
-
 import {
-  createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
+  createFindReplacePlugin,
 } from '@/packages/find-replace/src/createFindReplacePlugin';
 import { decorateFindReplace } from '@/packages/find-replace/src/decorateFindReplace';
+import { createPlateEditor } from '@udecode/plate-common';
+import { Range } from 'slate';
 
 const output: Range[] = [];
 

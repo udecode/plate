@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
+  PlateEditor,
   createPlateEditor,
   insertNodes,
   mergeNodes,
-  PlateEditor,
   splitNodes,
 } from '@udecode/plate-common';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@udecode/plate-list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { createNodeIdPlugin } from './createNodeIdPlugin';
 
 jsx;

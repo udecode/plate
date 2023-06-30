@@ -1,22 +1,23 @@
 /** @jsx jsx */
 
 import {
+  ComboboxState,
   comboboxActions,
   comboboxSelectors,
-  ComboboxState,
 } from '@udecode/plate-combobox';
 import {
-  moveSelection,
   PlateEditor,
-  select,
   Value,
+  moveSelection,
+  select,
 } from '@udecode/plate-common';
 import {
-  createDataTransfer,
   DataTransferDataMap,
+  createDataTransfer,
   jsx,
 } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
+
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 

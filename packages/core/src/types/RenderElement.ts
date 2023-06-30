@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateRenderElementProps } from './PlateRenderElementProps';
 
 /**

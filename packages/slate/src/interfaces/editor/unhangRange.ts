@@ -6,6 +6,7 @@ import {
   Range,
   Span,
 } from 'slate';
+
 import { TRange } from '../../types/interfaces';
 import { TEditor, Value } from './TEditor';
 

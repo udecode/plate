@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
+import { createEditorWithMentions } from '@/packages/mention/src/__tests__/createEditorWithMentions';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-
-import { createEditorWithMentions } from '@/packages/mention/src/__tests__/createEditorWithMentions';
 
 jsx;
 

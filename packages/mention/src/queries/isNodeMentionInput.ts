@@ -1,9 +1,10 @@
 import {
-  getPluginType,
   PlateEditor,
   TNode,
   Value,
+  getPluginType,
 } from '@udecode/plate-common';
+
 import { ELEMENT_MENTION_INPUT } from '../createMentionPlugin';
 import { TMentionInputElement } from '../types';
 

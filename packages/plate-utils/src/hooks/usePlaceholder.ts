@@ -1,12 +1,13 @@
 import { usePlateEditorState } from '@udecode/plate-core';
 import {
+  QueryNodeOptions,
   isCollapsed,
   isElementEmpty,
   queryNode,
-  QueryNodeOptions,
 } from '@udecode/slate';
 import { findNodePath } from '@udecode/slate-react';
 import { useFocused, useSelected } from 'slate-react';
+
 import { PlateElementProps } from '..';
 
 export interface PlaceholderProps extends PlateElementProps {

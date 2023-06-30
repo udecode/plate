@@ -5,8 +5,8 @@
   "files": [
     {
       "name": "link-toolbar-button.tsx",
-      "content": "import React from 'react';\nimport {\n  useLinkToolbarButton,\n  useLinkToolbarButtonState,\n} from '@udecode/plate-link';\n\nimport { Icons } from '@/components/icons';\nimport { ToolbarButton } from '@/registry/default/ui/toolbar';\n\nexport function LinkToolbarButton() {\n  const state = useLinkToolbarButtonState();\n  const { props } = useLinkToolbarButton(state);\n\n  return (\n    <ToolbarButton tooltip=\"Link\" {...props}>\n      <Icons.link />\n    </ToolbarButton>\n  );\n}\n"
+      "content": "import React from 'react';\nimport {\n  useLinkToolbarButton,\n  useLinkToolbarButtonState,\n} from '@udecode/plate-link';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function LinkToolbarButton() {\n  const state = useLinkToolbarButtonState();\n  const { props } = useLinkToolbarButton(state);\n\n  return (\n    <ToolbarButton tooltip=\"Link\" {...props}>\n      <Icons.link />\n    </ToolbarButton>\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

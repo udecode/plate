@@ -1,11 +1,12 @@
 import {
+  PlateEditor,
+  Value,
   getAboveNode,
   getPluginType,
-  PlateEditor,
   removeNodes,
   someNode,
-  Value,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
 export const deleteTable = <V extends Value>(editor: PlateEditor<V>) => {

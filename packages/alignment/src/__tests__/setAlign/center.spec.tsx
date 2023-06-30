@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-
 import { createAlignPlugin } from '@/packages/alignment/src/createAlignPlugin';
 import { setAlign } from '@/packages/alignment/src/transforms/setAlign';
+import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 

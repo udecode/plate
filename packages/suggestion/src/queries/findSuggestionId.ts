@@ -1,11 +1,12 @@
 import {
+  PlateEditor,
+  Value,
   getEdgePoints,
   getPointAfter,
   getPointBefore,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 import { Location, Point } from 'slate';
+
 import { KEY_SUGGESTION_ID } from '../constants';
 import { findSuggestionNode } from './findSuggestionNode';
 

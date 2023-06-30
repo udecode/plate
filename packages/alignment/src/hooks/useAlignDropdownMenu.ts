@@ -6,6 +6,7 @@ import {
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-common';
+
 import { Alignment, KEY_ALIGN, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {

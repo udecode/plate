@@ -1,4 +1,4 @@
-import { getNode, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getNode } from '@udecode/slate';
 import { last } from 'lodash';
 import { Path } from 'slate';
 

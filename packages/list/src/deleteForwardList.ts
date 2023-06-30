@@ -1,4 +1,8 @@
 import {
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -9,22 +13,19 @@ import {
   getPluginType,
   getPointAfter,
   isSelectionAtBlockEnd,
-  PlateEditor,
   removeNodes,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
+import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries/index';
 import {
-  moveListItemsToList,
   moveListItemUp,
+  moveListItemsToList,
   removeFirstListItem,
   removeListItem,
 } from './transforms/index';
-import { ELEMENT_LI } from './createListPlugin';
 
 const selectionIsNotInAListHandler = <V extends Value>(
   editor: PlateEditor<V>

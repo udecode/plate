@@ -1,4 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
+
 import { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';
 import { ImagePlugin } from './types';
 import { withImage } from './withImage';

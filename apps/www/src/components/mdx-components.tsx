@@ -4,23 +4,13 @@ import { ReactNode } from 'react';
 import * as React from 'react';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer/hooks';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from './ui/accordion';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { AspectRatio } from './ui/aspect-ratio';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+
+import { NpmCommands } from '@/types/unist';
+import { Event } from '@/lib/events';
+import { cn } from '@/lib/utils';
+import { useConfig } from '@/hooks/use-config';
+import { Style } from '@/registry/styles';
+
 import {
   APIAttributes,
   APIItem,
@@ -39,12 +29,23 @@ import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';
-
-import { useConfig } from '@/hooks/use-config';
-import { Event } from '@/lib/events';
-import { cn } from '@/lib/utils';
-import { Style } from '@/registry/styles';
-import { NpmCommands } from '@/types/unist';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from './ui/accordion';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { AspectRatio } from './ui/aspect-ratio';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const components = {
   Accordion,

@@ -5,6 +5,7 @@ import {
   NoData,
 } from '@udecode/plate-combobox';
 import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-common';
+
 import { EmojiPlugin, getEmojiOnSelectItem } from '../index';
 
 export interface TEmojiCombobox<TData extends Data = NoData>

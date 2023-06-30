@@ -1,9 +1,8 @@
+import { createLinkPlugin } from '@/packages/link/src/index';
+import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { createImagePlugin } from '@udecode/plate-media';
 import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
-
-import { createLinkPlugin } from '@/packages/link/src/index';
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 
 it('serialize link to html with attributes', () => {
   const plugins = [

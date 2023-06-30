@@ -1,9 +1,10 @@
 import {
-  getChildren,
-  getNodeString,
   PlateEditor,
   Value,
+  getChildren,
+  getNodeString,
 } from '@udecode/plate-common';
+
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /**

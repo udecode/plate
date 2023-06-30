@@ -1,12 +1,12 @@
 import React from 'react';
+import { PlatePlugin } from '@/packages/core/src/types';
+import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 import { render } from '@testing-library/react';
 import { isBlock } from '@udecode/slate/src/interfaces/editor/isBlock';
 import { setNodes } from '@udecode/slate/src/interfaces/transforms/setNodes';
 import { isEqual, memoize } from 'lodash';
-import { Plate } from './Plate';
 
-import { PlatePlugin } from '@/packages/core/src/types';
-import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
+import { Plate } from './Plate';
 
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {

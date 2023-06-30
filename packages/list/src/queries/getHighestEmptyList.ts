@@ -1,10 +1,11 @@
 import {
-  getAboveNode,
-  getPluginType,
   PlateEditor,
   Value,
+  getAboveNode,
+  getPluginType,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { ELEMENT_LI } from '../createListPlugin';
 import { getListTypes } from './getListTypes';
 

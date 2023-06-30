@@ -1,11 +1,11 @@
 import {
   ELEMENT_DEFAULT,
-  getPluginType,
   HotkeyPlugin,
   KeyboardHandlerReturnType,
   PlateEditor,
-  toggleNodeType,
   WithPlatePlugin,
+  getPluginType,
+  toggleNodeType,
 } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
 import isHotkey from 'is-hotkey';

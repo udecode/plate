@@ -3,10 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
-import { Index } from '../__registry__';
-import { styles } from '../registry/styles';
 
 import { UnistNode, UnistTree } from '@/types/unist';
+
+import { Index } from '../__registry__';
+import { styles } from '../registry/styles';
 
 export function rehypeComponent() {
   return async (tree: UnistTree) => {

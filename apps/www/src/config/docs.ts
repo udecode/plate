@@ -57,13 +57,20 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Plugin Component',
+          title: 'Component',
           href: '/docs/plugin-component',
           items: [],
         },
         {
           title: 'Typescript',
           href: '/docs/typescript',
+          items: [],
+        },
+        {
+          title: 'CLI',
+          href: '/docs/cli',
+          disabled: true,
+          label: 'Soon',
           items: [],
         },
       ],

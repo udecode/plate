@@ -1,6 +1,6 @@
 import {
-  createPluginFactory,
   KEY_DESERIALIZE_HTML,
+  createPluginFactory,
 } from '@udecode/plate-common';
 import juice from 'juice';
 

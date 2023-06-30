@@ -6,11 +6,12 @@ import {
   autoformatPunctuation,
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
+
+import { MyAutoformatRule } from '@/types/plate-types';
+
 import { autoformatBlocks } from './autoformatBlocks';
 import { autoformatLists } from './autoformatLists';
 import { autoformatMarks } from './autoformatMarks';
-
-import { MyAutoformatRule } from '@/types/plate-types';
 
 export const autoformatRules = [
   ...autoformatBlocks,

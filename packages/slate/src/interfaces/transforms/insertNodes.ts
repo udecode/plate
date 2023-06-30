@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Path, Transforms } from 'slate';
+
 import { NodeMatchOption } from '../../types/NodeMatchOption';
 import { getAboveNode, getEndPoint } from '../editor';
 import { TEditor, Value } from '../editor/TEditor';

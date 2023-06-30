@@ -1,3 +1,4 @@
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -46,7 +47,6 @@ import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { CheckedId } from '@/config/setting-plugins';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export const descriptions: Record<CheckedId, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',

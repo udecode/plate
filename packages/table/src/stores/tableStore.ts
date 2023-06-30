@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { createAtomStore, TElement } from '@udecode/plate-common';
+import { TElement, createAtomStore } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
 export type TableStoreSizeOverrides = Map<number, number>;

@@ -17,10 +17,6 @@ Includes:
 - Check out [Image](https://platejs.org/docs/image).
 - Check out [Media Embed](https://platejs.org/docs/media-embed).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

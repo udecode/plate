@@ -1,5 +1,9 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+packages/cli/components
+tsconfig.tsbuildinfo
+apps/www/tsconfig.tsbuildinfo
+
 .yarn/*
 !.yarn/cache
 !.yarn/patches
@@ -20,7 +24,6 @@ report.*
 # Dependency directories
 jspm_packages/
 /packages/*/node_modules
-/packages/*/LICENSE
 **/dist
 
 # compiled output

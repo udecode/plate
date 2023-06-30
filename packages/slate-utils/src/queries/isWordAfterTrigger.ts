@@ -1,9 +1,9 @@
 import {
+  TEditor,
+  Value,
   getEditorString,
   getPointBefore,
   getRange,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import { escapeRegExp } from '@udecode/utils';
 import { Point } from 'slate';

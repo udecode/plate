@@ -1,12 +1,12 @@
 import {
   ELEMENT_DEFAULT,
-  getPlugin,
-  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
   TNode,
   Value,
+  getPlugin,
+  getPluginType,
 } from '@udecode/plate-common';
 import {
   ELEMENT_TABLE,
@@ -15,6 +15,7 @@ import {
   ELEMENT_TR,
 } from '@udecode/plate-table';
 import { parse } from 'papaparse';
+
 import { KEY_DESERIALIZE_CSV } from '../createDeserializeCsvPlugin';
 import { DeserializeCsvParseOptions, DeserializeCsvPlugin } from '../types';
 

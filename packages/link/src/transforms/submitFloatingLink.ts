@@ -1,9 +1,10 @@
 import {
-  focusEditor,
-  getPluginOptions,
   PlateEditor,
   Value,
+  focusEditor,
+  getPluginOptions,
 } from '@udecode/plate-common';
+
 import {
   floatingLinkActions,
   floatingLinkSelectors,

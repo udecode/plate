@@ -1,9 +1,9 @@
 import {
-  findNodePath,
-  getParentNode,
   TElement,
   TReactEditor,
   Value,
+  findNodePath,
+  getParentNode,
 } from '@udecode/plate-common';
 
 /**

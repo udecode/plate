@@ -1,6 +1,7 @@
 import { TNode } from '@udecode/slate';
 import merge from 'lodash/merge';
-import { applyDeepToNodes, ApplyDeepToNodesOptions } from './applyDeepToNodes';
+
+import { ApplyDeepToNodesOptions, applyDeepToNodes } from './applyDeepToNodes';
 
 /**
  * Recursively merge a source object to children nodes with a query.

@@ -1,16 +1,17 @@
 import {
-  applyDeepToNodes,
-  defaultsDeepToNodes,
   PlateEditor,
-  queryNode,
-  someNode,
   TDescendant,
   TNode,
   TNodeEntry,
   Value,
   WithPlatePlugin,
+  applyDeepToNodes,
+  defaultsDeepToNodes,
+  queryNode,
+  someNode,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep';
+
 import { NodeIdPlugin } from './createNodeIdPlugin';
 
 /**

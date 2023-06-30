@@ -1,4 +1,5 @@
 import { Node, NodeAncestorsOptions, Path } from 'slate';
+
 import { AncestorOf } from './TAncestor';
 import { TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';

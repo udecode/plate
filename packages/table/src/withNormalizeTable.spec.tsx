@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
 import {
+  PlateEditor,
   createPlateEditor,
   normalizeEditor,
-  PlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { createTablePlugin } from './createTablePlugin';
 
 jsx;

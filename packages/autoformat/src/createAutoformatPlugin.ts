@@ -1,4 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
+
 import { onKeyDownAutoformat } from './onKeyDownAutoformat';
 import { AutoformatPlugin } from './types';
 import { withAutoformat } from './withAutoformat';

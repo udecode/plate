@@ -1,14 +1,15 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   getAboveNode,
   getNodeString,
   getPluginType,
   isCollapsed,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
+
 import { ImagePlugin } from '../image/index';
 import { TMediaElement } from '../media/index';
 import { captionGlobalStore } from './captionGlobalStore';

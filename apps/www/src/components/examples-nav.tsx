@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+
 import { Icons } from './icons';
 
 export function ExampleCodeLink() {

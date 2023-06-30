@@ -1,36 +1,3 @@
-import { KEY_ALIGN } from '@udecode/plate-alignment';
-import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
-import {
-  KEY_EXIT_BREAK,
-  KEY_SINGLE_LINE,
-  KEY_SOFT_BREAK,
-} from '@udecode/plate-break';
-import { MARK_COMMENT } from '@udecode/plate-comments';
-import { KEY_DND } from '@udecode/plate-dnd';
-import { KEY_EMOJI } from '@udecode/plate-emoji';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_BG_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { KEY_INDENT } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
-import { ELEMENT_LINK } from '@udecode/plate-link';
-import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { KEY_NODE_ID } from '@udecode/plate-node-id';
-import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
-import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
-import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
-import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
-import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
-import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
-import { KEY_TABBABLE } from '@udecode/plate-tabbable';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
-
 import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -64,6 +31,38 @@ import { singleLineValue } from '@/plate/demo/values/singleLineValue';
 import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
+import { KEY_ALIGN } from '@udecode/plate-alignment';
+import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
+import {
+  KEY_EXIT_BREAK,
+  KEY_SINGLE_LINE,
+  KEY_SOFT_BREAK,
+} from '@udecode/plate-break';
+import { MARK_COMMENT } from '@udecode/plate-comments';
+import { KEY_DND } from '@udecode/plate-dnd';
+import { KEY_EMOJI } from '@udecode/plate-emoji';
+import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
+import { MARK_BG_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
+import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { KEY_INDENT } from '@udecode/plate-indent';
+import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
+import { MARK_KBD } from '@udecode/plate-kbd';
+import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
+import { ELEMENT_LINK } from '@udecode/plate-link';
+import { ELEMENT_TODO_LI } from '@udecode/plate-list';
+import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+import { ELEMENT_MENTION } from '@udecode/plate-mention';
+import { KEY_NODE_ID } from '@udecode/plate-node-id';
+import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
+import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
+import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
+import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
+import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
+import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
+import { KEY_TABBABLE } from '@udecode/plate-tabbable';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 export type ValueId = keyof typeof settingValues;
 

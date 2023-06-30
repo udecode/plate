@@ -1,5 +1,6 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
-import { setIndent, SetIndentOptions } from './setIndent';
+
+import { SetIndentOptions, setIndent } from './setIndent';
 
 /**
  * Decrease the indentation of the selected blocks.

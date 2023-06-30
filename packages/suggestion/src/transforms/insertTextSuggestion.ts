@@ -1,11 +1,12 @@
 import {
+  PlateEditor,
+  Value,
   insertNodes,
   isSelectionExpanded,
   nanoid,
-  PlateEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { TSuggestionText } from '../types';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';

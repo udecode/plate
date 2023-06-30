@@ -5,7 +5,8 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
-import { generateSrcAndSrcSet, TCloudImageElement, useUpload } from '..';
+
+import { TCloudImageElement, generateSrcAndSrcSet, useUpload } from '..';
 
 export const useCloudImageElementState = ({
   element,

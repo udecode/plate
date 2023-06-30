@@ -1,9 +1,9 @@
 import {
-  getNodeString,
-  isInline,
   TAncestor,
   TEditor,
   Value,
+  getNodeString,
+  isInline,
 } from '@udecode/slate';
 
 /**

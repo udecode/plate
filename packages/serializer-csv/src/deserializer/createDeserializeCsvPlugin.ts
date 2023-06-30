@@ -1,6 +1,7 @@
 import { createPluginFactory } from '@udecode/plate-common';
-import { deserializeCsv } from './utils/index';
+
 import { DeserializeCsvPlugin } from './types';
+import { deserializeCsv } from './utils/index';
 
 export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
 

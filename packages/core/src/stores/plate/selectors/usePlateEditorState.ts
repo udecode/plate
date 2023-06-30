@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../../../types/PlateEditor';
 import { PlateId, usePlateSelectors } from '../createPlateStore';
 import { usePlateEditorRef } from './usePlateEditorRef';

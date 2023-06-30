@@ -1,4 +1,4 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, getPluginType } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
 import castArray from 'lodash/castArray';
 
