@@ -1,18 +1,11 @@
-# Plate core architecture
+# Plate Core
 
-This package implements the Plate core architecture: a plugin system which
-glues everything together.
+This package provides the foundational structure of the Plate editor framework.
 
 ## Documentation
 
-Check out:
-- [Basic Editor](https://platejs.org/docs/basic-editor)
-- [Plate](https://platejs.org/docs/Plate) and the following guides.
-
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
+Visit https://platejs.org/docs/api/core to view the documentation.
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](./LICENSE)

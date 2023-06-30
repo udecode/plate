@@ -7,10 +7,6 @@ This package programmatically corrects the tab order for tabbable elements insid
 Check out
 [Tabbable](https://platejs.org/docs/tabbable).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

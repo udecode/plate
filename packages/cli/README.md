@@ -37,3 +37,7 @@ npx plate-ui add
 ## Documentation
 
 Visit https://platejs.org/docs to view the documentation.
+
+## License
+
+[MIT](./LICENSE)

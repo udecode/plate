@@ -57,7 +57,7 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
-          title: 'Plugin Component',
+          title: 'Component',
           href: '/docs/plugin-component',
           items: [],
         },

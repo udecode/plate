@@ -7,10 +7,6 @@ This package implements the Markdown serializer for Plate.
 Check out
 [Serializing Markdown](https://platejs.org/docs/serializing-md).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html).
-
 ## License
 
-[MIT](../../LICENSE)
+[MIT](./LICENSE)

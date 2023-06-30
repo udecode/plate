@@ -7,10 +7,6 @@ autocompletion from user input.
 
 Check out [Mention](https://platejs.org/docs/mention).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

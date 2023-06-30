@@ -6,10 +6,6 @@ This package implements the table plugin for Plate.
 
 Check out [Table](https://platejs.org/docs/table).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)
