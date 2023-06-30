@@ -18,61 +18,67 @@ export const getCssTableCellRoot = ({
   isHeader,
   selected,
   borders,
+  background,
 }: {
   hideBorder?: boolean;
   isHeader?: boolean;
   selected?: boolean;
   borders?: BorderStylesDefault;
-} = {}): CSSProp => [
-  tw`relative p-0 overflow-visible bg-white border-none`,
-  hideBorder && tw`before:border-none`,
-  !hideBorder && [
-    tw`before:content-[''] before:box-border before:absolute before:select-none`,
-    borders && [
-      borders.bottom &&
-        css`
-          ::before {
-            border-bottom: ${borders.bottom.size}px ${borders.bottom.style}
-              ${borders.bottom.color};
-          }
-        `,
-      borders.right &&
-        css`
-          ::before {
-            border-right: ${borders.right.size}px ${borders.right.style}
-              ${borders.right.color};
-          }
-        `,
-      borders.left &&
-        css`
-          ::before {
-            border-left: ${borders.left.size}px ${borders.left.style}
-              ${borders.left.color};
-          }
-        `,
-      borders.top &&
-        css`
-          ::before {
-            border-top: ${borders.top.size}px ${borders.top.style}
-              ${borders.top.color};
-          }
-        `,
+  background?: string;
+} = {}): CSSProp => {
+  const appliedBackground =
+    background || (isHeader && 'rgb(244, 245, 247)') || '';
+  return [
+    tw`relative p-0 overflow-visible bg-white border-none`,
+    hideBorder && tw`before:border-none`,
+    !hideBorder && [
+      tw`before:content-[''] before:box-border before:absolute before:select-none`,
+      borders && [
+        borders.bottom &&
+          css`
+            ::before {
+              border-bottom: ${borders.bottom.size}px ${borders.bottom.style}
+                ${borders.bottom.color};
+            }
+          `,
+        borders.right &&
+          css`
+            ::before {
+              border-right: ${borders.right.size}px ${borders.right.style}
+                ${borders.right.color};
+            }
+          `,
+        borders.left &&
+          css`
+            ::before {
+              border-left: ${borders.left.size}px ${borders.left.style}
+                ${borders.left.color};
+            }
+          `,
+        borders.top &&
+          css`
+            ::before {
+              border-top: ${borders.top.size}px ${borders.top.style}
+                ${borders.top.color};
+            }
+          `,
+      ],
     ],
-  ],
-  isHeader && tw`text-left`,
-  isHeader &&
-    css`
-      ::before {
-        background-color: rgb(244, 245, 247);
-      }
+    isHeader && tw`text-left`,
+    appliedBackground &&
+      css`
+        ::before {
+          background: ${appliedBackground};
+        }
 
-      > * {
-        margin: 0;
-      }
-    `,
-  tw`before:w-full before:h-full`,
-  selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
-];
+        > * {
+          margin: 0;
+        }
+      `,
+    tw`before:w-full before:h-full`,
+    selected && tw`before:border-blue-500 before:z-10 before:bg-blue-50`,
+  ];
+};
 
 export const cssTableCellContent: CSSProp = [
   tw`relative h-full px-3 py-2 z-20 box-border`,
@@ -111,7 +117,13 @@ export const PlateTableCellElement = (props: PlateTableCellElementProps) => {
   return (
     <TableCellElement.Root
       asAlias={isHeader ? 'th' : 'td'}
-      css={getCssTableCellRoot({ borders, hideBorder, isHeader, selected })}
+      css={getCssTableCellRoot({
+        borders,
+        hideBorder,
+        isHeader,
+        selected,
+        background: rootProps.element.background,
+      })}
       {...rootProps}
     >
       {/* <div css={[tw`absolute top-0 right-2 z-30`]} contentEditable={false}> */}
