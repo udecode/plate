@@ -1,7 +1,11 @@
 {
   "name": "indent-list-toolbar-button",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-indent-list"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "indent-list-toolbar-button.tsx",

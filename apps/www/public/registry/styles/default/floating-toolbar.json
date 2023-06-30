@@ -1,7 +1,11 @@
 {
   "name": "floating-toolbar",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-floating"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "floating-toolbar.tsx",

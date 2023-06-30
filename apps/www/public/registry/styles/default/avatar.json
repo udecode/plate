@@ -1,6 +1,8 @@
 {
   "name": "avatar",
-  "dependencies": [],
+  "dependencies": [
+    "@radix-ui/react-avatar"
+  ],
   "registryDependencies": [],
   "files": [
     {

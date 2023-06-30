@@ -1,6 +1,8 @@
 {
   "name": "hr-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-horizontal-rule"
+  ],
   "registryDependencies": [],
   "files": [
     {

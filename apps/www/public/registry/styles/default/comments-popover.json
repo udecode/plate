@@ -1,7 +1,9 @@
 {
   "name": "comments-popover",
   "dependencies": [],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "popover"
+  ],
   "files": [
     {
       "name": "comments-popover.tsx",

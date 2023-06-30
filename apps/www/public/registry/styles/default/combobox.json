@@ -1,6 +1,8 @@
 {
   "name": "combobox",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-combobox"
+  ],
   "registryDependencies": [],
   "files": [
     {

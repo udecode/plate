@@ -1,7 +1,12 @@
 {
   "name": "table-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-table"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
   "files": [
     {
       "name": "table-dropdown-menu.tsx",

@@ -1,7 +1,9 @@
 {
   "name": "emoji-dropdown-menu",
   "dependencies": [],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "emoji-dropdown-menu.tsx",

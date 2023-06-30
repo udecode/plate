@@ -1,6 +1,8 @@
 {
   "name": "popover",
-  "dependencies": [],
+  "dependencies": [
+    "@radix-ui/react-popover"
+  ],
   "registryDependencies": [],
   "files": [
     {

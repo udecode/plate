@@ -53,6 +53,29 @@ interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
 }
 ```
 
+### `EmojiPlugin`
+
+An interface representing configuration options for an emoji plugin.
+
+<APIParameters>
+  <APIItem name="trigger" type="string" optional>
+    Triggering character(s) to activate the emoji plugin.
+  </APIItem>
+  <APIItem name="createEmoji" type="CreateEmoji<TData>" optional>
+    A function that is used to create the emoji.
+  </APIItem>
+  <APIItem
+    name="emojiTriggeringController"
+    type="IEmojiTriggeringController"
+    optional
+  >
+    A controller object that manages the triggering of the emoji plugin.
+  </APIItem>
+  <APIItem name="id" type="string" optional>
+    The identifier for the emoji plugin.
+  </APIItem>
+</APIParameters>
+
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/emoji/src/createEmojiPlugin.ts)

@@ -1,7 +1,15 @@
 {
   "name": "media-floating-toolbar",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-floating",
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "button",
+    "input",
+    "popover",
+    "separator"
+  ],
   "files": [
     {
       "name": "media-floating-toolbar.tsx",

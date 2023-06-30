@@ -1,6 +1,8 @@
 {
   "name": "emoji-toolbar-dropdown",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-floating"
+  ],
   "registryDependencies": [],
   "files": [
     {

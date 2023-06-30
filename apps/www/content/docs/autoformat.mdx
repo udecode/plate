@@ -241,6 +241,137 @@ export interface AutoformatPlugin {
 }
 ```
 
+### `MatchRange`
+
+Defines a range where an autoformat match begins and ends.
+
+<APIParameters>
+  <APIItem name="start" type="string">
+    The start of the match range.
+  </APIItem>
+  <APIItem name="end" type="string">
+    The end of the match range.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatQueryOptions`
+
+Options that are used in an autoformat query.
+
+<APIParameters>
+  <APIItem name="text" type="string">
+    The text to insert during autoformatting.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatCommonRule`
+
+Defines common rules that apply to all autoformat modes.
+
+<APIParameters>
+  <APIItem name="match" type="string | string[] | MatchRange | MatchRange[]">
+    The rule applies when the trigger and the text just before the cursor
+    matches. The value can be a string, an array of strings, a `MatchRange`, or
+    an array of `MatchRange` objects.
+  </APIItem>
+  <APIItem name="trigger" type="string | string[]" optional>
+    Triggering character(s) to autoformat. The default is the last character of
+    the `match` or `match.end`.
+  </APIItem>
+  <APIItem name="insertTrigger" type="boolean" optional>
+    If true, the triggering character is inserted after autoformatting. The
+    default value is `false`.
+  </APIItem>
+  <APIItem
+    name="query"
+    type="(editor: TEditor<V>, options: AutoformatQueryOptions) => boolean"
+    optional
+  >
+    An optional query function to allow autoformatting.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatBlockRule`
+
+Defines autoformat rules that apply to blocks.
+
+<APIParameters>
+  <APIItem name="mode" type="'block'">
+    The autoformat mode. For this rule, it is always `'block'`.
+  </APIItem>
+  <APIItem name="match" type="string | string[]">
+    Defines when the rule applies.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    The block type to set. If `format` is defined, this field is ignored. For `mode: 'mark'`, this is the mark(s) to add.
+  </APIItem>
+  <APIItem name="triggerAtBlockStart" type="boolean" optional>
+    If true, the trigger should be at the block start to allow autoformatting. The default value is `true`.
+  </APIItem>
+  <APIItem name="allowSameTypeAbove" type="boolean" optional>
+    If true, autoformatting is allowed even if there is a block of the same type above the selected block. The default value is `false`.
+  </APIItem>
+  <APIItem name="preFormat" type="(editor: TEditor<V>) => void" optional>
+    An optional function called just before `format`. Generally used to reset the selected block.
+  </APIItem>
+  <APIItem name="format" type="(editor: TEditor<V>) => void" optional>
+    An optional custom formatting function. The default is `setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })`.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatMarkRule`
+
+Defines autoformat rules that apply to marks.
+
+<APIParameters>
+  <APIItem name="mode" type="'mark'">
+    The autoformat mode. For this rule, it is always `'mark'`.
+  </APIItem>
+  <APIItem name="type" type="string | string[]">
+    The mark(s) to add.
+  </APIItem>
+  <APIItem name="ignoreTrim" type="boolean" optional>
+    If `false`, formatting will not be applied when the string can be trimmed.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatTextRule`
+
+Defines autoformat rules that apply to text.
+
+<APIParameters>
+  <APIItem name="mode" type="'text'">
+    The autoformat mode. For this rule, it is always `'text'`.
+  </APIItem>
+  <APIItem name="match" type="string | string[]">
+    Defines when the rule applies.
+  </APIItem>
+  <APIItem
+    name="format"
+    type="string | string[] | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void)"
+  >
+    Defines the formatting to be applied. It can be a string (the matched text
+    is replaced by this string), an array of strings (the matched texts are
+    replaced by these strings), or a function called when there is a match.
+  </APIItem>
+</APIParameters>
+
+### `AutoformatRule`
+
+Represents a single autoformat rule. This can be of type AutoformatBlockRule,
+AutoformatMarkRule, or AutoformatTextRule.
+
+### `AutoformatPlugin`
+
+A plugin used to autoformat text based on certain rules.
+
+<APIParameters>
+  <APIItem name="rules" type="AutoformatRule[]" optional>
+    A list of triggering rules. These rules define the conditions under which
+    autoformatting should take place.
+  </APIItem>
+</APIParameters>
+
 ### Source code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/autoformat/src/createAutoformatPlugin.ts)

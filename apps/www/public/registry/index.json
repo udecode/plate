@@ -1,7 +1,9 @@
 [
   {
     "name": "cloud",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-cloud"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/cloud.tsx",
@@ -15,7 +17,9 @@
   },
   {
     "name": "code-block-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-code-block"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/code-block-element.tsx",
@@ -27,7 +31,13 @@
   {
     "name": "color-dropdown-menu",
     "dependencies": [],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar",
+      "separator",
+      "button",
+      "tooltip"
+    ],
     "files": [
       "plate-ui/color-dropdown-menu.tsx",
       "plate-ui/color-constants.ts",
@@ -41,7 +51,9 @@
   {
     "name": "comments-popover",
     "dependencies": [],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "popover"
+    ],
     "files": [
       "plate-ui/comments-popover.tsx",
       "plate-ui/comment-avatar.tsx",
@@ -73,7 +85,9 @@
   {
     "name": "emoji-dropdown-menu",
     "dependencies": [],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/emoji-dropdown-menu.tsx",
       "plate-ui/emoji-icons.tsx",
@@ -88,8 +102,13 @@
   },
   {
     "name": "align-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-alignment"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/align-dropdown-menu.tsx"
     ],
@@ -97,7 +116,9 @@
   },
   {
     "name": "avatar",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-avatar"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/avatar.tsx"
@@ -106,7 +127,9 @@
   },
   {
     "name": "blockquote-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-block-quote"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/blockquote-element.tsx"
@@ -115,7 +138,9 @@
   },
   {
     "name": "button",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-slot"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/button.tsx"
@@ -124,7 +149,9 @@
   },
   {
     "name": "checkbox",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-checkbox"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/checkbox.tsx"
@@ -133,7 +160,10 @@
   },
   {
     "name": "code-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-code-block",
+      "@udecode/plate-basic-marks"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/code-leaf.tsx"
@@ -142,7 +172,9 @@
   },
   {
     "name": "code-line-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-code-block"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/code-line-element.tsx"
@@ -151,7 +183,9 @@
   },
   {
     "name": "code-syntax-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-code-block"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/code-syntax-leaf.tsx"
@@ -160,7 +194,9 @@
   },
   {
     "name": "combobox",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-combobox"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/combobox.tsx"
@@ -169,8 +205,12 @@
   },
   {
     "name": "command",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "cmdk"
+    ],
+    "registryDependencies": [
+      "dialog"
+    ],
     "files": [
       "plate-ui/command.tsx"
     ],
@@ -178,7 +218,9 @@
   },
   {
     "name": "comment-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-comments"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/comment-leaf.tsx"
@@ -214,7 +256,9 @@
   },
   {
     "name": "dropdown-menu",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-dropdown-menu"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/dropdown-menu.tsx"
@@ -223,7 +267,9 @@
   },
   {
     "name": "emoji-combobox",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-combobox"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/emoji-combobox.tsx"
@@ -232,7 +278,9 @@
   },
   {
     "name": "emoji-toolbar-dropdown",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-floating"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/emoji-toolbar-dropdown.tsx"
@@ -241,7 +289,9 @@
   },
   {
     "name": "excalidraw-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-excalidraw"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/excalidraw-element.tsx"
@@ -251,7 +301,9 @@
   {
     "name": "fixed-toolbar",
     "dependencies": [],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/fixed-toolbar.tsx"
     ],
@@ -259,8 +311,33 @@
   },
   {
     "name": "fixed-toolbar-buttons",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-basic-marks",
+      "@udecode/plate-font",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-list",
+      "@udecode/plate-media"
+    ],
+    "registryDependencies": [
+      "toolbar",
+      "color-dropdown-menu",
+      "emoji-dropdown-menu",
+      "align-dropdown-menu",
+      "comment-toolbar-button",
+      "indent-list-toolbar-button",
+      "indent-toolbar-button",
+      "insert-dropdown-menu",
+      "line-height-dropdown-menu",
+      "link-toolbar-button",
+      "list-toolbar-button",
+      "mark-toolbar-button",
+      "media-toolbar-button",
+      "mode-dropdown-menu",
+      "more-dropdown-menu",
+      "outdent-toolbar-button",
+      "table-dropdown-menu",
+      "turn-into-dropdown-menu"
+    ],
     "files": [
       "plate-ui/fixed-toolbar-buttons.tsx"
     ],
@@ -268,8 +345,12 @@
   },
   {
     "name": "floating-toolbar",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-floating"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/floating-toolbar.tsx"
     ],
@@ -277,8 +358,17 @@
   },
   {
     "name": "floating-toolbar-buttons",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-basic-marks"
+    ],
+    "registryDependencies": [
+      "toolbar",
+      "comment-toolbar-button",
+      "link-toolbar-button",
+      "mark-toolbar-button",
+      "more-dropdown-menu",
+      "turn-into-dropdown-menu"
+    ],
     "files": [
       "plate-ui/floating-toolbar-buttons.tsx"
     ],
@@ -286,7 +376,9 @@
   },
   {
     "name": "heading-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-heading"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/heading-element.tsx"
@@ -295,7 +387,9 @@
   },
   {
     "name": "highlight-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-highlight"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/highlight-leaf.tsx"
@@ -304,7 +398,9 @@
   },
   {
     "name": "hr-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-horizontal-rule"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/hr-element.tsx"
@@ -313,8 +409,13 @@
   },
   {
     "name": "image-element",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-floating",
+      "@udecode/plate-media"
+    ],
+    "registryDependencies": [
+      "media-floating-toolbar"
+    ],
     "files": [
       "plate-ui/image-element.tsx"
     ],
@@ -322,8 +423,12 @@
   },
   {
     "name": "indent-list-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-indent-list"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/indent-list-toolbar-button.tsx"
     ],
@@ -331,8 +436,12 @@
   },
   {
     "name": "indent-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-indent"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/indent-toolbar-button.tsx"
     ],
@@ -349,8 +458,23 @@
   },
   {
     "name": "insert-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-block-quote",
+      "@udecode/plate-code-block",
+      "@udecode/plate-excalidraw",
+      "@udecode/plate-heading",
+      "@udecode/plate-horizontal-rule",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-link",
+      "@udecode/plate-list",
+      "@udecode/plate-media",
+      "@udecode/plate-paragraph",
+      "@udecode/plate-table"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/insert-dropdown-menu.tsx"
     ],
@@ -358,7 +482,9 @@
   },
   {
     "name": "kbd-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-kbd"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/kbd-leaf.tsx"
@@ -367,8 +493,13 @@
   },
   {
     "name": "line-height-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-line-height"
+    ],
+    "registryDependencies": [
+      "toolbar",
+      "dropdown-menu"
+    ],
     "files": [
       "plate-ui/line-height-dropdown-menu.tsx"
     ],
@@ -376,7 +507,9 @@
   },
   {
     "name": "link-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-link"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/link-element.tsx"
@@ -385,8 +518,15 @@
   },
   {
     "name": "link-floating-toolbar",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-link"
+    ],
+    "registryDependencies": [
+      "button",
+      "input",
+      "popover",
+      "separator"
+    ],
     "files": [
       "plate-ui/link-floating-toolbar.tsx"
     ],
@@ -394,8 +534,12 @@
   },
   {
     "name": "link-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-link"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/link-toolbar-button.tsx"
     ],
@@ -403,7 +547,10 @@
   },
   {
     "name": "list-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-list",
+      "@udecode/plate-indent-list"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/list-element.tsx"
@@ -412,8 +559,12 @@
   },
   {
     "name": "list-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-list"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/list-toolbar-button.tsx"
     ],
@@ -421,8 +572,12 @@
   },
   {
     "name": "mark-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-basic-marks"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/mark-toolbar-button.tsx"
     ],
@@ -430,8 +585,12 @@
   },
   {
     "name": "media-embed-element",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-media"
+    ],
+    "registryDependencies": [
+      "media-floating-toolbar"
+    ],
     "files": [
       "plate-ui/media-embed-element.tsx"
     ],
@@ -439,8 +598,16 @@
   },
   {
     "name": "media-floating-toolbar",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-floating",
+      "@udecode/plate-media"
+    ],
+    "registryDependencies": [
+      "button",
+      "input",
+      "popover",
+      "separator"
+    ],
     "files": [
       "plate-ui/media-floating-toolbar.tsx"
     ],
@@ -448,8 +615,12 @@
   },
   {
     "name": "media-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-media"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/media-toolbar-button.tsx"
     ],
@@ -457,8 +628,13 @@
   },
   {
     "name": "mention-combobox",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-mention",
+      "@udecode/plate-combobox"
+    ],
+    "registryDependencies": [
+      "combobox"
+    ],
     "files": [
       "plate-ui/mention-combobox.tsx"
     ],
@@ -466,7 +642,9 @@
   },
   {
     "name": "mention-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-mention"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/mention-element.tsx"
@@ -475,7 +653,9 @@
   },
   {
     "name": "mention-input-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-mention"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/mention-input-element.tsx"
@@ -484,8 +664,13 @@
   },
   {
     "name": "mode-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-suggestion"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/mode-dropdown-menu.tsx"
     ],
@@ -493,8 +678,15 @@
   },
   {
     "name": "more-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-kbd",
+      "@udecode/plate-basic-marks",
+      "@udecode/plate-highlight"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/more-dropdown-menu.tsx"
     ],
@@ -502,8 +694,12 @@
   },
   {
     "name": "outdent-toolbar-button",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-indent"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
     "files": [
       "plate-ui/outdent-toolbar-button.tsx"
     ],
@@ -522,8 +718,12 @@
   },
   {
     "name": "placeholders",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-heading"
+    ],
+    "registryDependencies": [
+      "paragraph-element"
+    ],
     "files": [
       "plate-ui/placeholders.tsx"
     ],
@@ -531,7 +731,9 @@
   },
   {
     "name": "popover",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-popover"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/popover.tsx"
@@ -540,7 +742,9 @@
   },
   {
     "name": "scroll-area",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-scroll-area"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/scroll-area.tsx"
@@ -549,7 +753,10 @@
   },
   {
     "name": "search-highlight-leaf",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-highlight",
+      "@udecode/plate-find-replace"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/search-highlight-leaf.tsx"
@@ -558,7 +765,9 @@
   },
   {
     "name": "separator",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-separator"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/separator.tsx"
@@ -567,7 +776,9 @@
   },
   {
     "name": "table-cell-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-table"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/table-cell-element.tsx"
@@ -576,8 +787,13 @@
   },
   {
     "name": "table-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-table"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/table-dropdown-menu.tsx"
     ],
@@ -585,7 +801,9 @@
   },
   {
     "name": "table-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-table"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/table-element.tsx"
@@ -594,7 +812,9 @@
   },
   {
     "name": "table-row-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-table"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/table-row-element.tsx"
@@ -603,7 +823,9 @@
   },
   {
     "name": "todo-list-element",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-list"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/todo-list-element.tsx"
@@ -612,7 +834,9 @@
   },
   {
     "name": "toggle",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-toggle"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/toggle.tsx"
@@ -621,8 +845,16 @@
   },
   {
     "name": "toolbar",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-dnd",
+      "@udecode/plate-basic-marks"
+    ],
+    "registryDependencies": [
+      "color-dropdown-menu",
+      "insert-dropdown-menu",
+      "mark-toolbar-button",
+      "turn-into-dropdown-menu"
+    ],
     "files": [
       "plate-ui/toolbar.tsx"
     ],
@@ -641,8 +873,17 @@
   },
   {
     "name": "turn-into-dropdown-menu",
-    "dependencies": [],
-    "registryDependencies": [],
+    "dependencies": [
+      "@udecode/plate-block-quote",
+      "@udecode/plate-heading",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-list",
+      "@udecode/plate-paragraph"
+    ],
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "files": [
       "plate-ui/turn-into-dropdown-menu.tsx"
     ],

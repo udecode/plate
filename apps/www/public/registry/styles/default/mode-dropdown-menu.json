@@ -1,7 +1,12 @@
 {
   "name": "mode-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-suggestion"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
   "files": [
     {
       "name": "mode-dropdown-menu.tsx",

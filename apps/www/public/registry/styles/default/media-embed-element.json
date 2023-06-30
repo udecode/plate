@@ -1,7 +1,11 @@
 {
   "name": "media-embed-element",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "media-floating-toolbar"
+  ],
   "files": [
     {
       "name": "media-embed-element.tsx",

@@ -1,7 +1,16 @@
 {
   "name": "turn-into-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-block-quote",
+    "@udecode/plate-heading",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-list",
+    "@udecode/plate-paragraph"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
   "files": [
     {
       "name": "turn-into-dropdown-menu.tsx",

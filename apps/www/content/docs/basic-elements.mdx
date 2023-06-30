@@ -91,6 +91,54 @@ export interface HeadingsPlugin {
 }
 ```
 
+### `HotkeyPlugin`
+
+A plugin used to listen to hotkeys and trigger associated actions.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+
+### `CodeBlockPlugin`
+
+A plugin used for handling code blocks.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+  <APIItem name="syntax" type="boolean" optional>
+    A flag indicating whether syntax highlighting should be applied. If set to
+    `true`, syntax highlighting is enabled.
+  </APIItem>
+  <APIItem name="syntaxPopularFirst" type="boolean" optional>
+    If `true`, popular syntax options will be shown first in the syntax
+    selection dropdown.
+  </APIItem>
+  <APIItem name="deserializers" type="string[]" optional>
+    A list of deserializers to be used with the plugin.
+  </APIItem>
+</APIParameters>
+
+### `HeadingPlugin`
+
+A plugin used for handling headings.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+HeadingsPlugin A plugin used for handling multiple levels of headings.
+
+<APIParameters>
+  <APIItem name="levels" type="number" optional>
+    Defines the heading levels supported, ranging from 1 to `levels`.
+  </APIItem>
+</APIParameters>
+
 ## Keyboard Interactions
 
 <KeyTable>

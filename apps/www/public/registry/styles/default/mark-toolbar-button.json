@@ -1,7 +1,11 @@
 {
   "name": "mark-toolbar-button",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "mark-toolbar-button.tsx",

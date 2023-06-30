@@ -1,7 +1,15 @@
 {
   "name": "toolbar",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-dnd",
+    "@udecode/plate-basic-marks"
+  ],
+  "registryDependencies": [
+    "color-dropdown-menu",
+    "insert-dropdown-menu",
+    "mark-toolbar-button",
+    "turn-into-dropdown-menu"
+  ],
   "files": [
     {
       "name": "toolbar.tsx",

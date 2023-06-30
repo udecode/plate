@@ -1,6 +1,9 @@
 {
   "name": "code-leaf",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-code-block",
+    "@udecode/plate-basic-marks"
+  ],
   "registryDependencies": [],
   "files": [
     {

@@ -59,6 +59,27 @@ export interface BlockSelectionPlugin {
 }
 ```
 
+### `BlockSelectionPlugin`
+
+A plugin used to manage block selection within the editor.
+
+<APIParameters>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    Options for querying nodes within the editor.
+  </APIItem>
+  <APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
+    A function that gets called when a key is pressed while a block is selected.
+  </APIItem>
+  <APIItem
+    name="sizes"
+    type="{ left?: number; top?: number; bottom?: number; right?: number; }"
+    optional
+  >
+    An object specifying the block's dimensions from each side. Values are in
+    pixels.
+  </APIItem>
+</APIParameters>
+
 ### Source Code
 
 - [Plugin](https://github.com/udecode/plate/blob/main/packages/selection/src)

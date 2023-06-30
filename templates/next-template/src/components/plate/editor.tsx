@@ -1,51 +1,152 @@
 'use client';
 
 import React, { useRef } from 'react';
+import {
+  MARK_CODE,
+  createBoldPlugin,
+  createCodePlugin,
+  createItalicPlugin,
+  createStrikethroughPlugin,
+  createSubscriptPlugin,
+  createSuperscriptPlugin,
+  createUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import {
+  ELEMENT_BLOCKQUOTE,
+  createBlockquotePlugin,
+} from '@udecode/plate-block-quote';
+import {
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_CODE_SYNTAX,
+  createCodeBlockPlugin,
+} from '@udecode/plate-code-block';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { MARK_COMMENT, createCommentsPlugin } from '@udecode/plate-comments';
 import { Plate, PlateProvider, createPlugins } from '@udecode/plate-common';
+import {
+  ELEMENT_EXCALIDRAW,
+  createExcalidrawPlugin,
+} from '@udecode/plate-excalidraw';
+import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
+import {
+  createFontBackgroundColorPlugin,
+  createFontColorPlugin,
+  createFontSizePlugin,
+} from '@udecode/plate-font';
+import {
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  createHeadingPlugin,
+} from '@udecode/plate-heading';
+import {
+  MARK_HIGHLIGHT,
+  createHighlightPlugin,
+} from '@udecode/plate-highlight';
+import {
+  ELEMENT_HR,
+  createHorizontalRulePlugin,
+} from '@udecode/plate-horizontal-rule';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
+import { MARK_KBD, createKbdPlugin } from '@udecode/plate-kbd';
+import { ELEMENT_LINK, createLinkPlugin } from '@udecode/plate-link';
+import {
+  ELEMENT_OL,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
+  createTodoListPlugin,
+} from '@udecode/plate-list';
+import {
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  createImagePlugin,
+  createMediaEmbedPlugin,
+} from '@udecode/plate-media';
+import {
+  ELEMENT_MENTION,
+  ELEMENT_MENTION_INPUT,
+  createMentionPlugin,
+} from '@udecode/plate-mention';
 import {
   ELEMENT_PARAGRAPH,
   createParagraphPlugin,
 } from '@udecode/plate-paragraph';
+import {
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TR,
+  createTablePlugin,
+} from '@udecode/plate-table';
+import { withProps } from '@udecode/plate-utils';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
+import { linkPlugin } from '@/lib/plate/linkPlugin';
+import { MENTIONABLES } from '@/lib/plate/mentionables';
 import { cn } from '@/lib/utils';
+import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
+import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
+import { CodeLeaf } from '@/components/plate-ui/code-leaf';
+import { CodeLineElement } from '@/components/plate-ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
+import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
+import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
+import { HeadingElement } from '@/components/plate-ui/heading-element';
+import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
+import { HrElement } from '@/components/plate-ui/hr-element';
+import { ImageElement } from '@/components/plate-ui/image-element';
+import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
+import { LinkElement } from '@/components/plate-ui/link-element';
+import { ListElement } from '@/components/plate-ui/list-element';
+import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
+import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
+import { MentionElement } from '@/components/plate-ui/mention-element';
+import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
+import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
+import { TableCellElement } from '@/components/plate-ui/table-cell-element';
+import { TableElement } from '@/components/plate-ui/table-element';
+import { TableRowElement } from '@/components/plate-ui/table-row-element';
+import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 
 const plugins = createPlugins(
   [
     // Nodes
     createParagraphPlugin(),
-    // createHeadingPlugin(),
-    // createBlockquotePlugin(),
-    // createCodeBlockPlugin(),
-    // createHorizontalRulePlugin(),
-    // createLinkPlugin(linkPlugin),
-    // createImagePlugin(),
-    // createMediaEmbedPlugin(),
-    // createMentionPlugin(),
-    // createTablePlugin(),
-    // createTodoListPlugin(),
-    // createExcalidrawPlugin(),
+    createHeadingPlugin(),
+    createBlockquotePlugin(),
+    createCodeBlockPlugin(),
+    createHorizontalRulePlugin(),
+    createLinkPlugin(linkPlugin),
+    createImagePlugin(),
+    createMediaEmbedPlugin(),
+    createMentionPlugin(),
+    createTablePlugin(),
+    createTodoListPlugin(),
+    createExcalidrawPlugin(),
     //
     // // Marks
-    // createBoldPlugin(),
-    // createItalicPlugin(),
-    // createUnderlinePlugin(),
-    // createStrikethroughPlugin(),
-    // createCodePlugin(),
-    // createSubscriptPlugin(),
-    // createSuperscriptPlugin(),
-    // createFontColorPlugin(),
-    // createFontBackgroundColorPlugin(),
-    // createFontSizePlugin(),
-    // createHighlightPlugin(),
-    // createKbdPlugin(),
+    createBoldPlugin(),
+    createItalicPlugin(),
+    createUnderlinePlugin(),
+    createStrikethroughPlugin(),
+    createCodePlugin(),
+    createSubscriptPlugin(),
+    createSuperscriptPlugin(),
+    createFontColorPlugin(),
+    createFontBackgroundColorPlugin(),
+    createFontSizePlugin(),
+    createHighlightPlugin(),
+    createKbdPlugin(),
     //
     // // Block Style
     // createAlignPlugin(alignPlugin),
     // createIndentPlugin(indentPlugin),
-    // createIndentListPlugin(),
+    createIndentListPlugin(),
     // createLineHeightPlugin(lineHeightPlugin),
     //
     // // Functionality
@@ -58,7 +159,7 @@ const plugins = createPlugins(
     //     },
     //   },
     // }),
-    // createComboboxPlugin(),
+    createComboboxPlugin(),
     // createDndPlugin({
     //   options: { enableScroller: true },
     // }),
@@ -73,7 +174,7 @@ const plugins = createPlugins(
     // dragOverCursorPlugin,
     //
     // // Collaboration
-    // createCommentsPlugin(),
+    createCommentsPlugin(),
     //
     // // Deserialization
     // createDeserializeDocxPlugin(),
@@ -85,43 +186,43 @@ const plugins = createPlugins(
       // withDraggables(
       // withPlaceholders(
       {
-        // [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-        // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
-        // [ELEMENT_CODE_LINE]: CodeLineElement,
-        // [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
-        // [ELEMENT_HR]: HrElement,
-        // [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
-        // [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),
-        // [ELEMENT_H3]: withProps(HeadingElement, { variant: 'h3' }),
-        // [ELEMENT_H4]: withProps(HeadingElement, { variant: 'h4' }),
-        // [ELEMENT_H5]: withProps(HeadingElement, { variant: 'h5' }),
-        // [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
-        // [ELEMENT_IMAGE]: ImageElement,
+        [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
+        [ELEMENT_CODE_BLOCK]: CodeBlockElement,
+        [ELEMENT_CODE_LINE]: CodeLineElement,
+        [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
+        [ELEMENT_HR]: HrElement,
+        [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
+        [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),
+        [ELEMENT_H3]: withProps(HeadingElement, { variant: 'h3' }),
+        [ELEMENT_H4]: withProps(HeadingElement, { variant: 'h4' }),
+        [ELEMENT_H5]: withProps(HeadingElement, { variant: 'h5' }),
+        [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
+        [ELEMENT_IMAGE]: ImageElement,
         // [ELEMENT_LI]: withProps(PlateElement, { as: 'li' }),
-        // [ELEMENT_LINK]: LinkElement,
-        // [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
-        // [ELEMENT_MENTION]: MentionElement,
-        // [ELEMENT_MENTION_INPUT]: MentionInputElement,
-        // [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
-        // [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
+        [ELEMENT_LINK]: LinkElement,
+        [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
+        [ELEMENT_MENTION]: MentionElement,
+        [ELEMENT_MENTION_INPUT]: MentionInputElement,
+        [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
+        [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
         [ELEMENT_PARAGRAPH]: ParagraphElement,
-        // [ELEMENT_TABLE]: TableElement,
-        // [ELEMENT_TD]: TableCellElement,
+        [ELEMENT_TABLE]: TableElement,
+        [ELEMENT_TD]: TableCellElement,
         // [ELEMENT_TH]: TableCellHeaderElement,
-        // [ELEMENT_TODO_LI]: TodoListElement,
-        // [ELEMENT_TR]: TableRowElement,
-        // [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+        [ELEMENT_TODO_LI]: TodoListElement,
+        [ELEMENT_TR]: TableRowElement,
+        [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
         // [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-        // [MARK_CODE]: CodeLeaf,
-        // [MARK_HIGHLIGHT]: HighlightLeaf,
+        [MARK_CODE]: CodeLeaf,
+        [MARK_HIGHLIGHT]: HighlightLeaf,
         // [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
-        // [MARK_KBD]: KbdLeaf,
-        // [MARK_SEARCH_HIGHLIGHT]: SearchHighlightLeaf,
+        [MARK_KBD]: KbdLeaf,
+        [MARK_SEARCH_HIGHLIGHT]: SearchHighlightLeaf,
         // [MARK_STRIKETHROUGH]: withProps(PlateLeaf, { as: 's' }),
         // [MARK_SUBSCRIPT]: withProps(PlateLeaf, { as: 'sub' }),
         // [MARK_SUPERSCRIPT]: withProps(PlateLeaf, { as: 'sup' }),
         // [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
-        // [MARK_COMMENT]: CommentLeaf,
+        [MARK_COMMENT]: CommentLeaf,
       },
     //   )
     // )
@@ -143,7 +244,7 @@ export default function Editor() {
       <div className="relative">
         <PlateProvider plugins={plugins} initialValue={initialValue}>
           {/*<FixedToolbar>*/}
-          {/*  <FixedToolbarButtons />*/}
+          <FixedToolbarButtons />
           {/*</FixedToolbar>*/}
 
           <div className="flex">
@@ -169,7 +270,7 @@ export default function Editor() {
                 {/*  <FloatingToolbarButtons id={id} />*/}
                 {/*</FloatingToolbar>*/}
 
-                {/*<MentionCombobox items={MENTIONABLES} />*/}
+                <MentionCombobox items={MENTIONABLES} />
 
                 {/*<CursorOverlay containerRef={containerRef} />*/}
               </Plate>

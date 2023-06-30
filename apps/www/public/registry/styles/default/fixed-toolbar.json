@@ -1,7 +1,9 @@
 {
   "name": "fixed-toolbar",
   "dependencies": [],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "fixed-toolbar.tsx",

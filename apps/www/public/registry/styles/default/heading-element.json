@@ -1,6 +1,8 @@
 {
   "name": "heading-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-heading"
+  ],
   "registryDependencies": [],
   "files": [
     {

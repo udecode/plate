@@ -1,6 +1,8 @@
 {
   "name": "excalidraw-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-excalidraw"
+  ],
   "registryDependencies": [],
   "files": [
     {

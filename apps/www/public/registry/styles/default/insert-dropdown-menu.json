@@ -1,7 +1,22 @@
 {
   "name": "insert-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-block-quote",
+    "@udecode/plate-code-block",
+    "@udecode/plate-excalidraw",
+    "@udecode/plate-heading",
+    "@udecode/plate-horizontal-rule",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-link",
+    "@udecode/plate-list",
+    "@udecode/plate-media",
+    "@udecode/plate-paragraph",
+    "@udecode/plate-table"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
   "files": [
     {
       "name": "insert-dropdown-menu.tsx",

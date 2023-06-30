@@ -77,6 +77,124 @@ export type CloudImagePlugin = {
 };
 ```
 
+### `CloudPlugin`
+
+An interface representing configuration options for a cloud-based plugin for managing and uploading files in the editor.
+
+<APIParameters>
+  <APIItem
+    name="uploadStoreInitialValue"
+    type="Record<string, Upload>"
+    optional
+  >
+    Initial value for the upload store.
+  </APIItem>
+</APIParameters>
+
+### `PlateCloudEditor`
+
+A type representing a CloudEditor with the additional functionality provided by the Plate Editor.
+
+### `FinishUploadsOptions`
+
+A type representing options when finishing uploads.
+
+<APIParameters>
+  <APIItem name="maxTimeoutInMs" type="number" optional>
+    The maximum timeout in milliseconds to wait before considering the uploads
+    finished.
+  </APIItem>
+</APIParameters>
+
+### `CloudEditorProps`
+
+A type representing properties of a CloudEditor.
+
+<APIParameters>
+  <APIItem name="cloud" type="Object">
+    A namespace containing cloud-related properties.
+  </APIItem>
+</APIParameters>
+
+### `FileEventBase`
+
+A type representing the base properties for a file event, regardless
+of the type of file.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier for the file.
+  </APIItem>
+  <APIItem name="file" type="File">
+    The File object.
+  </APIItem>
+  <APIItem name="url" type="string">
+    The URL where the file is located.
+  </APIItem>
+</APIParameters>
+
+### `GenericFileEvent`
+
+A type representing a file event for generic files, which extends
+FileEventBase.
+
+<APIParameters>
+  <APIItem name="type" type="'generic'">
+    Indicates that the file is of generic type.
+  </APIItem>
+</APIParameters>
+
+### `ImageFileEvent`
+
+A type representing a file event for image files, which extends FileEventBase.
+
+<APIParameters>
+  <APIItem name="type" type="'image'">
+    Indicates that the file is an image.
+  </APIItem>
+  <APIItem name="width" type="number">
+    The width of the image.
+  </APIItem>
+  <APIItem name="height" type="number">
+    The height of the image.
+  </APIItem>
+</APIParameters>
+
+### `FileEvent`
+
+A type that could be either a GenericFileEvent or ImageFileEvent.
+
+### `ProgressEvent`
+
+A type representing a progress event during file upload.
+
+<APIParameters>
+  <APIItem name="sentBytes" type="number">
+    The number of bytes that have been sent so far.
+  </APIItem>
+  <APIItem name="totalBytes" type="number">
+    The total number of bytes to send.
+  </APIItem>
+</APIParameters>
+
+### `ErrorEvent` A type representing an error event during file upload.
+
+<APIParameters>
+  <APIItem name="message" type="string">
+    The error message.
+  </APIItem>
+</APIParameters>
+
+### `SuccessEvent`
+
+A type representing a successful file upload event.
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL where the uploaded file is located.
+  </APIItem>
+</APIParameters>
+
 ### Source Code
 
 - [Cloud Plugin](https://github.com/udecode/plate/blob/main/packages/cloud/src/cloud/createCloudPlugin.ts)

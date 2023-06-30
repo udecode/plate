@@ -1,6 +1,8 @@
 {
   "name": "checkbox",
-  "dependencies": [],
+  "dependencies": [
+    "@radix-ui/react-checkbox"
+  ],
   "registryDependencies": [],
   "files": [
     {

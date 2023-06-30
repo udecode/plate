@@ -1,6 +1,8 @@
 {
   "name": "code-block-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
   "registryDependencies": [],
   "files": [
     {

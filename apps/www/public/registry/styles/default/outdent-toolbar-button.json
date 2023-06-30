@@ -1,7 +1,11 @@
 {
   "name": "outdent-toolbar-button",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-indent"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "outdent-toolbar-button.tsx",
