@@ -1,4 +1,5 @@
 import React from 'react';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -8,20 +9,24 @@ import {
 } from '@udecode/plate-basic-marks';
 import { usePlateReadOnly } from '@udecode/plate-common';
 
+import { ValueId } from '@/config/setting-values';
 import { Icons } from '@/components/icons';
+import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
 
-import { MarkToolbarButton } from './mark-toolbar-button';
-import { MoreDropdownMenu } from './more-dropdown-menu';
-import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
+import { CommentToolbarButton } from '../../registry/default/plate-ui/comment-toolbar-button';
+import { LinkToolbarButton } from '../../registry/default/plate-ui/link-toolbar-button';
+import { MarkToolbarButton } from '../../registry/default/plate-ui/mark-toolbar-button';
+import { MoreDropdownMenu } from '../../registry/default/plate-ui/more-dropdown-menu';
+import { ToolbarSeparator } from '../../registry/default/plate-ui/toolbar';
 
-export function FloatingToolbarButtons() {
+export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
 
   return (
     <>
       {!readOnly && (
         <>
-          <TurnIntoDropdownMenu />
+          <PlaygroundTurnIntoDropdownMenu />
 
           <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
             <Icons.bold />
@@ -44,8 +49,14 @@ export function FloatingToolbarButtons() {
           <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
             <Icons.code />
           </MarkToolbarButton>
+
+          <ToolbarSeparator />
+
+          {isEnabled('link', id) && <LinkToolbarButton />}
         </>
       )}
+
+      {isEnabled('comment', id) && <CommentToolbarButton />}
 
       <MoreDropdownMenu />
     </>

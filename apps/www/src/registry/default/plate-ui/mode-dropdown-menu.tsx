@@ -6,11 +6,6 @@ import {
   usePlateReadOnly,
   usePlateStore,
 } from '@udecode/plate-common';
-import {
-  useSetIsSuggesting,
-  useSuggestionActions,
-  useSuggestionSelectors,
-} from '@udecode/plate-suggestion';
 
 import { Icons } from '@/components/icons';
 
@@ -28,14 +23,10 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = usePlateEditorState();
   const setReadOnly = usePlateStore().set.readOnly();
   const readOnly = usePlateReadOnly();
-  const setIsSuggesting = useSetIsSuggesting();
-  const setIsSuggestingg = useSuggestionActions().isSuggesting();
-  const isSuggesting = useSuggestionSelectors().isSuggesting();
   const openState = useOpenState();
 
   let value = 'editing';
   if (readOnly) value = 'viewing';
-  if (isSuggesting) value = 'suggesting';
 
   const item = {
     editing: (
@@ -79,10 +70,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
             if (newValue !== 'viewing') {
               setReadOnly(false);
             }
-            if (newValue !== 'suggesting') {
-              setIsSuggesting(false);
-              setIsSuggestingg(false);
-            }
 
             if (newValue === 'viewing') {
               setReadOnly(true);
@@ -92,11 +79,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
             if (newValue === 'editing') {
               focusEditor(editor);
               return;
-            }
-
-            if (newValue === 'suggesting') {
-              setIsSuggesting(true);
-              focusEditor(editor);
             }
           }}
         >

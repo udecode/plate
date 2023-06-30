@@ -7,9 +7,9 @@ import { imageValue } from '@/plate/demo/values/mediaValue';
 import { Plate, PlateProps, PlateProvider } from '@udecode/plate-common';
 
 import { MyValue } from '@/types/plate-types';
+import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { Separator } from '@/registry/default/plate-ui/separator';
-import { TurnIntoDropdownMenu } from '@/registry/default/plate-ui/turn-into-dropdown-menu';
 
 function Editor(props: PlateProps<MyValue>) {
   return <Plate {...props}>{/* <MarkFloatingToolbar /> */}</Plate>;
@@ -32,7 +32,7 @@ export default function MultipleEditorsDemo() {
           initialValue={imageValue}
         >
           <FixedToolbar>
-            <TurnIntoDropdownMenu />
+            <PlaygroundTurnIntoDropdownMenu />
           </FixedToolbar>
 
           <div>
