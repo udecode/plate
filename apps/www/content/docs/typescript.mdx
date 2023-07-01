@@ -8,25 +8,27 @@ description: Generic types for Plate.
   PR](https://github.com/ianstormtaylor/slate/pull/4177).
 </Callout>
 
-Plate is providing a typed layer on top of Slate, using mostly [generic types](https://www.typescriptlang.org/docs/handbook/2/generics.html).
+Plate delivers a structured typing layer built on top of Slate, which primarily employs [generic types](https://www.typescriptlang.org/docs/handbook/2/generics.html).
 
-Differences with Slate types:
+**Differences with Slate types:**
 
-- `Editor` type: `TEditor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
-- Other `TEditor`-and-`TNode`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `TText` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined). `TEditor` type is not matching with Slate `Editor` type, so Plate has forked (type-only) all Slate methods that use `Editor` that you **should** use.
-- This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `TEditor` still.)
+- **`Editor` type:** Plate introduces **`TEditor<V>`**, where **`V`** symbolizes the "value" that Slate edits. In a generic editor, **`V`** would correspond to **`TElement[]`**, as this is what the editor accepts as children. However, in a custom editor, **`V`** might be defined as **`TEditor<Array<Paragraph | Quote>>`**.
+- **Methods related to `TEditor` and `TNode`:** These methods have also been made generic. For instance, when you call **`getLeafNode(editor, path)`**, it is recognized that the return value is a **`TText`** node. More specifically, it recognizes the text node of the type defined in your custom elements, along with any marks you've defined. The **`TEditor`** type in Plate does not correspond to the **`Editor`** type in Slate, hence, Plate has introduced type-only forks of all Slate methods that use **`Editor`**, which you **should** utilize. See the full list in [Slate](/docs/api/slate) and [Slate React](/docs/api/slate-react).
+- **Declaration merging approach:** Plate's use of generic types supersedes the declaration merging approach, offering several benefits. One issue with declaration merging was the inability to distinguish between an "unknown" and a "known" element as the underlying type was changed. Similarly, managing two editors on a page with different schemas was not possible. The use of generics in Plate, however, can smoothly replace the declaration merging approach while facilitating an easy migration. You can continue to pass the same custom element definitions into **`TEditor`**.
 
-The following example is defining all the types in `plateTypes.ts`:
+**Example of Defining Types in `plate-types.ts`:**
 
-- `MyValue` type, which will be the type of our `editor.children`
-- `MyValue` is the most important type as most of the core types are derived from it
-- The types following `MyValue` are optional but highly recommended, writing generic types are redundant so try doing it only once
-- A few typed functions are also provided
+The following example outlines the types in **`plate-types.ts`**:
 
-Naming convention:
+- The **`MyValue`** type, which will serve as the type of our **`editor.children`**.
+- **`MyValue`** is a crucial type since most core types derive from it.
+- Types following **`MyValue`** are optional, yet highly recommended. The process of writing generic types can be repetitive, so aim to do it just once.
+- A set of typed functions are also included for your use.
 
-- `T...Element` is used because `...Element` is already used by Plate UI components and we don't want naming conflicts between imports. `T...` is also a way to differenciate Plate types with Slate types.
-- `My` is for the library consumer types. It's short and explicit. You could replace it with your project name.
+**Naming Convention:**
+
+- We use **`T...Element`** because **`...Element`** is already utilized by Plate UI components, and we wish to avoid naming conflicts among imports. The **`T...`** prefix also differentiates Plate types from Slate types.
+- **`My`** is used for consumer types of the library. It's succinct and unambiguous. You could substitute it with the tag name of your project.
 
 ## Usage
 

@@ -7276,7 +7276,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-emoji@npm:21.3.5, @udecode/plate-emoji@workspace:^, @udecode/plate-emoji@workspace:packages/emoji":
+"@udecode/plate-emoji@workspace:^, @udecode/plate-emoji@workspace:packages/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/emoji"
   dependencies:
@@ -7793,7 +7793,6 @@ __metadata:
     "@udecode/plate-combobox": "npm:21.3.2"
     "@udecode/plate-comments": "npm:21.3.2"
     "@udecode/plate-common": "npm:21.3.2"
-    "@udecode/plate-emoji": "npm:21.3.5"
     "@udecode/plate-find-replace": "npm:21.3.2"
     "@udecode/plate-floating": "npm:21.3.2"
     "@udecode/plate-font": "npm:21.3.2"

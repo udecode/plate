@@ -71,13 +71,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createImagePlugin } from '@udecode/plate-media';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createImagePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createImagePlugin(),
+];
 ```

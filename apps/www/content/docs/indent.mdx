@@ -10,15 +10,13 @@ docs:
 
 <ComponentPreview name="playground-demo" id="indent" />
 
+<PackageInfo>
+
 ## Features
 
-The Indent plugin enables you to customize the indentation of text blocks, such as paragraphs, headings, and lists.
+- Set text block indentation for differentiating structural elements or emphasizing certain content sections.
 
-It is designed to visually distinguish different parts of the content, which is particularly useful for differentiating structural elements like headings or lists.
-
-Additionally, it can be employed to present quotes or emphasize paragraphs or passages that need to be set apart from the main body of content.
-
-Use the indent or outdent toolbar buttons in the editor below to control the level of indentation of the content, both for paragraph text and headers.
+</PackageInfo>
 
 ## Installation
 
@@ -29,31 +27,21 @@ npm install @udecode/plate-indent
 ## Usage
 
 ```tsx
-import {
-  createHeadingPlugin,
-  createIndentPlugin,
-  createParagraphPlugin,
-  ELEMENT_PARAGRAPH,
-  ELEMENT_H1,
-} from '@udecode/plate';
+// ...
+import { createIndentPlugin } from '@udecode/plate-indent';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createHeadingPlugin(),
-    createParagraphPlugin(),
-    createIndentPlugin({
-      inject: {
-        props: {
-          validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
-        },
+const plugins = [
+  // ...otherPlugins,
+  createHeadingPlugin(),
+  createParagraphPlugin(),
+  createIndentPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
       },
-    }),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+    },
+  }),
+];
 ```
 
 ## Options

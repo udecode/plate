@@ -64,13 +64,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createMentionPlugin } from '@udecode/plate-mention';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createMentionPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createMentionPlugin(),
+];
 ```

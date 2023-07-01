@@ -1,6 +1,6 @@
 ---
 title: Emoji
-description: Enhance your text with emojis.
+description: Insert emoji inline.
 docs:
   - route: /docs/components/emoji-combobox
     title: Emoji Combobox
@@ -12,34 +12,32 @@ docs:
 
 <ComponentPreview name="playground-demo" id="emoji" />
 
+<PackageInfo>
+
 ## Features
 
-The emoji plugin is using the combobox plugin(/docs/combobox). The Emoji plugin enables users to effortlessly insert emojis into their text, enhancing the user experience by providing a simple and convenient way to add visual expression to content.
+- Insert emoji inline.
+- Use the **`:`** shortcut followed by the emoji name (e.g., **`:apple:`** 🍎). Autocomplete suggestions appear as you type.
 
-To use the Emoji plugin, click the emoji icon on the toolbar or use the shortcut ":", followed by the emoji name, such as :apple: 🍎. Autocomplete suggestions will appear as you type, and you can select the desired emoji from the list.
+</PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-combobox
-npm install @udecode/plate-emoji
+npm install @udecode/plate-emoji @udecode/plate-combobox
 ```
 
 ## Usage
 
 ```tsx
-import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createEmojiPlugin } from '@udecode/plate-emoji';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createComboboxPlugin(),
-    createEmojiPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createEmojiPlugin(),
+];
 ```
 
 ### Options

@@ -64,13 +64,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createCodePlugin } from '@udecode/plate-basic-marks';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createCodePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createCodePlugin(),
+];
 ```

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 
 import { usePackageInfo } from '@/hooks/use-package-info';
+import { Separator } from '@/registry/default/plate-ui/separator';
 
 export function PackageInfo({ children }: { children: React.ReactNode }) {
   const [packageInfo] = usePackageInfo();
@@ -9,6 +10,8 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-12 flex flex-col flex-nowrap items-stretch justify-start md:flex-row md:gap-16">
       <div className="md:flex-1">{children}</div>
+
+      <Separator className="mb-4 md:hidden" />
 
       <nav className="flex w-fit flex-col gap-3">
         {packageInfo?.gzip && (

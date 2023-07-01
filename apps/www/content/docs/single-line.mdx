@@ -5,13 +5,13 @@ description: Restrict the editor to a single block.
 
 <ComponentPreview name="playground-demo" id="singleline" />
 
+<PackageInfo>
+
 ## Features
 
-The Single Line plugin limits the editor to only one line of text, making it suitable for certain types of content.
+- Limits editor to one block of text. Suitable for brief content or titles.
 
-Test out the Single Line feature in the demo provided.
-
-It limits the editor to one line of text, perfect for brief content or titles.
+</PackageInfo>
 
 ## Installation
 
@@ -22,9 +22,10 @@ npm install @udecode/plate-break
 ## Usage
 
 ```tsx
-import { createSingleLinePlugin } from '@udecode/plate';
+import { createSingleLinePlugin } from '@udecode/plate-break';
 
-const plugins = createPlugins([...otherPlugins, createSingleLinePlugin()], {
-  components: createPlateUI(),
-});
+const plugins = [
+  // ...otherPlugins
+  createSingleLinePlugin(),
+];
 ```

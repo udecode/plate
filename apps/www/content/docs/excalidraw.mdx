@@ -8,9 +8,13 @@ docs:
 
 <ComponentPreview name="playground-demo" id="excalidraw" />
 
+<PackageInfo>
+
 ## Features
 
-This plugin enhances your editor by integrating the Excalidraw library, which allows users to create drawings and diagrams effortlessly. These visual elements are stored as block nodes within Plate, making it simple to incorporate them into your content.
+- Integrates Excalidraw library for creation of drawings and diagrams.
+
+</PackageInfo>
 
 ## Installation
 
@@ -21,20 +25,18 @@ npm install @udecode/plate-excalidraw
 ## Usage
 
 ```tsx
-import { createSelectOnBackspacePlugin } from '@udecode/plate';
 import {
-  createExcalidrawPlugin,
-  ExcalidrawElement,
   ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+  createExcalidrawPlugin,
 } from '@udecode/plate-excalidraw';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
-const plugins = createPlugins([
+const plugins = [
   // ...basicNodesPlugins,
-  createExcalidrawPlugin({
-    component: ExcalidrawElement,
-  }),
+  createExcalidrawPlugin(),
   createSelectOnBackspacePlugin({
     options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
   }),
-]);
+];
 ```

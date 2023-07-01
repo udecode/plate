@@ -1,19 +1,19 @@
 ---
 title: Find
-description: Search and locate specific text or blocks within your document
+description: Search and locate specific text or blocks within your document.
 ---
 
-The Find plugin enhances your editor by enabling users to easily locate and substitute text within the content.
+<Callout>
 
-The feature can search for whole words, word parts, or phrases, and match the case of the searched text.
+Work in progress.
 
-This is particularly useful in long documents or those that use specific words in various contexts.
+</Callout>
 
-[//]: # 'With the ability to replace individual instances or all occurrences of the searched phrase, this plugin streamlines the editing process and ensures content consistency.'
+- Search for whole words, word parts, or phrases with case matching.
 
-To utilize the Find and Replace feature, you can click on the search input, allowing you to find and replace desired words or phrases.
+[//]: # '- Use search input for find and replace operations.'
 
-For example, try searching "text" in the demo content, making sure to match the case as there are different instances of the word present in the document.
+<PackageInfo>
 
 ## Installation
 
@@ -21,35 +21,4 @@ For example, try searching "text" in the demo content, making sure to match the 
 npm install @udecode/plate-find-replace
 ```
 
-## Usage
-
-```tsx
-import { createFindReplacePlugin } from '@udecode/plate';
-
-const [search, setSearch] = useState('');
-
-const plugins = useMemo(
-  () =>
-    createPlugins(
-      [
-        // ...otherPlugins,
-        createFindReplacePlugin({ options: { search } }),
-      ],
-      {
-        components: createPlateUI(),
-      }
-    ),
-  [search]
-);
-```
-
-### Options
-
-```tsx
-export interface FindReplacePlugin {
-  /**
-   * Searching text to highlight
-   */
-  search?: string;
-}
-```
+</PackageInfo>

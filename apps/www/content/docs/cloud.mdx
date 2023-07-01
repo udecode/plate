@@ -1,6 +1,6 @@
 ---
 title: Cloud
-description: Cloud plugin
+description: Upload images and attachments to the cloud.
 docs:
   - route: /docs/components/cloud
     title: Cloud
@@ -8,21 +8,15 @@ docs:
 
 <ComponentPreview name="cloud-demo" padding="md" />
 
+<PackageInfo>
+
 ## Features
 
-Plate Cloud is the official Plate plugin and cloud service for image and attachment uploads, automatic server-side image resizing, and future Plate cloud services.
+- Image and attachment uploads, automatic server-side image resizing, and more.
+- Supports drag and drop, paste, and file picker uploads.
+- Automatic delivery of DPI-specific images.
 
-It supports:
-
-- Drag and drop uploading of images and attachments
-- Paste uploading of images and attachments
-- Using a file picker for uploading images and attachment
-- Drag resize of images with server-side image resizing which optimizes download speed
-- Automatically delivers high DPI images to high DPI devices and normal sized images to everyone else
-
-Your usage of Plate Cloud supports the development of Plate.
-
-You can start by [getting a free Portive API key](https://admin.portive.com/).
+</PackageInfo>
 
 ## Installation
 
@@ -32,7 +26,7 @@ npm install @udecode/plate-cloud
 
 ## Usage
 
-To use Plate Cloud, you will need to [get a free Portive API key](https://www.portive.com/).
+[Get a free Portive API key](https://www.portive.com/).
 
 To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
 
@@ -76,13 +70,6 @@ export type CloudImagePlugin = {
   maxInitialHeight?: number;
 };
 ```
-
-### Source Code
-
-- [Cloud Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/cloud/createCloudPlugin.ts)
-- [Cloud Attachment Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/attachment/createCloudAttachmentPlugin.ts)
-- [Cloud Image Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/image/createCloudImagePlugin.ts)
-- [packages/cloud](https://github.com/udecode/plate/tree/main/packages/cloud)
 
 ## API
 

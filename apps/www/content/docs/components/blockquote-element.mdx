@@ -64,13 +64,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createBlockquotePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createBlockquotePlugin(),
+];
 ```

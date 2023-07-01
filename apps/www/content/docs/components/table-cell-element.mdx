@@ -66,13 +66,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createTablePlugin } from '@udecode/plate-table';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTablePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTablePlugin(),
+];
 ```

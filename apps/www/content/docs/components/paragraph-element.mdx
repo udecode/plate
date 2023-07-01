@@ -64,13 +64,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createParagraphPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createParagraphPlugin(),
+];
 ```

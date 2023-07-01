@@ -8,17 +8,14 @@ docs:
 
 <ComponentPreview name="playground-demo" id="highlight" />
 
+<PackageInfo>
+
 ## Features
 
-The Highlight plugin provides text marking tools to aid content authors in their work, such as reviewing and referencing content.
+- Provides text marking tools for content review and referencing.
+- Uses inline `<mark>` elements supporting markers (background color).
 
-It utilizes inline **`<mark>`** elements, supporting markers (background color).
-
-[//]: # 'It utilizes inline **`<mark>`** elements, supporting both markers (background color) and pens (text color), and comes with a flexible configuration.'
-
-To utilize the highlight feature, first select the desired text and then use the Highlight toolbar button to apply the highlight.
-
-[//]: # 'You can choose from a predefined and limited number of available colors.'
+</PackageInfo>
 
 ## Installation
 
@@ -31,15 +28,10 @@ npm install @udecode/plate-highlight
 ```tsx
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createHighlightPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createHighlightPlugin(),
+];
 ```
 
 ## Keyboard Interactions

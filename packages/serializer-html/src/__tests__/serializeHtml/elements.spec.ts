@@ -14,10 +14,10 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@/packages/table/src/index';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { createTablePlugin } from '@udecode/plate';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
 import { createImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
 
 import { TableCellElement } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';

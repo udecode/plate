@@ -61,13 +61,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createKbdPlugin } from '@udecode/plate-kbd';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createKbdPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createKbdPlugin(),
+];
 ```

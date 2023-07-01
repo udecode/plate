@@ -24,7 +24,7 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 Let's start with a minimal editor setup leveraging `Plate` and `editableProps`.
 
 ```tsx showLineNumbers {1,3-5,9}
-import { Plate } from '@udecode/plate';
+import { Plate } from '@udecode/plate-common';
 
 const editableProps = {
   placeholder: 'Type...',
@@ -122,24 +122,21 @@ To simultaneously plug-in all the components, `createPlugins` can be used:
 - use the first parameter for the `plugins`
 - use the second parameter for the `components`. In the following example, we'll call `createPlateUI()`, which returns all Plate components by plugin key.
 
-```tsx showLineNumbers {19-34, 39}
+```tsx showLineNumbers {16-31, 36}
 // ...
 import {
-  createBlockquotePlugin,
   createBoldPlugin,
   createCodePlugin,
-  createHeadingPlugin,
   createItalicPlugin,
-  createParagraphPlugin,
-  createPlateUI,
-  createPlugins,
   createStrikethroughPlugin,
   createUnderlinePlugin,
-  Plate,
-} from '@udecode/plate';
+} from '@udecode/plate-basic-marks';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { Plate, createPlugins } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-// Local components.
-import { createPlateUI } from '@/lib/createPlateUI';
+import { createPlateUI } from '@/lib/create-plate-ui';
 
 const plugins = createPlugins(
   [
@@ -167,6 +164,11 @@ export default function BasicEditor() {
   );
 }
 ```
+
+<ComponentSource
+  src="src/lib/plate/create-plate-ui.ts"
+  name="create-plate-ui"
+/>
 
 <ComponentPreview name="basic-plugins-components-demo" padding="md" />
 

@@ -8,9 +8,13 @@ docs:
 
 <ComponentPreview name="playground-demo" id="dnd" />
 
+<PackageInfo>
+
 ## Features
 
-Drag & drop blocks to easily move and insert content within the editor.
+- Drag & drop of blocks for content movement and insertion within the editor.
+
+</PackageInfo>
 
 ## Installation
 
@@ -19,5 +23,17 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 ```
 
 ## Usage
+
+```tsx
+// ...
+import { createDndPlugin } from '@udecode/plate-dnd';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+
+const plugins = [
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createDndPlugin(),
+];
+```
 
 See [Draggable](/docs/components/draggable).

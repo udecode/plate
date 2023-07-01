@@ -12,9 +12,15 @@ docs:
 
 <ComponentPreview name="playground-demo" id="list" />
 
+<PackageInfo>
+
 ## Features
 
-The List plugin allows you to create both ordered (numbered) and unordered (bulleted) lists within your Plate editor.
+- Supports both unordered (bulleted) and ordered (numbered) lists.
+- Supports nesting to create complex hierarchical list structures.
+- Combined with the autoformat plugin, use markdown shortcuts (**``**, **``**, **`1.`**) to create lists.
+
+</PackageInfo>
 
 ## Installation
 
@@ -25,17 +31,12 @@ npm install @udecode/plate-list
 ## Usage
 
 ```tsx
-import { createListPlugin, createTodoListPlugin } from '@udecode/plate';
+import { createListPlugin } from '@udecode/plate-list';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createListPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createListPlugin(),
+];
 ```
 
 ### Options
@@ -66,17 +67,12 @@ npm install @udecode/plate-list
 ## Usage
 
 ```tsx
-import { createTodoListPlugin } from '@udecode/plate';
+import { createTodoListPlugin } from '@udecode/plate-list';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTodoListPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTodoListPlugin(),
+];
 ```
 
 ### Options

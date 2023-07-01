@@ -5,6 +5,8 @@ description: Copy paste from DOCX to Slate.
 
 <ComponentPreview name="playground-demo" id="deserializedocx" />
 
+<PackageInfo>
+
 ## Features
 
 - Convert DOCX content to a Slate value.
@@ -12,6 +14,8 @@ description: Copy paste from DOCX to Slate.
 <Callout className="my-4">
   **Note**: Converting a Slate value to DOCX is not yet supported.
 </Callout>
+
+</PackageInfo>
 
 ## Installation
 
@@ -24,48 +28,14 @@ npm install @udecode/plate-serializer-docx @udecode/plate-juice
 ### DOCX -> Slate
 
 ```tsx
-import React from 'react';
-import {
-  createImagePlugin,
-  createHorizontalRulePlugin,
-  createLineHeightPlugin,
-  createTablePlugin,
-  createAlignPlugin,
-  createFontBackgroundColorPlugin,
-  createFontFamilyPlugin,
-  createFontColorPlugin,
-  createFontSizePlugin,
-  createFontWeightPlugin,
-  createIndentListPlugin,
-  createIndentPlugin,
-  createTextIndentPlugin,
-  createDeserializeDocxPlugin,
-} from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createImagePlugin(),
-    createHorizontalRulePlugin(),
-    createLineHeightPlugin(),
-    createTablePlugin(),
-    createAlignPlugin(),
-    createFontBackgroundColorPlugin(),
-    createFontFamilyPlugin(),
-    createFontColorPlugin(),
-    createFontSizePlugin(),
-    createFontWeightPlugin(),
-    createIndentListPlugin(),
-    createIndentPlugin(),
-    createTextIndentPlugin(),
-    createDeserializeDocxPlugin(),
-    createJuicePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createDeserializeDocxPlugin(),
+  createJuicePlugin(),
+];
 ```
 
 Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.

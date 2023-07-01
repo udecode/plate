@@ -6,7 +6,7 @@ import {
   createPlateEditor,
 } from '@udecode/plate-common';
 
-import { createPlateUI } from './createPlateUI';
+import { createPlateUI } from './create-plate-ui';
 
 /**
  * Create a plate editor with default UI.
