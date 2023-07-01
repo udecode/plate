@@ -89,14 +89,14 @@ import { MyValue, createMyPlugins } from '@/types/plate-types';
 import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
+import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
+import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { SettingsPanel } from '@/components/settings-panel';
 import { SettingsToggle } from '@/components/settings-toggle';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
@@ -277,7 +277,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
 
           <FixedToolbar>
-            <FixedToolbarButtons id={id} />
+            <PlaygroundFixedToolbarButtons id={id} />
           </FixedToolbar>
 
           <div className="flex">
@@ -306,7 +306,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   }}
                 >
                   <FloatingToolbar>
-                    <FloatingToolbarButtons id={id} />
+                    <PlaygroundFloatingToolbarButtons id={id} />
                   </FloatingToolbar>
 
                   {isEnabled('mention', id) && (

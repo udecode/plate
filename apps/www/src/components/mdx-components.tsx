@@ -3,12 +3,14 @@
 import { ReactNode } from 'react';
 import * as React from 'react';
 import Image from 'next/image';
+import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
 import { NpmCommands } from '@/types/unist';
 import { Event } from '@/lib/events';
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
+import { packageInfoAtom } from '@/hooks/use-package-info';
 import { Style } from '@/registry/styles';
 
 import {
@@ -27,7 +29,9 @@ import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
+import { HydrateAtoms } from './context/hydrate-atoms';
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { PackageInfo } from './package-info';
 import { StyleWrapper } from './style-wrapper';
 import {
   Accordion,
@@ -333,13 +337,17 @@ const components = {
   APISubList,
   APISubListItem,
   APIItem,
+  PackageInfo,
 };
 
 interface MdxProps {
   code: string;
+  packageInfo?: {
+    gzip: string | null;
+  };
 }
 
-export function Mdx({ code }: MdxProps) {
+export function Mdx({ code, packageInfo }: MdxProps) {
   const [config] = useConfig();
   const Component = useMDXComponent(code, {
     style: config.style,
@@ -348,7 +356,11 @@ export function Mdx({ code }: MdxProps) {
   return (
     // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="mdx">
-      <Component components={components as any} />
+      <Provider>
+        <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
+          <Component components={components as any} />
+        </HydrateAtoms>
+      </Provider>
     </div>
   );
 }

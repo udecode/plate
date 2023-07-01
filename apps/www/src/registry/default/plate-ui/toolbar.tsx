@@ -8,6 +8,7 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
+import { Separator } from './separator';
 import { ToggleProps, toggleVariants } from './toggle';
 import {
   Tooltip,
@@ -173,6 +174,27 @@ const ToolbarToggleItem = React.forwardRef<
 ));
 ToolbarToggleItem.displayName = ToolbarPrimitive.ToggleItem.displayName;
 
+const ToolbarGroup = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { noSeparator?: boolean }
+>(({ noSeparator, className, children }, ref) => {
+  const childArr = React.Children.map(children, (c) => c);
+  if (!childArr || childArr.length === 0) return null;
+
+  return (
+    <div ref={ref} className={cn('flex', className)}>
+      {!noSeparator && (
+        <div className="h-full py-1">
+          <Separator orientation="vertical" />
+        </div>
+      )}
+
+      <div className="mx-1 flex items-center gap-1">{children}</div>
+    </div>
+  );
+});
+ToolbarGroup.displayName = 'ToolbarGroup';
+
 export {
   Toolbar,
   ToolbarLink,
@@ -180,4 +202,5 @@ export {
   ToolbarSeparator,
   ToolbarToggleItem,
   ToolbarButton,
+  ToolbarGroup,
 };
