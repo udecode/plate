@@ -19,7 +19,7 @@ const ui: Registry = [
     name: 'code-block-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-code-block'],
-    registryDependencies: [],
+    registryDependencies: ['command'],
     files: [
       'plate-ui/code-block-element.tsx',
       'plate-ui/code-block-element.css',
@@ -49,8 +49,8 @@ const ui: Registry = [
   {
     name: 'comments-popover',
     type: 'components:plate-ui',
-    dependencies: [],
-    registryDependencies: ['popover'],
+    dependencies: ['@udecode/plate-comments'],
+    registryDependencies: ['popover', 'avatar'],
     files: [
       'plate-ui/comments-popover.tsx',
       'plate-ui/comment-avatar.tsx',
@@ -76,10 +76,12 @@ const ui: Registry = [
   {
     name: 'emoji-dropdown-menu',
     type: 'components:plate-ui',
-    dependencies: [],
+    dependencies: ['@udecode/plate-floating'],
     registryDependencies: ['toolbar'],
+
     files: [
       'plate-ui/emoji-dropdown-menu.tsx',
+      'plate-ui/emoji-toolbar-dropdown.tsx',
       'plate-ui/emoji-icons.tsx',
       'plate-ui/emoji-picker.tsx',
       'plate-ui/emoji-picker-content.tsx',
@@ -127,7 +129,7 @@ const ui: Registry = [
   {
     name: 'code-leaf',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-code-block', '@udecode/plate-basic-marks'],
+    dependencies: ['@udecode/plate-basic-marks'],
     registryDependencies: [],
     files: ['plate-ui/code-leaf.tsx'],
   },
@@ -149,7 +151,7 @@ const ui: Registry = [
     name: 'combobox',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-combobox'],
-    registryDependencies: [],
+    registryDependencies: ['scroll-area'],
     files: ['plate-ui/combobox.tsx'],
   },
   {
@@ -203,13 +205,6 @@ const ui: Registry = [
     files: ['plate-ui/emoji-combobox.tsx'],
   },
   {
-    name: 'emoji-toolbar-dropdown',
-    type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-floating'],
-    registryDependencies: [],
-    files: ['plate-ui/emoji-toolbar-dropdown.tsx'],
-  },
-  {
     name: 'excalidraw-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-excalidraw'],
@@ -226,31 +221,12 @@ const ui: Registry = [
   {
     name: 'fixed-toolbar-buttons',
     type: 'components:plate-ui',
-    dependencies: [
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-font',
-      '@udecode/plate-indent-list',
-      '@udecode/plate-list',
-      '@udecode/plate-media',
-    ],
+    dependencies: ['@udecode/plate-basic-marks'],
     registryDependencies: [
-      'toolbar',
-      'color-dropdown-menu',
-      'emoji-dropdown-menu',
-      'align-dropdown-menu',
-      'comment-toolbar-button',
-      'indent-list-toolbar-button',
-      'indent-toolbar-button',
       'insert-dropdown-menu',
-      'line-height-dropdown-menu',
-      'link-toolbar-button',
-      'list-toolbar-button',
       'mark-toolbar-button',
-      'media-toolbar-button',
       'mode-dropdown-menu',
-      'more-dropdown-menu',
-      'outdent-toolbar-button',
-      'table-dropdown-menu',
+      'toolbar',
       'turn-into-dropdown-menu',
     ],
     files: ['plate-ui/fixed-toolbar-buttons.tsx'],
@@ -267,9 +243,6 @@ const ui: Registry = [
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-basic-marks'],
     registryDependencies: [
-      'toolbar',
-      'comment-toolbar-button',
-      'link-toolbar-button',
       'mark-toolbar-button',
       'more-dropdown-menu',
       'turn-into-dropdown-menu',
@@ -330,16 +303,8 @@ const ui: Registry = [
     type: 'components:plate-ui',
     dependencies: [
       '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-excalidraw',
       '@udecode/plate-heading',
-      '@udecode/plate-horizontal-rule',
-      '@udecode/plate-indent-list',
-      '@udecode/plate-link',
-      '@udecode/plate-list',
-      '@udecode/plate-media',
       '@udecode/plate-paragraph',
-      '@udecode/plate-table',
     ],
     registryDependencies: ['dropdown-menu', 'toolbar'],
     files: ['plate-ui/insert-dropdown-menu.tsx'],
@@ -382,7 +347,7 @@ const ui: Registry = [
   {
     name: 'list-element',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-list', '@udecode/plate-indent-list'],
+    dependencies: ['@udecode/plate-list'],
     registryDependencies: [],
     files: ['plate-ui/list-element.tsx'],
   },
@@ -425,7 +390,7 @@ const ui: Registry = [
     name: 'mention-combobox',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-mention', '@udecode/plate-combobox'],
-    registryDependencies: ['combobox'],
+    registryDependencies: ['combobox', 'scroll-area'],
     files: ['plate-ui/mention-combobox.tsx'],
   },
   {
@@ -498,7 +463,7 @@ const ui: Registry = [
   {
     name: 'search-highlight-leaf',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-highlight', '@udecode/plate-find-replace'],
+    dependencies: ['@udecode/plate-find-replace'],
     registryDependencies: [],
     files: ['plate-ui/search-highlight-leaf.tsx'],
   },
@@ -555,13 +520,8 @@ const ui: Registry = [
   {
     name: 'toolbar',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-dnd', '@udecode/plate-basic-marks'],
-    registryDependencies: [
-      'color-dropdown-menu',
-      'insert-dropdown-menu',
-      'mark-toolbar-button',
-      'turn-into-dropdown-menu',
-    ],
+    dependencies: ['@radix-ui/react-toolbar'],
+    registryDependencies: ['tooltip', 'toggle'],
     files: ['plate-ui/toolbar.tsx'],
   },
   {
@@ -577,8 +537,6 @@ const ui: Registry = [
     dependencies: [
       '@udecode/plate-block-quote',
       '@udecode/plate-heading',
-      '@udecode/plate-indent-list',
-      '@udecode/plate-list',
       '@udecode/plate-paragraph',
     ],
     registryDependencies: ['dropdown-menu', 'toolbar'],

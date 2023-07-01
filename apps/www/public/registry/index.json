@@ -20,7 +20,9 @@
     "dependencies": [
       "@udecode/plate-code-block"
     ],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "command"
+    ],
     "files": [
       "plate-ui/code-block-element.tsx",
       "plate-ui/code-block-element.css",
@@ -50,9 +52,12 @@
   },
   {
     "name": "comments-popover",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-comments"
+    ],
     "registryDependencies": [
-      "popover"
+      "popover",
+      "avatar"
     ],
     "files": [
       "plate-ui/comments-popover.tsx",
@@ -84,12 +89,15 @@
   },
   {
     "name": "emoji-dropdown-menu",
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-floating"
+    ],
     "registryDependencies": [
       "toolbar"
     ],
     "files": [
       "plate-ui/emoji-dropdown-menu.tsx",
+      "plate-ui/emoji-toolbar-dropdown.tsx",
       "plate-ui/emoji-icons.tsx",
       "plate-ui/emoji-picker.tsx",
       "plate-ui/emoji-picker-content.tsx",
@@ -161,7 +169,6 @@
   {
     "name": "code-leaf",
     "dependencies": [
-      "@udecode/plate-code-block",
       "@udecode/plate-basic-marks"
     ],
     "registryDependencies": [],
@@ -197,7 +204,9 @@
     "dependencies": [
       "@udecode/plate-combobox"
     ],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "scroll-area"
+    ],
     "files": [
       "plate-ui/combobox.tsx"
     ],
@@ -277,17 +286,6 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "emoji-toolbar-dropdown",
-    "dependencies": [
-      "@udecode/plate-floating"
-    ],
-    "registryDependencies": [],
-    "files": [
-      "plate-ui/emoji-toolbar-dropdown.tsx"
-    ],
-    "type": "components:plate-ui"
-  },
-  {
     "name": "excalidraw-element",
     "dependencies": [
       "@udecode/plate-excalidraw"
@@ -312,30 +310,13 @@
   {
     "name": "fixed-toolbar-buttons",
     "dependencies": [
-      "@udecode/plate-basic-marks",
-      "@udecode/plate-font",
-      "@udecode/plate-indent-list",
-      "@udecode/plate-list",
-      "@udecode/plate-media"
+      "@udecode/plate-basic-marks"
     ],
     "registryDependencies": [
-      "toolbar",
-      "color-dropdown-menu",
-      "emoji-dropdown-menu",
-      "align-dropdown-menu",
-      "comment-toolbar-button",
-      "indent-list-toolbar-button",
-      "indent-toolbar-button",
       "insert-dropdown-menu",
-      "line-height-dropdown-menu",
-      "link-toolbar-button",
-      "list-toolbar-button",
       "mark-toolbar-button",
-      "media-toolbar-button",
       "mode-dropdown-menu",
-      "more-dropdown-menu",
-      "outdent-toolbar-button",
-      "table-dropdown-menu",
+      "toolbar",
       "turn-into-dropdown-menu"
     ],
     "files": [
@@ -362,9 +343,6 @@
       "@udecode/plate-basic-marks"
     ],
     "registryDependencies": [
-      "toolbar",
-      "comment-toolbar-button",
-      "link-toolbar-button",
       "mark-toolbar-button",
       "more-dropdown-menu",
       "turn-into-dropdown-menu"
@@ -460,16 +438,8 @@
     "name": "insert-dropdown-menu",
     "dependencies": [
       "@udecode/plate-block-quote",
-      "@udecode/plate-code-block",
-      "@udecode/plate-excalidraw",
       "@udecode/plate-heading",
-      "@udecode/plate-horizontal-rule",
-      "@udecode/plate-indent-list",
-      "@udecode/plate-link",
-      "@udecode/plate-list",
-      "@udecode/plate-media",
-      "@udecode/plate-paragraph",
-      "@udecode/plate-table"
+      "@udecode/plate-paragraph"
     ],
     "registryDependencies": [
       "dropdown-menu",
@@ -548,8 +518,7 @@
   {
     "name": "list-element",
     "dependencies": [
-      "@udecode/plate-list",
-      "@udecode/plate-indent-list"
+      "@udecode/plate-list"
     ],
     "registryDependencies": [],
     "files": [
@@ -633,7 +602,8 @@
       "@udecode/plate-combobox"
     ],
     "registryDependencies": [
-      "combobox"
+      "combobox",
+      "scroll-area"
     ],
     "files": [
       "plate-ui/mention-combobox.tsx"
@@ -754,7 +724,6 @@
   {
     "name": "search-highlight-leaf",
     "dependencies": [
-      "@udecode/plate-highlight",
       "@udecode/plate-find-replace"
     ],
     "registryDependencies": [],
@@ -846,14 +815,11 @@
   {
     "name": "toolbar",
     "dependencies": [
-      "@udecode/plate-dnd",
-      "@udecode/plate-basic-marks"
+      "@radix-ui/react-toolbar"
     ],
     "registryDependencies": [
-      "color-dropdown-menu",
-      "insert-dropdown-menu",
-      "mark-toolbar-button",
-      "turn-into-dropdown-menu"
+      "tooltip",
+      "toggle"
     ],
     "files": [
       "plate-ui/toolbar.tsx"
@@ -876,8 +842,6 @@
     "dependencies": [
       "@udecode/plate-block-quote",
       "@udecode/plate-heading",
-      "@udecode/plate-indent-list",
-      "@udecode/plate-list",
       "@udecode/plate-paragraph"
     ],
     "registryDependencies": [

@@ -2,16 +2,8 @@
   "name": "insert-dropdown-menu",
   "dependencies": [
     "@udecode/plate-block-quote",
-    "@udecode/plate-code-block",
-    "@udecode/plate-excalidraw",
     "@udecode/plate-heading",
-    "@udecode/plate-horizontal-rule",
-    "@udecode/plate-indent-list",
-    "@udecode/plate-link",
-    "@udecode/plate-list",
-    "@udecode/plate-media",
-    "@udecode/plate-paragraph",
-    "@udecode/plate-table"
+    "@udecode/plate-paragraph"
   ],
   "registryDependencies": [
     "dropdown-menu",

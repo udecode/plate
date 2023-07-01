@@ -1,6 +1,8 @@
 {
   "name": "emoji-dropdown-menu",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-floating"
+  ],
   "registryDependencies": [
     "toolbar"
   ],
@@ -8,6 +10,10 @@
     {
       "name": "emoji-dropdown-menu.tsx",
       "content": "import React from 'react';\nimport {\n  EmojiDropdownMenuOptions,\n  useEmojiDropdownMenuState,\n} from '@udecode/plate-emoji';\n\nimport { Icons } from '@/components/icons';\nimport { EmojiToolbarDropdown } from '@/registry/default/plate-ui/emoji-toolbar-dropdown';\nimport {\n  ToolbarButton,\n  ToolbarButtonProps,\n} from '@/registry/default/plate-ui/toolbar';\n\nimport { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';\nimport { EmojiPicker } from './emoji-picker';\n\ntype EmojiDropdownMenuProps = {\n  options?: EmojiDropdownMenuOptions;\n} & ToolbarButtonProps;\n\nexport function EmojiDropdownMenu({\n  options,\n  ...props\n}: EmojiDropdownMenuProps) {\n  const { isOpen, onToggle, emojiPickerState } =\n    useEmojiDropdownMenuState(options);\n\n  return (\n    <EmojiToolbarDropdown\n      control={\n        <ToolbarButton pressed={isOpen} isDropdown tooltip=\"Emoji\" {...props}>\n          <Icons.emoji />\n        </ToolbarButton>\n      }\n      open={isOpen}\n      onOpen={onToggle}\n      onClose={onToggle}\n    >\n      <EmojiPicker\n        {...emojiPickerState}\n        isOpen={isOpen}\n        onToggle={onToggle}\n        icons={{\n          categories: emojiCategoryIcons,\n          search: emojiSearchIcons,\n        }}\n        settings={options?.settings}\n      />\n    </EmojiToolbarDropdown>\n  );\n}\n"
+    },
+    {
+      "name": "emoji-toolbar-dropdown.tsx",
+      "content": "import React, { ReactNode } from 'react';\nimport { useDropdownControls } from '@udecode/plate-floating';\n\ntype EmojiToolbarDropdownProps = {\n  control: ReactNode;\n  open: boolean;\n  children: ReactNode;\n  onOpen?: () => void;\n  onClose?: (ev: MouseEvent) => void;\n};\n\nexport function EmojiToolbarDropdown({\n  control,\n  children,\n  open,\n  onOpen,\n  onClose,\n}: EmojiToolbarDropdownProps) {\n  const { styles, refs } = useDropdownControls({\n    open,\n    onClose,\n  });\n\n  return (\n    <>\n      <div ref={refs.setReference} onMouseDown={onOpen}>\n        {control}\n      </div>\n\n      {open && (\n        <div ref={refs.setFloating} className=\"!z-[100]\" style={styles}>\n          {children}\n        </div>\n      )}\n    </>\n  );\n}\n"
     },
     {
       "name": "emoji-icons.tsx",

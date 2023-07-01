@@ -14,7 +14,7 @@ export const Index: Record<string, any> = {
     'code-block-element': {
       name: 'code-block-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["command"],
       files: ['registry/default/plate-ui/code-block-element.tsx','registry/default/plate-ui/code-block-element.css','registry/default/plate-ui/code-block-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/code-block-element')),
     },
@@ -28,7 +28,7 @@ export const Index: Record<string, any> = {
     'comments-popover': {
       name: 'comments-popover',
       type: 'components:plate-ui',
-      registryDependencies: ["popover"],
+      registryDependencies: ["popover","avatar"],
       files: ['registry/default/plate-ui/comments-popover.tsx','registry/default/plate-ui/comment-avatar.tsx','registry/default/plate-ui/comment-create-form.tsx','registry/default/plate-ui/comment-item.tsx','registry/default/plate-ui/comment-more-dropdown.tsx','registry/default/plate-ui/comment-reply-items.tsx','registry/default/plate-ui/comment-resolve-button.tsx','registry/default/plate-ui/comment-value.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/comments-popover')),
     },
@@ -43,7 +43,7 @@ export const Index: Record<string, any> = {
       name: 'emoji-dropdown-menu',
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
-      files: ['registry/default/plate-ui/emoji-dropdown-menu.tsx','registry/default/plate-ui/emoji-icons.tsx','registry/default/plate-ui/emoji-picker.tsx','registry/default/plate-ui/emoji-picker-content.tsx','registry/default/plate-ui/emoji-picker-navigation.tsx','registry/default/plate-ui/emoji-picker-preview.tsx','registry/default/plate-ui/emoji-picker-search-and-clear.tsx','registry/default/plate-ui/emoji-picker-search-bar.tsx'],
+      files: ['registry/default/plate-ui/emoji-dropdown-menu.tsx','registry/default/plate-ui/emoji-toolbar-dropdown.tsx','registry/default/plate-ui/emoji-icons.tsx','registry/default/plate-ui/emoji-picker.tsx','registry/default/plate-ui/emoji-picker-content.tsx','registry/default/plate-ui/emoji-picker-navigation.tsx','registry/default/plate-ui/emoji-picker-preview.tsx','registry/default/plate-ui/emoji-picker-search-and-clear.tsx','registry/default/plate-ui/emoji-picker-search-bar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/emoji-dropdown-menu')),
     },
     'align-dropdown-menu': {
@@ -105,7 +105,7 @@ export const Index: Record<string, any> = {
     'combobox': {
       name: 'combobox',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["scroll-area"],
       files: ['registry/default/plate-ui/combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/combobox')),
     },
@@ -158,13 +158,6 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/emoji-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/emoji-combobox')),
     },
-    'emoji-toolbar-dropdown': {
-      name: 'emoji-toolbar-dropdown',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/emoji-toolbar-dropdown.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/emoji-toolbar-dropdown')),
-    },
     'excalidraw-element': {
       name: 'excalidraw-element',
       type: 'components:plate-ui',
@@ -182,7 +175,7 @@ export const Index: Record<string, any> = {
     'fixed-toolbar-buttons': {
       name: 'fixed-toolbar-buttons',
       type: 'components:plate-ui',
-      registryDependencies: ["toolbar","color-dropdown-menu","emoji-dropdown-menu","align-dropdown-menu","comment-toolbar-button","indent-list-toolbar-button","indent-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","list-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","turn-into-dropdown-menu"],
+      registryDependencies: ["insert-dropdown-menu","mark-toolbar-button","mode-dropdown-menu","toolbar","turn-into-dropdown-menu"],
       files: ['registry/default/plate-ui/fixed-toolbar-buttons.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/fixed-toolbar-buttons')),
     },
@@ -196,7 +189,7 @@ export const Index: Record<string, any> = {
     'floating-toolbar-buttons': {
       name: 'floating-toolbar-buttons',
       type: 'components:plate-ui',
-      registryDependencies: ["toolbar","comment-toolbar-button","link-toolbar-button","mark-toolbar-button","more-dropdown-menu","turn-into-dropdown-menu"],
+      registryDependencies: ["mark-toolbar-button","more-dropdown-menu","turn-into-dropdown-menu"],
       files: ['registry/default/plate-ui/floating-toolbar-buttons.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/floating-toolbar-buttons')),
     },
@@ -336,7 +329,7 @@ export const Index: Record<string, any> = {
     'mention-combobox': {
       name: 'mention-combobox',
       type: 'components:plate-ui',
-      registryDependencies: ["combobox"],
+      registryDependencies: ["combobox","scroll-area"],
       files: ['registry/default/plate-ui/mention-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-combobox')),
     },
@@ -462,7 +455,7 @@ export const Index: Record<string, any> = {
     'toolbar': {
       name: 'toolbar',
       type: 'components:plate-ui',
-      registryDependencies: ["color-dropdown-menu","insert-dropdown-menu","mark-toolbar-button","turn-into-dropdown-menu"],
+      registryDependencies: ["tooltip","toggle"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },

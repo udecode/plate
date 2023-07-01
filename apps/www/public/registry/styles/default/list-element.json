@@ -1,8 +1,7 @@
 {
   "name": "list-element",
   "dependencies": [
-    "@udecode/plate-list",
-    "@udecode/plate-indent-list"
+    "@udecode/plate-list"
   ],
   "registryDependencies": [],
   "files": [

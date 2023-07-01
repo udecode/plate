@@ -1,14 +1,11 @@
 {
   "name": "toolbar",
   "dependencies": [
-    "@udecode/plate-dnd",
-    "@udecode/plate-basic-marks"
+    "@radix-ui/react-toolbar"
   ],
   "registryDependencies": [
-    "color-dropdown-menu",
-    "insert-dropdown-menu",
-    "mark-toolbar-button",
-    "turn-into-dropdown-menu"
+    "tooltip",
+    "toggle"
   ],
   "files": [
     {

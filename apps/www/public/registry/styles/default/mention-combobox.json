@@ -5,7 +5,8 @@
     "@udecode/plate-combobox"
   ],
   "registryDependencies": [
-    "combobox"
+    "combobox",
+    "scroll-area"
   ],
   "files": [
     {

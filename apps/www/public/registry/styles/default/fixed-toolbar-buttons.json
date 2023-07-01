@@ -1,30 +1,13 @@
 {
   "name": "fixed-toolbar-buttons",
   "dependencies": [
-    "@udecode/plate-basic-marks",
-    "@udecode/plate-font",
-    "@udecode/plate-indent-list",
-    "@udecode/plate-list",
-    "@udecode/plate-media"
+    "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
-    "toolbar",
-    "color-dropdown-menu",
-    "emoji-dropdown-menu",
-    "align-dropdown-menu",
-    "comment-toolbar-button",
-    "indent-list-toolbar-button",
-    "indent-toolbar-button",
     "insert-dropdown-menu",
-    "line-height-dropdown-menu",
-    "link-toolbar-button",
-    "list-toolbar-button",
     "mark-toolbar-button",
-    "media-toolbar-button",
     "mode-dropdown-menu",
-    "more-dropdown-menu",
-    "outdent-toolbar-button",
-    "table-dropdown-menu",
+    "toolbar",
     "turn-into-dropdown-menu"
   ],
   "files": [

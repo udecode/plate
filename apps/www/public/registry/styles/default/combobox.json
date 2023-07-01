@@ -3,7 +3,9 @@
   "dependencies": [
     "@udecode/plate-combobox"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "scroll-area"
+  ],
   "files": [
     {
       "name": "combobox.tsx",

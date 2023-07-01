@@ -1,7 +1,6 @@
 {
   "name": "search-highlight-leaf",
   "dependencies": [
-    "@udecode/plate-highlight",
     "@udecode/plate-find-replace"
   ],
   "registryDependencies": [],

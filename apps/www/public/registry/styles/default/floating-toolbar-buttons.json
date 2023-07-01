@@ -4,9 +4,6 @@
     "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
-    "toolbar",
-    "comment-toolbar-button",
-    "link-toolbar-button",
     "mark-toolbar-button",
     "more-dropdown-menu",
     "turn-into-dropdown-menu"

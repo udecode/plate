@@ -1,8 +1,11 @@
 {
   "name": "comments-popover",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-comments"
+  ],
   "registryDependencies": [
-    "popover"
+    "popover",
+    "avatar"
   ],
   "files": [
     {

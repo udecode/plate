@@ -4544,7 +4544,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-avatar@npm:^1.0.3":
+"@radix-ui/react-avatar@npm:1.0.3, @radix-ui/react-avatar@npm:^1.0.3":
   version: 1.0.3
   resolution: "@radix-ui/react-avatar@npm:1.0.3"
   dependencies:
@@ -4567,7 +4567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-checkbox@npm:^1.0.4":
+"@radix-ui/react-checkbox@npm:1.0.4, @radix-ui/react-checkbox@npm:^1.0.4":
   version: 1.0.4
   resolution: "@radix-ui/react-checkbox@npm:1.0.4"
   dependencies:
@@ -4836,7 +4836,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dropdown-menu@npm:^2.0.5":
+"@radix-ui/react-dropdown-menu@npm:2.0.5, @radix-ui/react-dropdown-menu@npm:^2.0.5":
   version: 2.0.5
   resolution: "@radix-ui/react-dropdown-menu@npm:2.0.5"
   dependencies:
@@ -5351,7 +5351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-scroll-area@npm:^1.0.4":
+"@radix-ui/react-scroll-area@npm:1.0.4, @radix-ui/react-scroll-area@npm:^1.0.4":
   version: 1.0.4
   resolution: "@radix-ui/react-scroll-area@npm:1.0.4"
   dependencies:
@@ -5629,7 +5629,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-toolbar@npm:^1.0.4":
+"@radix-ui/react-toolbar@npm:1.0.4, @radix-ui/react-toolbar@npm:^1.0.4":
   version: 1.0.4
   resolution: "@radix-ui/react-toolbar@npm:1.0.4"
   dependencies:
@@ -7052,7 +7052,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@udecode/plate-alignment@npm:21.3.2, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
+"@udecode/plate-alignment@npm:21.3.2, @udecode/plate-alignment@workspace:*, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
   dependencies:
@@ -7098,7 +7098,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-marks@npm:21.3.2, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
+"@udecode/plate-basic-marks@npm:21.3.2, @udecode/plate-basic-marks@workspace:*, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-marks@workspace:packages/basic-marks"
   dependencies:
@@ -7188,7 +7188,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:21.3.2, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:21.3.2, @udecode/plate-comments@workspace:*, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -7337,7 +7337,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-font@npm:21.3.2, @udecode/plate-font@workspace:^, @udecode/plate-font@workspace:packages/font":
+"@udecode/plate-font@npm:21.3.2, @udecode/plate-font@workspace:*, @udecode/plate-font@workspace:^, @udecode/plate-font@workspace:packages/font":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-font@workspace:packages/font"
   dependencies:
@@ -7393,7 +7393,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:21.3.2, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:21.3.2, @udecode/plate-indent-list@workspace:*, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
@@ -7409,7 +7409,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent@npm:21.3.2, @udecode/plate-indent@workspace:^, @udecode/plate-indent@workspace:packages/indent":
+"@udecode/plate-indent@npm:21.3.2, @udecode/plate-indent@workspace:*, @udecode/plate-indent@workspace:^, @udecode/plate-indent@workspace:packages/indent":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent@workspace:packages/indent"
   dependencies:
@@ -7452,7 +7452,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-line-height@npm:21.3.2, @udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
+"@udecode/plate-line-height@npm:21.3.2, @udecode/plate-line-height@workspace:*, @udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-line-height@workspace:packages/line-height"
   dependencies:
@@ -7693,7 +7693,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:21.3.2, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:21.3.2, @udecode/plate-suggestion@workspace:*, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
@@ -9783,7 +9783,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cmdk@npm:^0.2.0":
+"cmdk@npm:0.2.0, cmdk@npm:^0.2.0":
   version: 0.2.0
   resolution: "cmdk@npm:0.2.0"
   dependencies:
@@ -18014,35 +18014,50 @@ __metadata:
   resolution: "next-template@workspace:templates/next-template"
   dependencies:
     "@ianvs/prettier-plugin-sort-imports": "npm:^3.7.2"
+    "@radix-ui/react-avatar": "npm:1.0.3"
+    "@radix-ui/react-checkbox": "npm:1.0.4"
+    "@radix-ui/react-dropdown-menu": "npm:2.0.5"
     "@radix-ui/react-popover": "npm:1.0.6"
+    "@radix-ui/react-scroll-area": "npm:1.0.4"
     "@radix-ui/react-separator": "npm:1.0.3"
     "@radix-ui/react-slot": "npm:^1.0.2"
+    "@radix-ui/react-toggle": "npm:1.0.3"
+    "@radix-ui/react-toolbar": "npm:1.0.4"
     "@radix-ui/react-tooltip": "npm:1.0.6"
     "@types/node": "npm:^17.0.45"
     "@types/react": "npm:^18.2.13"
     "@types/react-dom": "npm:^18.2.6"
     "@typescript-eslint/parser": "npm:^5.60.0"
+    "@udecode/plate-alignment": "workspace:*"
     "@udecode/plate-autoformat": "workspace:*"
+    "@udecode/plate-basic-marks": "workspace:*"
     "@udecode/plate-block-quote": "workspace:*"
     "@udecode/plate-code-block": "workspace:*"
     "@udecode/plate-combobox": "workspace:*"
+    "@udecode/plate-comments": "workspace:*"
     "@udecode/plate-common": "workspace:*"
     "@udecode/plate-dnd": "workspace:*"
     "@udecode/plate-excalidraw": "workspace:*"
     "@udecode/plate-floating": "workspace:*"
+    "@udecode/plate-font": "workspace:*"
     "@udecode/plate-heading": "workspace:*"
     "@udecode/plate-highlight": "workspace:*"
     "@udecode/plate-horizontal-rule": "workspace:*"
+    "@udecode/plate-indent": "workspace:*"
+    "@udecode/plate-indent-list": "workspace:*"
     "@udecode/plate-kbd": "workspace:*"
+    "@udecode/plate-line-height": "workspace:*"
     "@udecode/plate-link": "workspace:*"
     "@udecode/plate-list": "workspace:*"
     "@udecode/plate-media": "workspace:*"
     "@udecode/plate-mention": "workspace:*"
     "@udecode/plate-paragraph": "workspace:*"
+    "@udecode/plate-suggestion": "workspace:*"
     "@udecode/plate-table": "workspace:*"
     autoprefixer: "npm:^10.4.14"
     class-variance-authority: "npm:0.6.1"
     clsx: "npm:1.2.1"
+    cmdk: "npm:0.2.0"
     eslint: "npm:^8.43.0"
     eslint-config-next: "npm:13.4.6"
     eslint-config-prettier: "npm:^8.8.0"
