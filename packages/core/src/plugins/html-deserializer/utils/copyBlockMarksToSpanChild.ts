@@ -1,4 +1,5 @@
 import { isHtmlBlockElement } from './isHtmlBlockElement';
+import { isHtmlTable } from './isHtmlTable';
 import { traverseHtmlElements } from './traverseHtmlElements';
 
 /**
@@ -12,7 +13,7 @@ export const copyBlockMarksToSpanChild = (rootNode: Node) => {
     const styleAttribute = element.getAttribute('style');
     if (!styleAttribute) return true;
 
-    if (isHtmlBlockElement(el)) {
+    if (isHtmlBlockElement(el) && !isHtmlTable(el)) {
       const {
         style: {
           backgroundColor,
