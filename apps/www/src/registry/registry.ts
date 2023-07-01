@@ -223,10 +223,10 @@ const ui: Registry = [
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-basic-marks'],
     registryDependencies: [
+      'toolbar',
       'insert-dropdown-menu',
       'mark-toolbar-button',
       'mode-dropdown-menu',
-      'toolbar',
       'turn-into-dropdown-menu',
     ],
     files: ['plate-ui/fixed-toolbar-buttons.tsx'],
