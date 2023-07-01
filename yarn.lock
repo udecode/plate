@@ -15560,6 +15560,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jotai@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "jotai@npm:2.2.1"
+  peerDependencies:
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    react:
+      optional: true
+  checksum: 603a3e0090b785c7b1a0409a30b2dd876819572207faf71ec9d40803bbb6b56eb41130523dccdb5571a8d03ea0bfd822fe9578f2e0869819181d8ce4159992f7
+  languageName: node
+  linkType: hard
+
 "joycon@npm:^3.0.1":
   version: 3.1.1
   resolution: "joycon@npm:3.1.1"
@@ -25567,6 +25579,7 @@ __metadata:
     contentlayer: "npm:0.3.3"
     date-fns: "npm:^2.30.0"
     framer-motion: "npm:10.12.16"
+    jotai: "npm:^2.2.1"
     lodash.template: "npm:^4.5.0"
     lucide-react: "npm:^0.256.0"
     mdast-util-toc: "npm:^6.1.1"
