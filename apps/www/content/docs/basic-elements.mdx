@@ -52,31 +52,74 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export type HotkeyPlugin = {
-  /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-};
+### createBasicElementsPlugin
 
-export interface CodeBlockPlugin extends HotkeyPlugin {
-  syntax?: boolean;
-  syntaxPopularFirst?: boolean;
-  deserializers?: string[];
-}
+### createBlockquotePlugin
 
-export interface HeadingPlugin extends HotkeyPlugin {}
+### createHeadingPlugin
 
-export interface HeadingsPlugin {
-  /**
-   * Heading levels supported from 1 to `levels`
-   */
-  levels?: number;
-}
-```
+<APIAttributes>
+<APIItem name="levels" type="number" optional>
+Specifies the heading levels supported, ranging from 1 to the specified levels.
+
+</APIItem>
+</APIAttributes>
+
+### createParagraphPlugin
+
+---
+
+### createCodeBlockPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="syntax" type="boolean" optional>
+Determines if syntax highlighting is enabled.
+
+</APIItem>
+<APIItem name="syntaxPopularFirst" type="boolean" optional>
+Determines if popular syntax should be displayed first.
+
+</APIItem>
+<APIItem name="deserializers" type="string[]" optional>
+Defines deserializers for the code block plugin.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a code block action.
+
+</APIItem>
+</APIAttributes>
+
+### useCodeBlockCombobox
+
+### useCodeBlockComboboxState
+
+### useCodeBlockElement
+
+### useCodeBlockElementState
+
+### useCodeSyntaxLeaf
+
+### isCodeBlockEmpty
+
+### isSelectionAtCodeBlockStart
+
+### indentCodeLine
+
+### insertCodeBlock
+
+### insertCodeLine
+
+### outdentCodeLine
+
+### toggleCodeBlock
+
+### unwrapCodeBlock
 
 ## Keyboard Interactions
 

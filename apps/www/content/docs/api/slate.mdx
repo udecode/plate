@@ -272,3 +272,45 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 ### `wrapNodes`
 
 ### `liftNodes`
+
+## Types
+
+### QueryNodeOptions
+
+An interface used to query node entries.
+
+<APIAttributes>
+<APIItem
+  name="filter"
+  type="(entry: TNodeEntry) => boolean"
+  optional
+>
+
+A function to filter node entries.
+
+- The function should take a node entry as a parameter and return a boolean.
+
+</APIItem>
+<APIItem name="allow" type="string[] | string | null" optional>
+
+List of types that are valid.
+
+- If empty or undefined, all types are allowed.
+
+</APIItem>
+<APIItem name="exclude" type="string[] | string | null" optional>
+
+List of types that are invalid.
+
+</APIItem>
+<APIItem name="level" type="number[] | number | null" optional>
+
+Valid path levels.
+
+</APIItem>
+<APIItem name="maxLevel" type="number | null" optional>
+
+Paths above this level are invalid.
+
+</APIItem>
+</APIAttributes>

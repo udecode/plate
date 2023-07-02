@@ -52,47 +52,63 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export interface ExitBreakRule {
-  /**
-   * Hotkey to trigger exit break.
-   */
-  hotkey: string;
+### createExitBreakPlugin
 
-  /**
-   * @see {@link QueryNodeOptions}
-   */
-  query?: QueryNodeOptions & {
-    /**
-     * When the selection is at the start of the block above.
-     */
-    start?: boolean;
+<APIParameters>
 
-    /**
-     * When the selection is at the end of the block above.
-     */
-    end?: boolean;
-  };
+Options.
 
-  /**
-   * Path level where to exit. Default is 1.
-   */
-  level?: number;
+<APIItem name="rules" type="ExitBreakRule[]" optional>
 
-  /**
-   * Exit before the selected block if true.
-   */
-  before?: boolean;
+An array of rule objects each containing the following properties:
 
-  defaultType?: string;
-}
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+Hotkey to trigger exit break.
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions & {start?: boolean, end?: boolean}" optional>
+Object determining the conditions under which to exit.
 
-export interface ExitBreakPlugin {
-  rules?: ExitBreakRule[];
-}
-```
+- Extends `QueryNodeOptions`:
+
+<APISubList>
+
+<APISubListItem parent="query" name="start" type="boolean" optional>
+
+Start of the block.
+
+</APISubListItem>
+
+<APISubListItem parent="query" name="end" type="boolean" optional>
+
+End of the block.
+
+</APISubListItem>
+
+</APISubList>
+
+</APISubListItem>
+<APISubListItem parent="rules" name="level" type="number" optional>
+Path level where to exit.
+
+- **Default:** `1`
+
+</APISubListItem>
+<APISubListItem parent="rules" name="before" type="boolean" optional>
+If true, exit before the selected block.
+</APISubListItem>
+<APISubListItem parent="rules" name="defaultType" type="string" optional>
+The default type of the node to be inserted upon exit.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+### exitBreak
+
+### exitBreakAtEdges
 
 ## Keyboard Interactions
 

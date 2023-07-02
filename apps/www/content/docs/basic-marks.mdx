@@ -43,23 +43,100 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export type HotkeyPlugin = {
-  /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-};
+### createBasicMarksPlugin
 
-export interface ToggleMarkPlugin extends HotkeyPlugin {
-  /**
-   * Node properties to delete.
-   */
-  clear?: string | string[];
-}
-```
+### createBoldPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createItalicPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createUnderlinePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createStrikethroughPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createSubscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createSuperscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createCodePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
 
 ## Keyboard Interactions
 

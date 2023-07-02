@@ -49,7 +49,57 @@ const plugins = [
 ];
 ```
 
+Then render the combobox component inside `Plate`. You can use the [Combobox component](/docs/components/combobox) or create your own.
+
 ## API
+
+### createComboboxPlugin
+
+### ComboboxProps
+
+Here are some key aspects of the **`Combobox`**:
+
+- Multiple Instances: You can render the **`Combobox`** multiple times, each with its unique configuration provided by a different **`ComboboxStateById`**.
+- Singleton Behavior: Only one **`Combobox`** can be opened at a time. The state of the active **`Combobox`** is stored in the **`comboboxStore`**.
+- Extends **`ComboboxState`**, **`ComboboxStateById`**:
+
+<APIParameters>
+<APIItem name="items" type="TComboboxItem[]">
+The items for the combobox. An alternative to setting the items is to use
+`comboboxActions.items(items)`.
+</APIItem>
+<APIItem name="component" type="React.FC<{ store: ComboboxStoreById }>">
+A component that is rendered when the combobox is open. Useful for injecting
+hooks.
+</APIItem>
+<APIItem name="onRenderItem" type="React.FC<ComboboxItemProps>">
+A function to render the combobox item.
+
+- **Default:** item text
+
+<APISubList>
+<APISubListItem parent="ComboboxItemProps" name="item" type="TComboboxItem">
+
+The combobox item.
+
+</APISubListItem>
+<APISubListItem parent="ComboboxItemProps" name="search" type="string">
+
+The search text.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="portalElement" type="Element" optional>
+
+The element to which the combobox is rendered.
+
+- **Default:** `document.body`
+
+</APIItem>
+
+</APIParameters>
 
 ### ComboboxState
 
@@ -159,47 +209,13 @@ Data available to `onRenderItem`.
 </APIItem>
 </APIParameters>
 
-### Combobox
+### useComboboxControls
 
-**`Combobox`** is a headless component that allows users to make a selection from a list of suggestions.
-Each **`Combobox`** instance can be customized using the **`ComboboxStateById`** configuration.
+Used in `Combobox` to control the combobox state. See [useCombobox](https://www.downshift-js.com/use-combobox).
 
-Here are some key aspects of the **`Combobox`**:
+### useComboboxContentState
 
-- Multiple Instances: You can render the **`Combobox`** multiple times, each with its unique configuration provided by a different **`ComboboxStateById`**.
-- Singleton Behavior: Only one **`Combobox`** can be opened at a time. The state of the active **`Combobox`** is stored in the **`comboboxStore`**.
-- Props extends **`ComboboxStateById`**:
-
-<APIParameters>
-<APIItem name="items" type="TComboboxItem[]">
-The items for the combobox. An alternative to setting the items is to use
-`comboboxActions.items(items)`.
-</APIItem>
-<APIItem name="component" type="React.FC<{ store: ComboboxStoreById }>">
-A component that is rendered when the combobox is open. Useful for injecting
-hooks.
-</APIItem>
-<APIItem name="onRenderItem" type="React.FC<ComboboxItemProps>">
-A function to render the combobox item. By default, it is the `text`.
-
-<APISubList>
-  <APISubListItem parent="ComboboxItemProps" name="item" type="TComboboxItem">
-    The combobox item.
-  </APISubListItem>
-  <APISubListItem parent="ComboboxItemProps" name="search" type="string">
-    The search text.
-  </APISubListItem>
-</APISubList>
-
-</APIItem>
-<APIItem name="portalElement" type="Element" optional>
-
-The element to which the combobox is rendered. By default, it is rendered to
-`document.body`.
-
-</APIItem>
-
-</APIParameters>
+### useComboboxContent
 
 ## Keyboard Interactions
 

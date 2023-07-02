@@ -37,7 +37,7 @@ export function APIItem({
     <AccordionItem value={value ?? name} className="select-text">
       <AccordionTrigger className="group hover:no-underline">
         <li id={name} className="scroll-mt-[56px]">
-          <h4 className="relative py-2 font-semibold leading-none tracking-tight">
+          <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             <a
               href={`#${name}`}
               className={cn(

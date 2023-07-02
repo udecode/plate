@@ -54,7 +54,32 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
+
+### createAutoformatPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="rules" type="AutoformatRule[]" optional>
+
+A list of triggering rules.
+
+- Can be one of the following: `AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`.
+- Extends `AutoformatCommonRule`.
+
+</APIItem>
+<APIItem name="enableUndoOnDelete" type="boolean" optional>
+
+Enable undo on delete.
+
+</APIItem>
+</APIAttributes>
+
+### Rules
+
+You can import the following rules:
 
 | Name                           | Description                          |
 | :----------------------------- | :----------------------------------- |
@@ -116,129 +141,163 @@ const plugins = [
 |                                | `autoformatSuperscriptNumbers` rules |
 |                                | `autoformatSuperscriptSymbols` rules |
 
-```tsx
-export interface MatchRange {
-  start: string;
-  end: string;
-}
+### AutoformatCommonRule
 
-export interface AutoformatQueryOptions
-  extends Omit<AutoformatCommonRule, 'query'> {
-  /**
-   * `insertText` text.
-   */
-  text: string;
-}
+An interface for the common structure of autoformat rules, regardless of their mode.
 
-export interface AutoformatCommonRule {
-  /**
-   * The rule applies when the trigger and the text just before the cursor matches.
-   * For `mode: 'block'`: lookup for the end match(es) before the cursor.
-   * For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
-   * For `mode: 'mark'`: lookup for the start and end matches.
-   * Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
-   */
-  match: string | string[] | MatchRange | MatchRange[];
+<APIAttributes>
+<APIItem
+  name="match"
+  type="string | string[] | MatchRange | MatchRange[]"
+>
 
-  /**
-   * Triggering character to autoformat.
-   * @default the last character of `match` or `match.end`
-   */
-  trigger?: string | string[];
+The rule applies when the trigger and the text just before the cursor matches.
 
-  /**
-   * If true, insert the triggering character after autoformatting.
-   * @default: false
-   */
-  insertTrigger?: boolean;
+- For `mode: 'block'`: lookup for the end match(es) before the cursor.
+- For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
+- For `mode: 'mark'`: lookup for the start and end matches.
+- Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
+- `MatchRange`:
 
-  /**
-   * Query to allow autoformat.
-   */
-  query?: (editor: TEditor<V>, options: AutoformatQueryOptions) => boolean;
-}
+<APISubList>
 
-export interface AutoformatBlockRule extends AutoformatCommonRule {
-  /**
-   * - text: insert text.
-   * - block: set block type or custom format.
-   * - mark: insert mark(s) between matches.
-   * @default 'text'
-   */
-  mode: 'block';
+<APISubListItem parent="match" name="start" type="string">
 
-  match: string | string[];
+The starting point of the range.
 
-  /**
-   * For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
-   * For `mode: 'mark'`: Mark(s) to add.
-   */
-  type?: string;
+</APISubListItem>
+<APISubListItem parent="match" name="end" type="string">
 
-  /**
-   * If true, the trigger should be at block start to allow autoformatting.
-   * @default true
-   */
-  triggerAtBlockStart?: boolean;
+The ending point of the range.
 
-  /**
-   * If true, allow to autoformat even if there is a block of the same type above the selected block.
-   * @default false
-   */
-  allowSameTypeAbove?: boolean;
+</APISubListItem>
+</APISubList>
 
-  /**
-   * Function called just before `format`.
-   * Generally used to reset the selected block.
-   */
-  preFormat?: (editor: TEditor<V>) => void;
+</APIItem>
+<APIItem name="trigger" type="string | string[]" optional>
 
-  /**
-   * Custom formatting function.
-   * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
-   */
-  format?: (editor: TEditor<V>) => void;
-}
+Triggering character to autoformat.
 
-export interface AutoformatMarkRule extends AutoformatCommonRule {
-  mode: 'mark';
+</APIItem>
+<APIItem name="insertTrigger" type="boolean" optional>
 
-  /**
-   * Mark(s) to add.
-   */
-  type: string | string[];
+If true, insert the triggering character after autoformatting.
 
-  /**
-   * If false, do not format when the string can be trimmed.
-   */
-  ignoreTrim?: boolean;
-}
+- **Default:** `false`
 
-export interface AutoformatTextRule extends AutoformatCommonRule {
-  mode: 'text';
+</APIItem>
+<APIItem
+  name="query"
+  type="(editor: TEditor<V>, options: AutoformatQueryOptions) => boolean"
+  optional
+>
 
-  match: string | string[];
+A query function to allow autoformat.
 
-  /**
-   * string: the matched text is replaced by that string.
-   * string[]: the matched texts are replaced by these strings.
-   * function: called when there is a match.
-   */
-  format:
-    | string
-    | string[]
-    | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void);
-}
+- `AutoformatQueryOptions` extends `Omit<AutoformatCommonRule<V, E>, 'query'>`:
 
-export type AutoformatRule =
-  | AutoformatBlockRule
-  | AutoformatMarkRule
-  | AutoformatTextRule;
+<APISubList>
+<APISubListItem parent="options" name="text" type="string">
 
-export interface AutoformatPlugin {
-  /**
-   * A list of triggering rules.
-   */
-  rules?: AutoformatRule[];
-}
-```
+`insertText` text.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatBlockRule
+
+An interface for autoformat rules for block mode.
+
+<APIAttributes>
+<APIItem name="mode" type="'block'">
+
+- Text: insert text.
+- Block: set block type or custom format.
+- Mark: insert mark(s) between matches.
+
+</APIItem>
+<APIItem name="match" type="string | string[]">
+
+A pattern to match for the autoformat rule to apply.
+
+</APIItem>
+<APIItem name="type" type="string" optional>
+
+- For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
+- For `mode: 'mark'`: Mark(s) to add.
+
+</APIItem>
+<APIItem name="triggerAtBlockStart" type="boolean" optional>
+
+If true, the trigger should be at block start to allow autoformatting.
+
+- **Default:** `true`
+
+</APIItem>
+<APIItem name="allowSameTypeAbove" type="boolean" optional>
+
+If true, allow to autoformat even if there is a block of the same type above
+the selected block.
+
+- **Default:** `false`
+
+</APIItem>
+<APIItem name="preFormat" type="(editor: TEditor<V>) => void" optional>
+
+Function called just before `format`. Generally used to reset the selected
+block.
+
+</APIItem>
+<APIItem name="format" type="(editor: TEditor<V>) => void" optional>
+
+Custom formatting function.
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatMarkRule
+
+An interface for autoformat rules for mark mode.
+
+<APIAttributes>
+<APIItem name="mode" type="'mark'">
+
+The mode is 'mark'.
+
+</APIItem>
+<APIItem name="type" type="string | string[]">
+
+Mark(s) to add.
+
+</APIItem>
+<APIItem name="ignoreTrim" type="boolean" optional>
+
+If false, do not format when the string can be trimmed.
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatTextRule
+
+An interface for autoformat rules for text mode.
+
+<APIParameters>
+<APIItem name="mode" type="'text'">
+
+The mode is 'text'.
+
+</APIItem>
+<APIItem name="match" type="string | string[]">
+
+A pattern to match for the autoformat rule to apply.
+
+</APIItem>
+<APIItem name="format" type="string | string[] | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void)">
+
+The matched text is replaced by that string, the matched texts are replaced by these strings, or a function called when there is a match.
+
+</APIItem>
+</APIParameters>

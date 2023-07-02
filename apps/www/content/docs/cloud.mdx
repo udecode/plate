@@ -30,130 +30,40 @@ npm install @udecode/plate-cloud
 
 To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
 
-### Options
-
-```tsx
-/**
- * CloudPlugin options
- */
-export type CloudPlugin = {
-    /**
-   * Options for connecting to the official Portive Cloud service
-   *
-   * Either `apiKey` or `authToken` must be provided
-   */
-  apiKey?: string | () => string | () => Promise<string>;
-  authToken?: string | () => string | () => Promise<string>;
-  apiOrigin?: string;
-  /**
-   * Only used for testing to prepopulate the current state of uploads
-   */
-  uploadStoreInitialValue?: Record<string, Upload>;
-};
-
-/**
- * CloudAttachmentPlugin options (none at the moment)
- */
-export type CloudAttachmentPlugin = {};
-
-/**
- * CloudImagePlugin options
- */
-
-export type CloudImagePlugin = {
-  /**
-   * Choose a max width/height to display for when an image is first update.
-   * The image is always uploaded at full size so this is not about the
-   * stored resolution of the image.
-   */
-  maxInitialWidth?: number;
-  maxInitialHeight?: number;
-};
-```
-
 ## API
 
-[createCloudAttachmentPlugin.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fattachment%2FcreateCloudAttachmentPlugin.ts)
+### createCloudAttachmentPlugin
 
 ### TCloudAttachmentElement
 
-[useCloudAttachmentElementState.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fattachment%2FuseCloudAttachmentElementState.ts)
-[withCloudAttachment.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fattachment%2FwithCloudAttachment.ts)
+### useCloudAttachmentElementState
 
-[createCloudPlugin.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FcreateCloudPlugin.ts)
-[getInProgressUploads.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FgetInProgressUploads.ts)
-[withCloud.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FwithCloud.ts)
-[getSaveValue.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FgetSaveValue.ts)
-[onDropCloud.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2Fhandlers.ts)
-[onPasteCloud.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2Fhandlers.ts)
-[uploadFiles.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FuploadFiles.ts)
-[finishUploads.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FfinishUploads.ts)
-[generateSrcAndSrcSet.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fcloud%2FgenerateSrcAndSrcSet.ts)
-[createCloudImagePlugin.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fimage%2FcreateCloudImagePlugin.ts)
-[useCloudImageElementState.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fimage%2FuseCloudImageElementState.ts)
-[withCloudImage.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fimage%2FwithCloudImage.ts)
-[createUploadStore.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fupload%2FcreateUploadStore.ts)
-[useUpload.ts](..%2F..%2F..%2F..%2Fpackages%2Fcloud%2Fsrc%2Fupload%2FuseUpload.ts)
+### withCloudAttachment
 
-```tsx
-/**
- * Specifies just the `options` part of the CloudPlugin
- */
-export type CloudPlugin = ClientOptions & {
-  uploadStoreInitialValue?: Record<string, Upload>;
-};
+### createCloudPlugin
 
-export type PlateCloudEditor<V extends Value = Value> = PlateEditor<V> &
-  CloudEditorProps<V>;
+### getInProgressUploads
 
-export type CloudEditorProps<V extends Value = Value> = {
-  cloud: {
-    client: Client;
-    uploadFiles: (msg: any) => void;
-    uploadStore: ReturnType<typeof createUploadStore>;
-    genericFileHandlers?: {
-      onStart?: (e: FileEvent) => void;
-      onProgress?: (e: FileEvent & ProgressEvent) => void;
-      onError?: (e: FileEvent & ErrorEvent) => void;
-      onSuccess?: (e: FileEvent & SuccessEvent) => void;
-    };
-    imageFileHandlers?: {
-      onStart?: (e: ImageFileEvent) => void;
-      onProgress?: (e: ImageFileEvent & ProgressEvent) => void;
-      onError?: (e: ImageFileEvent & ErrorEvent) => void;
-      onSuccess?: (e: ImageFileEvent & SuccessEvent) => void;
-    };
-    getSaveValue: () => V;
-    finishUploads: (options?: { maxTimeoutInMs?: number }) => Promise<void>;
-    // save: (options: { maxTimeoutInMs?: number }) => Promise<V>;
-  };
-};
+### withCloud
 
-export type CloudImagePlugin = {
-  maxInitialWidth?: number;
-  maxInitialHeight?: number;
-  minResizeWidth?: number;
-  maxResizeWidth?: number;
-};
+### getSaveValue
 
-export type CloudImageEditorProps = {
-  cloudImage: {
-    maxInitialWidth: number;
-    maxInitialHeight: number;
-    minResizeWidth: number;
-    maxResizeWidth: number;
-  };
-};
+### onDropCloud
 
-export type PlateCloudImageEditor<V extends Value = Value> = PlateEditor<V> &
-  CloudImageEditorProps;
+### onPasteCloud
 
-export interface TCloudImageElement extends TElement {
-  url: string;
-  bytes: number;
-  width: number;
-  height: number;
-  maxWidth: number;
-  maxHeight: number;
-}
-```
+### uploadFiles
+
+### finishUploads
+
+### generateSrcAndSrcSet
+
+### createCloudImagePlugin
+
+### useCloudImageElementState
+
+### withCloudImage
+
+### createUploadStore
+
+### useUpload
