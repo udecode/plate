@@ -67,20 +67,28 @@ for (const style of styles) {
     }
     },`;
 
-    if (item.items) {
+    if (item.files.length > 1) {
       // If 'items' is defined
       // @ts-ignore
-      for (const [subIndex, subItem] of item.items.entries()) {
-        index += `
-    '${item.name}/${subItem}': {
-      name: '${item.name}/${subItem}',
+      for (const [subIndex, subItem] of item.files.entries()) {
+        if (subIndex === 0) continue;
+
+        const file = path.basename(subItem);
+
+        const subName = file.slice(0, Math.max(0, file.indexOf('.')));
+        const ext = file.slice(Math.max(file.indexOf('.'), -1));
+        if (['.ts', '.tsx'].includes(ext)) {
+          index += `
+    '${subName}': {
+      name: '${subName}',
       type: '${item.type}',
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: ['${resolveFiles[subIndex]}'],
-      component: React.lazy(() => import('@/registry/${style.name}/${type}/${
-          item.name
-        }/${subItem}')),
+      component: React.lazy(() => import('@/registry/${
+        style.name
+      }/${type}/${subName}')),
     },`;
+        }
       }
     }
   }

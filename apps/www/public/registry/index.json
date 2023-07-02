@@ -313,10 +313,10 @@
       "@udecode/plate-basic-marks"
     ],
     "registryDependencies": [
+      "toolbar",
       "insert-dropdown-menu",
       "mark-toolbar-button",
       "mode-dropdown-menu",
-      "toolbar",
       "turn-into-dropdown-menu"
     ],
     "files": [
@@ -687,7 +687,7 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "placeholders",
+    "name": "placeholder",
     "dependencies": [
       "@udecode/plate-heading"
     ],
@@ -695,7 +695,7 @@
       "paragraph-element"
     ],
     "files": [
-      "plate-ui/placeholders.tsx"
+      "plate-ui/placeholder.tsx"
     ],
     "type": "components:plate-ui"
   },

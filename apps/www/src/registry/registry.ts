@@ -440,11 +440,11 @@ const ui: Registry = [
     files: ['plate-ui/paragraph-element.tsx'],
   },
   {
-    name: 'placeholders',
+    name: 'placeholder',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-heading'],
     registryDependencies: ['paragraph-element'],
-    files: ['plate-ui/placeholders.tsx'],
+    files: ['plate-ui/placeholder.tsx'],
   },
   {
     name: 'popover',
@@ -633,12 +633,6 @@ const example: Registry = [
     type: 'components:example',
     registryDependencies: [],
     files: ['example/preview-md-demo.tsx'],
-  },
-  {
-    name: 'createPlateUI',
-    type: 'components:component',
-    external: true,
-    files: ['lib/plate/createPlateUI.ts'],
   },
   {
     name: 'globals',

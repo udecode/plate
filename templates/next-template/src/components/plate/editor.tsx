@@ -160,7 +160,7 @@ import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/components/plate-ui/placeholders';
+import { withPlaceholders } from '@/components/plate-ui/placeholder';
 import { SearchHighlightLeaf } from '@/components/plate-ui/search-highlight-leaf';
 import {
   TableCellElement,

@@ -4,10 +4,10 @@
     "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
+    "toolbar",
     "insert-dropdown-menu",
     "mark-toolbar-button",
     "mode-dropdown-menu",
-    "toolbar",
     "turn-into-dropdown-menu"
   ],
   "files": [

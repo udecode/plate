@@ -970,8 +970,8 @@ export const docsConfig: DocsConfig = {
           label: 'Element',
         },
         {
-          title: 'Placeholders',
-          href: '/docs/components/placeholders',
+          title: 'Placeholder',
+          href: '/docs/components/placeholder',
           items: [],
         },
         {
