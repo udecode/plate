@@ -415,6 +415,16 @@ export const docsConfig: DocsConfig = {
               items: [],
             },
             {
+              title: 'Vite',
+              href: '/docs/components/installation/vite',
+              items: [],
+            },
+            {
+              title: 'Remix',
+              href: '/docs/components/installation/remix',
+              items: [],
+            },
+            {
               title: 'Manual',
               href: '/docs/components/installation/manual',
               items: [],

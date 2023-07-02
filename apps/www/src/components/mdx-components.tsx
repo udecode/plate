@@ -32,6 +32,7 @@ import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { FrameworkDocs } from './framework-docs';
 import { PackageInfo } from './package-info';
 import { StyleWrapper } from './style-wrapper';
 import {
@@ -328,6 +329,12 @@ const components = {
       )}
       {...props}
     />
+  ),
+  FrameworkDocs: ({
+    className,
+    ...props
+  }: React.ComponentProps<typeof FrameworkDocs>) => (
+    <FrameworkDocs className={cn(className)} {...props} />
   ),
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link

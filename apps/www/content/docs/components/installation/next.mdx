@@ -44,7 +44,7 @@ Are you using React Server Components? › no / yes
 
 Here's how we structure our Next.js apps. You can use this as a reference:
 
-```txt {6-10,14-15}
+```txt {7-11,15-18}
 .
 ├── src
 │   ├── app
@@ -86,14 +86,14 @@ npx plate-ui add button
 The command above will add the `Button` component to your project. You can then import it like this:
 
 ```tsx {1,6} showLineNumbers
-import { Button } from "@/components/plate-ui"
+import { Button } from '@/components/plate-ui';
 
 export default function Home() {
   return (
     <div>
       <Button>Click me</Button>
     </div>
-  )
+  );
 }
 ```
 
@@ -102,4 +102,3 @@ export default function Home() {
 To add the components to your plugins, see [Plugin component](/docs/plugin-component#register-components).
 
 </Steps>
-
