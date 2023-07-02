@@ -1,7 +1,11 @@
 {
   "name": "media-toolbar-button",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
   "files": [
     {
       "name": "media-toolbar-button.tsx",

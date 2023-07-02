@@ -121,6 +121,54 @@ Hotkeys to trigger a code block action.
 
 ### unwrapCodeBlock
 
+### `HotkeyPlugin`
+
+A plugin used to listen to hotkeys and trigger associated actions.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+
+### `CodeBlockPlugin`
+
+A plugin used for handling code blocks.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+  <APIItem name="syntax" type="boolean" optional>
+    A flag indicating whether syntax highlighting should be applied. If set to
+    `true`, syntax highlighting is enabled.
+  </APIItem>
+  <APIItem name="syntaxPopularFirst" type="boolean" optional>
+    If `true`, popular syntax options will be shown first in the syntax
+    selection dropdown.
+  </APIItem>
+  <APIItem name="deserializers" type="string[]" optional>
+    A list of deserializers to be used with the plugin.
+  </APIItem>
+</APIParameters>
+
+### `HeadingPlugin`
+
+A plugin used for handling headings.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+HeadingsPlugin A plugin used for handling multiple levels of headings.
+
+<APIParameters>
+  <APIItem name="levels" type="number" optional>
+    Defines the heading levels supported, ranging from 1 to `levels`.
+  </APIItem>
+</APIParameters>
+
 ## Keyboard Interactions
 
 <KeyTable>
@@ -130,8 +178,22 @@ Hotkeys to trigger a code block action.
   <KeyTableItem hotkey="⌘ + ⌥ + 1">
     Toggle between a paragraph and normal text formatting.
   </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + .">
+    Toggle the blockquote formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⌥ + 8">
+    Toggle the code block formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + 8">
+    Toggle the code block formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + A">Select all text in the editor.</KeyTableItem>
 </KeyTable>
 
-- `mod+shift+.`: Toggle the blockquote formatting for selected text.
-- `mod+opt+8', 'mod+shift+8`: Toggle the code block formatting for selected text.
-- `mod+a`: Select all text in the editor.
+### Source Code
+
+- [Basic elements plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/basic-elements/src/createBasicElementPlugins.ts)
+- [Block quote plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/block-quote/src/createBlockquotePlugin.ts)
+- [Code block plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/code-block/src/createCodeBlockPlugin.ts)
+- [Heading plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/heading/src/createHeadingPlugin.ts)
+- [Paragraph plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/paragraph/src/createParagraphPlugin.ts)

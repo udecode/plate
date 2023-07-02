@@ -1,7 +1,11 @@
 {
   "name": "placeholders",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-heading"
+  ],
+  "registryDependencies": [
+    "paragraph-element"
+  ],
   "files": [
     {
       "name": "placeholders.tsx",

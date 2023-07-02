@@ -1,6 +1,8 @@
 {
   "name": "blockquote-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-block-quote"
+  ],
   "registryDependencies": [],
   "files": [
     {

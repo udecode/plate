@@ -1,6 +1,8 @@
 {
   "name": "list-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-list"
+  ],
   "registryDependencies": [],
   "files": [
     {

@@ -1,6 +1,8 @@
 {
   "name": "code-syntax-leaf",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
   "registryDependencies": [],
   "files": [
     {

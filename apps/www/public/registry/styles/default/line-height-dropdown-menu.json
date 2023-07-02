@@ -1,7 +1,12 @@
 {
   "name": "line-height-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-line-height"
+  ],
+  "registryDependencies": [
+    "toolbar",
+    "dropdown-menu"
+  ],
   "files": [
     {
       "name": "line-height-dropdown-menu.tsx",

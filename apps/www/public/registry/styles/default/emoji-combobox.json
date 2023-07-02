@@ -1,6 +1,8 @@
 {
   "name": "emoji-combobox",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-combobox"
+  ],
   "registryDependencies": [],
   "files": [
     {

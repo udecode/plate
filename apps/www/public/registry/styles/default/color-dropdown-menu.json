@@ -1,7 +1,13 @@
 {
   "name": "color-dropdown-menu",
   "dependencies": [],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar",
+    "separator",
+    "button",
+    "tooltip"
+  ],
   "files": [
     {
       "name": "color-dropdown-menu.tsx",

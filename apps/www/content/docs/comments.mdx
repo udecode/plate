@@ -197,6 +197,80 @@ Records of comments. Each record's key is a string and its value is a boolean.
 </APIItem>
 </APIAttributes>
 
+### `CommentUser`
+
+An interface representing a user who can make comments.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the user.
+  </APIItem>
+  <APIItem name="name" type="string">
+    The name of the user.
+  </APIItem>
+  <APIItem name="avatarUrl" type="string" optional>
+    The URL of the user's avatar.
+  </APIItem>
+</APIParameters>
+
+### `TComment`
+
+An interface representing a comment in the editor.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the comment.
+  </APIItem>
+  <APIItem name="value" type="Value">
+    The Slate value of the document.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    The time the comment was created. Default is the current time
+    (`Date.now()`).
+  </APIItem>
+  <APIItem name="userId" type="string">
+    The identifier of the user who made the comment.
+  </APIItem>
+  <APIItem name="parentId" type="string" optional>
+    The identifier of the parent comment this comment replies to.
+  </APIItem>
+  <APIItem name="isResolved" type="boolean" optional>
+    Indicates whether the comment is resolved.
+  </APIItem>
+</APIParameters>
+
+### `TCommentText`
+
+An interface extending TText with additional properties for managing
+comments.
+
+<APIParameters>
+  <APIItem name="comment" type="boolean" optional>
+    Indicates whether the text includes a comment.
+  </APIItem>
+  <APIItem name="comments" type="Record<string, boolean>" optional>
+    An object containing boolean values for each comment associated with the
+    text, with the comment id as the key.
+  </APIItem>
+</APIParameters>
+
+### `CommentsPlugin`
+
+An interface representing a plugin for handling comments in the editor.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    The hotkey or array of hotkeys to listen for triggering a plugin action.
+  </APIItem>
+</APIParameters>
+
 ## Keyboard Interactions
 
-- `meta+shift+m, ctrl+shift+m`: Add or remove a comment on the selected text.
+<KeyTable>
+  <KeyTableItem hotkey="⌘ + ⇧ + M">
+    Add a comment on the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + M">
+    Remove a comment on the selected text.
+  </KeyTableItem>
+</KeyTable>

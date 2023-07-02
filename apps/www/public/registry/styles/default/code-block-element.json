@@ -1,7 +1,11 @@
 {
   "name": "code-block-element",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
+  "registryDependencies": [
+    "command"
+  ],
   "files": [
     {
       "name": "code-block-element.tsx",

@@ -1,6 +1,8 @@
 {
   "name": "comment-leaf",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-comments"
+  ],
   "registryDependencies": [],
   "files": [
     {

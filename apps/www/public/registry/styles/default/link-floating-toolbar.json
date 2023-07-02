@@ -1,7 +1,14 @@
 {
   "name": "link-floating-toolbar",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-link"
+  ],
+  "registryDependencies": [
+    "button",
+    "input",
+    "popover",
+    "separator"
+  ],
   "files": [
     {
       "name": "link-floating-toolbar.tsx",

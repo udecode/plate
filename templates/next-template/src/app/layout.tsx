@@ -1,12 +1,13 @@
-import '@/styles/globals.css';
-import { Metadata } from 'next';
-
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@/components/plate-ui/tooltip';
 import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { ThemeProvider } from '@/components/theme-provider';
+
+import '@/styles/globals.css';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
@@ -41,11 +42,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="light">
-            <div className="relative flex min-h-screen flex-col">
-              <SiteHeader />
-              <div className="flex-1">{children}</div>
-            </div>
-            <TailwindIndicator />
+            <TooltipProvider
+              disableHoverableContent
+              delayDuration={500}
+              skipDelayDuration={0}
+            >
+              {children}
+              <div className="relative flex min-h-screen flex-col">
+                <SiteHeader />
+                <div className="flex-1">{children}</div>
+              </div>
+              <TailwindIndicator />
+            </TooltipProvider>
           </ThemeProvider>
         </body>
       </html>

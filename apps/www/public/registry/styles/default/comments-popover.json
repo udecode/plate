@@ -1,7 +1,12 @@
 {
   "name": "comments-popover",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-comments"
+  ],
+  "registryDependencies": [
+    "popover",
+    "avatar"
+  ],
   "files": [
     {
       "name": "comments-popover.tsx",

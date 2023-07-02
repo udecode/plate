@@ -1,7 +1,13 @@
 {
   "name": "floating-toolbar-buttons",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "registryDependencies": [
+    "mark-toolbar-button",
+    "more-dropdown-menu",
+    "turn-into-dropdown-menu"
+  ],
   "files": [
     {
       "name": "floating-toolbar-buttons.tsx",

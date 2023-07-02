@@ -1,6 +1,8 @@
 {
   "name": "mention-input-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-mention"
+  ],
   "registryDependencies": [],
   "files": [
     {

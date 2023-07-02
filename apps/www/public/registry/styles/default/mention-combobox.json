@@ -1,7 +1,13 @@
 {
   "name": "mention-combobox",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-mention",
+    "@udecode/plate-combobox"
+  ],
+  "registryDependencies": [
+    "combobox",
+    "scroll-area"
+  ],
   "files": [
     {
       "name": "mention-combobox.tsx",

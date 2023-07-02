@@ -1,6 +1,8 @@
 {
   "name": "cloud",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-cloud"
+  ],
   "registryDependencies": [],
   "files": [
     {

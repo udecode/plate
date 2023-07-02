@@ -1,6 +1,8 @@
 {
   "name": "highlight-leaf",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-highlight"
+  ],
   "registryDependencies": [],
   "files": [
     {

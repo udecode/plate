@@ -1,7 +1,12 @@
 {
   "name": "toolbar",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@radix-ui/react-toolbar"
+  ],
+  "registryDependencies": [
+    "tooltip",
+    "toggle"
+  ],
   "files": [
     {
       "name": "toolbar.tsx",

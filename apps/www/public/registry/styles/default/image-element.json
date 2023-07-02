@@ -1,7 +1,12 @@
 {
   "name": "image-element",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-floating",
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "media-floating-toolbar"
+  ],
   "files": [
     {
       "name": "image-element.tsx",

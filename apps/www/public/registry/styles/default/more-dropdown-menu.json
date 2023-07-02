@@ -1,7 +1,14 @@
 {
   "name": "more-dropdown-menu",
-  "dependencies": [],
-  "registryDependencies": [],
+  "dependencies": [
+    "@udecode/plate-kbd",
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-highlight"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
   "files": [
     {
       "name": "more-dropdown-menu.tsx",

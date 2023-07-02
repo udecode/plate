@@ -1,6 +1,8 @@
 {
   "name": "kbd-leaf",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-kbd"
+  ],
   "registryDependencies": [],
   "files": [
     {

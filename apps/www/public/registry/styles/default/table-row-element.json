@@ -1,6 +1,8 @@
 {
   "name": "table-row-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-table"
+  ],
   "registryDependencies": [],
   "files": [
     {

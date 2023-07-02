@@ -1,6 +1,8 @@
 {
   "name": "link-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-link"
+  ],
   "registryDependencies": [],
   "files": [
     {

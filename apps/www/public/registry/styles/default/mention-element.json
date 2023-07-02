@@ -1,6 +1,8 @@
 {
   "name": "mention-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-mention"
+  ],
   "registryDependencies": [],
   "files": [
     {
