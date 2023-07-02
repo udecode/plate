@@ -12,7 +12,7 @@ docs:
 
 ## Features
 
-Align text content to the left, right, center, or justify it.
+- Provides text alignment options: left, right, center, or justify.
 
 </PackageInfo>
 
@@ -25,40 +25,25 @@ npm install @udecode/plate-alignment
 ## Usage
 
 ```tsx
-import {
-  basicNodesPlugins,
-  createAlignPlugin,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-  ELEMENT_PARAGRAPH,
-} from '@udecode/plate';
+// ...
+import { createAlignPlugin } from '@udecode/plate-alignment';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    ...basicNodesPlugins,
-    createAlignPlugin({
-      inject: {
-        props: {
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1,
-            ELEMENT_H2,
-            ELEMENT_H3,
-            ELEMENT_H4,
-            ELEMENT_H5,
-            ELEMENT_H6,
-          ],
-        },
+const plugins = [
+  // ...otherPlugins,
+  createAlignPlugin({
+    inject: {
+      props: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
       },
-    }),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+    },
+  }),
+];
 ```

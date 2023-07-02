@@ -5,6 +5,8 @@ description: Copy paste from Markdown to Slate.
 
 <ComponentPreview name="playground-demo" id="deserializemd" />
 
+<PackageInfo>
+
 ## Features
 
 - Convert Markdown content to a Slate value.
@@ -12,6 +14,8 @@ description: Copy paste from Markdown to Slate.
 <Callout className="my-4">
   **Note**: Converting a Slate value to Markdown is not yet supported.
 </Callout>
+
+</PackageInfo>
 
 ## Installation
 
@@ -22,17 +26,12 @@ npm install @udecode/plate-serializer-md
 ## Usage
 
 ```tsx
-import { createDeserializeMdPlugin } from '@udecode/plate';
+import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createDeserializeMdPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createDeserializeMdPlugin(),
+];
 ```
 
 ### Serializer Usage

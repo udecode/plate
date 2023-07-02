@@ -1,8 +1,8 @@
 import { createLinkPlugin } from '@/packages/link/src/index';
 import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { createImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
 
 const plugins = [
   createLinkPlugin({

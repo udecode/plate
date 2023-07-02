@@ -1,4 +1,4 @@
-import { createPlateUI } from '@/plate/createPlateUI';
+import { createPlateUI } from '@/plate/create-plate-ui';
 import {
   createBoldPlugin,
   createCodePlugin,

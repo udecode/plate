@@ -14,29 +14,17 @@ docs:
 
 <ComponentPreview name="playground-demo" id="media" />
 
+<PackageInfo>
+
 ## Features
 
-This package implements the media plugins for Plate.
+- Allows insertion of embeddable media: images, videos, and tweets.
+- Supports multiple media providers: video, youtube, vimeo, dailymotion, youku, coub, twitter.
+- Editable captions.
+- Resizable.
+- Use [Plate Cloud](/docs/cloud) for easy cloud uploads and server-side image resizing.
 
-It allows inserting embeddable media such as images, YouTube or Vimeo videos and tweets into your
-editor.
-
-> For easy cloud uploads of images and attachment including server-side image resizing, please see our official [Plate Cloud](/docs/guides/cloud) service and associated plugin.
-
-Media providers supported by this plugin:
-
-- video:
-- youtube
-- vimeo
-- dailymotion
-- youku
-- coub
-- twitter
-
-In addition to basic media embedding, this plugin offers features like editable captions below the media and resizing capabilities.
-
-- To insert upload images, use the image button in the toolbar.
-- To insert embedded media or images, use the media button in the toolbar.
+</PackageInfo>
 
 ## Installation
 
@@ -48,30 +36,25 @@ npm install @udecode/plate-media
 
 ```tsx
 import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
-  createSelectOnBackspacePlugin,
   ELEMENT_IMAGE,
   ELEMENT_MEDIA_EMBED,
-} from '@udecode/plate';
+  createImagePlugin,
+  createMediaEmbedPlugin,
+} from '@udecode/plate-media';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createImagePlugin(),
-    createMediaEmbedPlugin(),
-    createSelectOnBackspacePlugin({
-      options: {
-        query: {
-          allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
-        },
+const plugins = [
+  // ...otherPlugins,
+  createImagePlugin(),
+  createMediaEmbedPlugin(),
+  createSelectOnBackspacePlugin({
+    options: {
+      query: {
+        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
       },
-    }),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+    },
+  }),
+];
 ```
 
 ### Options

@@ -5,6 +5,8 @@ description: Select and manipulate entire text blocks.
 
 <ComponentPreview name="playground-demo" id="blockselection" />
 
+<PackageInfo>
+
 ## Features
 
 - Select entire blocks, as opposed to individual words or characters.
@@ -12,30 +14,25 @@ description: Select and manipulate entire text blocks.
 - Keep moving down or up to select multiple blocks.
 - Once selected, the available actions are: copy, cut, and delete.
 
+</PackageInfo>
+
 ## Installation
 
 ```bash
-npm install @udecode/plate-selection
-# or
-npm install @udecode/plate-node-id
+npm install @udecode/plate-selection @udecode/plate-node-id
 ```
 
 ## Usage
 
 ```tsx
-import { createNodeIdPlugin } from '@udecode/plate';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createNodeIdPlugin(),
-    createBlockSelectionPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createBlockSelectionPlugin(),
+];
 ```
 
 Note: the Selection plugin needs `id` property on each selectable block. You can use `createNodeIdPlugin()` to add it automatically.

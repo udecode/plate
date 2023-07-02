@@ -20,7 +20,6 @@ import {
   PlatePluginComponent,
   withProps,
 } from '@udecode/plate-common';
-import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
@@ -142,39 +141,3 @@ export const createPlateUI = (
 
   return components;
 };
-
-export type DefaultPlatePluginKey =
-  | typeof ELEMENT_BLOCKQUOTE
-  | typeof ELEMENT_CODE_BLOCK
-  | typeof ELEMENT_CODE_LINE
-  | typeof KEY_EMOJI
-  | typeof ELEMENT_H1
-  | typeof ELEMENT_H2
-  | typeof ELEMENT_H3
-  | typeof ELEMENT_H4
-  | typeof ELEMENT_H5
-  | typeof ELEMENT_H6
-  | typeof ELEMENT_IMAGE
-  | typeof ELEMENT_LI
-  | typeof ELEMENT_LINK
-  | typeof ELEMENT_MEDIA_EMBED
-  | typeof ELEMENT_MENTION
-  | typeof ELEMENT_MENTION_INPUT
-  | typeof ELEMENT_OL
-  | typeof ELEMENT_PARAGRAPH
-  | typeof ELEMENT_TABLE
-  | typeof ELEMENT_TD
-  | typeof ELEMENT_TH
-  | typeof ELEMENT_TODO_LI
-  | typeof ELEMENT_TR
-  | typeof ELEMENT_UL
-  | typeof MARK_BOLD
-  | typeof MARK_CODE
-  | typeof MARK_HIGHLIGHT
-  | typeof MARK_ITALIC
-  | typeof MARK_KBD
-  | typeof MARK_SEARCH_HIGHLIGHT
-  | typeof MARK_STRIKETHROUGH
-  | typeof MARK_SUBSCRIPT
-  | typeof MARK_SUPERSCRIPT
-  | typeof MARK_UNDERLINE;

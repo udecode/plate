@@ -66,13 +66,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createMediaEmbedPlugin } from '@udecode/plate-media';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createMediaEmbedPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createMediaEmbedPlugin(),
+];
 ```

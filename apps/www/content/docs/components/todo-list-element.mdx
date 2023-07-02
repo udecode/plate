@@ -64,13 +64,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createTodoListPlugin } from '@udecode/plate-list';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTodoListPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTodoListPlugin(),
+];
 ```

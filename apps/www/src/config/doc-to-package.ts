@@ -10,7 +10,7 @@ const plateOverrides = {
   dnd: 'plate-dnd',
   emoji: 'plate-emoji',
   excalidraw: 'plate-excalidraw',
-  'exit-break': 'plate-exit-break',
+  'exit-break': 'plate-break',
   'find-replace': 'plate-find-replace',
   font: 'plate-font',
   'forced-layout': 'plate-normalizers',

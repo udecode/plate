@@ -70,8 +70,7 @@ import { createPlugins } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
-const plugins = createPlugins(
-  [
+const plugins = [
     // ...otherPlugins,
     createNodeIdPlugin(),
     createDndPlugin({ options: { enableScroller: true } }),

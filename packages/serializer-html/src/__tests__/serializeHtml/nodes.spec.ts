@@ -3,8 +3,8 @@ import { createItalicPlugin } from '@/packages/basic-marks/src/createItalicPlugi
 import { createListPlugin } from '@/packages/list/src/createListPlugin';
 import { createParagraphPlugin } from '@/packages/paragraph/src/createParagraphPlugin';
 import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { Value, htmlStringToDOMNode } from '@udecode/plate-common';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [

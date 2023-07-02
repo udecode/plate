@@ -68,13 +68,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createHighlightPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createHighlightPlugin(),
+];
 ```

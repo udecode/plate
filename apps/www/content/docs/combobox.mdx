@@ -10,19 +10,25 @@ docs:
     title: Mention Combobox
 ---
 
+<PackageInfo>
+
 ## Features
 
-- Displays a combobox that lets users select an option from a set list.
-- Typical use cases include creating mentions, tags, or slash commands.
-- Check out the combobox plugin in combination with the [Mention plugin](/docs/mention).
+- Displays a combobox for selecting options from a set list.
+- Suitable for creating mentions, tags, or slash commands.
+- Works in conjunction with the [Mention plugin](/docs/mention).
 
-The Combobox plugin activates when:
+**Activation Conditions:**
 
-- The text selection is collapsed.
-- The cursor is immediately after the trigger character.
+- Collapsed text selection.
+- Cursor placement immediately after the trigger character.
 - Text without spaces follows the trigger character.
 
-Upon activation, the plugin sets `id`, `text`, and `targetRange` in the combobox store.
+**On Activation:**
+
+- Sets `id`, `text`, and `targetRange` in the combobox store.
+
+</PackageInfo>
 
 ## Installation
 
@@ -33,18 +39,14 @@ npm install @udecode/plate-combobox
 ## Usage
 
 ```tsx
-import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createMentionPlugin } from '@udecode/plate-mention';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createComboboxPlugin(),
-    createMentionPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createMentionPlugin(),
+];
 ```
 
 ## API

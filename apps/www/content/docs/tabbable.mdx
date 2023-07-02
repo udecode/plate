@@ -5,9 +5,13 @@ description: Maintain a consistent tab order for tabbable elements.
 
 <ComponentPreview name="playground-demo" id="tabbable" />
 
+<PackageInfo>
+
 ## Features
 
-The Tabbable plugin ensures a consistent tab order between tabbable elements when navigating inside the editor.
+- Ensures consistent tab order between tabbable elements in the editor.
+
+</PackageInfo>
 
 ## Installation
 
@@ -18,18 +22,12 @@ npm install @udecode/plate-tabbable
 ## Usage
 
 ```tsx
-import React from 'react';
-import { createTabbablePlugin } from '@udecode/plate';
+import { createTabbablePlugin } from '@udecode/plate-tabbable';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTabbablePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTabbablePlugin(),
+];
 ```
 
 ### Conflicts with other plugins

@@ -68,13 +68,8 @@ Update the import paths to match your project setup.
 ```tsx
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createCodeBlockPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createCodeBlockPlugin(),
+];
 ```

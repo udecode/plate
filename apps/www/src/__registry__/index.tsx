@@ -583,7 +583,7 @@ export const Index: Record<string, any> = {
       type: 'components:component',
       registryDependencies: [],
       files: ['lib/plate/createPlateUI.ts'],
-      component: React.lazy(() => import('@/lib/plate/createPlateUI.ts')),
+      component: React.lazy(() => import('@/plate/create-plate-ui.ts')),
     },
     'globals': {
       name: 'globals',

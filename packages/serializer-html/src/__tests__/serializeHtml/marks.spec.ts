@@ -2,8 +2,8 @@ import { createBasicMarksPlugin } from '@/packages/basic-marks/src/createBasicMa
 import { createHighlightPlugin } from '@/packages/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '@/packages/kbd/src/createKbdPlugin';
 import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
 
 const plugins = [
   createBasicMarksPlugin(),

@@ -6,7 +6,7 @@ import { allDocs } from 'contentlayer/generated';
 import { ChevronRight } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
-import { docToPackage } from '@/config/docToPackage';
+import { docToPackage } from '@/config/doc-to-package';
 import { siteConfig } from '@/config/site';
 import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';

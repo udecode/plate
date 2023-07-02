@@ -1,6 +1,6 @@
 ---
 title: Cloud
-description: Streamline cloud integration for seamless access and management of cloud-based resources.
+description: Upload images and attachments to the cloud.
 docs:
   - route: /docs/components/cloud
     title: Cloud
@@ -8,21 +8,15 @@ docs:
 
 <ComponentPreview name="cloud-demo" padding="md" />
 
+<PackageInfo>
+
 ## Features
 
-Plate Cloud is the official Plate plugin and cloud service for image and attachment uploads, automatic server-side image resizing, and future Plate cloud services.
+- Image and attachment uploads, automatic server-side image resizing, and more.
+- Supports drag and drop, paste, and file picker uploads.
+- Automatic delivery of DPI-specific images.
 
-It supports:
-
-- Drag and drop uploading of images and attachments
-- Paste uploading of images and attachments
-- Using a file picker for uploading images and attachment
-- Drag resize of images with server-side image resizing which optimizes download speed
-- Automatically delivers high DPI images to high DPI devices and normal sized images to everyone else
-
-Your usage of Plate Cloud supports the development of Plate.
-
-You can start by [getting a free Portive API key](https://admin.portive.com/).
+</PackageInfo>
 
 ## Installation
 
@@ -32,7 +26,7 @@ npm install @udecode/plate-cloud
 
 ## Usage
 
-To use Plate Cloud, you will need to [get a free Portive API key](https://www.portive.com/).
+[Get a free Portive API key](https://www.portive.com/).
 
 To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
 
@@ -76,131 +70,6 @@ export type CloudImagePlugin = {
   maxInitialHeight?: number;
 };
 ```
-
-### `CloudPlugin`
-
-An interface representing configuration options for a cloud-based plugin for managing and uploading files in the editor.
-
-<APIParameters>
-  <APIItem
-    name="uploadStoreInitialValue"
-    type="Record<string, Upload>"
-    optional
-  >
-    Initial value for the upload store.
-  </APIItem>
-</APIParameters>
-
-### `PlateCloudEditor`
-
-A type representing a CloudEditor with the additional functionality provided by the Plate Editor.
-
-### `FinishUploadsOptions`
-
-A type representing options when finishing uploads.
-
-<APIParameters>
-  <APIItem name="maxTimeoutInMs" type="number" optional>
-    The maximum timeout in milliseconds to wait before considering the uploads
-    finished.
-  </APIItem>
-</APIParameters>
-
-### `CloudEditorProps`
-
-A type representing properties of a CloudEditor.
-
-<APIParameters>
-  <APIItem name="cloud" type="Object">
-    A namespace containing cloud-related properties.
-  </APIItem>
-</APIParameters>
-
-### `FileEventBase`
-
-A type representing the base properties for a file event, regardless
-of the type of file.
-
-<APIParameters>
-  <APIItem name="id" type="string">
-    The unique identifier for the file.
-  </APIItem>
-  <APIItem name="file" type="File">
-    The File object.
-  </APIItem>
-  <APIItem name="url" type="string">
-    The URL where the file is located.
-  </APIItem>
-</APIParameters>
-
-### `GenericFileEvent`
-
-A type representing a file event for generic files, which extends
-FileEventBase.
-
-<APIParameters>
-  <APIItem name="type" type="'generic'">
-    Indicates that the file is of generic type.
-  </APIItem>
-</APIParameters>
-
-### `ImageFileEvent`
-
-A type representing a file event for image files, which extends FileEventBase.
-
-<APIParameters>
-  <APIItem name="type" type="'image'">
-    Indicates that the file is an image.
-  </APIItem>
-  <APIItem name="width" type="number">
-    The width of the image.
-  </APIItem>
-  <APIItem name="height" type="number">
-    The height of the image.
-  </APIItem>
-</APIParameters>
-
-### `FileEvent`
-
-A type that could be either a GenericFileEvent or ImageFileEvent.
-
-### `ProgressEvent`
-
-A type representing a progress event during file upload.
-
-<APIParameters>
-  <APIItem name="sentBytes" type="number">
-    The number of bytes that have been sent so far.
-  </APIItem>
-  <APIItem name="totalBytes" type="number">
-    The total number of bytes to send.
-  </APIItem>
-</APIParameters>
-
-### `ErrorEvent` A type representing an error event during file upload.
-
-<APIParameters>
-  <APIItem name="message" type="string">
-    The error message.
-  </APIItem>
-</APIParameters>
-
-### `SuccessEvent`
-
-A type representing a successful file upload event.
-
-<APIParameters>
-  <APIItem name="url" type="string">
-    The URL where the uploaded file is located.
-  </APIItem>
-</APIParameters>
-
-### Source Code
-
-- [Cloud Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/cloud/createCloudPlugin.ts)
-- [Cloud Attachment Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/attachment/createCloudAttachmentPlugin.ts)
-- [Cloud Image Plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/cloud/src/image/createCloudImagePlugin.ts)
-- [packages/cloud](https://github.com/udecode/plate/tree/main/packages/cloud)
 
 ## API
 
