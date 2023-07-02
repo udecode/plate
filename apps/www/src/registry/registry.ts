@@ -421,11 +421,11 @@ const ui: Registry = [
     files: ['plate-ui/paragraph-element.tsx'],
   },
   {
-    name: 'placeholders',
+    name: 'placeholder',
     type: 'components:plate-ui',
     dependencies: [],
     registryDependencies: [],
-    files: ['plate-ui/placeholders.tsx'],
+    files: ['plate-ui/placeholder.tsx'],
   },
   {
     name: 'popover',

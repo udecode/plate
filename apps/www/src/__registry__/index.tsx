@@ -382,12 +382,12 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/paragraph-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/paragraph-element')),
     },
-    'placeholders': {
-      name: 'placeholders',
+    'placeholder': {
+      name: 'placeholder',
       type: 'components:plate-ui',
       registryDependencies: [],
-      files: ['registry/default/plate-ui/placeholders.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/placeholders')),
+      files: ['registry/default/plate-ui/placeholder.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/placeholder')),
     },
     'popover': {
       name: 'popover',
@@ -584,13 +584,6 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ['registry/default/example/preview-md-demo.tsx'],
       component: React.lazy(() => import('@/registry/default/example/preview-md-demo')),
-    },
-    'createPlateUI': {
-      name: 'createPlateUI',
-      type: 'components:component',
-      registryDependencies: [],
-      files: ['lib/plate/createPlateUI.ts'],
-      component: React.lazy(() => import('@/lib/plate/createPlateUI.ts')),
     },
     'globals': {
       name: 'globals',

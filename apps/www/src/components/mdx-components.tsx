@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
@@ -250,7 +251,7 @@ const components = {
   Steps: ({ ...props }) => (
     <div
       // eslint-disable-next-line tailwindcss/no-custom-classname
-      className="[&>h3]:step mb-12 ml-4 border-l pl-8 [counter-reset:step]"
+      className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
       {...props}
     />
   ),
@@ -322,7 +323,16 @@ const components = {
   }: React.ComponentProps<typeof TabsContent>) => (
     <TabsContent
       className={cn(
-        'relative [&_h3.font-heading]:text-base [&_h3.font-heading]:font-normal',
+        'relative [&_h3.font-heading]:text-base [&_h3.font-heading]:font-semibold',
+        className
+      )}
+      {...props}
+    />
+  ),
+  LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
+    <Link
+      className={cn(
+        'flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10',
         className
       )}
       {...props}

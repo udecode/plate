@@ -1,0 +1,105 @@
+---
+title: Next.js
+description: Install and configure Next.js.
+---
+
+<Callout>
+
+A [template](https://github.com/udecode/plate/tree/plate-ui-tw/templates/next-template) is available to help you get started quickly.
+
+</Callout>
+
+<Steps>
+
+### Create project
+
+Start by creating a new Next.js project using `create-next-app`:
+
+```bash
+npx create-next-app@latest my-app --typescript --tailwind --eslint
+```
+
+### Run the CLI
+
+```bash
+npx plate-ui init
+```
+
+### Configure components.json
+
+You will be asked a few questions to configure `components.json`:
+
+```txt showLineNumbers
+Which style would you like to use? › Default
+Which color would you like to use as base color? › Slate
+Where is your global CSS file? › src/style/globals.css
+Do you want to use CSS variables for colors? › no / yes
+Where is your tailwind.config.js located? › tailwind.config.js
+Configure the import alias for components: › @/components
+Configure the import alias for utils: › @/lib/utils
+Are you using React Server Components? › no / yes
+```
+
+## App structure
+
+Here's how we structure our Next.js apps. You can use this as a reference:
+
+```txt {6-10,14-15}
+.
+├── src
+│   ├── app
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │   components
+│   │   ├── ui
+│   │   │   ├── button.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── paragraph-element.tsx
+│   │   │   └── ...
+│   │   ├── main-nav.tsx
+│   │   ├── page-header.tsx
+│   │   └── ...
+│   │   lib
+│   │   └── utils.ts
+│   │   styles
+│   │   └── globals.css
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.js
+└── tsconfig.json
+```
+
+- We place the UI components in the `components/ui` folder. If you already have one and want to keep them separated, you could use `components/plate-ui`.
+- The rest of the components such as `<PageHeader />` and `<MainNav />` are placed in the `components` folder.
+- The `lib` folder contains all the utility functions. We have a `utils.ts` where we define the `cn` helper.
+- The `styles` folder contains the global CSS.
+
+### Add components
+
+You can now start adding components to your project.
+
+```bash
+npx plate-ui add button
+```
+
+The command above will add the `Button` component to your project. You can then import it like this:
+
+```tsx {1,6} showLineNumbers
+import { Button } from "@/components/plate-ui"
+
+export default function Home() {
+  return (
+    <div>
+      <Button>Click me</Button>
+    </div>
+  )
+}
+```
+
+### Register components
+
+To add the components to your plugins, see [Plugin component](/docs/plugin-component#register-components).
+
+</Steps>
+

@@ -521,11 +521,11 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "placeholders",
+    "name": "placeholder",
     "dependencies": [],
     "registryDependencies": [],
     "files": [
-      "plate-ui/placeholders.tsx"
+      "plate-ui/placeholder.tsx"
     ],
     "type": "components:plate-ui"
   },

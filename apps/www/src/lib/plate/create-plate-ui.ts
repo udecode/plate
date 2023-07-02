@@ -68,7 +68,7 @@ import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-eleme
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/registry/default/plate-ui/placeholders';
+import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SearchHighlightLeaf } from '@/registry/default/plate-ui/search-highlight-leaf';
 import {
   TableCellElement,
