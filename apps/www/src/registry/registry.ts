@@ -612,12 +612,6 @@ const example: Registry = [
     files: ['example/preview-md-demo.tsx'],
   },
   {
-    name: 'createPlateUI',
-    type: 'components:component',
-    external: true,
-    files: ['lib/plate/createPlateUI.ts'],
-  },
-  {
     name: 'globals',
     type: 'components:component',
     external: true,
