@@ -63,14 +63,17 @@ Update the import paths to match your project setup.
 
 ## Usage
 
-### Plugins
-
 ```tsx
 import { createPlugins } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 
-const plugins = [
+import { createPlateUI } from '@/lib/plate/create-plate-ui';
+
+import { withDraggables } from './withDraggables';
+
+const plugins = createPlugins(
+  [
     // ...otherPlugins,
     createNodeIdPlugin(),
     createDndPlugin({ options: { enableScroller: true } }),
@@ -80,10 +83,6 @@ const plugins = [
   }
 );
 ```
-
-As done in `createPlateUI`:
-
-<ComponentSource name="createPlateUI" />
 
 ### Provider
 
@@ -98,6 +97,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 </DndProvider>;
 ```
 
-As done in the playground:
+## Examples
 
-<ComponentSource name="playground-demo" />
+<ComponentSource src="../../templates/next-template/src/components/plate/editor.tsx" />
