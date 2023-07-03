@@ -1,5 +1,4 @@
 import { ComponentClass, FunctionComponent } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import {
   PlateEditor,
   PlateRenderElementProps,
