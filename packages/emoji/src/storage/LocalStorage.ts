@@ -11,6 +11,9 @@ export class LocalStorage<T> implements ILocalStorage<T> {
 
   get(): T {
     let value = this.defaultValue;
+
+    if (typeof window === 'undefined') return value;
+
     const valueInLocalStorage = window.localStorage.getItem(this.key);
 
     if (valueInLocalStorage) {
