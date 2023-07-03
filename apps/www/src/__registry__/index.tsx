@@ -406,7 +406,7 @@ export const Index: Record<string, any> = {
     'image-element': {
       name: 'image-element',
       type: 'components:plate-ui',
-      registryDependencies: ["media-floating-toolbar"],
+      registryDependencies: ["media-popover"],
       files: ['registry/default/plate-ui/image-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/image-element')),
     },
@@ -497,15 +497,15 @@ export const Index: Record<string, any> = {
     'media-embed-element': {
       name: 'media-embed-element',
       type: 'components:plate-ui',
-      registryDependencies: ["media-floating-toolbar"],
+      registryDependencies: ["media-popover"],
       files: ['registry/default/plate-ui/media-embed-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/media-embed-element')),
     },
     'media-popover': {
       name: 'media-popover',
-      type: 'components:ui',
+      type: 'components:plate-ui',
       registryDependencies: ["button","input","popover","separator"],
-      files: ['registry/default/ui/media-popover.tsx'],
+      files: ['registry/default/plate-ui/media-popover.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/media-popover')),
     },
     'media-toolbar-button': {

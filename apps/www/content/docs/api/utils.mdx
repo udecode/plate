@@ -7,19 +7,19 @@ description: API reference for @udecode/plate-utils.
 
 ## Components
 
-### `PlateElement`
+### PlateElement
 
-### `PlateLeaf`
+### PlateLeaf
 
-### `PortalBody`
+### PortalBody
 
-### `Text`
+### Text
 
-### `Box`
+### Box
 
 ## Hooks
 
-### `useMarkToolbarButtonState`
+### useMarkToolbarButtonState
 
 Generates the state for a mark toolbar button.
 
@@ -44,7 +44,7 @@ Generates the state for a mark toolbar button.
   </APIItem>
 </APIReturns>
 
-### `useMarkToolbarButton`
+### useMarkToolbarButton
 
 Generates the props for a mark toolbar button using the state created by **`useMarkToolbarButtonState`**.
 
@@ -74,7 +74,7 @@ Generates the props for a mark toolbar button using the state created by **`useM
   </APIItem>
 </APIReturns>
 
-### `usePlaceholderState`
+### usePlaceholderState
 
 Generates the state for a placeholder in an editor.
 
@@ -99,7 +99,7 @@ Generates the state for a placeholder in an editor.
   </APIItem>
 </APIReturns>
 
-### `useRemoveNodeButton`
+### useRemoveNodeButton
 
 Generates the props for a button that, when clicked, removes a node from the editor.
 
@@ -122,7 +122,7 @@ Generates the props for a button that, when clicked, removes a node from the edi
 
 ## Queries
 
-### `isType`
+### isType
 
 Checks whether a node matches the provided type.
 
@@ -145,7 +145,7 @@ Checks whether a node matches the provided type.
 
 ## Transforms
 
-### `resetEditorChildren`
+### resetEditorChildren
 
 Replaces the children of an editor with default blocks.
 
@@ -163,7 +163,7 @@ Replaces the children of an editor with default blocks.
   </APIItem>
 </APIParameters>
 
-### `selectEditor`
+### selectEditor
 
 Selects an editor at a target location or an edge (start, end).
 
@@ -192,7 +192,7 @@ Selects an editor at a target location or an edge (start, end).
 
 ## Utils
 
-### `createPrimitiveComponent`
+### createPrimitiveComponent
 
 Creates a primitive component factory which utilizes hooks for managing state, props, and forwards references to child components.
 
@@ -206,7 +206,7 @@ Creates a primitive component factory which utilizes hooks for managing state, p
   management.
 </APIReturns>
 
-### `createSlotComponent`
+### createSlotComponent
 
 Creates a Slot component, which is useful when you want a component to behave as its child.
 
@@ -221,7 +221,7 @@ A function returning a Slot component.
 
 </APIReturns>
 
-### `defaultsDeepToNodes`
+### defaultsDeepToNodes
 
 Recursively merges a source object into children nodes using a query.
 
@@ -235,7 +235,7 @@ Recursively merges a source object into children nodes using a query.
   options.
 </APIReturns>
 
-### `getRootProps`
+### getRootProps
 
 Gets the Plate component root props.
 
@@ -249,7 +249,7 @@ Gets the Plate component root props.
   'nodeProps', 'element', 'leaf', and 'text'.
 </APIReturns>
 
-### `onKeyDownToggleElement`
+### onKeyDownToggleElement
 
 A function that toggles the type of the node in the editor when a hotkey is pressed.
 
@@ -267,7 +267,7 @@ A function that toggles the type of the node in the editor when a hotkey is pres
   is pressed.
 </APIReturns>
 
-### `onKeyDownToggleMark`
+### onKeyDownToggleMark
 
 A function that toggles the mark of the node in the editor when a hotkey is pressed.
 
@@ -285,7 +285,7 @@ A function that toggles the mark of the node in the editor when a hotkey is pres
   pressed.
 </APIReturns>
 
-### `withProps`
+### withProps
 
 A Higher-Order Component (HOC) that adds props to a component.
 
@@ -303,7 +303,7 @@ A new component that includes the additional props.
 
 </APIReturns>
 
-### `withProviders`
+### withProviders
 
 A function that wraps a component into multiple providers.
 

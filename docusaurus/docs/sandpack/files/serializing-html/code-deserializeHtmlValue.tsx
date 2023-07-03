@@ -1,10 +1,11 @@
 export const deserializeHtmlValueCode = `/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
+import { mapNodeId } from '../common/mapNodeId';
 
 jsx;
 
-export const deserializeHtmlValue: any = (
+export const deserializeHtmlValue: any = mapNodeId(
   <fragment>
     <hh1>Deserialize HTML</hh1>
     <hp>

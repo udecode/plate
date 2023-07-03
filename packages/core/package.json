@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "21.3.2",
+  "version": "21.4.2",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,9 +30,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "21.3.0",
-    "@udecode/slate-react": "21.3.0",
-    "@udecode/utils": "19.7.0",
+    "@udecode/slate": "21.4.1",
+    "@udecode/slate-react": "21.4.1",
+    "@udecode/utils": "19.7.1",
     "@udecode/zustood": "^1.1.3",
     "clsx": "^1.2.1",
     "jotai": "1.7.2",

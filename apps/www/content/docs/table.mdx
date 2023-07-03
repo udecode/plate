@@ -21,7 +21,7 @@ docs:
 - Enables creation and editing of tables with advanced behaviors.
 - Arrow navigation (up/down).
 - Grid cell selection.
-- Cell selection expansion with `Shift+arrow` keys.
+- Cell selection expansion with `Shift+Arrow` keys.
 - Copying and pasting cells.
 
 </PackageInfo>
@@ -48,14 +48,170 @@ const plugins = [
 ];
 ```
 
+## API
+
+### createTablePlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="disableExpandOnInsert" type="boolean" optional>
+Disables the expansion of the table when inserting cells.
+</APIItem>
+<APIItem name="disableMarginLeft" type="boolean" optional>
+Disables the left resizer of the first column in the table.
+</APIItem>
+<APIItem name="enableUnsetSingleColSize" type="boolean" optional>
+Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
+</APIItem>
+<APIItem name="newCellChildren" type="TDescendant[]" optional>
+Defines the content of a newly inserted cell.
+
+- **Default:** an empty paragraph
+
+</APIItem>
+<APIItem name="insertColumn" type="(editor: PlateEditor, options: { fromCell: Path; }) => void" optional>
+The function to insert a new column into the table.
+
+- **Default:** **`insertTableColumn`**
+
+</APIItem>
+<APIItem name="insertRow" type="(editor: PlateEditor, options: { fromRow: Path; }) => void" optional>
+The function to insert a new row into the table.
+
+- **Default:** **`insertTableRow`**
+
+</APIItem>
+<APIItem name="initialTableWidth" type="number" optional>
+If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns. Note that merged cells are not yet supported.
+</APIItem>
+<APIItem name="minColumnWidth" type="number" optional>
+The minimum width of a column in the table.
+
+- **Default:** **`48`**
+
+</APIItem>
+</APIAttributes>
+
+### deleteColumn
+
+### deleteRow
+
+### deleteTable
+
+### getCellInNextTableRow
+
+### getCellInPreviousTableRow
+
+### getCellType
+
+### getEmptyCellNode
+
+### getEmptyRowNode
+
+### getEmptyTableNode
+
+### getLeftTableCell
+
+### getNextTableCell
+
+### getPreviousTableCell
+
+### getTableAbove
+
+### getTableColumnCount
+
+### getTableColumnIndex
+
+### getTableEntries
+
+### getTableGridAbove
+
+### getTableGridByRange
+
+### getTableOverriddenColSizes
+
+### getTableRowIndex
+
+### getTopTableCell
+
+### insertTable
+
+### insertTableColumn
+
+### insertTableRow
+
+### isTableBorderHidden
+
+### moveSelectionFromCell
+
+### overrideSelectionFromCell
+
+### setBorderSize
+
+### setTableColSize
+
+### setTableMarginLeft
+
+### setTableRowSize
+
+## API Plugin
+
+### onKeyDownTable
+
+### withDeleteTable
+
+### withGetFragmentTable
+
+### withInsertFragmentTable
+
+### withInsertTextTable
+
+### withNormalizeTable
+
+### withSelectionTable
+
+### withSetFragmentDataTable
+
+### withTable
+
+## API Components
+
+### TableCellElementResizable
+
+### getOnSelectTableBorderFactory
+
+### getTableCellBorders
+
+### roundCellSizeToStep
+
+### tableStore
+
+### useIsCellSelected
+
+### useSelectedCells
+
+### useTableBordersDropdownMenuContentState
+
+### useTableCellElementState
+
+### useTableColSizes
+
+### useTableElement
+
 ## Keyboard Interactions
 
 <KeyTable>
-  <KeyTableItem hotkey="⇧ + Up">Select the cell above.</KeyTableItem>
-  <KeyTableItem hotkey="⇧ + Down">Select the cell below.</KeyTableItem>
-  <KeyTableItem hotkey="⇧ + Left">Select the cell on the left.</KeyTableItem>
-  <KeyTableItem hotkey="⇧ + Right">Select the cell on the right.</KeyTableItem>
-  <KeyTableItem hotkey="⇧ + Tab">Select the previous cell.</KeyTableItem>
+  <KeyTableItem hotkey="Shift + ArrowUp">Select the cell above.</KeyTableItem>
+  <KeyTableItem hotkey="Shift + ArrowDown">Select the cell below.</KeyTableItem>
+  <KeyTableItem hotkey="Shift + ArrowLeft">
+    Select the cell on the left.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Shift + ArrowRight">
+    Select the cell on the right.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Shift + Tab">Select the previous cell.</KeyTableItem>
   <KeyTableItem hotkey="Tab">Select the next cell.</KeyTableItem>
-  <KeyTableItem hotkey="⌘ + A">Select the whole table.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + A">Select the whole table.</KeyTableItem>
 </KeyTable>

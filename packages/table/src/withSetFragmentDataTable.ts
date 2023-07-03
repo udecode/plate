@@ -28,6 +28,9 @@ export const withSetFragmentDataTable = <
     const tableEntry = getTableGridAbove(editor, {
       format: 'table',
     })?.[0];
+    const selectedCellEntries = getTableGridAbove(editor, {
+      format: 'cell',
+    });
 
     const initialSelection = editor.selection;
 
@@ -57,6 +60,19 @@ export const withSetFragmentDataTable = <
 
     const divElement = document.createElement('div');
     const tableElement = document.createElement('table');
+
+    /**
+     * Cover single cell copy | cut operation. In this case, copy cell content instead of table structure.
+     */
+    if (
+      tableEntry &&
+      initialSelection &&
+      selectedCellEntries.length === 1 &&
+      (originEvent === 'copy' || originEvent === 'cut')
+    ) {
+      setFragmentData(data);
+      return;
+    }
 
     withoutNormalizing(editor, () => {
       tableRows.forEach((row, rowIndex) => {

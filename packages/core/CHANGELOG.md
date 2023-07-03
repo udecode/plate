@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 21.4.2
+
+### Patch Changes
+
+- [#2454](https://github.com/udecode/plate/pull/2454) by [@dimaanj](https://github.com/dimaanj) – HTML deserializer: fix pasting tables with empty cells
+
+## 21.4.1
+
 ## 21.3.2
 
 ### Patch Changes

@@ -5,6 +5,7 @@
  */
 
 const protocolAndDomainRE = /^(?:\w+:)?\/\/(\S+)$/;
+const emailLintRE = /mailto:([^\\?]+)/;
 
 const localhostDomainRE = /^localhost[\d:?]*(?:[^\d:?]\S*)?$/;
 const nonLocalhostDomainRE = /^[^\s.]+\.\S{2,}$/;
@@ -17,7 +18,10 @@ export const isUrl = (string: any) => {
     return false;
   }
 
-  const match = string.match(protocolAndDomainRE);
+  const generalMatch = string.match(protocolAndDomainRE);
+  const emailLinkMatch = string.match(emailLintRE);
+
+  const match = generalMatch || emailLinkMatch;
   if (!match) {
     return false;
   }

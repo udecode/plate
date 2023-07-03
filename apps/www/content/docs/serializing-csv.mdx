@@ -36,22 +36,30 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export interface DeserializeCsvPlugin {
-  /**
-   * Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed,
-   * Percentage based on number of errors compared to number of rows
-   * @default 0.25
-   */
-  errorTolerance?: number;
+### createDeserializeCsvPlugin
 
-  /**
-   * Options to pass to papaparse
-   * @default { header: true }
-   * @see https://www.papaparse.com/docs#config
-   */
-  parseOptions?: DeserializeCsvParseOptions;
-}
-```
+<APIAttributes>
+
+Options.
+
+<APIItem name="errorTolerance" type="number" optional>
+
+The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
+
+- **Default:** **`0.25`** (This indicates that up to 25% of the rows can contain errors.)
+
+</APIItem>
+<APIItem name="parseOptions" type="ParseConfig" optional>
+
+Options to be passed to the PapaParse library for parsing CSV data.
+
+- **Default:** **`{ header: true }`** (Indicating that the first row of the CSV data should be treated as a header.)
+
+Refer to **[PapaParse documentation](https://www.papaparse.com/docs#config)** for more details about these options.
+
+</APIItem>
+</APIAttributes>
+
+### deserializeCsv
