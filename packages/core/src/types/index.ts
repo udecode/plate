@@ -4,6 +4,7 @@
 
 export * from './OverrideByKey';
 export * from './PlateEditor';
+export * from './PlateEditorMethods';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';

@@ -3,6 +3,12 @@ import { PlateProps } from '../components/Plate';
 import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
 
+const shouldHaveBeenOverridden = (fnName: string) => () => {
+  console.warn(
+    `editor.${fnName} should have been overriden but was not. Please report this issue here: https://github.com/udecode/plate/issues`
+  );
+};
+
 export interface WithPlateOptions<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -34,6 +40,16 @@ export const withPlate = <
   editor.id = id ?? editor.id;
   editor.prevSelection = null;
   editor.currentKeyboardEvent = null;
+
+  // Editor methods
+  editor.reset = () => shouldHaveBeenOverridden('reset');
+  editor.redecorate = () => shouldHaveBeenOverridden('redecorate');
+  editor.plate = {
+    get set() {
+      shouldHaveBeenOverridden('plate.set');
+      return null as any;
+    },
+  };
 
   if (!editor.key) {
     editor.key = Math.random();
