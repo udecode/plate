@@ -22,7 +22,7 @@ export interface PlateProviderProps<
     Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
   /**
    * Initial value of the editor.
-   * @default [{ children: [{ text: '' }]}]
+   * @default editor.childrenFactory()
    */
   initialValue?: PlateStoreState<V>['value'];
 
