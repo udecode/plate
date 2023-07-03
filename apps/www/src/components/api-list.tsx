@@ -215,8 +215,14 @@ export function APISubListItem({
   );
 }
 
-export function APISubList({ children }: { children: ReactNode }) {
-  const [value, setValue] = useState('');
+export function APISubList({
+  open,
+  children,
+}: {
+  children: ReactNode;
+  open?: boolean;
+}) {
+  const [value, setValue] = useState(open ? '1' : '');
 
   return (
     <Card className="my-2">
@@ -224,9 +230,7 @@ export function APISubList({ children }: { children: ReactNode }) {
         type="single"
         collapsible
         className="w-full"
-        defaultValue=""
-        // DEBUG:
-        // defaultValue="1"
+        defaultValue={open ? '1' : ''}
         onValueChange={setValue}
       >
         <AccordionItem value="1" className="border-none">

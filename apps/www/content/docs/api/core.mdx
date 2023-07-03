@@ -43,7 +43,7 @@ Plugins to override by plugin key.
   </APIItem>
 </APIReturns>
 
-### `createAtomStore`
+### createAtomStore
 
 Creates an atom store from an initial value. Each property of the initial value will have a getter and setter.
 
@@ -61,7 +61,7 @@ An AtomStoreApi object.
 
 </APIReturns>
 
-### `useElement`
+### useElement
 
 <APIParameters>
   <APIItem name="pluginKey" type="string" optional>
@@ -77,7 +77,7 @@ The value of the element as a TElement.
 
 </APIReturns>
 
-### `PlateProvider`
+### PlateProvider
 
 A react component that provides the context for the Plate editor.
 
@@ -93,7 +93,7 @@ A react component.
 
 </APIReturns>
 
-### `useEditorRef`
+### useEditorRef
 
 A hook to use the Slate editor reference in a statically typed way, as PlateEditor.
 
@@ -103,7 +103,7 @@ A PlateEditor object, which is the Slate editor.
 
 </APIReturns>
 
-### `useEditorState`
+### useEditorState
 
 A hook to use the Slate editor state in a statically typed way, as PlateEditor.
 
@@ -113,7 +113,7 @@ A PlateEditor object, which is the Slate editor.
 
 </APIReturns>
 
-### `usePlateEditorRef`
+### usePlateEditorRef
 
 Get an editor reference which is never updated.
 
@@ -128,7 +128,7 @@ A reference to the editor that does not update.
 
 </APIReturns>
 
-### `usePlateEditorState`
+### usePlateEditorState
 
 Get the editor state which is updated on each editor change.
 
@@ -141,7 +141,7 @@ Get the editor state which is updated on each editor change.
   The current state of the editor that updates with each editor change.
 </APIReturns>
 
-### `usePlateReadOnly`
+### usePlateReadOnly
 
 Get the editor's readOnly status.
 
@@ -156,7 +156,7 @@ The readOnly status of the editor.
 
 </APIReturns>
 
-### `usePlateSelection`
+### usePlateSelection
 
 Get the editor's selection which is updated on each editor change.
 
@@ -169,7 +169,7 @@ Get the editor's selection which is updated on each editor change.
   The current selection in the editor that updates with each editor change.
 </APIReturns>
 
-### `toggleNodeType`
+### toggleNodeType
 
 Toggle the type of the selected node. No operation is performed if activeType equals inactiveType.
 
@@ -208,7 +208,7 @@ Toggle the type of the selected node. No operation is performed if activeType eq
   selection in the editor.
 </APIReturns>
 
-### `PlateEditor`
+### PlateEditor
 
 A custom editor interface that extends the base **`TEditor`**, **`THistoryEditor`**, and **`TReactEditor`** interfaces and includes additional properties and methods specific to the Plate library.
 
@@ -242,7 +242,7 @@ A custom editor interface that extends the base **`TEditor`**, **`THistoryEditor
   </APIItem>
 </APIParameters>
 
-### `createPlateEditor`
+### createPlateEditor
 
 Generates a new instance of a PlateEditor, initialized with a set of plugins and their configurations.
 
@@ -279,7 +279,7 @@ Generates a new instance of a PlateEditor, initialized with a set of plugins and
   settings applied.
 </APIReturns>
 
-### `createPluginFactory`
+### createPluginFactory
 
 Generates a factory for creating plugins with a default plugin, which can be overridden.
 
@@ -302,7 +302,7 @@ Generates a factory for creating plugins with a default plugin, which can be ove
   A new plugin based on the default one, with the specified overrides applied.
 </APIReturns>
 
-### `createPlugins`
+### createPlugins
 
 Generates a new array of plugins by overriding the plugins in the original array. It can override plugin components by key using components in the second param. Other properties can be overridden by key using overrideByKey in the second param.
 
@@ -336,7 +336,7 @@ Generates a new array of plugins by overriding the plugins in the original array
   An array of plugins with overridden components or properties.
 </APIReturns>
 
-### `getPlugin`
+### getPlugin
 
 Retrieves a plugin by plugin key.
 
@@ -353,7 +353,7 @@ Retrieves a plugin by plugin key.
   with only the key.
 </APIReturns>
 
-### `getPluginInjectProps`
+### getPluginInjectProps
 
 Retrieves the props to be injected by a plugin, identified by its key.
 
@@ -370,7 +370,7 @@ Retrieves the props to be injected by a plugin, identified by its key.
   not exist or does not have inject props, returns an empty object.
 </APIReturns>
 
-### `getPluginOptions`
+### getPluginOptions
 
 Retrieves the options of a plugin, identified by its key.
 
@@ -387,7 +387,7 @@ Retrieves the options of a plugin, identified by its key.
   does not have options, returns an empty object.
 </APIReturns>
 
-### `getPluginType`
+### getPluginType
 
 Retrieves the type of a plugin, identified by its key.
 
@@ -404,7 +404,7 @@ Retrieves the type of a plugin, identified by its key.
   not have a type, returns the key.
 </APIReturns>
 
-### `Hotkeys`
+### Hotkeys
 
 An object containing functions to check for various hotkeys. Each function takes a KeyboardEvent and returns a boolean indicating whether the hotkey was pressed.
 
@@ -491,7 +491,7 @@ An object containing functions to check for various hotkeys. Each function takes
 
 ## Core plugins
 
-### `createDeserializeAstPlugin`
+### createDeserializeAstPlugin
 
 Enables support for deserializing inserted content from Slate Ast format to Slate format while applying a small bug fix.
 
@@ -505,7 +505,7 @@ Enables support for deserializing inserted content from Slate Ast format to Slat
   </APIItem>
 </APIParameters>
 
-### `createDeserializeHtmlPlugin`
+### createDeserializeHtmlPlugin
 
 Enables support for deserializing inserted content from HTML format to Slate format.
 
@@ -519,7 +519,7 @@ Enables support for deserializing inserted content from HTML format to Slate for
   </APIItem>
 </APIParameters>
 
-### `createEditorProtocolPlugin`
+### createEditorProtocolPlugin
 
 Modifies the editor protocol to reset marks when the selection is at the start of a block and after delete operations.
 
@@ -533,7 +533,7 @@ Modifies the editor protocol to reset marks when the selection is at the start o
   </APIItem>
 </APIParameters>
 
-### `createEventEditorPlugin`
+### createEventEditorPlugin
 
 Creates a plugin that dispatches focus and blur events.
 
@@ -546,7 +546,7 @@ Creates a plugin that dispatches focus and blur events.
   </APIItem>
 </APIParameters>
 
-### `createHistoryPlugin`
+### createHistoryPlugin
 
 Creates a plugin that enables history support for the editor.
 
@@ -559,7 +559,7 @@ Creates a plugin that enables history support for the editor.
   </APIItem>
 </APIParameters>
 
-### `createInlineVoidPlugin`
+### createInlineVoidPlugin
 
 Creates a plugin that merges and registers all the inline types and void types from the plugins and options, using editor.isInline and editor.isVoid.
 
@@ -573,7 +573,7 @@ Creates a plugin that merges and registers all the inline types and void types f
   </APIItem>
 </APIParameters>
 
-### `createInsertDataPlugin`
+### createInsertDataPlugin
 
 Creates a plugin that overrides the default insertData function in the editor, which is called when data is being pasted or dragged into the editor.
 
@@ -588,7 +588,7 @@ The editor with the overridden `insertData` function.
 
 </APIReturns>
 
-### `createNodeFactoryPlugin`
+### createNodeFactoryPlugin
 
 Creates a plugin that overrides the default blockFactory and childrenFactory functions in the editor. These functions are used to generate the default blocks and children for the editor.
 
@@ -602,7 +602,7 @@ Creates a plugin that overrides the default blockFactory and childrenFactory fun
   The editor with the overridden `blockFactory` and `childrenFactory` functions.
 </APIReturns>
 
-### `createPrevSelectionPlugin`
+### createPrevSelectionPlugin
 
 Creates a plugin that keeps track of the previous selection in the editor and the current keyboard event being processed.
 
@@ -616,7 +616,7 @@ Creates a plugin that keeps track of the previous selection in the editor and th
   The editor with the previous selection and current keyboard event tracking.
 </APIReturns>
 
-### `createReactPlugin`
+### createReactPlugin
 
 Creates a plugin that adds withTReact to the editor, which is a function that enhances the editor with additional functionalities from 'slate-react' library.
 
@@ -631,7 +631,7 @@ The editor enhanced with `withTReact`.
 
 </APIReturns>
 
-### `withPlate`
+### withPlate
 
 A high-order function that applies the withInlineVoid and all plate plugins' withOverrides.
 
@@ -649,7 +649,7 @@ The enhanced editor.
 
 </APIReturns>
 
-### `withTReact`
+### withTReact
 
 A high-order function that enhances the editor with additional functionalities from 'slate-react' library.
 
