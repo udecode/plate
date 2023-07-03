@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import * as Popover from '@radix-ui/react-popover';
 import {
   ComboboxContentItemProps,
   ComboboxContentProps,
@@ -17,14 +18,12 @@ import {
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
 import {
-  PortalBody,
   useEventEditorSelectors,
   usePlateEditorState,
 } from '@udecode/plate-common';
+import { createVirtualRef } from '@udecode/plate-floating';
 
 import { cn } from '@/lib/utils';
-
-import { ScrollArea } from './scroll-area';
 
 export function ComboboxItem<TData extends Data = NoData>({
   combobox,
@@ -56,35 +55,46 @@ export function ComboboxContent<TData extends Data = NoData>(
     onRenderItem,
   } = props;
 
+  const editor = usePlateEditorState();
+
   const filteredItems =
     useComboboxSelectors.filteredItems() as TComboboxItem<TData>[];
   const activeComboboxStore = useActiveComboboxStore()!;
 
   const state = useComboboxContentState({ items, combobox });
-  const { menuProps, menuRef } = useComboboxContent(state);
+  const { menuProps, targetRange } = useComboboxContent(state);
 
   return (
-    <PortalBody element={portalElement}>
-      <ScrollArea
-        {...menuProps}
-        ref={menuRef}
-        className={cn(
-          'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-md bg-popover p-0 shadow-md'
-        )}
-      >
-        {Component ? Component({ store: activeComboboxStore }) : null}
+    <Popover.Root open>
+      <Popover.PopoverAnchor
+        virtualRef={createVirtualRef(editor, targetRange ?? undefined)}
+      />
 
-        {filteredItems.map((item, index) => (
-          <ComboboxItem
-            key={item.key}
-            item={item}
-            combobox={combobox}
-            index={index}
-            onRenderItem={onRenderItem}
-          />
-        ))}
-      </ScrollArea>
-    </PortalBody>
+      <Popover.Portal container={portalElement}>
+        <Popover.Content
+          {...menuProps}
+          sideOffset={5}
+          side="bottom"
+          align="start"
+          className={cn(
+            'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-md bg-popover p-0 shadow-md'
+          )}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          {Component ? Component({ store: activeComboboxStore }) : null}
+
+          {filteredItems.map((item, index) => (
+            <ComboboxItem
+              key={item.key}
+              item={item}
+              combobox={combobox}
+              index={index}
+              onRenderItem={onRenderItem}
+            />
+          ))}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -101,7 +111,6 @@ export function Combobox<TData extends Data = NoData>({
   maxSuggestions,
   filter,
   sort,
-  floatingOptions,
   disabled: _disabled,
   ...props
 }: ComboboxProps<TData>) {
@@ -113,12 +122,6 @@ export function Combobox<TData extends Data = NoData>({
   const combobox = useComboboxControls();
   const activeId = useComboboxSelectors.activeId();
   const editor = usePlateEditorState();
-
-  useEffect(() => {
-    if (floatingOptions) {
-      comboboxActions.floatingOptions(floatingOptions);
-    }
-  }, [floatingOptions]);
 
   useEffect(() => {
     comboboxActions.setComboboxById({

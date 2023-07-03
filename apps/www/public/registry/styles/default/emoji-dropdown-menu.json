@@ -1,7 +1,8 @@
 {
   "name": "emoji-dropdown-menu",
   "dependencies": [
-    "@udecode/plate-floating"
+    "@udecode/plate-floating",
+    "@radix-ui/react-popover"
   ],
   "registryDependencies": [
     "toolbar"

@@ -1,4 +1,4 @@
-import { PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-common';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';

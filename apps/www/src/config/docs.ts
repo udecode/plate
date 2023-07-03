@@ -922,8 +922,8 @@ export const docsConfig: DocsConfig = {
           label: 'Element',
         },
         {
-          title: 'Media Floating Toolbar',
-          href: '/docs/components/media-floating-toolbar',
+          title: 'Media Popover',
+          href: '/docs/components/media-popover',
           items: [],
         },
         {
@@ -977,11 +977,6 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Popover',
           href: '/docs/components/popover',
-          items: [],
-        },
-        {
-          title: 'Scroll Area',
-          href: '/docs/components/scroll-area',
           items: [],
         },
         {

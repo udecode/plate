@@ -294,7 +294,7 @@ export const Index: Record<string, any> = {
     'combobox': {
       name: 'combobox',
       type: 'components:plate-ui',
-      registryDependencies: ["scroll-area"],
+      registryDependencies: ["popover"],
       files: ['registry/default/plate-ui/combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/combobox')),
     },
@@ -518,7 +518,7 @@ export const Index: Record<string, any> = {
     'mention-combobox': {
       name: 'mention-combobox',
       type: 'components:plate-ui',
-      registryDependencies: ["combobox","scroll-area"],
+      registryDependencies: ["combobox"],
       files: ['registry/default/plate-ui/mention-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-combobox')),
     },
@@ -577,13 +577,6 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ['registry/default/plate-ui/popover.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/popover')),
-    },
-    'scroll-area': {
-      name: 'scroll-area',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/scroll-area.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/scroll-area')),
     },
     'search-highlight-leaf': {
       name: 'search-highlight-leaf',

@@ -6,10 +6,10 @@ import {
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
 import {
+  PlatePlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_TODO_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';

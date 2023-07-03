@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PlateCloudEditor } from '@udecode/plate-cloud';
-import { usePlateEditorRef } from '@udecode/plate-core';
+import { usePlateEditorRef } from '@udecode/plate-common';
 
 const buttonStyle: React.CSSProperties = {
   marginRight: 4,

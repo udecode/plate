@@ -6,7 +6,7 @@ import {
   focusEditor,
   toggleMark,
 } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import { usePlateEditorState } from '@udecode/plate-common';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { MARK_KBD } from '@udecode/plate-kbd';
 

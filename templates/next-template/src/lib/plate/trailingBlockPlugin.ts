@@ -1,4 +1,4 @@
-import { PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 

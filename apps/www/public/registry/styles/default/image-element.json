@@ -1,7 +1,6 @@
 {
   "name": "image-element",
   "dependencies": [
-    "@udecode/plate-floating",
     "@udecode/plate-media"
   ],
   "registryDependencies": [

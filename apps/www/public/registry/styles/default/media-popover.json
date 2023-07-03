@@ -1,7 +1,6 @@
 {
   "name": "media-popover",
   "dependencies": [
-    "@udecode/plate-floating",
     "@udecode/plate-media"
   ],
   "registryDependencies": [

@@ -1,4 +1,4 @@
-import { PlatePlugin, RenderAfterEditable } from '@udecode/plate-core';
+import { PlatePlugin, RenderAfterEditable } from '@udecode/plate-common';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 
 import { EmojiCombobox } from '@/lib/plate/emoji-combobox';

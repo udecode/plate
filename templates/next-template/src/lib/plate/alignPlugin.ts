@@ -1,4 +1,4 @@
-import { PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

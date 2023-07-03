@@ -47,7 +47,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
               delayDuration={500}
               skipDelayDuration={0}
             >
-              {children}
               <div className="relative flex min-h-screen flex-col">
                 <SiteHeader />
                 <div className="flex-1">{children}</div>

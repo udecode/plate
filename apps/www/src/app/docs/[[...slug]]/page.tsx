@@ -13,11 +13,11 @@ import { getTableOfContents } from '@/lib/toc';
 import { absoluteUrl, cn } from '@/lib/utils';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
-import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 interface DocPageProps {
   params: {

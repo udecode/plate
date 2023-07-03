@@ -90,7 +90,8 @@
   {
     "name": "emoji-dropdown-menu",
     "dependencies": [
-      "@udecode/plate-floating"
+      "@udecode/plate-floating",
+      "@radix-ui/react-popover"
     ],
     "registryDependencies": [
       "toolbar"
@@ -202,10 +203,12 @@
   {
     "name": "combobox",
     "dependencies": [
-      "@udecode/plate-combobox"
+      "@udecode/plate-combobox",
+      "@radix-ui/react-popover",
+      "@udecode/plate-floating"
     ],
     "registryDependencies": [
-      "scroll-area"
+      "popover"
     ],
     "files": [
       "plate-ui/combobox.tsx"
@@ -388,7 +391,6 @@
   {
     "name": "image-element",
     "dependencies": [
-      "@udecode/plate-floating",
       "@udecode/plate-media"
     ],
     "registryDependencies": [
@@ -568,7 +570,6 @@
   {
     "name": "media-popover",
     "dependencies": [
-      "@udecode/plate-floating",
       "@udecode/plate-media"
     ],
     "registryDependencies": [
@@ -602,8 +603,7 @@
       "@udecode/plate-combobox"
     ],
     "registryDependencies": [
-      "combobox",
-      "scroll-area"
+      "combobox"
     ],
     "files": [
       "plate-ui/mention-combobox.tsx"
@@ -707,17 +707,6 @@
     "registryDependencies": [],
     "files": [
       "plate-ui/popover.tsx"
-    ],
-    "type": "components:plate-ui"
-  },
-  {
-    "name": "scroll-area",
-    "dependencies": [
-      "@radix-ui/react-scroll-area"
-    ],
-    "registryDependencies": [],
-    "files": [
-      "plate-ui/scroll-area.tsx"
     ],
     "type": "components:plate-ui"
   },

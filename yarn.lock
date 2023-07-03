@@ -18320,7 +18320,7 @@ __metadata:
     "@radix-ui/react-popover": "npm:1.0.6"
     "@radix-ui/react-scroll-area": "npm:1.0.4"
     "@radix-ui/react-separator": "npm:1.0.3"
-    "@radix-ui/react-slot": "npm:^1.0.2"
+    "@radix-ui/react-slot": "npm:1.0.2"
     "@radix-ui/react-toggle": "npm:1.0.3"
     "@radix-ui/react-toolbar": "npm:1.0.4"
     "@radix-ui/react-tooltip": "npm:1.0.6"

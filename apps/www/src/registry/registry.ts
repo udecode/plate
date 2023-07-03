@@ -76,7 +76,7 @@ const ui: Registry = [
   {
     name: 'emoji-dropdown-menu',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-floating'],
+    dependencies: ['@radix-ui/react-popover'],
     registryDependencies: ['toolbar'],
 
     files: [
@@ -150,8 +150,12 @@ const ui: Registry = [
   {
     name: 'combobox',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-combobox'],
-    registryDependencies: ['scroll-area'],
+    dependencies: [
+      '@radix-ui/react-popover',
+      '@udecode/plate-combobox',
+      '@udecode/plate-floating',
+    ],
+    registryDependencies: [],
     files: ['plate-ui/combobox.tsx'],
   },
   {
@@ -273,7 +277,7 @@ const ui: Registry = [
   {
     name: 'image-element',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-floating', '@udecode/plate-media'],
+    dependencies: ['@udecode/plate-media'],
     registryDependencies: ['media-popover'],
     files: ['plate-ui/image-element.tsx'],
   },
@@ -375,7 +379,7 @@ const ui: Registry = [
   {
     name: 'media-popover',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-floating', '@udecode/plate-media'],
+    dependencies: ['@udecode/plate-media'],
     registryDependencies: ['button', 'input', 'popover', 'separator'],
     files: ['plate-ui/media-popover.tsx'],
   },
@@ -390,7 +394,7 @@ const ui: Registry = [
     name: 'mention-combobox',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-mention', '@udecode/plate-combobox'],
-    registryDependencies: ['combobox', 'scroll-area'],
+    registryDependencies: ['combobox'],
     files: ['plate-ui/mention-combobox.tsx'],
   },
   {
@@ -452,13 +456,6 @@ const ui: Registry = [
     dependencies: ['@radix-ui/react-popover'],
     registryDependencies: [],
     files: ['plate-ui/popover.tsx'],
-  },
-  {
-    name: 'scroll-area',
-    type: 'components:plate-ui',
-    dependencies: ['@radix-ui/react-scroll-area'],
-    registryDependencies: [],
-    files: ['plate-ui/scroll-area.tsx'],
   },
   {
     name: 'search-highlight-leaf',

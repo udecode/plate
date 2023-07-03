@@ -1,6 +1,9 @@
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
+import {
+  PlatePlugin,
+  isSelectionAtBlockStart,
+  someNode,
+} from '@udecode/plate-common';
 import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 import { ELEMENT_LI } from '@udecode/plate-list';
 import { TabbablePlugin } from '@udecode/plate-tabbable';

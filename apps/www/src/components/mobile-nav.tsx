@@ -9,9 +9,9 @@ import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
-import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 import { Logo } from './icons/Logo';
+import { ScrollArea } from './ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 export function MobileNav() {

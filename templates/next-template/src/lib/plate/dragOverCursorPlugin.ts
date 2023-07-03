@@ -1,5 +1,4 @@
-import { findEventRange } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin, findEventRange } from '@udecode/plate-common';
 
 import { cursorStore } from '@/components/plate-ui/cursor-overlay';
 

@@ -10,7 +10,7 @@ import {
   isCollapsed,
   toggleNodeType,
 } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import { usePlateEditorState } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

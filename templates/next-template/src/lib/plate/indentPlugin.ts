@@ -1,6 +1,6 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

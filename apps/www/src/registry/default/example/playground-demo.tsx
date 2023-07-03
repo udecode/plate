@@ -47,7 +47,7 @@ import {
   createPlateEditor,
   usePlateActions,
   usePlateSelectors,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
