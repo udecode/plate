@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useEffect } from 'react';
+import { ChangeEventHandler, useCallback } from 'react';
 import {
   createPrimitiveComponent,
   focusEditor,
@@ -21,12 +21,6 @@ export const useFloatingMediaUrlInputState = ({
 } = {}) => {
   const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
-
-  useEffect(() => {
-    return () => {
-      floatingMediaActions.isEditing(false);
-    };
-  }, []);
 
   useHotkeys(
     'enter',

@@ -274,7 +274,7 @@ const ui: Registry = [
     name: 'image-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-floating', '@udecode/plate-media'],
-    registryDependencies: ['media-floating-toolbar'],
+    registryDependencies: ['media-popover'],
     files: ['plate-ui/image-element.tsx'],
   },
   {
@@ -369,15 +369,15 @@ const ui: Registry = [
     name: 'media-embed-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-media'],
-    registryDependencies: ['media-floating-toolbar'],
+    registryDependencies: ['media-popover'],
     files: ['plate-ui/media-embed-element.tsx'],
   },
   {
-    name: 'media-floating-toolbar',
+    name: 'media-popover',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-floating', '@udecode/plate-media'],
     registryDependencies: ['button', 'input', 'popover', 'separator'],
-    files: ['plate-ui/media-floating-toolbar.tsx'],
+    files: ['plate-ui/media-popover.tsx'],
   },
   {
     name: 'media-toolbar-button',

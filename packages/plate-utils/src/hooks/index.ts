@@ -7,3 +7,4 @@ export * from './useMarkToolbarButton';
 export * from './useOnClickOutside';
 export * from './usePlaceholder';
 export * from './useRemoveNodeButton';
+export * from './useStableMemo';

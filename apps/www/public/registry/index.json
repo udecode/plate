@@ -392,7 +392,7 @@
       "@udecode/plate-media"
     ],
     "registryDependencies": [
-      "media-floating-toolbar"
+      "media-popover"
     ],
     "files": [
       "plate-ui/image-element.tsx"
@@ -558,7 +558,7 @@
       "@udecode/plate-media"
     ],
     "registryDependencies": [
-      "media-floating-toolbar"
+      "media-popover"
     ],
     "files": [
       "plate-ui/media-embed-element.tsx"
@@ -566,7 +566,7 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "media-floating-toolbar",
+    "name": "media-popover",
     "dependencies": [
       "@udecode/plate-floating",
       "@udecode/plate-media"
@@ -578,7 +578,7 @@
       "separator"
     ],
     "files": [
-      "plate-ui/media-floating-toolbar.tsx"
+      "plate-ui/media-popover.tsx"
     ],
     "type": "components:plate-ui"
   },

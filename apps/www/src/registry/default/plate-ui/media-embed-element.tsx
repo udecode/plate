@@ -5,7 +5,6 @@ import {
   PlateElementProps,
   Value,
 } from '@udecode/plate-common';
-import { ElementPopover } from '@udecode/plate-floating';
 import {
   Caption,
   CaptionTextarea,
@@ -15,13 +14,9 @@ import {
   useMediaEmbed,
   useMediaState,
 } from '@udecode/plate-media';
+import { MediaPopover } from './media-popover';
 
 import { cn } from '@/lib/utils';
-
-import {
-  MediaFloatingToolbar,
-  mediaFloatingOptions,
-} from './media-floating-toolbar';
 
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
@@ -31,10 +26,7 @@ const MediaEmbedElement = React.forwardRef<
   const { props: mediaEmbedProps, component: MediaComponent } = useMediaEmbed();
 
   return (
-    <ElementPopover
-      content={<MediaFloatingToolbar pluginKey={ELEMENT_MEDIA_EMBED} />}
-      floatingOptions={mediaFloatingOptions}
-    >
+    <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
       <PlateElement
         ref={ref}
         className={cn('relative py-2.5', className)}
@@ -123,7 +115,7 @@ const MediaEmbedElement = React.forwardRef<
 
         {children}
       </PlateElement>
-    </ElementPopover>
+    </MediaPopover>
   );
 });
 MediaEmbedElement.displayName = 'MediaEmbedElement';

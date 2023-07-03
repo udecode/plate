@@ -1,12 +1,5 @@
-import { useCallback, useEffect } from 'react';
-import { usePlateEditorState } from '@udecode/plate-common';
-import {
-  flip,
-  getRangeBoundingClientRect,
-  offset,
-  shift,
-  useVirtualFloating,
-} from '@udecode/plate-floating';
+import { useEffect } from 'react';
+import { ComboboxProps } from '../types/ComboboxProps';
 
 import {
   ComboboxControls,
@@ -16,7 +9,6 @@ import {
   useActiveComboboxStore,
   useComboboxSelectors,
 } from '..';
-import { ComboboxProps } from '../types/ComboboxProps';
 
 export type ComboboxContentProps<TData extends Data = NoData> = Omit<
   ComboboxProps<TData>,
@@ -38,8 +30,6 @@ export const useComboboxContentState = <TData extends Data = NoData>({
   combobox,
 }: ComboboxContentRootProps<TData>) => {
   const targetRange = useComboboxSelectors.targetRange();
-  const floatingOptions = useComboboxSelectors.floatingOptions();
-  const editor = usePlateEditorState();
   const activeComboboxStore = useActiveComboboxStore()!;
   const text = useComboboxSelectors.text() ?? '';
   const storeItems = useComboboxSelectors.items();
@@ -67,23 +57,9 @@ export const useComboboxContentState = <TData extends Data = NoData>({
     );
   }, [filter, sort, storeItems, maxSuggestions, text]);
 
-  // Get target range rect
-  const getBoundingClientRect = useCallback(
-    () => getRangeBoundingClientRect(editor, targetRange),
-    [editor, targetRange]
-  );
-
-  // Update popper position
-  const floating = useVirtualFloating({
-    placement: 'bottom-start',
-    getBoundingClientRect,
-    middleware: [offset(4), shift(), flip()],
-    ...floatingOptions,
-  });
-
   return {
     combobox,
-    floating,
+    targetRange,
   };
 };
 
@@ -95,10 +71,7 @@ export const useComboboxContent = (
     : { ref: null };
 
   return {
-    menuRef: state.floating.refs.setFloating,
-    menuProps: {
-      ...menuProps,
-      style: state.floating.style,
-    },
+    menuProps,
+    targetRange: state.targetRange,
   };
 };

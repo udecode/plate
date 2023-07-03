@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.4.2",
-    "@udecode/plate-floating": "21.4.2",
     "downshift": "^6.1.12"
   },
   "peerDependencies": {

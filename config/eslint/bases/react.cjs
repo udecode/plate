@@ -25,12 +25,7 @@ module.exports = {
   ],
   rules: {
     'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
-    'react-hooks/exhaustive-deps': [
-      'warn',
-      {
-        enableDangerousAutofixThisMayCauseInfiniteLoops: true,
-      },
-    ], // Checks effect dependencies
+    'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies
   },
   overrides: [
     {
@@ -56,10 +51,7 @@ module.exports = {
         'mdx/no-unescaped-entities': 'off',
         'mdx/no-unused-expressions': 'off',
 
-        'react-hooks/exhaustive-deps': [
-          'warn',
-          { enableDangerousAutofixThisMayCauseInfiniteLoops: true },
-        ],
+        'react-hooks/exhaustive-deps': 'warn',
         'react-hooks/rules-of-hooks': 'error',
         'react/button-has-type': [
           'error',
