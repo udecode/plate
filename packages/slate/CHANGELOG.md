@@ -1,5 +1,7 @@
 # @udecode/slate
 
+## 21.4.1
+
 ## 21.3.0
 
 ### Minor Changes

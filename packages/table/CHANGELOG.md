@@ -1,5 +1,15 @@
 # @udecode/plate-table
 
+## 21.4.3
+
+### Patch Changes
+
+- [#2461](https://github.com/udecode/plate/pull/2461) by [@dimaanj](https://github.com/dimaanj) – Support copy paste content of a single table cell.
+
+## 21.4.2
+
+## 21.4.1
+
 ## 21.3.4
 
 ## 21.3.2

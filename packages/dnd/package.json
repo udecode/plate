@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-dnd",
-  "version": "21.3.2",
+  "version": "21.4.2",
   "description": "Drag and drop feature for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "21.3.2",
+    "@udecode/plate-common": "21.4.2",
     "raf": "^3.4.1"
   },
   "peerDependencies": {

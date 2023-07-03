@@ -1,5 +1,9 @@
 # @udecode/plate-resizable
 
+## 20.5.2
+
+## 20.5.1
+
 ## 20.5.0
 
 ### Minor Changes
