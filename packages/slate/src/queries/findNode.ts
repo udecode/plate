@@ -1,10 +1,10 @@
 import {
   ENode,
-  getNodeEntries,
   GetNodeEntriesOptions,
   TEditor,
   TNodeEntry,
   Value,
+  getNodeEntries,
 } from '../interfaces';
 import { getQueryOptions } from '../utils';
 

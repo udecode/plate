@@ -3,10 +3,14 @@
 ---
 
 Plate 2.0 – Headless UI.
-Read the docs about the new UI pattern:
+Read the docs about the new UI pattern: https://platejs.org/docs/components.
+
 - Removed `@udecode/plate-ui` dependency.
+- Removed `@udecode/plate-emoji` dependency. You can install it separately.
 - Removed `styled-components` peerDependency.
-Replaced `@udecode/plate-headless` dependency by:
+
+Replaced `@udecode/plate-headless` dependency (deprecated) by:
+
 - `@udecode/plate-alignment`
 - `@udecode/plate-autoformat`
 - `@udecode/plate-basic-elements`
@@ -17,7 +21,6 @@ Replaced `@udecode/plate-headless` dependency by:
 - `@udecode/plate-combobox`
 - `@udecode/plate-comments`
 - `@udecode/plate-common`
-- `@udecode/plate-emoji`
 - `@udecode/plate-find-replace`
 - `@udecode/plate-floating`
 - `@udecode/plate-font`

@@ -1,12 +1,12 @@
 import {
+  TEditor,
+  TElementEntry,
+  Value,
   getEditorString,
   getRange,
   getStartPoint,
   insertText,
   isExpanded,
-  TEditor,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common';
 
 export interface IndentCodeLineOptions {

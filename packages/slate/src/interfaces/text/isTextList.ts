@@ -1,4 +1,5 @@
 import { Text } from 'slate';
+
 import { TText } from './TText';
 
 /**

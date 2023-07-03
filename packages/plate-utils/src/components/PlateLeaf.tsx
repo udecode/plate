@@ -2,6 +2,7 @@ import React, { ReactElement, RefAttributes } from 'react';
 import { PlateRenderLeafProps } from '@udecode/plate-core';
 import { EText, TText, Value } from '@udecode/slate';
 import { clsx } from 'clsx';
+
 import { Text, TextProps, useComposedRef } from '..';
 
 export type PlateLeafProps<

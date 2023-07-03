@@ -1,5 +1,6 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
 import { setIndent } from '@udecode/plate-indent';
+
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { IndentListOptions } from './indentList';
 

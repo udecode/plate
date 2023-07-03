@@ -1,6 +1,6 @@
 ---
 title: Excalidraw Element
-description: Excalidraw Element.
+description: Embed Excalidraw diagrams or illustrations into your content.
 component: true
 docs:
   - route: /docs/excalidraw
@@ -13,39 +13,47 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add excalidraw-element
-    ```
+```bash
+npx plate-ui add excalidraw-element
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Excalidraw](/docs/excalidraw)
+- [Excalidraw](/docs/excalidraw)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="excalidraw-element" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="excalidraw-element" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -56,13 +64,8 @@ docs:
 ```tsx
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createExcalidrawPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createExcalidrawPlugin(),
+];
 ```

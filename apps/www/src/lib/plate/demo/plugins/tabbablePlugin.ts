@@ -4,9 +4,10 @@ import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 import { ELEMENT_LI } from '@udecode/plate-list';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { TabbableElement } from './TabbableElement';
 
 import { MyPlatePlugin } from '@/types/plate-types';
+
+import { TabbableElement } from './TabbableElement';
 
 const TABBABLE_ELEMENT = 'tabbable_element';
 

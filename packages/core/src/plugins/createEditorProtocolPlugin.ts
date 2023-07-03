@@ -1,14 +1,15 @@
 import {
   EAncestor,
-  getAboveNode,
   GetAboveNodeOptions,
+  TEditor,
+  Value,
+  getAboveNode,
   getMarks,
   isExpanded,
   isStartPoint,
   removeEditorMark,
-  TEditor,
-  Value,
 } from '@udecode/slate';
+
 import { PlateEditor } from '../types/index';
 import { createPluginFactory } from '../utils/createPluginFactory';
 

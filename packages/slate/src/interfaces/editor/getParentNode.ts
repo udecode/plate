@@ -1,4 +1,5 @@
 import { Editor, EditorParentOptions, Location } from 'slate';
+
 import { EAncestor } from '../node/TAncestor';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';

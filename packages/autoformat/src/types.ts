@@ -1,4 +1,5 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
+
 import { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
 export interface MatchRange {

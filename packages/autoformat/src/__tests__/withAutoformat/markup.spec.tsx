@@ -1,12 +1,11 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-
 import { createAutoformatPlugin } from '@/packages/autoformat/src/createAutoformatPlugin';
 import { MARK_BOLD } from '@/packages/basic-marks/src/createBoldPlugin';
 import { MARK_ITALIC } from '@/packages/basic-marks/src/createItalicPlugin';
 import { MARK_UNDERLINE } from '@/packages/basic-marks/src/createUnderlinePlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 

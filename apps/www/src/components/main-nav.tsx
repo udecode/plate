@@ -3,11 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Logo } from './icons/Logo';
-import { Badge } from './ui/badge';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+
+import { Logo } from './icons/Logo';
+import { Badge } from './ui/badge';
 
 export function MainNav() {
   const pathname = usePathname();

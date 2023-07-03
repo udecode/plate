@@ -1,5 +1,6 @@
 import { TEditor, Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
+
 import { getMark } from './getMark';
 
 /**

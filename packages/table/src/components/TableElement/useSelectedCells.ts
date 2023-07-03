@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
+
 import { getTableGridAbove } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 

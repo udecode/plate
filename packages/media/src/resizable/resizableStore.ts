@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { createAtomStore, SCOPE_ELEMENT } from '@udecode/plate-common';
+import { SCOPE_ELEMENT, createAtomStore } from '@udecode/plate-common';
 
 export const { resizableStore, useResizableStore } = createAtomStore(
   {

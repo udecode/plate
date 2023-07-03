@@ -1,4 +1,5 @@
 import { ClientRectObject } from '@floating-ui/core';
+
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 
 /**

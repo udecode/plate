@@ -1,15 +1,16 @@
 import {
-  getNodeEntries,
-  getParentNode,
   Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
-  select,
   TElement,
   Value,
+  getNodeEntries,
+  getParentNode,
+  select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { indentCodeLine } from './transforms/indentCodeLine';

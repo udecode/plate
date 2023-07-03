@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import defaultsDeep from 'lodash/defaultsDeep';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { mergeDeepPlugins } from './mergeDeepPlugins';

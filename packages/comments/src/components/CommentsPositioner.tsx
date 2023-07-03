@@ -4,6 +4,7 @@ import {
   toDOMNode,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { getCommentPosition } from '../queries/index';
 import { useCommentsSelectors } from '../stores/comments/CommentsProvider';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';

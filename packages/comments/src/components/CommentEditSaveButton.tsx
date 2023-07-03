@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
+
 import {
   useCommentActions,
   useCommentSelectors,

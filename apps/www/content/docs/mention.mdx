@@ -14,42 +14,35 @@ docs:
 
 <ComponentPreview name="playground-demo" id="mention" />
 
-### Features
+<PackageInfo>
 
-The Mention plugin provides smart autocompletion support for user input.
+## Features
 
-When a user types a pre-configured marker,
-such as "@" or "#", they will receive autocomplete suggestions in a panel displayed next to the cursor.
-The selected suggestion is then inserted into the content,
-allowing for efficient user interactions such as mentioning users or applying tags.
+- Provides smart autocompletion for mentioning users or applying tags.
+- Invoke combobox with `@` or "#" and select suggestion.
 
-To use the Mention feature, type "@" or "#" to invoke the combobox and select a suggestion from the list.
+</PackageInfo>
 
-### Installation
+## Installation
 
 ```bash
-npm install @udecode/plate-combobox
-npm install @udecode/plate-mention
+npm install @udecode/plate-mention @udecode/plate-combobox
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import { createComboboxPlugin, createMentionPlugin } from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createMentionPlugin } from '@udecode/plate-mention';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createComboboxPlugin(),
-    createMentionPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createMentionPlugin(),
+];
 ```
 
-#### Options
+### Options
 
 ```ts
 interface MentionPlugin<TData extends Data = NoData> {
@@ -59,7 +52,3 @@ interface MentionPlugin<TData extends Data = NoData> {
   trigger?: string;
 }
 ```
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/mention/src/createMentionPlugin.ts)

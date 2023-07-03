@@ -1,11 +1,12 @@
 import { AnchorHTMLAttributes } from 'react';
 import {
+  RangeBeforeOptions,
   createPluginFactory,
   isUrl,
-  RangeBeforeOptions,
 } from '@udecode/plate-common';
-import { getLinkAttributes, validateUrl } from './utils/index';
+
 import { TLinkElement } from './types';
+import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
 export const ELEMENT_LINK = 'a';

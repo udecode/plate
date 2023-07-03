@@ -1,4 +1,5 @@
 import { focusEditor, usePlateEditorRef } from '@udecode/plate-common';
+
 import { indent } from '../index';
 
 export const useIndentButton = () => {

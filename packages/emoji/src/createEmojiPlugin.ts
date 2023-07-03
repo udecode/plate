@@ -1,7 +1,8 @@
 import { createPluginFactory } from '@udecode/plate-common';
-import { EmojiTriggeringController } from './utils/index';
+
 import { EMOJI_TRIGGER, KEY_EMOJI } from './constants';
 import { EmojiPlugin } from './types';
+import { EmojiTriggeringController } from './utils/index';
 import { withEmoji } from './withEmoji';
 
 export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({

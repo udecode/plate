@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
+
 import { ELEMENT_MEDIA_EMBED } from '../media-embed/index';
 import { useMediaStore } from './mediaStore';
 import { parseMediaUrl } from './parseMediaUrl';

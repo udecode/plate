@@ -1,20 +1,23 @@
 import '@/styles/mdx.css';
-import Balancer from 'react-wrap-balancer';
-import { allDocs } from 'contentlayer/generated';
-import { ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { allDocs } from 'contentlayer/generated';
+import { ChevronRight } from 'lucide-react';
+import Balancer from 'react-wrap-balancer';
 
+import { docToPackage } from '@/config/doc-to-package';
+import { siteConfig } from '@/config/site';
+import { formatBytes, getPackageData } from '@/lib/bundlephobia';
+import { getTableOfContents } from '@/lib/toc';
+import { absoluteUrl, cn } from '@/lib/utils';
+import { PackageInfoType } from '@/hooks/use-package-info';
+import { badgeVariants } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
-import { badgeVariants } from '@/components/ui/badge';
-import { siteConfig } from '@/config/site';
-import { getTableOfContents } from '@/lib/toc';
-import { absoluteUrl, cn } from '@/lib/utils';
-import { ScrollArea } from '@/registry/default/ui/scroll-area';
+import { ScrollArea } from '@/registry/default/plate-ui/scroll-area';
 
 interface DocPageProps {
   params: {
@@ -78,9 +81,34 @@ export async function generateStaticParams(): Promise<
 }
 
 export default async function DocPage({ params }: DocPageProps) {
-  const isUI = params.slug?.[0] === 'components';
+  const name = params.slug?.[0];
+
+  const isUI = name === 'components';
 
   const doc = await getDocFromParams({ params });
+
+  const packageInfo: PackageInfoType = {
+    gzip: '',
+    name: '',
+    npm: '',
+    source: '',
+  };
+  const pkg = docToPackage(name);
+  if (pkg) {
+    const { gzip: gzipNumber } = await getPackageData(pkg.name);
+    const gzip =
+      typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
+
+    packageInfo.name = pkg.name;
+    if (gzip) {
+      packageInfo.gzip = gzip;
+    }
+    packageInfo.source =
+      'https://github.com/udecode/plate/tree/plate-ui-tw/packages/' +
+      pkg.sourcePath +
+      '/src';
+    packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
+  }
 
   if (!doc) {
     notFound();
@@ -159,7 +187,7 @@ export default async function DocPage({ params }: DocPageProps) {
         ) : null}
 
         <div className="pb-12 pt-8">
-          <Mdx code={doc.body.code} />
+          <Mdx code={doc.body.code} packageInfo={packageInfo} />
         </div>
 
         <DocsPager doc={doc} />

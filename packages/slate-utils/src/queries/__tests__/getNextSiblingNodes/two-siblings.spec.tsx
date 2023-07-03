@@ -1,13 +1,12 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/plate-test-utils';
-import { Range } from 'slate';
-
 import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 import { createLinkPlugin } from '@/packages/link/src/index';
 import { getBlockAbove } from '@/packages/slate-utils/src/queries/getBlockAbove';
 import { getNextSiblingNodes } from '@/packages/slate-utils/src/queries/getNextSiblingNodes';
+import { jsx } from '@udecode/plate-test-utils';
+import { Range } from 'slate';
 
 jsx;
 

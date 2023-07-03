@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { ComboboxProps } from '../types/ComboboxProps';
+
 import {
-  comboboxActions,
   ComboboxControls,
   Data,
   NoData,
+  comboboxActions,
   useActiveComboboxStore,
   useComboboxSelectors,
 } from '..';

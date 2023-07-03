@@ -1,3 +1,4 @@
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -17,6 +18,7 @@ import {
 } from '@udecode/plate-break';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
@@ -45,7 +47,6 @@ import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { CheckedId } from '@/config/setting-plugins';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export const descriptions: Record<CheckedId, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
@@ -85,7 +86,7 @@ export const descriptions: Record<CheckedId, string> = {
   [KEY_AUTOFORMAT]: 'Apply formatting automatically using shortcodes.',
   [KEY_BLOCK_SELECTION]: 'Select and manipulate entire text blocks.',
   [KEY_COMBOBOX]: 'Select options from a predefined list.',
-  // [KEY_DND]: 'Move blocks within the editor.',
+  [KEY_DND]: 'Move blocks within the editor.',
   [KEY_DRAG_OVER_CURSOR]: 'Customize the cursor when dragging.',
   [KEY_EMOJI]: 'Enhance your text with emojis.',
   [KEY_EXIT_BREAK]: 'Exit a large block using a shortcut.',

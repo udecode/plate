@@ -1,4 +1,5 @@
 import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
+
 import { useCaptionString } from '../../caption/index';
 import { TMediaElement } from '../../media/index';
 

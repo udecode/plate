@@ -4,11 +4,11 @@ import {
   ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
 import {
-  getPluginType,
   TDescendant,
   TElement,
   TText,
   Value,
+  getPluginType,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -28,6 +28,7 @@ import {
 } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
 import { RemarkElementRules } from './types';
 

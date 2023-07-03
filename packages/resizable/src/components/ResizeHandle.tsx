@@ -5,6 +5,7 @@ import {
   useState,
 } from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
+
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 

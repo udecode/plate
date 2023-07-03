@@ -1,25 +1,26 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  PlateEditor,
+  TNode,
+  TText,
+  Value,
+  WithPlatePlugin,
   getEditorString,
   getNodeString,
   getPlugin,
   getPointBefore,
   getRange,
-  PlateEditor,
   setSelection,
-  TNode,
-  TText,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
+import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
   findMentionInput,
   isNodeMentionInput,
   isSelectionInMentionInput,
 } from './queries/index';
 import { removeMentionInput } from './transforms/removeMentionInput';
-import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionPlugin, TMentionInputElement } from './types';
 
 export const withMention = <

@@ -1,4 +1,5 @@
 import { Descendant } from 'slate';
+
 import { Upload, UploadProgress } from '../upload/types';
 import { isStoreRef } from './getSaveValue';
 

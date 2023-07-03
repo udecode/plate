@@ -1,14 +1,15 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   getNodeEntries,
   getPointBefore,
   isCollapsed,
-  PlateEditor,
   queryNode,
   select,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import Slate from 'slate';
+
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 
 /**

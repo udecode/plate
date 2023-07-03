@@ -1,6 +1,6 @@
 ---
 title: Heading Element
-description: Heading Element.
+description: Apply heading styles to create hierarchical structure within your content.
 component: true
 docs:
   - route: /docs/basic-elements
@@ -13,39 +13,47 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add heading-element
-    ```
+```bash
+npx plate-ui add heading-element
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Basic Elements](/docs/basic-elements)
+- [Basic Elements](/docs/basic-elements)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="heading-element" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="heading-element" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -56,13 +64,8 @@ docs:
 ```tsx
 import { createHeadingPlugin } from '@udecode/plate-heading';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createHeadingPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createHeadingPlugin(),
+];
 ```

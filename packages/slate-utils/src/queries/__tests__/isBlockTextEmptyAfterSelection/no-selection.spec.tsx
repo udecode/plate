@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
+import { isBlockTextEmptyAfterSelection } from '@/packages/slate-utils/src/index';
 import { jsx } from '@udecode/plate-test-utils';
 import { TEditor } from '@udecode/slate';
-
-import { isBlockTextEmptyAfterSelection } from '@/packages/slate-utils/src/index';
 
 jsx;
 

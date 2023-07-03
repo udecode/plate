@@ -1,11 +1,12 @@
 import {
   EDescendant,
-  isElement,
-  isText,
   TDescendant,
   TEditor,
   Value,
+  isElement,
+  isText,
 } from '@udecode/slate';
+
 import { ELEMENT_DEFAULT } from '../constants';
 import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from './getPluginType';

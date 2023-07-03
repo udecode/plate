@@ -1,3 +1,4 @@
+import { createPlateUI } from '@/plate/create-plate-ui';
 import {
   createBoldPlugin,
   createCodePlugin,
@@ -7,11 +8,10 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { Plate, createPlugins } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-import { createPlateUI } from '@/plate/createPlateUI';
 import { MyValue } from '@/types/plate-types';
 
 const plugins = createPlugins<MyValue>(

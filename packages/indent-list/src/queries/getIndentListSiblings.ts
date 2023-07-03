@@ -5,6 +5,7 @@ import {
   TNodeEntry,
   Value,
 } from '@udecode/plate-common';
+
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';

@@ -1,11 +1,12 @@
 import {
-  createPluginFactory,
-  getPlugin,
   KEY_DESERIALIZE_HTML,
   PlateEditor,
-  someNode,
   Value,
+  createPluginFactory,
+  getPlugin,
+  someNode,
 } from '@udecode/plate-common';
+
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,

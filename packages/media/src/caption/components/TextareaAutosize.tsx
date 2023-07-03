@@ -1,8 +1,8 @@
 import React, { forwardRef, useState } from 'react';
+import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 import ReactTextareaAutosize, {
   TextareaAutosizeProps,
 } from 'react-textarea-autosize';
-import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
 /**
  * `<textarea />` component for React which grows with content.

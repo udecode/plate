@@ -6,6 +6,7 @@ import {
   useHotkeys,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { TMediaElement } from '../types';
 import {
   floatingMediaActions,

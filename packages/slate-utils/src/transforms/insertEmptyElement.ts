@@ -1,9 +1,10 @@
 import {
-  getQueryOptions,
   InsertNodesOptions,
   TEditor,
   Value,
+  getQueryOptions,
 } from '@udecode/slate';
+
 import { insertElements } from './insertElements';
 
 export const insertEmptyElement = <V extends Value>(

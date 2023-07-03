@@ -17,9 +17,9 @@ Let's create a plugin factory with `createPluginFactory`:
 - the only required property of the default plugin is `key`.
 - the naming convention is `create...Plugin`
 - returns a plugin factory:
-  - first param `override` can be used to (deeply) override the default plugin.
-  - second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
-  - returns a plugin of type `PlatePlugin`
+- first param `override` can be used to (deeply) override the default plugin.
+- second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
+- returns a plugin of type `PlatePlugin`
 
 ```ts
 const createParagraphPlugin = createPluginFactory({
@@ -39,7 +39,7 @@ const paragraphPlugin = createParagraphPlugin({ key: 'p', type: 'paragraph' });
 - To customize the rendered component, use `component`.
 - To enable block toggling with a hotkey, use `handlers.onKeyDown: onKeyDownToggleElement`
 - To define the hotkey, use `options.hotkey`.
-  - Note that `options` type is set to `HotkeyPlugin`
+- Note that `options` type is set to `HotkeyPlugin`
 
 ```ts
 const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({

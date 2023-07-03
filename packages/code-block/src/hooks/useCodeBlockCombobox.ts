@@ -7,6 +7,7 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
+
 import {
   CodeBlockPlugin,
   ELEMENT_CODE_BLOCK,

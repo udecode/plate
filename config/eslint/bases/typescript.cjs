@@ -45,6 +45,12 @@ module.exports = {
   // Overrides for specific files
   overrides: [
     {
+      files: ['packages/cli/**'],
+      rules: {
+        '@typescript-eslint/no-shadow': 'off',
+      },
+    },
+    {
       files: ['*.mjs'],
       parserOptions: {
         ecmaVersion: 'latest',

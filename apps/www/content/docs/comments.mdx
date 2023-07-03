@@ -12,155 +12,265 @@ docs:
 
 <ComponentPreview name="playground-demo" id="comment" />
 
-### Features
+<PackageInfo>
 
-The Comments plugin allows users to add comments to text as marks.
+## Features
 
-These comments can include explanations of what the author or editor did or suggests,
-such as questions about unclear statements,
-notes on facts or continuity errors, common mistakes, or ideas for expanding a paragraph.
+- Add text comments as marks.
+- Comments can include explanations, suggestions, questions, notes, or ideas for content improvement.
+- Add a comment by selecting the text and using the comment button or hotkey **`Cmd+Shift+M`**.
 
-To add a comment, select the text and:
+</PackageInfo>
 
-- Click on the comment button to add a comment
-- Alternatively, use the hotkey **`⌘+⇧+M`**
-
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-comments
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import {
-  createCommentsPlugin,
-  MARK_COMMENT,
-  PlateCommentLeaf,
-} from '@udecode/plate';
+import { createCommentsPlugin } from '@udecode/plate-comments';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createCommentsPlugin(),
-  ],
-  {
-    components: {
-      ...createPlateUI(),
-      [MARK_COMMENT]: PlateCommentLeaf,
-    },
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createCommentsPlugin(),
+];
 ```
 
-#### Options
+## API
 
-```ts
-interface CommentsPlugin {
-  hotkey?: string;
-}
-```
+### createCommentsPlugin
 
-### Source Code
+<APIAttributes>
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/comments/src/createCommentsPlugin.ts)
+Options.
 
-# API Reference
+<APIItem name="hotkey" type="string" optional>
 
-[CommentNewTextarea.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentNewTextarea.tsx)
-[useCommentItemContent.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentItemContent.ts)
-[CommentResolveButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentResolveButton.tsx)
-[CommentDeleteButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentDeleteButton.tsx)
-[CommentEditActions.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentEditActions.tsx)
-[useFloatingCommentsState.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseFloatingCommentsState.ts)
-[useCommentValue.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentValue.ts)
-[CommentEditTextarea.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentEditTextarea.tsx)
-[useCommentLeaf.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentLeaf.ts)
-[CommentEditButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentEditButton.tsx)
-[CommentNewSubmitButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentNewSubmitButton.tsx)
-[CommentEditSaveButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentEditSaveButton.tsx)
-[useFloatingCommentsContentState.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseFloatingCommentsContentState.ts)
-[useCommentAddButton.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentAddButton.ts)
-[CommentEditCancelButton.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentEditCancelButton.tsx)
-[useCommentsShowResolvedButton.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FuseCommentsShowResolvedButton.ts)
-[CommentsPositioner.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentsPositioner.tsx)
-[CommentUserName.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fcomponents%2FCommentUserName.tsx)
-[findCommentNode.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fqueries%2FfindCommentNode.ts)
-[findCommentNodeById.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fqueries%2FfindCommentNodeById.ts)
-[getCommentNodeEntries.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fqueries%2FgetCommentNodeEntries.ts)
-[getCommentNodesById.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fqueries%2FgetCommentNodesById.ts)
-[getCommentPosition.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fqueries%2FgetCommentPosition.ts)
-[CommentProvider.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fstores%2Fcomment%2FCommentProvider.tsx)
-[useCommentsResolved.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fstores%2Fcomments%2FuseCommentsResolved.ts)
-[useAddCommentMark.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fstores%2Fcomments%2FuseAddCommentMark.ts)
-[useActiveCommentNode.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fstores%2Fcomments%2FuseActiveCommentNode.ts)
-[CommentsProvider.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Fstores%2Fcomments%2FCommentsProvider.tsx)
-[removeCommentMark.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Ftransforms%2FremoveCommentMark.ts)
-[getElementAbsolutePosition.tsx](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetElementAbsolutePosition.tsx)
-[isCommentNodeById.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FisCommentNodeById.ts)
-[getCommentUrl.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetCommentUrl.ts)
-[getCommentKeyId.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetCommentKeyId.ts)
-[isCommentKey.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FisCommentKey.ts)
-[getCommentCount.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetCommentCount.ts)
-[getCommentKeys.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetCommentKeys.ts)
-[unsetCommentNodesById.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FunsetCommentNodesById.ts)
-[isCommentText.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FisCommentText.ts)
-[getCommentKey.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2Futils%2FgetCommentKey.ts)
-[withComments.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2FwithComments.ts)
-[useHooksComments.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2FuseHooksComments.ts)
-[createCommentsPlugin.ts](..%2F..%2F..%2F..%2Fpackages%2Fcomments%2Fsrc%2FcreateCommentsPlugin.ts)
+The hotkey used to add a comment.
 
-```tsx
-import { TText, Value } from '@udecode/plate-common';
+</APIItem>
+</APIAttributes>
 
-export interface CommentUser {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-}
+### CommentDeleteButton
 
-export interface TComment {
-  id: string;
+### CommentEditActions
 
-  /**
-   * Slate value of the document.
-   */
-  value: Value;
+### CommentEditButton
 
-  /**
-   * @default Date.now()
-   */
-  createdAt: number;
+### CommentEditCancelButton
 
-  /**
-   * Author id.
-   */
-  userId: string;
+### CommentEditSaveButton
 
-  /**
-   * Parent comment id it replies to.
-   */
-  parentId?: string;
+### CommentEditTextarea
 
-  /**
-   * Whether the comment is resolved.
-   */
-  isResolved?: boolean;
-}
+### CommentNewSubmitButton
 
-export interface TCommentText extends TText {
-  comment?: boolean;
-  comments?: Record<string, boolean>;
-}
+### CommentNewTextarea
 
-export interface CommentsPlugin {
-  hotkey?: string | string[];
-}
+### CommentProvider
 
-export const MARK_COMMENT = 'comment';
-```
+### CommentResolveButton
 
-### Keyboard Interactions
+### CommentUserName
 
-- `meta+shift+m, ctrl+shift+m`: Add or remove a comment on the selected text.
+### CommentsPositioner
+
+### CommentsProvider
+
+### findCommentNode
+
+### findCommentNodeById
+
+### getCommentCount
+
+### getCommentKey
+
+### getCommentKeyId
+
+### getCommentKeys
+
+### getCommentNodeEntries
+
+### getCommentNodesById
+
+### getCommentPosition
+
+### getCommentUrl
+
+### getElementAbsolutePosition
+
+### isCommentKey
+
+### isCommentNodeById
+
+### isCommentText
+
+### removeCommentMark
+
+### unsetCommentNodesById
+
+### useActiveCommentNode
+
+### useAddCommentMark
+
+### useCommentAddButton
+
+### useCommentItemContent
+
+### useCommentLeaf
+
+### useCommentValue
+
+### useCommentsResolved
+
+### useCommentsShowResolvedButton
+
+### useFloatingCommentsContentState
+
+### useFloatingCommentsState
+
+### useHooksComments
+
+### withComments
+
+### CommentUser
+
+<APIAttributes>
+<APIItem name="id" type="string">
+A unique identifier for the comment user.
+
+</APIItem>
+<APIItem name="name" type="string">
+The name of the comment user.
+
+</APIItem>
+<APIItem name="avatarUrl" type="string" optional>
+URL to the avatar of the comment user.
+
+</APIItem>
+</APIAttributes>
+
+### TComment
+
+<APIAttributes>
+<APIItem name="id" type="string">
+A unique identifier for the comment.
+
+</APIItem>
+<APIItem name="value" type="Value">
+The Slate value of the document.
+
+</APIItem>
+<APIItem name="createdAt" type="number">
+Timestamp when the comment was created.
+
+- **Default:** `Date.now()`
+
+</APIItem>
+<APIItem name="userId" type="string">
+Identifier of the author of the comment.
+
+</APIItem>
+<APIItem name="parentId" type="string" optional>
+Identifier of the parent comment it replies to.
+
+</APIItem>
+<APIItem name="isResolved" type="boolean" optional>
+Whether the comment is resolved.
+
+</APIItem>
+</APIAttributes>
+
+### TCommentText
+
+<APIAttributes>
+<APIItem name="comment" type="boolean" optional>
+Indicates whether this is a comment.
+
+</APIItem>
+<APIItem name="comments" type="Record<string, boolean>" optional>
+Records of comments. Each record's key is a string and its value is a boolean.
+
+</APIItem>
+</APIAttributes>
+
+### `CommentUser`
+
+An interface representing a user who can make comments.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the user.
+  </APIItem>
+  <APIItem name="name" type="string">
+    The name of the user.
+  </APIItem>
+  <APIItem name="avatarUrl" type="string" optional>
+    The URL of the user's avatar.
+  </APIItem>
+</APIParameters>
+
+### `TComment`
+
+An interface representing a comment in the editor.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the comment.
+  </APIItem>
+  <APIItem name="value" type="Value">
+    The Slate value of the document.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    The time the comment was created. Default is the current time
+    (`Date.now()`).
+  </APIItem>
+  <APIItem name="userId" type="string">
+    The identifier of the user who made the comment.
+  </APIItem>
+  <APIItem name="parentId" type="string" optional>
+    The identifier of the parent comment this comment replies to.
+  </APIItem>
+  <APIItem name="isResolved" type="boolean" optional>
+    Indicates whether the comment is resolved.
+  </APIItem>
+</APIParameters>
+
+### `TCommentText`
+
+An interface extending TText with additional properties for managing
+comments.
+
+<APIParameters>
+  <APIItem name="comment" type="boolean" optional>
+    Indicates whether the text includes a comment.
+  </APIItem>
+  <APIItem name="comments" type="Record<string, boolean>" optional>
+    An object containing boolean values for each comment associated with the
+    text, with the comment id as the key.
+  </APIItem>
+</APIParameters>
+
+### `CommentsPlugin`
+
+An interface representing a plugin for handling comments in the editor.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    The hotkey or array of hotkeys to listen for triggering a plugin action.
+  </APIItem>
+</APIParameters>
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="⌘ + ⇧ + M">
+    Add a comment on the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + M">
+    Remove a comment on the selected text.
+  </KeyTableItem>
+</KeyTable>

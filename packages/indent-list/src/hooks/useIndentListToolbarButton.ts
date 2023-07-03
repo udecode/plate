@@ -3,6 +3,7 @@ import {
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-common';
+
 import { ListStyleType, toggleIndentList } from '../index';
 import { someIndentList } from './someIndentList';
 

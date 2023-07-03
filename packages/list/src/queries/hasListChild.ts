@@ -1,4 +1,5 @@
-import { match, PlateEditor, TAncestor, Value } from '@udecode/plate-common';
+import { PlateEditor, TAncestor, Value, match } from '@udecode/plate-common';
+
 import { getListTypes } from './getListTypes';
 
 /**

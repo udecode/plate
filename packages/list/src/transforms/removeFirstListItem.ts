@@ -1,4 +1,5 @@
 import { PlateEditor, TElementEntry, Value } from '@udecode/plate-common';
+
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 

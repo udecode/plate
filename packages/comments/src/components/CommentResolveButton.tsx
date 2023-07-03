@@ -1,4 +1,5 @@
 import { createPrimitiveComponent } from '@udecode/plate-common';
+
 import { useComment } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,

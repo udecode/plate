@@ -1,6 +1,6 @@
 ---
 title: Table Row Element
-description: Table Row Element
+description: Insert and manage rows within a table in your content.
 component: true
 docs:
   - route: /docs/table
@@ -13,39 +13,47 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add table-row-element
-    ```
+```bash
+npx plate-ui add table-row-element
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Table](/docs/table)
+- [Table](/docs/table)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="table-row-element" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="table-row-element" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -56,13 +64,8 @@ docs:
 ```tsx
 import { createTablePlugin } from '@udecode/plate-table';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTablePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTablePlugin(),
+];
 ```

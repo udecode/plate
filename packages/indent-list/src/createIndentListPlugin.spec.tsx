@@ -1,4 +1,9 @@
 /** @jsx jsx */
+
+import { createBasicElementsPlugin } from '@/packages/basic-elements/src/index';
+import { createHorizontalRulePlugin } from '@/packages/horizontal-rule/src/index';
+import { createLineHeightPlugin } from '@/packages/line-height/src/index';
+import { createLinkPlugin } from '@/packages/link/src/index';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-core';
@@ -12,12 +17,8 @@ import { createTablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
-import { createIndentListPlugin } from './createIndentListPlugin';
 
-import { createBasicElementsPlugin } from '@/packages/basic-elements/src/index';
-import { createHorizontalRulePlugin } from '@/packages/horizontal-rule/src/index';
-import { createLineHeightPlugin } from '@/packages/line-height/src/index';
-import { createLinkPlugin } from '@/packages/link/src/index';
+import { createIndentListPlugin } from './createIndentListPlugin';
 
 jsx;
 

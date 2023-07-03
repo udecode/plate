@@ -1,15 +1,16 @@
 import {
-  getNodeEntry,
-  match,
-  moveNodes,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
+  getNodeEntry,
+  match,
+  moveNodes,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getListTypes } from '../queries/index';
 
 export interface MoveListItemDownOptions {

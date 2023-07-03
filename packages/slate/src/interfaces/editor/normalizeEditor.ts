@@ -1,4 +1,5 @@
 import { Editor, EditorNormalizeOptions } from 'slate';
+
 import { TEditor, Value } from './TEditor';
 
 /**

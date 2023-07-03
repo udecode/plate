@@ -1,4 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
+
 import { decorateFindReplace } from './decorateFindReplace';
 import { FindReplacePlugin } from './types';
 

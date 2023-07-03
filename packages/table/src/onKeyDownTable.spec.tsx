@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
 import React from 'react';
+import { createPlateTestEditor } from '@/packages/core/src/utils/__tests__/createPlateTestEditor';
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from './createTablePlugin';
 
-import { createPlateTestEditor } from '@/packages/core/src/utils/__tests__/createPlateTestEditor';
+import { createTablePlugin } from './createTablePlugin';
 
 jsx;
 

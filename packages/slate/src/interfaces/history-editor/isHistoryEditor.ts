@@ -1,4 +1,5 @@
 import { HistoryEditor } from 'slate-history';
+
 import { THistoryEditor } from './THistoryEditor';
 
 /**

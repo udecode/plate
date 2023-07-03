@@ -2,6 +2,7 @@
 
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { createResetNodePlugin } from './createResetNodePlugin';
 
 jsx;

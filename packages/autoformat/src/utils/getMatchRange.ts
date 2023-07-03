@@ -1,4 +1,5 @@
 import castArray from 'lodash/castArray';
+
 import { AutoformatRule, MatchRange } from '../types';
 
 export const getMatchRange = ({

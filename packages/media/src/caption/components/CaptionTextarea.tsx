@@ -5,21 +5,22 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { TextareaAutosizeProps } from 'react-textarea-autosize';
 import {
+  TElement,
   createPrimitiveComponent,
   findNodePath,
   focusEditor,
   getNodeString,
   getPointAfter,
   setNodes,
-  TElement,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+import { TextareaAutosizeProps } from 'react-textarea-autosize';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
+
 import { captionGlobalStore } from '../captionGlobalStore';
 import { TCaptionElement } from '../types/TCaptionElement';
 import { TextareaAutosize } from './TextareaAutosize';

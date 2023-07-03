@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { Range } from 'slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 

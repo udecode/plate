@@ -6,9 +6,10 @@ import {
   ELEMENT_UL,
   TTodoListItemElement,
 } from '@udecode/plate-list';
-import { formatList, preFormat } from './autoformatUtils';
 
 import { MyAutoformatRule } from '@/types/plate-types';
+
+import { formatList, preFormat } from './autoformatUtils';
 
 export const autoformatLists: MyAutoformatRule[] = [
   {

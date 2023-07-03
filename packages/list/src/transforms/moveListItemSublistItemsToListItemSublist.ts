@@ -1,17 +1,18 @@
 import {
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
   deleteText,
   findDescendant,
   getLastChildPath,
   getParentNode,
   insertElements,
   moveChildren,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {

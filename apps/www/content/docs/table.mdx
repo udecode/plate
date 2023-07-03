@@ -14,59 +14,48 @@ docs:
 
 <ComponentPreview name="playground-demo" id="table" />
 
-### Features
+<PackageInfo>
 
-Tables are useful for organizing content in a visually distinct way, making it more easily readable for certain types of information.
+## Features
 
-They are perfect for listing, grouping, and otherwise organizing data sets or for presenting information in a clear and efficient manner.
+- Enables creation and editing of tables with advanced behaviors.
+- Arrow navigation (up/down).
+- Grid cell selection.
+- Cell selection expansion with `Shift+arrow` keys.
+- Copying and pasting cells.
 
-The Table plugin provides tools for creating and editing tables, enabling table rendering with advanced behaviors such as:
+</PackageInfo>
 
-- Arrow navigation (up/down)
-- Selecting cells as a grid
-- Expanding cell selection with ⇧ + arrow keys
-- Copying and pasting cells
-
-Click anywhere within the table and use the toolbar buttons to explore the features.
-
-Use ⇧ + arrow keys to select multiple cells.
-
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-table
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import { createTablePlugin } from '@udecode/plate';
+// ...
+import { createTablePlugin } from '@udecode/plate-table';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTablePlugin({
-      options: {
-        initialTableWidth: 600,
-      },
-    }),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTablePlugin({
+    options: {
+      initialTableWidth: 600,
+    },
+  }),
+];
 ```
 
-### Keyboard Interactions
+## Keyboard Interactions
 
-- `shift+up`: Select the cell above.
-- `shift+down`: Select the cell below.
-- `shift+left`: Select the cell on the left.
-- `shift+right`: Select the cell on the right.
-- `shift+tab` : Select the previous cell.
-- `tab` : Select the next cell.
-- `mod+a` : Select the whole table.
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/table/src/createTablePlugin.ts)
+<KeyTable>
+  <KeyTableItem hotkey="⇧ + Up">Select the cell above.</KeyTableItem>
+  <KeyTableItem hotkey="⇧ + Down">Select the cell below.</KeyTableItem>
+  <KeyTableItem hotkey="⇧ + Left">Select the cell on the left.</KeyTableItem>
+  <KeyTableItem hotkey="⇧ + Right">Select the cell on the right.</KeyTableItem>
+  <KeyTableItem hotkey="⇧ + Tab">Select the previous cell.</KeyTableItem>
+  <KeyTableItem hotkey="Tab">Select the next cell.</KeyTableItem>
+  <KeyTableItem hotkey="⌘ + A">Select the whole table.</KeyTableItem>
+</KeyTable>

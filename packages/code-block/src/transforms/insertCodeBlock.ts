@@ -1,15 +1,16 @@
 import {
-  getPluginType,
   InsertNodesOptions,
-  isExpanded,
-  isSelectionAtBlockStart,
   PlateEditor,
-  setElements,
-  someNode,
   TElement,
   Value,
+  getPluginType,
+  isExpanded,
+  isSelectionAtBlockStart,
+  setElements,
+  someNode,
   wrapNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options/index';
 

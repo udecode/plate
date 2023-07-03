@@ -1,16 +1,11 @@
-import { createTablePlugin } from '@udecode/plate';
-import { htmlStringToDOMNode } from '@udecode/plate-common';
-import { createImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
-
 import { createAlignPlugin } from '@/packages/alignment/src/index';
 import { createBlockquotePlugin } from '@/packages/block-quote/src/index';
 import { createHeadingPlugin } from '@/packages/heading/src/index';
 import { createLinkPlugin } from '@/packages/link/src/index';
 import { createListPlugin } from '@/packages/list/src/index';
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@/packages/paragraph/src/index';
 import { serializeHtml } from '@/packages/serializer-html/src/index';
 import {
@@ -19,9 +14,14 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@/packages/table/src/index';
-import { TableCellElement } from '@/registry/default/ui/table-cell-element';
-import { TableElement } from '@/registry/default/ui/table-element';
-import { TableRowElement } from '@/registry/default/ui/table-row-element';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
+import { createTablePlugin } from '@udecode/plate';
+import { htmlStringToDOMNode } from '@udecode/plate-common';
+import { createImagePlugin } from '@udecode/plate-media';
+
+import { TableCellElement } from '@/registry/default/plate-ui/table-cell-element';
+import { TableElement } from '@/registry/default/plate-ui/table-element';
+import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 
 it('serialize list to html', () => {
   const editor = createPlateUIEditor({

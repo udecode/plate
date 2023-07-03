@@ -1,11 +1,12 @@
 import {
-  getNode,
-  getPreviousPath,
   PlatePlugin,
   TElement,
   Value,
+  getNode,
+  getPreviousPath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { IndentListPlugin } from '../createIndentListPlugin';
 import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 

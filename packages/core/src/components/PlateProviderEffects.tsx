@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Value } from '@udecode/slate';
-import { usePlateEffects, UsePlateEffectsProps } from '../hooks';
+
+import { UsePlateEffectsProps, usePlateEffects } from '../hooks';
 import { PlateEditor } from '../types';
 
 export interface PlateProviderEffectsProps<

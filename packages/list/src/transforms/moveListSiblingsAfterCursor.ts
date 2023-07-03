@@ -1,13 +1,14 @@
 import {
-  getNode,
-  match,
-  moveChildren,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
+  getNode,
+  match,
+  moveChildren,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = <V extends Value>(

@@ -6,10 +6,6 @@ This package implements the HTML serializer for Plate.
 
 Check out [Serializing HTML](https://platejs.org/docs/serializing-html).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html).
-
 ## License
 
 [MIT](../../LICENSE)

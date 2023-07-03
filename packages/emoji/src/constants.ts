@@ -1,13 +1,13 @@
 import {
-  EmojiTriggeringControllerOptions,
-  FrequentEmojis,
-} from './utils/index';
-import {
   EmojiCategory,
   EmojiCategoryList,
   EmojiSettingsType,
   i18nProps,
 } from './types';
+import {
+  EmojiTriggeringControllerOptions,
+  FrequentEmojis,
+} from './utils/index';
 
 export const KEY_EMOJI = 'emoji';
 export const EMOJI_TRIGGER = ':';

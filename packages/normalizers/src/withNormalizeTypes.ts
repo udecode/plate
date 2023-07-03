@@ -1,13 +1,14 @@
 import {
-  getNode,
-  insertElements,
-  isElement,
   PlateEditor,
-  setElements,
   TElement,
   Value,
   WithPlatePlugin,
+  getNode,
+  insertElements,
+  isElement,
+  setElements,
 } from '@udecode/plate-common';
+
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
 export const withNormalizeTypes = <

@@ -1,5 +1,6 @@
 import { Modify, UnknownObject } from '@udecode/utils';
 import { Editor, Path } from 'slate';
+
 import { TOperation } from '../../types/TOperation';
 import { EElement, EElementOrText, TElement } from '../element/TElement';
 import { TDescendant } from '../node/TDescendant';

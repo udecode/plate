@@ -1,21 +1,22 @@
 import {
-  createPathRef,
-  getNode,
   PlateEditor,
   TElement,
   Value,
   WithPlatePlugin,
+  createPathRef,
+  getNode,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { PathRef } from 'slate';
-import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
-import { getNextIndentList } from './queries/getNextIndentList';
-import { getPreviousIndentList } from './queries/getPreviousIndentList';
+
 import {
   IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
 import { normalizeIndentList } from './normalizeIndentList';
+import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
+import { getNextIndentList } from './queries/getNextIndentList';
+import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 
 export const withIndentList = <

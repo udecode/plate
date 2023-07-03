@@ -1,15 +1,9 @@
-# Slate extension
-
-
+# Slate React
 
 ## Documentation
 
-WIP
-
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
+[Slate](https://platejs.org/docs/api/slate)
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](./LICENSE)

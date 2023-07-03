@@ -1,13 +1,14 @@
 import {
-  findNode,
-  isElement,
   PlateEditor,
-  setNodes,
   SetNodesOptions,
   Value,
+  findNode,
+  isElement,
+  setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getLeftTableCell } from '../queries/getLeftTableCell';
 import { getTopTableCell } from '../queries/getTopTableCell';
 import { BorderDirection, BorderStyle, TTableCellElement } from '../types';

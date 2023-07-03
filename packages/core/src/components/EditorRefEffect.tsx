@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+
 import { useEditorRef } from '../hooks';
 import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';

@@ -1,5 +1,6 @@
 import React, { FC, useMemo } from 'react';
-import { normalizeEditor, Value } from '@udecode/slate';
+import { Value, normalizeEditor } from '@udecode/slate';
+
 import { JotaiProvider } from '../libs/jotai';
 import {
   GLOBAL_PLATE_SCOPE,

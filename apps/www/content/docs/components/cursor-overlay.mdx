@@ -1,6 +1,6 @@
 ---
 title: Cursor Overlay
-description: Cursor Overlay
+description: Overlay a cursor indicator for collaborative editing or real-time interaction.
 component: true
 ---
 
@@ -10,41 +10,49 @@ component: true
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add cursor-overlay
-    ```
+```bash
+npx plate-ui add cursor-overlay
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        ```bash
-        npm install @udecode/plate-cursor
-        ```
+```bash
+npm install @udecode/plate-cursor
+```
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="cursor-overlay" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="cursor-overlay" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

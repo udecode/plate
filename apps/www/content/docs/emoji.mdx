@@ -1,6 +1,6 @@
 ---
 title: Emoji
-description: Enhance your text with emojis.
+description: Insert emoji inline.
 docs:
   - route: /docs/components/emoji-combobox
     title: Emoji Combobox
@@ -12,47 +12,91 @@ docs:
 
 <ComponentPreview name="playground-demo" id="emoji" />
 
-### Features
+<PackageInfo>
 
-The emoji plugin is using the combobox plugin(/docs/combobox). The Emoji plugin enables users to effortlessly insert emojis into their text, enhancing the user experience by providing a simple and convenient way to add visual expression to content.
+## Features
 
-To use the Emoji plugin, click the emoji icon on the toolbar or use the shortcut ":", followed by the emoji name, such as :apple: 🍎. Autocomplete suggestions will appear as you type, and you can select the desired emoji from the list.
+- Insert emoji inline.
+- Use the **`:`** shortcut followed by the emoji name (e.g., **`:apple:`** 🍎). Autocomplete suggestions appear as you type.
 
-### Installation
+</PackageInfo>
+
+## Installation
 
 ```bash
-npm install @udecode/plate-combobox
-npm install @udecode/plate-emoji
+npm install @udecode/plate-emoji @udecode/plate-combobox
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import { createComboboxPlugin, createEmojiPlugin } from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createEmojiPlugin } from '@udecode/plate-emoji';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createComboboxPlugin(),
-    createEmojiPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createEmojiPlugin(),
+];
 ```
 
-#### Options
+## API
 
-```tsx
-interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
-  trigger?: string;
-  createEmoji?: CreateEmoji<TData>;
-  emojiTriggeringController?: IEmojiTriggeringController;
-  id?: string;
-}
-```
+### createEmojiPlugin
 
-### Source Code
+<APIAttributes>
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/emoji/src/createEmojiPlugin.ts)
+Options.
+
+<APIItem name="trigger" type="string" optional>
+The trigger character(s) for the emoji.
+
+</APIItem>
+<APIItem name="createEmoji" type="(data: TComboboxItem<TData>): string" optional>
+A function to create an Emoji. TData is the type of the data used to create the emoji.
+
+</APIItem>
+<APIItem name="emojiTriggeringController" type="IEmojiTriggeringController" optional>
+A controller object that controls the emoji triggering behavior.
+
+<APISubList>
+<APISubListItem parent="emojiTriggeringController" name="isTriggering" type="boolean">
+Indicates whether the emoji trigger is active.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="hasTriggeringMark" type="boolean">
+Indicates whether the triggering mark is present.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="setIsTriggering" type="(isTriggering: boolean) => this">
+A function that sets the triggering status.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="setText" type="(text: string) => this">
+A function that sets the text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="getText" type="() => string">
+A function that gets the current text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="hasEnclosingTriggeringMark" type="() => boolean">
+A function that checks whether the current triggering mark is enclosing.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="getTextSize" type="() => number">
+A function that gets the size of the current text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="reset" type="() => this">
+A function that resets the triggering controller.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="id" type="string" optional>
+The ID of the plugin.
+
+</APIItem>
+</APIAttributes>

@@ -1,7 +1,8 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, getPluginOptions } from '@udecode/plate-common';
 import markdown from 'remark-parse';
 import unified from 'unified';
-import { remarkPlugin, RemarkPluginOptions } from '../../remark-slate/index';
+
+import { RemarkPluginOptions, remarkPlugin } from '../../remark-slate/index';
 import { KEY_DESERIALIZE_MD } from '../createDeserializeMdPlugin';
 import { DeserializeMdPlugin } from '../types';
 

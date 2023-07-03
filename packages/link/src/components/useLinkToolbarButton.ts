@@ -4,6 +4,7 @@ import {
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-common';
+
 import { ELEMENT_LINK, triggerFloatingLink } from '../index';
 
 export const useLinkToolbarButtonState = () => {

@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
+import { createCodeBlockPlugin } from '@/packages/code-block/src/createCodeBlockPlugin';
 import {
-  createPlateEditor,
-  getNodeEntry,
   PlateEditor,
   TElementEntry,
+  createPlateEditor,
+  getNodeEntry,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { indentCodeLine } from './indentCodeLine';
 
-import { createCodeBlockPlugin } from '@/packages/code-block/src/createCodeBlockPlugin';
+import { indentCodeLine } from './indentCodeLine';
 
 jsx;
 

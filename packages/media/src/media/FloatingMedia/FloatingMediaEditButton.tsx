@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
+
 import { TMediaElement } from '../types';
 import { floatingMediaActions } from './floatingMediaStore';
 

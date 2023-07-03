@@ -1,16 +1,17 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   findNode,
   getBlockAbove,
   getPluginOptions,
   getPluginType,
   insertElements,
-  PlateEditor,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { TablePlugin } from '../types';
 import { getCellTypes, getEmptyRowNode } from '../utils/index';

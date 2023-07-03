@@ -18,80 +18,158 @@ docs:
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
 
-### Features
+<PackageInfo>
 
-- **`createBlockquotePlugin()`** for the `blockquote` element
-- **`createCodeBlockPlugin()`** for the `code_block` element
-- **`createHeadingPlugin()`** for the `h1`, `h2`,... elements
-- **`createParagraphPlugin()`** for the `p` element
+## Features
 
-These plugins provide the foundational formatting options for structuring your content effectively,
-allowing you to create blockquotes, code blocks, headings, and paragraphs with ease.
+- Includes commonly used block elements: blockquote, code block, headings, and paragraph.
 
-Use the toolbar buttons to apply blockquote, code block, heading, and paragraph formatting to your text.
+</PackageInfo>
 
-### Installation
+**Plugins:**
+
+- **`createBlockquotePlugin()`** for `blockquote` element
+- **`createCodeBlockPlugin()`** for `code_block` element
+- **`createHeadingPlugin()`** for `h1`, `h2`,... elements
+- **`createParagraphPlugin()`** for `p` element
+
+## Installation
 
 ```bash
 npm install @udecode/plate-basic-elements
 # or
-npm install @udecode/plate-block-quote
-npm install @udecode/plate-code-block
-npm install @udecode/plate-heading
-npm install @udecode/plate-paragraph
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading @udecode/plate-paragraph
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import { createBasicElementsPlugin } from '@udecode/plate';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createBasicElementsPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createBasicElementsPlugin(),
+];
 ```
 
-The code block component is not included in Plate UI. You can add it using:
+## API
 
-```tsx
-createPlateUI({
-  [ELEMENT_CODE_BLOCK]: CodeBlockElement,
-});
-```
+### createBasicElementsPlugin
 
-#### Options
+### createBlockquotePlugin
 
-```tsx
-export type HotkeyPlugin = {
-  /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-};
+### createHeadingPlugin
 
-export interface CodeBlockPlugin extends HotkeyPlugin {
-  syntax?: boolean;
-  syntaxPopularFirst?: boolean;
-  deserializers?: string[];
-}
+<APIAttributes>
+<APIItem name="levels" type="number" optional>
+Specifies the heading levels supported, ranging from 1 to the specified levels.
 
-export interface HeadingPlugin extends HotkeyPlugin {}
+</APIItem>
+</APIAttributes>
 
-export interface HeadingsPlugin {
-  /**
-   * Heading levels supported from 1 to `levels`
-   */
-  levels?: number;
-}
-```
+### createParagraphPlugin
 
-### Keyboard Interactions
+---
+
+### createCodeBlockPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="syntax" type="boolean" optional>
+Determines if syntax highlighting is enabled.
+
+</APIItem>
+<APIItem name="syntaxPopularFirst" type="boolean" optional>
+Determines if popular syntax should be displayed first.
+
+</APIItem>
+<APIItem name="deserializers" type="string[]" optional>
+Defines deserializers for the code block plugin.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a code block action.
+
+</APIItem>
+</APIAttributes>
+
+### useCodeBlockCombobox
+
+### useCodeBlockComboboxState
+
+### useCodeBlockElement
+
+### useCodeBlockElementState
+
+### useCodeSyntaxLeaf
+
+### isCodeBlockEmpty
+
+### isSelectionAtCodeBlockStart
+
+### indentCodeLine
+
+### insertCodeBlock
+
+### insertCodeLine
+
+### outdentCodeLine
+
+### toggleCodeBlock
+
+### unwrapCodeBlock
+
+### `HotkeyPlugin`
+
+A plugin used to listen to hotkeys and trigger associated actions.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+
+### `CodeBlockPlugin`
+
+A plugin used for handling code blocks.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+  <APIItem name="syntax" type="boolean" optional>
+    A flag indicating whether syntax highlighting should be applied. If set to
+    `true`, syntax highlighting is enabled.
+  </APIItem>
+  <APIItem name="syntaxPopularFirst" type="boolean" optional>
+    If `true`, popular syntax options will be shown first in the syntax
+    selection dropdown.
+  </APIItem>
+  <APIItem name="deserializers" type="string[]" optional>
+    A list of deserializers to be used with the plugin.
+  </APIItem>
+</APIParameters>
+
+### `HeadingPlugin`
+
+A plugin used for handling headings.
+
+<APIParameters>
+  <APIItem name="hotkey" type="string | string[]" optional>
+    A single hotkey or an array of hotkeys to listen for.
+  </APIItem>
+</APIParameters>
+HeadingsPlugin A plugin used for handling multiple levels of headings.
+
+<APIParameters>
+  <APIItem name="levels" type="number" optional>
+    Defines the heading levels supported, ranging from 1 to `levels`.
+  </APIItem>
+</APIParameters>
+
+## Keyboard Interactions
 
 <KeyTable>
   <KeyTableItem hotkey="⌘ + ⌥ + 0">
@@ -100,16 +178,22 @@ export interface HeadingsPlugin {
   <KeyTableItem hotkey="⌘ + ⌥ + 1">
     Toggle between a paragraph and normal text formatting.
   </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + .">
+    Toggle the blockquote formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⌥ + 8">
+    Toggle the code block formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌃ + ⇧ + 8">
+    Toggle the code block formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + A">Select all text in the editor.</KeyTableItem>
 </KeyTable>
-
-- `mod+shift+.`: Toggle the blockquote formatting for selected text.
-- `mod+opt+8', 'mod+shift+8`: Toggle the code block formatting for selected text.
-- `mod+a`: Select all text in the editor.
 
 ### Source Code
 
-- [Basic elements plugin](https://github.com/udecode/plate/blob/main/packages/basic-elements/src/createBasicElementPlugins.ts)
-- [Block quote plugin](https://github.com/udecode/plate/blob/main/packages/block-quote/src/createBlockquotePlugin.ts)
-- [Code block plugin](https://github.com/udecode/plate/blob/main/packages/code-block/src/createCodeBlockPlugin.ts)
-- [Heading plugin](https://github.com/udecode/plate/blob/main/packages/heading/src/createHeadingPlugin.ts)
-- [Paragraph plugin](https://github.com/udecode/plate/blob/main/packages/paragraph/src/createParagraphPlugin.ts)
+- [Basic elements plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/basic-elements/src/createBasicElementPlugins.ts)
+- [Block quote plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/block-quote/src/createBlockquotePlugin.ts)
+- [Code block plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/code-block/src/createCodeBlockPlugin.ts)
+- [Heading plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/heading/src/createHeadingPlugin.ts)
+- [Paragraph plugin](https://github.com/udecode/plate/blob/plate-ui-tw/packages/paragraph/src/createParagraphPlugin.ts)

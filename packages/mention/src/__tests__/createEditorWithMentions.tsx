@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, createPlateEditor } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { createMentionPlugin } from '../createMentionPlugin';
 
 jsx;

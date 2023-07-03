@@ -1,9 +1,10 @@
 import {
-  createPluginFactory,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
+  createPluginFactory,
   someNode,
 } from '@udecode/plate-common';
+
 import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';

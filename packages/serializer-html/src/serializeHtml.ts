@@ -1,17 +1,18 @@
 import {
   EDescendant,
   EElement,
-  isText,
   PlateEditor,
   SlateProps,
   Value,
+  isText,
 } from '@udecode/plate-common';
 import { encode } from 'html-entities';
+
+import { elementToHtml } from './elementToHtml';
+import { leafToHtml } from './leafToHtml';
 import { newLinesToHtmlBr } from './utils/newLinesToHtmlBr';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
-import { elementToHtml } from './elementToHtml';
-import { leafToHtml } from './leafToHtml';
 
 /**
  * Convert Slate Nodes into HTML string

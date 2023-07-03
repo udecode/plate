@@ -1,15 +1,16 @@
 import {
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
   getAboveNode,
   getNode,
   getParentNode,
   getPluginType,
   isCollapsed,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common';
 import { Location, Path, Range } from 'slate';
+
 import { ELEMENT_LI } from '../createListPlugin';
 
 /**

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+
 import { createPlateEditor } from '../../../utils/index';
 import {
   PlateId,

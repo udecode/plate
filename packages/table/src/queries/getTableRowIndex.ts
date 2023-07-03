@@ -1,8 +1,8 @@
 import {
-  findNodePath,
   TElement,
   TReactEditor,
   Value,
+  findNodePath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

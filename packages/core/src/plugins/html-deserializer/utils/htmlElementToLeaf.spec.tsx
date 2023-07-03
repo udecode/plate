@@ -7,6 +7,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 

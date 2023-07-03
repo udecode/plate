@@ -1,13 +1,14 @@
 import React from 'react';
-import { createBoldPlugin } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate-core';
-import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { PlatePlugin } from '@udecode/plate-core';
-import { createImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/createPlateUIEditor';
-
 import { MARK_BOLD } from '@/packages/basic-marks/src/index';
 import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
+import { createBoldPlugin } from '@udecode/plate';
+import {
+  PlatePlugin,
+  createPlateEditor,
+  htmlStringToDOMNode,
+} from '@udecode/plate-core';
+import { createImagePlugin } from '@udecode/plate-media';
 
 const plugins = [
   createImagePlugin({

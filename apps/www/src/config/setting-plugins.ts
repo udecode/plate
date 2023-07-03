@@ -1,3 +1,4 @@
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -18,6 +19,7 @@ import {
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
@@ -47,7 +49,6 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { SettingBadge, settingBadges } from '@/config/setting-badges';
 import { settingValues } from '@/config/setting-values';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export type CheckedId = keyof typeof settingPluginItems;
 
@@ -145,13 +146,13 @@ export const settingPluginItems = {
     id: MARK_BOLD,
     label: 'Bold',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_CODE]: {
     id: MARK_CODE,
     label: 'Code',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_COMMENT]: {
     id: MARK_COMMENT,
@@ -187,7 +188,7 @@ export const settingPluginItems = {
     id: MARK_ITALIC,
     label: 'Italic',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_KBD]: {
     id: MARK_KBD,
@@ -199,25 +200,25 @@ export const settingPluginItems = {
     id: MARK_STRIKETHROUGH,
     label: 'Strikethrough',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_SUBSCRIPT]: {
     id: MARK_SUBSCRIPT,
     label: 'Subscript',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_SUPERSCRIPT]: {
     id: MARK_SUPERSCRIPT,
     label: 'Superscript',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [MARK_UNDERLINE]: {
     id: MARK_UNDERLINE,
     label: 'Underline',
     badges: [settingBadges.leaf],
-    route: settingValues.basicnodes.route,
+    route: settingValues.basicmarks.route,
   },
   [KEY_ALIGN]: {
     id: KEY_ALIGN,
@@ -266,13 +267,13 @@ export const settingPluginItems = {
     badges: [settingBadges.handler, settingBadges.ui],
     // route: settingValues.combobox.route,
   },
-  // [KEY_DND]: {
-  //   id: KEY_DND,
-  //   label: 'Drag & Drop',
-  //   badges: [settingBadges.handler, settingBadges.ui],
-  //   dependencies: [KEY_NODE_ID],
-  //   route: settingValues.dnd.route,
-  // },
+  [KEY_DND]: {
+    id: KEY_DND,
+    label: 'Drag & Drop',
+    badges: [settingBadges.handler, settingBadges.ui],
+    dependencies: [KEY_NODE_ID],
+    route: settingValues.dnd.route,
+  },
   [KEY_DRAG_OVER_CURSOR]: {
     id: KEY_DRAG_OVER_CURSOR,
     label: 'Drag Cursor',
@@ -429,7 +430,7 @@ export const settingPlugins = [
       settingPluginItems[KEY_AUTOFORMAT],
       settingPluginItems[KEY_BLOCK_SELECTION],
       settingPluginItems[KEY_COMBOBOX],
-      // settingPluginItems[KEY_DND],
+      settingPluginItems[KEY_DND],
       settingPluginItems[KEY_DRAG_OVER_CURSOR],
       settingPluginItems[KEY_EMOJI],
       settingPluginItems[KEY_EXIT_BREAK],

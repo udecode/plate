@@ -1,4 +1,5 @@
 import emojiMartData from '@emoji-mart/data';
+
 import {
   Emoji,
   EmojiLibrary,

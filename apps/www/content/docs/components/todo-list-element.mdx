@@ -1,6 +1,6 @@
 ---
 title: Todo List Element
-description: Todo List Element
+description: Create a checklist or to-do list within your content.
 component: true
 docs:
   - route: /docs/list
@@ -13,39 +13,47 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add todo-list-element
-    ```
+```bash
+npx plate-ui add todo-list-element
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [List](/docs/list)
+- [List](/docs/list)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="todo-list-element" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="todo-list-element" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -56,13 +64,8 @@ docs:
 ```tsx
 import { createTodoListPlugin } from '@udecode/plate-list';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTodoListPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTodoListPlugin(),
+];
 ```

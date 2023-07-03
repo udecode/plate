@@ -1,10 +1,10 @@
 ---
 title: Code Leaf
-description: Component for table plugin.
+description: Apply inline styling to denote code snippets within your text.
 component: true
 docs:
-  - route: /docs/basic-elements
-    title: Code Block
+  - route: /docs/basic-marks
+    title: Basic Marks
 ---
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
@@ -13,39 +13,47 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add code-leaf
-    ```
+```bash
+npx plate-ui add code-leaf
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Code Block](/docs/basic-elements)
+- [Basic Marks](/docs/basic-marks)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="code-leaf" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="code-leaf" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -56,13 +64,8 @@ docs:
 ```tsx
 import { createCodePlugin } from '@udecode/plate-basic-marks';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createCodePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createCodePlugin(),
+];
 ```

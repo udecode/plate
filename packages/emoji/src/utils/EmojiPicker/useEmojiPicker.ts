@@ -1,12 +1,13 @@
 import {
-  createRef,
   MutableRefObject,
   RefObject,
+  createRef,
   useCallback,
   useEffect,
   useRef,
 } from 'react';
 import { PlateEditor } from '@udecode/plate-common';
+
 import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import {
@@ -17,8 +18,8 @@ import {
 } from '../../types';
 import { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary/index';
 import {
-  observeCategories,
   SetFocusedAndVisibleSectionsType,
+  observeCategories,
 } from '../EmojiObserver';
 import { AIndexSearch } from '../IndexSearch/index';
 import { EmojiPickerState, MapEmojiCategoryList } from './EmojiPickerState';

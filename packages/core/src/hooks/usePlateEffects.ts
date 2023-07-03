@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Value } from '@udecode/slate';
 import { isUndefined } from 'lodash';
+
 import { usePlateEditorRef, usePlateStates } from '../stores';
 import {
   Nullable,

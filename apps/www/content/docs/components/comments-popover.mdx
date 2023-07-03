@@ -1,18 +1,12 @@
 ---
 title: Comments Popover
-description: Comments Popover
+description: View and manage comments within a popover interface.
 component: true
 docs:
   - route: /docs/comments
     title: Comments
   - route: /docs/components/popover
     title: Popover
-  - route: /docs/components/dropdown-menu
-    title: Dropdown Menu
-  - route: /docs/components/button
-    title: Button
-  - route: /docs/components/input
-    title: Input
   - route: /docs/components/avatar
     title: Avatar
 ---
@@ -23,55 +17,60 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add combobox
-    ```
+```bash
+npx plate-ui add combobox
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        ```bash
-        npm install date-fns
-        ```
+```bash
+npm install date-fns
+```
 
-        - [Comments](/docs/comments)
-        - [Popover](/docs/components/popover)
-        - [Dropdown-menu](/docs/components/dropdown-menu)
-        - [Button](/docs/components/button)
-        - [Input](/docs/components/input)
-        - [Avatar](/docs/components/avatar)
+- [Comments](/docs/comments)
+- [Popover](/docs/components/popover)
+- [Avatar](/docs/components/avatar)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="comments-popover/comment-avatar" />
-      <ComponentSource name="comments-popover/comment-create-form" />
-      <ComponentSource name="comments-popover/comment-item" />
-      <ComponentSource name="comments-popover/comment-more-dropdown" />
-      <ComponentSource name="comments-popover/comment-reply-items" />
-      <ComponentSource name="comments-popover/comment-resolve-button" />
-      <ComponentSource name="comments-popover/comment-value" />
-      <ComponentSource name="comments-popover/comments-popover" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="comment-avatar" />
+<ComponentSource name="comment-create-form" />
+<ComponentSource name="comment-item" />
+<ComponentSource name="comment-more-dropdown" />
+<ComponentSource name="comment-reply-items" />
+<ComponentSource name="comment-resolve-button" />
+<ComponentSource name="comment-value" />
+<ComponentSource name="comments-popover" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

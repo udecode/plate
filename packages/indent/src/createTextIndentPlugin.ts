@@ -1,8 +1,9 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  createPluginFactory,
   getPluginType,
 } from '@udecode/plate-common';
+
 import { IndentPlugin } from './types';
 
 export const KEY_TEXT_INDENT = 'textIndent';

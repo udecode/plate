@@ -1,5 +1,6 @@
 import { Value } from '@udecode/plate-common';
 import delay from 'delay';
+
 import { getInProgressUploads } from './getInProgressUploads';
 import { FinishUploadsOptions, PlateCloudEditor } from './types';
 

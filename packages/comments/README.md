@@ -6,10 +6,6 @@ This package implements the comments plugin for Plate.
 
 Check out [comments](https://platejs.org/docs/comments).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

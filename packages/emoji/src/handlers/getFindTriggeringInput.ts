@@ -1,12 +1,13 @@
 import {
+  PlateEditor,
+  Value,
   getEditorString,
   getPointBefore,
   getRange,
   isCollapsed,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 import { BasePoint } from 'slate';
+
 import { FindTriggeringInputProps } from '../types';
 import { IEmojiTriggeringController } from '../utils/index';
 

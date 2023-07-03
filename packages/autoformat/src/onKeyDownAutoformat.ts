@@ -1,16 +1,17 @@
 import { KeyboardEvent } from 'react';
 import {
-  deleteBackward,
-  getEditorString,
-  getPointBefore,
-  insertText,
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
   WithPlatePlugin,
+  deleteBackward,
+  getEditorString,
+  getPointBefore,
+  insertText,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
+
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';
 
 export const onKeyDownAutoformat =

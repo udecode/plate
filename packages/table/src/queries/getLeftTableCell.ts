@@ -1,10 +1,11 @@
 import {
-  findNode,
-  getNodeEntry,
   PlateEditor,
   Value,
+  findNode,
+  getNodeEntry,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { TTableCellElement } from '../types';
 import { getCellTypes } from '../utils/index';
 

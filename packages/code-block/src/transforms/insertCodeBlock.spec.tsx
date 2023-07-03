@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { insertCodeBlock } from './insertCodeBlock';
-
 import { createCodeBlockPlugin } from '@/packages/code-block/src/createCodeBlockPlugin';
+import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { insertCodeBlock } from './insertCodeBlock';
 
 jsx;
 

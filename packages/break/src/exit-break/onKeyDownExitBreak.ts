@@ -1,12 +1,13 @@
 import {
-  getBlockAbove,
   KeyboardHandlerReturnType,
   PlateEditor,
-  queryNode,
   Value,
   WithPlatePlugin,
+  getBlockAbove,
+  queryNode,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
 import { exitBreak } from './transforms/exitBreak';
 import { ExitBreakPlugin } from './types';
 

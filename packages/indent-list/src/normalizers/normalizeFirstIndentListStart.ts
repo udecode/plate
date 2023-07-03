@@ -1,10 +1,11 @@
 import {
-  isDefined,
   TEditor,
   TNodeEntry,
-  unsetNodes,
   Value,
+  isDefined,
+  unsetNodes,
 } from '@udecode/plate-common';
+
 import { KEY_LIST_START } from '../createIndentListPlugin';
 
 /**

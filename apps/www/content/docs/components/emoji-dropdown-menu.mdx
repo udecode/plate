@@ -1,6 +1,6 @@
 ---
 title: Emoji Dropdown Menu
-description: Emoji Dropdown Menu
+description: Access a wide range of emojis from a dropdown menu.
 component: true
 docs:
   - route: /docs/components/toolbar
@@ -15,46 +15,59 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add emoji-dropdown-menu
-    ```
+```bash
+npx plate-ui add emoji-dropdown-menu
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Toolbar](/docs/components/toolbar)
+```bash
+npm install @udecode/plate-floating
+```
 
-      </Step>
+- [Emoji](/docs/emoji)
+- [Toolbar](/docs/components/toolbar)
 
-      <Step>Copy and paste the following code into your project.</Step>
+</Step>
 
-      <ComponentSource name="emoji-dropdown-menu/emoji-dropdown-menu" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-icons" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker-content" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker-navigation" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker-preview" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker-search-and-clear" />
-      <ComponentSource name="emoji-dropdown-menu/emoji-picker-search-bar" />
+<Step>
 
-      <Step>Update the import paths to match your project setup.</Step>
+Copy and paste the following code into your project.
 
-    </Steps>
+</Step>
 
-  </TabsContent>
+<ComponentSource name="emoji-dropdown-menu" />
+<ComponentSource name="emoji-icons" />
+<ComponentSource name="emoji-picker" />
+<ComponentSource name="emoji-picker-content" />
+<ComponentSource name="emoji-picker-navigation" />
+<ComponentSource name="emoji-picker-preview" />
+<ComponentSource name="emoji-picker-search-and-clear" />
+<ComponentSource name="emoji-picker-search-bar" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

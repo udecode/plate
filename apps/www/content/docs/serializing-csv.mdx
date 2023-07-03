@@ -5,7 +5,9 @@ description: Copy paste from CSV to Slate.
 
 <ComponentPreview name="playground-demo" id="deserializecsv" />
 
-### Features
+<PackageInfo>
+
+## Features
 
 - Convert CSV content to a Slate value.
 
@@ -13,32 +15,28 @@ description: Copy paste from CSV to Slate.
   **Note**: Converting a Slate value to CSV is not yet supported.
 </Callout>
 
-### Installation
+</PackageInfo>
+
+## Installation
 
 ```bash
 npm install @udecode/plate-serializer-csv
 ```
 
-### Usage
+## Usage
 
-#### CSV -> Slate
+### CSV -> Slate
 
 ```tsx
-import React from 'react';
-import { createDeserializeCsvPlugin } from '@udecode/plate';
+import { createDeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
 
-const plugins = createMyPlugins(
-  [
-    // ...otherPlugins,
-    createDeserializeCsvPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createDeserializeCsvPlugin(),
+];
 ```
 
-#### Options
+### Options
 
 ```tsx
 export interface DeserializeCsvPlugin {
@@ -57,7 +55,3 @@ export interface DeserializeCsvPlugin {
   parseOptions?: DeserializeCsvParseOptions;
 }
 ```
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializer-csv/src/deserializer/createDeserializeCsvPlugin.ts)

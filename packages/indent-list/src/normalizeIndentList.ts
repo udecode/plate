@@ -5,9 +5,10 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
+import { IndentListPlugin } from './createIndentListPlugin';
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
-import { IndentListPlugin } from './createIndentListPlugin';
 
 export const normalizeIndentList = <V extends Value>(
   editor: TEditor<V>,

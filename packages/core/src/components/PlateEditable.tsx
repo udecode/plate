@@ -1,6 +1,7 @@
 import React, { ReactElement, ReactNode, Ref } from 'react';
 import { Value } from '@udecode/slate';
 import { Editable } from 'slate-react';
+
 import { useEditableProps, useEditorRef } from '../hooks';
 import { PlateId } from '../stores';
 import { TEditableProps } from '../types/slate-react/TEditableProps';

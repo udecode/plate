@@ -1,9 +1,10 @@
 import {
-  isCollapsed,
   PlateEditor,
   Value,
   WithPlatePlugin,
+  isCollapsed,
 } from '@udecode/plate-common';
+
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
 import { autoformatText } from './transforms/autoformatText';

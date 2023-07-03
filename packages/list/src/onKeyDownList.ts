@@ -1,20 +1,21 @@
 import {
-  getPluginType,
   Hotkeys,
-  isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
+  Value,
+  WithPlatePlugin,
+  getPluginType,
+  isCollapsed,
   select,
   someNode,
   unhangRange,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
-import { moveListItems, toggleList } from './transforms/index';
+
 import { ELEMENT_LI } from './createListPlugin';
+import { moveListItems, toggleList } from './transforms/index';
 import { ListPlugin } from './types';
 
 export const onKeyDownList =

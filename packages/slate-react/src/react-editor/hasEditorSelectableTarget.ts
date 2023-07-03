@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**

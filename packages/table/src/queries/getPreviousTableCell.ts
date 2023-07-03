@@ -1,11 +1,12 @@
 import {
-  getNodeEntry,
-  getPreviousPath,
   TEditor,
   TNodeEntry,
   Value,
+  getNodeEntry,
+  getPreviousPath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
 export const getPreviousTableCell = <V extends Value>(

@@ -1,15 +1,16 @@
 import {
   AnyObject,
-  getNodeEntries,
   GetNodeEntriesOptions,
-  getPluginInjectProps,
   PlateEditor,
-  setElements,
   UnhangRangeOptions,
-  unsetNodes,
   Value,
+  getNodeEntries,
+  getPluginInjectProps,
+  setElements,
+  unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import { KEY_INDENT } from '../createIndentPlugin';
 
 export interface SetIndentOptions<V extends Value = Value> {

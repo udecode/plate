@@ -4,10 +4,11 @@ import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
+
 import {
-  createIndentListPlugin,
   IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
+  createIndentListPlugin,
 } from './createIndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 

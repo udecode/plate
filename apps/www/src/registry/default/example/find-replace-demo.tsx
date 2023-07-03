@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { Plate } from '@udecode/plate-common';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace';
-
-import { Icons } from '@/components/icons';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { FixedToolbar } from '@/registry/default/ui/fixed-toolbar';
-import { createMyPlugins, MyValue } from '@/types/plate-types';
+import { Plate } from '@udecode/plate-common';
+import { createFindReplacePlugin } from '@udecode/plate-find-replace';
+
+import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { Icons } from '@/components/icons';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 export interface SearchHighlightToolbarProps {
   icon: any;

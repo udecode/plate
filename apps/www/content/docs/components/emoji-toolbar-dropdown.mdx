@@ -1,6 +1,6 @@
 ---
 title: Emoji Toolbar Dropdown
-description: Emoji Toolbar Dropdown.
+description: Display an emoji selection menu within a toolbar interface.
 component: true
 ---
 
@@ -10,44 +10,52 @@ component: true
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add emoji-toolbar-dropdown
-    ```
+```bash
+npx plate-ui add emoji-toolbar-dropdown
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        ```bash
-        npm install @udecode/plate-floating
-        ```
+```bash
+npm install @udecode/plate-floating
+```
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="emoji-toolbar-dropdown" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="emoji-toolbar-dropdown" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
 ## Usage
 
-<ComponentSource name="emoji-dropdown-menu/emoji-dropdown-menu" />
+<ComponentSource name="emoji-dropdown-menu" />

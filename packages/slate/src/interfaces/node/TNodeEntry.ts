@@ -1,4 +1,5 @@
 import { Path } from 'slate';
+
 import { TEditor, Value } from '../editor/TEditor';
 import { EElement, ElementOf } from '../element/TElement';
 import { EText, TextOf } from '../text/TText';

@@ -1,15 +1,15 @@
 import {
   EElement,
-  findNode,
-  getNodeEntries,
-  getPreviousNode,
-  isBlock,
-  queryNode,
   QueryNodeOptions,
   TEditor,
   TElement,
   TNodeEntry,
   Value,
+  findNode,
+  getNodeEntries,
+  getPreviousNode,
+  isBlock,
+  queryNode,
 } from '@udecode/slate';
 
 /**

@@ -3,7 +3,38 @@
 import { ReactNode } from 'react';
 import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
+
+import { NpmCommands } from '@/types/unist';
+import { Event } from '@/lib/events';
+import { cn } from '@/lib/utils';
+import { useConfig } from '@/hooks/use-config';
+import { packageInfoAtom } from '@/hooks/use-package-info';
+import { Style } from '@/registry/styles';
+
+import {
+  APIAttributes,
+  APIItem,
+  APIList,
+  APIParameters,
+  APIReturns,
+  APISubList,
+  APISubListItem,
+} from './api-list';
+import { BadgeList, BadgePopover } from './badge-popover';
+import { Callout } from './callout';
+import { Code } from './code';
+import { CodeBlockWrapper } from './code-block-wrapper';
+import { ComponentExample } from './component-example';
+import { ComponentPreview } from './component-preview';
+import { ComponentSource } from './component-source';
+import { HydrateAtoms } from './context/hydrate-atoms';
+import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { FrameworkDocs } from './framework-docs';
+import { PackageInfo } from './package-info';
+import { StyleWrapper } from './style-wrapper';
 import {
   Accordion,
   AccordionContent,
@@ -21,30 +52,6 @@ import {
   TableRow,
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import {
-  APIAttributes,
-  APIItem,
-  APIList,
-  APIParameters,
-  APIReturns,
-  APISubList,
-  APISubListItem,
-} from './api-list';
-import { BadgeList, BadgePopover } from './badge-popover';
-import { Callout } from './callout';
-import { Code } from './code';
-import { CodeBlockWrapper } from './code-block-wrapper';
-import { ComponentExample } from './component-example';
-import { ComponentPreview } from './component-preview';
-import { ComponentSource } from './component-source';
-import { CopyButton, CopyNpmCommandButton } from './copy-button';
-import { StyleWrapper } from './style-wrapper';
-
-import { useConfig } from '@/hooks/use-config';
-import { Event } from '@/lib/events';
-import { cn } from '@/lib/utils';
-import { Style } from '@/registry/styles';
-import { NpmCommands } from '@/types/unist';
 
 const components = {
   Accordion,
@@ -66,7 +73,7 @@ const components = {
   h2: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h2
       className={cn(
-        'mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+        'mt-12 scroll-m-20 pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
         className
       )}
       {...props}
@@ -121,10 +128,10 @@ const components = {
     />
   ),
   ul: ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className={cn('my-0 ml-6 list-disc', className)} {...props} />
+    <ul className={cn('my-4 ml-6 list-disc', className)} {...props} />
   ),
   ol: ({ className, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className={cn('my-0 ml-6 list-decimal', className)} {...props} />
+    <ol className={cn('my-4 ml-6 list-decimal', className)} {...props} />
   ),
   li: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <li className={cn('mt-2', className)} {...props} />
@@ -245,7 +252,7 @@ const components = {
   Steps: ({ ...props }) => (
     <div
       // eslint-disable-next-line tailwindcss/no-custom-classname
-      className="[&>h3]:step mb-12 ml-4 border-l pl-8 [counter-reset:step]"
+      className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
       {...props}
     />
   ),
@@ -317,7 +324,22 @@ const components = {
   }: React.ComponentProps<typeof TabsContent>) => (
     <TabsContent
       className={cn(
-        'relative [&_h3.font-heading]:text-base [&_h3.font-heading]:font-normal',
+        'relative [&_h3.font-heading]:text-base [&_h3.font-heading]:font-semibold',
+        className
+      )}
+      {...props}
+    />
+  ),
+  FrameworkDocs: ({
+    className,
+    ...props
+  }: React.ComponentProps<typeof FrameworkDocs>) => (
+    <FrameworkDocs className={cn(className)} {...props} />
+  ),
+  LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
+    <Link
+      className={cn(
+        'flex w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow transition-colors hover:bg-muted/50 sm:p-10',
         className
       )}
       {...props}
@@ -332,13 +354,17 @@ const components = {
   APISubList,
   APISubListItem,
   APIItem,
+  PackageInfo,
 };
 
 interface MdxProps {
   code: string;
+  packageInfo?: {
+    gzip: string | null;
+  };
 }
 
-export function Mdx({ code }: MdxProps) {
+export function Mdx({ code, packageInfo }: MdxProps) {
   const [config] = useConfig();
   const Component = useMDXComponent(code, {
     style: config.style,
@@ -347,7 +373,11 @@ export function Mdx({ code }: MdxProps) {
   return (
     // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="mdx">
-      <Component components={components as any} />
+      <Provider>
+        <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
+          <Component components={components as any} />
+        </HydrateAtoms>
+      </Provider>
     </div>
   );
 }

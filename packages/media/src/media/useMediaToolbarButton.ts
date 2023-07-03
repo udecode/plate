@@ -1,4 +1,5 @@
 import { focusEditor, usePlateEditorRef } from '@udecode/plate-common';
+
 import { insertMedia } from './insertMedia';
 
 export const useMediaToolbarButton = ({

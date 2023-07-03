@@ -1,6 +1,6 @@
 ---
 title: Table Element
-description: Component for table plugin.
+description: Insert and manage tables to organize tabular data within your content.
 component: true
 docs:
   - route: /docs/table
@@ -37,11 +37,19 @@ Install the following dependencies:
 
 </Step>
 
-<Step>Copy and paste the following code into your project.</Step>
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
 
 <ComponentSource name="table-element" />
 
-<Step>Update the import paths to match your project setup.</Step>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
 
 </Steps>
 
@@ -56,13 +64,8 @@ Install the following dependencies:
 ```tsx
 import { createTablePlugin } from '@udecode/plate-table';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createTablePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createTablePlugin(),
+];
 ```

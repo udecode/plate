@@ -1,15 +1,16 @@
 import {
   EElement,
-  getNode,
   TEditor,
   TElement,
   Value,
+  WrapNodesOptions,
+  getNode,
   withoutNormalizing,
   wrapNodes,
-  WrapNodesOptions,
 } from '@udecode/slate';
 import { Modify } from '@udecode/utils';
 import { Path } from 'slate';
+
 import { moveChildren } from './moveChildren';
 
 /**

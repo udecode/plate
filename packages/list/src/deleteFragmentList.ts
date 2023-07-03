@@ -1,4 +1,6 @@
 import {
+  PlateEditor,
+  Value,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -6,16 +8,15 @@ import {
   getParentNode,
   getPluginType,
   getStartPoint,
-  PlateEditor,
   removeNodes,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
+import { ELEMENT_LI } from './createListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
-import { ELEMENT_LI } from './createListPlugin';
 
 export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   let deleted = false;

@@ -6,6 +6,7 @@ import {
   usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
+
 import { TCloudAttachmentElement, useUpload } from '..';
 
 export const useCloudAttachmentElementState = ({

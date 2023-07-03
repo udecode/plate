@@ -1,4 +1,5 @@
 import { Location } from 'slate';
+
 import { TEditor, Value } from '../interfaces';
 import { QueryNodeOptions } from './QueryNodeOptions';
 

@@ -1,4 +1,5 @@
 import { Editor } from 'slate';
+
 import { EMarks } from '../text/TText';
 import { TEditor, Value } from './TEditor';
 

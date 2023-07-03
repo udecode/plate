@@ -1,5 +1,6 @@
-import { QueryEditorOptions, someNode, TEditor, Value } from '@udecode/slate';
+import { QueryEditorOptions, TEditor, Value, someNode } from '@udecode/slate';
 import castArray from 'lodash/castArray';
+
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
 

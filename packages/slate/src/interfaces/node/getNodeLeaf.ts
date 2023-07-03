@@ -1,4 +1,5 @@
 import { Node, Path } from 'slate';
+
 import { TextOf } from '../text/TText';
 import { TNode } from './TNode';
 

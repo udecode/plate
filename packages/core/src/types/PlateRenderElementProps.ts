@@ -1,6 +1,7 @@
 import { EElement, TElement, Value } from '@udecode/slate';
-import { TRenderElementProps } from './slate-react/TRenderElementProps';
+
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
+import { TRenderElementProps } from './slate-react/TRenderElementProps';
 
 /**
  * Element props passed by Plate

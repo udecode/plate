@@ -1,8 +1,9 @@
 import {
+  PlatePlugin,
   createPluginFactory,
   onKeyDownToggleElement,
-  PlatePlugin,
 } from '@udecode/plate-common';
+
 import { KEYS_HEADING } from './constants';
 import { HeadingPlugin, HeadingsPlugin } from './types';
 

@@ -1,6 +1,6 @@
 ---
 title: Indent List Toolbar Button
-description: Ident List Toolbar Button.
+description: Indent list items to create nested or hierarchical lists.
 component: true
 docs:
   - route: /docs/indent-list
@@ -15,65 +15,72 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
-
-    ```bash
-    npx plate-ui add indent-list-toolbar-button
-    ```
-
-  </TabsContent>
-
-  <TabsContent value="manual">
-
-    <Steps>
-
-      <Step>
-
-        Install the following dependencies:
-
-        - [Indent List](/docs/indent-list)
-        - [Toolbar](/docs/components/toolbar)
-      </Step>
-
-      <Step>Copy and paste the following code into your project.</Step>
-
-      <ComponentSource name="indent-list-toolbar-button" />
-
-      <Step>Update the import paths to match your project setup.</Step>
-
-    </Steps>
-
-  </TabsContent>
-
-</Tabs>
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
 ```bash
 npx plate-ui add indent-list-toolbar-button
 ```
 
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+- [Indent List](/docs/indent-list)
+- [Toolbar](/docs/components/toolbar)
+
+</Step>
+
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="indent-list-toolbar-button" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+
 <Accordion type="single" collapsible>
-  <AccordionItem value="manual-installation">
-    <AccordionTrigger>Manual Installation</AccordionTrigger>
-    <AccordionContent>
+<AccordionItem value="manual-installation">
+<AccordionTrigger>Manual Installation</AccordionTrigger>
+<AccordionContent>
 
-      1. Install the following dependencies:
+1. Install the following dependencies:
 
-      - [Indent List](/docs/indent-list)
-      - [Toolbar](/docs/components/toolbar)
+- [Indent List](/docs/indent-list)
+- [Toolbar](/docs/components/toolbar)
 
-      2. Copy and paste the following code into your project.
+2. Copy and paste the following code into your project.
 
-      - `components/plate-ui/indent-list-toolbar-button.tsx`
+- `components/plate-ui/indent-list-toolbar-button.tsx`
 
-      <ComponentSource name="indent-list-toolbar-button" />
+<ComponentSource name="indent-list-toolbar-button" />
 
-    </AccordionContent>
+</AccordionContent>
 
-  </AccordionItem>
+</AccordionItem>
 </Accordion>
 
 ## Usage

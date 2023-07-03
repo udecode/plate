@@ -1,14 +1,5 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { createPlateEditor } from '@udecode/plate-common';
-import { ELEMENT_LI } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
-import { onKeyDownResetNode } from './onKeyDownResetNode';
-
 import {
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
@@ -20,6 +11,15 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@/packages/slate-utils/src/index';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { createPlateEditor } from '@udecode/plate-common';
+import { ELEMENT_LI } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { jsx } from '@udecode/plate-test-utils';
+import * as isHotkey from 'is-hotkey';
+
+import { onKeyDownResetNode } from './onKeyDownResetNode';
 
 jsx;
 

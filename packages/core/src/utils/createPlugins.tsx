@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { cloneDeep } from 'lodash';
+
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';

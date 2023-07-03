@@ -5,7 +5,9 @@ description: Copy paste from DOCX to Slate.
 
 <ComponentPreview name="playground-demo" id="deserializedocx" />
 
-### Features
+<PackageInfo>
+
+## Features
 
 - Convert DOCX content to a Slate value.
 
@@ -13,63 +15,27 @@ description: Copy paste from DOCX to Slate.
   **Note**: Converting a Slate value to DOCX is not yet supported.
 </Callout>
 
-### Installation
+</PackageInfo>
+
+## Installation
 
 ```bash
 npm install @udecode/plate-serializer-docx @udecode/plate-juice
 ```
 
-### Usage
+## Usage
 
-#### DOCX -> Slate
+### DOCX -> Slate
 
 ```tsx
-import React from 'react';
-import {
-  createImagePlugin,
-  createHorizontalRulePlugin,
-  createLineHeightPlugin,
-  createTablePlugin,
-  createAlignPlugin,
-  createFontBackgroundColorPlugin,
-  createFontFamilyPlugin,
-  createFontColorPlugin,
-  createFontSizePlugin,
-  createFontWeightPlugin,
-  createIndentListPlugin,
-  createIndentPlugin,
-  createTextIndentPlugin,
-  createDeserializeDocxPlugin,
-} from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createImagePlugin(),
-    createHorizontalRulePlugin(),
-    createLineHeightPlugin(),
-    createTablePlugin(),
-    createAlignPlugin(),
-    createFontBackgroundColorPlugin(),
-    createFontFamilyPlugin(),
-    createFontColorPlugin(),
-    createFontSizePlugin(),
-    createFontWeightPlugin(),
-    createIndentListPlugin(),
-    createIndentPlugin(),
-    createTextIndentPlugin(),
-    createDeserializeDocxPlugin(),
-    createJuicePlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createDeserializeDocxPlugin(),
+  createJuicePlugin(),
+];
 ```
 
 Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializer-docx/src/deserializer/createDeserializeDocxPlugin.ts)

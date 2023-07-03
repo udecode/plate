@@ -1,18 +1,19 @@
 import {
-  getBlockAbove,
-  isBlockAboveEmpty,
   KeyboardHandlerReturnType,
   PlateEditor,
   TElement,
   Value,
   WithPlatePlugin,
+  getBlockAbove,
+  isBlockAboveEmpty,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
-import { outdentList } from './transforms/index';
+
 import {
   IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
+import { outdentList } from './transforms/index';
 
 export const onKeyDownIndentList =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(

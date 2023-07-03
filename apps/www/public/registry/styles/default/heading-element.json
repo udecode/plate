@@ -1,12 +1,14 @@
 {
   "name": "heading-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-heading"
+  ],
   "registryDependencies": [],
   "files": [
     {
       "name": "heading-element.tsx",
-      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { cva, VariantProps } from 'class-variance-authority';\n\nconst headingVariants = cva('', {\n  variants: {\n    variant: {\n      h1: 'mb-1 mt-[2em] font-heading text-4xl font-bold',\n      h2: 'mb-px mt-[1.4em] font-heading text-2xl font-semibold tracking-tight',\n      h3: 'mb-px mt-[1em] font-heading text-xl font-semibold tracking-tight',\n      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',\n      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',\n      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',\n    },\n    isFirstBlock: {\n      true: 'mt-0',\n      false: '',\n    },\n  },\n});\n\nexport function HeadingElement({\n  className,\n  variant = 'h1',\n  isFirstBlock,\n  children,\n  ...props\n}: PlateElementProps & VariantProps<typeof headingVariants>) {\n  const { element, editor } = props;\n\n  const Element = variant!;\n\n  return (\n    <PlateElement\n      asChild\n      className={headingVariants({\n        variant,\n        className,\n        isFirstBlock: element === editor.children[0],\n      })}\n      {...props}\n    >\n      <Element>{children}</Element>\n    </PlateElement>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { VariantProps, cva } from 'class-variance-authority';\n\nconst headingVariants = cva('', {\n  variants: {\n    variant: {\n      h1: 'mb-1 mt-[2em] font-heading text-4xl font-bold',\n      h2: 'mb-px mt-[1.4em] font-heading text-2xl font-semibold tracking-tight',\n      h3: 'mb-px mt-[1em] font-heading text-xl font-semibold tracking-tight',\n      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',\n      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',\n      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',\n    },\n    isFirstBlock: {\n      true: 'mt-0',\n      false: '',\n    },\n  },\n});\n\nexport function HeadingElement({\n  className,\n  variant = 'h1',\n  isFirstBlock,\n  children,\n  ...props\n}: PlateElementProps & VariantProps<typeof headingVariants>) {\n  const { element, editor } = props;\n\n  const Element = variant!;\n\n  return (\n    <PlateElement\n      asChild\n      className={headingVariants({\n        variant,\n        className,\n        isFirstBlock: element === editor.children[0],\n      })}\n      {...props}\n    >\n      <Element>{children}</Element>\n    </PlateElement>\n  );\n}\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

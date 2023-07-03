@@ -1,55 +1,63 @@
 ---
 title: Cloud
-description: Cloud
+description: Integrate cloud functionality to enable seamless access to cloud-based resources.
 component: true
 docs:
   - route: /docs/cloud
     title: Cloud
 ---
 
-<ComponentPreview name="cloud-demo" />
+<ComponentPreview name="cloud-demo" padding="md" />
 
 ## Installation
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add cloud
-    ```
+```bash
+npx plate-ui add cloud
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Cloud](/docs/cloud)
+- [Cloud](/docs/cloud)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="cloud/cloud-attachment-element" />
-      <ComponentSource name="cloud/cloud-image-element" />
-      <ComponentSource name="cloud/cloud-resize-controls" />
-      <ComponentSource name="cloud/cloud-status-bar" />
-      <ComponentSource name="cloud/cloud-toolbar-buttons" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="cloud-attachment-element" />
+<ComponentSource name="cloud-image-element" />
+<ComponentSource name="cloud-resize-controls" />
+<ComponentSource name="cloud-status-bar" />
+<ComponentSource name="cloud-toolbar-buttons" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

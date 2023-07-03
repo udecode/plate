@@ -5,12 +5,13 @@ import {
   Value,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
-import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
+
 import {
   comboboxActions,
   comboboxSelectors,
   getComboboxStoreById,
 } from './combobox.store';
+import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
 
 /**
  * If the combobox is open, handle:

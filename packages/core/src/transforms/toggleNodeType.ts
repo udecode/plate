@@ -1,9 +1,10 @@
 import {
   GetNodeEntriesOptions,
+  Value,
   setElements,
   someNode,
-  Value,
 } from '@udecode/slate';
+
 import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
 import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from '../utils/getPluginType';

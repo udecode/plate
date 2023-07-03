@@ -1,22 +1,23 @@
 import {
-  getAboveNode,
   Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   PluginOptions,
-  select,
   TElement,
   Value,
   WithPlatePlugin,
+  getAboveNode,
+  select,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
+
+import { keyShiftEdges } from './constants';
 import {
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
-import { keyShiftEdges } from './constants';
 
 export const onKeyDownTable =
   <

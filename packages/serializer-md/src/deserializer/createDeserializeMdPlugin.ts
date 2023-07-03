@@ -1,10 +1,11 @@
-import { createPluginFactory, isUrl, Value } from '@udecode/plate-common';
+import { Value, createPluginFactory, isUrl } from '@udecode/plate-common';
+
 import {
   remarkDefaultElementRules,
   remarkDefaultTextRules,
 } from '../remark-slate/index';
-import { deserializeMd } from './utils/index';
 import { DeserializeMdPlugin } from './types';
+import { deserializeMd } from './utils/index';
 
 export const KEY_DESERIALIZE_MD = 'deserializeMd';
 

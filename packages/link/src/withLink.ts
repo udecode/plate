@@ -1,4 +1,7 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   collapseSelection,
   getAboveNode,
   getEditorString,
@@ -12,17 +15,15 @@ import {
   isEndPoint,
   isStartPoint,
   mockPlugin,
-  PlateEditor,
   select,
   someNode,
-  Value,
   withoutNormalizing,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Path, Point, Range } from 'slate';
-import { upsertLink } from './transforms/index';
+
 import { ELEMENT_LINK, LinkPlugin } from './createLinkPlugin';
+import { upsertLink } from './transforms/index';
 
 /**
  * Insert space after a url to wrap a link.

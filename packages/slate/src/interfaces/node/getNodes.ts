@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Node, NodeNodesOptions } from 'slate';
+
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';
 

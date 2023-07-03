@@ -1,12 +1,13 @@
-import { comboboxActions, ComboboxOnSelectItem } from '@udecode/plate-combobox';
+import { ComboboxOnSelectItem, comboboxActions } from '@udecode/plate-combobox';
 import {
+  PlatePluginKey,
   deleteText,
   getPlugin,
   insertText,
-  PlatePluginKey,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import { KEY_EMOJI } from '../constants';
 import { EmojiItemData, EmojiPlugin } from '../types';
 

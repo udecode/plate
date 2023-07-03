@@ -1,15 +1,16 @@
 /** @jsx jsx */
 
 import {
-  createPlateEditor,
-  getNode,
   PlateEditor,
   TNode,
+  createPlateEditor,
+  getNode,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
+
 import {
-  findTabDestination,
   FindTabDestinationOptions,
+  findTabDestination,
 } from './findTabDestination';
 import { TabbableEntry } from './types';
 

@@ -1,14 +1,14 @@
 ---
 title: Table Dropdown Menu
-description: Table Dropdown Menu.
+description: Access table-related options and functionality through a dropdown menu.
 component: true
 docs:
   - route: /docs/table
     title: Table
   - route: /docs/components/dropdown-menu
     title: Dropdown Menu
-  - route: /docs/components/tooltip
-    title: Tooltip
+  - route: /docs/components/toolbar
+    title: Toolbar
 ---
 
 <ComponentPreview name="playground-demo" id="table" />
@@ -17,40 +17,49 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add table-dropdown-menu
-    ```
+```bash
+npx plate-ui add table-dropdown-menu
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Table](/docs/table)
-        - [dropdown Menu](/docs/components/dropdown-menu)
-        - [Tooltip](/docs/components/tooltip)
-      </Step>
+- [Table](/docs/table)
+- [dropdown Menu](/docs/components/dropdown-menu)
+- [Toolbar](/docs/components/toolbar)
 
-      <Step>Copy and paste the following code into your project.</Step>
+</Step>
 
-      <ComponentSource name="table-dropdown-menu" />
+<Step>
 
-      <Step>Update the import paths to match your project setup.</Step>
+Copy and paste the following code into your project.
 
-    </Steps>
+</Step>
 
-  </TabsContent>
+<ComponentSource name="table-dropdown-menu" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

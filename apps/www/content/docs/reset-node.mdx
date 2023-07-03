@@ -5,27 +5,30 @@ description: Reset the block type using rules.
 
 <ComponentPreview name="playground-demo" id="resetnode" />
 
-### Features
+<PackageInfo>
 
-The Reset Node plugin allows users to quickly reset the formatting of a selected block of text to its default settings on key events like Enter.
+## Features
 
-This feature is particularly useful when you want to reset a block on Enter instead of the default behavior.
+- Enables quick reset of text block formatting to default on key events (e.g. `Enter`).
+- To test, press Enter in an empty or at the end of a block quote, or Backspace at the start of a block quote.
 
-To test the Reset Node feature, press:
+</PackageInfo>
 
-- Enter in an empty or at the end of a block quote
-- Backspace at the start of a block quote
-
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-reset-node
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import { createResetNodePlugin } from '@udecode/plate';
+// ...
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from '@udecode/plate-common';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
@@ -38,45 +41,38 @@ const resetBlockTypesCodeBlockRule = {
   onReset: unwrapCodeBlock,
 };
 
-export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
-  options: {
-    rules: [
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Enter',
-        predicate: isBlockAboveEmpty,
-      },
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtBlockStart,
-      },
-      {
-        ...resetBlockTypesCodeBlockRule,
-        hotkey: 'Enter',
-        predicate: isCodeBlockEmpty,
-      },
-      {
-        ...resetBlockTypesCodeBlockRule,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtCodeBlockStart,
-      },
-    ],
-  },
-};
-
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createResetNodePlugin(resetBlockTypePlugin),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createResetNodePlugin({
+    options: {
+      rules: [
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Enter',
+          predicate: isBlockAboveEmpty,
+        },
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtBlockStart,
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Enter',
+          predicate: isCodeBlockEmpty,
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtCodeBlockStart,
+        },
+      ],
+    },
+  }),
+];
 ```
 
-#### Options
+### Options
 
 ```tsx
 export interface ResetNodePluginRule<
@@ -108,7 +104,3 @@ export interface ResetNodePlugin<
   rules?: ResetNodePluginRule<V, E>[];
 }
 ```
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/reset-node/src/createResetNodePlugin.ts)

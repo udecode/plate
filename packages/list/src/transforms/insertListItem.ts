@@ -1,4 +1,7 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   collapseSelection,
   deleteText,
   getAboveNode,
@@ -9,15 +12,13 @@ import {
   isBlockTextEmptyAfterSelection,
   isStartPoint,
   moveNodes,
-  PlateEditor,
   select,
   splitNodes,
-  TElement,
-  Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
+
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
 /**

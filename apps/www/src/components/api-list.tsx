@@ -1,6 +1,11 @@
 'use client';
 
 import React, { ReactNode, useState } from 'react';
+
+import { cn } from '@/lib/utils';
+import { Separator } from '@/registry/default/plate-ui/separator';
+
+import { Icons } from './icons';
 import {
   Accordion,
   AccordionContent,
@@ -8,10 +13,6 @@ import {
   AccordionTrigger,
 } from './ui/accordion';
 import { Card } from './ui/card';
-import { Icons } from './icons';
-
-import { cn } from '@/lib/utils';
-import { Separator } from '@/registry/default/ui/separator';
 
 type Item = {
   name: string;
@@ -36,7 +37,7 @@ export function APIItem({
     <AccordionItem value={value ?? name} className="select-text">
       <AccordionTrigger className="group hover:no-underline">
         <li id={name} className="scroll-mt-[56px]">
-          <h4 className="relative py-2 font-semibold leading-none tracking-tight">
+          <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             <a
               href={`#${name}`}
               className={cn(

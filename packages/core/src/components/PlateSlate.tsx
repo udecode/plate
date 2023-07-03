@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Slate } from 'slate-react';
+
 import { useSlateProps } from '../hooks';
 import { PlateId, usePlateSelectors } from '../stores';
 

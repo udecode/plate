@@ -1,10 +1,10 @@
 import {
-  getMarks,
-  isText,
   SetNodesOptions,
   TEditor,
-  unsetNodes,
   Value,
+  getMarks,
+  isText,
+  unsetNodes,
 } from '@udecode/slate';
 import { castArray } from 'lodash';
 import { Range } from 'slate';

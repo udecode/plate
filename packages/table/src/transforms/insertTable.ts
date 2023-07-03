@@ -1,20 +1,21 @@
 import {
+  InsertNodesOptions,
+  PlateEditor,
+  Value,
   getBlockAbove,
   getPluginType,
   getStartPoint,
   insertNodes,
-  InsertNodesOptions,
-  PlateEditor,
   selectEditor,
   someNode,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TTableElement } from '../types';
 import {
-  getEmptyTableNode,
   GetEmptyTableNodeOptions,
+  getEmptyTableNode,
 } from '../utils/getEmptyTableNode';
 
 /**

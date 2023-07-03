@@ -1,13 +1,14 @@
 import {
   EElementOrText,
-  insertNodes,
   InsertNodesOptions,
   RemoveNodesOptions,
   TEditor,
   Value,
+  insertNodes,
   withoutNormalizing,
 } from '@udecode/slate';
 import { Path } from 'slate';
+
 import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<

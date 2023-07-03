@@ -1,5 +1,6 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
+
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
 
 export interface InjectComponentProps<V extends Value = Value>

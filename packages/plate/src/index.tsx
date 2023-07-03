@@ -41,4 +41,3 @@ export * from '@udecode/plate-tabbable';
 export * from '@udecode/plate-table';
 export * from '@udecode/plate-trailing-block';
 export * from '@udecode/resizable';
-export * from './DefaultPlatePluginKey';

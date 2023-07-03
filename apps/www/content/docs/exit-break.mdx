@@ -5,114 +5,118 @@ description: Exit a large block using a shortcut.
 
 <ComponentPreview name="playground-demo" id="exitbreak" />
 
-### Features
+<PackageInfo>
 
-The Exit Break plugin streamlines the workflow when working with large blocks of text
+## Features
 
-by enabling users to quickly navigate to the end of a block and start a new one with a single keystroke.
+- Exit large text blocks with a single hotkey.
 
-This feature is particularly beneficial for writers, bloggers, or anyone who frequently works with substantial amounts of text.
+</PackageInfo>
 
-To use the Exit Break feature, press the cmd+enter (Mac) or ctrl+enter (Windows) keyboard shortcut to move to the end of a text block and begin a new one.
-
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-break
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import {
-  createExitBreakPlugin,
-  ExitBreakPlugin,
-  KEYS_HEADING,
-  PlatePlugin,
-} from '@udecode/plate';
+import { createExitBreakPlugin } from '@udecode/plate-break';
 
-const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
-  options: {
-    rules: [
-      {
-        hotkey: 'mod+enter',
-      },
-      {
-        hotkey: 'mod+shift+enter',
-        before: true,
-      },
-      {
-        hotkey: 'enter',
-        query: {
-          start: true,
-          end: true,
-          allow: KEYS_HEADING,
+const plugins = [
+  // ...otherPlugins,
+  createExitBreakPlugin({
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
         },
-        relative: true,
-        level: 1,
-      },
-    ],
-  },
-};
-
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createExitBreakPlugin(exitBreakPlugin),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: KEYS_HEADING,
+          },
+          relative: true,
+          level: 1,
+        },
+      ],
+    },
+  }),
+];
 ```
 
-#### Options
+## API
 
-```tsx
-export interface ExitBreakRule {
-  /**
-   * Hotkey to trigger exit break.
-   */
-  hotkey: string;
+### createExitBreakPlugin
 
-  /**
-   * @see {@link QueryNodeOptions}
-   */
-  query?: QueryNodeOptions & {
-    /**
-     * When the selection is at the start of the block above.
-     */
-    start?: boolean;
+<APIParameters>
 
-    /**
-     * When the selection is at the end of the block above.
-     */
-    end?: boolean;
-  };
+Options.
 
-  /**
-   * Path level where to exit. Default is 1.
-   */
-  level?: number;
+<APIItem name="rules" type="ExitBreakRule[]" optional>
 
-  /**
-   * Exit before the selected block if true.
-   */
-  before?: boolean;
+An array of rule objects each containing the following properties:
 
-  defaultType?: string;
-}
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+Hotkey to trigger exit break.
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions & {start?: boolean, end?: boolean}" optional>
+Object determining the conditions under which to exit.
 
-export interface ExitBreakPlugin {
-  rules?: ExitBreakRule[];
-}
-```
+- Extends `QueryNodeOptions`:
 
-### Keyboard Interactions
+<APISubList>
 
-- `mod+enter`: Move to the end of the current block and start a new block.
-- `mod+shift+enter`: Move to the end of the previous block and start a new block before it.
+<APISubListItem parent="query" name="start" type="boolean" optional>
 
-### Source Code
+Start of the block.
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/break/src/exit-break/createExitBreakPlugin.ts)
+</APISubListItem>
+
+<APISubListItem parent="query" name="end" type="boolean" optional>
+
+End of the block.
+
+</APISubListItem>
+
+</APISubList>
+
+</APISubListItem>
+<APISubListItem parent="rules" name="level" type="number" optional>
+Path level where to exit.
+
+- **Default:** `1`
+
+</APISubListItem>
+<APISubListItem parent="rules" name="before" type="boolean" optional>
+If true, exit before the selected block.
+</APISubListItem>
+<APISubListItem parent="rules" name="defaultType" type="string" optional>
+The default type of the node to be inserted upon exit.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+### exitBreak
+
+### exitBreakAtEdges
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    Move to the end of the current block and start a new block.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    Move to the end of the previous block and start a new block before it.
+  </KeyTableItem>
+</KeyTable>

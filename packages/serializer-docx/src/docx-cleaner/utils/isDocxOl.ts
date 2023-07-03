@@ -1,4 +1,5 @@
 import { isOlSymbol } from '@udecode/plate-common';
+
 import { getDocxListNode } from './getDocxListNode';
 
 export const isDocxOl = (element: Element): boolean => {

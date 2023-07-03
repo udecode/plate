@@ -1,10 +1,12 @@
 ---
 title: Combobox
-description: Combobox
+description: Combine a text input field with a dropdown menu for enhanced user interaction.
 component: true
 docs:
   - route: /docs/combobox
     title: Combobox
+  - route: /docs/components/scroll-area
+    title: Scroll Area
 ---
 
 <ComponentPreview name="playground-demo" id="mention" />
@@ -13,39 +15,48 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add combobox
-    ```
+```bash
+npx plate-ui add combobox
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Combobox](/docs/combobox)
+- [Combobox](/docs/combobox)
+- [Scroll Area](/docs/components/scroll-area)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="combobox" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="combobox" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 

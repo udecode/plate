@@ -1,4 +1,7 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -8,17 +11,15 @@ import {
   isCollapsed,
   isRangeInSameBlock,
   moveSelection,
-  PlateEditor,
   replaceNodeChildren,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
+
+import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
-import { ELEMENT_TABLE } from './createTablePlugin';
 
 /**
  * Return true if:

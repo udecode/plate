@@ -1,10 +1,12 @@
 ---
 title: Code Block Element
-description: Code Block Element
+description: Insert a formatted block of code into your content.
 component: true
 docs:
   - route: /docs/basic-elements
     title: Code Block
+  - route: /docs/components/command
+    title: Command
 ---
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
@@ -13,40 +15,49 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add code-block-element
-    ```
+```bash
+npx plate-ui add code-block-element
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Code Block](/docs/basic-elements)
+- [Code Block](/docs/basic-elements)
+- [Command](/docs/components/command)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="code-block-element/code-block-element" />
-      <ComponentSource name="code-block-element/code-block-combobox" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="code-block-element" />
+<ComponentSource src="../../templates/next-template/src/components/plate-ui/code-block-element.css" />
 
-  </TabsContent>
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
 
 </Tabs>
 
@@ -57,13 +68,8 @@ docs:
 ```tsx
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createCodeBlockPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createCodeBlockPlugin(),
+];
 ```

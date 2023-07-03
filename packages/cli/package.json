@@ -1,0 +1,70 @@
+{
+  "name": "plate-ui",
+  "version": "0.2.2",
+  "description": "Add Plate components to your apps.",
+  "license": "MIT",
+  "homepage": "https://platejs.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": "./dist/index.js",
+  "bin": "./dist/index.js",
+  "scripts": {
+    "build": "yarn tsup",
+    "build:watch": "yarn tsup --watch",
+    "brl": "yarn p:brl",
+    "clean": "yarn p:clean && rimraf components",
+    "dev": "COMPONENTS_REGISTRY_URL=http://localhost:3000 node dist/index.js",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@antfu/ni": "^0.21.4",
+    "chalk": "5.2.0",
+    "commander": "^10.0.0",
+    "cosmiconfig": "^8.1.3",
+    "diff": "^5.1.0",
+    "execa": "^7.0.0",
+    "fs-extra": "^11.1.0",
+    "https-proxy-agent": "^6.2.0",
+    "node-fetch": "^3.3.0",
+    "ora": "^6.1.2",
+    "prompts": "^2.4.2",
+    "ts-morph": "^18.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.0.3",
+    "@types/fs-extra": "^11.0.1",
+    "@types/prompts": "^2.4.2",
+    "tsup": "^6.6.3",
+    "type-fest": "^3.8.0",
+    "vitest": "^0.31.1"
+  },
+  "keywords": [
+    "components",
+    "plate",
+    "slate",
+    "ui",
+    "tailwind",
+    "radix-ui",
+    "shadcn"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

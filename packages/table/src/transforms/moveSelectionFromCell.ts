@@ -1,15 +1,16 @@
 import {
+  PlateEditor,
+  Value,
   getBlockAbove,
   getEndPoint,
   getStartPoint,
   hasNode,
   moveSelection,
-  PlateEditor,
   select,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
+
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 

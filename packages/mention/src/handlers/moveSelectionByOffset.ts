@@ -1,6 +1,7 @@
-import { moveSelection, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, moveSelection } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
+
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 
 export interface MoveSelectionByOffsetOptions<V extends Value = Value> {

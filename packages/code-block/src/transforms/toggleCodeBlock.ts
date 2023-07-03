@@ -1,13 +1,14 @@
 import {
-  getPluginType,
   PlateEditor,
-  setElements,
-  someNode,
   TElement,
   Value,
+  getPluginType,
+  setElements,
+  someNode,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options/index';
 import { unwrapCodeBlock } from './unwrapCodeBlock';

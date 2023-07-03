@@ -1,6 +1,6 @@
 ---
 title: Color Dropdown Menu
-description: Color Dropdown Menu
+description: Choose and apply colors to your content from a dropdown menu.
 component: true
 docs:
   - route: /docs/components/dropdown-menu
@@ -21,46 +21,54 @@ docs:
 
 <Tabs defaultValue="cli">
 
-  <TabsList>
-    <TabsTrigger value="cli">CLI</TabsTrigger>
-    <TabsTrigger value="manual">Manual</TabsTrigger>
-  </TabsList>
-  <TabsContent value="cli">
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
 
-    ```bash
-    npx plate-ui add color-dropdown-menu
-    ```
+```bash
+npx plate-ui add color-dropdown-menu
+```
 
-  </TabsContent>
+</TabsContent>
 
-  <TabsContent value="manual">
+<TabsContent value="manual">
 
-    <Steps>
+<Steps>
 
-      <Step>
+<Step>
 
-        Install the following dependencies:
+Install the following dependencies:
 
-        - [Dropdown Menu](/docs/components/dropdown-menu)
-        - [Toolbar](/docs/components/toolbar)
-        - [Separator](/docs/components/separator)
-        - [Button](/docs/components/button)
-        - [Tooltip](/docs/components/tooltip)
+- [Dropdown Menu](/docs/components/dropdown-menu)
+- [Toolbar](/docs/components/toolbar)
+- [Separator](/docs/components/separator)
+- [Button](/docs/components/button)
+- [Tooltip](/docs/components/tooltip)
 
-      </Step>
+</Step>
 
-      <Step>Copy and paste the following code into your project.</Step>
+<Step>
 
-      <ComponentSource name="color-dropdown-menu/color-constants" />
-      <ComponentSource name="color-dropdown-menu/color-dropdown-menu" />
-      <ComponentSource name="color-dropdown-menu/color-dropdown-menu-items" />
-      <ComponentSource name="color-dropdown-menu/color-input" />
-      <ComponentSource name="color-dropdown-menu/color-picker" />
-      <ComponentSource name="color-dropdown-menu/colors-custom" />
+Copy and paste the following code into your project.
 
-      <Step>Update the import paths to match your project setup.</Step>
+</Step>
 
-    </Steps>
+<ComponentSource name="color-dropdown-menu" />
+<ComponentSource name="color-dropdown-menu-items" />
+<ComponentSource name="color-constants" />
+<ComponentSource name="color-input" />
+<ComponentSource name="color-picker" />
+<ComponentSource name="colors-custom" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
 
   </TabsContent>
 

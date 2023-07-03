@@ -1,6 +1,8 @@
 {
   "name": "hr-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-horizontal-rule"
+  ],
   "registryDependencies": [],
   "files": [
     {
@@ -8,5 +10,5 @@
       "content": "import React from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\nimport { useFocused, useSelected } from 'slate-react';\n\nimport { cn } from '@/lib/utils';\n\nconst HrElement = React.forwardRef<\n  React.ElementRef<typeof PlateElement>,\n  PlateElementProps\n>(({ className, nodeProps, ...props }, ref) => {\n  const { children } = props;\n\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement ref={ref} {...props}>\n      <div className=\"py-6\" contentEditable={false}>\n        <hr\n          {...nodeProps}\n          className={cn(\n            'h-0.5 cursor-pointer rounded-sm border-none bg-muted bg-clip-content',\n            selected && focused && 'ring-2 ring-ring ring-offset-2',\n            className\n          )}\n        />\n      </div>\n      {children}\n    </PlateElement>\n  );\n});\nHrElement.displayName = 'HrElement';\n\nexport { HrElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

@@ -1,7 +1,7 @@
 import { TEditableProps } from '@udecode/plate-common';
 
-import { cn } from '@/lib/utils';
 import { MyValue } from '@/types/plate-types';
+import { cn } from '@/lib/utils';
 
 export const editableProps: TEditableProps<MyValue> = {
   spellCheck: false,

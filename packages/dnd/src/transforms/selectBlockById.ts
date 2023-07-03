@@ -1,10 +1,10 @@
 import {
+  TReactEditor,
+  Value,
   findNode,
   focusEditor,
   getRange,
   select,
-  TReactEditor,
-  Value,
 } from '@udecode/plate-common';
 
 /**

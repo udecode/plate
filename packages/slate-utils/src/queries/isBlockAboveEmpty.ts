@@ -1,4 +1,5 @@
 import { TEditor, Value } from '@udecode/slate';
+
 import { getBlockAbove } from './getBlockAbove';
 import { isAncestorEmpty } from './isAncestorEmpty';
 

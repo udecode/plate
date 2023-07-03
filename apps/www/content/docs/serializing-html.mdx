@@ -5,55 +5,58 @@ description: Copy paste from HTML to Slate.
 
 <ComponentPreview name="playground-demo" id="deserializehtml" />
 
-### Features
+<PackageInfo>
+
+## Features
 
 - Convert a Slate value to a HTML string.
 - Convert a HTML string to a Slate value.
 
 <Callout className="my-4">
-**Note**: Round-tripping is not yet supported: the HTML serializer will not preserve all information from the Slate value when converting to HTML and back.
+  **Note**: Round-tripping is not yet supported: the HTML serializer will not
+  preserve all information from the Slate value when converting to HTML and
+  back.
 </Callout>
 
-### Installation
+</PackageInfo>
+
+## Installation
 
 ```bash
 npm install @udecode/plate-serializer-html
 ```
 
-### Usage
+## Usage
 
-#### HTML -> Slate
+### HTML -> Slate
 
 **`createDeserializeHTMLPlugin`** is included in the core plugins of `Plate`, so you don't need to import it manually.
 
-#### Slate -> HTML
+### Slate -> HTML
 
 An `editor` instance is required to serialize a Slate value to HTML. If you need to use `serializeHtml` in a context where no `editor` is available, you can create one using `createPlateEditor({ plugins })`. Include the plugins and components necessary for rendering all node types used in your Slate value.
 
 ```tsx
-import {
-  createParagraphPlugin,
-  createPlateEditor,
-  createPlateUI,
-  createPlugins,
-  serializeHtml,
-  // ...
-} from '@udecode/plate';
+// ...
+import { createPlugins } from '@udecode/plate-common';
+import { serializeHtml } from '@udecode/plate-serializer-html';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const plugins = createPlugins([
-  createParagraphPlugin(),
-  // ...
-], {
-  components: createPlateUI(),
-});
+const plugins = createPlugins(
+  [
+    // ...plugins
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 
 const editor = createPlateEditor({ plugins });
 
 const html = serializeHtml(editor, {
   nodes: editor.children,
+  // if you use @udecode/plate-dnd
+  dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
 });
 ```
-
-### Source Code
-
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/core/src/plugins/html-deserializer/createDeserializeHtmlPlugin.ts)

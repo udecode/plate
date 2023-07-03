@@ -1,15 +1,16 @@
 import {
   ELEMENT_DEFAULT,
+  PlateEditor,
+  Value,
   getChildren,
   getNodeEntries,
   getPluginType,
-  PlateEditor,
   setElements,
   unwrapNodes,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
+
 import { ELEMENT_CODE_BLOCK } from '../constants';
 
 export const unwrapCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {

@@ -8,10 +8,6 @@ styling text by typing sequences like **bold**.
 Check out
 [Autoformat](https://platejs.org/docs/autoformat).
 
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
-
 ## License
 
 [MIT](../../LICENSE)

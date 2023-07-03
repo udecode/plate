@@ -1,6 +1,8 @@
 {
   "name": "code-line-element",
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
   "registryDependencies": [],
   "files": [
     {
@@ -8,5 +10,5 @@
       "content": "'use client';\n\nimport React, { forwardRef } from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nconst CodeLineElement = forwardRef<HTMLDivElement, PlateElementProps>(\n  (props, ref) => <PlateElement ref={ref} {...props} />\n);\nCodeLineElement.displayName = 'CodeLineElement';\n\nexport { CodeLineElement };\n"
     }
   ],
-  "type": "components:ui"
+  "type": "components:plate-ui"
 }

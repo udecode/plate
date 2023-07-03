@@ -1,55 +1,42 @@
 ---
 title: Forced Layout
-description: Compel the document to adhere to a specified structure, dictating the type and order of blocks.
+description: Strict document structure.
 ---
 
 <ComponentPreview name="playground-demo" id="forcedlayout" />
 
-### Features
+<PackageInfo>
 
-The Forced Layout plugin empowers users to maintain a consistent document structure by enforcing specific element usage.
+## Features
 
-This feature promotes uniformity and organization within the created content.
+- Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).
 
-When using the Forced Layout plugin, the editor will automatically ensure that the specified elements are used as required,
-maintaining the desired structure throughout the document.
+</PackageInfo>
 
-For instance, the first line could be mandated as an H1 element.
-
-### Installation
+## Installation
 
 ```bash
-npm install @udecode/plate-normalizers
-npm install @udecode/plate-trailing-block
+npm install @udecode/plate-normalizers @udecode/plate-trailing-block
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import {
-  createNormalizeTypesPlugin,
-  createTrailingBlockPlugin,
-  ELEMENT_H1,
-  ELEMENT_PARAGRAPH,
-} from '@udecode/plate';
+import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-const plugins = createPlugins(
-  [
-    ...basicNodesPlugins,
-    createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH } }),
-    createNormalizeTypesPlugin({
-      options: {
-        rules: [{ path: [0], strictType: ELEMENT_H1 }],
-      },
-    }),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins
+  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH } }),
+  createNormalizeTypesPlugin({
+    options: {
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    },
+  }),
+];
 ```
 
-#### Options
+### Options
 
 ```tsx
 export interface TrailingBlockPlugin extends QueryNodeOptions {
@@ -93,8 +80,3 @@ export interface NormalizeTypesPlugin extends ErrorHandler {
   rules?: Rule[];
 }
 ```
-
-### Source Code
-
-- [Trailing Block Plugin](https://github.com/udecode/plate/blob/main/packages/trailing-block/src/createTrailingBlockPlugin.ts)
-- [Normalize Types Plugin](https://github.com/udecode/plate/blob/main/packages/normalizers/src/createNormalizeTypesPlugin.ts)

@@ -8,93 +8,158 @@ docs:
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
 
-### Features
+<PackageInfo>
 
-This package includes commonly used text styling features such as bold, italic, underline, strikethrough, subscript, superscript, and code.
+## Features
 
-Includes the following plugins:
+- Includes commonly used text styling features: bold, italic, underline, strikethrough, subscript, superscript, and code.
 
-- `createBoldPlugin()` for the `bold` mark
-- `createItalicPlugin()` for the `italic` mark
-- `createUnderlinePlugin()` for the `underline` mark
-- `createStrikethroughPlugin()` for the `strikethrough` mark
-- `createSubscriptPlugin()` for the `subscript` mark
-- `createSuperscriptPlugin()` for the `superscript` mark
-- `createCodePlugin()` for the `code` mark
+</PackageInfo>
 
-Basic marks can be applied using toolbar buttons or keyboard shortcuts:
+**Plugins:**
 
-- Bold – Use the bold toolbar button or press Cmd/Ctrl + B
-- Italic – Use the italic toolbar button or press Cmd/Ctrl + I
-- Underline – Use the underline toolbar button or press Cmd/Ctrl + U
-- Strikethrough – Use the strikethrough toolbar button or press Cmd/Ctrl + Shift + X
-- Code – Use the code toolbar button
-- Superscript – Use the superscript toolbar button
-- Subscript – Use the subscript toolbar button
+- `createBoldPlugin()` for `bold` mark
+- `createItalicPlugin()` for `italic` mark
+- `createUnderlinePlugin()` for `underline` mark
+- `createStrikethroughPlugin()` for `strikethrough` mark
+- `createSubscriptPlugin()` for `subscript` mark
+- `createSuperscriptPlugin()` for `superscript` mark
+- `createCodePlugin()` for `code` mark
 
-### Installation
+## Installation
 
 ```bash
 npm install @udecode/plate-basic-marks
 ```
 
-### Usage
+## Usage
 
 ```tsx
-import {
-  createBasicMarksPlugin,
-  createBasicElementsPlugins,
-} from '@udecode/plate';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createBasicElementsPlugins(),
-    createBasicMarksPlugin(),
-  ],
-  {
-    components: createPlateUI(),
-  }
-);
+const plugins = [
+  // ...otherPlugins,
+  createBasicMarksPlugin(),
+];
 ```
 
-#### Options
+## API
 
-```tsx
-export type HotkeyPlugin = {
-  /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-};
+### createBasicMarksPlugin
 
-export interface ToggleMarkPlugin extends HotkeyPlugin {
-  /**
-   * Node properties to delete.
-   */
-  clear?: string | string[];
-}
-```
+### createBoldPlugin
 
-### Keyboard Interactions
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
 
-<KeyTable />
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
 
-- `mod+b`: Toggle the bold formatting for the selected text.
-- `mod+e`: Toggle the code formatting for the selected text.
-- `mod+i`: Toggle the italic formatting for the selected text.
-- `mod+shift+x`: Toggle the strikethrough formatting for the selected text.
-- `mod+,`: Toggle the subscript formatting for the selected text.
-- `mod+.`: Toggle the superscript formatting for the selected text.
-- `mod+u`: Toggle the underline formatting for the selected text.
+</APIItem>
+</APIAttributes>
 
-### Source Code
+### createItalicPlugin
 
-- [Basic Marks Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createBasicMarksPlugin.ts)
-- [Bold Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createBoldPlugin.ts)
-- [Italic Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createItalicPlugin.ts)
-- [Underline Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createUnderlinePlugin.ts)
-- [Strikethrough Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createStrikethroughPlugin.ts)
-- [Subscript Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createSubscriptPlugin.ts)
-- [Superscript Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createSuperscriptPlugin.ts)
-- [Code Plugin](https://github.com/udecode/plate/blob/main/packages/basic-marks/src/createCodePlugin.ts)
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createUnderlinePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createStrikethroughPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createSubscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createSuperscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+### createCodePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a plugin action.
+
+</APIItem>
+</APIAttributes>
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="⌘ + B">
+    Toggle the bold formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + E">
+    Toggle the code formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + I">
+    Toggle the italic formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + ⇧ + X">
+    Toggle the strikethrough formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + ,">
+    Toggle the subscript formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + .">
+    Toggle the superscript formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="⌘ + U">
+    Toggle the underline formatting for the selected text.
+  </KeyTableItem>
+</KeyTable>

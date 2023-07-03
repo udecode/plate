@@ -1,14 +1,15 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   getAboveNode,
   getPluginType,
-  PlateEditor,
   removeNodes,
   setNodes,
   someNode,
-  TElement,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
