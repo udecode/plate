@@ -72,35 +72,38 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export interface ResetNodePluginRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
-> extends HotkeyPlugin {
-  defaultType?: string;
+### createResetNodePlugin
 
-  /**
-   * Node types where the rule applies.
-   */
-  types: string[];
+<APIAttributes>
 
-  /**
-   * Additional condition to the rule.
-   */
-  predicate: (editor: E) => boolean;
+Options.
 
-  /**
-   * Callback called when resetting.
-   */
-  onReset?: (editor: E) => void;
-}
-
-export interface ResetNodePlugin<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
-> {
-  rules?: ResetNodePluginRule<V, E>[];
-}
-```
+<APIItem name="rules" type="Array" optional>
+An array of rules which govern how the node reset will be performed. Each rule includes:
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string | string[]" optional>
+The hotkey(s) that trigger the rule.
+</APISubListItem>
+<APISubListItem parent="rules" name="defaultType" type="string" optional>
+The default type to which the node should be reset.
+</APISubListItem>
+<APISubListItem parent="rules" name="types" type="string[]">
+The types of nodes where the rule applies.
+</APISubListItem>
+<APISubListItem parent="rules" name="predicate" type="(editor: E) => boolean">
+An additional condition to the rule which should be a function taking the editor state and returning a boolean.
+</APISubListItem>
+<APISubListItem parent="rules" name="onReset" type="(editor: E) => void" optional>
+A callback function that is called when the reset operation is performed.
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="disableFirstBlockReset" type="boolean" optional>
+Whether to disable reset for the first block in the editor.
+</APIItem>
+<APIItem name="disableEditorReset" type="boolean" optional>
+Whether to disable the reset operation for the entire editor.
+</APIItem>
+</APIAttributes>

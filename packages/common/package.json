@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-common",
-  "version": "21.3.2",
+  "version": "21.4.2",
   "description": "Plate common packages for plugins",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,12 +30,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "21.3.2",
-    "@udecode/plate-utils": "21.3.2",
-    "@udecode/slate": "21.3.0",
-    "@udecode/slate-react": "21.3.0",
-    "@udecode/slate-utils": "21.3.0",
-    "@udecode/utils": "19.7.0"
+    "@udecode/plate-core": "21.4.2",
+    "@udecode/plate-utils": "21.4.2",
+    "@udecode/slate": "21.4.1",
+    "@udecode/slate-react": "21.4.1",
+    "@udecode/slate-utils": "21.4.1",
+    "@udecode/utils": "19.7.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

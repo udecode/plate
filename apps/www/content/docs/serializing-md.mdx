@@ -25,6 +25,8 @@ npm install @udecode/plate-serializer-md
 
 ## Usage
 
+### Markdown -> Slate
+
 ```tsx
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
 
@@ -34,6 +36,55 @@ const plugins = [
 ];
 ```
 
-### Serializer Usage
+### Slate -> Markdown
 
-Use [remark-slate](https://github.com/hanford/remark-slate).
+Use [remark-slate](https://github.com/hanford/remark-slate#slate-object-to-markdown).
+
+## API
+
+### createDeserializeMdPlugin
+
+<APIAttributes>
+<APIItem name="elementRules" type="RemarkElementRules">
+
+Object where each key is a Markdown syntax element type and the value is a transformation function.
+
+<APISubList>
+<APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
+
+The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
+
+<APISubList>
+<APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
+A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
+
+</APISubListItem>
+</APISubList>
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="textRules" type="RemarkTextRules">
+
+Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
+
+<APISubList>
+<APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
+
+The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
+
+<APISubList>
+<APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
+
+An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
+
+</APISubListItem>
+<APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
+
+An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
+
+</APISubListItem>
+</APISubList>
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIAttributes>

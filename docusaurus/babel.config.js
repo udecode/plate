@@ -1,4 +1,4 @@
-const babelConfig = require('../config/babel.config');
+const babelConfig = require('../config/babel.config.cjs');
 
 module.exports = {
   plugins: [

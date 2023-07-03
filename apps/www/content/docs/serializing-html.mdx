@@ -60,3 +60,68 @@ const html = serializeHtml(editor, {
   dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
 });
 ```
+
+## API
+
+### serializeHtml
+
+Convert Slate Nodes into HTML string.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+
+The Slate editor instance.
+
+</APIItem>
+<APIItem name="options" type="object">
+
+Options to control the HTML serialization process.
+
+<APISubList>
+<APISubListItem parent="options" name="nodes" type="EDescendant[]">
+
+The Slate nodes to convert into HTML.
+
+</APISubListItem>
+<APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
+
+Flag to enable or disable the removal of data attributes from the serialized HTML.
+
+- **Default:** `true` (Data attributes will be removed.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
+
+A list of class name prefixes that should not be stripped out from the serialized HTML.
+
+</APISubListItem>
+<APISubListItem parent="options" name="slateProps" type="Partial<SlateProps>" optional>
+
+Additional Slate properties to provide, in case the rendering process depends on certain Slate hooks.
+
+</APISubListItem>
+<APISubListItem parent="options" name="stripWhitespace" type="boolean" optional>
+
+Flag to enable or disable the removal of whitespace from the serialized HTML.
+
+- **Default:** `true` (Whitespace will be removed.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="convertNewLinesToHtmlBr" type="boolean" optional>
+
+Optionally convert newline characters (`\n`) to HTML `<br />` tags.
+
+- **Default:** `false` (Newline characters will not be converted.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="dndWrapper" type="string | FunctionComponent | ComponentClass" optional>
+
+Specifies a component to be used for wrapping the rendered elements during a drag-and-drop operation.
+
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+<APIReturns>
+The function returns a string representing the serialized HTML.
+</APIReturns>

@@ -9,22 +9,19 @@ description: API reference for Plate component.
 
 ## Plate Props
 
-All the following props are optional.
+All properties are optional.
 
 ### `id`
 
 `symbol | string | number`
 
-- A unique id used to store the editor state by id.
-- Required if rendering multiple `Plate`. Optional otherwise.
-- Default is `'main'`.
+A unique identifier to store the editor state by id. This is mandatory for multiple **`Plate`** instances but optional otherwise. Default is **`'main'`**.
 
 ### `children`
 
 `ReactNode`
 
-- The last children rendered inside `Slate`, after `Editable`.
-- To render the first children, use `firstChildren`.
+- **`children`**: The last component rendered inside **`Slate`**, after **`Editable`**. Use **`firstChildren`** to render the first children.
 
 ### `decorate`
 
@@ -45,49 +42,43 @@ All the following props are optional.
 } | boolean | undefined;
 ```
 
-- If `true`, disable all the core plugins.
-- If an object, disable the core plugin properties that are `true` in the object.
+- **`disableCorePlugins`**: Can be **`true`** to disable all core plugins, an object to selectively disable core plugins, or **`undefined`**.
 
 ### `editableProps`
 
 `TEditableProps<V>`
 
-- The props for the `Editable` component.
+- **`editableProps`**: Props for the **`Editable`** component.
 
 ### `editableRef`
 
 `Ref<HTMLDivElement>`
 
-- Ref to the `Editable` component.
+- **`editableRef`**: Ref to the **`Editable`** component.
 
 ### `editor`
 
 `E extends PlateEditor<V> = PlateEditor<V>`
 
-- Controlled `editor`.
-- Default is `pipe(createTEditor(), withPlate({ id, plugins }))`.
+- **`editor`**: A controlled **`editor`**. The default is **`pipe(createTEditor(), withPlate({ id, plugins }))`**.
 
 ### `firstChildren`
 
 `ReactNode`
 
-- The first children rendered inside `Slate`, before `Editable`.
-- Slate DOM is not yet resolvable on first render, for that case use `children` instead.
+- **`firstChildren`**: The first children rendered inside **`Slate`**, before **`Editable`**. Use **`children`** instead if you need resolved Slate DOM on the first render.
 
 ### `initialValue`
 
 `V extends Value = Value`
 
-- Initial value of the editor.
-- Default is `[{ children: [{ text: '' }]}]`.
+- **`initialValue`**: Initial editor value. Default is **`[{ children: [{ text: '' }]}]`**.
 
 ### `normalizeInitialValue`
 
 `boolean`
 
-- When `true`, it will normalize the initial value passed to the `editor` once it gets created.
-- This is useful when adding normalization rules on already existing content.
-- Default is `false`.
+- **`normalizeInitialValue`**: If **`true`**, normalizes the initial **`editor`** value upon creation. This is useful for applying normalization rules on existing content. Default is **`false`**.
 
 ### `onChange`
 
@@ -104,8 +95,7 @@ All the following props are optional.
 
 `(editable: ReactNode) => ReactNode`
 
-- Custom `Editable` node.
-- Default is `<Editable {...editableProps} />`.
+- **`renderEditable`**: Custom **`Editable`** node. Default is **`<Editable {...editableProps} />`**.
 
 ### `renderElement`
 
@@ -119,18 +109,14 @@ All the following props are optional.
 
 `V extends Value = Value`
 
-- Editor `value`.
-- Stored in the store on each change (`Editable.onChange`).
-- Except when resetting the editor with `resetEditor`, you should not directly update the value as it would break the history.
-- If you want to update `value` with history support, you should use [Slate transforms](https://docs.slatejs.org/concepts/04-transforms) like `Transforms.setNodes`.
-- Default is `[{ children: [{ text: '' }]}]`.
+- **`value`**: Editor **`value`**. Stored in the store on each change (**`Editable.onChange`**). To update **`value`** with history support, use **[Slate transforms](https://docs.slatejs.org/concepts/04-transforms)**. Default is **`[{ children: [{ text: '' }]}]`**.
 
 ## PlateProvider Props
 
 - `id` (optional)
 - `children`
 
-Any of the following `Plate` props should be pulled up into `PlateProvider`:
+If using `PlateProvider`, the following `Plate` props should be moved into it:
 
 - `decorate`
 - `disableCorePlugins`

@@ -1,3 +1,4 @@
+import { ComponentClass, FunctionComponent } from 'react';
 import {
   EDescendant,
   EElement,
@@ -15,7 +16,7 @@ import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
 
 /**
- * Convert Slate Nodes into HTML string
+ * Convert Slate Nodes into HTML string.
  */
 export const serializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
@@ -26,6 +27,7 @@ export const serializeHtml = <V extends Value>(
     preserveClassNames,
     stripWhitespace = true,
     convertNewLinesToHtmlBr = false,
+    dndWrapper,
   }: {
     /**
      * Slate nodes to convert to HTML.
@@ -58,6 +60,11 @@ export const serializeHtml = <V extends Value>(
      * @default false
      */
     convertNewLinesToHtmlBr?: boolean;
+
+    /**
+     *  Drag and drop component
+     */
+    dndWrapper?: string | FunctionComponent | ComponentClass;
   }
 ): string => {
   let result = nodes
@@ -94,6 +101,7 @@ export const serializeHtml = <V extends Value>(
         },
         slateProps,
         preserveClassNames,
+        dndWrapper,
       });
     })
     .join('');

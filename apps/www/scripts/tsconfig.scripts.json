@@ -5,6 +5,7 @@
     "baseUrl": "..",
     "target": "es6",
     "module": "commonjs",
+    "outDir": "dist",
     "esModuleInterop": true,
     "isolatedModules": false
   },

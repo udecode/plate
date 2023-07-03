@@ -37,55 +37,149 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-interface LinkPlugin {
-  /**
-   * Allow custom config for rangeBeforeOptions.
-   * @example default
-   * {
-   *   matchString: ' ',
-   *   skipInvalid: true,
-   *   afterMatch: true,
-   * }
-   */
-  rangeBeforeOptions?: RangeBeforeOptions;
+### createLinkPlugin
 
-  /**
-   * Hotkeys to trigger floating link.
-   * @default 'meta+k, ctrl+k'
-   */
-  triggerFloatingLinkHotkeys?: string | string[];
+<APIParameters>
+<APIItem name="forceSubmit" type="boolean" optional>
+Determines whether to force the submission of the link form.
+</APIItem>
+<APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
+Allows custom configurations for rangeBeforeOptions.
 
-  /**
-   * List of allowed URL schemes.
-   * @default ['http', 'https', 'mailto', 'tel']
-   */
-  allowedSchemes?: string[];
+- **Default:**
 
-  /**
-   * Default HTML attributes for link elements.
-   * @default {}
-   */
-  defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
-
-  /**
-   * Callback to validate an url.
-   * @default isUrl
-   */
-  isUrl?: (text: string) => boolean;
-
-  /**
-   * Callback to optionally get the href for a url
-   * @returns href: an optional link to be used that is different from the text content (example https://google.com for google.com)
-   */
-  getUrlHref?: (url: string) => string | undefined;
-
-  /**
-   * On keyboard shortcut or toolbar mousedown, get the link url by calling this promise. The
-   * default behavior is to use the browser's native `prompt`.
-   */
-  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+```ts
+{
+  matchString: ' ',
+  skipInvalid: true,
+  afterMatch: true,
 }
 ```
+
+</APIItem>
+<APIItem name="triggerFloatingLinkHotkeys" type="string | string[]" optional>
+Hotkeys to trigger floating link.
+
+- **Default:** **`'meta+k, ctrl+k'`**
+
+</APIItem>
+<APIItem name="allowedSchemes" type="string[]" optional>
+List of allowed URL schemes.
+
+- **Default:** **`['http', 'https', 'mailto', 'tel']`**
+
+</APIItem>
+<APIItem name="dangerouslySkipSanitization" type="boolean" optional>
+Determines whether the sanitation of links should be skipped.
+
+- **Default:** **`false`**
+
+</APIItem>
+<APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
+Default HTML attributes for link elements.
+
+- **Default:** **`{}`**
+
+</APIItem>
+<APIItem name="keepSelectedTextOnPaste" type="boolean" optional>
+Keeps selected text on pasting links by default.
+
+- **Default:** **`true`**
+
+</APIItem>
+<APIItem name="isUrl" type="(text: string) => boolean" optional>
+Callback function to validate a URL.
+
+- **Default:** **`isUrl`**
+
+</APIItem>
+<APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
+Callback function to optionally get the href for a URL. It returns an optional link that is different from the text content. For example, returns `https://google.com` for `google.com`.
+</APIItem>
+<APIItem name="getLinkUrl" type="(prevUrl: string | null) => Promise<string | null>" optional>
+On keyboard shortcut or toolbar mousedown, this function is called to get the link URL. The default behavior is to use the browser's native `prompt`.
+</APIItem>
+
+</APIParameters>
+
+### getLinkAttributes
+
+### insertLink
+
+Insert a link node.
+
+### submitFloatingLink
+
+- Insert link if url is valid.
+- Text is url if empty.
+- Close floating link.
+- Focus editor.
+
+### triggerFloatingLink
+
+### triggerFloatingLinkEdit
+
+### triggerFloatingLinkInsert
+
+Trigger floating link.
+
+Do not trigger when:
+
+- Selection is across blocks.
+- Selection has more than one leaf node.
+- Lowest selection is not text.
+- Selection has a link node.
+
+### unwrapLink
+
+Unwrap link node.
+
+### upsertLink
+
+If selection in a link or is not url:
+
+- Insert text with url, exit.
+
+If selection is expanded or `update` in a link:
+
+- Remove link node, get link text.
+
+Then:
+
+- Insert link node.
+
+### upsertLinkText
+
+If the text is different than the link above text, replace link children by a new text. The new text has the same marks than the first text replaced.
+
+### validateUrl
+
+### wrapLink
+
+Wrap a link node with split.
+
+## API Components
+
+### FloatingLinkNewTabInput
+
+### FloatingLinkUrlInput
+
+### LinkOpenButton
+
+### floatingLinkStore
+
+### useFloatingLinkEdit
+
+### useFloatingLinkEnter
+
+### useFloatingLinkEscape
+
+### useFloatingLinkInsert
+
+### useLink
+
+### useLinkToolbarButton
+
+### useVirtualFloatingLink

@@ -24,7 +24,7 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-indent-list
+npm install @udecode/plate-indent-list @udecode/plate-indent
 ```
 
 ## Usage
@@ -38,14 +38,14 @@ const plugins = [
   // ...otherPlugins,
   createHeadingPlugin(),
   createParagraphPlugin(),
-  createIndentListPlugin({
+  createIndentPlugin({
     inject: {
       props: {
         validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
       },
     },
   }),
-  createIndentPlugin({
+  createIndentListPlugin({
     inject: {
       props: {
         validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
@@ -55,12 +55,45 @@ const plugins = [
 ];
 ```
 
-## Commands
+## API
 
-### `indentList`
+### createIndentListPlugin
 
-- Increase the list indentation of the selected blocks.
+<APIParameters>
+  <APIItem
+    name="getSiblingIndentListOptions"
+    type="GetSiblingIndentListOptions<TElement>"
+    optional
+  >
+    A function to determine indent list options for sibling elements.
+  </APIItem>
+  <APIItem
+    name="getListStyleType"
+    type="(element: HTMLElement) => ListStyleType"
+    optional
+  >
+    A function mapping HTML elements to list style types.
+  </APIItem>
+</APIParameters>
 
-### `outdentList`
+### getNextIndentList
 
-- Decrease the list indentation of the selected blocks.
+### getPreviousIndentList
+
+### indentList
+
+Increase the list indentation of the selected blocks.
+
+### outdentList
+
+Decrease the list indentation of the selected blocks.
+
+### someIndentList
+
+### toggleIndentList
+
+Toggle indent list.
+
+## API Components
+
+### useIndentListToolbarButton

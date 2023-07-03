@@ -39,34 +39,17 @@ const plugins = [
 ];
 ```
 
-### Options
-
-```tsx
-export interface ListPlugin extends HotkeyPlugin {
-  /**
-   * Valid children types for list items, in addition to p and ul types.
-   */
-  validLiChildrenTypes?: string[];
-}
-```
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="⌘ + ⌥ + 4">Insert a numbered list.</KeyTableItem>
-  <KeyTableItem hotkey="⌘ + ⇧ + 4">Insert a numbered list.</KeyTableItem>
-</KeyTable>
 ## Todo List
 
-<ComponentPreview name="playground-demo" id="list" />
+<ComponentPreview name="playground-demo" id="todoli" />
 
-## Installation
+## Installation Todo List
 
 ```bash
 npm install @udecode/plate-list
 ```
 
-## Usage
+## Usage Todo List
 
 ```tsx
 import { createTodoListPlugin } from '@udecode/plate-list';
@@ -77,28 +60,90 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export interface TodoListPlugin extends HotkeyPlugin {
-  inheritCheckStateOnLineStartBreak?: boolean;
-  inheritCheckStateOnLineEndBreak?: boolean;
-}
-```
+### createListPlugin
 
-`inheritCheckStateOnLineStartBreak`: This setting is triggered when a todo item line is broken from the beginning.
-It takes on the checkbox state of the current todo item when a new one is made above it.
-By default, its value is set to `false`.
+<APIAttributes>
+  <APIItem name="validLiChildrenTypes" type="string[]" optional>
+    Specifies valid child node types for list items, in addition to `p` and `ul`
+    types.
+  </APIItem>
+  <APIItem name="enableResetOnShiftTab" type="boolean" optional>
+    Determines whether pressing Shift+Tab should reset the list indent level.
+  </APIItem>
+</APIAttributes>
 
-`inheritCheckStateOnLineEndBreak`: This setting is triggered when a todo item line is broken from the end.
-It takes on the checkbox state of the current todo item when a new one is made below it.
-By default, its value is set to `false`.
+### getHighestEmptyList
+
+### getListItemEntry
+
+### getListRoot
+
+### getListTypes
+
+### hasListChild
+
+### indentListItems
+
+### insertListItem
+
+### insertTodoListItem
+
+### isAcrossListItems
+
+### isListNested
+
+### isListRoot
+
+### moveListItemDown
+
+### moveListItemSublistItemsToListItemSublist
+
+### moveListItemUp
+
+### moveListItems
+
+### moveListItemsToList
+
+### moveListSiblingsAfterCursor
+
+### removeFirstListItem
+
+### removeListItem
+
+### someList
+
+### toggleList
+
+### unindentListItems
+
+### unwrapList
+
+## API Components
+
+### useListToolbarButton
+
+## API Todo List
+
+<APIAttributes>
+  <APIItem name="inheritCheckStateOnLineStartBreak" type="boolean" optional>
+    Determines whether a new todo item created at the start of a line should
+    inherit the check state of the previous item.
+  </APIItem>
+  <APIItem name="inheritCheckStateOnLineEndBreak" type="boolean" optional>
+    Determines whether a new todo item created at the end of a line should
+    inherit the check state of the current item.
+  </APIItem>
+</APIAttributes>
+
+### getTodoListItemEntry
+
+### useTodoListElement
 
 ## Keyboard Interactions
 
 <KeyTable>
-  <KeyTableItem hotkey="⌘ + ⌥ + 4, ⌘ + ⇧ + 4">
-    Insert a numbered list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Backspace">Delete backward.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
 </KeyTable>
