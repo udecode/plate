@@ -7,7 +7,7 @@ description: API reference for @udecode/slate-utils.
 
 ## Queries
 
-### `findDescendant`
+### findDescendant
 
 Iterates through all nodes in the editor and returns the first match. If no match is found, returns undefined.
 
@@ -25,7 +25,7 @@ Iterates through all nodes in the editor and returns the first match. If no matc
   is found.
 </APIReturns>
 
-### `getBlockAbove`
+### getBlockAbove
 
 Returns the block above a specified location
 
@@ -45,7 +45,7 @@ Returns the block above the specified location.
 
 </APIReturns>
 
-### `getChildren`
+### getChildren
 
 Returns the children node entries of a node entry.
 
@@ -60,7 +60,7 @@ Returns an array of the children node entries.
 
 </APIReturns>
 
-### `getEdgeBlocksAbove`
+### getEdgeBlocksAbove
 
 Returns the edge blocks above a specified location.
 
@@ -79,7 +79,7 @@ Returns the edge blocks above a specified location.
   location, or `null` if not found.
 </APIReturns>
 
-### `getLastChild`
+### getLastChild
 
 Returns the last child of a node or null if no children.
 
@@ -92,7 +92,7 @@ Returns the last child of a node or null if no children.
   Returns the last child of a node or `null` if no children.
 </APIReturns>
 
-### `getLastNodeByLevel`
+### getLastNodeByLevel
 
 Retrieves the last node at a specified level in the editor.
 
@@ -109,7 +109,7 @@ Retrieves the last node at a specified level in the editor.
   is found.
 </APIReturns>
 
-### `getMark`
+### getMark
 
 Retrieves the value of the selection mark by key in the editor.
 
@@ -126,7 +126,7 @@ Retrieves the value of the selection mark by key in the editor.
   mark is not found.
 </APIReturns>
 
-### `getNextNodeStartPoint`
+### getNextNodeStartPoint
 
 Retrieves the start point of the next node at a specified path in the editor.
 
@@ -143,7 +143,7 @@ Retrieves the start point of the next node at a specified path in the editor.
   not found.
 </APIReturns>
 
-### `getNextSiblingNodes`
+### getNextSiblingNodes
 
 Retrieves the sibling nodes following a specified path in the ancestor node.
 
@@ -160,7 +160,7 @@ Retrieves the sibling nodes following a specified path in the ancestor node.
   sibling nodes are found.
 </APIReturns>
 
-### `getOperations`
+### getOperations
 
 Retrieves the operations of the editor.
 
@@ -173,7 +173,7 @@ Retrieves the operations of the editor.
   Returns the operations of the editor as `TOperation` array.
 </APIReturns>
 
-### `getPointBeforeLocation`
+### getPointBeforeLocation
 
 Returns the point before a location, with additional options to customize the behavior. If no options are provided or neither **`match`** nor **`matchString`** are defined, it will default to using **`getPointBefore`**.
 
@@ -192,7 +192,7 @@ Returns the point before a location, with additional options to customize the be
   Returns the point before a location. If not found, returns `undefined`.
 </APIReturns>
 
-### `getPointFromLocation`
+### getPointFromLocation
 
 Returns the point from a location (**Default:** selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
 
@@ -213,7 +213,7 @@ Returns the point from the location.
 
 </APIReturns>
 
-### `getPointNextToVoid`
+### getPointNextToVoid
 
 If the start point is inside an inline void, returns the point before or after it.
 
@@ -233,7 +233,7 @@ Returns the point next to the void.
 
 </APIReturns>
 
-### `getPreviousBlockById`
+### getPreviousBlockById
 
 Finds the block before a block by ID. If not found, it finds the first block by ID and returns **`[null, its previous path]`**.
 
@@ -252,7 +252,7 @@ Finds the block before a block by ID. If not found, it finds the first block by 
   Returns the node entry of the previous block if found, otherwise undefined.
 </APIReturns>
 
-### `getPreviousNodeEndPoint`
+### getPreviousNodeEndPoint
 
 Gets the end point of the previous node.
 
@@ -268,7 +268,7 @@ Gets the end point of the previous node.
   Returns the end point of the previous node if found, otherwise undefined.
 </APIReturns>
 
-### `getPreviousPath`
+### getPreviousPath
 
 Generates the previous path based on the given path.
 
@@ -281,7 +281,7 @@ Generates the previous path based on the given path.
   The previous path or undefined if there is no previous path.
 </APIReturns>
 
-### `getPreviousSiblingNode`
+### getPreviousSiblingNode
 
 Gets the previous sibling node from the given path.
 
@@ -298,7 +298,7 @@ Gets the previous sibling node from the given path.
   there is no previous sibling.
 </APIReturns>
 
-### `getRangeBefore`
+### getRangeBefore
 
 Gets the range from the point before a given location to the end point of the location.
 
@@ -318,7 +318,7 @@ Gets the range from the point before a given location to the end point of the lo
   or undefined if no such point exists.
 </APIReturns>
 
-### `getRangeFromBlockStart`
+### getRangeFromBlockStart
 
 Gets the range from the start of the block above a location to the location.
 
@@ -335,7 +335,7 @@ Gets the range from the start of the block above a location to the location.
   undefined if no such block exists.
 </APIReturns>
 
-### `getSelectionText`
+### getSelectionText
 
 Gets the selected text from the editor.
 
@@ -348,7 +348,7 @@ Gets the selected text from the editor.
   The selected text, or an empty string if no text is selected.
 </APIReturns>
 
-### `isAncestorEmpty`
+### isAncestorEmpty
 
 Checks whether an ancestor node is empty (has empty text and no inline children).
 
@@ -366,7 +366,7 @@ True if the ancestor node is empty, false otherwise.
 
 </APIReturns>
 
-### `isBlockAboveEmpty`
+### isBlockAboveEmpty
 
 Checks whether the block above the selection is empty.
 
@@ -381,7 +381,7 @@ True if the block above the selection is empty, false otherwise.
 
 </APIReturns>
 
-### `isBlockTextEmptyAfterSelection`
+### isBlockTextEmptyAfterSelection
 
 Checks whether the text in the block after the selection is empty.
 
@@ -396,7 +396,7 @@ True if the text in the block after the selection is empty, false otherwise.
 
 </APIReturns>
 
-### `isDocumentEnd`
+### isDocumentEnd
 
 Checks whether the selection is at the end of the document.
 
@@ -411,7 +411,7 @@ True if the selection is at the end of the document, false otherwise.
 
 </APIReturns>
 
-### `isFirstChild`
+### isFirstChild
 
 Checks whether a node is the first child of its parent.
 
@@ -426,7 +426,7 @@ True if the node is the first child of its parent, false otherwise.
 
 </APIReturns>
 
-### `isMarkActive`
+### isMarkActive
 
 Checks whether a node is the first child of its parent.
 
@@ -439,7 +439,7 @@ Checks whether a node is the first child of its parent.
   True if the node is the first child of its parent, false otherwise.
 </APIReturns>
 
-### `isPointAtWordEnd`
+### isPointAtWordEnd
 
 Checks whether a point is at the end of a word.
 
@@ -455,7 +455,7 @@ Checks whether a point is at the end of a word.
   True if the point is at the end of a word, false otherwise.
 </APIReturns>
 
-### `isRangeAcrossBlocks`
+### isRangeAcrossBlocks
 
 Determines whether the range (**Default:** selection) is across blocks.
 
@@ -472,7 +472,7 @@ Determines whether the range (**Default:** selection) is across blocks.
   undefined if the block was not found.
 </APIReturns>
 
-### `isRangeInSameBlock`
+### isRangeInSameBlock
 
 Determines whether the range is within the same block.
 
@@ -488,7 +488,7 @@ Determines whether the range is within the same block.
   True if the range is within the same block, false otherwise.
 </APIReturns>
 
-### `isRangeInSingleText`
+### isRangeInSingleText
 
 Checks whether a range is within a single text path.
 
@@ -501,7 +501,7 @@ Checks whether a range is within a single text path.
   True if the range is within a single text path, false otherwise.
 </APIReturns>
 
-### `isSelectionAtBlockEnd`
+### isSelectionAtBlockEnd
 
 Checks whether the selection focus is at the end of its parent block.
 
@@ -518,7 +518,7 @@ Checks whether the selection focus is at the end of its parent block.
   otherwise.
 </APIReturns>
 
-### `isSelectionAtBlockStart`
+### isSelectionAtBlockStart
 
 Checks whether the selection anchor or focus is at the start of its parent block.
 
@@ -535,7 +535,7 @@ Checks whether the selection anchor or focus is at the start of its parent block
   false otherwise.
 </APIReturns>
 
-### `isSelectionExpanded`
+### isSelectionExpanded
 
 Checks whether the selection is expanded.
 
@@ -550,7 +550,7 @@ True if the selection is expanded, false otherwise.
 
 </APIReturns>
 
-### `isTextByPath`
+### isTextByPath
 
 Checks whether the node at a given path is a text node.
 
@@ -568,7 +568,7 @@ True if the node is a text node, false otherwise.
 
 </APIReturns>
 
-### `isWordAfterTrigger`
+### isWordAfterTrigger
 
 Checks whether the word at a given point is after a trigger (punctuation character).
 
@@ -589,7 +589,7 @@ Checks whether the word at a given point is after a trigger (punctuation charact
   trigger and ends with word characters.
 </APIReturns>
 
-### `queryEditor`
+### queryEditor
 
 Queries the editor state.
 
@@ -609,7 +609,7 @@ Queries the editor state.
 
 ## Transforms
 
-### `insertElements`
+### insertElements
 
 Inserts nodes at a location in the document.
 
@@ -625,7 +625,7 @@ Inserts nodes at a location in the document.
   </APIItem>
 </APIParameters>
 
-### `insertEmptyElement`
+### insertEmptyElement
 
 Inserts an empty element at a location in the document.
 
@@ -641,7 +641,7 @@ Inserts an empty element at a location in the document.
   </APIItem>
 </APIParameters>
 
-### `moveChildren`
+### moveChildren
 
 Moves the children of a node to a path.
 
@@ -660,7 +660,7 @@ The number of children moved.
 
 </APIReturns>
 
-### `removeMark`
+### removeMark
 
 Removes a mark and triggers onChange if the selection is collapsed.
 
@@ -673,7 +673,7 @@ Removes a mark and triggers onChange if the selection is collapsed.
   </APIItem>
 </APIParameters>
 
-### `removeNodeChildren`
+### removeNodeChildren
 
 Removes all children of a node.
 
@@ -689,7 +689,7 @@ Removes all children of a node.
   </APIItem>
 </APIParameters>
 
-### `removeSelectionMark`
+### removeSelectionMark
 
 Removes all marks from the selection.
 
@@ -699,7 +699,7 @@ Removes all marks from the selection.
   </APIItem>
 </APIParameters>
 
-### `replaceNodeChildren`
+### replaceNodeChildren
 
 Replaces the children of a node: removes then inserts them.
 
@@ -713,7 +713,7 @@ Replaces the children of a node: removes then inserts them.
   </APIItem>
 </APIParameters>
 
-### `selectEndOfBlockAboveSelection`
+### selectEndOfBlockAboveSelection
 
 Selects the end point of the block above the selection.
 
@@ -723,7 +723,7 @@ Selects the end point of the block above the selection.
   </APIItem>
 </APIParameters>
 
-### `setMarks`
+### setMarks
 
 Sets marks to selected text.
 
@@ -739,7 +739,7 @@ Sets marks to selected text.
   </APIItem>
 </APIParameters>
 
-### `toggleMark`
+### toggleMark
 
 Adds or removes marks in the selection.
 
@@ -752,7 +752,7 @@ Adds or removes marks in the selection.
   </APIItem>
 </APIParameters>
 
-### `toggleWrapNodes`
+### toggleWrapNodes
 
 Unwraps a node if the node type is in selection, otherwise wraps it.
 
@@ -765,7 +765,7 @@ Unwraps a node if the node type is in selection, otherwise wraps it.
   </APIItem>
 </APIParameters>
 
-### `wrapNodeChildren`
+### wrapNodeChildren
 
 Wraps the children of a node into a single element.
 
@@ -783,7 +783,7 @@ Wraps the children of a node into a single element.
 
 ## Utils
 
-### `createDocumentNode`
+### createDocumentNode
 
 Creates a new document node.
 
@@ -802,7 +802,7 @@ Creates a new document node.
   An array of TDescendant nodes, starting with the newly created node.
 </APIReturns>
 
-### `createNode`
+### createNode
 
 Creates a new node.
 

@@ -57,55 +57,143 @@ const plugins = [
 ];
 ```
 
-### Options
+## API Media
 
-```tsx
-export type EmbedUrlData = {
-  url?: string;
-  provider?: string;
-  id?: string;
-  component?: RenderFunction<EmbedUrlData>;
-};
+### MediaPlugin
 
-export type MediaUrlParser = (url: string) => EmbedUrlData | undefined;
+Common attributes shared by image and media embed plugins.
 
-export type MediaPluginRule = {
-  parser: MediaUrlParser;
-  component?: RenderFunction<EmbedUrlData>;
-};
+<APIAttributes>
+  <APIItem name="isUrl" type="(text: string) => boolean" optional>
+    A function to check whether a text string is a URL.
+  </APIItem>
+  <APIItem name="transformUrl" type="(url: string) => string" optional>
+    A function to transform the URL.
+  </APIItem>
+  <APIItem name="rules" type="Array" optional>
+    List of rules. The first rule that matches the URL will be used, i.e. its
+    component will be used to render the media.
+    <APISubList>
+      <APISubListItem
+        parent="rules"
+        name="parser"
+        type="(url: string) => EmbedUrlData | undefined"
+      >
+        A function that parses the URL and returns data for embedding.
+      </APISubListItem>
+      <APISubListItem
+        parent="rules"
+        name="component"
+        type="React.FC<EmbedUrlData>"
+        optional
+      >
+        A React component to render the media embedding.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="disableCaption" type="boolean" optional>
+    Disables captions for media if set to true.
+  </APIItem>
+</APIAttributes>
 
-export interface MediaPlugin {
-  isUrl?: (text: string) => boolean;
+### EmbedUrlData
 
-  /**
-   * Transforms the url.
-   */
-  transformUrl?: (url: string) => string;
+A type defining the data returned from parsing an embed URL.
 
-  /**
-   * List of rules. The first rule that matches the url will be used,
-   * i.e. its component will be used to render the media. Used by `MediaEmbed`.
-   */
-  rules?: MediaPluginRule[];
-}
+<APIAttributes>
+  <APIItem name="url" type="string" optional>
+    The URL of the embedded content.
+  </APIItem>
+  <APIItem name="provider" type="string" optional>
+    The provider of the embedded content.
+  </APIItem>
+  <APIItem name="id" type="string" optional>
+    The unique identifier for the embedded content.
+  </APIItem>
+  <APIItem
+    name="component"
+    type="React.FC<EmbedUrlData & HTMLAttributes<HTMLDivElement>>"
+    optional
+  >
+    The component to be rendered for the embedded content.
+  </APIItem>
+</APIAttributes>
 
-export interface ImagePlugin extends MediaPlugin {
-  /**
-   * An optional method that will upload the image to a server.
-   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
-   */
-  uploadImage?: (
-    dataUrl: string | ArrayBuffer
-  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+### insertMedia
 
-  /**
-   * Disable file upload on insert data.
-   */
-  disableUploadInsert?: boolean;
+### parseMediaUrl
 
-  /**
-   * Disable url embed on insert data.
-   */
-  disableEmbedInsert?: boolean;
-}
-```
+### submitFloatingMedia
+
+## API Image
+
+### createImagePlugin
+
+<APIAttributes>
+
+Options extends `MediaPlugin`.
+
+<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+
+An optional method that will upload the image to a server. The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+
+</APIItem>
+<APIItem name="disableUploadInsert" type="boolean" optional>
+Disables file upload on data insertion if set to true.
+</APIItem>
+<APIItem name="disableEmbedInsert" type="boolean" optional>
+Disables URL embed on data insertion if set to true.
+</APIItem>
+</APIAttributes>
+
+### insertImage
+
+### isImageUrl
+
+### withImageUpload
+
+### withImageEmbed
+
+## API Media Embed
+
+### createMediaEmbedPlugin
+
+Options extends `MediaPlugin`.
+
+### insertMediaEmbed
+
+### parseIframeUrl
+
+### parseTwitterUrl
+
+### parseVideoUrl
+
+## API Components
+
+### floatingMediaStore
+
+### mediaStore
+
+### resizableStore
+
+### Resizable
+
+### useFloatingMedia
+
+### useFloatingMediaEditButton
+
+### useFloatingMediaUrlInput
+
+### useImage
+
+### useMediaEmbed
+
+### useMediaEmbedTweet
+
+### useMediaEmbedVideo
+
+### useMediaState
+
+### useMediaToolbarButton
+
+### Tweet

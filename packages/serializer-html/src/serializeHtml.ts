@@ -16,7 +16,7 @@ import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
 
 /**
- * Convert Slate Nodes into HTML string
+ * Convert Slate Nodes into HTML string.
  */
 export const serializeHtml = <V extends Value>(
   editor: PlateEditor<V>,

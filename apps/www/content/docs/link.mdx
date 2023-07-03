@@ -103,3 +103,83 @@ On keyboard shortcut or toolbar mousedown, this function is called to get the li
 </APIItem>
 
 </APIParameters>
+
+### getLinkAttributes
+
+### insertLink
+
+Insert a link node.
+
+### submitFloatingLink
+
+- Insert link if url is valid.
+- Text is url if empty.
+- Close floating link.
+- Focus editor.
+
+### triggerFloatingLink
+
+### triggerFloatingLinkEdit
+
+### triggerFloatingLinkInsert
+
+Trigger floating link.
+
+Do not trigger when:
+
+- Selection is across blocks.
+- Selection has more than one leaf node.
+- Lowest selection is not text.
+- Selection has a link node.
+
+### unwrapLink
+
+Unwrap link node.
+
+### upsertLink
+
+If selection in a link or is not url:
+
+- Insert text with url, exit.
+
+If selection is expanded or `update` in a link:
+
+- Remove link node, get link text.
+
+Then:
+
+- Insert link node.
+
+### upsertLinkText
+
+If the text is different than the link above text, replace link children by a new text. The new text has the same marks than the first text replaced.
+
+### validateUrl
+
+### wrapLink
+
+Wrap a link node with split.
+
+## API Components
+
+### FloatingLinkNewTabInput
+
+### FloatingLinkUrlInput
+
+### LinkOpenButton
+
+### floatingLinkStore
+
+### useFloatingLinkEdit
+
+### useFloatingLinkEnter
+
+### useFloatingLinkEscape
+
+### useFloatingLinkInsert
+
+### useLink
+
+### useLinkToolbarButton
+
+### useVirtualFloatingLink

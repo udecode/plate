@@ -94,46 +94,49 @@ insertTabbableEntries: (editor) => {
 },
 ```
 
-### Options
+## API
 
-```tsx
-export type TabbableEntry = {
-  domNode: HTMLElement;
-  slateNode: TNode;
-  path: TPath;
-};
+### createTabbablePlugin
 
-export interface TabbablePlugin<V extends Value = Value> {
-  /**
-   * Dynamically enable or disable the plugin.
-   * @default: () => true
-   */
-  query?: (editor: PlateEditor<V>, event: KeyboardEvent) => boolean;
+<APIAttributes>
+<APIItem name="query" type="(editor: PlateEditor<V>, event: KeyboardEvent) => boolean" optional>
+Dynamically enables or disables the plugin. Returns `true` by default.
 
-  /**
-   * When true, the plugin will add its event listener to the document instead
-   * of the editor, allowing it to capture events from outside the editor.
-   * @default: false
-   */
-  globalEventListener?: boolean;
+- **Default:** **`() => true`**
 
-  /**
-   * Add additional tabbables to the list of tabbables. Useful for adding
-   * tabbables that are not contained within the editor. Ignores `isTabbable`.
-   * @default: () => []
-   */
-  insertTabbableEntries?: (
-    editor: PlateEditor<V>,
-    event: KeyboardEvent
-  ) => TabbableEntry[];
+</APIItem>
+<APIItem name="globalEventListener" type="boolean" optional>
+Determines if the plugin adds its event listener to the document instead of the editor, which allows it to capture events from outside the editor.
 
-  /**
-   * Determine whether an element should be included in the tabbable list.
-   * @default: (editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)
-   */
-  isTabbable?: (
-    editor: PlateEditor<V>,
-    tabbableEntry: TabbableEntry
-  ) => boolean;
-}
-```
+- **Default:** **`false`**
+
+</APIItem>
+<APIItem name="insertTabbableEntries" type="(editor: PlateEditor<V>, event: KeyboardEvent) => TabbableEntry[]" optional>
+Adds additional tabbable entries to the list of tabbable elements. Useful for adding tabbables that are not contained within the editor. It ignores `isTabbable`.
+
+- **Default:** **`() => []`**
+
+</APIItem>
+<APIItem name="isTabbable" type="(editor: PlateEditor<V>, tabbableEntry: TabbableEntry) => boolean" optional>
+Determines whether an element should be included in the tabbable list. Returns `true` if the tabbableEntry's slateNode is void.
+
+- **Default:** **`(editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`**
+
+</APIItem>
+</APIAttributes>
+
+### TabbableEntry
+
+Defines the properties of a tabbable entry.
+
+<APIAttributes>
+  <APIItem name="domNode" type="HTMLElement">
+    The HTML element that represents the tabbable entry.
+  </APIItem>
+  <APIItem name="slateNode" type="TNode">
+    The corresponding Slate node of the tabbable entry.
+  </APIItem>
+  <APIItem name="path" type="TPath">
+    The path to the Slate node in the Slate document.
+  </APIItem>
+</APIAttributes>
