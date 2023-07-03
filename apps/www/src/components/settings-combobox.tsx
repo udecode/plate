@@ -94,7 +94,7 @@ export function SettingsCombobox() {
             </Button>
           )}
         </PopoverTrigger>
-        <PopoverContent className="w-[220px] p-0">
+        <PopoverContent className="z-[99999999] w-[220px] p-0">
           <Command defaultValue={valueId}>
             <CommandInput placeholder="Search value..." />
             <CommandEmpty>No value found.</CommandEmpty>
