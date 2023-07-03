@@ -70,11 +70,14 @@ export const useEmojiPicker = ({
     content: createRef<HTMLDivElement>(),
   });
 
-  const setIsOpen = useCallback((isOpen: boolean) => {
-    dispatch({
-      type: isOpen ? 'SET_OPEN' : 'SET_CLOSE',
-    });
-  }, [dispatch]);
+  const setIsOpen = useCallback(
+    (isOpen: boolean) => {
+      dispatch({
+        type: isOpen ? 'SET_OPEN' : 'SET_CLOSE',
+      });
+    },
+    [dispatch]
+  );
 
   const setFocusedAndVisibleSections =
     useCallback<SetFocusedAndVisibleSectionsType>(
