@@ -44,26 +44,42 @@ const plugins = [
 ];
 ```
 
-## Options
+## API
 
-### `offset` and `unit`
+### createIndentPlugin
 
-- By default, the block indentation plugin increases or decreases the current indentation by the given `offset`, using the given `unit`.
-- The above demo is using the default configuration, which defines a `24px` indentation step.
-- Default is `24`
+<APIAttributes>
+<APIItem name="offset" type="number" optional>
+The indentation offset used in `(offset * element.indent) + unit`.
 
-### `indentMax`
+- **Default:** `40`
 
-- You generally want to set a maximum number of indentation so the text stays readable.
-- Using `indentMax: 5` will limit the indent to 5 levels.
-- Default is `'px'`
+</APIItem>
+<APIItem name="unit" type="string" optional>
+The indentation unit used in `(offset * element.indent) + unit`.
 
-### Commands
+- **Default:** `'px'`
 
-### `indent`
+</APIItem>
+<APIItem name="indentMax" type="number" optional>
+The maximum number of indentations that can be applied to an element.
+</APIItem>
+</APIAttributes>
 
-- Increase the indentation of the selected blocks.
+### createTextIndentPlugin
 
-### `outdent`
+### indent
 
-- Decrease the indentation of the selected blocks
+Increase the indentation of the selected blocks.
+
+### outdent
+
+Decrease the indentation of the selected blocks.
+
+### setIndent
+
+Add offset to the indentation of the selected blocks.
+
+### useIndentButton
+
+### useOutdentButton

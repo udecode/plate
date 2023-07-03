@@ -25,7 +25,7 @@ import { toggleIndentListSet } from './toggleIndentListSet';
 import { toggleIndentListUnset } from './toggleIndentListUnset';
 
 /**
- * Increase the indentation of the selected blocks.
+ * Toggle indent list.
  */
 export const toggleIndentList = <V extends Value>(
   editor: PlateEditor<V>,

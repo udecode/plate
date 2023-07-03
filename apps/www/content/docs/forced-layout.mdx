@@ -36,47 +36,24 @@ const plugins = [
 ];
 ```
 
-### Options
+## API
 
-```tsx
-export interface TrailingBlockPlugin extends QueryNodeOptions {
-  /**
-   * Level where the trailing node should be, the first level being 0.
-   */
-  level?: number;
+### createNormalizeTypesPlugin
 
-  /**
-   * Type of the trailing block
-   */
-  type?: string;
-}
-```
-
-```tsx
-interface Rule {
-  /**
-   * Force the type of the node at the given path
-   */
-  strictType?: string;
-  /**
-   * Type of the inserted node at the given path if `strictType` is not provided
-   */
-  type?: string;
-  /**
-   * Path where the rule applies
-   */
-  path: Path;
-}
-
-export interface NormalizeTypesPlugin extends ErrorHandler {
-  /**
-   * Set of rules for the types.
-   * For each rule, provide a `path` and either `strictType` or `type`.
-   * If there is no node existing at `path`:
-   * insert a node with `strictType`.
-   * If there is a node existing at `path` but its type is not `strictType` or `type`:
-   * set the node type to `strictType` or `type`.
-   */
-  rules?: Rule[];
-}
-```
+<APIAttributes>
+  <APIItem name="rules" type="object[]" optional>
+    An array of rule objects.
+    <APISubList>
+      <APISubListItem parent="rules" name="strictType" type="string" optional>
+        Force the type of the node at the given path.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="type" type="string" optional>
+        Type of the inserted node at the given path if `strictType` is not
+        provided.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="path" type="Path">
+        Path where the rule applies.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIAttributes>
