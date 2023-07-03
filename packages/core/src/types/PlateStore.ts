@@ -83,3 +83,13 @@ export type PlateStoreState<
   renderElement: { fn: NonNullable<TEditableProps<V>['renderElement']> };
   renderLeaf: { fn: NonNullable<TEditableProps<V>['renderLeaf']> };
 }>;
+
+// A list of store keys to be exposed in `editor.plate.set`.
+export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
+  'readOnly',
+  'plugins',
+  'onChange',
+  'decorate',
+  'renderElement',
+  'renderLeaf',
+];

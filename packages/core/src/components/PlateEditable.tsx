@@ -4,6 +4,7 @@ import { Editable } from 'slate-react';
 import { useEditableProps, useEditorRef } from '../hooks';
 import { PlateId } from '../stores';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
+import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
@@ -85,6 +86,7 @@ export const PlateEditable = <V extends Value = Value>({
 
       {renderEditable ? renderEditable(editable) : editable}
 
+      <EditorMethodsEffect id={id} />
       <EditorStateEffect id={id} />
       <EditorRefEffect id={id} />
 
