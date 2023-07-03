@@ -1,3 +1,4 @@
+import { ForwardedRef } from 'react';
 import { Value } from '@udecode/slate';
 import { PlateId } from '../stores';
 import { Nullable } from './misc/Nullable';
@@ -72,6 +73,11 @@ export type PlateStoreState<
    * Controlled callback called when the editor state changes.
    */
   onChange: { fn: (value: V) => void };
+
+  /**
+   * Access the editor object using a React ref.
+   */
+  editorRef: { ref: ForwardedRef<E> };
 
   decorate: { fn: NonNullable<TEditableProps<V>['decorate']> };
   renderElement: { fn: NonNullable<TEditableProps<V>['renderElement']> };
