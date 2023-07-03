@@ -5,7 +5,6 @@ import {
   PlateElementProps,
   Value,
 } from '@udecode/plate-common';
-import { ElementPopover } from '@udecode/plate-floating';
 import {
   Caption,
   CaptionTextarea,
@@ -16,10 +15,7 @@ import {
   useMediaState,
 } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
-import {
-  mediaFloatingOptions,
-  MediaFloatingToolbar,
-} from './media-floating-toolbar';
+import { MediaPopover } from './media-popover';
 
 import { cn } from '@/lib/utils';
 
@@ -38,12 +34,7 @@ export function ImageElement({
   useMediaState();
 
   return (
-    <ElementPopover
-      content={
-        readOnly ? null : <MediaFloatingToolbar pluginKey={ELEMENT_IMAGE} />
-      }
-      floatingOptions={mediaFloatingOptions}
-    >
+    <MediaPopover pluginKey={ELEMENT_IMAGE}>
       <PlateElement className={cn('py-2.5', className)} {...props}>
         <figure className="group relative m-0" contentEditable={false}>
           <Resizable
@@ -111,6 +102,6 @@ export function ImageElement({
 
         {children}
       </PlateElement>
-    </ElementPopover>
+    </MediaPopover>
   );
 }

@@ -503,12 +503,12 @@ export const Index: Record<string, any> = {
       files: ['registry/default/ui/media-embed-element.tsx'],
       component: React.lazy(() => import('@/registry/default/ui/media-embed-element')),
     },
-    'media-floating-toolbar': {
-      name: 'media-floating-toolbar',
+    'media-popover': {
+      name: 'media-popover',
       type: 'components:ui',
       registryDependencies: [],
-      files: ['registry/default/ui/media-floating-toolbar.tsx'],
-      component: React.lazy(() => import('@/registry/default/ui/media-floating-toolbar')),
+      files: ['registry/default/ui/media-popover.tsx'],
+      component: React.lazy(() => import('@/registry/default/ui/media-popover')),
     },
     'media-toolbar-button': {
       name: 'media-toolbar-button',
