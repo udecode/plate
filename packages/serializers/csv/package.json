@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-csv",
-  "version": "21.4.3",
+  "version": "21.5.0",
   "description": "CSV serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -19,8 +19,8 @@
   ],
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@udecode/plate-common": "21.4.2",
-    "@udecode/plate-table": "21.4.3",
+    "@udecode/plate-common": "21.5.0",
+    "@udecode/plate-table": "21.5.0",
     "papaparse": "^5.3.2"
   },
   "peerDependencies": {
