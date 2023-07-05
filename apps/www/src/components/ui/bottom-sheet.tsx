@@ -30,7 +30,7 @@ const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(
     return (
       <BottomSheetPrimitive
         ref={ref}
-        snapPoints={[0.8, 0]}
+        snapPoints={[0.7, 0]}
         // Prevent close animation on first render
         prefersReducedMotion={isFirstRender}
         {...props}

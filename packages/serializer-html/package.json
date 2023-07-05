@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "21.4.2",
-    "html-entities": "^2.3.6"
+    "html-entities": "^2.4.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

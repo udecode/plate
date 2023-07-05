@@ -87,6 +87,7 @@ module.exports = {
       rules: {
         'react/jsx-key': 'off',
         'import/no-relative-packages': 'off',
+        'import/no-unresolved': 'off',
         '@dword-design/import-alias/prefer-alias': [
           'warn',
           {

@@ -1,10 +1,11 @@
 import {
-  getRange,
-  toDOMRange,
   TReactEditor,
   Value,
+  getRange,
+  toDOMRange,
 } from '@udecode/plate-common';
 import { Location, Path, Range } from 'slate';
+
 import { mergeClientRects } from './mergeClientRects';
 
 export const getBoundingClientRect = <V extends Value>(

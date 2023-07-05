@@ -33,7 +33,7 @@
     "@udecode/plate-common": "21.4.2",
     "@udecode/resizable": "20.5.2",
     "js-video-url-parser": "^0.5.1",
-    "react-textarea-autosize": "^8.4.1",
+    "react-textarea-autosize": "^8.5.2",
     "scriptjs": "2.5.9"
   },
   "peerDependencies": {

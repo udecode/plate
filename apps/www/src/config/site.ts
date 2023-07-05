@@ -3,7 +3,7 @@ export const siteConfig = {
   url: 'https://platejs.org',
   ogImage: 'https://platejs.org/og.png',
   author: 'zbeyens',
-  description: 'Rich-text editor plugin system for React.',
+  description: 'The rich-text editor framework for React.',
   links: {
     twitter: 'https://twitter.com/zbeyens',
     github: 'https://github.com/udecode/plate',

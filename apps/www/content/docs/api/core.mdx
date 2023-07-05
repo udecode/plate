@@ -19,14 +19,14 @@ The options to override plugins.
 Components to override by plugin key.
 </APISubListItem>
 <APISubListItem parent="options" name="overrideByKey" type="Record<PluginKey, Partial<PlatePlugin>>" optional>
-Plugins to override by plugin key.
+Plugin attributes to override by plugin key.
 </APISubListItem>
 </APISubList>
 </APIItem>
 </APIParameters>
 
 <APIReturns>
-  An array of plugins with overridden components or properties.
+  An array of plugins with overridden components or attributes.
 </APIReturns>
 
 <APIReturns>
@@ -63,6 +63,8 @@ An AtomStoreApi object.
 
 ### useElement
 
+Hook to get the element from a node component.
+
 <APIParameters>
   <APIItem name="pluginKey" type="string" optional>
     The plugin key.
@@ -95,21 +97,29 @@ A react component.
 
 ### useEditorRef
 
-A hook to use the Slate editor reference in a statically typed way, as PlateEditor.
+Get the Slate editor reference.
+
+- Does not re-render on editor change.
+- Does not support nested editors.
+- Should be used inside `Plate`.
 
 <APIReturns>
 
-A PlateEditor object, which is the Slate editor.
+A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
 ### useEditorState
 
-A hook to use the Slate editor state in a statically typed way, as PlateEditor.
+Get the Slate editor reference. 
+
+- Re-renders on editor change.
+- Does not support nested editors.
+- Should be used inside `Plate`.
 
 <APIReturns>
 
-A PlateEditor object, which is the Slate editor.
+A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
@@ -117,42 +127,52 @@ A PlateEditor object, which is the Slate editor.
 
 Get an editor reference which is never updated.
 
+- Does not re-render on editor change.
+- Supports nested editors.
+- Should be used inside `Plate` or `PlateProvider`.
+
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
-    The identifier of the plate editor.
+    The id of the plate editor. Useful only when nesting editors. 
   </APIItem>
 </APIParameters>
 <APIReturns>
 
-A reference to the editor that does not update.
+A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
 ### usePlateEditorState
 
-Get the editor state which is updated on each editor change.
+Get the Slate editor reference. Re-renders on editor change.
+
+- Re-renders on editor change.
+- Supports nested editors.
+- Should be used inside `Plate` or `PlateProvider`.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
-    The identifier of the plate editor.
+    The id of the plate editor.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  The current state of the editor that updates with each editor change.
+
+A `PlateEditor` object, which is the Slate editor.
+
 </APIReturns>
 
 ### usePlateReadOnly
 
-Get the editor's readOnly status.
+Get the editor's `readOnly` state.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
-    The identifier of the plate editor.
+    The id of the plate editor.
   </APIItem>
 </APIParameters>
 <APIReturns>
 
-The readOnly status of the editor.
+The `readOnly` state of the editor.
 
 </APIReturns>
 
@@ -162,7 +182,7 @@ Get the editor's selection which is updated on each editor change.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
-    The identifier of the plate editor.
+    The id of the plate editor.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -171,7 +191,7 @@ Get the editor's selection which is updated on each editor change.
 
 ### toggleNodeType
 
-Toggle the type of the selected node. No operation is performed if activeType equals inactiveType.
+Toggle the type of the selected node. No operation is performed if `activeType` equals `inactiveType`.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor<V>">

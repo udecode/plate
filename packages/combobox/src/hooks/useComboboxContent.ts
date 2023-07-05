@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { ComboboxProps } from '../types/ComboboxProps';
 
 import {
   ComboboxControls,
@@ -9,6 +8,7 @@ import {
   useActiveComboboxStore,
   useComboboxSelectors,
 } from '..';
+import { ComboboxProps } from '../types/ComboboxProps';
 
 export type ComboboxContentProps<TData extends Data = NoData> = Omit<
   ComboboxProps<TData>,

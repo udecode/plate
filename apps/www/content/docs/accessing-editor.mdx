@@ -3,11 +3,11 @@ title: Accessing the Editor
 description: Getting a reference to the editor instance
 ---
 
-To do most things with Plate, you'll need to access the `editor` instance at one point or another. The way you'll do this depends on the context in which you need to access the `editor`.
+To do most things with Plate, you'll need to access the **`editor`** instance at one point or another. The way you'll do this depends on the context in which you need to access the **`editor`**.
 
 ## From Inside a Plugin
 
-Most often, when you want to extend the functionality of your editor, you'll create a [custom Plate plugin](/docs/plugin). Luckily, plugins are one of the easiest places to access the `editor` instance.
+Most often, when you want to extend the functionality of your editor, you'll create a [custom Plate plugin](/docs/plugin). Luckily, plugins are one of the easiest places to access the **`editor`** instance.
 
 ### Inside Event Handlers
 
@@ -29,9 +29,9 @@ const createMyPlugin = createPluginFactory({
 
 ### Using the Then Option
 
-The purpose of the `then` option is to access the `editor` instance in plugin options that normally don't have access to it. Pass a function that takes an `editor` and returns an object to be merged with the top-level plugin options.
+The purpose of the **`then`** option is to access the **`editor`** instance in plugin options that normally don't have access to it. Pass a function that takes an **`editor`** and returns an object to be merged with the top-level plugin options.
 
-For example, suppose you had this code and wanted to access the `editor` instance inside `deserializeHtml`:
+For example, suppose you had this code and wanted to access the **`editor`** instance inside **`deserializeHtml`**:
 
 ```ts showLineNumbers
 const createMyPlugin = createPluginFactory({
@@ -42,7 +42,7 @@ const createMyPlugin = createPluginFactory({
 });
 ```
 
-You would wrap the `deserializeHtml` option inside `then`.
+You would wrap the **`deserializeHtml`** option inside **`then`**.
 
 ```ts showLineNumbers {3,7}
 const createMyPlugin = createPluginFactory({
@@ -57,11 +57,11 @@ const createMyPlugin = createPluginFactory({
 
 ## From a Child of Plate
 
-Use the `usePlateEditorRef` or `usePlateEditorState` hooks.
+Use the **`usePlateEditorRef`** or **`usePlateEditorState`** hooks.
 
-Internally, `usePlateEditorState` is a wrapper for `usePlateEditorRef`. The only difference is that `usePlateEditorState` causes React to re-render whenever the `editor` state changes, whereas `usePlateEditorRef` does not cause a re-render. Since `editor` is mutable and is updated by reference, `usePlateEditorRef` will be sufficient (and more efficient) in most situations.
+Internally, **`usePlateEditorState`** is a wrapper for **`usePlateEditorRef`**. The only difference is that **`usePlateEditorState`** causes React to re-render whenever the **`editor`** state changes, whereas **`usePlateEditorRef`** does not cause a re-render. Since **`editor`** is mutable and is updated by reference, **`usePlateEditorRef`** will be sufficient (and more efficient) in most situations.
 
-You can call these hooks from any React component that is rendered as a descendant of the `Plate` (or `PlateProvider`) component, including [Plugin Components](/docs/plugin-components).
+You can call these hooks from any React component that is rendered as a descendant of the **`Plate`** (or **`PlateProvider`**) component, including [Plugin Components](/docs/plugin-components).
 
 ```tsx showLineNumbers {6}
 const ParagraphElement = ({
@@ -85,7 +85,7 @@ const ParagraphElement = ({
 };
 ```
 
-One common pattern is to add an effect component as a child of `Plate` that consumes `editor` and returns `null`.
+One common pattern is to add an effect component as a child of **`Plate`** that consumes **`editor`** and returns **`null`**.
 
 ```tsx showLineNumbers {2,17}
 const CustomEffect = () => {
@@ -110,15 +110,15 @@ export default () => (
 ```
 
 <Callout className="my-4">
-  **If `editor` is modified by reference, why include it in dependency lists?**<br />
-  Good question! Even though `editor` is usually modified by reference, there are some situations in which it's replaced with a fresh instance, such as when the editor is reset.
+  **If **`editor`** is modified by reference, why include it in dependency lists?**<br />
+  Good question! Even though **`editor`** is usually modified by reference, there are some situations in which it's replaced with a fresh instance, such as when the editor is reset.
 </Callout>
 
 ## From a Sibling of Plate
 
-Wrap `Plate` and the sibling in `PlateProvider`, and then use `usePlateEditorRef` or `usePlateEditorState` from within the sibling.
+Wrap **`Plate`** and the sibling in **`PlateProvider`**, and then use **`usePlateEditorRef`** or **`usePlateEditorState`** from within the sibling.
 
-Note that certain `Plate` props, such as `plugins` and `initialValue`, must be lifted up to the `PlateProvider`. See [From an Ancestor](#from-an-ancestor) if this is impractical or impossible for you to achieve.
+Note that certain **`Plate`** props, such as **`plugins`** and **`initialValue`**, must be lifted up to the **`PlateProvider`**. See [From an Ancestor](#from-an-ancestor) if this is impractical or impossible for you to achieve.
 
 ```tsx showLineNumbers {2,8,11}
 const Toolbar = () => {
@@ -137,9 +137,9 @@ export default () => (
 
 ## From an Ancestor
 
-If you need to access the `editor` instance from an ancestor of `Plate`, wrapping the relevant components in a `PlateProvider` is the preferred solution. If this is not an option, you can instead use the `editorRef` prop to pass a reference to the `editor` instance up the React component tree to where it is needed.
+If you need to access the **`editor`** instance from an ancestor of **`Plate`**, wrapping the relevant components in a **`PlateProvider`** is the preferred solution. If this is not an option, you can instead use the **`editorRef`** prop to pass a reference to the **`editor`** instance up the React component tree to where it is needed.
 
-The `editorRef` prop can be used with `useRef`, `useState`, or a custom ref callback. Regardless of which you use, you'll need to handle the case where `editor` is null. This happens when the editor hasn't had a chance to render yet or has unmounted.
+The **`editorRef`** prop can be used with **`useRef`**, **`useState`**, or a custom ref callback. Regardless of which you use, you'll need to handle the case where **`editor`** is null. This happens when the editor hasn't had a chance to render yet or has unmounted.
 
 ### With a Ref Object
 
@@ -169,9 +169,9 @@ const MyEditor = ({
 
 ### With State
 
-If you want your ancestor component to re-render when the editor content changes, you may want to use `useState` to store your `editor` instance. Since the `editorRef` callback is only called once when the editor first mounts, you'll also need to manually trigger a re-render by updating a counter whenever the `onChange` handler of `Plate` is called.
+If you want your ancestor component to re-render when the editor content changes, you may want to use **`useState`** to store your **`editor`** instance. Since the **`editorRef`** callback is only called once when the editor first mounts, you'll also need to manually trigger a re-render by updating a counter whenever the **`onChange`** handler of **`Plate`** is called.
 
-Using `editorRef` with `useState` without a counter is equivalent to using `usePlateEditorRef` instead of `usePlateEdtiorState` (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using `useRef` instead.
+Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`usePlateEditorRef`** instead of **`usePlateEdtiorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
 
 ```tsx showLineNumbers {2-3,34-35}
 const App = () => {
@@ -215,9 +215,9 @@ const MyEditor = ({
 
 ## Temporary Editor Instance
 
-Sometimes, you'll need to access an `editor` instance, but not necessarily the same `editor` instance that is used by the Plate editor itself. Such cases include serializing a Plate value to HTML (either on the client or on the server) and deserializing HTML to produce an initial value for Plate.
+Sometimes, you'll need to access an **`editor`** instance, but not necessarily the same **`editor`** instance that is used by the Plate editor itself. Such cases include serializing a Plate value to HTML (either on the client or on the server) and deserializing HTML to produce an initial value for Plate.
 
-In these cases, you can create a temporary `editor` instance using `createPlateEditor({ plugins })`. The only requirement is that you pass the same set of plugins to `createPlateEditor` as you pass to the Plate editor itself.
+In these cases, you can create a temporary **`editor`** instance using **`createPlateEditor({ plugins })`**. The only requirement is that you pass the same set of plugins to **`createPlateEditor`** as you pass to the Plate editor itself.
 
 See the following example to deserialize a HTML value and use it as the initial value of the Plate editor.
 

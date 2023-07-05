@@ -17,7 +17,7 @@ Install the core and the plugins you need. You need at least:
 npm install @udecode/plate-common slate slate-react slate-history slate-hyperscript react react-dom
 ```
 
-Alternatively you can install `@udecode/plate` that contains all the packages excluding the ones with additional dependencies (e.g. `@udecode/plate-dnd`).
+Alternatively you can install **`@udecode/plate`** that contains all the packages excluding the ones with additional dependencies (e.g. **`@udecode/plate-dnd`**).
 
 ```bash
 npm install @udecode/plate slate slate-react slate-history slate-hyperscript react react-dom
@@ -25,7 +25,7 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 
 ### Basic Editor
 
-Let's start with a minimal editor setup leveraging `Plate` and `editableProps`.
+Let's start with a minimal editor setup leveraging **`Plate`** and **`editableProps`**.
 
 ```tsx showLineNumbers {1,3-5,9}
 import { Plate } from '@udecode/plate-common';
@@ -72,7 +72,7 @@ export default function BasicEditor() {
 ```
 
 <Callout className="mt-4">
-  **Note**: Plate uses the `type` property to enable plugins to render nodes by
+  **Note**: Plate uses the **`type`** property to enable plugins to render nodes by
   type.
 </Callout>
 
@@ -80,7 +80,7 @@ export default function BasicEditor() {
 
 ### Implementing Change Handler
 
-At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The `onChange` prop will serve this purpose.
+At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose.
 
 ```tsx showLineNumbers {8-10}
 // ...
@@ -106,11 +106,11 @@ Let's use the basic plugins for a rich-text editor.
 
 <ComponentPreview name="basic-plugins-default-demo" padding="md" />
 
-The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a `div` and the default leaf component is a `span`.
+The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a **`div`** and the default leaf component is a **`span`**.
 
 <Callout className="mt-4">
-  **Note**: You don't need to add core plugins such as `react` and `history` as
-  `Plate` already does it.
+  **Note**: You don't need to add core plugins such as **`react`** and **`history`** as
+  **`Plate`** already does it.
 </Callout>
 
 ### Components
@@ -118,13 +118,13 @@ The debug value indicates everything works as expected. However, we haven't prov
 <Callout className="mt-4">
   **Note**: Plate plugins are packaged unstyled, implying that you have complete
   control over markup and styling, hence you can integrate your own design
-  system or [Plate UI](/components).
+  system or [Plate UI](/docs/components).
 </Callout>
 
-To simultaneously plug-in all the components, `createPlugins` can be used:
+To simultaneously plug-in all the components, **`createPlugins`** can be used:
 
-- use the first parameter for the `plugins`
-- use the second parameter for the `components`. In the following example, we'll call `createPlateUI()`, which returns all Plate components by plugin key.
+- use the first parameter for the **`plugins`**
+- use the second parameter for the **`components`**. In the following example, we'll call **`createPlateUI()`**, which returns all Plate components by plugin key.
 
 ```tsx showLineNumbers {16-31, 36}
 // ...

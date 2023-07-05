@@ -33,7 +33,7 @@
     "@portive/client": "10.0.3",
     "@udecode/plate-common": "21.4.2",
     "delay": "5.0.0",
-    "p-defer": "^3.0"
+    "p-defer": "^3.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
