@@ -12,7 +12,7 @@ Plugins are the building blocks of a Plate editor. Many plugins are provided out
 
 Most plugins you'll create will look something like this:
 
-```ts
+```ts showLineNumbers
 const KEY_AMAZING = 'amazing';
 
 const createAmazingPlugin = createPluginFactory({
@@ -24,7 +24,7 @@ The only required option for `createPluginFactory` is `key`, which is used to un
 
 Your plugin won't do anything yet, but let's add it to a Plate editor all the same.
 
-```tsx
+```tsx showLineNumbers
 const plugins = createPlugins([
   // This is where you would specify options or overrides to the plugin
   createAmazingPlugin(),
@@ -43,7 +43,7 @@ Now we're ready to start adding functionality to your plugin. The specifics of t
 
 To create a new type of element using your plugin, use the `isElement: true` option.
 
-```ts
+```ts showLineNumbers {3}
 const createParagraphPlugin = createPluginFactory({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
@@ -52,7 +52,7 @@ const createParagraphPlugin = createPluginFactory({
 
 Each element should have an associated component, which you can provide either as an option `component: ParagraphElement` to `createPluginFactory`, or in the `components` option of `createPlugins` (recommended).
 
-```ts
+```ts showLineNumbers {4}
 const plugins = createPlugins([
   createParagraphPlugin(),
 ], {
@@ -62,7 +62,7 @@ const plugins = createPlugins([
 
 A minimum, the component for an element plugin should look like this. The `PlateElement` component is also available to provide the standard component boilerplate. See [Plugin Components](/docs/plugin-components) for more information.
 
-```tsx
+```tsx showLineNumbers
 const ParagraphElement = ({
   attributes,
   nodeProps,
@@ -79,7 +79,7 @@ const ParagraphElement = ({
 
 You can also configure a hotkey to toggle your new element. In the following example, the `HotkeyPlugin` type argument defines types for the `options.hotkey` option. Plugin options will be explained in more detail shortly.
 
-```tsx
+```tsx showLineNumbers {1,4-11}
 const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
@@ -98,7 +98,7 @@ const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
 
 You can configure your element to be inline or void using the `isInline` and `isVoid` options respectively. Please refer to the [Slate documentation](https://docs.slatejs.org/concepts/02-nodes) for explanations of these concepts. If you're unsure which of these options to use, try checking Plate's source code for an example of a plugin that works in a similar way to what you want.
 
-```ts
+```ts showLineNumbers {3-4}
 const createLinkPlugin = createPluginFactory({
   key: ELEMENT_LINK,
   isElement: true,
@@ -107,7 +107,7 @@ const createLinkPlugin = createPluginFactory({
 });
 ```
 
-```ts
+```ts showLineNumbers {3-4}
 const createImagePlugin = createPluginFactory({
   key: ELEMENT_IMAGE,
   isElement: true,
@@ -118,7 +118,7 @@ const createImagePlugin = createPluginFactory({
 
 To create a new type of mark, use `isLeaf: true`. Similarly to with element plugins, you can use `onKeyDownToggleMark` to toggle your mark using a hotkey.
 
-```ts
+```ts showLineNumbers {1,3-10}
 const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_SUBSCRIPT,
   isLeaf: true,
@@ -136,7 +136,7 @@ const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
 
 To enable your element or mark to be deserialized from HTML passed to `deserializeHtml` or pasted into the editor, specify deserialization rules using the `deserializeHtml` option.
 
-```ts
+```ts showLineNumbers
 const createBoldPlugin = createPluginFactory({
   // ...
   deserializeHtml: {
@@ -162,7 +162,7 @@ The recommended way to respond to user-generated events from inside a plugin is 
 
 The `onChange` handler, which is called when the editor value changes, is an exception to this rule; the inner function of an `onChange` handler should accept a `Value` object instead of an event.
 
-```ts
+```ts showLineNumbers
 const createExamplePlugin = createPluginFactory({
   key: KEY_EXAMPLE,
   handlers: {
@@ -180,7 +180,7 @@ const createExamplePlugin = createPluginFactory({
 
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
-```ts
+```ts showLineNumbers
 const KEY_ALIGN = 'align';
 
 const createAlignPlugin = createPluginFactory({
@@ -203,7 +203,7 @@ const createAlignPlugin = createPluginFactory({
 
 A paragraph node affected by the this plugin would look like this:
 
-```ts
+```ts showLineNumbers {3}
 {
   type: 'p',
   align: 'right',
@@ -217,7 +217,7 @@ Occasionally, you'll need to override the built-in editor methods provided by Sl
 
 One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing). 
 
-```ts
+```ts showLineNumbers {20}
 const withCustomNormalizer = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
@@ -247,7 +247,7 @@ Often, you may want to pass custom data to a plugin. We've already seen two exam
 
 Let's see a more detailed example of defining a custom options type and using it to customize the plugin behavior.
 
-```tsx
+```tsx showLineNumbers {7,11,15,23-26,32}
 interface DemoPlugin {
   username?: string;
 }
