@@ -62,6 +62,11 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
+          title: 'Accessing the Editor',
+          href: '/docs/accessing-editor',
+          items: [],
+        },
+        {
           title: 'Typescript',
           href: '/docs/typescript',
           items: [],
