@@ -1,6 +1,5 @@
 import { useElement, usePlateEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
-import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
 import {
@@ -44,8 +43,8 @@ export const useTableCellElementState = ({
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
 
-  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
-  const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
+  const tableElement = useElement<TTableElement>();
+  const rowElement = useElement<TTableRowElement>();
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
     rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;

@@ -57,7 +57,7 @@ export const useTableCellElementResizableProps = ({
 } => {
   const editor = usePlateEditorRef();
   const element = useElement();
-  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
+  const tableElement = useElement<TTableElement>();
   const { minColumnWidth = 0 } = getPluginOptions<TablePlugin>(
     editor,
     ELEMENT_TABLE
