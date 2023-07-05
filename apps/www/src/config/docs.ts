@@ -52,13 +52,13 @@ export const docsConfig: DocsConfig = {
       title: 'Guides',
       items: [
         {
-          title: 'Plugin',
+          title: 'Custom Plugins',
           href: '/docs/plugin',
           items: [],
         },
         {
-          title: 'Component',
-          href: '/docs/plugin-component',
+          title: 'Plugin Components',
+          href: '/docs/plugin-components',
           items: [],
         },
         {
