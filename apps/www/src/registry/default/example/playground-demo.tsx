@@ -41,9 +41,10 @@ import {
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
-import { Plate, PlateProvider } from '@udecode/plate-common';
 import {
+  Plate,
   PlatePluginComponent,
+  PlateProvider,
   createPlateEditor,
   usePlateActions,
   usePlateSelectors,

@@ -9,8 +9,8 @@ import {
   isBlock,
   isCollapsed,
   toggleNodeType,
+  usePlateEditorState,
 } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

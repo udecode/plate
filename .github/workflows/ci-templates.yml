@@ -1,44 +1,21 @@
-name: Jest tests
+name: Lint and typecheck
 
 on:
   push:
     branches:
       - main
-      - next
     paths:
-      - 'packages/**'
-      - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
-      - '.prettier*'
-      - '.eslint*'
-      - 'jest.config.js'
-      - 'tsconfig.json'
-      - 'turbo.json'
-      - 'config'
-      - 'scripts'
-      - 'patches'
+      - 'templates/**'
   pull_request:
     types:
       - opened
       - synchronize
       - reopened
     paths:
-      - 'packages/**'
-      - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
-      - '.prettier*'
-      - '.eslint*'
-      - 'jest.config.js'
-      - 'tsconfig.json'
-      - 'turbo.json'
-      - 'config'
-      - 'scripts'
-      - 'patches'
+      - 'templates/**'
 
 jobs:
-  test:
+  build:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
     steps:
@@ -81,23 +58,16 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
-      # Build packages that have changed (--include & --since), assuming that
-      # apps build are done already. Otherwise --from & --since
+      # Lint, typecheck, build
       - name: Build
-        run: yarn build
-
-      # Test packages that have changed (--include & --since)
-      - name: Test
-        run: yarn test
-        env:
-          CI: true
+        run: yarn build:templates
 
   notify:
     name: Discord Notification
     runs-on: ubuntu-latest
     needs:
-      - test
-    if: ${{ failure() }}
+      - build
+    if: ${{ !github.event.pull_request.draft && failure() }}
     
     steps:
       - name: Notify
