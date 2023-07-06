@@ -13,10 +13,6 @@ apps/www/tsconfig.tsbuildinfo
 !.yarn/versions
 
 # Generated files
-/docs/.docusaurus
-/docs/.cache-loader
-/docs/src/css/tailwind.output.css
-
 .history
 node_modules/
 report.*
