@@ -59,18 +59,6 @@ Update the import paths to match your project setup.
 
 </Tabs>
 
-## Usage
+## Examples
 
-### Plugins
-
-```tsx
-import { MyPlatePlugin, MyValue } from '@/plate/plate-types';
-import { RenderAfterEditable } from '@udecode/plate-common';
-import { EmojiPlugin } from '@udecode/plate-emoji';
-
-import { EmojiCombobox } from '@/components/plate-ui/emoji-combobox';
-
-export const emojiPlugin: Partial<MyPlatePlugin<EmojiPlugin>> = {
-  renderAfterEditable: EmojiCombobox as RenderAfterEditable<MyValue>,
-};
-```
+<ComponentSource src="../../templates/plate-playground/src/lib/plate/plate-plugins.ts" />

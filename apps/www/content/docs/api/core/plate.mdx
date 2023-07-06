@@ -201,20 +201,16 @@ Alias to **`initialValue`**. Stored in the store on each change (**`Editable.onC
 
 ## PlateProvider Props
 
-- `id` (optional)
-- `children`
+A react component that provides the context for the Plate editor.
 
-If using `PlateProvider`, the following `Plate` props should be moved to `PlateProvider`:
+Same props than [PlateProps](#plate-props) excluding:
 
-- `decorate`
-- `disableCorePlugins`
-- `editor`
-- `initialValue`
-- `normalizeInitialValue`
-- `onChange`
-- `renderElement`
-- `renderLeaf`
-- `value`
+- `editableProps`
+- `editableRef`
+- `firstChildren`
+- `renderEditable`
+
+If used, only the listed props should be set on `Plate`.
 
 ## How Plate Works
 

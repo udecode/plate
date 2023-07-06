@@ -113,8 +113,6 @@ storybook-static/
 
 # Local
 packages/plate/docs/
-config/typedoc/
-!config/typedoc/_redirects
 # Local Netlify folder
 .netlify
 /test-results/

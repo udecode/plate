@@ -1,5 +1,5 @@
 ---
-title: Utils
+title: Plate Utils
 description: API reference for @udecode/plate-utils.
 ---
 
@@ -9,13 +9,127 @@ description: API reference for @udecode/plate-utils.
 
 ### PlateElement
 
+Generic component for rendering an element.
+
+<APIAttributes>
+
+PlateElementProps.
+
+<APIItem name="className" type="string" optional>
+The CSS class to apply to the component.
+</APIItem>
+<APIItem name="editor" type="E">
+The editor instance.
+</APIItem>
+<APIItem name="nodeProps" type="AnyObject" optional>
+Additional props to pass to the component.
+</APIItem>
+<APIItem name="element" type="TElement">
+The element node.
+</APIItem>
+<APIItem name="attributes" type="object">
+Attributes of the element to be spread on the top-level element.
+<APISubList>
+<APISubListItem parent="attributes" name="data-slate-node" type="'element'">
+This is always set to `'element'`.
+</APISubListItem>
+<APISubListItem
+  parent="attributes"
+  name="data-slate-inline"
+  type="boolean"
+  optional
+/>
+<APISubListItem
+  parent="attributes"
+  name="data-slate-void"
+  type="boolean"
+  optional
+/>
+<APISubListItem parent="attributes" name="dir" type="string" optional />
+<APISubListItem parent="attributes" name="ref" type="any">
+The reference to the element. If using your own reference, you must
+merge it with this one.
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="children" type="any">
+Necessary for rendering the node children.
+</APIItem>
+<APIItem name="elementToAttributes" type="(element: N) => any" optional>
+Get HTML attributes from Slate element. This is an alternative to
+`PlatePlugin.props`.
+</APIItem>
+<APIItem name="as" type="React.ElementType" optional>
+The component type to render as.
+
+- **Default:** `'div'`
+
+</APIItem>
+<APIItem name="asChild" type="boolean" optional>
+If true, merges its props onto its immediate child.
+</APIItem>
+</APIAttributes>
+
 ### PlateLeaf
+
+Generic component for rendering a leaf.
+
+<APIAttributes>
+
+PlateLeafProps.
+
+<APIItem name="className" type="string" optional>
+The CSS class to apply to the component.
+</APIItem>
+<APIItem name="editor" type="E">
+The editor context.
+</APIItem>
+<APIItem name="nodeProps" type="AnyObject" optional>
+Additional props to pass to the component.
+</APIItem>
+<APIItem name="children" type="any">
+Necessary for rendering the node children.
+</APIItem>
+<APIItem name="leaf" type="TText">
+The leaf node.
+</APIItem>
+<APIItem name="text" type="TText">
+The text node.
+</APIItem>
+<APIItem name="attributes" type="object">
+Attributes of the leaf to be spread on the top-level element.
+
+<APISubList>
+<APISubListItem parent="attributes" name="data-slate-leaf" type="true">
+This is always set to `true`.
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="leafToAttributes" type="(leaf: N) => any" optional>
+Get HTML attributes from Slate leaf. This is an alternative to `PlatePlugin.props`.
+</APIItem>
+<APIItem name="as" type="React.ElementType" optional>
+The component type to render as.
+
+- **Default:** `'span'`
+
+</APIItem>
+<APIItem name="asChild" type="boolean" optional>
+If true, merges its props onto its immediate child.
+</APIItem>
+</APIAttributes>
 
 ### PortalBody
 
+Renders a React component in the `document.body` using a portal.
+
 ### Text
 
+Generic component for rendering a span.
+
 ### Box
+
+Generic component for rendering a div.
 
 ## Hooks
 
@@ -308,19 +422,19 @@ A new component that includes the additional props.
 A function that wraps a component into multiple providers.
 
 <APIParameters>
-  <APIItem name="providers" type="any[]">
-    Providers with which to wrap the component.
+<APIItem name="providers" type="any[]">
+Providers with which to wrap the component.
 
-    -If there are any props that you want a provider to receive, you can simply pass an array.
+If there are any props that you want a provider to receive, you can simply pass an array.
 
-  </APIItem>
-  <APIItem name="WrappedComponent" type="FunctionComponent<T>">
-    The component to be wrapped.
-  </APIItem>
-  <APIItem name="props" type="T">
-    The props to be passed to the wrapped component.
-  </APIItem>
+</APIItem>
+<APIItem name="WrappedComponent" type="FunctionComponent<T>">
+The component to be wrapped.
+</APIItem>
+<APIItem name="props" type="T">
+The props to be passed to the wrapped component.
+</APIItem>
 </APIParameters>
 <APIReturns>
-  A new component that is wrapped by the specified providers.
+A new component that is wrapped by the specified providers.
 </APIReturns>

@@ -1,10 +1,10 @@
 ---
-title: Blockquote Element
+title: Block Quote Element
 description: Add a blockquote to emphasize quoted text within your content.
 component: true
 docs:
   - route: /docs/basic-elements
-    title: Code Block
+    title: Block Quote
 ---
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
@@ -33,7 +33,7 @@ npx plate-ui@latest add blockquote-element
 
 Install the following dependencies:
 
-- [Code Block](/docs/basic-elements)
+- [Block Quote](/docs/basic-elements)
 
 </Step>
 
@@ -57,15 +57,6 @@ Update the import paths to match your project setup.
 
 </Tabs>
 
-## Usage
+## Examples
 
-### Plugins
-
-```tsx
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-
-const plugins = [
-  // ...otherPlugins,
-  createBlockquotePlugin(),
-];
-```
+<ComponentSource src="../../templates/plate-playground/src/lib/plate/plate-plugins.ts" />

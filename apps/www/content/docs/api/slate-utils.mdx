@@ -81,7 +81,7 @@ Returns the edge blocks above a specified location.
 
 ### getLastChild
 
-Returns the last child of a node or null if no children.
+Returns the last child of a node or `null` if no children.
 
 <APIParameters>
   <APIItem name="nodeEntry" type="TNodeEntry">
@@ -197,15 +197,27 @@ Returns the point before a location, with additional options to customize the be
 Returns the point from a location (**Default:** selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor where to find the point.
-  </APIItem>
-  <APIItem name="options" type="Object">
-    An object with optional parameters: - `at` (Location | null): The location
-    where to get the point. Default is the editor's selection. - `focus`
-    (boolean): If true, returns the focus point. Otherwise, returns the anchor
-    point.
-  </APIItem>
+<APIItem name="editor" type="TEditor">
+The editor where to find the point.
+</APIItem>
+<APIItem name="options" type="object">
+
+<APISubList>
+
+<APISubListItem parent="options" name="at" type="Location | null" optional>
+The location where to get the point.
+
+- **Default:** Selection.
+
+</APISubListItem>
+<APISubListItem parent="options" name="focus" type="boolean" optional>
+If true, returns the focus point. Otherwise, returns the anchor point.
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+
 </APIParameters>
 <APIReturns>
 
@@ -218,14 +230,23 @@ Returns the point from the location.
 If the start point is inside an inline void, returns the point before or after it.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor where to find the point next to the void.
-  </APIItem>
-  <APIItem name="options" type="Object">
-    An object with parameters: - `at` (Point): The point from where to start. -
-    `after` (boolean): If true, gets the point after the void node. Otherwise,
-    gets the point before.
-  </APIItem>
+<APIItem name="editor" type="TEditor">
+The editor where to find the point next to the void.
+</APIItem>
+<APIItem name="options" type="object">
+
+<APISubList>
+
+<APISubListItem parent="options" name="at" type="Point" optional>
+The point from where to start.
+
+</APISubListItem>
+<APISubListItem parent="options" name="after" type="boolean" optional>
+If true, gets the point after the void node. Otherwise, gets the point before.
+</APISubListItem>
+
+</APISubList>
+</APIItem>
 </APIParameters>
 <APIReturns>
 
@@ -265,7 +286,7 @@ Gets the end point of the previous node.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  Returns the end point of the previous node if found, otherwise undefined.
+  Returns the end point of the previous node if found, otherwise `undefined`.
 </APIReturns>
 
 ### getPreviousPath
@@ -278,7 +299,7 @@ Generates the previous path based on the given path.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  The previous path or undefined if there is no previous path.
+  The previous path or `undefined` if there is no previous path.
 </APIReturns>
 
 ### getPreviousSiblingNode
@@ -294,7 +315,7 @@ Gets the previous sibling node from the given path.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  An array containing the previous sibling node and its path, or undefined if
+  An array containing the previous sibling node and its path, or `undefined` if
   there is no previous sibling.
 </APIReturns>
 
@@ -315,7 +336,7 @@ Gets the range from the point before a given location to the end point of the lo
 </APIParameters>
 <APIReturns>
   The range from the point before the location to the end point of the location,
-  or undefined if no such point exists.
+  or `undefined` if no such point exists.
 </APIReturns>
 
 ### getRangeFromBlockStart
@@ -332,7 +353,7 @@ Gets the range from the start of the block above a location to the location.
 </APIParameters>
 <APIReturns>
   The range from the start of the block above the location to the location, or
-  undefined if no such block exists.
+  `undefined` if no such block exists.
 </APIReturns>
 
 ### getSelectionText
@@ -428,15 +449,20 @@ True if the node is the first child of its parent, false otherwise.
 
 ### isMarkActive
 
-Checks whether a node is the first child of its parent.
+Checks whether a mark is active in the selection.
 
 <APIParameters>
-  <APIItem name="path" type="Path">
-    The path of the node to check.
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The mark key.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  True if the node is the first child of its parent, false otherwise.
+
+True if the mark is active in the selection.
+
 </APIReturns>
 
 ### isPointAtWordEnd
@@ -650,7 +676,7 @@ Moves the children of a node to a path.
     The editor instance.
   </APIItem>
   <APIItem name="options" type="MoveChildrenOptions">
-    The options object, which includes at, to, match, and fromStartIndex
+    The options object, which includes `at`, `to`, `match`, and `fromStartIndex`
     properties.
   </APIItem>
 </APIParameters>
@@ -662,14 +688,15 @@ The number of children moved.
 
 ### removeMark
 
-Removes a mark and triggers onChange if the selection is collapsed.
+Removes a mark and triggers `onChange` if the selection is collapsed.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="RemoveMarkOptions">
-    The options object, which includes key, at, and shouldChange properties.
+    The options object, which includes `key`, `at`, and `shouldChange`
+    properties.
   </APIItem>
 </APIParameters>
 
@@ -708,8 +735,8 @@ Replaces the children of a node: removes then inserts them.
     The editor instance.
   </APIItem>
   <APIItem name="options" type="ReplaceNodeChildrenOptions">
-    The options object, which includes at, nodes, insertOptions, and
-    removeOptions properties.
+    The options object, which includes `at`, `nodes`, `insertOptions`, and
+    `removeOptions` properties.
   </APIItem>
 </APIParameters>
 
@@ -748,7 +775,7 @@ Adds or removes marks in the selection.
     The editor instance.
   </APIItem>
   <APIItem name="options" type="ToggleMarkOptions">
-    The options object, which includes key and clear properties.
+    The options object, which includes `key` and `clear` properties.
   </APIItem>
 </APIParameters>
 
@@ -777,7 +804,7 @@ Wraps the children of a node into a single element.
     The new parent element.
   </APIItem>
   <APIItem name="options" type="WrapNodesOptions">
-    The options object, which includes at property.
+    The options object, which includes `at` property.
   </APIItem>
 </APIParameters>
 
@@ -788,18 +815,27 @@ Wraps the children of a node into a single element.
 Creates a new document node.
 
 <APIParameters>
-  <APIItem name="type" type="string" optional>
-    The type of the node. Default is 'p'.
-  </APIItem>
-  <APIItem name="text" type="string" optional>
-    The text for the node. Default is an empty string.
-  </APIItem>
-  <APIItem name="remaining" type="TDescendant[]" optional>
-    The remaining nodes. Default is an empty array.
-  </APIItem>
+<APIItem name="type" type="string" optional>
+The type of the node.
+
+- **Default:** `'p'`
+
+</APIItem>
+<APIItem name="text" type="string" optional>
+The text for the node.
+
+- **Default:** an empty string.
+
+</APIItem>
+<APIItem name="remaining" type="TDescendant[]" optional>
+The remaining nodes.
+
+- **Default:** an empty array.
+
+</APIItem>
 </APIParameters>
 <APIReturns>
-  An array of TDescendant nodes, starting with the newly created node.
+An array of `TDescendant` nodes, starting with the newly created node.
 </APIReturns>
 
 ### createNode
@@ -807,15 +843,21 @@ Creates a new document node.
 Creates a new node.
 
 <APIParameters>
-  <APIItem name="type" type="string" optional>
-    The type of the node. Default is 'p'.
-  </APIItem>
-  <APIItem name="text" type="string" optional>
-    The text for the node. Default is an empty string.
-  </APIItem>
+<APIItem name="type" type="string" optional>
+The type of the node.
+
+- **Default:** `'p'`
+
+</APIItem>
+<APIItem name="text" type="string" optional>
+The text for the node.
+
+- **Default:** an empty string.
+
+</APIItem>
 </APIParameters>
 <APIReturns>
 
-A new TElement node.
+A new `TElement` node.
 
 </APIReturns>

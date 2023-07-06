@@ -95,20 +95,26 @@ export function APIParameters({ children, ...props }: APIListProps) {
 
 type APIListProps = {
   type?: string;
+  collapsed?: boolean;
   children: ReactNode;
 };
 
-export function APIList({ type = 'parameters', children }: APIListProps) {
+export function APIList({
+  type = 'parameters',
+  collapsed = false,
+  children,
+}: APIListProps) {
   const childCount = React.Children.count(children);
   const hasItems = React.Children.toArray(children).some(
     (child) => (child as any)?.type?.name === 'APIItem'
   );
-  const defaultValues = Array.from(
-    Array.from({ length: childCount }).keys()
-  ).map((i) => i.toString());
+  const newValues = Array.from(Array.from({ length: childCount }).keys()).map(
+    (i) => i.toString()
+  );
+  const defaultValues = collapsed ? [] : newValues;
 
   const [values, setValues] = useState<string[]>(defaultValues);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(!collapsed);
 
   if (type === 'returns' && !childCount) return null;
 
@@ -129,7 +135,7 @@ export function APIList({ type = 'parameters', children }: APIListProps) {
                 onClick={() => {
                   values.length === childCount
                     ? setValues([])
-                    : setValues(defaultValues);
+                    : setValues(newValues);
                   setExpanded(!expanded);
                 }}
               >
