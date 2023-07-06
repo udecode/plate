@@ -50,6 +50,7 @@ function PlateProviderContent<
     plugins: _plugins,
     disableCorePlugins,
     onChange,
+    editorRef,
     decorate,
     renderElement,
     renderLeaf,
@@ -107,6 +108,7 @@ function PlateProviderContent<
         [plateStore.atom.value, value],
         [plateStore.atom.decorate, { fn: decorate }],
         [plateStore.atom.onChange, { fn: onChange }],
+        [plateStore.atom.editorRef, { ref: editorRef }],
         [plateStore.atom.renderElement, { fn: renderElement }],
         [plateStore.atom.renderLeaf, { fn: renderLeaf }],
       ]}

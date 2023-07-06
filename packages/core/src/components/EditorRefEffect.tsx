@@ -15,6 +15,8 @@ export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
 export function EditorRefEffect({ id }: { id?: PlateId }) {
   const setIsRendered = usePlateActions(id).isRendered();
   const plugins = usePlateSelectors(id).plugins();
+  const editorState = useEditorRef();
+  const editorRef = usePlateSelectors(id).editorRef()?.ref;
 
   useEffect(() => {
     setIsRendered(true);
@@ -23,6 +25,26 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
       setIsRendered(false);
     };
   }, [setIsRendered]);
+
+  /**
+   * Pass `editorState` to `editorRef` when the editor mounts. Since the editor
+   * instance is mutable, we don't need to update it on every change, although
+   * consumers will need to manually trigger a re-render inside `onChange` if
+   * they want to use `editorRef` with `useState`.
+   */
+  useEffect(() => {
+    if (typeof editorRef === 'function') {
+      editorRef(editorState);
+      return () => editorRef(null);
+    }
+
+    if (editorRef) {
+      editorRef.current = editorState;
+      return () => {
+        editorRef.current = null;
+      };
+    }
+  }, [editorRef, editorState]);
 
   return (
     <>

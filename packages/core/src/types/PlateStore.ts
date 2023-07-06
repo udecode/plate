@@ -1,3 +1,4 @@
+import { ForwardedRef } from 'react';
 import { Value } from '@udecode/slate';
 
 import { PlateId } from '../stores';
@@ -74,7 +75,22 @@ export type PlateStoreState<
    */
   onChange: { fn: (value: V) => void };
 
+  /**
+   * Access the editor object using a React ref.
+   */
+  editorRef: { ref: ForwardedRef<E> };
+
   decorate: { fn: NonNullable<TEditableProps<V>['decorate']> };
   renderElement: { fn: NonNullable<TEditableProps<V>['renderElement']> };
   renderLeaf: { fn: NonNullable<TEditableProps<V>['renderLeaf']> };
 }>;
+
+// A list of store keys to be exposed in `editor.plate.set`.
+export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
+  'readOnly',
+  'plugins',
+  'onChange',
+  'decorate',
+  'renderElement',
+  'renderLeaf',
+];

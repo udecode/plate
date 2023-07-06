@@ -37,14 +37,14 @@ describe('addSuggestionMark', () => {
   describe('when editor.activeSuggestionId is not defined', () => {
     describe('when editor.marks?.[MARK_SUGGESTION] is not defined', () => {
       it('should add marks', () => {
-        const input = (
+        const input = ((
           <editor>
             <hp>
               test
               <cursor />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any) as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

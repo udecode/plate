@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { ForwardedRef, useEffect } from 'react';
 import { Value } from '@udecode/slate';
 import { isUndefined } from 'lodash';
 
@@ -43,6 +43,11 @@ export type UsePlateEffectsProps<
      */
     onChange?: (value: V) => void;
 
+    /**
+     * Access the editor object using a React ref.
+     */
+    editorRef?: ForwardedRef<E>;
+
     decorate?: TEditableProps<V>['decorate'];
     renderElement?: TEditableProps<V>['renderElement'];
     renderLeaf?: TEditableProps<V>['renderLeaf'];
@@ -79,6 +84,7 @@ export const usePlateEffects = <
   value: valueProp,
   onChange: onChangeProp,
   plugins: pluginsProp,
+  editorRef: editorRefProp,
   decorate: decorateProp,
   renderElement: renderElementProp,
   renderLeaf: renderLeafProp,
@@ -88,6 +94,7 @@ export const usePlateEffects = <
 
   const states = usePlateStates<V, E>(id);
   const [value, setValue] = states.value();
+  const [editorRef, setEditorRef] = states.editorRef();
   const [decorate, setDecorate] = states.decorate();
   const [renderElement, setRenderElement] = states.renderElement();
   const [renderLeaf, setRenderLeaf] = states.renderLeaf();
@@ -121,6 +128,13 @@ export const usePlateEffects = <
     setState: setOnChange,
     nextState: onChangeProp,
     nextStateValue: onChangeProp ? { fn: onChangeProp } : null,
+  });
+
+  usePlateStoreOnChange({
+    state: editorRef?.ref,
+    setState: setEditorRef,
+    nextState: editorRefProp,
+    nextStateValue: editorRefProp ? { ref: editorRefProp } : null,
   });
 
   usePlateStoreOnChange({

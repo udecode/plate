@@ -12,10 +12,12 @@ import { Path } from 'slate';
 
 import { WithPlatePlugin } from './plugin/PlatePlugin';
 import { PluginKey } from './plugin/PlatePluginKey';
+import { PlateEditorMethods } from './PlateEditorMethods';
 
 export type PlateEditor<V extends Value = Value> = TEditor<V> &
   THistoryEditor<V> &
-  TReactEditor<V> & {
+  TReactEditor<V> &
+  PlateEditorMethods<V> & {
     key: any;
     plugins: WithPlatePlugin<{}, V>[];
     pluginsByKey: Record<PluginKey, WithPlatePlugin<{}, V>>;
