@@ -81,6 +81,9 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
+      - name: Build
+        run: yarn build
+
       # Lint packages that have changed (--include & --since)
       - name: Lint
         run: yarn lint
