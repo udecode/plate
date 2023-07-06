@@ -17,8 +17,6 @@ import {
   TooltipTrigger,
 } from './tooltip';
 
-// PLATE:
-
 const toolbarVariants = cva(
   'relative flex select-none items-stretch gap-1 bg-background'
 );

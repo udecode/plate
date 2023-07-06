@@ -7848,7 +7848,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-list@npm:21.4.2, @udecode/plate-list@workspace:*, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
+"@udecode/plate-list@npm:21.4.2, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
@@ -8060,7 +8060,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:21.4.2, @udecode/plate-suggestion@workspace:*, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:21.4.2, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
@@ -20023,11 +20023,9 @@ __metadata:
     "@udecode/plate-kbd": "workspace:*"
     "@udecode/plate-line-height": "workspace:*"
     "@udecode/plate-link": "workspace:*"
-    "@udecode/plate-list": "workspace:*"
     "@udecode/plate-media": "workspace:*"
     "@udecode/plate-mention": "workspace:*"
     "@udecode/plate-paragraph": "workspace:*"
-    "@udecode/plate-suggestion": "workspace:*"
     "@udecode/plate-table": "workspace:*"
     autoprefixer: "npm:^10.4.14"
     class-variance-authority: "npm:0.6.1"

@@ -1,17 +1,23 @@
 import React, { useEffect } from 'react';
-import { useElement, useRemoveNodeButton, isCollapsed, usePlateEditorState } from '@udecode/plate-common';
+import {
+  isCollapsed,
+  useElement,
+  usePlateEditorState,
+  useRemoveNodeButton,
+} from '@udecode/plate-common';
 import {
   FloatingMedia as FloatingMediaPrimitive,
-  useFloatingMediaSelectors,
   floatingMediaActions,
+  useFloatingMediaSelectors,
 } from '@udecode/plate-media';
 import { useReadOnly, useSelected } from 'slate-react';
+
+import { Icons } from '@/components/icons';
+
 import { Button, buttonVariants } from './button';
 import { inputVariants } from './input';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
-
-import { Icons } from '@/components/icons';
 
 export interface MediaPopoverProps {
   pluginKey?: string;
@@ -30,18 +36,17 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
     if (!isOpen && isEditing) {
       floatingMediaActions.isEditing(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const element = useElement();
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
-  if (readOnly) return <>children</>;
+  if (readOnly) return <>{children}</>;
 
   return (
     <Popover open={isOpen}>
-      <PopoverAnchor>
-        {children}
-      </PopoverAnchor>
+      <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent className="w-auto p-1">
         {isEditing ? (

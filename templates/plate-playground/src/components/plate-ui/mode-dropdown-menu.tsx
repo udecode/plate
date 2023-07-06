@@ -28,17 +28,11 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   let value = 'editing';
   if (readOnly) value = 'viewing';
 
-  const item = {
+  const item: any = {
     editing: (
       <>
         <Icons.editing className="mr-2 h-5 w-5" />
         <span className="hidden lg:inline">Editing</span>
-      </>
-    ),
-    suggesting: (
-      <>
-        <Icons.suggesting className="mr-2 h-5 w-5" />
-        <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
@@ -84,13 +78,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
         >
           <DropdownMenuRadioItem value="editing">
             {item.editing}
-          </DropdownMenuRadioItem>
-
-          <DropdownMenuRadioItem value="suggesting" disabled>
-            {item.suggesting}
-            <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
-              Soon
-            </span>
           </DropdownMenuRadioItem>
 
           <DropdownMenuRadioItem value="viewing">

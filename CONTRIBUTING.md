@@ -56,6 +56,35 @@ If you'd like to monitor a specific package for changes, run:
 yarn workspace <package> build:watch
 ```
 
+### How to: Create a Component
+
+- Create your component in `apps/www/src/registry/default/plate-ui`
+- Add your component to `apps/www/src/registry/registry.ts`
+- Run `yarn build:registry`
+
+To try installing your component locally:
+
+- `cd templates/plate-playground`
+- `yarn g:plate-ui add <component-name>`
+
+### **How to: Docs**
+
+Adding a new value? Here's the process:
+
+- Create the value in **`/apps/www/src/lib/plate/demo/values`**
+- Add your value to **`/apps/www/src/config/setting-values.ts`**
+- Add your value to **`/apps/www/src/lib/plate/demo/values/usePlaygroundValue.ts`**
+
+Creating a new plugin?
+
+- Add your plugin to **`/apps/www/src/config/setting-plugins.ts`**
+- Add your plugin to **`/apps/www/src/registry/default/example/playground-demo.tsx`**
+
+Creating a new document?
+
+- Create a new mdx file in **`/apps/www/content/docs`**
+- Add the new document to **`/apps/www/src/config/docs.ts`**
+
 ### How to: Create a Plate Package
 
 Use the command below and follow the prompts to create a new package:
@@ -70,86 +99,6 @@ After creating your package, install and build it:
 yarn install
 yarn build
 ```
-
-For further details, refer to the specific sections in the original document.
-
-### How to: Create a plate plugin
-
-- Start by creating a file named **`createXPlugin.ts`**
-
-```ts
-import { createPluginFactory } from '@udecode/plate-core';
-export const createXPlugin = createPluginFactory({});
-```
-
-If the plugin is a node, you need to do the following:
-
-- Create a file called **`constants.ts`**
-
-```ts
-// for elements
-export const ELEMENT_X = 'x';
-// for marks
-export const MARK_X = 'x';
-```
-
-If the node has data, then:
-
-- Create a file named **`types.ts`**
-
-```ts
-export interface TXElement extends TElement {}
-```
-
-For an element:
-
-- Add to the plugin:
-
-```ts
-isElement: true;
-```
-
-For inline:
-
-- Add to the plugin:
-
-```ts
-isInline: true;
-```
-
-- Create the components in **`/components`**
-
-For void:
-
-- Add to the plugin:
-
-```ts
-isVoid: true;
-```
-
-- Go to **`createPlateUI`** and add the plugin component to the **`components`** object
-
-```ts
-[ELEMENT_X]: XElement,
-```
-
-### **How to: Docs**
-
-Adding a new value? Here's the process:
-
-- Create the value in **`/apps/www/src/lib/plate/demo/values`**
-- Add your value to **`/Users/zbeyens/GitHub/plate/apps/www/src/config/setting-values.ts`**
-- Add your value to **`/apps/www/src/lib/plate/demo/values/usePlaygroundValue.ts`**
-
-Creating a new plugin?
-
-- Add your plugin to **`/Users/zbeyens/GitHub/plate/apps/www/src/config/setting-plugins.ts`**
-- Add your plugin to **`/Users/zbeyens/GitHub/plate/apps/www/src/components/examples/PlaygroundDemo.tsx`**
-
-Creating a new document?
-
-- Create a new mdx file in **`/Users/zbeyens/GitHub/plate/apps/www/content/docs`**
-- Add the new document to **`/Users/zbeyens/GitHub/plate/apps/www/src/config/docs.ts`**
 
 ### Run Linter
 

@@ -5,8 +5,10 @@ A Next.js 13 template for building rich-text editors with Plate and [shadcn/ui](
 ## Usage
 
 ```bash
-npx create-next-app -e https://github.com/udecode/plate-playground
+yarn dev
 ```
+
+[//]: # 'npx create-next-app -e https://github.com/udecode/plate-playground'
 
 ## Features
 

@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { useTheme } from 'next-themes';
 
+import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
-import { Button } from '@/components/plate-ui/button';
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();

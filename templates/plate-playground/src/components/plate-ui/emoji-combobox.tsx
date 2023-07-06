@@ -7,7 +7,7 @@ import {
   useEmojiComboboxState,
 } from '@udecode/plate-emoji';
 
-import { Combobox } from '@/components/plate-ui/combobox';
+import { Combobox } from './combobox';
 
 export function EmojiComboboxItem({
   item,

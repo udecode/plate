@@ -14,9 +14,10 @@ import {
   useMediaEmbed,
   useMediaState,
 } from '@udecode/plate-media';
-import { MediaPopover } from './media-popover';
 
 import { cn } from '@/lib/utils';
+
+import { MediaPopover } from './media-popover';
 
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
@@ -56,7 +57,6 @@ const MediaEmbedElement = React.forwardRef<
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
                     'after:flex after:h-16 after:bg-ring after:opacity-0 group-hover:after:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant left
                     '-left-3 -ml-3 pl-3'
@@ -70,7 +70,6 @@ const MediaEmbedElement = React.forwardRef<
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
                     'after:flex after:h-16 after:bg-ring  after:opacity-0 group-hover:after:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant right
                     '-right-3 -mr-3 items-end pr-3',

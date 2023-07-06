@@ -2,13 +2,10 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
 import {
-  collapseSelection,
   focusEditor,
   toggleMark,
+  usePlateEditorState,
 } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-common';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { MARK_KBD } from '@udecode/plate-kbd';
 
 import { Icons } from '@/components/icons';
 
@@ -37,32 +34,6 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         align="start"
         className="flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto"
       >
-        <DropdownMenuItem
-          onSelect={() => {
-            toggleMark(editor, {
-              key: MARK_HIGHLIGHT,
-            });
-            collapseSelection(editor, { edge: 'end' });
-            focusEditor(editor);
-          }}
-        >
-          <Icons.highlight className="mr-2 h-5 w-5" />
-          Highlight
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onSelect={() => {
-            toggleMark(editor, {
-              key: MARK_KBD,
-            });
-            collapseSelection(editor, { edge: 'end' });
-            focusEditor(editor);
-          }}
-        >
-          <Icons.kbd className="mr-2 h-5 w-5" />
-          Keyboard input
-        </DropdownMenuItem>
-
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
