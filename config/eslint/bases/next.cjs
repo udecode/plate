@@ -27,7 +27,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['^@theme', '^@docusaurus', '^@generated', '^@/plate'],
+        ignore: ['^@/plate'],
       },
     ],
     'import/prefer-default-export': 'off',
