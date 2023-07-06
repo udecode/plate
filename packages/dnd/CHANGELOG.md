@@ -1,5 +1,19 @@
 # @udecode/plate-dnd
 
+## 22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `Draggable`
+  - `DraggableBlock`
+  - `DraggableBlockToolbar`
+  - `DraggableBlockToolbarWrapper`
+  - `DraggableDropline`
+  - `DraggableGutterLeftProps`
+  - `DraggableRoot`
+  - `DragHandle`
+
 ## 21.5.0
 
 ## 21.4.2
