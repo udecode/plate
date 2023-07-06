@@ -13,7 +13,7 @@
     },
     {
       "name": "emoji-toolbar-dropdown.tsx",
-      "content": "import React, { ReactNode } from 'react';\nimport * as Popover from '@radix-ui/react-popover';\n\ntype EmojiToolbarDropdownProps = {\n  control: ReactNode;\n  isOpen: boolean;\n  setIsOpen: (open: boolean) => void;\n  children: ReactNode;\n};\n\nexport function EmojiToolbarDropdown({\n  control,\n  isOpen,\n  setIsOpen,\n  children,\n}: EmojiToolbarDropdownProps) {\n  return (\n    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>\n      <Popover.Trigger asChild>{control}</Popover.Trigger>\n\n      <Popover.Portal>\n        <Popover.Content className=\"z-[100]\">\n          {children}\n        </Popover.Content>\n      </Popover.Portal>\n    </Popover.Root>\n  );\n}\n"
+      "content": "import React, { ReactNode } from 'react';\nimport * as Popover from '@radix-ui/react-popover';\n\ntype EmojiToolbarDropdownProps = {\n  control: ReactNode;\n  isOpen: boolean;\n  setIsOpen: (open: boolean) => void;\n  children: ReactNode;\n};\n\nexport function EmojiToolbarDropdown({\n  control,\n  isOpen,\n  setIsOpen,\n  children,\n}: EmojiToolbarDropdownProps) {\n  return (\n    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>\n      <Popover.Trigger asChild>{control}</Popover.Trigger>\n\n      <Popover.Portal>\n        <Popover.Content className=\"z-[100]\">{children}</Popover.Content>\n      </Popover.Portal>\n    </Popover.Root>\n  );\n}\n"
     },
     {
       "name": "emoji-icons.tsx",

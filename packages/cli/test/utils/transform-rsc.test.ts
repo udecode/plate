@@ -1,11 +1,11 @@
-import { expect, test } from "vitest"
+import { expect, test } from 'vitest';
 
-import { transform } from "../../src/utils/transformers"
+import { transform } from '../../src/utils/transformers';
 
-test("transform rsc", async () => {
+test('transform rsc', async () => {
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
     `,
@@ -13,11 +13,11 @@ import { Foo } from "bar"
         rsc: true,
       },
     })
-  ).toMatchSnapshot()
+  ).toMatchSnapshot();
 
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `"use client"
 
       import * as React from "react"
@@ -27,25 +27,25 @@ import { Foo } from "bar"
         rsc: true,
       },
     })
-  ).toMatchSnapshot()
+  ).toMatchSnapshot();
 
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `"use client"
 
-      import * as React from "react"
+     import * as React from "react"
 import { Foo } from "bar"
     `,
       config: {
         rsc: false,
       },
     })
-  ).toMatchSnapshot()
+  ).toMatchSnapshot();
 
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `"use foo"
 
       import * as React from "react"
@@ -57,5 +57,5 @@ import { Foo } from "bar"
         rsc: false,
       },
     })
-  ).toMatchSnapshot()
-})
+  ).toMatchSnapshot();
+});
