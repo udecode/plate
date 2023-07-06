@@ -1,12 +1,5 @@
 # @udecode/plate-core
 
-## 22.0.0
-
-### Minor Changes
-
-- [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – New plugin option:
-  - `enabled`: boolean to enable/disable the plugin
-
 ## 21.5.0
 
 ### Minor Changes
