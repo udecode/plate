@@ -1,5 +1,11 @@
 # @udecode/plate-break
 
+## 22.0.0
+
+### Patch Changes
+
+- [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – Fix: normalize only for the editor node.
+
 ## 21.5.0
 
 ## 21.4.2

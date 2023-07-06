@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-html
 
+## 22.0.0
+
+### Patch Changes
+
+- [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – Fix `serializeHtml` to support `initialValue`
+
 ## 21.5.0
 
 ## 21.4.2
