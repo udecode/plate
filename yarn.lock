@@ -24983,12 +24983,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-builder@npm:3.0.1":
-  version: 3.0.1
-  resolution: "unist-builder@npm:3.0.1"
+"unist-builder@npm:3.0.0":
+  version: 3.0.0
+  resolution: "unist-builder@npm:3.0.0"
   dependencies:
     "@types/unist": "npm:^2.0.0"
-  checksum: ecd976eb930fda62edb46bcbfd18a84cc484072ef0e43be99faa5ca9a021c3b2691dcf7ecaa82393d596bf801e3ded6f71ea5cfa586b73d80251cec2f47fad72
+  checksum: c50173b69fad25a27ca7ccfa68f4bcdd87d1631d0e3063b957471ee84e3a11ec16dd2f6ca62bd849160eae4131e0fb619576b5fdc47fad4b159e6dbe19d4433c
   languageName: node
   linkType: hard
 
@@ -26152,7 +26152,7 @@ __metadata:
     tailwindcss-animate: "npm:^1.0.6"
     ts-node: "npm:^10.9.1"
     typescript: "npm:5.0.4"
-    unist-builder: "npm:3.0.1"
+    unist-builder: "npm:3.0.0"
     unist-util-visit: "npm:^4.1.2"
   languageName: unknown
   linkType: soft
