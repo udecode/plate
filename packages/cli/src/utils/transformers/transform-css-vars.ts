@@ -35,7 +35,7 @@ export const transformCssVars: Transformer = async ({
     const value = node.getText();
     if (value) {
       const valueWithColorMapping = applyColorMapping(
-        value.replaceAll('"', ''),
+        value.replace(/"/g, ''),
         baseColor.inlineColors
       );
       node.replaceWithText(`"${valueWithColorMapping.trim()}"`);
