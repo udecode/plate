@@ -1,4 +1,4 @@
-name: Lint and typecheck
+name: Build apps
 
 on:
   push:
@@ -59,7 +59,7 @@ jobs:
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
       # Lint, typecheck, build
-      - name: Build
+      - name: Build Apps
         run: yarn build:apps
 
   notify:

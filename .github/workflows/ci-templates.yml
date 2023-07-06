@@ -1,4 +1,4 @@
-name: Lint and typecheck
+name: Build templates
 
 on:
   push:
