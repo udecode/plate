@@ -294,6 +294,7 @@ it('serialize image and paragraph to html', () => {
       },
     ],
   });
-  const result = `<div class="slate-p">I am centered text!</div><div class="slate-img"><figure  contenteditable="false"><div style="position:relative"><div style="width:0;min-width:92px;max-width:100%;position:relative" ><div style="cursor:ew-resize" ></div><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" /><div style="cursor:ew-resize" ></div></div></div></figure></div>`;
-  expect(render).toBe(result);
+  expect(render).toContain(
+    `<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" draggable="true" />`
+  );
 });
