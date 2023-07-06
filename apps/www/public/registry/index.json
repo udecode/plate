@@ -90,7 +90,6 @@
   {
     "name": "emoji-dropdown-menu",
     "dependencies": [
-      "@udecode/plate-floating",
       "@radix-ui/react-popover"
     ],
     "registryDependencies": [
@@ -203,13 +202,11 @@
   {
     "name": "combobox",
     "dependencies": [
-      "@udecode/plate-combobox",
       "@radix-ui/react-popover",
+      "@udecode/plate-combobox",
       "@udecode/plate-floating"
     ],
-    "registryDependencies": [
-      "popover"
-    ],
+    "registryDependencies": [],
     "files": [
       "plate-ui/combobox.tsx"
     ],
@@ -634,9 +631,7 @@
   },
   {
     "name": "mode-dropdown-menu",
-    "dependencies": [
-      "@udecode/plate-suggestion"
-    ],
+    "dependencies": [],
     "registryDependencies": [
       "dropdown-menu",
       "toolbar"
@@ -649,9 +644,7 @@
   {
     "name": "more-dropdown-menu",
     "dependencies": [
-      "@udecode/plate-kbd",
-      "@udecode/plate-basic-marks",
-      "@udecode/plate-highlight"
+      "@udecode/plate-basic-marks"
     ],
     "registryDependencies": [
       "dropdown-menu",
@@ -808,7 +801,8 @@
     ],
     "registryDependencies": [
       "tooltip",
-      "toggle"
+      "toggle",
+      "separator"
     ],
     "files": [
       "plate-ui/toolbar.tsx"

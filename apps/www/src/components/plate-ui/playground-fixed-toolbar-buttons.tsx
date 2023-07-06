@@ -27,13 +27,13 @@ import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-butt
 import { ListToolbarButton } from '@/registry/default/plate-ui/list-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
 import { MediaToolbarButton } from '@/registry/default/plate-ui/media-toolbar-button';
-import { ModeDropdownMenu } from '@/registry/default/plate-ui/mode-dropdown-menu';
-import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 import { OutdentToolbarButton } from '@/registry/default/plate-ui/outdent-toolbar-button';
 import { TableDropdownMenu } from '@/registry/default/plate-ui/table-dropdown-menu';
 import { ToolbarGroup } from '@/registry/default/plate-ui/toolbar';
 
 import { PlaygroundInsertDropdownMenu } from './playground-insert-dropdown-menu';
+import { PlaygroundModeDropdownMenu } from './playground-mode-dropdown-menu';
+import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
@@ -145,7 +145,7 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
               {isEnabled('emoji', id) && <EmojiDropdownMenu />}
 
-              <MoreDropdownMenu />
+              <PlaygroundMoreDropdownMenu />
             </ToolbarGroup>
           </>
         )}
@@ -154,7 +154,7 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
         <ToolbarGroup noSeparator>
           {isEnabled('comment', id) && <CommentToolbarButton />}
-          <ModeDropdownMenu />
+          <PlaygroundModeDropdownMenu />
         </ToolbarGroup>
       </div>
     </div>

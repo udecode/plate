@@ -294,7 +294,7 @@ export const Index: Record<string, any> = {
     'combobox': {
       name: 'combobox',
       type: 'components:plate-ui',
-      registryDependencies: ["popover"],
+      registryDependencies: [],
       files: ['registry/default/plate-ui/combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/combobox')),
     },
@@ -637,7 +637,7 @@ export const Index: Record<string, any> = {
     'toolbar': {
       name: 'toolbar',
       type: 'components:plate-ui',
-      registryDependencies: ["tooltip","toggle"],
+      registryDependencies: ["tooltip","toggle","separator"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },

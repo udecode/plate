@@ -117,7 +117,9 @@ export async function promptForConfig(
     {
       type: 'toggle',
       name: 'tailwindCssVariables',
-      message: `Do you want to use ${highlight('CSS variables')} for colors?`,
+      message: `Would you like to use ${highlight(
+        'CSS variables'
+      )} for colors?`,
       initial: defaultConfig?.tailwind.cssVariables ?? true,
       active: 'yes',
       inactive: 'no',

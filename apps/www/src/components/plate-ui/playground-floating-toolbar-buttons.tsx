@@ -14,9 +14,9 @@ import { Icons } from '@/components/icons';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
-import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 import { ToolbarSeparator } from '@/registry/default/plate-ui/toolbar';
 
+import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
@@ -58,7 +58,7 @@ export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
 
       {isEnabled('comment', id) && <CommentToolbarButton />}
 
-      <MoreDropdownMenu />
+      <PlaygroundMoreDropdownMenu />
     </>
   );
 }

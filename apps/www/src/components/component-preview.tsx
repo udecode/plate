@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 import { Index } from '@/__registry__';
-import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { styles } from '@/registry/styles';
 
 import { CopyButton, CopyWithClassNames } from './copy-button';
+import { Icons } from './icons';
 import { StyleSwitcher } from './style-switcher';
 import { ThemeWrapper } from './theme-wrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -105,7 +105,7 @@ export function ComponentPreview({
               fallback={
                 // eslint-disable-next-line tailwindcss/no-custom-classname
                 <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
                 </div>
               }

@@ -15,9 +15,10 @@ import {
   useMediaState,
 } from '@udecode/plate-media';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
-import { MediaPopover } from './media-popover';
 
 import { cn } from '@/lib/utils';
+
+import { MediaPopover } from './media-popover';
 
 const align = 'center';
 
@@ -38,10 +39,7 @@ export function ImageElement({
       <PlateElement className={cn('py-2.5', className)} {...props}>
         <figure className="group relative m-0" contentEditable={false}>
           <Resizable
-            className={cn(
-              align === 'center' && 'mx-auto'
-              // align === 'right' && 'ml-auto'
-            )}
+            className={cn(align === 'center' && 'mx-auto')}
             options={{
               renderHandleLeft: (htmlProps) => (
                 <Box
@@ -50,7 +48,6 @@ export function ImageElement({
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
                     'after:flex after:h-16 after:bg-ring after:opacity-0 after:group-hover:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant left
                     '-left-3 -ml-3 pl-3'
@@ -64,7 +61,6 @@ export function ImageElement({
                     'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
                     'after:flex after:h-16 after:bg-ring after:opacity-0 after:group-hover:opacity-100',
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    // 'hover:after:bg-muted-foreground focus:after:bg-muted-foreground active:after:bg-muted-foreground',
                     focused && selected && 'opacity-100',
                     // variant right
                     '-right-3 -mr-3 items-end pr-3'

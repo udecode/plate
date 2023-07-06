@@ -13,6 +13,7 @@ module.exports = {
     '@next/next/no-html-link-for-pages': 'off',
     'prettier/prettier': ['warn', prettierConfig],
     'react/jsx-key': 'off',
+    'tailwindcss/classnames-order': 'off',
     'tailwindcss/no-custom-classname': 'off',
     'unused-imports/no-unused-imports': 'warn',
     'unused-imports/no-unused-vars': [

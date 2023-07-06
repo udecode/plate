@@ -414,18 +414,14 @@ const ui: Registry = [
   {
     name: 'mode-dropdown-menu',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-suggestion'],
+    dependencies: [],
     registryDependencies: ['dropdown-menu', 'toolbar'],
     files: ['plate-ui/mode-dropdown-menu.tsx'],
   },
   {
     name: 'more-dropdown-menu',
     type: 'components:plate-ui',
-    dependencies: [
-      '@udecode/plate-kbd',
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-highlight',
-    ],
+    dependencies: ['@udecode/plate-basic-marks'],
     registryDependencies: ['dropdown-menu', 'toolbar'],
     files: ['plate-ui/more-dropdown-menu.tsx'],
   },
@@ -518,7 +514,7 @@ const ui: Registry = [
     name: 'toolbar',
     type: 'components:plate-ui',
     dependencies: ['@radix-ui/react-toolbar'],
-    registryDependencies: ['tooltip', 'toggle'],
+    registryDependencies: ['tooltip', 'toggle', 'separator'],
     files: ['plate-ui/toolbar.tsx'],
   },
   {
