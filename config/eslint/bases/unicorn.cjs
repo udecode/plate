@@ -32,6 +32,7 @@ module.exports = {
         'unicorn/prefer-node-protocol': 'off',
         'unicorn/no-process-exit': 'off',
         'unicorn/prefer-top-level-await': 'off',
+        'unicorn/prefer-string-replace-all': 'off',
       },
     },
   ],
