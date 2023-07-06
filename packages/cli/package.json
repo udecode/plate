@@ -21,7 +21,6 @@
   "scripts": {
     "build": "yarn tsup",
     "build:watch": "yarn tsup --watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean && rimraf components",
     "dev": "COMPONENTS_REGISTRY_URL=http://localhost:3000 node dist/index.js",
     "lint": "yarn p:lint",
