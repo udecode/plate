@@ -1,5 +1,14 @@
 # @udecode/plate-code-block
 
+## 22.0.0
+
+### Minor Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – New exports:
+  - `useCodeBlockElement`
+  - `useCodeBlockSelectElement`
+  - `useCodeSyntaxLeaf`
+
 ## 21.5.0
 
 ## 21.4.2

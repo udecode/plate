@@ -1,5 +1,32 @@
 # @udecode/plate-link
 
+## 22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `FloatingLink`
+  - `FloatingLinkEditButton`
+  - `FloatingLinkTextInput`
+  - `UnlinkButton`
+  - `LaunchIcon`
+  - `Link`
+  - `LinkIcon`
+  - `LinkOffIcon`
+  - `ShortTextIcon`
+
+### Minor Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – New hooks:
+
+  - `useLink`
+  - `useLinkToolbarButton`
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – New exports:
+  - `useListToolbarButton`
+  - `useTodoListElement`
+  - `someList`
+
 ## 21.5.0
 
 ## 21.4.2

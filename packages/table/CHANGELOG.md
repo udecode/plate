@@ -1,5 +1,38 @@
 # @udecode/plate-table
 
+## 22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `TableCellElement`
+  - `TableCellElementResizableWrapper`
+  - `TableCellElementRoot`
+  - `TableElement`
+  - `TableElementCol`
+  - `TableElementColGroup`
+  - `TableElementRoot`
+  - `TableElementTBody`
+  - `TableRowElement`
+  - `ArrowDropDownCircleIcon`
+  - `BorderAllIcon`
+  - `BorderBottomIcon`
+  - `BorderLeftIcon`
+  - `BorderNoneIcon`
+  - `BorderOuterIcon`
+  - `BorderRightIcon`
+  - `BorderTopIcon`
+
+### Minor Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – New hooks:
+  - `useTableElement`
+  - `useTableCellElement`
+
+### Patch Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Untab from first row cell should not throw anymore.
+
 ## 21.5.0
 
 ## 21.4.3
