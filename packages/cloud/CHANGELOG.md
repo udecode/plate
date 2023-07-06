@@ -1,14 +1,5 @@
 # @udecode/plate-cloud
 
-## 22.0.0
-
-### Minor Changes
-
-- [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – New exports:
-  - `generateSrcAndSrcSet`
-  - `useCloudAttachmentElementState`
-  - `useCloudImageElementState`
-
 ## 21.5.0
 
 ## 21.4.2

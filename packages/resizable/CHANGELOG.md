@@ -1,7 +1,5 @@
 # @udecode/plate-resizable
 
-## 22.0.0
-
 ## 20.5.3
 
 ## 20.5.2
