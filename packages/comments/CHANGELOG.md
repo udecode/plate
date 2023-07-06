@@ -1,5 +1,26 @@
 # @udecode/plate-comments
 
+## 22.0.0
+
+### Major Changes
+
+- [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `AccountCircleIcon`
+  - `CheckIcon`
+  - `MoreVertIcon`
+  - `RefreshIcon`
+  - `AvatarImage`
+  - `CommentLinkButton`
+  - `CommentLinkDialog`
+  - `CommentLinkDialogCloseButton`
+  - `CommentLinkDialogCopyLink`
+  - `CommentLinkDialogInput`
+  - `PlateCommentLeaf` for `useCommentLeafState`
+
+### Minor Changes
+
+- ## [#2403](https://github.com/udecode/plate/pull/2403) by [@zbeyens](https://github.com/zbeyens) – New exports:
+
 ## 21.5.0
 
 ## 21.4.2
