@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
+// eslint-disable-next-line import/no-unresolved
 import { Atom, Scope, SetAtom } from 'jotai/core/atom';
 
 export type GetRecord<O> = {
@@ -32,20 +33,18 @@ export type AtomStoreApi<T, N extends string = ''> = {
       >
     ) => AtomStoreApi<T & ET, EN extends string ? EN : N>;
   };
-} &
-  {
-    [key in keyof Record<UseNameStore<N>, {}>]: (
-      scope?: Scope
-    ) => {
-      get: GetRecord<T>;
-      set: SetRecord<T>;
-      use: UseRecord<T>;
-    };
+} & {
+  [key in keyof Record<UseNameStore<N>, {}>]: (scope?: Scope) => {
+    get: GetRecord<T>;
+    set: SetRecord<T>;
+    use: UseRecord<T>;
   };
+};
 
 const capitalizeFirstLetter = (str = '') =>
-  str.length ? str[0].toUpperCase() + str.slice(1) : '';
-const getStoreIndex = (name = '') => (name.length ? `${name}Store` : 'store');
+  str.length > 0 ? str[0].toUpperCase() + str.slice(1) : '';
+const getStoreIndex = (name = '') =>
+  name.length > 0 ? `${name}Store` : 'store';
 const getUseStoreIndex = (name = '') =>
   `use${capitalizeFirstLetter(name)}Store`;
 
@@ -81,20 +80,20 @@ export const createAtomStore = <T, IT, N extends string = ''>(
   const storeIndex = getStoreIndex(name);
 
   const getAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().get
+    ? (initialStore as any)[useInitialStoreIndex]().get
     : ({} as GetRecord<T & IT>);
   const setAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().set
+    ? (initialStore as any)[useInitialStoreIndex]().set
     : ({} as SetRecord<T & IT>);
   const useAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().use
+    ? (initialStore as any)[useInitialStoreIndex]().use
     : ({} as UseRecord<T & IT>);
   const atoms = initialStore
-    ? initialStore[initialStoreIndex].atom
+    ? (initialStore as any)[initialStoreIndex].atom
     : ({} as AtomRecord<T & IT>);
 
-  Object.keys(initialState).forEach((key) => {
-    const atomConfig = atom(initialState[key]);
+  Object.keys(initialState as any).forEach((key) => {
+    const atomConfig = atom((initialState as any)[key]);
 
     atoms[key] = atomConfig;
     getAtoms[key] = (scope?: Scope) => {

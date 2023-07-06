@@ -38,7 +38,7 @@ describe('createAtomStore', () => {
 
   describe('when store is extended', () => {
     it('should be defined', () => {
-      const { namedStore, useNamedStore } = createAtomStore(
+      const { namedStore } = createAtomStore(
         {
           a: 1,
           b: 'a',

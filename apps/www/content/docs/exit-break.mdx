@@ -1,0 +1,122 @@
+---
+title: Exit Break
+description: Exit a large block using a shortcut.
+---
+
+<ComponentPreview name="playground-demo" id="exitbreak" />
+
+<PackageInfo>
+
+## Features
+
+- Exit large text blocks with a single hotkey.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+## Usage
+
+```tsx
+import { createExitBreakPlugin } from '@udecode/plate-break';
+
+const plugins = [
+  // ...otherPlugins,
+  createExitBreakPlugin({
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: KEYS_HEADING,
+          },
+          relative: true,
+          level: 1,
+        },
+      ],
+    },
+  }),
+];
+```
+
+## API
+
+### createExitBreakPlugin
+
+<APIParameters>
+
+Options.
+
+<APIItem name="rules" type="ExitBreakRule[]" optional>
+
+An array of rule objects each containing the following properties:
+
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+Hotkey to trigger exit break.
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions & {start?: boolean, end?: boolean}" optional>
+Object determining the conditions under which to exit.
+
+- Extends `QueryNodeOptions`:
+
+<APISubList>
+
+<APISubListItem parent="query" name="start" type="boolean" optional>
+
+Start of the block.
+
+</APISubListItem>
+
+<APISubListItem parent="query" name="end" type="boolean" optional>
+
+End of the block.
+
+</APISubListItem>
+
+</APISubList>
+
+</APISubListItem>
+<APISubListItem parent="rules" name="level" type="number" optional>
+Path level where to exit.
+
+- **Default:** `1`
+
+</APISubListItem>
+<APISubListItem parent="rules" name="before" type="boolean" optional>
+If true, exit before the selected block.
+</APISubListItem>
+<APISubListItem parent="rules" name="defaultType" type="string" optional>
+The default type of the node to be inserted upon exit.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+### exitBreak
+
+### exitBreakAtEdges
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    Start a new block after the selected block.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    Start a new block before the selected block.
+  </KeyTableItem>
+</KeyTable>

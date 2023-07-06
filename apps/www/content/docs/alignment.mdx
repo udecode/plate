@@ -1,0 +1,59 @@
+---
+title: Alignment
+description: Align your content to different positions.
+docs:
+  - route: /docs/components/align-dropdown-menu
+    title: Align Dropdown Menu
+---
+
+<ComponentPreview name="playground-demo" id="align" />
+
+<PackageInfo>
+
+## Features
+
+- Provides text alignment options: left, right, center, or justify.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-alignment
+```
+
+## Usage
+
+```tsx
+// ...
+import { createAlignPlugin } from '@udecode/plate-alignment';
+
+const plugins = [
+  // ...otherPlugins,
+  createAlignPlugin({
+    inject: {
+      props: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
+      },
+    },
+  }),
+];
+```
+
+## API
+
+### createAlignPlugin
+
+### setAlign
+
+## API Components
+
+### useAlignDropdownMenu

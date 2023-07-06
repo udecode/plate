@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-common';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -19,7 +20,7 @@ describe('when deserializing p > test', () => {
   it('should be', () => {
     expect(
       htmlElementToElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [createParagraphPlugin()],
         }),
         parseHtmlElement(`<p>test</p>`)

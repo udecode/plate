@@ -1,24 +1,25 @@
 import { useEffect } from 'react';
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   findNode,
   focusEditor,
   getEndPoint,
   isEditorReadOnly,
-  PlateEditor,
   removeNodes,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
-import { copySelectedBlocks } from './utils/copySelectedBlocks';
-import { selectInsertedBlocks } from './utils/index';
-import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
+
 import {
   blockSelectionActions,
   blockSelectionSelectors,
   useBlockSelectionSelectors,
 } from './blockSelectionStore';
 import { BlockSelectionPlugin } from './createBlockSelectionPlugin';
+import { copySelectedBlocks } from './utils/copySelectedBlocks';
+import { selectInsertedBlocks } from './utils/index';
+import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
 export const useHooksBlockSelection = <
   V extends Value = Value,
@@ -33,9 +34,9 @@ export const useHooksBlockSelection = <
 
   // TODO: test
   useEffect(() => {
-    const el = document.getElementById('slate-shadow-input');
+    const el = document.querySelector('#slate-shadow-input');
     if (el) {
-      document.body.removeChild(el);
+      el.remove();
     }
 
     const isReadonly = isEditorReadOnly(editor);
@@ -51,7 +52,7 @@ export const useHooksBlockSelection = <
       input.style.left = '-300px';
       input.style.opacity = '0';
 
-      input.onkeydown = (e) => {
+      input.addEventListener('keydown', (e) => {
         onKeyDownSelecting?.(e);
 
         // selecting commands
@@ -94,17 +95,17 @@ export const useHooksBlockSelection = <
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
         }
-      };
+      });
 
       // TODO: paste + select blocks if selecting editor
-      input.oncopy = (e) => {
+      input.addEventListener('copy', (e) => {
         e.preventDefault();
 
         if (blockSelectionSelectors.isSelectingSome()) {
           copySelectedBlocks(editor);
         }
-      };
-      input.oncut = (e) => {
+      });
+      input.addEventListener('cut', (e) => {
         e.preventDefault();
 
         if (blockSelectionSelectors.isSelectingSome()) {
@@ -117,15 +118,15 @@ export const useHooksBlockSelection = <
             });
           }
         }
-      };
-      input.onpaste = (e) => {
+      });
+      input.addEventListener('paste', (e) => {
         e.preventDefault();
 
         if (!isReadonly) {
           pasteSelectedBlocks(editor, e);
         }
-      };
-      document.body.appendChild(input);
+      });
+      document.body.append(input);
       input.focus();
     }
   }, [editor, isSelecting, onKeyDownSelecting, selectedIds]);

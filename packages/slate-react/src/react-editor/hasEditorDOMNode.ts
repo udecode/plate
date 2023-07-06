@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
 import { DOMNode } from 'slate-react/dist/utils/dom';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -13,7 +14,7 @@ export const hasEditorDOMNode = <V extends Value>(
 ) => {
   try {
     return ReactEditor.hasDOMNode(editor as any, target, options);
-  } catch (e) {}
+  } catch (error) {}
 
   return false;
 };

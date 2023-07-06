@@ -1,11 +1,12 @@
 import {
+  TEditor,
+  Value,
   getPointAfter,
   getPointBefore,
   getVoidNode,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import { Path, Point } from 'slate';
+
 import { getBlockAbove } from './getBlockAbove';
 
 /**
@@ -30,12 +31,9 @@ export const getPointNextToVoid = <V extends Value>(
     const blockAbove = getBlockAbove(editor, { at });
 
     if (blockAbove) {
-      let nextPoint: Point | undefined;
-      if (after) {
-        nextPoint = getPointAfter(editor, at);
-      } else {
-        nextPoint = getPointBefore(editor, at);
-      }
+      const nextPoint = after
+        ? getPointAfter(editor, at)
+        : getPointBefore(editor, at);
 
       if (
         nextPoint &&

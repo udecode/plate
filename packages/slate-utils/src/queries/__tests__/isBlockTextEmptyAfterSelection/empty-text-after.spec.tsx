@@ -1,14 +1,12 @@
 /** @jsx jsx */
 
-import { createLinkPlugin } from '@udecode/plate-link';
+import { isBlockTextEmptyAfterSelection } from '@/packages/slate-utils/src/queries/isBlockTextEmptyAfterSelection';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { createPlateEditor } from '../../../../../core/src/utils/createPlateEditor';
-import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
+import { TEditor } from '@udecode/slate';
 
 jsx;
 
-const input = ((
+const editor = (
   <editor>
     <hp>
       <htext>first</htext>
@@ -19,15 +17,12 @@ const input = ((
       <htext />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as TEditor;
 
 const output = true;
 
 it('should be', () => {
-  const editor = createPlateEditor({
-    editor: input,
-    plugins: [createLinkPlugin()],
-  });
+  editor.isInline = (element) => element.type === 'a';
 
   expect(isBlockTextEmptyAfterSelection(editor)).toEqual(output);
 });

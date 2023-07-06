@@ -1,11 +1,12 @@
 import { FC, ReactNode } from 'react';
 import { Value } from '@udecode/slate';
 import { AnyObject, WithRequired } from '@udecode/utils';
-import { Nullable } from '../misc';
+
 import { PlateEditor } from '../PlateEditor';
+import { Nullable } from '../misc';
+import { DOMHandlers } from './DOMHandlers';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
-import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
 import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
@@ -90,6 +91,11 @@ export type PlatePlugin<
    * Property used by `inlineVoid` core plugin to set elements of this `type` as void.
    */
   isVoid?: boolean;
+
+  /**
+   * Property used by Plate to enable/disable the plugin.
+   */
+  enabled?: boolean;
 
   /**
    * Extended properties used by any plugin as options.

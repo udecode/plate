@@ -1,6 +1,7 @@
 import { TNode, Value } from '@udecode/slate';
 import { Path } from 'slate';
 import { ReactEditor } from 'slate-react';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -12,5 +13,5 @@ export const findNodePath = <V extends Value>(
 ): Path | undefined => {
   try {
     return ReactEditor.findPath(editor as any, node);
-  } catch (e) {}
+  } catch (error) {}
 };

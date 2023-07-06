@@ -1,14 +1,15 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   getAboveNode,
   getNodeString,
   getPluginType,
   isCollapsed,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
+
 import { ImagePlugin } from '../image/index';
 import { TMediaElement } from '../media/index';
 import { captionGlobalStore } from './captionGlobalStore';
@@ -25,28 +26,28 @@ import { captionGlobalStore } from './captionGlobalStore';
  * - If focus is in table, anchor in a block before: set focus to end of table
  * - If focus is in table, anchor in a block after: set focus to the point before start of table
  */
-export const getWithSelectionCaption = (pluginKey: string) => <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->(
-  editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  plugin: WithPlatePlugin<ImagePlugin, V, E>
-) => {
-  const { apply } = editor;
+export const getWithSelectionCaption =
+  (pluginKey: string) =>
+  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
+    editor: E,
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    plugin: WithPlatePlugin<ImagePlugin, V, E>
+  ) => {
+    const { apply } = editor;
 
-  editor.apply = (operation) => {
-    if (operation.type === 'set_selection') {
-      const newSelection = {
-        ...editor.selection,
-        ...operation.newProperties,
-      } as Range | null;
+    editor.apply = (operation) => {
+      if (operation.type === 'set_selection') {
+        const newSelection = {
+          ...editor.selection,
+          ...operation.newProperties,
+        } as Range | null;
 
-      if (
-        editor.currentKeyboardEvent &&
-        isHotkey('up', editor.currentKeyboardEvent)
-      ) {
-        if (newSelection && isCollapsed(newSelection)) {
+        if (
+          editor.currentKeyboardEvent &&
+          isHotkey('up', editor.currentKeyboardEvent) &&
+          newSelection &&
+          isCollapsed(newSelection)
+        ) {
           const entry = getAboveNode<TMediaElement>(editor, {
             at: newSelection,
             match: { type: getPluginType(editor, pluginKey) },
@@ -57,7 +58,7 @@ export const getWithSelectionCaption = (pluginKey: string) => <
 
             if (
               node.caption &&
-              getNodeString({ children: node.caption } as any).length
+              getNodeString({ children: node.caption } as any).length > 0
             ) {
               setTimeout(() => {
                 captionGlobalStore.set.focusEndCaptionPath(entry[1]);
@@ -66,10 +67,9 @@ export const getWithSelectionCaption = (pluginKey: string) => <
           }
         }
       }
-    }
 
-    apply(operation);
+      apply(operation);
+    };
+
+    return editor;
   };
-
-  return editor;
-};

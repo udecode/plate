@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
+
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
 import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 

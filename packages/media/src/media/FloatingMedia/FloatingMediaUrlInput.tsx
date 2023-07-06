@@ -1,14 +1,12 @@
-import { ChangeEventHandler, useCallback, useEffect } from 'react';
+import { ChangeEventHandler, useCallback } from 'react';
 import {
-  createComponentAs,
-  createElementAs,
+  createPrimitiveComponent,
   focusEditor,
-  HTMLPropsAs,
-  mergeProps,
-  useEditorRef,
   useElement,
   useHotkeys,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { TMediaElement } from '../types';
 import {
   floatingMediaActions,
@@ -16,22 +14,13 @@ import {
 } from './floatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';
 
-export type FloatingMediaUrlInputProps = HTMLPropsAs<'input'> & {
-  pluginKey?: string;
-};
-
-export const useFloatingMediaUrlInput = ({
+export const useFloatingMediaUrlInputState = ({
   pluginKey,
-  ...props
-}: FloatingMediaUrlInputProps): HTMLPropsAs<'input'> => {
-  const editor = useEditorRef();
+}: {
+  pluginKey?: string;
+} = {}) => {
+  const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
-
-  useEffect(() => {
-    return () => {
-      floatingMediaActions.isEditing(false);
-    };
-  }, []);
 
   useHotkeys(
     'enter',
@@ -61,24 +50,28 @@ export const useFloatingMediaUrlInput = ({
     []
   );
 
+  return {
+    defaultValue: floatingMediaSelectors.url(),
+  };
+};
+
+export const useFloatingMediaUrlInput = ({
+  defaultValue,
+}: ReturnType<typeof useFloatingMediaUrlInputState>) => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingMediaActions.url(e.target.value);
   }, []);
 
-  return mergeProps(
-    {
+  return {
+    props: {
       onChange,
       autoFocus: true,
-      defaultValue: floatingMediaSelectors.url(),
+      defaultValue,
     },
-    props
-  );
+  };
 };
 
-export const FloatingMediaUrlInput = createComponentAs<FloatingMediaUrlInputProps>(
-  (props) => {
-    const htmlProps = useFloatingMediaUrlInput(props);
-
-    return createElementAs('input', htmlProps);
-  }
-);
+export const FloatingMediaUrlInput = createPrimitiveComponent('input')({
+  stateHook: useFloatingMediaUrlInputState,
+  propsHook: useFloatingMediaUrlInput,
+});

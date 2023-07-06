@@ -1,11 +1,12 @@
 import {
   EAncestor,
   GetAboveNodeOptions,
-  getEdgePoints,
   TEditor,
   TNodeEntry,
   Value,
+  getEdgePoints,
 } from '@udecode/slate';
+
 import { getBlockAbove } from './getBlockAbove';
 
 /**

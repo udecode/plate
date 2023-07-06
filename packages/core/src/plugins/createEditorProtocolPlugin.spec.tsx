@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@/packages/core/src/utils/index';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../utils/index';
 
 jsx;
 

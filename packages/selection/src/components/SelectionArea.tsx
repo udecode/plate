@@ -1,12 +1,8 @@
 import React, { createRef, useEffect } from 'react';
 import VanillaSelectionArea, {
-  ChangedElements,
-  SelectionEvent,
   SelectionEvents,
   SelectionOptions,
 } from '@viselect/vanilla';
-
-export type { SelectionEvent, ChangedElements };
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
@@ -26,7 +22,7 @@ export interface SelectionAreaProps
   ) => SelectionOptions['boundaries'];
 }
 
-export const SelectionArea = ({
+export function SelectionArea({
   onBeforeStart,
   onStart,
   onMove,
@@ -42,7 +38,7 @@ export const SelectionArea = ({
   features,
   getBoundaries = (boundaries) => boundaries,
   ...props
-}: SelectionAreaProps) => {
+}: SelectionAreaProps) {
   const ref = createRef<HTMLDivElement>();
 
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -78,4 +74,6 @@ export const SelectionArea = ({
       {children}
     </div>
   );
-};
+}
+
+export { type ChangedElements, type SelectionEvent } from '@viselect/vanilla';

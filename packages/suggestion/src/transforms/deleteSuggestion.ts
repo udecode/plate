@@ -1,4 +1,7 @@
 import {
+  PlateEditor,
+  TElement,
+  Value,
   createPointRef,
   deleteText,
   findNode,
@@ -11,14 +14,12 @@ import {
   isStartPoint,
   moveSelection,
   nanoid,
-  PlateEditor,
   removeNodes,
-  TElement,
   unhangCharacterRange,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point, Range } from 'slate';
+
 import { MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { findSuggestionNode } from '../queries/index';

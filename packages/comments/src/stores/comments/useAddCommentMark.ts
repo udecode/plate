@@ -6,6 +6,7 @@ import {
   setNodes,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { MARK_COMMENT } from '../../constants';
 import { getCommentKey } from '../../utils/index';
 import { useCommentsActions } from './CommentsProvider';
@@ -43,7 +44,7 @@ export const useAddCommentMark = () => {
 
     try {
       deselectEditor(editor);
-    } catch (err) {}
+    } catch {}
 
     setTimeout(() => {
       setActiveCommentId(id);

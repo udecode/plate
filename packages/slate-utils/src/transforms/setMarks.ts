@@ -1,5 +1,6 @@
 import { EMarks, TEditor, Value, withoutNormalizing } from '@udecode/slate';
 import castArray from 'lodash/castArray';
+
 import { removeMark } from './removeMark';
 
 /**
@@ -18,7 +19,7 @@ export const setMarks = <V extends Value>(
     removeMark(editor, { key: Object.keys(marks) });
 
     Object.keys(marks).forEach((key) => {
-      editor.addMark(key, marks[key]);
+      editor.addMark(key, (marks as any)[key]);
     });
   });
 };

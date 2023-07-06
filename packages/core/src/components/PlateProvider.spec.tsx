@@ -1,7 +1,12 @@
 import React from 'react';
+import {
+  PLATE_SCOPE,
+  usePlateEditorRef,
+  usePlateSelectors,
+} from '@/packages/core/src/stores';
+import { createPlateEditor } from '@/packages/core/src/utils';
 import { renderHook } from '@testing-library/react-hooks';
-import { PLATE_SCOPE, usePlateEditorRef, usePlateSelectors } from '../stores';
-import { createPlateEditor } from '../utils';
+
 import { PlateProvider } from './PlateProvider';
 
 describe('PlateProvider', () => {
@@ -122,11 +127,11 @@ describe('PlateProvider', () => {
           }
         );
 
-        expect(result.current[result.current.length - 1].key).toBe('test');
+        expect(result.current.at(-1)!.key).toBe('test');
 
         rerender({ plugins: [{ key: 'test2' }] });
 
-        expect(result.current[result.current.length - 1].key).toBe('test2');
+        expect(result.current.at(-1)!.key).toBe('test2');
       });
     });
   });
@@ -148,11 +153,11 @@ describe('PlateProvider', () => {
         }
       );
 
-      expect(result.current[result.current.length - 1].key).toBe('test1');
+      expect(result.current.at(-1)!.key).toBe('test1');
 
       rerender({ id: 2 });
 
-      expect(result.current[result.current.length - 1].key).not.toBe('test1');
+      expect(result.current.at(-1)!.key).not.toBe('test1');
     });
   });
 

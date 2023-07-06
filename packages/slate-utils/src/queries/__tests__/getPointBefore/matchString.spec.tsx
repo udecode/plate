@@ -1,22 +1,22 @@
 /** @jsx jsx */
 
+import { getPointBeforeLocation } from '@/packages/slate-utils/src/queries/getPointBeforeLocation';
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { getPointBeforeLocation } from '../../getPointBeforeLocation';
 
 jsx;
 
 describe('when skipInvalid is true', () => {
   describe('when matchString is a character', () => {
     it('should be', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             test http://google.com
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const output = { offset: 4, path: [0, 0] };
 
@@ -31,14 +31,14 @@ describe('when skipInvalid is true', () => {
 
   describe('when matchString is multiple characters', () => {
     it('should be', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             find **test
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const output = {
         offset: 5,
@@ -56,14 +56,14 @@ describe('when skipInvalid is true', () => {
 
   describe('when matchString is a character and not in the editor', () => {
     it('should be undefined', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             test
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const output = undefined;
 
@@ -80,14 +80,14 @@ describe('when skipInvalid is true', () => {
 describe('when skipInvalid is false', () => {
   describe('when matchString is multiple characters', () => {
     it('should be', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             find ***__
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const output = {
         offset: 5,
@@ -104,14 +104,14 @@ describe('when skipInvalid is false', () => {
 
   describe('when matchString is an array of string', () => {
     it('should be', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             find ***__
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const output = {
         offset: 5,

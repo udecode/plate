@@ -1,6 +1,7 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { RenderElement } from '../types/RenderElement';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
@@ -22,7 +23,7 @@ export const pipeRenderElement = <V extends Value>(
     }
   });
 
-  return (nodeProps) => {
+  return function render(nodeProps) {
     const props = pipeInjectProps<V>(editor, nodeProps);
 
     let element;

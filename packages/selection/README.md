@@ -1,16 +1,11 @@
-# Plate plugin for block selection 
+# Plate plugin for block selection
 
 Plugin that allows you to select blocks in the drag area using the mouse or touch.
 
 ## Documentation
 
 Check out
-[Block Selection](https://plate.udecode.io/docs/plugins/block-selection).
-
-
-## API
-
-See the [API documentation](https://plate-api.udecode.io/globals.html). 
+[Block Selection](https://platejs.org/docs/block-selection).
 
 ## License
 

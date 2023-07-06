@@ -1,10 +1,11 @@
 import {
-  getInjectedPlugins,
-  pipeInsertDataQuery,
   PlateEditor,
   Value,
   WithPlatePlugin,
+  getInjectedPlugins,
+  pipeInsertDataQuery,
 } from '@udecode/plate-common';
+
 import { insertImage } from './transforms/insertImage';
 import { ImagePlugin } from './types';
 

@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
 import { DOMPoint } from 'slate-react/dist/utils/dom';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -13,5 +14,5 @@ export const toSlatePoint = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toSlatePoint(editor as any, domPoint, options);
-  } catch (e) {}
+  } catch (error) {}
 };

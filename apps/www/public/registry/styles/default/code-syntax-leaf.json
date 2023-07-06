@@ -1,0 +1,14 @@
+{
+  "name": "code-syntax-leaf",
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "code-syntax-leaf.tsx",
+      "content": "'use client';\n\nimport React from 'react';\nimport { useCodeSyntaxLeaf } from '@udecode/plate-code-block';\nimport { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';\n\nexport function CodeSyntaxLeaf({ children, ...props }: PlateLeafProps) {\n  const { leaf } = props;\n\n  const { tokenProps } = useCodeSyntaxLeaf({ leaf });\n\n  return (\n    <PlateLeaf {...props}>\n      <span {...tokenProps}>{children}</span>\n    </PlateLeaf>\n  );\n}\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

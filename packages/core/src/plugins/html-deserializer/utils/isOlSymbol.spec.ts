@@ -1,4 +1,8 @@
-import { NO_BREAK_SPACE, SPACE } from '../constants';
+import {
+  NO_BREAK_SPACE,
+  SPACE,
+} from '@/packages/core/src/plugins/html-deserializer/constants';
+
 import { isOlSymbol } from './isOlSymbol';
 
 describe('isOlSymbol', () => {

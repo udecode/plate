@@ -1,5 +1,5 @@
 import { KeyboardEvent } from 'react';
-import { isComposing, TReactEditor } from '@udecode/slate-react';
+import { TReactEditor, isComposing } from '@udecode/slate-react';
 import { IS_APPLE } from '@udecode/utils';
 import { isKeyHotkey } from 'is-hotkey';
 
@@ -53,9 +53,9 @@ const WINDOWS_HOTKEYS = {
  */
 
 const create = (key: string) => {
-  const generic = HOTKEYS[key];
-  const apple = APPLE_HOTKEYS[key];
-  const windows = WINDOWS_HOTKEYS[key];
+  const generic = (HOTKEYS as any)[key];
+  const apple = (APPLE_HOTKEYS as any)[key];
+  const windows = (WINDOWS_HOTKEYS as any)[key];
   const isGeneric = generic && isKeyHotkey(generic);
   const isApple = apple && isKeyHotkey(apple);
   const isWindows = windows && isKeyHotkey(windows);
@@ -68,24 +68,26 @@ const create = (key: string) => {
   };
 };
 
-const createComposing = (key: string) => (
-  editor: TReactEditor,
-  event: KeyboardEvent,
-  {
-    composing,
-  }: {
-    /**
-     * Ignore the event if composing.
-     */
-    composing?: boolean;
-  } = {}
-) => {
-  if (!create(key)(event)) return false;
+const createComposing =
+  (key: string) =>
+  (
+    editor: TReactEditor,
+    event: KeyboardEvent,
+    {
+      composing,
+    }: {
+      /**
+       * Ignore the event if composing.
+       */
+      composing?: boolean;
+    } = {}
+  ) => {
+    if (!create(key)(event)) return false;
 
-  if (!!composing !== isComposing(editor)) return false;
+    if (!!composing !== isComposing(editor)) return false;
 
-  return true;
-};
+    return true;
+  };
 
 export const Hotkeys = {
   isBold: create('bold'),

@@ -1,11 +1,12 @@
 import {
+  PlateEditor,
+  Value,
   getEdgePoints,
   getPointAfter,
   getPointBefore,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 import { Location, Point } from 'slate';
+
 import { KEY_SUGGESTION_ID } from '../constants';
 import { findSuggestionNode } from './findSuggestionNode';
 
@@ -24,7 +25,7 @@ export const findSuggestionId = <V extends Value>(
     let end: Point;
     try {
       [start, end] = getEdgePoints(editor, at);
-    } catch (err) {
+    } catch {
       return;
     }
 

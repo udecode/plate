@@ -5,11 +5,11 @@ it('should be', () => {
 
   getHandler(cb)();
 
-  expect(cb).toBeCalled();
+  expect(cb).toHaveBeenCalled();
 });
 
 it('should be', () => {
-  getHandler(undefined)();
+  getHandler()();
 
   expect(1).toBe(1);
 });

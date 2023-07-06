@@ -3,7 +3,7 @@
   "version": "21.5.0",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
-  "homepage": "https://plate.udecode.io",
+  "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
@@ -12,15 +12,65 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "files": [
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl:below",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
   "dependencies": {
-    "@udecode/plate-headless": "21.5.0",
-    "@udecode/plate-ui": "21.5.0"
+    "@udecode/plate-alignment": "21.5.0",
+    "@udecode/plate-autoformat": "21.5.0",
+    "@udecode/plate-basic-elements": "21.5.0",
+    "@udecode/plate-basic-marks": "21.5.0",
+    "@udecode/plate-block-quote": "21.5.0",
+    "@udecode/plate-break": "21.5.0",
+    "@udecode/plate-code-block": "21.5.0",
+    "@udecode/plate-combobox": "21.5.0",
+    "@udecode/plate-comments": "21.5.0",
+    "@udecode/plate-common": "21.5.0",
+    "@udecode/plate-find-replace": "21.5.0",
+    "@udecode/plate-floating": "21.5.0",
+    "@udecode/plate-font": "21.5.0",
+    "@udecode/plate-heading": "21.5.0",
+    "@udecode/plate-highlight": "21.5.0",
+    "@udecode/plate-horizontal-rule": "21.5.0",
+    "@udecode/plate-indent": "21.5.0",
+    "@udecode/plate-indent-list": "21.5.0",
+    "@udecode/plate-kbd": "21.5.0",
+    "@udecode/plate-line-height": "21.5.0",
+    "@udecode/plate-link": "21.5.0",
+    "@udecode/plate-list": "21.5.0",
+    "@udecode/plate-media": "21.5.0",
+    "@udecode/plate-mention": "21.5.0",
+    "@udecode/plate-node-id": "21.5.0",
+    "@udecode/plate-normalizers": "21.5.0",
+    "@udecode/plate-paragraph": "21.5.0",
+    "@udecode/plate-reset-node": "21.5.0",
+    "@udecode/plate-select": "21.5.0",
+    "@udecode/plate-serializer-csv": "21.4.3",
+    "@udecode/plate-serializer-docx": "21.4.3",
+    "@udecode/plate-serializer-html": "21.5.0",
+    "@udecode/plate-serializer-md": "21.5.0",
+    "@udecode/plate-suggestion": "21.5.0",
+    "@udecode/plate-tabbable": "21.5.0",
+    "@udecode/plate-table": "21.5.0",
+    "@udecode/plate-trailing-block": "21.5.0",
+    "@udecode/resizable": "20.5.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -28,8 +78,7 @@
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.94.0",
-    "styled-components": ">=5.0.0"
+    "slate-react": ">=0.95.0"
   },
   "keywords": [
     "contentEditable",

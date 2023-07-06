@@ -5,9 +5,9 @@
  */
 
 const protocolAndDomainRE = /^(?:\w+:)?\/\/(\S+)$/;
-const emailLintRE = /mailto:([^\\?]+)/;
+const emailLintRE = /mailto:([^?\\]+)/;
 
-const localhostDomainRE = /^localhost[:?\d]*(?:[^:?\d]\S*)?$/;
+const localhostDomainRE = /^localhost[\d:?]*(?:[^\d:?]\S*)?$/;
 const nonLocalhostDomainRE = /^[^\s.]+\.\S{2,}$/;
 
 /**
@@ -33,7 +33,7 @@ export const isUrl = (string: any) => {
 
   try {
     new URL(string);
-  } catch (err) {
+  } catch {
     return false;
   }
 

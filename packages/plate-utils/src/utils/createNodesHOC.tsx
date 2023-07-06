@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 import { AnyObject } from '@udecode/utils';
 import { castArray } from 'lodash';
 import merge from 'lodash/merge';
+
 import { createNodeHOC } from './createNodeHOC';
 
 export type CreateHOCOptions<T> = Partial<T> &
@@ -23,7 +24,7 @@ const createHOC = <T,>(withHOC: any) => {
     options: CreateHOCOptions<T> | CreateHOCOptions<T>[]
   ) => {
     const _components = { ...components };
-    const optionsByKey = {};
+    const optionsByKey: any = {};
 
     const optionsList = castArray<CreateHOCOptions<T>>(options);
 

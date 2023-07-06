@@ -1,11 +1,12 @@
 import {
   EDescendant,
-  isElement,
-  isText,
   TDescendant,
   Value,
+  isElement,
+  isText,
 } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
+
 import { PlateEditor } from '../../../types';
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -26,7 +27,7 @@ export const htmlElementToLeaf = <V extends Value>(
       if (!child) return arr;
 
       if (isElement(child)) {
-        if (Object.keys(node).length) {
+        if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
             node: child,
             source: node,

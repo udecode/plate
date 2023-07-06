@@ -1,0 +1,35 @@
+---
+title: Single Line
+description: Restrict the editor to a single block.
+---
+
+<ComponentPreview name="playground-demo" id="singleline" />
+
+<PackageInfo>
+
+## Features
+
+- Limits editor to one block of text. Suitable for brief content or titles.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+## Usage
+
+```tsx
+import { createSingleLinePlugin } from '@udecode/plate-break';
+
+const plugins = [
+  // ...otherPlugins
+  createSingleLinePlugin(),
+];
+```
+
+## API
+
+### createSingleLinePlugin

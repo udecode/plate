@@ -1,25 +1,26 @@
 import {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
   getNode,
   getPointAfter,
   getPointBefore,
-  PlateEditor,
   removeNodes,
   setNodes,
   unsetNodes,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
+
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
-import { getSuggestionId, getSuggestionKeys } from './utils/index';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import {
   SuggestionEditorProps,
   SuggestionPlugin,
   TSuggestionText,
 } from './types';
+import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
 export const withSuggestion = <
   V extends Value = Value,
@@ -27,10 +28,10 @@ export const withSuggestion = <
   EE extends E & SuggestionEditorProps = E & SuggestionEditorProps
 >(
   e: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<SuggestionPlugin, V, E>
 ) => {
-  const editor = e as EE;
+  const editor = e as unknown as EE;
 
   const {
     normalizeNode,
@@ -42,7 +43,7 @@ export const withSuggestion = <
     deleteFragment,
   } = editor;
 
-  editor.isSuggesting = true;
+  editor.isSuggesting = false;
 
   editor.insertBreak = () => {
     if (editor.isSuggesting) {
@@ -130,12 +131,12 @@ export const withSuggestion = <
       if (pointBefore) {
         const nodeBefore = getNode(editor, pointBefore.path);
         if (
-          nodeBefore?.[MARK_SUGGESTION] &&
-          nodeBefore[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
+          (nodeBefore as any)?.[MARK_SUGGESTION] &&
+          (nodeBefore as any)[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
         ) {
           setNodes<TSuggestionText>(
             editor,
-            { [KEY_SUGGESTION_ID]: nodeBefore[KEY_SUGGESTION_ID] },
+            { [KEY_SUGGESTION_ID]: (nodeBefore as any)[KEY_SUGGESTION_ID] },
             { at: path }
           );
           return;
@@ -152,15 +153,15 @@ export const withSuggestion = <
       }
 
       // Unset suggestion when there is no suggestion user id
-      if (!getSuggestionKeys(node).length) {
-        if (!node.suggestionDeletion) {
-          // Remove additions
-          removeNodes(editor, { at: path });
-        } else {
+      if (getSuggestionKeys(node).length === 0) {
+        if (node.suggestionDeletion) {
           // Unset deletions
           unsetNodes(editor, [MARK_SUGGESTION, KEY_SUGGESTION_ID], {
             at: path,
           });
+        } else {
+          // Remove additions
+          removeNodes(editor, { at: path });
         }
         return;
       }

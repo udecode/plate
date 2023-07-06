@@ -1,4 +1,5 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
+
 import { getWithSelectionCaption } from '../caption/getWithSelectionCaption';
 import { ELEMENT_IMAGE } from './createImagePlugin';
 import { ImagePlugin } from './types';

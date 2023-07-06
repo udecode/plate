@@ -3,6 +3,8 @@
  */
 
 export * from './useComposedRef';
-export * from './useElementProps';
+export * from './useMarkToolbarButton';
 export * from './useOnClickOutside';
-export * from './useWrapElement';
+export * from './usePlaceholder';
+export * from './useRemoveNodeButton';
+export * from './useStableMemo';

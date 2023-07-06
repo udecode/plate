@@ -1,4 +1,5 @@
 import { Editor, EditorPositionsOptions } from 'slate';
+
 import { TEditor, Value } from './TEditor';
 
 /**

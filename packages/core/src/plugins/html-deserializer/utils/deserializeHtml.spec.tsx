@@ -1,29 +1,30 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
+import { createAlignPlugin } from '@udecode/plate-alignment/src/createAlignPlugin';
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createCodePlugin } from '@udecode/plate-basic-marks/src/createCodePlugin';
+import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { createStrikethroughPlugin } from '@udecode/plate-basic-marks/src/createStrikethroughPlugin';
+import { createSubscriptPlugin } from '@udecode/plate-basic-marks/src/createSubscriptPlugin';
+import { createSuperscriptPlugin } from '@udecode/plate-basic-marks/src/createSuperscriptPlugin';
+import { createUnderlinePlugin } from '@udecode/plate-basic-marks/src/createUnderlinePlugin';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
+import { createSoftBreakPlugin } from '@udecode/plate-break/src/soft-break/createSoftBreakPlugin';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block/src/createCodeBlockPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { createFindReplacePlugin } from '@udecode/plate-find-replace/src/createFindReplacePlugin';
+import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
+import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
+import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
+import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createFindReplacePlugin } from '../../../../../decorators/find-replace/src/createFindReplacePlugin';
-import { createSoftBreakPlugin } from '../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
-import { createImagePlugin } from '../../../../../media/src/image/createImagePlugin';
-import { createMediaEmbedPlugin } from '../../../../../media/src/media-embed/createMediaEmbedPlugin';
-import { createAlignPlugin } from '../../../../../nodes/alignment/src/createAlignPlugin';
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createCodePlugin } from '../../../../../nodes/basic-marks/src/createCodePlugin';
-import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
-import { createStrikethroughPlugin } from '../../../../../nodes/basic-marks/src/createStrikethroughPlugin';
-import { createSubscriptPlugin } from '../../../../../nodes/basic-marks/src/createSubscriptPlugin';
-import { createSuperscriptPlugin } from '../../../../../nodes/basic-marks/src/createSuperscriptPlugin';
-import { createUnderlinePlugin } from '../../../../../nodes/basic-marks/src/createUnderlinePlugin';
-import { createBlockquotePlugin } from '../../../../../nodes/block-quote/src/createBlockquotePlugin';
-import { createCodeBlockPlugin } from '../../../../../nodes/code-block/src/createCodeBlockPlugin';
-import { createHeadingPlugin } from '../../../../../nodes/heading/src/createHeadingPlugin';
-import { createHighlightPlugin } from '../../../../../nodes/highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '../../../../../nodes/kbd/src/createKbdPlugin';
-import { createLinkPlugin } from '../../../../../nodes/link/src/createLinkPlugin';
-import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -36,7 +37,7 @@ describe('when stripWhitespace is false', () => {
   const expectedOutput = [{ text: 'test \n code' }];
 
   it('should have the break line', () => {
-    const convertedDocumentFragment = deserializeHtml(createPlateUIEditor(), {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
       element,
       stripWhitespace: false,
     });
@@ -57,7 +58,7 @@ describe('when element is a div', () => {
 
   it('should be a fragment of text', () => {
     expect(
-      deserializeHtml(createPlateUIEditor(), {
+      deserializeHtml(createPlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -75,7 +76,7 @@ describe('when element is 2 p', () => {
   it('should be a fragment of 2 paragraph nodes', () => {
     expect(
       deserializeHtml(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [createParagraphPlugin()],
         }),
         {
@@ -98,7 +99,7 @@ describe('when html is a text without tags', () => {
 
   it('should be a fragment of text', () => {
     expect(
-      deserializeHtml(createPlateUIEditor(), {
+      deserializeHtml(createPlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -219,7 +220,7 @@ describe('when deserializing all plugins', () => {
 
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins,
         }),
         element

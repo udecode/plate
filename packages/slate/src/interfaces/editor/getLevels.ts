@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Editor, EditorLevelsOptions } from 'slate';
+
 import { ENode, TNode, TNodeMatch } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';

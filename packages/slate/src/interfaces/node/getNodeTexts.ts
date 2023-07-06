@@ -1,5 +1,6 @@
 import { Modify } from '@udecode/utils';
 import { Node, NodeTextsOptions } from 'slate';
+
 import { TextOf } from '../text/TText';
 import { NodeOf, TNode } from './TNode';
 import { TNodeEntry } from './TNodeEntry';

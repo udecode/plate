@@ -25,6 +25,7 @@ export * from './isHtmlBlockElement';
 export * from './isHtmlComment';
 export * from './isHtmlElement';
 export * from './isHtmlFragmentHref';
+export * from './isHtmlTable';
 export * from './isHtmlText';
 export * from './isOlSymbol';
 export * from './parseHtmlDocument';

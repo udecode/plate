@@ -1,4 +1,4 @@
-import { getNode, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getNode } from '@udecode/slate';
 import { last } from 'lodash';
 import { Path } from 'slate';
 
@@ -11,7 +11,7 @@ export const getPreviousSiblingNode = <V extends Value = Value>(
   if (index > 0) {
     const previousSiblingIndex = index - 1;
     const previousSiblingPath = path
-      .slice(0, path.length - 1)
+      .slice(0, -1)
       .concat([previousSiblingIndex]);
     const previousSiblingNode = getNode(editor, previousSiblingPath);
 

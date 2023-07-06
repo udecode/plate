@@ -1,11 +1,12 @@
 import React, { ReactNode } from 'react';
 import {
+  JotaiProvider,
+  WithPartial,
   createAtomStore,
   getJotaiProviderInitialValues,
-  JotaiProvider,
   nanoid,
-  WithPartial,
 } from '@udecode/plate-common';
+
 import { SuggestionUser, TSuggestion } from '../types';
 
 export const SCOPE_SUGGESTION = Symbol('suggestion');
@@ -56,8 +57,7 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
      */
     suggestions: {},
 
-    // TODO
-    isSuggesting: true,
+    isSuggesting: false,
 
     /**
      * Id of the active suggestion. If null, no suggestion is active.
@@ -74,10 +74,10 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
   }
 );
 
-export const SuggestionProvider = ({
+export function SuggestionProvider({
   children,
   ...props
-}: Partial<SuggestionStoreState> & { children: ReactNode }) => {
+}: Partial<SuggestionStoreState> & { children: ReactNode }) {
   return (
     <JotaiProvider
       initialValues={getJotaiProviderInitialValues(suggestionStore, props)}
@@ -86,7 +86,7 @@ export const SuggestionProvider = ({
       {children}
     </JotaiProvider>
   );
-};
+}
 
 export const useSuggestionStates = () => useSuggestionStore().use;
 export const useSuggestionSelectors = () => useSuggestionStore().get;

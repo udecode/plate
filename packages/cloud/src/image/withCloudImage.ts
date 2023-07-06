@@ -1,6 +1,7 @@
 import { resizeIn } from '@portive/client';
-import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
+import { Value, WithPlatePlugin, insertNode } from '@udecode/plate-common';
 import Defer from 'p-defer';
+
 import { PlateCloudEditor } from '../cloud';
 import { UploadError, UploadSuccess } from '../upload';
 import {
@@ -22,18 +23,14 @@ export const withCloudImage = <
   plugin: WithPlatePlugin<CloudImagePlugin, V, E>
 ) => {
   const editor = $editor as E & PlateCloudEditor<V>;
-  const {
-    maxInitialWidth,
-    maxInitialHeight,
-    minResizeWidth,
-    maxResizeWidth,
-  } = {
-    maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
-    maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
-    minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
-    maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
-    ...plugin.options,
-  };
+  const { maxInitialWidth, maxInitialHeight, minResizeWidth, maxResizeWidth } =
+    {
+      maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
+      maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
+      minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
+      maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
+      ...plugin.options,
+    };
 
   editor.cloudImage = {
     maxInitialWidth,

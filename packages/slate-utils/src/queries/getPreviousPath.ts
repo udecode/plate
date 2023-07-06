@@ -3,7 +3,7 @@ import { Path } from 'slate';
 export const getPreviousPath = (path: Path): Path | undefined => {
   if (path.length === 0) return;
 
-  const last = path[path.length - 1];
+  const last = path.at(-1)!;
 
   if (last <= 0) return;
 

@@ -1,0 +1,102 @@
+---
+title: Emoji
+description: Insert emoji inline.
+docs:
+  - route: /docs/components/emoji-combobox
+    title: Emoji Combobox
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Dropdown Menu
+  - route: /docs/components/emoji-toolbar-dropdown
+    title: Emoji Toolbar Dropdown
+---
+
+<ComponentPreview name="playground-demo" id="emoji" />
+
+<PackageInfo>
+
+## Features
+
+- Insert emoji inline.
+- Use the **`:`** shortcut followed by the emoji name (e.g., **`:apple:`** 🍎). Autocomplete suggestions appear as you type.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-emoji @udecode/plate-combobox
+```
+
+## Usage
+
+```tsx
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createEmojiPlugin } from '@udecode/plate-emoji';
+
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createEmojiPlugin(),
+];
+```
+
+## API
+
+### createEmojiPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="trigger" type="string" optional>
+The trigger character(s) for the emoji.
+
+</APIItem>
+<APIItem name="createEmoji" type="(data: TComboboxItem<TData>): string" optional>
+A function to create an Emoji. TData is the type of the data used to create the emoji.
+
+</APIItem>
+<APIItem name="emojiTriggeringController" type="IEmojiTriggeringController" optional>
+A controller object that controls the emoji triggering behavior.
+
+<APISubList>
+<APISubListItem parent="emojiTriggeringController" name="isTriggering" type="boolean">
+Indicates whether the emoji trigger is active.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="hasTriggeringMark" type="boolean">
+Indicates whether the triggering mark is present.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="setIsTriggering" type="(isTriggering: boolean) => this">
+A function that sets the triggering status.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="setText" type="(text: string) => this">
+A function that sets the text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="getText" type="() => string">
+A function that gets the current text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="hasEnclosingTriggeringMark" type="() => boolean">
+A function that checks whether the current triggering mark is enclosing.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="getTextSize" type="() => number">
+A function that gets the size of the current text.
+
+</APISubListItem>
+<APISubListItem parent="emojiTriggeringController" name="reset" type="() => this">
+A function that resets the triggering controller.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="id" type="string" optional>
+The ID of the plugin.
+
+</APIItem>
+</APIAttributes>

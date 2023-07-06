@@ -4,4 +4,5 @@
 
 export * from './createCloudAttachmentPlugin';
 export * from './types';
+export * from './useCloudAttachmentElementState';
 export * from './withCloudAttachment';

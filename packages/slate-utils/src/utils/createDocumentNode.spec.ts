@@ -1,4 +1,3 @@
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { Value } from '@udecode/slate';
 import { createDocumentNode } from '@udecode/slate-utils';
 
@@ -6,7 +5,7 @@ const output: Value = [
   {
     children: [
       {
-        type: ELEMENT_PARAGRAPH,
+        type: 'p',
         children: [{ text: '' }],
       },
     ],

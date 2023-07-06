@@ -1,16 +1,16 @@
 import {
+  PlateEditor,
+  SetNodesOptions,
+  TNodeProps,
+  Value,
   addRangeMarks,
   getNodeEntries,
   isInline,
   nanoid,
-  PlateEditor,
   setNodes,
-  SetNodesOptions,
-  TNodeProps,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
+
 import { SuggestionEditorProps, TSuggestionText } from '../types';
 import { getSuggestionProps } from './getSuggestionProps';
 

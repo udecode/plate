@@ -1,4 +1,6 @@
+/* eslint-disable react/display-name */
 import { memo, useEffect } from 'react';
+
 import { useEditorState } from '../hooks/useEditorState';
 import { PlateId, useUpdatePlateKey } from '../stores';
 

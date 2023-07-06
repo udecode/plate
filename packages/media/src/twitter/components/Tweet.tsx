@@ -21,13 +21,13 @@ export type TweetProps = Readonly<{
   twitterOptions?: TwitterEmbedOptions;
 }>;
 
-export const Tweet = ({
+export function Tweet({
   tweetId,
   onError,
   onLoad,
   loadingComponent,
   twitterOptions = {},
-}: TweetProps) => {
+}: TweetProps) {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef(null);
   const previousTweetIDRef = useRef('');
@@ -55,6 +55,7 @@ export const Tweet = ({
   useEffect(() => {
     if (tweetId !== previousTweetIDRef.current) {
       let isComponentMounted = true;
+      // eslint-disable-next-line unicorn/prefer-module
       const script = require('scriptjs');
       script(WIDGET_SCRIPT_URL, 'twitter-embed', () => {
         if (!window.twttr) {
@@ -80,4 +81,4 @@ export const Tweet = ({
       <div key={tweetId} ref={containerRef} />
     </>
   );
-};
+}

@@ -1,14 +1,15 @@
 import {
   EElement,
+  QueryNodeOptions,
+  TEditor,
+  TElement,
+  TNodeEntry,
+  Value,
   findNode,
   getNodeEntries,
   getPreviousNode,
   isBlock,
   queryNode,
-  QueryNodeOptions,
-  TEditor,
-  TNodeEntry,
-  Value,
 } from '@udecode/slate';
 
 /**
@@ -27,9 +28,9 @@ export const getPreviousBlockById = <
     match: { id },
   });
   if (entry) {
-    const prevEntry = getPreviousNode<N>(editor, { at: entry[1] });
+    const prevEntry = getPreviousNode<TElement>(editor, { at: entry[1] });
     if (prevEntry && prevEntry[0].id && isBlock(editor, prevEntry[0])) {
-      return prevEntry;
+      return prevEntry as TNodeEntry<N>;
     }
   }
   let found = false;
@@ -51,12 +52,12 @@ export const getPreviousBlockById = <
     at: [],
   });
   const nodeEntries = Array.from(_nodes);
-  if (nodeEntries.length) {
+  if (nodeEntries.length > 0) {
     return nodeEntries[0];
   }
   if (!found) return;
 
-  const _entries = getNodeEntries(editor, {
+  const _entries = getNodeEntries<TElement>(editor, {
     mode: 'highest',
     match: (n) => {
       return isBlock(editor, n) && !!n.id && queryNode([n, []], query);
@@ -65,10 +66,10 @@ export const getPreviousBlockById = <
   });
   const firstNodeEntry = Array.from(_entries);
 
-  if (firstNodeEntry.length) {
+  if (firstNodeEntry.length > 0) {
     const [, path] = firstNodeEntry[0];
 
-    path[path.length - 1] = path[path.length - 1] - 1;
+    path[path.length - 1] = path.at(-1)! - 1;
 
     return [null, path] as any;
   }

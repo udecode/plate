@@ -1,4 +1,4 @@
-import { getMarks, removeEditorMark, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getMarks, removeEditorMark } from '@udecode/slate';
 
 /**
  * Remove selection marks.

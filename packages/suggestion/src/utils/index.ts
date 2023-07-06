@@ -4,5 +4,5 @@
 
 export * from './getActiveSuggestionDescriptions';
 export * from './getSuggestionId';
-export * from './getSuggestionNodeEntries';
 export * from './getSuggestionKeys';
+export * from './getSuggestionNodeEntries';

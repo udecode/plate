@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { useSlateStatic } from 'slate-react';
+
 import { PlateEditor } from '../types/PlateEditor';
 
 /**
@@ -10,4 +11,4 @@ import { PlateEditor } from '../types/PlateEditor';
 export const useEditorRef = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
->() => (useSlateStatic() as unknown) as E;
+>() => useSlateStatic() as unknown as E;

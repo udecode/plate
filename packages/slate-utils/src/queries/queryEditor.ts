@@ -1,5 +1,6 @@
-import { QueryEditorOptions, someNode, TEditor, Value } from '@udecode/slate';
+import { QueryEditorOptions, TEditor, Value, someNode } from '@udecode/slate';
 import castArray from 'lodash/castArray';
+
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
 
@@ -29,12 +30,15 @@ export const queryEditor = <
   }
 
   const allows = castArray(allow);
-  if (allows.length && !someNode(editor, { at, match: { type: allows } })) {
+  if (allows.length > 0 && !someNode(editor, { at, match: { type: allows } })) {
     return false;
   }
 
   const excludes = castArray(exclude);
-  if (excludes.length && someNode(editor, { at, match: { type: excludes } })) {
+  if (
+    excludes.length > 0 &&
+    someNode(editor, { at, match: { type: excludes } })
+  ) {
     return false;
   }
 

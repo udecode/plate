@@ -1,11 +1,10 @@
 import { traverseHtmlElements } from './traverseHtmlElements';
 
-const ALLOWED_EMPTY_ELEMENTS = ['BR', 'IMG', 'TH', 'TD'];
+const ALLOWED_EMPTY_ELEMENTS = new Set(['BR', 'IMG', 'TH', 'TD']);
 
 const isEmpty = (element: Element): boolean => {
   return (
-    !ALLOWED_EMPTY_ELEMENTS.includes(element.nodeName) &&
-    !element.innerHTML.trim()
+    !ALLOWED_EMPTY_ELEMENTS.has(element.nodeName) && !element.innerHTML.trim()
   );
 };
 

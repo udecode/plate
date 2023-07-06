@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react';
 import {
-  createComponentAs,
-  createElementAs,
-  HTMLPropsAs,
+  createPrimitiveComponent,
   toDOMNode,
   usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { getCommentPosition } from '../queries/index';
 import { useCommentsSelectors } from '../stores/comments/CommentsProvider';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';
 
-export interface CommentsPositionerProps extends HTMLPropsAs<'div'> {}
-
-export const useCommentsPositioner = (props: CommentsPositionerProps = {}) => {
+export const useCommentsPositionerState = () => {
   const editor = usePlateEditorRef();
-  const activeCommentId = useCommentsSelectors().activeCommentId();
+  let activeCommentId = useCommentsSelectors().activeCommentId();
 
   const [position, setPosition] = useState<{ top: number; left: number }>({
     left: 0,
     top: 0,
   });
+
+  if (position.left === 0 && position.top === 0) {
+    activeCommentId = null;
+  }
 
   const [node] = useActiveCommentNode() ?? [];
 
@@ -36,21 +37,26 @@ export const useCommentsPositioner = (props: CommentsPositionerProps = {}) => {
   }, [editor, node]);
 
   return {
-    display: !activeCommentId ? 'none' : undefined,
-    ...props,
-    style: {
-      ...props.style,
-      ...position,
+    activeCommentId,
+    position,
+  };
+};
+
+export const useCommentsPositioner = ({
+  activeCommentId,
+  position,
+}: ReturnType<typeof useCommentsPositionerState>) => {
+  return {
+    hidden: !activeCommentId,
+    props: {
+      style: {
+        ...position,
+      },
     },
   };
 };
 
-export const CommentsPositioner = createComponentAs<CommentsPositionerProps>(
-  (props) => {
-    const htmlProps = useCommentsPositioner(props);
-
-    if (htmlProps.display === 'none') return null;
-
-    return createElementAs('div', htmlProps);
-  }
-);
+export const CommentsPositioner = createPrimitiveComponent('div')({
+  stateHook: useCommentsPositionerState,
+  propsHook: useCommentsPositioner,
+});

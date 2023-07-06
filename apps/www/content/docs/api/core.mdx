@@ -1,0 +1,468 @@
+---
+title: Plate Core
+description: API reference for @udecode/plate-core.
+---
+
+## API
+
+### `createPlugins`
+
+Creates a new array of plugins by overriding the plugins in the original array.
+
+<APIParameters>
+<APIItem name="plugins" type="PlatePlugin[]" optional>
+The original array of plugins.
+</APIItem>
+<APIItem name="options" type="object" optional>
+The options to override plugins.
+
+<APISubList>
+<APISubListItem parent="options" name="components" type="Record<string, React.FC>" optional>
+Components to override by plugin key.
+</APISubListItem>
+<APISubListItem parent="options" name="overrideByKey" type="Record<PluginKey, Partial<PlatePlugin>>" optional>
+Plugin attributes to override by plugin key.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of plugins with overridden components or attributes.
+</APIReturns>
+
+<APIReturns>
+  An object containing the following properties:
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the `nodeType` mark is active in the current
+    selection.
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    The type of the node.
+  </APIItem>
+  <APIItem name="clear" type="string | string[]">
+    Type or types of the node to clear.
+  </APIItem>
+</APIReturns>
+
+### createAtomStore
+
+Creates an atom store from an initial value. Each property of the initial value will have a getter and setter.
+
+<APIParameters>
+  <APIItem name="initialState" type="T">
+    The initial state of the atom store.
+  </APIItem>
+  <APIItem name="options" type="CreateAtomStoreOptions">
+    An optional object which can contain a scope, an initial store, and a name.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+An `AtomStoreApi` object.
+
+</APIReturns>
+
+### createPlateEditor
+
+Generates a new instance of a `PlateEditor`, initialized with a set of plugins and their configurations.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor<V>" optional>
+    Initial editor without `withPlate`.
+  </APIItem>
+  <APIItem name="plugins" type="PlatePlugin<PluginOptions, V>[]" optional>
+    An array of editor plugins.
+  </APIItem>
+  <APIItem
+    name="components"
+    type="Record<string, PlatePluginComponent>"
+    optional
+  >
+    Components to inject into plugins.
+  </APIItem>
+  <APIItem name="overrideByKey" type="OverrideByKey<V>" optional>
+    Plugins to override by key.
+  </APIItem>
+  <APIItem name="normalizeInitialValue" type="boolean" optional>
+    A flag indicating whether to normalize the initial editor value.
+  </APIItem>
+  <APIItem
+    name="withPlateOptions"
+    type="WithPlateOptions<V, E & PlateEditor<V>>"
+    optional
+  >
+    Options for the `withPlate` function, excluding `plugins`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An instance of `PlateEditor` with the specified plugins, components, and
+  settings applied.
+</APIReturns>
+
+### createPluginFactory
+
+Generates a factory for creating plugins with a default plugin, which can be overridden.
+
+<APIParameters>
+  <APIItem name="defaultPlugin" type="PlatePlugin">
+    The default plugin. The only required property is `key`.
+  </APIItem>
+  <APIItem name="override" type="Partial<PlatePlugin>" optional>
+    Overrides for the default plugin.
+  </APIItem>
+  <APIItem name="overrideByKey" type="OverrideByKey" optional>
+    Overrides for nested plugins (in `plugin.plugins`) by key.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  A plugin factory based on the default one, with the specified overrides
+  applied.
+</APIReturns>
+
+### getPlugin
+
+Retrieves a plugin by plugin key.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor to extract the plugin from.
+  </APIItem>
+  <APIItem name="key" type="PluginKey">
+    The key of the plugin to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the requested plugin. If the plugin does not exist, returns an object
+  with only the key.
+</APIReturns>
+
+### getPluginInjectProps
+
+Retrieves the props to be injected by a plugin, identified by its key.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor to extract the plugin from.
+  </APIItem>
+  <APIItem name="key" type="PluginKey">
+    The key of the plugin whose inject props to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the props to be injected by the specified plugin. If the plugin does
+  not exist or does not have inject props, returns an empty object.
+</APIReturns>
+
+### getPluginOptions
+
+Retrieves the options of a plugin, identified by its key.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor to extract the plugin from.
+  </APIItem>
+  <APIItem name="key" type="PluginKey">
+    The key of the plugin whose options to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the options of the specified plugin. If the plugin does not exist or
+  does not have options, returns an empty object.
+</APIReturns>
+
+### getPluginType
+
+Retrieves the type of a plugin, identified by its key.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor to extract the plugin from.
+  </APIItem>
+  <APIItem name="key" type="string">
+    The key of the plugin whose type to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the type of the specified plugin. If the plugin does not exist or does
+  not have a type, returns the key.
+</APIReturns>
+
+### Hotkeys
+
+An object containing functions to check for various hotkeys. Each function takes a `KeyboardEvent` and returns a boolean indicating whether the hotkey was pressed.
+
+<APIParameters collapsed>
+  <APIItem name="isBold" type="function">
+    Checks if the bold hotkey was pressed.
+  </APIItem>
+  <APIItem name="isCompose" type="function">
+    Checks if any of the compose hotkeys were pressed.
+  </APIItem>
+  <APIItem name="isMoveBackward" type="function">
+    Checks if the move backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isMoveForward" type="function">
+    Checks if the move forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteBackward" type="function">
+    Checks if the delete backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteForward" type="function">
+    Checks if the delete forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteLineBackward" type="function">
+    Checks if the delete line backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteLineForward" type="function">
+    Checks if the delete line forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteWordBackward" type="function">
+    Checks if the delete word backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isDeleteWordForward" type="function">
+    Checks if the delete word forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isExtendBackward" type="function">
+    Checks if the extend backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isExtendForward" type="function">
+    Checks if the extend forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isExtendLineBackward" type="function">
+    Checks if the extend line backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isExtendLineForward" type="function">
+    Checks if the extend line forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isItalic" type="function">
+    Checks if the italic hotkey was pressed.
+  </APIItem>
+  <APIItem name="isMoveLineBackward" type="function">
+    Checks if the move line backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isMoveLineForward" type="function">
+    Checks if the move line forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isMoveWordBackward" type="function">
+    Checks if the move word backward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isMoveWordForward" type="function">
+    Checks if the move word forward hotkey was pressed.
+  </APIItem>
+  <APIItem name="isRedo" type="function">
+    Checks if the redo hotkey was pressed.
+  </APIItem>
+  <APIItem name="isSoftBreak" type="function">
+    Checks if the soft break hotkey was pressed.
+  </APIItem>
+  <APIItem name="isSplitBlock" type="function">
+    Checks if the split block hotkey was pressed.
+  </APIItem>
+  <APIItem name="isTab" type="function">
+    Checks if the tab hotkey was pressed.
+  </APIItem>
+  <APIItem name="isTransposeCharacter" type="function">
+    Checks if the transpose character hotkey was pressed.
+  </APIItem>
+  <APIItem name="isUndo" type="function">
+    Checks if the undo hotkey was pressed.
+  </APIItem>
+  <APIItem name="isUntab" type="function">
+    Checks if the untab hotkey was pressed.
+  </APIItem>
+</APIParameters>
+
+### toggleNodeType
+
+Toggle the type of the selected node. No operation is performed if `activeType` equals `inactiveType`.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor<V>">
+    The editor.
+  </APIItem>
+  <APIItem name="options" type="ToggleNodeTypeOptions">
+    <APISubList>
+      <APISubListItem parent="options" name="activeType" type="string" optional>
+        If there is no node type above the selection, set the selected node type
+        to `activeType`.
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="inactiveType"
+        type="string"
+        optional
+      >
+        If there is a node type above the selection, set the selected node type
+        to `inactiveType`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem
+    name="editorNodesOptions"
+    type="Omit<GetNodeEntriesOptions<V>, 'match'>"
+    optional
+  >
+    Options for getting the nodes of the editor.
+  </APIItem>
+</APIParameters>
+
+### useElement
+
+Hook to get the element from a node component.
+
+<APIParameters>
+<APIItem name="pluginKey" type="string" optional>
+The plugin key.
+
+- **Default:** `SCOPE_ELEMENT`.
+
+</APIItem>
+</APIParameters>
+<APIReturns>
+
+The value of the element as a TElement.
+
+</APIReturns>
+
+### useEditorRef
+
+Get the Slate editor reference.
+
+- Does not re-render on editor change.
+- Does not support nested editors.
+- Should be used inside `Plate`.
+
+<APIReturns>
+
+A `PlateEditor` object, which is the Slate editor.
+
+</APIReturns>
+
+### useEditorState
+
+Get the Slate editor reference.
+
+- Re-renders on editor change.
+- Does not support nested editors.
+- Should be used inside `Plate`.
+
+<APIReturns>
+
+A `PlateEditor` object, which is the Slate editor.
+
+</APIReturns>
+
+### usePlateEditorRef
+
+Get an editor reference which is never updated.
+
+- Does not re-render on editor change.
+- Supports nested editors.
+- Should be used inside `Plate` or `PlateProvider`.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The id of the plate editor. Useful only when nesting editors. 
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A `PlateEditor` object, which is the Slate editor.
+
+</APIReturns>
+
+### usePlateEditorState
+
+Get the Slate editor reference. Re-renders on editor change.
+
+- Re-renders on editor change.
+- Supports nested editors.
+- Should be used inside `Plate` or `PlateProvider`.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The id of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A `PlateEditor` object, which is the Slate editor.
+
+</APIReturns>
+
+### usePlateReadOnly
+
+Get the editor's `readOnly` state.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The id of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+The `readOnly` state of the editor.
+
+</APIReturns>
+
+### usePlateSelection
+
+Get the editor's selection which is updated on each editor change.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The id of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>The current selection in the editor.</APIReturns>
+
+## Core plugins
+
+### createDeserializeAstPlugin
+
+Enables support for deserializing inserted content from Slate Ast format to Slate format while applying a small bug fix.
+
+### createDeserializeHtmlPlugin
+
+Enables support for deserializing inserted content from HTML format to Slate format.
+
+### createEditorProtocolPlugin
+
+Reset marks when the selection is at the start of a block and after delete operations.
+
+### createEventEditorPlugin
+
+Creates a plugin that dispatches focus and blur events.
+
+### createHistoryPlugin
+
+Creates a plugin that enables history support for the editor.
+
+### createInlineVoidPlugin
+
+Creates a plugin that merges and registers all the inline types and void types from the plugins and options, using `editor.isInline` and `editor.isVoid`.
+
+### createInsertDataPlugin
+
+Creates a plugin that overrides the default `insertData` function in the editor, which is called when data is being pasted or dragged into the editor.
+
+### createNodeFactoryPlugin
+
+Creates a plugin that overrides the default `blockFactory` and `childrenFactory` functions in the editor. These functions are used to generate the default blocks and children for the editor.
+
+### createPrevSelectionPlugin
+
+Creates a plugin that keeps track of the previous selection in the editor and the current keyboard event being processed.
+
+### createReactPlugin
+
+Creates a plugin that adds `withTReact` to the editor, which is a generic typed version of `withReact` from 'slate-react' library.
+
+### withPlate
+
+An overrider that applies the `withInlineVoid` and all plate plugins' `withOverrides`.
+
+### withTReact
+
+Generic typed version of `withReact` from 'slate-react' library.

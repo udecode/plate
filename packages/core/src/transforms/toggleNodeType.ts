@@ -1,10 +1,11 @@
 import {
   GetNodeEntriesOptions,
+  Value,
   setElements,
   someNode,
-  Value,
 } from '@udecode/slate';
-import { ELEMENT_DEFAULT } from '../constants/node.types';
+
+import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
 import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from '../utils/getPluginType';
 
@@ -29,10 +30,8 @@ export const toggleNodeType = <V extends Value>(
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<GetNodeEntriesOptions<V>, 'match'>
 ) => {
-  const {
-    activeType,
-    inactiveType = getPluginType(editor, ELEMENT_DEFAULT),
-  } = options;
+  const { activeType, inactiveType = getPluginType(editor, ELEMENT_DEFAULT) } =
+    options;
 
   if (!activeType || !editor.selection) return;
 

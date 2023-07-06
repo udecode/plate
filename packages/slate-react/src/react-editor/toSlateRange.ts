@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -12,5 +13,5 @@ export const toSlateRange = <V extends Value>(
 ) => {
   try {
     return ReactEditor.toSlateRange(editor as any, domRange, options);
-  } catch (e) {}
+  } catch (error) {}
 };

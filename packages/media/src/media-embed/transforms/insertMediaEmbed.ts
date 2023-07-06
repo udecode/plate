@@ -1,10 +1,12 @@
 import {
-  getParentNode,
-  insertNodes,
+  InsertNodesOptions,
   PlateEditor,
   PlatePluginKey,
   Value,
+  getParentNode,
+  insertNodes,
 } from '@udecode/plate-common';
+
 import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';
 import { TMediaEmbedElement } from '../types';
 
@@ -13,7 +15,8 @@ export const insertMediaEmbed = <V extends Value>(
   {
     url = '',
     key = ELEMENT_MEDIA_EMBED,
-  }: Partial<TMediaEmbedElement> & PlatePluginKey
+  }: Partial<TMediaEmbedElement> & PlatePluginKey,
+  options: InsertNodesOptions<V> = {}
 ): void => {
   if (!editor.selection) return;
   const selectionParentEntry = getParentNode(editor, editor.selection);
@@ -26,6 +29,10 @@ export const insertMediaEmbed = <V extends Value>(
       url,
       children: [{ text: '' }],
     },
-    { at: path }
+    {
+      at: path,
+      nextBlock: true,
+      ...(options as any),
+    }
   );
 };

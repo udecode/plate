@@ -1,4 +1,4 @@
-import { getEndPoint, getPreviousNode, TEditor, Value } from '@udecode/slate';
+import { TEditor, Value, getEndPoint, getPreviousNode } from '@udecode/slate';
 import { Path } from 'slate';
 
 /**

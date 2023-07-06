@@ -1,0 +1,5 @@
+node_modules
+.next
+build
+.contentlayer
+src/pages/api/registry.json

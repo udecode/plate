@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { EmbedUrlData } from '../../media/index';
 import { Tweet, TweetProps } from '../index';
 
@@ -12,8 +13,8 @@ export const useMediaEmbedTweet = ({
   };
 };
 
-export const MediaEmbedTweet = (props: EmbedUrlData) => {
+export function MediaEmbedTweet(props: EmbedUrlData) {
   const htmlProps = useMediaEmbedTweet(props);
 
   return <Tweet {...htmlProps} />;
-};
+}

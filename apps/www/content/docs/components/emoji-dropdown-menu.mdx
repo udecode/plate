@@ -1,0 +1,76 @@
+---
+title: Emoji Dropdown Menu
+description: Access a wide range of emojis from a dropdown menu.
+component: true
+docs:
+  - route: /docs/components/toolbar
+    title: Toolbar
+  - route: /docs/emoji
+    title: Emoji
+---
+
+<ComponentPreview name="playground-demo" id="emoji" />
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx plate-ui@latest add emoji-dropdown-menu
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+```bash
+npm install @radix-ui/react-popover
+```
+
+- [Emoji](/docs/emoji)
+- [Toolbar](/docs/components/toolbar)
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="emoji-dropdown-menu" />
+<ComponentSource name="emoji-icons" />
+<ComponentSource name="emoji-picker" />
+<ComponentSource name="emoji-picker-content" />
+<ComponentSource name="emoji-picker-navigation" />
+<ComponentSource name="emoji-picker-preview" />
+<ComponentSource name="emoji-picker-search-and-clear" />
+<ComponentSource name="emoji-picker-search-bar" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+<ComponentSource src="../../templates/plate-playground/src/components/plate-ui/fixed-toolbar-buttons.tsx" />

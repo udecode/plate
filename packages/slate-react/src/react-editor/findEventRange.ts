@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -11,5 +12,5 @@ export const findEventRange = <V extends Value>(
 ) => {
   try {
     return ReactEditor.findEventRange(editor as any, event);
-  } catch (e) {}
+  } catch (error) {}
 };

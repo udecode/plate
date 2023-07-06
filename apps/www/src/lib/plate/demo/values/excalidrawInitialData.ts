@@ -1,0 +1,52 @@
+import { TNodeProps } from '@udecode/plate-common';
+import { TExcalidrawElement } from '@udecode/plate-excalidraw';
+
+export const excalidrawInitialData: TNodeProps<TExcalidrawElement> = {
+  data: {
+    elements: [
+      {
+        type: 'rectangle',
+        version: 141,
+        versionNonce: 361_174_001,
+        isDeleted: false,
+        id: 'oDVXy8D6rom3H1-LLH2-f',
+        fillStyle: 'hachure',
+        strokeWidth: 1,
+        strokeStyle: 'solid',
+        roughness: 1,
+        opacity: 100,
+        angle: 0,
+        x: 100.503_906_25,
+        y: 93.675_781_25,
+        strokeColor: '#000000',
+        backgroundColor: 'transparent',
+        width: 186.472_656_25,
+        height: 141.976_562_5,
+        seed: 1_968_410_350,
+        groupIds: [],
+      },
+      {
+        id: '-xMIs_0jIFqvpx-R9UnaG',
+        type: 'ellipse',
+        x: 300.570_312_5,
+        y: 190.691_406_25,
+        width: 198.218_75,
+        height: 129.511_718_75,
+        angle: 0,
+        strokeColor: '#000000',
+        backgroundColor: 'transparent',
+        fillStyle: 'hachure',
+        strokeWidth: 1,
+        strokeStyle: 'solid',
+        roughness: 1,
+        opacity: 100,
+        groupIds: [],
+        seed: 957_947_807,
+        version: 47,
+        versionNonce: 1_128_618_623,
+        isDeleted: false,
+      },
+    ],
+    state: { viewBackgroundColor: '#AFEEEE', currentItemFontFamily: 1 },
+  },
+};

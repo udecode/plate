@@ -1,0 +1,99 @@
+---
+title: Indent List
+description: Turn any block into a list item.
+docs:
+  - route: /docs/components/indent-list-toolbar-button
+    title: Indent List Toolbar Button
+---
+
+<ComponentPreview name="playground-demo" id="indentlist" />
+
+<PackageInfo>
+
+## Features
+
+- Set list indentation for various blocks.
+- Differs from the [List plugin](/docs/list) with its flat structure and additional flexibility:
+  - Any block can be indented as a list.
+  - Each indented list block consists of a list (`ul` or `ol`) with a single item.
+  - The list plugin enforces strict rules between parent and children.
+- Refer to the [Indent documentation](/docs/indent) for more information.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent-list @udecode/plate-indent
+```
+
+## Usage
+
+```tsx
+// ...
+import { createIndentPlugin } from '@udecode/plate-indent';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
+
+const plugins = [
+  // ...otherPlugins,
+  createHeadingPlugin(),
+  createParagraphPlugin(),
+  createIndentPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+  createIndentListPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+];
+```
+
+## API
+
+### createIndentListPlugin
+
+<APIParameters>
+  <APIItem
+    name="getSiblingIndentListOptions"
+    type="GetSiblingIndentListOptions<TElement>"
+    optional
+  >
+    A function to determine indent list options for sibling elements.
+  </APIItem>
+  <APIItem
+    name="getListStyleType"
+    type="(element: HTMLElement) => ListStyleType"
+    optional
+  >
+    A function mapping HTML elements to list style types.
+  </APIItem>
+</APIParameters>
+
+### getNextIndentList
+
+### getPreviousIndentList
+
+### indentList
+
+Increase the list indentation of the selected blocks.
+
+### outdentList
+
+Decrease the list indentation of the selected blocks.
+
+### someIndentList
+
+### toggleIndentList
+
+Toggle indent list.
+
+## API Components
+
+### useIndentListToolbarButton

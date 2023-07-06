@@ -1,5 +1,6 @@
-import { DragSourceHookSpec, useDrag } from 'react-dnd';
 import { TEditor, Value } from '@udecode/plate-common';
+import { DragSourceHookSpec, useDrag } from 'react-dnd';
+
 import { dndStore } from '../dndStore';
 import { DragItemNode } from '../types';
 

@@ -1,4 +1,5 @@
 import { Editor } from 'slate';
+
 import { TElement } from '../element/TElement';
 import { TEditor, Value } from './TEditor';
 

@@ -37,7 +37,7 @@ export const mergeProps = <T>(
           map.set(key, []);
         }
 
-        map.get(key)?.push(value);
+        map.get(key)?.push(value as any);
 
         acc[key] = (...args: unknown[]) => {
           map.get(key)?.forEach((fn) => fn(...args));

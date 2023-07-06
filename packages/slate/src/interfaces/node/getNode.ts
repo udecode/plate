@@ -1,4 +1,5 @@
 import { Path } from 'slate';
+
 import { isText } from '../text';
 import { NodeOf, TNode } from './TNode';
 
@@ -25,7 +26,7 @@ export const getNode = <N extends NodeOf<R>, R extends TNode = TNode>(
     }
 
     return root as N;
-  } catch (e) {
+  } catch (error) {
     return null;
   }
 };

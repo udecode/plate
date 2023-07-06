@@ -6,6 +6,7 @@ import React, { FunctionComponent } from 'react';
 export const withProps: <T>(
   Component: FunctionComponent<T>,
   props: Partial<T>
-) => FunctionComponent<any> = (Component, props) => (_props) => (
-  <Component {..._props} {...props} />
-);
+) => FunctionComponent<any> = (Component, props) =>
+  function component(_props) {
+    return <Component {..._props} {...props} />;
+  };

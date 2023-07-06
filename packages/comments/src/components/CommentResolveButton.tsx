@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button, ButtonProps } from '@udecode/plate-button';
+import { createPrimitiveComponent } from '@udecode/plate-common';
+
 import { useComment } from '../stores/comment/CommentProvider';
 import {
   useCommentsActions,
@@ -7,9 +7,7 @@ import {
   useUpdateComment,
 } from '../stores/comments/CommentsProvider';
 
-export const useCommentResolveButton = ({
-  ...props
-}: ButtonProps): ButtonProps => {
+export const useCommentResolveButton = () => {
   const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
@@ -18,30 +16,29 @@ export const useCommentResolveButton = ({
   const comment = useComment()!;
 
   return {
-    onClick: () => {
-      const isResolved = !comment.isResolved;
+    props: {
+      onClick: () => {
+        const isResolved = !comment.isResolved;
 
-      const value = {
-        isResolved,
-      };
+        const value = {
+          isResolved,
+        };
 
-      updateComment(value);
+        updateComment(value);
 
-      onCommentUpdate?.({
-        id: activeCommentId!,
-        ...value,
-      });
+        onCommentUpdate?.({
+          id: activeCommentId!,
+          ...value,
+        });
 
-      if (isResolved) {
-        setActiveCommentId(null);
-      }
+        if (isResolved) {
+          setActiveCommentId(null);
+        }
+      },
     },
-    ...props,
   };
 };
 
-export const CommentResolveButton = (props: ButtonProps) => {
-  const htmlProps = useCommentResolveButton(props);
-
-  return <Button {...htmlProps} />;
-};
+export const CommentResolveButton = createPrimitiveComponent('button')({
+  propsHook: useCommentResolveButton,
+});

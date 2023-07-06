@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { getKeysByTypes } from './getKeysByTypes';
 

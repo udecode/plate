@@ -1,4 +1,5 @@
-import { nanoid, PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, nanoid } from '@udecode/plate-common';
+
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { SuggestionEditorProps } from '../types';

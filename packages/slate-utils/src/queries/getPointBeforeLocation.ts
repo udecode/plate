@@ -1,14 +1,15 @@
 /* eslint-disable no-constant-condition */
 import {
+  TEditor,
+  Value,
   getEditorString,
   getPoint,
   getPointBefore,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';
 import { Location, Point } from 'slate';
+
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {
@@ -70,7 +71,7 @@ export const getPointBeforeLocation = <V extends Value>(
     let previousBeforePoint = getPoint(editor, at, { edge: 'end' });
 
     const stackLength = matchString.length + 1;
-    const stack = Array(stackLength);
+    const stack: any[] = Array.from({ length: stackLength });
 
     let count = 0;
 
@@ -115,7 +116,7 @@ export const getPointBeforeLocation = <V extends Value>(
       ) {
         if (options.afterMatch) {
           if (stackLength && unitOffset) {
-            point = stack[stack.length - 1]?.point;
+            point = stack.at(-1)?.point;
             return !!point;
           }
           point = previousBeforePoint;
@@ -130,9 +131,8 @@ export const getPointBeforeLocation = <V extends Value>(
 
       count += 1;
 
-      if (!options.skipInvalid) {
-        if (!matchString || count >= matchString.length) return;
-      }
+      if (!options.skipInvalid && (!matchString || count >= matchString.length))
+        return;
     }
   });
 

@@ -1,5 +1,6 @@
 import React, { FC, useMemo } from 'react';
-import { normalizeEditor, Value } from '@udecode/slate';
+import { Value, normalizeEditor } from '@udecode/slate';
+
 import { JotaiProvider } from '../libs/jotai';
 import {
   GLOBAL_PLATE_SCOPE,
@@ -21,7 +22,7 @@ export interface PlateProviderProps<
     Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
   /**
    * Initial value of the editor.
-   * @default [{ children: [{ text: '' }]}]
+   * @default editor.childrenFactory()
    */
   initialValue?: PlateStoreState<V>['value'];
 
@@ -33,13 +34,13 @@ export interface PlateProviderProps<
   normalizeInitialValue?: boolean;
 }
 
-const PlateProviderContent = <
+function PlateProviderContent<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >({
   normalizeInitialValue: shouldNormalizeInitialValue,
   ...props
-}: PlateProviderProps<V, E>) => {
+}: PlateProviderProps<V, E>) {
   const {
     id = PLATE_SCOPE,
     editor: _editor,
@@ -73,9 +74,10 @@ const PlateProviderContent = <
       let currValue = initialValue ?? _value;
 
       if (!currValue) {
-        currValue = editor.children.length
-          ? editor.children
-          : (editor.childrenFactory() as V);
+        currValue =
+          editor.children.length > 0
+            ? editor.children
+            : (editor.childrenFactory() as V);
       }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);
@@ -120,18 +122,16 @@ const PlateProviderContent = <
       </JotaiProvider>
     </JotaiProvider>
   );
-};
+}
 
-export const PlateProvider = <
+export function PlateProvider<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
->(
-  props: PlateProviderProps<V, E>
-) => {
+>(props: PlateProviderProps<V, E>) {
   const { id } = props;
 
   return <PlateProviderContent key={id?.toString()} {...props} />;
-};
+}
 
 export const withPlateProvider = <T,>(Component: FC<T>, hocProps?: T) =>
   withHOC<T>(PlateProvider, Component, hocProps);

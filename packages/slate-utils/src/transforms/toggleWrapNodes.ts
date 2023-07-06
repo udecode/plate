@@ -1,9 +1,9 @@
 import {
-  someNode,
   TEditor,
   TElement,
-  unwrapNodes,
   Value,
+  someNode,
+  unwrapNodes,
   wrapNodes,
 } from '@udecode/slate';
 

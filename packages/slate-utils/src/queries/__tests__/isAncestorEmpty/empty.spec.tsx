@@ -1,16 +1,16 @@
 /** @jsx jsx */
 
+import { isAncestorEmpty } from '@/packages/slate-utils/src/queries/index';
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { isAncestorEmpty } from '../../index';
 
 jsx;
 
-const input = ((
+const input = (
   <hp>
     <cursor />
   </hp>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = true;
 

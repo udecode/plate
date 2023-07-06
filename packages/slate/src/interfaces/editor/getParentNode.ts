@@ -1,4 +1,5 @@
 import { Editor, EditorParentOptions, Location } from 'slate';
+
 import { EAncestor } from '../node/TAncestor';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
@@ -14,5 +15,5 @@ export const getParentNode = <N extends EAncestor<V>, V extends Value = Value>(
 ): TNodeEntry<N> | undefined => {
   try {
     return Editor.parent(editor as any, at, options) as any;
-  } catch (err) {}
+  } catch (error) {}
 };

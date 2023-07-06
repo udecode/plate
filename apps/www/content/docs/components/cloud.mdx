@@ -1,0 +1,108 @@
+---
+title: Cloud
+description: Integrate cloud functionality to enable seamless access to cloud-based resources.
+component: true
+docs:
+  - route: /docs/cloud
+    title: Cloud
+---
+
+<ComponentPreview name="cloud-demo" padding="md" />
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx plate-ui@latest add cloud
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+- [Cloud](/docs/cloud)
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="cloud-attachment-element" />
+<ComponentSource name="cloud-image-element" />
+<ComponentSource name="cloud-resize-controls" />
+<ComponentSource name="cloud-status-bar" />
+<ComponentSource name="cloud-toolbar-buttons" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+### Plugins
+
+```tsx
+const plugins = createMyPlugins(
+  [
+    ...basicNodesPlugins,
+    createCloudPlugin({
+      options: {},
+    }),
+    createCloudAttachmentPlugin(),
+    createCloudImagePlugin({
+      options: {
+        maxInitialWidth: 320,
+        maxInitialHeight: 320,
+        minResizeWidth: 100,
+        maxResizeWidth: 720,
+      },
+    }),
+  ],
+  {
+    components: {
+      ...plateUI,
+      [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
+      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+    },
+  }
+);
+```
+
+### Demo
+
+```tsx
+export default function CloudDemo() {
+  return (
+    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+      <FixedToolbar>
+        <CloudToolbarButtons />
+      </FixedToolbar>
+      <Plate<MyValue> editableProps={editableProps} />
+    </PlateProvider>
+  );
+}
+```

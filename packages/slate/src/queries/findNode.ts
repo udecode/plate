@@ -1,10 +1,10 @@
 import {
   ENode,
-  getNodeEntries,
   GetNodeEntriesOptions,
   TEditor,
   TNodeEntry,
   Value,
+  getNodeEntries,
 } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
@@ -24,6 +24,7 @@ export const findNode = <N extends ENode<V>, V extends Value = Value>(
       ...getQueryOptions(editor, options),
     });
 
+    // eslint-disable-next-line no-unreachable-loop
     for (const [node, path] of nodeEntries) {
       return [node, path];
     }

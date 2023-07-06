@@ -1,17 +1,17 @@
 /** @jsx jsx */
 
-import { createLinkPlugin } from '@udecode/plate-link';
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
+import { createLinkPlugin } from '@/packages/link/src/index';
+import { getBlockAbove } from '@/packages/slate-utils/src/queries/getBlockAbove';
+import { getNextSiblingNodes } from '@/packages/slate-utils/src/queries/getNextSiblingNodes';
 import { jsx } from '@udecode/plate-test-utils';
 import { TDescendant } from '@udecode/slate';
 import { Range } from 'slate';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { createPlateEditor } from '../../../../../core/src/utils/createPlateEditor';
-import { getBlockAbove } from '../../getBlockAbove';
-import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       <htext>first</htext>
@@ -21,7 +21,7 @@ const input = ((
       </ha>
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output: TDescendant[] = [];
 

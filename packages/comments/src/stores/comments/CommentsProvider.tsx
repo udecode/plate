@@ -1,13 +1,14 @@
 import React, { ReactNode } from 'react';
 import {
+  JotaiProvider,
+  Value,
+  WithPartial,
   createAtomStore,
   getJotaiProviderInitialValues,
   getNodeString,
-  JotaiProvider,
   nanoid,
-  Value,
-  WithPartial,
 } from '@udecode/plate-common';
+
 import { CommentUser, TComment } from '../../types';
 
 export const SCOPE_COMMENTS = Symbol('comments');
@@ -84,10 +85,10 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
   }
 );
 
-export const CommentsProvider = ({
+export function CommentsProvider({
   children,
   ...props
-}: Partial<CommentsStoreState> & { children: ReactNode }) => {
+}: Partial<CommentsStoreState> & { children: ReactNode }) {
   return (
     <JotaiProvider
       initialValues={getJotaiProviderInitialValues(commentsStore, props)}
@@ -96,7 +97,7 @@ export const CommentsProvider = ({
       {children}
     </JotaiProvider>
   );
-};
+}
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;

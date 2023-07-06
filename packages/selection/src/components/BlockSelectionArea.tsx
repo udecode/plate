@@ -1,5 +1,6 @@
 import React from 'react';
-import { deselectEditor, useEditorRef } from '@udecode/plate-common';
+import { deselectEditor, usePlateEditorRef } from '@udecode/plate-common';
+
 import { blockSelectionActions } from '../blockSelectionStore';
 import {
   SelectionArea,
@@ -12,7 +13,7 @@ export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {}
 export const useBlockSelectionArea = (
   props: BlockSelectionAreaProps
 ): SelectionAreaProps => {
-  const editor = useEditorRef();
+  const editor = usePlateEditorRef();
 
   const onStart = ({ event, selection }: SelectionEvent) => {
     deselectEditor(editor);
@@ -24,7 +25,7 @@ export const useBlockSelectionArea = (
   };
 
   const onMove = ({ store: { changed } }: SelectionEvent) => {
-    if (!changed.added.length && !changed.removed.length) return;
+    if (changed.added.length === 0 && changed.removed.length === 0) return;
 
     blockSelectionActions.setSelectedIds(changed);
   };
@@ -33,6 +34,7 @@ export const useBlockSelectionArea = (
     className: 'slate-SelectionArea',
     style: {
       position: 'relative',
+      width: '100%',
     },
     onStart,
     onMove,
@@ -104,8 +106,8 @@ export const useBlockSelectionArea = (
   };
 };
 
-export const BlockSelectionArea = (props: BlockSelectionAreaProps) => {
+export function BlockSelectionArea(props: BlockSelectionAreaProps) {
   const componentProps = useBlockSelectionArea(props);
 
   return <SelectionArea {...componentProps} />;
-};
+}

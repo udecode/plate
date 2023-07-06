@@ -1,0 +1,304 @@
+---
+title: Custom Plugins
+description: How to create your own plugins.
+---
+
+Plugins are the building blocks of a Plate editor. Many plugins are provided out of the box, but you may find yourself needing to extend Plate with custom functionality. If that's the situation you're in, it's time to make a custom plugin.
+
+- [Getting Started: Components](/docs/getting-started#components) - Instructions for adding plugins to your editor
+- [PlatePlugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
+
+## Minimal Plugin
+
+Most plugins you'll create will look something like this:
+
+```ts showLineNumbers
+const KEY_AMAZING = 'amazing';
+
+const createAmazingPlugin = createPluginFactory({
+  key: KEY_AMAZING,
+});
+```
+
+The only required option for **`createPluginFactory`** is **`key`**, which is used to uniquely identify your plugin. We typically store the key in a constant so that it can be referenced later. The naming convention for this constant is **`KEY_`** for behavioral plugins (like [Reset Node](/docs/reset-node)), **`ELEMENT_`** for elements and **`MARK_`** for marks.
+
+Your plugin won't do anything yet, but let's add it to a Plate editor all the same.
+
+```tsx showLineNumbers
+const plugins = createPlugins([
+  // This is where you would specify options or overrides to the plugin
+  createAmazingPlugin(),
+]);
+
+export default () => {
+  return <Plate plugins={plugins} />;
+};
+```
+
+Now we're ready to start adding functionality to your plugin. The specifics of this will depend on what type of plugin you want to create. See [Slate's documentation](https://docs.slatejs.org/concepts/02-nodes#element) for explanations of terms like element, block, inline and leaf.
+
+## Node Plugins
+
+### Elements
+
+To create a new type of element using your plugin, use the **`isElement: true`** option.
+
+```ts showLineNumbers {3}
+const createParagraphPlugin = createPluginFactory({
+  key: ELEMENT_PARAGRAPH,
+  isElement: true,
+});
+```
+
+Each element should have an associated component, which you can provide either as an option **`component: ParagraphElement`** to **`createPluginFactory`**, or in the **`components`** option of **`createPlugins`** (recommended).
+
+```ts showLineNumbers {4}
+const plugins = createPlugins([
+  createParagraphPlugin(),
+], {
+  [ELEMENT_PARAGRAPH]: ParagraphElement,
+});
+```
+
+A minimum, the component for an element plugin should look like this. The **`PlateElement`** component is also available to provide the standard component boilerplate. See [Plugin Components](/docs/plugin-components) for more information.
+
+```tsx showLineNumbers
+const ParagraphElement = ({
+  attributes,
+  nodeProps,
+  children,
+}: PlateRenderElementProps) => {
+  return (
+    <p {...attributes} {...nodeProps}>
+      {/* The `children` prop must always be rendered */}
+      {children}
+    </p>
+  );
+};
+```
+
+You can also configure a hotkey to toggle your new element. In the following example, the **`HotkeyPlugin`** type argument defines types for the **`options.hotkey`** option. Plugin options will be explained in more detail shortly.
+
+```tsx showLineNumbers {1,4-11}
+const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
+  key: ELEMENT_PARAGRAPH,
+  isElement: true,
+  handlers: {
+    // Check for the hotkey on keydown
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    // Define the hotkeys here
+    hotkey: ['mod+opt+0', 'mod+shift+0'],
+  },
+});
+```
+
+### Inline, Void and Leaf Nodes
+
+You can configure your element to be inline or void using the **`isInline`** and **`isVoid`** options respectively. Please refer to the [Slate documentation](https://docs.slatejs.org/concepts/02-nodes) for explanations of these concepts. If you're unsure which of these options to use, try checking Plate's source code for an example of a plugin that works in a similar way to what you want.
+
+```ts showLineNumbers {3-4}
+const createLinkPlugin = createPluginFactory({
+  key: ELEMENT_LINK,
+  isElement: true,
+  isInline: true,
+  // ...
+});
+```
+
+```ts showLineNumbers {3-4}
+const createImagePlugin = createPluginFactory({
+  key: ELEMENT_IMAGE,
+  isElement: true,
+  isVoid: true,
+  // ...
+});
+```
+
+To create a new type of mark, use **`isLeaf: true`**. Similarly to with element plugins, you can use **`onKeyDownToggleMark`** to toggle your mark using a hotkey.
+
+```ts showLineNumbers {1,3-10}
+const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
+  key: MARK_SUBSCRIPT,
+  isLeaf: true,
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  options: {
+    hotkey: 'mod+.',
+    clear: MARK_SUBSCRIPT,
+  },
+});
+```
+
+### Deserializing HTML
+
+To enable your element or mark to be deserialized from HTML passed to **`deserializeHtml`** or pasted into the editor, specify deserialization rules using the **`deserializeHtml`** option.
+
+```ts showLineNumbers
+const createBoldPlugin = createPluginFactory({
+  // ...
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['STRONG', 'B'] },
+      {
+        validStyle: {
+          fontWeight: ['600', '700', 'bold'],
+        },
+      },
+    ],
+  },
+});
+```
+
+## Behavioral Plugins
+
+Rather than render an element or a mark, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
+
+### Event Handlers
+
+The recommended way to respond to user-generated events from inside a plugin is with the **`handlers`** plugin option. A handler should be a function that takes an **`editor`** object and returns another function that takes  an event object.
+
+The **`onChange`** handler, which is called when the editor value changes, is an exception to this rule; the inner function of an **`onChange`** handler should accept a **`Value`** object instead of an event.
+
+```ts showLineNumbers
+const createExamplePlugin = createPluginFactory({
+  key: KEY_EXAMPLE,
+  handlers: {
+    onChange: (editor) => (value) => {
+      console.log(editor, value);
+    },
+    onKeyDown: (editor) => (event) => {
+      console.log(`You pressed ${event.key}`);
+    },
+  },
+});
+```
+
+### Inject Props
+
+You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the **`textAlign`** CSS property on paragraphs with an **`align`** property.
+
+```ts showLineNumbers
+const KEY_ALIGN = 'align';
+
+const createAlignPlugin = createPluginFactory({
+  key: KEY_ALIGN,
+
+  // Note that we're using `then` to access to the editor
+  then: (editor) => ({
+    inject: {
+      props: {
+        nodeKey: KEY_ALIGN,
+        defaultNodeValue: 'left',
+        styleKey: 'textAlign',
+        validNodeValues: ['left', 'center', 'right', 'justify'],
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+      },
+    },
+  }),
+});
+```
+
+A paragraph node affected by the this plugin would look like this:
+
+```ts showLineNumbers {3}
+{
+  type: 'p',
+  align: 'right',
+  children: [{ text: 'This paragraph is aligned to the right!' }],
+}
+```
+
+### With Overrides (Advanced)
+
+Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the **`withOverrides`** plugin option to directly mutate properties of the **`editor`** object after its creation. 
+
+One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing). 
+
+```ts showLineNumbers {20}
+const withCustomNormalizer = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(editor: E) => {
+  const { normalizeNode } = editor;
+
+  editor.normalizeNode = ([node, path]: TNodeEntry) => {
+    // Normalize the node if necessary
+    // ...
+
+    // Call other normalizers
+    normalizeNode([node, path]);
+  };
+
+  return editor;
+};
+
+const createCustomNormalizerPlugin = createPluginFactory({
+  key: KEY_CUSTOM_NORMALIZER,
+  withOverrides: withCustomNormalizer,
+});
+```
+
+## Custom Plugin Options
+
+Often, you may want to pass custom data to a plugin. We've already seen two examples of this using the **`HotkeyPlugin`** and **`ToggleMarkPlugin`** type arguments to **`createPluginFactory`**.
+
+Let's see a more detailed example of defining a custom options type and using it to customize the plugin behavior.
+
+```tsx showLineNumbers {7,11,15,23-26,32}
+interface DemoPlugin {
+  username?: string;
+}
+
+const KEY_DEMO = 'demo';
+
+const createDemoPlugin = createPluginFactory<DemoPlugin>({
+  key: KEY_DEMO,
+  handlers: {
+    onKeyDown: (editor) => (event) => {
+      const { username } = getPluginOptions<DemoPlugin>(editor, KEY_DEMO);
+      console.log(`${username} pressed ${event.key}`)
+    },
+  },
+  then: (_editor, { options }) => ({
+    renderAboveEditable: ({ children }) => (
+      <div>
+        <p>Editing as {options.username}</p>
+        {children}
+      </div>
+    ),
+  }),
+  options: {
+    // Optionally specify a default value
+    username: 'Anonymous',
+  },
+});
+
+const MyEditor = ({ username }: { username: string }) => {
+  const plugins = useMemo(() => createPlugins([
+    createDemoPlugin({
+      options: { username },
+    }),
+  ]), [username]);
+  
+  return <Plate plugins={plugins} />;
+};
+
+export default () => <MyEditor username="Marsha P. Johnson" />;
+```
+
+As you can see from the above example, plugin options can be accessed anywhere that you have a reference to **`editor`** using **`getPluginOptions`**. Options are also exposed from a handful of other APIs, such as the second arguments to the **`then`** and **`withOverrides`** functions.
+
+## See also
+
+See the [PlatePlugin API](/docs/api/core/plate-plugin) for more plugin options. Here are some options you may want to pay particular attention to. You can find examples of their usage in Plate's source code.
+
+- **`editor.insertData`** - Handles data pasted into the editor
+- **`decorate`** - Used to apply [decorations](https://docs.slatejs.org/concepts/09-rendering#decorations) to text ranges without modifying the content of the editor
+- **`inject.aboveComponent`** - Inject a component wrapping the components of other plugins
+- **`inject.belowComponent`** - Inject a component wrapping the children of other plugins
+- **`inject.pluginsByKey`** - Modify the options of other plugins
+- **`plugins`** - Nest multiple plugins inside the same plugin factory
+- **`serializeHtml`** - Add a custom HTML serializer to a plugin

@@ -1,14 +1,15 @@
 import {
+  PlateEditor,
+  Value,
   deselect,
   focusEditor,
   getStartPoint,
   insertData,
   insertNodes,
   isElementEmpty,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
 import { getSelectedBlocks } from '../queries/getSelectedBlocks';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
 
@@ -18,8 +19,8 @@ export const pasteSelectedBlocks = <V extends Value>(
 ) => {
   const entries = getSelectedBlocks(editor);
 
-  if (entries.length) {
-    const entry = entries[entries.length - 1];
+  if (entries.length > 0) {
+    const entry = entries.at(-1)!;
     const [node, path] = entry;
 
     focusEditor(editor, getStartPoint(editor, path));

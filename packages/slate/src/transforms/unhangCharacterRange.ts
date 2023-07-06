@@ -1,5 +1,6 @@
 import { Path, Range } from 'slate';
-import { getPointAfter, getPointBefore, TEditor, Value } from '../interfaces';
+
+import { TEditor, Value, getPointAfter, getPointBefore } from '../interfaces';
 
 /**
  * Unhang the range of length 1 so both edges are in the same text node.

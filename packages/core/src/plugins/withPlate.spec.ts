@@ -1,9 +1,9 @@
-import { createHeadingPlugin } from '../../../nodes/heading/src/createHeadingPlugin';
-import { createParagraphPlugin } from '../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTEditor } from '../../../slate/src/createTEditor';
-import { PlatePlugin } from '../types/plugin/PlatePlugin';
-import { getPlugin } from '../utils/getPlugin';
-import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
+import { getPlugin } from '@/packages/core/src/utils/getPlugin';
+import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTEditor } from '@udecode/slate/src/createTEditor';
+
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';
@@ -11,6 +11,7 @@ import { KEY_INLINE_VOID } from './createInlineVoidPlugin';
 import { KEY_INSERT_DATA } from './createInsertDataPlugin';
 import { KEY_NODE_FACTORY } from './createNodeFactoryPlugin';
 import { KEY_PREV_SELECTION } from './createPrevSelectionPlugin';
+import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';
 import { withPlate } from './withPlate';
 
 const coreKeys = [

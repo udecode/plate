@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
 import { AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray';
+
 import { Nullable } from '../../../types';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
@@ -55,7 +56,7 @@ export const pluginDeserializeHtml = <V extends Value>(
 
           // Ignore if el nodeName is not included in rule validNodeNames (except *).
           if (
-            validNodeNames.length &&
+            validNodeNames.length > 0 &&
             !validNodeNames.includes(el.nodeName) &&
             validNodeName !== '*'
           )
@@ -71,15 +72,19 @@ export const pluginDeserializeHtml = <V extends Value>(
             const values = castArray<string>(value);
 
             // Ignore if el style value is not included in rule style values (except *)
-            if (!values.includes(el.style[key]) && value !== '*') return;
+            if (!values.includes((el.style as any)[key]) && value !== '*')
+              return;
 
             // Ignore if el style value is falsy (for value *)
-            if (value === '*' && !el.style[key]) return;
+            if (value === '*' && !(el.style as any)[key]) return;
 
             const defaultNodeValue = plugin.inject.props?.defaultNodeValue;
 
             // Ignore if the style value = plugin.inject.props.defaultNodeValue
-            if (defaultNodeValue && defaultNodeValue === el.style[key]) {
+            if (
+              defaultNodeValue &&
+              defaultNodeValue === (el.style as any)[key]
+            ) {
               return false;
             }
           }
@@ -126,7 +131,7 @@ export const pluginDeserializeHtml = <V extends Value>(
   }
 
   let node = getNode(el, {}) ?? {};
-  if (!Object.keys(node).length) return;
+  if (Object.keys(node).length === 0) return;
 
   const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
 
@@ -147,13 +152,12 @@ export const pluginDeserializeHtml = <V extends Value>(
 
     for (const elementAttributeName of elementAttributeNames) {
       if (attributeNames.includes(elementAttributeName)) {
-        elementAttributes[elementAttributeName] = el.getAttribute(
-          elementAttributeName
-        );
+        (elementAttributes as any)[elementAttributeName] =
+          el.getAttribute(elementAttributeName);
       }
     }
 
-    if (Object.keys(elementAttributes).length) {
+    if (Object.keys(elementAttributes).length > 0) {
       node.attributes = elementAttributes;
     }
   }

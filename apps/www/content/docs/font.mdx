@@ -1,0 +1,68 @@
+---
+title: Font
+description: Provide extended formatting options for document content.
+docs:
+  - route: /docs/components/color-dropdown-menu
+    title: Color Dropdown Menu
+---
+
+<ComponentPreview name="playground-demo" id="font" />
+
+<PackageInfo>
+
+## Features
+
+- Font size, family, color, background color, and weight.
+
+**Plugins:**
+
+- **`fontFamily`**: Change font family using inline elements with a **`font-family`** in the style attribute.
+- **`fontSize`**: Control font size with inline elements having a CSS class or a **`font-size`** in the style attribute.
+- **`fontColor`**: Control font color with inline elements having a **`color`** in the style attribute.
+- **`fontBackgroundColor`**: Control font background color with inline elements having a **`background-color`** in the style attribute.
+- **`fontWeight`**: Control font weight with inline elements having a **`font-weight`** in the style attribute.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-font
+```
+
+## Usage
+
+```tsx
+import {
+  createFontBackgroundColorPlugin,
+  createFontColorPlugin,
+  createFontSizePlugin,
+} from '@udecode/plate-font';
+
+const plugins = [
+  // ...otherPlugins,
+  createFontColorPlugin(),
+  createFontBackgroundColorPlugin(),
+  createFontSizePlugin(),
+];
+```
+
+## API
+
+### createFontBackgroundColorPlugin
+
+### createFontColorPlugin
+
+### createFontFamilyPlugin
+
+### createFontSizePlugin
+
+### createFontWeightPlugin
+
+## API Components
+
+### useColorDropdownMenu
+
+### useColorInput
+
+### useColorsCustom

@@ -1,7 +1,8 @@
 import { Value } from '@udecode/slate';
+
+import { PlateEditor } from './PlateEditor';
 import { PlatePlugin } from './plugin/PlatePlugin';
 import { PluginKey } from './plugin/PlatePluginKey';
-import { PlateEditor } from './PlateEditor';
 
 export type OverrideByKey<
   V extends Value = Value,

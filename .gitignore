@@ -1,5 +1,9 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+packages/cli/components
+tsconfig.tsbuildinfo
+apps/www/tsconfig.tsbuildinfo
+
 .yarn/*
 !.yarn/cache
 !.yarn/patches
@@ -9,10 +13,6 @@
 !.yarn/versions
 
 # Generated files
-/docs/.docusaurus
-/docs/.cache-loader
-/docs/src/css/tailwind.output.css
-
 .history
 node_modules/
 report.*
@@ -20,8 +20,6 @@ report.*
 # Dependency directories
 jspm_packages/
 /packages/*/node_modules
-/packages/*/LICENSE
-**/lib
 **/dist
 
 # compiled output
@@ -115,10 +113,9 @@ storybook-static/
 
 # Local
 packages/plate/docs/
-config/typedoc/
-!config/typedoc/_redirects
 # Local Netlify folder
 .netlify
 /test-results/
 /playwright-report/
 /playwright/.cache/
+.turbo

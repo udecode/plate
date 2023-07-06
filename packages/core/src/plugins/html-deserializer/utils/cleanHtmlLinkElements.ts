@@ -19,7 +19,7 @@ export const cleanHtmlLinkElements = (rootNode: Node): void => {
 
     if (href && element.querySelector('img')) {
       for (const span of element.querySelectorAll('span')) {
-        if (!span.innerText) {
+        if (!span.textContent) {
           unwrapHtmlElement(span);
         }
       }

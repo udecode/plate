@@ -1,4 +1,5 @@
 import { Element } from 'slate';
+
 import { TElement } from './TElement';
 
 /**

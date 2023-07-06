@@ -1,11 +1,8 @@
-import { ComponentProps } from 'react';
-import { atom, Provider, useAtom, useAtomValue } from 'jotai';
-import { Scope } from 'jotai/core/atom';
+import { ComponentPropsWithRef } from 'react';
+import { Provider } from 'jotai';
 
-export type JotaiProviderProps = ComponentProps<typeof Provider>;
+export type JotaiProviderProps = ComponentPropsWithRef<typeof Provider>;
 
-export type { Scope };
-
-export const JotaiProvider = Provider;
-
-export { atom, useAtom, useAtomValue };
+export { atom, useAtom, useAtomValue, Provider as JotaiProvider } from 'jotai';
+// eslint-disable-next-line import/no-unresolved
+export { type Scope } from 'jotai/core/atom';

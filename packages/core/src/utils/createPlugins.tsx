@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { cloneDeep } from 'lodash';
+
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
@@ -45,7 +46,7 @@ export const createPlugins = <
     });
   }
 
-  if (Object.keys(allOverrideByKey).length) {
+  if (Object.keys(allOverrideByKey).length > 0) {
     return plugins.map((plugin) => {
       return overridePluginsByKey<{}, V, E>(plugin, allOverrideByKey);
     });

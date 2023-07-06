@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { createPluginFactory } from '../utils/createPluginFactory';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
@@ -52,7 +53,7 @@ export const withInsertData = <
         data,
         dataTransfer,
       });
-      if (!fragment.length) return false;
+      if (fragment.length === 0) return false;
 
       pipeInsertFragment(editor, injectedPlugins, {
         fragment,

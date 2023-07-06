@@ -1,4 +1,5 @@
-import { RenderFunction } from '@udecode/plate-common';
+import React from 'react';
+
 import { TCaptionElement } from '../caption/index';
 import { TResizableElement } from '../resizable/index';
 import { EmbedUrlData } from './parseMediaUrl';
@@ -11,7 +12,7 @@ export type MediaUrlParser = (url: string) => EmbedUrlData | undefined;
 
 export type MediaPluginRule = {
   parser: MediaUrlParser;
-  component?: RenderFunction<EmbedUrlData>;
+  component?: React.FC<EmbedUrlData>;
 };
 
 export interface MediaPlugin {

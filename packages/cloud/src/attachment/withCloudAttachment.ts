@@ -1,10 +1,11 @@
 import {
   EElementOrText,
-  insertNode,
   Value,
   WithPlatePlugin,
+  insertNode,
 } from '@udecode/plate-common';
 import Defer from 'p-defer';
+
 import { PlateCloudEditor } from '../cloud/types';
 import { UploadError, UploadSuccess } from '../upload';
 import { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
@@ -18,7 +19,7 @@ export const withCloudAttachment = <
   E extends PlateCloudEditor<V> = PlateCloudEditor<V>
 >(
   editor: E,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>
 ) => {
   /**

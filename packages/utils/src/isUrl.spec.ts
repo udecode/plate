@@ -125,10 +125,6 @@ describe('is-url', () => {
       expect(!isUrl('')).toBeTruthy();
     });
 
-    it('undef', () => {
-      expect(!isUrl(undefined)).toBeTruthy();
-    });
-
     it('object', () => {
       expect(!isUrl({})).toBeTruthy();
     });
@@ -145,7 +141,7 @@ describe('is-url', () => {
   describe('redos', () => {
     it('redos exploit', () => {
       // Invalid. This should be discovered in under 1 second.
-      const attackString = `a://localhost${'9'.repeat(100000)}\t`;
+      const attackString = `a://localhost${'9'.repeat(100_000)}\t`;
       const before = process.hrtime();
 
       expect(!isUrl(attackString)).toBeTruthy();

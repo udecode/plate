@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
+import { getPointFromLocation } from '@/packages/slate-utils/src/queries/getPointFromLocation';
+import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
 import { jsx } from '@udecode/plate-test-utils';
-import { PlateEditor } from '../../../../../core/src/types/PlateEditor';
-import { getPointFromLocation } from '../../getPointFromLocation';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       tes
@@ -15,7 +15,7 @@ const input = ((
       <focus />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = {
   offset: 5,

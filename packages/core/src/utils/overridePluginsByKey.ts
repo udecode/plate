@@ -1,8 +1,9 @@
 import { Value } from '@udecode/slate';
 import defaultsDeep from 'lodash/defaultsDeep';
-import { NoInfer } from '../types/misc/NoInfer';
+
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
+import { NoInfer } from '../types/misc/NoInfer';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 
 /**
@@ -16,7 +17,7 @@ export const overridePluginsByKey = <
 >(
   plugin: PlatePlugin<NoInfer<P>, V, E>,
   overrideByKey: OverrideByKey<V, E> = {},
-  nested?: boolean
+  nested = false
 ): PlatePlugin<NoInfer<P>, V, E> => {
   if (overrideByKey[plugin.key]) {
     const {
@@ -49,7 +50,7 @@ export const overridePluginsByKey = <
   const { then } = plugin;
 
   if (then) {
-    if (typeof plugin._thenReplaced === 'undefined') {
+    if (plugin._thenReplaced === undefined) {
       plugin._thenReplaced = 0;
     }
     // Limit the number of times that `then` can be replaced.

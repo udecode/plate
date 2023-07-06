@@ -1,42 +1,37 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { HTMLAttributes, useMemo } from 'react';
 import {
+  TElement,
   findNodePath,
   getPluginOptions,
-  HTMLPropsAs,
   isInline,
   queryNode,
-  TElement,
-  useEditorRef,
+  usePlateEditorRef,
 } from '@udecode/plate-common';
+
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
   BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
 
-export interface BlockSelectableState {
-  active: boolean;
-}
-
-export interface BlockSelectableProps extends HTMLPropsAs<'div'> {
+export interface BlockSelectableOptions {
   element: TElement;
-  children: ReactNode;
-  state?: BlockSelectableState;
   selectedColor?: string;
+  active?: boolean;
 }
 
 export const useBlockSelectableState = ({
   element,
-  state,
-}: BlockSelectableProps) => {
-  const editor = useEditorRef();
+  selectedColor,
+  active,
+}: BlockSelectableOptions) => {
+  const editor = usePlateEditorRef();
 
   const path = useMemo(() => findNodePath(editor, element), [editor, element]);
 
   if (!path || isInline(editor, element)) {
     return {
-      active: false,
-      ...state,
+      active: active ?? false,
     };
   }
 
@@ -47,45 +42,57 @@ export const useBlockSelectableState = ({
 
   if (query && !queryNode([element, path], query)) {
     return {
-      active: false,
-      ...state,
+      active: active ?? false,
     };
   }
 
   return {
-    active: true,
-    ...state,
+    active: active ?? true,
+    element,
+    selectedColor,
   };
 };
 
 export const useBlockSelectable = ({
   element,
   selectedColor,
-  ...props
-}: BlockSelectableProps): HTMLPropsAs<'div'> => {
-  const id = element.id as string | undefined;
+}: ReturnType<typeof useBlockSelectableState>) => {
+  const id = element?.id as string | undefined;
   const isSelected = useBlockSelectionSelectors().isSelected(id);
 
-  return {
-    className: isSelected
-      ? 'slate-selected slate-selectable'
-      : 'slate-selectable',
-    style: isSelected
-      ? {
-          backgroundColor: selectedColor,
-        }
-      : undefined,
+  const data = {
     'data-key': id,
-    key: id,
-    ...props,
+  };
+
+  return {
+    props: {
+      className: isSelected
+        ? 'slate-selected slate-selectable'
+        : 'slate-selectable',
+      style: isSelected
+        ? {
+            backgroundColor: selectedColor,
+          }
+        : undefined,
+      key: id,
+      ...data,
+    },
   };
 };
 
-export const BlockSelectable = (props: BlockSelectableProps) => {
-  const htmlProps = useBlockSelectable(props as any);
-  const { active } = useBlockSelectableState(props as any);
+export function BlockSelectable({
+  options,
+  children,
+  ...props
+}: { options: BlockSelectableOptions } & HTMLAttributes<HTMLDivElement>) {
+  const state = useBlockSelectableState(options);
+  const { props: rootProps } = useBlockSelectable(state);
 
-  if (!active) return <>{htmlProps.children}</>;
+  if (!state.active) return <>{children}</>;
 
-  return <div {...htmlProps} />;
-};
+  return (
+    <div {...rootProps} {...props}>
+      {children}
+    </div>
+  );
+}

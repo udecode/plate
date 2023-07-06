@@ -13,8 +13,8 @@ on:
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
-      - 'lerna.json'
       - 'tsconfig.json'
+      - 'turbo.json'
       - 'config'
       - 'scripts'
       - 'patches'
@@ -31,8 +31,8 @@ on:
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
-      - 'lerna.json'
       - 'tsconfig.json'
+      - 'turbo.json'
       - 'config'
       - 'scripts'
       - 'patches'
@@ -49,10 +49,10 @@ jobs:
           # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
 
-      - name: Use Node.js 14.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       # Why not using setup-node 2.2+ cache option (yet) ?
       # see https://github.com/belgattitude/nextjs-monorepo-example/pull/369
@@ -81,18 +81,16 @@ jobs:
       - name: Install
         run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
-      # Build packages that have changed (--include & --since), assuming that
-      # apps build are done already. Otherwise --from & --since
       - name: Build
-        run: yarn g:build
+        run: yarn build
 
       # Lint packages that have changed (--include & --since)
       - name: Lint
-        run: yarn g:lint-changed
+        run: yarn lint
 
       # Typecheck packages that have changed (--include & --since)
       - name: Test
-        run: yarn g:typecheck-changed
+        run: yarn typecheck
 
   notify:
     name: Discord Notification

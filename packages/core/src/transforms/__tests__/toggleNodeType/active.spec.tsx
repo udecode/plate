@@ -1,21 +1,18 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
+import { PlateEditor, toggleNodeType } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '@udecode/slate';
-import { PlateEditor } from '../../../types/PlateEditor';
-import { toggleNodeType } from '../../toggleNodeType';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hblockquote>
       test
       <cursor />
     </hblockquote>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = (
   <editor>
@@ -27,7 +24,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleNodeType(input, { activeType: ELEMENT_BLOCKQUOTE });
+  toggleNodeType(input, { activeType: 'blockquote' });
 
   expect(input.children).toEqual(output.children);
 });

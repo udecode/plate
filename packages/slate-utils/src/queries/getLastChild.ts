@@ -1,4 +1,4 @@
-import { ChildOf, isText, TNode, TNodeEntry } from '@udecode/slate';
+import { ChildOf, TNode, TNodeEntry, isText } from '@udecode/slate';
 import { Path } from 'slate';
 
 /**
@@ -10,11 +10,11 @@ export const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   const [node, path] = nodeEntry;
 
   if (isText(node)) return null;
-  if (!node.children.length) return null;
+  if (node.children.length === 0) return null;
 
   const children = node.children as N[];
 
-  return [children[children.length - 1], path.concat([children.length - 1])];
+  return [children.at(-1) as N, path.concat([children.length - 1])];
 };
 
 /**

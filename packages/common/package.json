@@ -3,7 +3,7 @@
   "version": "21.5.0",
   "description": "Plate common packages for plugins",
   "license": "MIT",
-  "homepage": "https://plate.udecode.io",
+  "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
@@ -18,6 +18,17 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl:below",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
   "dependencies": {
     "@udecode/plate-core": "21.5.0",
     "@udecode/plate-utils": "21.5.0",
@@ -31,7 +42,7 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
-    "slate-react": ">=0.94.0"
+    "slate-react": ">=0.95.0"
   },
   "keywords": [
     "plate",

@@ -1,5 +1,6 @@
 import { Editor } from 'slate';
 import { EditorFragmentDeletionOptions } from 'slate/dist/interfaces/editor';
+
 import { TEditor, Value } from './TEditor';
 
 /**

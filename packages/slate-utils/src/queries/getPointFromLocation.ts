@@ -18,7 +18,7 @@ export const getPointFromLocation = <V extends Value>(
   } = {}
 ) => {
   let point: Point | undefined;
-  if (Range.isRange(at)) point = !focus ? at.anchor : at.focus;
+  if (Range.isRange(at)) point = focus ? at.focus : at.anchor;
   if (Point.isPoint(at)) point = at;
   if (Path.isPath(at)) point = { path: at, offset: 0 };
 

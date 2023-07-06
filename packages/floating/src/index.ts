@@ -3,7 +3,6 @@
  */
 
 export * from './createVirtualElement';
-export * from './components/index';
 export * from './hooks/index';
 export * from './libs/index';
 export * from './utils/index';

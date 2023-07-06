@@ -1,4 +1,5 @@
 import { createStore } from '@udecode/plate-common';
+
 import { Upload } from './types';
 
 /**
@@ -9,13 +10,11 @@ import { Upload } from './types';
  * because we don't want to modify the Editor value during the upload or it
  * becomes part of the edit history.
  */
-export const createUploadStore = (
-  {
-    uploads: initialUploads = {},
-  }: {
-    uploads: Record<string, Upload>;
-  } = { uploads: {} }
-) => {
+export const createUploadStore = ({
+  uploads: initialUploads = {},
+}: {
+  uploads?: Record<string, Upload>;
+} = {}) => {
   return createStore('upload')({ uploads: initialUploads })
     .extendActions((set, get) => ({
       upload: (id: string, upload: Upload): void => {

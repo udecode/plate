@@ -1,10 +1,11 @@
 import {
-  collapseSelection,
-  getEdgePoints,
   PlateEditor,
   Value,
+  collapseSelection,
+  getEdgePoints,
   withoutNormalizing,
 } from '@udecode/plate-common';
+
 import { deleteSuggestion } from './deleteSuggestion';
 
 export const deleteFragmentSuggestion = <V extends Value>(

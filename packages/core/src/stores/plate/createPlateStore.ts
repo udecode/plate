@@ -1,11 +1,12 @@
 import { Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 import { atom } from 'jotai';
+
 import {
-  createAtomStore,
   GetRecord,
   SetRecord,
   UseRecord,
+  createAtomStore,
 } from '../../atoms/index';
 import { Scope, useAtom } from '../../libs/index';
 import { PlateEditor } from '../../types/PlateEditor';

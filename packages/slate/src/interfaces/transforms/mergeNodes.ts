@@ -1,6 +1,8 @@
 import { Modify } from '@udecode/utils';
 import { Editor, Element, Path, Range, Text, Transforms } from 'slate';
+
 import { NodeMatchOption } from '../../types/NodeMatchOption';
+import { TEditor, Value } from '../editor/TEditor';
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';
@@ -9,7 +11,6 @@ import { getParentNode } from '../editor/getParentNode';
 import { getPreviousNode } from '../editor/getPreviousNode';
 import { isBlock } from '../editor/isBlock';
 import { isElementEmpty } from '../editor/isElementEmpty';
-import { TEditor, Value } from '../editor/TEditor';
 import { withoutNormalizing } from '../editor/withoutNormalizing';
 import { isElement } from '../element/isElement';
 import { hasSingleChild } from '../node/hasSingleChild';
@@ -105,16 +106,18 @@ export const mergeNodes = <V extends Value>(
     const commonPath = Path.common(path, prevPath);
     const isPreviousSibling = Path.isSibling(path, prevPath);
     const _levels = Editor.levels(editor as any, { at: path });
-    const levels = Array.from(_levels, ([n]) => n)
-      .slice(commonPath.length)
-      .slice(0, -1);
+    const levels = new Set(
+      Array.from(_levels, ([n]) => n)
+        .slice(commonPath.length)
+        .slice(0, -1)
+    );
 
     // Determine if the merge will leave an ancestor of the path empty as a
     // result, in which case we'll want to remove it after merging.
     const emptyAncestor = getAboveNode(editor as any, {
       at: path,
       mode: 'highest',
-      match: (n) => levels.includes(n) && isElement(n) && hasSingleChild(n),
+      match: (n) => levels.has(n) && isElement(n) && hasSingleChild(n),
     });
 
     const emptyRef =
@@ -142,22 +145,22 @@ export const mergeNodes = <V extends Value>(
 
     // If the node isn't already the next sibling of the previous node, move
     // it so that it is before merging.
-    if (!isPreviousSibling) {
-      // DIFF
-      if (!mergeNode) {
-        moveNodes(editor, { at: path, to: newPath, voids });
-      }
+    if (
+      !isPreviousSibling && // DIFF
+      !mergeNode
+    ) {
+      moveNodes(editor, { at: path, to: newPath, voids });
     }
 
     // If there was going to be an empty ancestor of the node that was merged,
     // we remove it from the tree.
     if (emptyRef) {
       // DIFF: start
-      if (!removeEmptyAncestor) {
-        removeNodes(editor, { at: emptyRef.current!, voids });
-      } else {
+      if (removeEmptyAncestor) {
         const emptyPath = emptyRef.current;
         emptyPath && removeEmptyAncestor(editor as any, { at: emptyPath });
+      } else {
+        removeNodes(editor, { at: emptyRef.current!, voids });
       }
       // DIFF: end
     }

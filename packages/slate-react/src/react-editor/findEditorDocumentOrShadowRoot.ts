@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
+
 import { TReactEditor } from '../types/TReactEditor';
 
 /**
@@ -10,5 +11,5 @@ export const findEditorDocumentOrShadowRoot = <V extends Value>(
 ) => {
   try {
     return ReactEditor.findDocumentOrShadowRoot(editor as any);
-  } catch (e) {}
+  } catch (error) {}
 };

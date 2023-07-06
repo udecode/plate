@@ -1,19 +1,20 @@
 import {
   EDescendant,
-  isElement,
-  isText,
   TDescendant,
   TEditor,
   Value,
+  isElement,
+  isText,
 } from '@udecode/slate';
+
 import { ELEMENT_DEFAULT } from '../constants';
 import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from './getPluginType';
 
-const isInlineNode = <V extends Value>(
-  editor: Pick<TEditor<V>, 'isInline'>
-) => (node: EDescendant<V>) =>
-  isText(node) || (isElement(node) && editor.isInline(node));
+const isInlineNode =
+  <V extends Value>(editor: Pick<TEditor<V>, 'isInline'>) =>
+  (node: EDescendant<V>) =>
+    isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({
   type,
@@ -75,7 +76,7 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
 const normalizeEmptyChildren = <N extends TDescendant>(
   descendants: N[]
 ): N[] => {
-  if (!descendants.length) {
+  if (descendants.length === 0) {
     return [{ text: '' } as N];
   }
   return descendants;

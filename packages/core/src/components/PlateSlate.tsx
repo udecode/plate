@@ -1,15 +1,16 @@
 import React, { ReactNode } from 'react';
 import { Slate } from 'slate-react';
+
 import { useSlateProps } from '../hooks';
 import { PlateId, usePlateSelectors } from '../stores';
 
-export const PlateSlate = ({
+export function PlateSlate({
   id,
   children,
 }: {
   id?: PlateId;
   children: ReactNode;
-}) => {
+}) {
   const slateProps = useSlateProps({ id });
 
   const { plugins } = usePlateSelectors(id).editor();
@@ -24,8 +25,8 @@ export const PlateSlate = ({
     if (renderAboveSlate)
       aboveSlate = renderAboveSlate({
         children: aboveSlate,
-      });
+      }) as any;
   });
 
   return aboveSlate;
-};
+}

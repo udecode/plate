@@ -8,4 +8,4 @@ export const withTReact = <
   EE extends E = E & TReactEditor<V>
 >(
   editor: E
-) => (withReact(editor as any) as any) as EE;
+) => withReact(editor as any) as any as EE;

@@ -1,12 +1,13 @@
 /** @jsx jsx */
 
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createImagePlugin } from '../../../../../media/src/image/createImagePlugin';
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createLinkPlugin } from '../../../../../nodes/link/src/createLinkPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;
@@ -26,7 +27,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
   it('should have type and attribute', () => {
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [
             {
               key: 'a',
@@ -35,7 +36,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
                 isElement: true,
                 getNode: (el) => ({
                   type: 'poll',
-                  id: el.getAttribute('data-id'),
+                  id: el.dataset.id,
                 }),
                 rules: [
                   {
@@ -75,7 +76,7 @@ describe('when plugin has deserialize attributeNames', () => {
   it('should have "attributes" field', () => {
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [createTablePlugin()],
         }),
         element
@@ -97,7 +98,7 @@ describe('when element has a comment node', () => {
   it('should ignore the comment node', () => {
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [],
         }),
         element
@@ -117,7 +118,7 @@ describe('when element has pre without child', () => {
   ) as any;
 
   it('should ignore pre', () => {
-    expect(deserializeHtmlElement(createPlateUIEditor(), element)).toEqual(
+    expect(deserializeHtmlElement(createPlateEditor(), element)).toEqual(
       output.children
     );
   });
@@ -136,7 +137,7 @@ describe('when there is no plugins', () => {
   it('should not deserialize the tags without plugins', () => {
     expect(
       deserializeHtmlElement(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [],
         }),
         element
@@ -148,7 +149,7 @@ describe('when there is no plugins', () => {
 describe('when plugin has deserialize.attributeNames', () => {
   const html = `<html><body><img alt="removed" src="https://i.imgur.com/removed.png" /></body></html>`;
 
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: [
       createImagePlugin({
         deserializeHtml: {
@@ -179,7 +180,7 @@ describe('when plugin has deserialize.attributeNames', () => {
 describe('when plugin has deserialize.getNode', () => {
   const html = `<html><body><p><a href="http://google.com" target="_blank">a</a></p></body></html>`;
 
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: [
       createParagraphPlugin(),
       createLinkPlugin({
@@ -214,7 +215,7 @@ describe('when plugin has deserialize.getNode', () => {
 describe('when plugin has deserialize.rules.validNodeName', () => {
   const html = `<html><body><p><b>strong</b></p></body></html>`;
 
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: [
       createParagraphPlugin(),
       createBoldPlugin({

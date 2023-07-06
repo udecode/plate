@@ -1,5 +1,6 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
+
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
@@ -23,7 +24,7 @@ export const pipeRenderLeaf = <V extends Value>(
     }
   });
 
-  return (nodeProps) => {
+  return function render(nodeProps) {
     const props = pipeInjectProps(editor, nodeProps) as PlateRenderLeafProps<V>;
 
     renderLeafs.forEach((renderLeaf) => {

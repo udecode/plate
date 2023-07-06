@@ -1,7 +1,7 @@
-import { AsProps } from '../types/index';
-import { createComponentAs } from '../utils/createComponentAs';
-import { createElementAs } from '../utils/index';
+import { ComponentPropsWithRef } from 'react';
 
-export const Box = createComponentAs<AsProps<'div'>>((props) =>
-  createElementAs('div', props)
-);
+import { createSlotComponent } from '../utils/createSlotComponent';
+
+export const Box = createSlotComponent('div');
+
+export type BoxProps = ComponentPropsWithRef<typeof Box>;

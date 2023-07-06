@@ -1,6 +1,7 @@
 import React, { ReactElement, ReactNode, Ref } from 'react';
 import { Value } from '@udecode/slate';
 import { Editable } from 'slate-react';
+
 import { useEditableProps, useEditorRef } from '../hooks';
 import { PlateId } from '../stores';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
@@ -37,13 +38,13 @@ export interface PlateEditableProps<V extends Value = Value>
   extends Omit<TEditableProps<V>, 'id'>,
     PlateEditableExtendedProps {}
 
-export const PlateEditable = <V extends Value = Value>({
+export function PlateEditable<V extends Value = Value>({
   children,
   renderEditable,
   editableRef,
   firstChildren,
   ...props
-}: PlateEditableProps<V>) => {
+}: PlateEditableProps<V>) {
   const { id } = props;
 
   const editor = useEditorRef();
@@ -102,8 +103,8 @@ export const PlateEditable = <V extends Value = Value>({
     if (renderAboveEditable)
       aboveEditable = renderAboveEditable({
         children: aboveEditable,
-      });
+      }) as any;
   });
 
   return aboveEditable;
-};
+}

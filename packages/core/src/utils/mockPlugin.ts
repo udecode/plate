@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
-import { NoInfer } from '../types/misc/NoInfer';
+
 import { PlateEditor } from '../types/PlateEditor';
+import { NoInfer } from '../types/misc/NoInfer';
 import {
   PlatePlugin,
   PluginOptions,

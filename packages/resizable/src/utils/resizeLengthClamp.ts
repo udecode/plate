@@ -31,19 +31,22 @@ export const resizeLengthClamp = <T extends ResizeLength>(
 
   const clampedStaticLength = resizeLengthClampStatic(staticLength, {
     min:
-      min !== undefined ? resizeLengthToStatic(min, parentLength) : undefined,
+      min === undefined ? undefined : resizeLengthToStatic(min, parentLength),
     max:
-      max !== undefined ? resizeLengthToStatic(max, parentLength) : undefined,
+      max === undefined ? undefined : resizeLengthToStatic(max, parentLength),
   });
 
   switch (typeof length) {
-    case 'string':
+    case 'string': {
       return resizeLengthToRelative(clampedStaticLength, parentLength) as T;
+    }
 
-    case 'number':
+    case 'number': {
       return clampedStaticLength as T;
+    }
 
-    default:
+    default: {
       throw new Error('Invalid length type');
+    }
   }
 };

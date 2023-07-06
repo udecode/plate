@@ -1,0 +1,267 @@
+---
+title: Comments
+description: Add comments to text as marks.
+docs:
+  - route: /docs/components/comment-leaf
+    title: Comment Leaf
+  - route: /docs/components/comment-toolbar-button
+    title: Comment Toolbar Button
+  - route: /docs/components/comments-popover
+    title: Comments Popover
+---
+
+<ComponentPreview name="playground-demo" id="comment" />
+
+<PackageInfo>
+
+## Features
+
+- Add text comments as marks.
+- Comments can include explanations, suggestions, questions, notes, or ideas for content improvement.
+- Add a comment by selecting the text and using the comment button or hotkey **`Cmd+Shift+M`**.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-comments
+```
+
+## Usage
+
+```tsx
+import { createCommentsPlugin } from '@udecode/plate-comments';
+
+const plugins = [
+  // ...otherPlugins,
+  createCommentsPlugin(),
+];
+```
+
+## API
+
+### createCommentsPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="hotkey" type="string" optional>
+
+The hotkey used to add a comment.
+
+</APIItem>
+</APIAttributes>
+
+### findCommentNode
+
+### findCommentNodeById
+
+### getCommentCount
+
+### getCommentKey
+
+### getCommentKeyId
+
+### getCommentKeys
+
+### getCommentNodeEntries
+
+### getCommentNodesById
+
+### getCommentPosition
+
+### getCommentUrl
+
+### getElementAbsolutePosition
+
+### isCommentKey
+
+### isCommentNodeById
+
+### isCommentText
+
+### removeCommentMark
+
+### unsetCommentNodesById
+
+### CommentUser
+
+<APIAttributes>
+<APIItem name="id" type="string">
+A unique identifier for the comment user.
+
+</APIItem>
+<APIItem name="name" type="string">
+The name of the comment user.
+
+</APIItem>
+<APIItem name="avatarUrl" type="string" optional>
+URL to the avatar of the comment user.
+
+</APIItem>
+</APIAttributes>
+
+### TComment
+
+<APIAttributes>
+<APIItem name="id" type="string">
+A unique identifier for the comment.
+
+</APIItem>
+<APIItem name="value" type="Value">
+The Slate value of the document.
+
+</APIItem>
+<APIItem name="createdAt" type="number">
+Timestamp when the comment was created.
+
+- **Default:** `Date.now()`
+
+</APIItem>
+<APIItem name="userId" type="string">
+Identifier of the author of the comment.
+
+</APIItem>
+<APIItem name="parentId" type="string" optional>
+Identifier of the parent comment it replies to.
+
+</APIItem>
+<APIItem name="isResolved" type="boolean" optional>
+Whether the comment is resolved.
+
+</APIItem>
+</APIAttributes>
+
+### TCommentText
+
+<APIAttributes>
+<APIItem name="comment" type="boolean" optional>
+Indicates whether this is a comment.
+
+</APIItem>
+<APIItem name="comments" type="Record<string, boolean>" optional>
+Records of comments. Each record's key is a string and its value is a boolean.
+
+</APIItem>
+</APIAttributes>
+
+### `CommentUser`
+
+An interface representing a user who can make comments.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the user.
+  </APIItem>
+  <APIItem name="name" type="string">
+    The name of the user.
+  </APIItem>
+  <APIItem name="avatarUrl" type="string" optional>
+    The URL of the user's avatar.
+  </APIItem>
+</APIParameters>
+
+### `TComment`
+
+An interface representing a comment in the editor.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The unique identifier of the comment.
+  </APIItem>
+  <APIItem name="value" type="Value">
+    The Slate value of the document.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    The time the comment was created. Default is the current time
+    (`Date.now()`).
+  </APIItem>
+  <APIItem name="userId" type="string">
+    The identifier of the user who made the comment.
+  </APIItem>
+  <APIItem name="parentId" type="string" optional>
+    The identifier of the parent comment this comment replies to.
+  </APIItem>
+  <APIItem name="isResolved" type="boolean" optional>
+    Indicates whether the comment is resolved.
+  </APIItem>
+</APIParameters>
+
+### `TCommentText`
+
+An interface extending TText with additional properties for managing
+comments.
+
+<APIParameters>
+  <APIItem name="comment" type="boolean" optional>
+    Indicates whether the text includes a comment.
+  </APIItem>
+  <APIItem name="comments" type="Record<string, boolean>" optional>
+    An object containing boolean values for each comment associated with the
+    text, with the comment id as the key.
+  </APIItem>
+</APIParameters>
+
+## API Plugins
+
+### useHooksComments
+
+### withComments
+
+## API Components
+
+### CommentDeleteButton
+
+### CommentEditActions
+
+### CommentEditButton
+
+### CommentEditCancelButton
+
+### CommentEditSaveButton
+
+### CommentEditTextarea
+
+### CommentNewSubmitButton
+
+### CommentNewTextarea
+
+### CommentProvider
+
+### CommentResolveButton
+
+### CommentUserName
+
+### CommentsPositioner
+
+### CommentsProvider
+
+### useActiveCommentNode
+
+### useAddCommentMark
+
+### useCommentAddButton
+
+### useCommentItemContent
+
+### useCommentLeaf
+
+### useCommentValue
+
+### useCommentsResolved
+
+### useCommentsShowResolvedButton
+
+### useFloatingCommentsContentState
+
+### useFloatingCommentsState
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + M">
+    Add a comment on the selected text.
+  </KeyTableItem>
+</KeyTable>

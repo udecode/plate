@@ -1,0 +1,102 @@
+---
+title: Draggables
+description: Allows movement of blocks, such as paragraph or tables, within the editor.
+component: true
+docs:
+  - route: /docs/dnd
+    title: Drag & Drop
+  - route: /docs/components/tooltip
+    title: Tooltip
+---
+
+<ComponentPreview name="playground-demo" id="dnd" />
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx plate-ui@latest add draggable
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+- [Drag & Drop](/docs/dnd)
+- [Tooltip](/docs/components/tooltip)
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="draggable" />
+<ComponentSource name="with-draggables" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+```tsx
+import { createPlugins } from '@udecode/plate-common';
+import { createDndPlugin } from '@udecode/plate-dnd';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+
+import { createPlateUI } from '@/lib/plate/create-plate-ui';
+
+import { withDraggables } from './withDraggables';
+
+const plugins = createPlugins(
+  [
+    // ...otherPlugins,
+    createNodeIdPlugin(),
+    createDndPlugin({ options: { enableScroller: true } }),
+  ],
+  {
+    components: withDraggables(createPlateUI()),
+  }
+);
+```
+
+### Provider
+
+Wrap `Plate` with `DndProvider` from `react-dnd`.
+
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+<DndProvider backend={HTML5Backend}>
+  <Plate plugins={plugins} />
+</DndProvider>;
+```
+
+## Examples
+
+<ComponentSource src="../../templates/plate-playground/src/lib/plate/plate-plugins.ts" />

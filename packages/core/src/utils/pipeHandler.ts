@@ -1,5 +1,6 @@
 import { SyntheticEvent } from 'react';
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugin/DOMHandlers';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
@@ -50,7 +51,7 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
     event: any
   ) => HandlerReturnType | undefined;
 
-  if (!pluginsHandlers.length && !propsHandler) return;
+  if (pluginsHandlers.length === 0 && !propsHandler) return;
 
   return (event: any) => {
     const eventIsHandled = pluginsHandlers.some((handler) =>

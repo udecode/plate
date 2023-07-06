@@ -1,10 +1,10 @@
 import {
-  getMarks,
-  isText,
   SetNodesOptions,
   TEditor,
-  unsetNodes,
   Value,
+  getMarks,
+  isText,
+  unsetNodes,
 } from '@udecode/slate';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
@@ -41,14 +41,14 @@ export const removeMark = <V extends Value>(
 
   if (selection) {
     if (Range.isRange(selection) && Range.isExpanded(selection)) {
-      unsetNodes(editor, (key as any) as string, {
+      unsetNodes(editor, key as any as string, {
         at: selection,
         match: isText,
         split: true,
         ...rest,
       });
     } else if (editor.selection) {
-      const marks = getMarks(editor) ?? {};
+      const marks: any = getMarks(editor) ?? {};
       key.forEach((k) => {
         delete marks[k];
       });

@@ -1,6 +1,8 @@
 import { ForwardedRef } from 'react';
 import { Value } from '@udecode/slate';
+
 import { PlateId } from '../stores';
+import { PlateEditor } from './PlateEditor';
 import { Nullable } from './misc/Nullable';
 import {
   PlatePlugin,
@@ -8,7 +10,6 @@ import {
   WithPlatePlugin,
 } from './plugin/PlatePlugin';
 import { TEditableProps } from './slate-react/TEditableProps';
-import { PlateEditor } from './PlateEditor';
 
 export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';
 

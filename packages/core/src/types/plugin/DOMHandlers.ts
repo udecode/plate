@@ -15,6 +15,7 @@ import {
   WheelEvent,
 } from 'react';
 import { Value } from '@udecode/slate';
+
 import { PlateEditor } from '../PlateEditor';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 

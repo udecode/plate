@@ -1,5 +1,6 @@
 import { Value } from '@udecode/slate';
 import { Range } from 'slate';
+
 import { PlateEditor } from '../types/PlateEditor';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 
@@ -17,7 +18,7 @@ export const pipeDecorate = <V extends Value>(
   if (decorateProp) {
     decorates.push(decorateProp);
   }
-  if (!decorates.length) return;
+  if (decorates.length === 0) return;
 
   return (entry) => {
     let ranges: Range[] = [];

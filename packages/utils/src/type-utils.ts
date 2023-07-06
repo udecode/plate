@@ -1,8 +1,7 @@
 /**
  * @returns whether the provided parameter is undefined.
  */
-export const isUndefined = (obj: any): obj is undefined =>
-  typeof obj === 'undefined';
+export const isUndefined = (obj: any): obj is undefined => obj === undefined;
 
 export const isNull = (obj: any): obj is null => obj === null;
 

@@ -1,5 +1,6 @@
-import { PlateEditor, toDOMNode, Value } from '@udecode/plate-common';
+import { PlateEditor, Value, toDOMNode } from '@udecode/plate-common';
 import { clamp } from 'lodash';
+
 import { TCommentText } from '../types';
 import { getElementAbsolutePosition } from '../utils/getElementAbsolutePosition';
 
@@ -15,10 +16,8 @@ export const getCommentPosition = <V extends Value>(
   const editorDOMNode = toDOMNode(editor, editor);
   if (!editorDOMNode) return;
 
-  const {
-    x: editorX,
-    width: editorWidth,
-  } = editorDOMNode.getBoundingClientRect();
+  const { x: editorX, width: editorWidth } =
+    editorDOMNode.getBoundingClientRect();
 
   const sidebarWidth = 418;
   const padding = 16;

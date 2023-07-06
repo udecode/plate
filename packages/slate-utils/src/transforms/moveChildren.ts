@@ -1,11 +1,11 @@
 import {
   ENodeEntry,
-  getNode,
-  isBlock,
-  moveNodes,
   TEditor,
   TElement,
   Value,
+  getNode,
+  isBlock,
+  moveNodes,
 } from '@udecode/slate';
 import { Path } from 'slate';
 

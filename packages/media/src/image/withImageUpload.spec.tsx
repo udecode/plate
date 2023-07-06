@@ -2,6 +2,7 @@
 
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
+
 import { createImagePlugin } from './createImagePlugin';
 
 jsx;
@@ -27,7 +28,7 @@ describe('withImageUpload', () => {
       });
 
       const data = {
-        getData: () => 'test',
+        getData: () => '',
         files: [
           new File(['test'], 'test.png', {
             type: 'image/png',
@@ -62,7 +63,7 @@ describe('withImageUpload', () => {
       });
 
       const data = {
-        getData: () => 'test',
+        getData: () => '',
       };
       editor.insertData(data as any);
 
@@ -90,7 +91,7 @@ describe('withImageUpload', () => {
       });
 
       const data = {
-        getData: () => 'test',
+        getData: () => '',
         files: [new File(['test'], 'not-an-image')],
       };
       editor.insertData(data as any);

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
+
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { RenderLeaf } from '../types/RenderLeaf';
+import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -14,21 +15,22 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 export const pluginRenderLeaf = <V extends Value>(
   editor: PlateEditor<V>,
   { key, type = key, component, props }: PlatePlugin<{}, V>
-): RenderLeaf => (nodeProps) => {
-  const { leaf, children } = nodeProps;
+): RenderLeaf =>
+  function render(nodeProps) {
+    const { leaf, children } = nodeProps;
 
-  if (leaf[type]) {
-    const Leaf = component ?? DefaultLeaf;
+    if (leaf[type]) {
+      const Leaf = component ?? DefaultLeaf;
 
-    nodeProps = getRenderNodeProps({
-      attributes: leaf.attributes as any,
-      props,
-      nodeProps: nodeProps as any,
-      type,
-    }) as any;
+      nodeProps = getRenderNodeProps({
+        attributes: leaf.attributes as any,
+        props,
+        nodeProps: nodeProps as any,
+        type,
+      }) as any;
 
-    return <Leaf {...nodeProps}>{children}</Leaf>;
-  }
+      return <Leaf {...nodeProps}>{children}</Leaf>;
+    }
 
-  return children;
-};
+    return children;
+  };

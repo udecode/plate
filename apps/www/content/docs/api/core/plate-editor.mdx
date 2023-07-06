@@ -1,0 +1,54 @@
+---
+title: Plate Editor
+description: API reference for Plate editor.
+---
+
+A custom editor interface that extends the base **`TEditor`**, **`THistoryEditor`**, and **`TReactEditor`** interfaces and includes additional properties and methods specific to the Plate library.
+
+<APIParameters>
+  <APIItem
+    name="blockFactory"
+    type="(node?: Partial<TElement>, path?: Path) => EElement"
+  >
+    A factory function that generates a default block, which by default is a
+    block of type `ELEMENT_DEFAULT` with a single empty text child.
+  </APIItem>
+  <APIItem name="childrenFactory" type="() => V">
+    A factory function that generates the children of the editor, which by
+    default is an array containing one default block.
+  </APIItem>
+  <APIItem name="currentKeyboardEvent" type="KeyboardEvent | null">
+    The current keyboard event being processed by the editor, or null if no
+    event is being processed.
+  </APIItem>
+  <APIItem name="key" type="any">
+    A key that can be used to uniquely identify the editor.
+  </APIItem>
+<APIItem name="plate.<key>.set" type="function">
+
+Sets the value of `<key>` in the Plate store. The following keys are currently supported:
+
+- `readOnly`
+- `plugins`
+- `onChange`
+- `decorate`
+- `renderElement`
+- `renderLeaf`
+
+</APIItem>
+  <APIItem name="plugins" type="WithPlatePlugin[]">
+    An array of plugins that are currently being used by the editor.
+  </APIItem>
+  <APIItem name="pluginsByKey" type="Record<PluginKey, WithPlatePlugin>">
+    A record of plugins indexed by their keys.
+  </APIItem>
+  <APIItem name="prevSelection" type="TRange | null">
+    The previous selection range in the editor.
+  </APIItem>
+  <APIItem name="redecorate" type="function">
+    A function that redecorates the editor.
+  </APIItem>
+  <APIItem name="reset" type="function">
+    A function that resets the editor to its initial state.
+  </APIItem>
+</APIParameters>
