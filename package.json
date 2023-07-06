@@ -44,7 +44,7 @@
     "g:test:covw": "yarn g:test:cov --watch",
     "g:test:covwa": "yarn g:test:cov --watchAll",
     "g:test:wa": "yarn g:test --watchAll",
-    "g:typecheck": "turbo --filter \"./packages/**\"",
+    "g:typecheck": "turbo --filter \"./packages/**\" typecheck",
     "g:typecheck:apps": "turbo --filter=www typecheck",
     "install:playwright": "yarn playwright install --with-deps",
     "nuke:node_modules": "rimraf '**/node_modules'",
