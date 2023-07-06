@@ -49,10 +49,10 @@ jobs:
           # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           fetch-depth: 0
 
-      - name: Use Node.js 14.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       # Why not using setup-node 2.2+ cache option (yet) ?
       # see https://github.com/belgattitude/nextjs-monorepo-example/pull/369
