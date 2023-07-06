@@ -30,12 +30,12 @@
     },
     "lint": {
       "cache": false,
-      "dependsOn": ["build"],
+      "dependsOn": [],
       "outputs": []
     },
     "lint:fix": {
       "cache": false,
-      "dependsOn": ["build"]
+      "dependsOn": []
     },
     "e2e-examples#lint": {
       "dependsOn": [],
