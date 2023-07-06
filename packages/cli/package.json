@@ -1,6 +1,6 @@
 {
-  "name": "plate-ui",
-  "version": "0.2.2",
+  "name": "@udecode/plate-ui",
+  "version": "22.0.0",
   "description": "Add Plate components to your apps.",
   "license": "MIT",
   "homepage": "https://platejs.org",

@@ -7082,6 +7082,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ui@workspace:^, @udecode/plate-ui@workspace:packages/cli":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ui@workspace:packages/cli"
+  dependencies:
+    "@antfu/ni": "npm:^0.21.4"
+    "@types/diff": "npm:^5.0.3"
+    "@types/fs-extra": "npm:^11.0.1"
+    "@types/prompts": "npm:^2.4.4"
+    chalk: "npm:5.3.0"
+    commander: "npm:^10.0.1"
+    cosmiconfig: "npm:^8.2.0"
+    diff: "npm:^5.1.0"
+    execa: "npm:^7.1.1"
+    fs-extra: "npm:^11.1.1"
+    https-proxy-agent: "npm:^6.2.1"
+    node-fetch: "npm:^3.3.1"
+    ora: "npm:^6.3.1"
+    prompts: "npm:^2.4.2"
+    ts-morph: "npm:^18.0.0"
+    tsconfig-paths: "npm:^4.2.0"
+    tsup: "npm:^6.6.3"
+    type-fest: "npm:^3.12.0"
+    vitest: "npm:^0.32.4"
+    zod: "npm:^3.21.4"
+  bin:
+    plate-ui: ./dist/index.js
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-utils@npm:21.5.0, @udecode/plate-utils@workspace:^, @udecode/plate-utils@workspace:packages/plate-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
@@ -17625,35 +17654,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"plate-ui@workspace:^, plate-ui@workspace:packages/cli":
-  version: 0.0.0-use.local
-  resolution: "plate-ui@workspace:packages/cli"
-  dependencies:
-    "@antfu/ni": "npm:^0.21.4"
-    "@types/diff": "npm:^5.0.3"
-    "@types/fs-extra": "npm:^11.0.1"
-    "@types/prompts": "npm:^2.4.4"
-    chalk: "npm:5.3.0"
-    commander: "npm:^10.0.1"
-    cosmiconfig: "npm:^8.2.0"
-    diff: "npm:^5.1.0"
-    execa: "npm:^7.1.1"
-    fs-extra: "npm:^11.1.1"
-    https-proxy-agent: "npm:^6.2.1"
-    node-fetch: "npm:^3.3.1"
-    ora: "npm:^6.3.1"
-    prompts: "npm:^2.4.2"
-    ts-morph: "npm:^18.0.0"
-    tsconfig-paths: "npm:^4.2.0"
-    tsup: "npm:^6.6.3"
-    type-fest: "npm:^3.12.0"
-    vitest: "npm:^0.32.4"
-    zod: "npm:^3.21.4"
-  bin:
-    plate-ui: ./dist/index.js
-  languageName: unknown
-  linkType: soft
-
 "playwright-core@npm:1.35.1":
   version: 1.35.1
   resolution: "playwright-core@npm:1.35.1"
@@ -19833,6 +19833,7 @@ __metadata:
     "@types/validator": "npm:^13.7.17"
     "@typescript-eslint/eslint-plugin": "npm:^5.61.0"
     "@typescript-eslint/parser": "npm:^5.61.0"
+    "@udecode/plate-ui": "workspace:^"
     app-root-path: "npm:^3.1.0"
     autoprefixer: "npm:^10.4.14"
     babel-eslint: "npm:^10.1.0"
@@ -19870,7 +19871,6 @@ __metadata:
     jest: "npm:^29.6.0"
     jest-environment-jsdom: "npm:^29.6.0"
     patch-package: "npm:^7.0.0"
-    plate-ui: "workspace:^"
     plop: "npm:3.1.2"
     prettier: "npm:^2.8.8"
     prettier-plugin-tailwindcss: "npm:^0.3.0"
