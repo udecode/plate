@@ -57,6 +57,9 @@
     "react-dnd-html5-backend": "16.0.1",
     "react-dom": "^18.2.0",
     "sharp": "^0.32.1",
+    "slate": "0.94.1",
+    "slate-history": "0.93.0",
+    "slate-react": "^0.97.1",
     "tailwind-merge": "1.13.2",
     "tailwindcss-animate": "1.0.6"
   },
