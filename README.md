@@ -40,4 +40,6 @@ place for bringing opinions and contributions. Your feedback and contributions a
 
 We'd love for you to join us! Whether it's through giving us a 🌟 star, making a 📥 pull request, or **sharing your plugins**, your help is always appreciated.
 
+[![Star History Chart](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
+
 To get started, check out our [contributing guide](CONTRIBUTING.md). Need more help? Join us on [Discord](https://discord.gg/mAZRuBzGM3). We're always here to guide you.
