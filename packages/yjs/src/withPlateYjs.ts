@@ -1,11 +1,12 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
-  getPluginOptions,
   PlateEditor,
   UnknownObject,
   Value,
-} from '@udecode/plate-core';
+  getPluginOptions,
+} from '@udecode/plate-common';
 import * as Y from 'yjs';
+
 import { KEY_YJS, YjsPlugin } from './createYjsPlugin';
 import { TCursorEditor, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
@@ -28,7 +29,7 @@ export const withPlateYjs = <
 >(
   e: E
 ) => {
-  const editor = e as EE;
+  const editor = e as unknown as EE;
 
   const {
     cursorOptions,
@@ -69,10 +70,10 @@ export const withPlateYjs = <
     provider: provider as any,
   };
 
-  const sharedType = (provider.document.get(
+  const sharedType = provider.document.get(
     'content',
     Y.XmlText
-  ) as any) as Y.XmlText;
+  ) as any as Y.XmlText;
 
   if (disableCursors) {
     return withTYHistory(
