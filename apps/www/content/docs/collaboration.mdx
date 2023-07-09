@@ -1,0 +1,59 @@
+---
+title: Collaboration
+description: Collaborate with others in a single document.
+---
+
+<PackageInfo>
+
+## Features
+
+- The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-yjs
+```
+
+## Usage
+
+```tsx
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createMentionPlugin } from '@udecode/plate-mention';
+
+const plugins = [
+  // ...otherPlugins,
+  createYjsPlugin({
+    options: {
+      hocuspocusProviderOptions: {
+        url, // hocuspocus url
+        name, // room name
+        onStatus: ({ status }) => {
+          setSocketStatus(socketStatus => {
+            if (socketStatus !== status) {
+              return status
+            }
+            return socketStatus
+          })
+        }
+      }
+    }
+  }),
+];
+```
+
+## API
+
+### createYjsPlugin
+
+### yjsStore
+
+### PlateYjsEditorProps
+
+### TCursorEditor
+
+### TYHistoryEditor
+
+### YjsEditorProps

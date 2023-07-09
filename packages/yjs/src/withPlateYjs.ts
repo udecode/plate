@@ -13,9 +13,8 @@ import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 import { yjsActions } from './yjsStore';
 
-export interface PlateYjsEditor<V extends Value = Value>
-  extends PlateEditor<V>,
-    TCursorEditor<V> {
+export interface PlateYjsEditorProps<V extends Value = Value>
+  extends TCursorEditor<V> {
   yjs: {
     provider: HocuspocusProvider;
   };
@@ -24,7 +23,7 @@ export interface PlateYjsEditor<V extends Value = Value>
 export const withPlateYjs = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & PlateYjsEditor<V> = E & PlateYjsEditor<V>,
+  EE extends E & PlateYjsEditorProps<V> = E & PlateYjsEditorProps<V>,
   TCursorData extends UnknownObject = UnknownObject
 >(
   e: E
@@ -48,7 +47,6 @@ export const withPlateYjs = <
    * the changes will be synced to other clients via the connected server.
    */
   const provider = new HocuspocusProvider({
-    connect: false,
     ...hocuspocusProviderOptions,
     onAwarenessChange() {},
     onConnect() {

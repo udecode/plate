@@ -3,13 +3,14 @@ import { WithCursorsOptions } from '@slate-yjs/core';
 // eslint-disable-next-line import/no-unresolved
 import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
 import {
+  PlateEditor,
   UnknownObject,
   Value,
   createPluginFactory,
 } from '@udecode/plate-common';
 
 import { RenderAboveEditableYjs } from './RenderAboveEditableYjs';
-import { PlateYjsEditor, withPlateYjs } from './withPlateYjs';
+import { PlateYjsEditorProps, withPlateYjs } from './withPlateYjs';
 
 export type YjsPlugin<TCursorData extends UnknownObject = UnknownObject> = {
   /**
@@ -36,7 +37,7 @@ export const KEY_YJS = 'yjs';
 export const createYjsPlugin = createPluginFactory<
   YjsPlugin,
   Value,
-  PlateYjsEditor
+  PlateEditor & PlateYjsEditorProps
 >({
   key: KEY_YJS,
   withOverrides: withPlateYjs,

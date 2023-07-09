@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@hocuspocus/provider": "^1.0.0-beta.2",
+    "@hocuspocus/provider": "^2.2.1",
     "@slate-yjs/core": "^1.0.1",
     "@udecode/plate-common": "22.0.1",
     "yjs": "^13.5.42"

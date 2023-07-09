@@ -2664,26 +2664,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hocuspocus/common@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "@hocuspocus/common@npm:1.1.3"
+"@hocuspocus/common@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@hocuspocus/common@npm:2.2.1"
   dependencies:
     lib0: "npm:^0.2.47"
-  checksum: aadd2042803ad2d5a9bdcd421aae2f2d7bb31dc8652d21727456d778c2d68c29012ffc5b0d9860ab22d0ca1a0cca0401a3734d69252f6b332931f799bfa4674b
+  checksum: c6edcbbd2647ba20b605ced499ed75f1c8f2c668919bfc43b0a852b94af4bb8eaa6ba125b7fdbe4a398488005ce923e7a965377db1d3ae32f0ed6a0a0c7bc640
   languageName: node
   linkType: hard
 
-"@hocuspocus/provider@npm:^1.0.0-beta.2":
-  version: 1.1.3
-  resolution: "@hocuspocus/provider@npm:1.1.3"
+"@hocuspocus/provider@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@hocuspocus/provider@npm:2.2.1"
   dependencies:
-    "@hocuspocus/common": "npm:^1.1.3"
+    "@hocuspocus/common": "npm:^2.2.1"
     "@lifeomic/attempt": "npm:^3.0.2"
-    lib0: "npm:^0.2.46"
+    lib0: "npm:^0.2.47"
+    ws: "npm:^7.5.9"
   peerDependencies:
     y-protocols: ^1.0.5
     yjs: ^13.5.29
-  checksum: 14e1fd7bc8d202110321882322c2f468d0a6031f30ce7e0f5477f9f595aec563ca3bb704ed47076371225b29ee17dcc1b68431102b54d0ed9f130f2a0f85d394
+  checksum: ac4fd9670d5c3fa0c50943b68de4ced49f8284da83ed7ed6bba768924dc0c38055e0aaea3ad0515b0c8fb723fb7afc9f953f67da2983ee95cdd47459b189faed
   languageName: node
   linkType: hard
 
@@ -7177,7 +7178,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-yjs@workspace:packages/yjs"
   dependencies:
-    "@hocuspocus/provider": "npm:^1.0.0-beta.2"
+    "@hocuspocus/provider": "npm:^2.2.1"
     "@slate-yjs/core": "npm:^1.0.1"
     "@udecode/plate-common": "npm:22.0.1"
     yjs: "npm:^13.5.42"
@@ -14728,7 +14729,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lib0@npm:^0.2.42, lib0@npm:^0.2.46, lib0@npm:^0.2.47, lib0@npm:^0.2.74":
+"lib0@npm:^0.2.42, lib0@npm:^0.2.47, lib0@npm:^0.2.74":
   version: 0.2.78
   resolution: "lib0@npm:0.2.78"
   dependencies:
@@ -22947,6 +22948,21 @@ __metadata:
     imurmurhash: "npm:^0.1.4"
     signal-exit: "npm:^3.0.7"
   checksum: 9cadd66c56a2de75ff08064561eada3d299041f73419947e036ffe1ac35baefbb087d602cf304aeb2a2333d1f2dd82657c7be8e9a9d69ee13ffffab50c2e255e
+  languageName: node
+  linkType: hard
+
+"ws@npm:^7.5.9":
+  version: 7.5.9
+  resolution: "ws@npm:7.5.9"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 5a4f52060e2a65194c324e5506021c998444ef5740365f7f04a59da38d2da5229221f5ab6e7ceee0d5999d03c2c1c73164a5ebdafa481043edeae4c5c42f988c
   languageName: node
   linkType: hard
 
