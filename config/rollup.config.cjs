@@ -61,6 +61,7 @@ const plugins = [
     include: /node_modules/,
     namedExports: {
       'react-is': ['typeOf', 'isElement', 'isForwardRef', 'isValidElementType'],
+      'scheduler': ['unstable_runWithPriority', 'unstable_NormalPriority'],
     },
   }),
 
