@@ -1,0 +1,44 @@
+---
+title: Line Height
+description: Adjust the height between lines of text.
+docs:
+  - route: /docs/components/line-height-dropdown-menu
+    title: Line Height Dropdown Menu
+---
+
+<ComponentPreview name="playground-demo" id="lineheight" />
+
+<PackageInfo>
+
+## Features
+
+- Set line height for selected blocks.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-line-height
+```
+
+## Usage
+
+```tsx
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
+
+const plugins = [
+  // ...otherPlugins,
+  createLineHeightPlugin(createLineHeightPlugin),
+];
+```
+
+## API
+
+### createLineHeightPlugin
+
+### setLineHeight
+
+## API Components
+
+### useLineHeightDropdownMenu

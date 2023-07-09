@@ -1,21 +1,20 @@
 /** @jsx jsx */
 
+import { toggleNodeType } from '@/packages/core/src/transforms/toggleNodeType';
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { toggleNodeType } from '../../toggleNodeType';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       test
       <cursor />
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const output = (
   <editor>

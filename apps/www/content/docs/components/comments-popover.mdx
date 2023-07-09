@@ -1,0 +1,79 @@
+---
+title: Comments Popover
+description: View and manage comments within a popover interface.
+component: true
+docs:
+  - route: /docs/comments
+    title: Comments
+  - route: /docs/components/popover
+    title: Popover
+  - route: /docs/components/avatar
+    title: Avatar
+---
+
+<ComponentPreview name="playground-demo" id="comment" />
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx @udecode/plate-ui@latest add combobox
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+```bash
+npm install date-fns
+```
+
+- [Comments](/docs/comments)
+- [Popover](/docs/components/popover)
+- [Avatar](/docs/components/avatar)
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="comment-avatar" />
+<ComponentSource name="comment-create-form" />
+<ComponentSource name="comment-item" />
+<ComponentSource name="comment-more-dropdown" />
+<ComponentSource name="comment-reply-items" />
+<ComponentSource name="comment-resolve-button" />
+<ComponentSource name="comment-value" />
+<ComponentSource name="comments-popover" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+<ComponentSource src="../../templates/plate-playground/src/components/plate/editor.tsx" />

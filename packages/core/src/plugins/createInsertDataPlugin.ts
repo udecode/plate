@@ -1,11 +1,12 @@
-import { Value } from '../slate/editor/TEditor';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
-import { getInjectedPlugins } from '../utils/plate/getInjectedPlugins';
-import { pipeInsertDataQuery } from '../utils/plate/pipeInsertDataQuery';
-import { pipeInsertFragment } from '../utils/plate/pipeInsertFragment';
-import { pipeTransformData } from '../utils/plate/pipeTransformData';
-import { pipeTransformFragment } from '../utils/plate/pipeTransformFragment';
+import { Value } from '@udecode/slate';
+
+import { PlateEditor } from '../types/PlateEditor';
+import { createPluginFactory } from '../utils/createPluginFactory';
+import { getInjectedPlugins } from '../utils/getInjectedPlugins';
+import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
+import { pipeInsertFragment } from '../utils/pipeInsertFragment';
+import { pipeTransformData } from '../utils/pipeTransformData';
+import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 
 export const withInsertData = <
   V extends Value = Value,
@@ -52,7 +53,7 @@ export const withInsertData = <
         data,
         dataTransfer,
       });
-      if (!fragment.length) return false;
+      if (fragment.length === 0) return false;
 
       pipeInsertFragment(editor, injectedPlugins, {
         fragment,

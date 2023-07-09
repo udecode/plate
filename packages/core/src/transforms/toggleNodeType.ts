@@ -1,10 +1,13 @@
-import { someNode } from '../queries/someNode';
-import { GetNodeEntriesOptions } from '../slate/editor/getNodeEntries';
-import { Value } from '../slate/editor/TEditor';
-import { ELEMENT_DEFAULT } from '../types/plate/node.types';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { getPluginType } from '../utils/plate/getPluginType';
-import { setElements } from './setElements';
+import {
+  GetNodeEntriesOptions,
+  Value,
+  setElements,
+  someNode,
+} from '@udecode/slate';
+
+import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
+import { PlateEditor } from '../types/PlateEditor';
+import { getPluginType } from '../utils/getPluginType';
 
 export interface ToggleNodeTypeOptions {
   /**
@@ -27,10 +30,8 @@ export const toggleNodeType = <V extends Value>(
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<GetNodeEntriesOptions<V>, 'match'>
 ) => {
-  const {
-    activeType,
-    inactiveType = getPluginType(editor, ELEMENT_DEFAULT),
-  } = options;
+  const { activeType, inactiveType = getPluginType(editor, ELEMENT_DEFAULT) } =
+    options;
 
   if (!activeType || !editor.selection) return;
 

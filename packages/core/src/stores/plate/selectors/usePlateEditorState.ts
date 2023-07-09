@@ -1,6 +1,7 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { usePlateSelectors } from '../platesStore';
+import { Value } from '@udecode/slate';
+
+import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateId, usePlateSelectors } from '../createPlateStore';
 import { usePlateEditorRef } from './usePlateEditorRef';
 
 /**
@@ -10,7 +11,7 @@ export const usePlateEditorState = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
-  id?: string
+  id?: PlateId
 ) => {
   usePlateSelectors(id).keyEditor();
 

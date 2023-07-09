@@ -1,124 +1,59 @@
-import React, { useState } from 'react';
-import {
-  Image,
-  LineWeight,
-  Link,
-  OndemandVideo,
-  Search,
-} from '@styled-icons/material';
+import React from 'react';
 import { render } from '@testing-library/react';
-import { Plate } from '@udecode/plate-core/src/index';
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import {
-  createBasicElementsPlugin,
-  createFindReplacePlugin,
-  createHeadingPlugin,
-  createPlugins,
-} from '@udecode/plate-headless';
-import { AlignToolbarButtons } from 'examples/src/align/AlignToolbarButtons';
-import { MarkBalloonToolbar } from 'examples/src/balloon-toolbar/MarkBalloonToolbar';
-import { BasicElementToolbarButtons } from 'examples/src/basic-elements/BasicElementToolbarButtons';
-import { BasicMarkToolbarButtons } from 'examples/src/basic-marks/BasicMarkToolbarButtons';
-import { editableProps } from 'examples/src/common/editableProps';
-import { exitBreakPlugin } from 'examples/src/exit-break/exitBreakPlugin';
-import { forcedLayoutPlugin } from 'examples/src/forced-layout/forcedLayoutPlugin';
-import { IndentToolbarButtons } from 'examples/src/indent/IndentToolbarButtons';
-import { ListToolbarButtons } from 'examples/src/list/ListToolbarButtons';
-import { playgroundValue } from 'examples/src/playgroundValue';
-import { resetBlockTypePlugin } from 'examples/src/reset-node/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from 'examples/src/select-on-backspace/selectOnBackspacePlugin';
-import { softBreakPlugin } from 'examples/src/soft-break/softBreakPlugin';
-import { TableToolbarButtons } from 'examples/src/table/TableToolbarButtons';
-import { trailingBlockPlugin } from 'examples/src/trailing-block/trailingBlockPlugin';
-import { autoformatPlugin } from '../../../../examples/src/autoformat/autoformatPlugin';
-import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
-import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
-import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
-import { createNodeIdPlugin } from '../../../editor/node-id/src/createNodeIdPlugin';
-import { createNormalizeTypesPlugin } from '../../../editor/normalizers/src/createNormalizeTypesPlugin';
-import { createResetNodePlugin } from '../../../editor/reset-node/src/createResetNodePlugin';
-import { createSelectOnBackspacePlugin } from '../../../editor/select/src/createSelectOnBackspacePlugin';
-import { createTrailingBlockPlugin } from '../../../editor/trailing-block/src/createTrailingBlockPlugin';
-import { createAlignPlugin } from '../../../nodes/alignment/src/createAlignPlugin';
-import { createBasicMarksPlugin } from '../../../nodes/basic-marks/src/createBasicMarksPlugin';
-import { createBlockquotePlugin } from '../../../nodes/block-quote/src/createBlockquotePlugin';
-import { createHighlightPlugin } from '../../../nodes/highlight/src/createHighlightPlugin';
-import { createImagePlugin } from '../../../nodes/image/src/createImagePlugin';
-import { createLinkPlugin } from '../../../nodes/link/src/createLinkPlugin';
-import { createListPlugin } from '../../../nodes/list/src/createListPlugin';
-import { createTodoListPlugin } from '../../../nodes/list/src/todo-list/createTodoListPlugin';
-import { createMediaEmbedPlugin } from '../../../nodes/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugin } from '../../../nodes/mention/src/createMentionPlugin';
-import { createTablePlugin } from '../../../nodes/table/src/createTablePlugin';
-import { SearchHighlightToolbar } from '../../../ui/find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
-import { ImageToolbarButton } from '../../../ui/nodes/image/src/ImageToolbarButton/ImageToolbarButton';
-import { LineHeightToolbarDropdown } from '../../../ui/nodes/line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
-import { LinkToolbarButton } from '../../../ui/nodes/link/src/LinkToolbarButton/LinkToolbarButton';
-import { MediaEmbedToolbarButton } from '../../../ui/nodes/media-embed/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
-import { MentionCombobox } from '../../../ui/nodes/mention/src/MentionCombobox';
-import { createPlateUI } from '../../../ui/plate/src/utils/createPlateUI';
-import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
+  createExitBreakPlugin,
+  createSoftBreakPlugin,
+} from '@udecode/plate-break';
+import { Plate, createPlugins } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createHighlightPlugin } from '@udecode/plate-highlight';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
+import {
+  createImagePlugin,
+  createMediaEmbedPlugin,
+} from '@udecode/plate-media';
+import { createMentionPlugin } from '@udecode/plate-mention';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import { createTablePlugin } from '@udecode/plate-table';
+import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-const PlateContainer = () => {
-  const [search, setSearch] = useState();
+function PlateContainer() {
+  const plugins = createPlugins([
+    createBlockquotePlugin(),
+    createTodoListPlugin(),
+    createHeadingPlugin({ options: { levels: 5 } }),
+    createBasicElementsPlugin(),
+    createBasicMarksPlugin(),
+    createTodoListPlugin(),
+    createImagePlugin(),
+    createLinkPlugin(),
+    createListPlugin(),
+    createTablePlugin(),
+    createMediaEmbedPlugin(),
+    createAlignPlugin(),
+    createHighlightPlugin(),
+    createMentionPlugin(),
+    createNodeIdPlugin(),
+    createAutoformatPlugin(),
+    createResetNodePlugin(),
+    createSoftBreakPlugin(),
+    createExitBreakPlugin(),
+    createNormalizeTypesPlugin(),
+    createTrailingBlockPlugin(),
+    createSelectOnBackspacePlugin(),
+  ]);
 
-  const plugins = createPlugins(
-    [
-      createBlockquotePlugin(),
-      createTodoListPlugin(),
-      createHeadingPlugin({ options: { levels: 5 } }),
-      createBasicElementsPlugin(),
-      createBasicMarksPlugin(),
-      createTodoListPlugin(),
-      createImagePlugin(),
-      createLinkPlugin(),
-      createListPlugin(),
-      createTablePlugin(),
-      createMediaEmbedPlugin(),
-      createAlignPlugin(),
-      createHighlightPlugin(),
-      createMentionPlugin(),
-      createFindReplacePlugin({ options: { search } }),
-      createNodeIdPlugin(),
-      // TODO: fix type
-      createAutoformatPlugin(autoformatPlugin as any),
-      createResetNodePlugin(resetBlockTypePlugin as any),
-      createSoftBreakPlugin(softBreakPlugin as any),
-      createExitBreakPlugin(exitBreakPlugin as any),
-      createNormalizeTypesPlugin(forcedLayoutPlugin as any),
-      createTrailingBlockPlugin(trailingBlockPlugin as any),
-      createSelectOnBackspacePlugin(selectOnBackspacePlugin as any),
-    ],
-    {
-      components: createPlateUI(),
-    }
-  );
-
-  return (
-    <Plate
-      editableProps={editableProps as any}
-      initialValue={playgroundValue}
-      plugins={plugins}
-    >
-      <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-        <ListToolbarButtons />
-        <IndentToolbarButtons />
-        <BasicMarkToolbarButtons />
-        <AlignToolbarButtons />
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-        <LinkToolbarButton icon={<Link />} />
-        <ImageToolbarButton icon={<Image />} />
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        <TableToolbarButtons />
-      </HeadingToolbar>
-
-      <MarkBalloonToolbar />
-
-      <MentionCombobox />
-    </Plate>
-  );
-};
+  return <Plate plugins={plugins} />;
+}
 
 describe('when all plugins', () => {
   it('should render', () => {

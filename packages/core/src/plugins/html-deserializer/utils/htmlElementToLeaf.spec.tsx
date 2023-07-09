@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
-import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
-import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
+
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -22,7 +23,7 @@ describe('when children is a text', () => {
   it('should set the mark on the text', () => {
     expect(
       htmlElementToLeaf(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [createBoldPlugin()],
         }),
         parseHtmlElement(`<strong>test</strong>`)
@@ -37,7 +38,7 @@ describe('when there is no plugins', () => {
   it('should do nothing', () => {
     expect(
       htmlElementToLeaf(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [{ key: 'a' }],
         }),
         parseHtmlElement(`<strong>test</strong>`)
@@ -61,7 +62,7 @@ describe('when there is a mark above multiple elements', () => {
   it('should set the mark to all children leaves', () => {
     expect(
       htmlElementToLeaf(
-        createPlateUIEditor({
+        createPlateEditor({
           plugins: [
             createParagraphPlugin(),
             createListPlugin(),

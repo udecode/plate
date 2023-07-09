@@ -1,6 +1,7 @@
-import { Value } from '../slate/editor/TEditor';
-import { PlateEditor } from '../types/plate/PlateEditor';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { Value } from '@udecode/slate';
+
+import { PlateEditor } from '../types/PlateEditor';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
 

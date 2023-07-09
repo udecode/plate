@@ -1,12 +1,12 @@
 import { FC, ReactNode } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { AnyObject } from '../misc/AnyObject';
-import { Nullable } from '../misc/Nullable';
-import { WithRequired } from '../misc/types';
-import { PlateEditor } from '../plate/PlateEditor';
+import { Value } from '@udecode/slate';
+import { AnyObject, WithRequired } from '@udecode/utils';
+
+import { PlateEditor } from '../PlateEditor';
+import { Nullable } from '../misc';
+import { DOMHandlers } from './DOMHandlers';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
-import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
 import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
@@ -14,6 +14,7 @@ import { PlatePluginComponent } from './PlatePluginComponent';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
 import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
+import { RenderAfterEditable } from './RenderAfterEditable';
 import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
 
@@ -92,6 +93,11 @@ export type PlatePlugin<
   isVoid?: boolean;
 
   /**
+   * Property used by Plate to enable/disable the plugin.
+   */
+  enabled?: boolean;
+
+  /**
    * Extended properties used by any plugin as options.
    */
   options?: P;
@@ -155,14 +161,21 @@ export type PlatePlugin<
     }>;
 
     /**
+     * Render a component above `Slate`.
+     */
+    renderAboveSlate?: FC<{
+      children: ReactNode;
+    }>;
+
+    /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: () => JSX.Element | null;
+    renderAfterEditable?: RenderAfterEditable<V>;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: () => JSX.Element | null;
+    renderBeforeEditable?: RenderAfterEditable<V>;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
@@ -178,6 +191,11 @@ export type PlatePlugin<
       editor: E,
       plugin: WithPlatePlugin<P, V, E>
     ) => Partial<PlatePlugin<P, V, E>> | void;
+
+    /**
+     * For internal use. Tracks if then has been replaced for recursive calls.
+     */
+    _thenReplaced?: number;
 
     /**
      * Hook called when the editor is initialized.

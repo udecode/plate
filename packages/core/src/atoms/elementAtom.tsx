@@ -1,28 +1,19 @@
 import React, { useEffect } from 'react';
+import { TElement } from '@udecode/slate';
+// eslint-disable-next-line import/no-unresolved
 import { Scope } from 'jotai/core/atom';
-import { TElement } from '../slate/index';
-import { JotaiProvider, JotaiProviderProps } from '../utils/index';
+
+import { JotaiProvider, JotaiProviderProps } from '../libs';
 import { createAtomStore } from './createAtomStore';
+
+export const SCOPE_ELEMENT = 'element';
 
 export const { elementStore, useElementStore } = createAtomStore(
   {
-    element: (null as unknown) as TElement,
+    element: null as unknown as TElement,
   },
   { name: 'element' as const }
 );
-
-export const useElement = <T extends TElement = TElement>(
-  pluginKey: string
-) => {
-  const value = useElementStore().get.element(pluginKey);
-
-  if (!value)
-    throw new Error(
-      `The \`useElement(pluginKey)\` hook must be used inside the node component's context`
-    );
-
-  return value as T;
-};
 
 export const ElementProviderChild = ({
   element,
@@ -34,29 +25,42 @@ export const ElementProviderChild = ({
   children: any;
 }) => {
   const setElement = useElementStore().set.element(scope);
+  const setGlobalElement = useElementStore().set.element(SCOPE_ELEMENT);
 
   useEffect(() => {
     setElement(element);
-  }, [element, setElement]);
+    setGlobalElement(element);
+  }, [element, setElement, setGlobalElement]);
 
   return children;
 };
 
-export const ElementProvider = ({
+/**
+ * Global and scoped provider above element.
+ */
+export function ElementProvider({
   element,
   scope,
   children,
   ...props
 }: JotaiProviderProps & {
   element: TElement;
-}) => (
-  <JotaiProvider
-    initialValues={[[elementStore.atom.element, element]]}
-    scope={scope}
-    {...props}
-  >
-    <ElementProviderChild element={element} scope={scope!}>
-      {children}
-    </ElementProviderChild>
-  </JotaiProvider>
-);
+}) {
+  return (
+    <JotaiProvider
+      initialValues={[[elementStore.atom.element, element]]}
+      scope={SCOPE_ELEMENT}
+      {...props}
+    >
+      <JotaiProvider
+        initialValues={[[elementStore.atom.element, element]]}
+        scope={scope}
+        {...props}
+      >
+        <ElementProviderChild element={element} scope={scope!}>
+          {children}
+        </ElementProviderChild>
+      </JotaiProvider>
+    </JotaiProvider>
+  );
+}

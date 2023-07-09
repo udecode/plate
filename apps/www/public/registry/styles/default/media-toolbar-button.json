@@ -1,0 +1,16 @@
+{
+  "name": "media-toolbar-button",
+  "dependencies": [
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "files": [
+    {
+      "name": "media-toolbar-button.tsx",
+      "content": "import React from 'react';\nimport {\n  ELEMENT_IMAGE,\n  ELEMENT_MEDIA_EMBED,\n  useMediaToolbarButton,\n} from '@udecode/plate-media';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function MediaToolbarButton({\n  nodeType,\n}: {\n  nodeType?: typeof ELEMENT_IMAGE | typeof ELEMENT_MEDIA_EMBED;\n}) {\n  const { props } = useMediaToolbarButton({ nodeType });\n\n  return (\n    <ToolbarButton {...props}>\n      <Icons.image />\n    </ToolbarButton>\n  );\n}\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

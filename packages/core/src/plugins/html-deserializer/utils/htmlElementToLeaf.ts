@@ -1,10 +1,14 @@
+import {
+  EDescendant,
+  TDescendant,
+  Value,
+  isElement,
+  isText,
+} from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
-import { Value } from '../../../slate/editor/TEditor';
-import { isElement } from '../../../slate/element/isElement';
-import { EDescendant, TDescendant } from '../../../slate/node/TDescendant';
-import { isText } from '../../../slate/text/isText';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
+
+import { PlateEditor } from '../../../types';
+import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 
@@ -23,7 +27,7 @@ export const htmlElementToLeaf = <V extends Value>(
       if (!child) return arr;
 
       if (isElement(child)) {
-        if (Object.keys(node).length) {
+        if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
             node: child,
             source: node,

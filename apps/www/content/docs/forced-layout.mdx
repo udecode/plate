@@ -1,0 +1,59 @@
+---
+title: Forced Layout
+description: Strict document structure.
+---
+
+<ComponentPreview name="playground-demo" id="forcedlayout" />
+
+<PackageInfo>
+
+## Features
+
+- Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-normalizers @udecode/plate-trailing-block
+```
+
+## Usage
+
+```tsx
+import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
+
+const plugins = [
+  // ...otherPlugins
+  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH } }),
+  createNormalizeTypesPlugin({
+    options: {
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    },
+  }),
+];
+```
+
+## API
+
+### createNormalizeTypesPlugin
+
+<APIAttributes>
+  <APIItem name="rules" type="object[]" optional>
+    An array of rule objects.
+    <APISubList>
+      <APISubListItem parent="rules" name="strictType" type="string" optional>
+        Force the type of the node at the given path.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="type" type="string" optional>
+        Type of the inserted node at the given path if `strictType` is not
+        provided.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="path" type="Path">
+        Path where the rule applies.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIAttributes>

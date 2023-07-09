@@ -1,7 +1,7 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { EDescendant } from '../../../slate/node/TDescendant';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { normalizeDescendantsToDocumentFragment } from '../../../utils/plate/normalizeDescendantsToDocumentFragment';
+import { EDescendant, Value } from '@udecode/slate';
+
+import { PlateEditor } from '../../../types/PlateEditor';
+import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 

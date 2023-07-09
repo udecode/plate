@@ -1,5 +1,521 @@
 # @udecode/plate-core
 
+## 22.0.1
+
+## 22.0.0
+
+### Minor Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – New plugin option:
+  - `enabled`: boolean to enable/disable the plugin
+
+## 21.5.0
+
+### Minor Changes
+
+- [#2464](https://github.com/udecode/plate/pull/2464) by [@12joan](https://github.com/12joan) –
+  - Add `editorRef` prop to Plate/PlateProvider
+    - Works with `useRef<PlateEditor | null>` or `useState<PlateEditor | null>`
+    - The editor instance is passed to the ref on mount and whenever the editor is reset
+    - The ref is set to `null` when the editor unmounts
+  - Add various new methods to `editor`:
+    - `editor.reset()` - Equivalent to `useResetPlateEditor()()`
+    - `editor.redecorate()` - Equivalent to `useRedecorate()()`
+    - `editor.plate.<key>.set(value)` - Sets the value of `<key>` in the Plate store. The following keys are currently supported:
+      - readOnly
+      - plugins
+      - onChange
+      - decorate
+      - renderElement
+      - renderLeaf
+
+## 21.4.2
+
+### Patch Changes
+
+- [#2454](https://github.com/udecode/plate/pull/2454) by [@dimaanj](https://github.com/dimaanj) – HTML deserializer: fix pasting tables with empty cells
+
+## 21.4.1
+
+## 21.3.2
+
+### Patch Changes
+
+- [#2415](https://github.com/udecode/plate/pull/2415) by [@santialbo](https://github.com/santialbo) – support new prop name initialValue on Slate after 0.94.1
+
+## 21.3.0
+
+## 21.1.5
+
+### Patch Changes
+
+- [#2400](https://github.com/udecode/plate/pull/2400) by [@joephela](https://github.com/joephela) – Fix/2399 deserialize validAttribute nullcheck
+
+## 21.0.0
+
+## 20.7.2
+
+### Patch Changes
+
+- [#2368](https://github.com/udecode/plate/pull/2368) by [@zbeyens](https://github.com/zbeyens) –
+  - error handling when pasting (`x-slate-fragment`)
+
+## 20.7.0
+
+### Patch Changes
+
+- [#2358](https://github.com/udecode/plate/pull/2358) by [@etienne-dldc](https://github.com/etienne-dldc) – fix readOnly not being properly updated on Editable
+
+## 20.4.0
+
+### Patch Changes
+
+- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) –
+  - fix `nodeProps`: `undefined` attributes values are ignored
+
+## 20.0.0
+
+### Major Changes
+
+- [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
+  - This package has been split into multiple packages for separation of concerns and decoupled versioning:
+    - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
+    - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
+    - `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
+    - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
+    - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
+    - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
+    - `@udecode/plate-common` re-exports the 6 previous packages and is a dependency of all the other packages. It's basically replacing `@udecore/plate-core` as a bundle.
+  - Removed `getPreventDefaultHandler` since it is no longer needed.
+    **Migration**:
+    - If using `@udecode/plate` or `@udecode/plate-headless`: none
+    - Else: find & replace `@udecode/plate-core` by `@udecode/plate-common`
+
+### Minor Changes
+
+- [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
+  - Add `sanitizeUrl` util to check if URL has an allowed scheme
+
+### Patch Changes
+
+- [#2237](https://github.com/udecode/plate/pull/2237) by [@TomMorane](https://github.com/TomMorane) – `createHOC`: deep merge props
+
+## 19.7.0
+
+### Minor Changes
+
+- [#2225](https://github.com/udecode/plate/pull/2225) by [@TomMorane](https://github.com/TomMorane) – vendor: upgrade react-hotkeys-hook to v4
+
+### Patch Changes
+
+- [#2233](https://github.com/udecode/plate/pull/2233) by [@fimion](https://github.com/fimion) – Fixes #2230: infinite recursion when using plugin field `then`
+
+## 19.5.0
+
+### Patch Changes
+
+- [#2211](https://github.com/udecode/plate/pull/2211) by [@zbeyens](https://github.com/zbeyens) –
+  - support `slate/slate-react@0.90.0`
+  - add `isElement(n)` to `isBlock` as it has been removed by slate
+  - Fixes #2203
+  - Fixes #2197
+
+## 19.4.4
+
+### Patch Changes
+
+- [#2194](https://github.com/udecode/plate/pull/2194) by [@zbeyens](https://github.com/zbeyens) – fix: `useElement` should not throw an error if the element is not found. It can happen when the document is not yet normalized. This patch replaces the `throw` by a `console.warn`.
+
+## 19.4.2
+
+### Patch Changes
+
+- [#2185](https://github.com/udecode/plate/pull/2185) by [@zbeyens](https://github.com/zbeyens) – fix: `getEditorString` should not throw an error when a node is not found. Returns an empty string in that case.
+
+## 19.2.0
+
+### Minor Changes
+
+- [#2156](https://github.com/udecode/plate/pull/2156) by [@12joan](https://github.com/12joan) – Trim \n characters from start and end of text nodes when deserializing HTML
+
+## 19.1.1
+
+### Patch Changes
+
+- [#2151](https://github.com/udecode/plate/pull/2151) by [@zbeyens](https://github.com/zbeyens) – fix: use `removeEditorMark` in editorProtocol plugin
+
+## 19.1.0
+
+### Minor Changes
+
+- [#2142](https://github.com/udecode/plate/pull/2142) by [@zbeyens](https://github.com/zbeyens) –
+  - New core plugin: `editorProtocol` following https://github.com/udecode/editor-protocol core specs
+    - Fixes https://github.com/udecode/editor-protocol/issues/81
+  - Slate types: replaced editor mark types by `string`. Derived types from `EMarks<V>` are often unusable.
+
+## 19.0.3
+
+### Patch Changes
+
+- [#2108](https://github.com/udecode/plate/pull/2108) by [@zbeyens](https://github.com/zbeyens) – Fixes #2107
+
+## 19.0.1
+
+### Patch Changes
+
+- [`8957172`](https://github.com/udecode/plate/commit/89571722d3e0e275af302cb4553e85f0edd0b912) by [@zbeyens](https://github.com/zbeyens) – fix: `editor.id` of type `Symbol`
+
+## 19.0.0
+
+### Major Changes
+
+- [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
+  - upgrade deps, including typescript support for the new editor methods:
+  ```json
+  // from
+  "slate": "0.78.0",
+  "slate-history": "0.66.0",
+  "slate-react": "0.79.0"
+  // to
+  "slate": "0.87.0",
+  "slate-history": "0.86.0",
+  "slate-react": "0.88.0"
+  ```
+
+## 18.15.0
+
+### Minor Changes
+
+- [`2a72716`](https://github.com/udecode/plate/commit/2a7271665eeedc35b8b8f08f793d550503c7b85a) by [@zbeyens](https://github.com/zbeyens) –
+
+  - new `Plate` / `PlateProvider` prop: `readOnly`
+  - it's also stored in plate store, useful when `readOnly` is needed between `PlateProvider` and `Plate`.
+  - new selector: `usePlateReadOnly`
+  - (not mandatory) migration:
+
+  ```tsx
+  // from
+  <Plate editableProps={{readOnly: true}} />
+
+  // to
+  <Plate readOnly />
+  ```
+
+## 18.13.0
+
+### Minor Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - new queries:
+    - `getPreviousSiblingNode`
+    - `isDocumentEnd`
+  - new utils:
+    - `getJotaiProviderInitialValues`: get jotai provider initial values from props
+    - exports `nanoid`
+  - new dependency: `nanoid`
+
+## 18.9.0
+
+### Minor Changes
+
+- [#1978](https://github.com/udecode/plate/pull/1978) by [@zbeyens](https://github.com/zbeyens) – Plugin fields `renderBeforeEditable` and `renderAfterEditable` now have `TEditableProps` passed as the first parameter.
+
+## 18.7.0
+
+### Minor Changes
+
+- [#1960](https://github.com/udecode/plate/pull/1960) by [@zbeyens](https://github.com/zbeyens) –
+  - Default editor value is now overridable with `editor.childrenFactory()`
+  - New core plugin `nodeFactory`, extends the editor with:
+    - `blockFactory: (node) => TElement`, can be used to create the default editor block
+    - `childrenFactory: () => Value`
+  - New transform `resetEditorChildren`: Replace editor children by `editor.childrenFactory()`.
+
+## 18.6.0
+
+### Minor Changes
+
+- [#1959](https://github.com/udecode/plate/pull/1959) by [@zbeyens](https://github.com/zbeyens) –
+  - Default editor value is now overridable with `editor.childrenFactory()`
+  - New core plugin `nodeFactory`, extends the editor with:
+    - `blockFactory: (node) => TElement`, can be used to create the default editor block
+    - `childrenFactory: () => Value`
+  - New transform `resetEditorChildren`: Replace editor children by `editor.childrenFactory()`.
+
+### Patch Changes
+
+- [#1957](https://github.com/udecode/plate/pull/1957) by [@tmilewski](https://github.com/tmilewski) – fix: update `@radix-ui/react-slot` to eliminate conflicting peer dependencies
+
+- [#1953](https://github.com/udecode/plate/pull/1953) by [@zbeyens](https://github.com/zbeyens) – `applyDeepToNodes`: new option `path`
+
+## 18.2.0
+
+### Minor Changes
+
+- [#1888](https://github.com/udecode/plate/pull/1888) by [@zbeyens](https://github.com/zbeyens) –
+  - new `PlatePlugin` property:
+    - `renderAboveSlate` – Render a component above `Slate`
+  - `id` is no longer required in plate hooks:
+    - `usePlateId()` is getting the closest editor id
+    - it's used in all store hooks if no store is found with the omitted id
+    - note that `id` is not needed if you don't have nested `Plate` / `PlateProvider`
+  - `id` prop change should remount `Plate`
+
+## 18.1.1
+
+### Patch Changes
+
+- [#1896](https://github.com/udecode/plate/pull/1896) by [@charrondev](https://github.com/charrondev) – Fix `PrevSelectionPlugin` event persistence on React 16.x
+
+## 17.0.3
+
+### Patch Changes
+
+- [#1885](https://github.com/udecode/plate/pull/1885) by [@zbeyens](https://github.com/zbeyens) – fix: Plate without `initialValue` or `value` prop should use `editor.children` as value. If `editor.children` is empty, use default value (empty paragraph).
+
+## 17.0.2
+
+### Patch Changes
+
+- [#1882](https://github.com/udecode/plate/pull/1882) by [@zbeyens](https://github.com/zbeyens) – Fix: dynamic plugins
+
+## 17.0.1
+
+### Patch Changes
+
+- [#1878](https://github.com/udecode/plate/pull/1878) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: `Maximum call stack size exceeded` after many changes
+  - Fix: Plate props that are functions are now working (e.g. `onChange`)
+
+## 17.0.0
+
+### Major Changes
+
+- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `usePlateStore`:
+    - Plate no longer has a global store containing all the editor states (zustand). Each editor store is now defined in a React context tree ([jotai](https://github.com/pmndrs/jotai)). If you need to access all the editor states at once (as you could do before), you'll need to build that layer yourself.
+    - Plate store is now accessible only below `PlateProvider` or `Plate` (provider-less mode). It means it's no longer accessible outside of a Plate React tree. If you have such use-case, you'll need to build your own layer to share the state between your components.
+    - You can nest many `PlateProvider` with different scopes (`id` prop). Default scope is `PLATE_SCOPE`
+    - Hook usage:
+      - `const value = usePlateSelectors(id).value()`
+      - `const setValue = usePlateActions(id).value()`
+      - `const [value, setValue] = usePlateStates(id).value()`
+    - removed from the store:
+      - `editableProps`, use the props instead
+      - `enabled`, use conditional rendering instead
+      - `isReady`, no point anymore as it's now directly ready
+    - `useEventPlateId` is still used to get the last focused editor id.
+    - Functions are stored in an object `{ fn: <here> }` - `const setOnChange = usePlateActions(id).onChange()` - `setOnChange({ fn: newOnChange })`
+  - `Plate`
+    - if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
+    - if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
+    - default `id` is no longer `main`, it's now `PLATE_SCOPE`
+  - `PlateProvider`
+    - Each provider has an optional `scope`, so you can have multiple providers in the same React tree and use the plate hooks with the corresponding `scope`.
+    - Plate effects are now run in `PlateProvider`
+      - `initialValue, value, editor, normalizeInitialValue, normalizeEditor` are no longer defined in an effect (SSR support)
+    - Props:
+      - now extends the previous `Plate` props
+      - if using `PlateProvider`, set the provider props on it instead of `Plate`. `Plate` would only need `editableProps` and `PlateEditableExtendedProps`
+      - if not using it, set the provider props on `Plate`
+
+  ```tsx
+  // Before
+  <PlateProvider>
+    <Toolbar>
+      <AlignToolbarButtons />
+    </Toolbar>
+
+    <Plate<MyValue> editableProps={editableProps} <MyValue> initialValue={alignValue} plugins={plugins} />
+  </PlateProvider>
+
+  // After
+  <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
+    <Toolbar>
+      <AlignToolbarButtons />
+    </Toolbar>
+
+    <Plate<MyValue> editableProps={editableProps} />
+  </PlateProvider>
+
+  // After (provider-less mode)
+  <Plate<MyValue> editableProps={editableProps} initialValue={alignValue} plugins={plugins} />
+  ```
+
+  - types:
+    - store `editor` is no longer nullable
+    - store `value` is no longer nullable
+    - `id` type is now `PlateId`
+  - renamed:
+    - `SCOPE_PLATE` to `PLATE_SCOPE`
+    - `getEventEditorId` to `getEventPlateId`
+    - `getPlateActions().resetEditor` to `useResetPlateEditor()`
+  - removed:
+    - `plateIdAtom`
+    - `usePlateId` for `usePlateSelectors().id()`
+    - `EditablePlugins` for `PlateEditable`
+    - `SlateChildren`
+    - `PlateEventProvider` for `PlateProvider`
+    - `withPlateEventProvider` for `withPlateProvider`
+    - `usePlate`
+    - `usePlatesStoreEffect`
+    - `useEventEditorId` for `useEventPlateId`
+    - `platesStore, platesActions, platesSelectors, usePlatesSelectors`
+    - `getPlateActions` for `usePlateActions`
+    - `getPlateSelectors` for `usePlateSelectors`
+    - `getPlateEditorRef` for `usePlateEditorRef`
+    - `getPlateStore, usePlateStore`
+    - `EditorId` for `PlateId`
+
+### Minor Changes
+
+- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
+
+  - **SSR support**
+  - `useEventPlateId` returns:
+    - `id` if defined
+    - focused editor id if defined
+    - blurred editor id if defined
+    - last editor id if defined
+    - provider id if defined
+    - `PLATE_SCOPE` otherwise
+  - new dep: `nanoid`
+  - `PlateProvider`
+
+  ```tsx
+  export interface PlateProviderProps<
+    V extends Value = Value,
+    E extends PlateEditor<V> = PlateEditor<V>
+  > extends PlateProviderEffectsProps<V, E>,
+      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
+    /**
+     * Initial value of the editor.
+     * @default [{ children: [{ text: '' }]}]
+     */
+    initialValue?: PlateStoreState<V>['value'];
+
+    /**
+     * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
+     * This is useful when adding normalization rules on already existing content.
+     * @default false
+     */
+    normalizeInitialValue?: boolean;
+
+    scope?: Scope;
+  }
+  ```
+
+  - `PlateProviderEffects`
+  - `PlateSlate`
+  - `PlateEditable`
+
+  ```tsx
+  export interface PlateEditableExtendedProps {
+    id?: PlateId;
+
+    /**
+     * The children rendered inside `Slate`, after `Editable`.
+     */
+    children?: ReactNode;
+
+    /**
+     * Ref to the `Editable` component.
+     */
+    editableRef?: Ref<HTMLDivElement>;
+
+    /**
+     * The first children rendered inside `Slate`, before `Editable`.
+     * Slate DOM is not yet resolvable on first render, for that case use `children` instead.
+     */
+    firstChildren?: ReactNode;
+
+    /**
+     * Custom `Editable` node.
+     */
+    renderEditable?: (editable: ReactNode) => ReactNode;
+  }
+
+  export interface PlateEditableProps<V extends Value = Value>
+    extends Omit<TEditableProps<V>, 'id'>,
+      PlateEditableExtendedProps {}
+  ```
+
+### Patch Changes
+
+- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes #1508
+  - Fixes #1343
+
+## 16.8.0
+
+### Minor Changes
+
+- [#1856](https://github.com/udecode/plate/pull/1856) by [@zbeyens](https://github.com/zbeyens) –
+  - core plugin `createSelectionPlugin` renamed to `createPrevSelectionPlugin`
+  - `queryNode` - new options:
+    - `level`: Valid path levels
+    - `maxLevel`: Paths above that value are invalid
+
+## 16.5.0
+
+### Minor Changes
+
+- [#1832](https://github.com/udecode/plate/pull/1832) by [@zbeyens](https://github.com/zbeyens) – New editor prop:
+  - `currentKeyboardEvent`: is set in `onKeyDown` and unset after applying `set_selection` operation. Useful to override the selection depending on the keyboard event.
+
+## 16.3.0
+
+### Patch Changes
+
+- [#1796](https://github.com/udecode/plate/pull/1796) by [@zbeyens](https://github.com/zbeyens) – New `PlateEditor` prop to store the last key down:
+  - `lastKeyDown: string | null`
+
+## 16.2.0
+
+### Minor Changes
+
+- [#1778](https://github.com/udecode/plate/pull/1778) by [@zbeyens](https://github.com/zbeyens) –
+  - `isRangeAcrossBlocks`: Now returns true if one of the block above is found but not the other and returns undefined if no block is found.
+  - `isRangeInSameBlock`: Whether the range is in the same block.
+  - `removeNodeChildren`: Remove node children.
+  - `replaceNodeChildren`: Replace node children: remove then insert.
+
+### Patch Changes
+
+- [#1776](https://github.com/udecode/plate/pull/1776) by [@davisg123](https://github.com/davisg123) – Autoformatter will incorrectly match on text that contains one additional character of text
+
+## 16.1.0
+
+### Minor Changes
+
+- [#1768](https://github.com/udecode/plate/pull/1768) by [@zbeyens](https://github.com/zbeyens) – new utils:
+  - `wrapNodeChildren`: Wrap node children into a single element
+
+## 16.0.2
+
+### Patch Changes
+
+- [#1766](https://github.com/udecode/plate/pull/1766) by [@zbeyens](https://github.com/zbeyens) – Fix: Plate `firstChildren` is now working
+
+- [#1755](https://github.com/udecode/plate/pull/1755) by [@mouradmourafiq](https://github.com/mouradmourafiq) – Add `options` parameter to `isSelectionAtBlockEnd`
+
+## 16.0.0
+
+### Minor Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - `ElementProvider` now has `SCOPE_ELEMENT='element'` scope in addition to the plugin key, so `useElement()` can be called without parameter (default = `SCOPE_ELEMENT`). You'll need to use the plugin key scope only to get an ancestor element.
+  - upgrade peerDeps:
+    - `"slate": ">=0.78.0"`
+    - `"slate-react": ">=0.79.0"`
+
+## 15.0.3
+
+### Patch Changes
+
+- [#1707](https://github.com/udecode/plate/pull/1707) by [@dylans](https://github.com/dylans) – improve performance of list normalizations
+
 ## 15.0.0
 
 ### Minor Changes
@@ -115,9 +631,6 @@
   - exports `Hotkeys` from slate
   - types:
     - use [slate type options](https://github.com/ianstormtaylor/slate/commit/3b7a1bf72d0c3951416c771f7f149bfbda411111) when defined
-  - upgrade deps:
-    - `"slate": "0.78.0"`
-    - `"slate-react": "0.79.0"`
 
 ## 11.1.0
 
@@ -190,7 +703,7 @@
 
 **Define your custom types**
 
-- Follow https://plate.udecode.io/docs/typescript example.
+- Follow https://platejs.org/docs/typescript example.
 
 **Slate types**
 

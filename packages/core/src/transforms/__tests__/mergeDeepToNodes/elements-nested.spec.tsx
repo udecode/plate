@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { mergeDeepToNodes } from '@/packages/core/src/utils/mergeDeepToNodes';
 import { ELEMENT_LI } from '@udecode/plate-list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { jsx } from '@udecode/plate-test-utils';
-import { isElement } from '../../../slate/element/isElement';
-import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
+import { isElement } from '@udecode/slate/src/interfaces/element/isElement';
 
 jsx;
 

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["CI"],
+  "pipeline": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "COMPONENTS_BASE_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NODE_ENV",
+        "npm_config_user_agent",
+        "https_proxy"
+      ],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "build:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "brl": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "lint": {
+      "cache": false,
+      "dependsOn": [],
+      "outputs": []
+    },
+    "lint:fix": {
+      "cache": false,
+      "dependsOn": []
+    },
+    "e2e-examples#lint": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "e2e-examples#lint:fix": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "e2e-examples#typecheck": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#lint": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#lint:fix": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#typecheck": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "test:watch": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": true
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "todo-list-element",
+  "dependencies": [
+    "@udecode/plate-list"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "todo-list-element.tsx",
+      "content": "import React from 'react';\nimport { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';\nimport {\n  TTodoListItemElement,\n  useTodoListElement,\n  useTodoListElementState,\n} from '@udecode/plate-list';\n\nimport { cn } from '@/lib/utils';\n\nimport { Checkbox } from './checkbox';\n\nexport type TodoListElementProps = PlateElementProps<\n  Value,\n  TTodoListItemElement\n>;\n\nexport function TodoListElement({\n  className,\n  children,\n  ...props\n}: TodoListElementProps) {\n  const { element } = props;\n  const state = useTodoListElementState({ element });\n  const { checkboxProps } = useTodoListElement(state);\n\n  return (\n    <PlateElement className={cn('flex flex-row py-1', className)} {...props}>\n      <div\n        className=\"mr-1.5 flex select-none items-center justify-center\"\n        contentEditable={false}\n      >\n        <Checkbox {...checkboxProps} />\n      </div>\n      <span\n        className={cn(\n          'flex-1 focus:outline-none',\n          state.checked && 'text-muted-foreground line-through'\n        )}\n        contentEditable={!state.readOnly}\n        suppressContentEditableWarning\n      >\n        {children}\n      </span>\n    </PlateElement>\n  );\n}\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

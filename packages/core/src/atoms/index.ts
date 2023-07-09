@@ -4,4 +4,4 @@
 
 export * from './createAtomStore';
 export * from './elementAtom';
-export * from './plateIdAtom';
+export * from './useElement';

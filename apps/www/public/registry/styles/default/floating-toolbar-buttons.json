@@ -1,0 +1,18 @@
+{
+  "name": "floating-toolbar-buttons",
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "registryDependencies": [
+    "mark-toolbar-button",
+    "more-dropdown-menu",
+    "turn-into-dropdown-menu"
+  ],
+  "files": [
+    {
+      "name": "floating-toolbar-buttons.tsx",
+      "content": "import React from 'react';\nimport {\n  MARK_BOLD,\n  MARK_CODE,\n  MARK_ITALIC,\n  MARK_STRIKETHROUGH,\n  MARK_UNDERLINE,\n} from '@udecode/plate-basic-marks';\nimport { usePlateReadOnly } from '@udecode/plate-common';\n\nimport { Icons } from '@/components/icons';\n\nimport { MarkToolbarButton } from './mark-toolbar-button';\nimport { MoreDropdownMenu } from './more-dropdown-menu';\nimport { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';\n\nexport function FloatingToolbarButtons() {\n  const readOnly = usePlateReadOnly();\n\n  return (\n    <>\n      {!readOnly && (\n        <>\n          <TurnIntoDropdownMenu />\n\n          <MarkToolbarButton nodeType={MARK_BOLD} tooltip=\"Bold (⌘+B)\">\n            <Icons.bold />\n          </MarkToolbarButton>\n          <MarkToolbarButton nodeType={MARK_ITALIC} tooltip=\"Italic (⌘+I)\">\n            <Icons.italic />\n          </MarkToolbarButton>\n          <MarkToolbarButton\n            nodeType={MARK_UNDERLINE}\n            tooltip=\"Underline (⌘+U)\"\n          >\n            <Icons.underline />\n          </MarkToolbarButton>\n          <MarkToolbarButton\n            nodeType={MARK_STRIKETHROUGH}\n            tooltip=\"Strikethrough (⌘+⇧+M)\"\n          >\n            <Icons.strikethrough />\n          </MarkToolbarButton>\n          <MarkToolbarButton nodeType={MARK_CODE} tooltip=\"Code (⌘+E)\">\n            <Icons.code />\n          </MarkToolbarButton>\n        </>\n      )}\n\n      <MoreDropdownMenu />\n    </>\n  );\n}\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

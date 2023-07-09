@@ -2,7 +2,7 @@ import {
   eventEditorActions,
   eventEditorSelectors,
 } from '../stores/event-editor/event-editor.store';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_EVENT_EDITOR = 'event-editor';
 

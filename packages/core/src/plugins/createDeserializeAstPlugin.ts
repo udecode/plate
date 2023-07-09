@@ -1,4 +1,4 @@
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_DESERIALIZE_AST = 'deserializeAst';
 
@@ -13,7 +13,11 @@ export const createDeserializeAstPlugin = createPluginFactory({
       format: 'application/x-slate-fragment',
       getFragment: ({ data }) => {
         const decoded = decodeURIComponent(window.atob(data));
-        return JSON.parse(decoded);
+        let parsed;
+        try {
+          parsed = JSON.parse(decoded);
+        } catch (error) {}
+        return parsed;
       },
     },
   },

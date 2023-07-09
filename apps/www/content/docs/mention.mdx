@@ -1,0 +1,103 @@
+---
+title: Mention
+description: Enable autocompletion for user mentions.
+docs:
+  - route: /docs/components/combobox
+    title: Combobox
+  - route: /docs/components/mention-combobox
+    title: Mention Combobox
+  - route: /docs/components/mention-element
+    title: Mention Element
+  - route: /docs/components/mention-input-element
+    title: Mention Input Element
+---
+
+<ComponentPreview name="playground-demo" id="mention" />
+
+<PackageInfo>
+
+## Features
+
+- Provides smart autocompletion for mentioning users or applying tags.
+- Invoke combobox with `@` or `#` and select suggestion.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-mention @udecode/plate-combobox
+```
+
+## Usage
+
+```tsx
+import { createComboboxPlugin } from '@udecode/plate-combobox';
+import { createMentionPlugin } from '@udecode/plate-mention';
+
+const plugins = [
+  // ...otherPlugins,
+  createComboboxPlugin(),
+  createMentionPlugin(),
+];
+```
+
+## API
+
+### createMentionPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="createMentionNode" type="(item: TComboboxItem<TData>, meta: CreateMentionNodeMeta) => TNodeProps<TMentionElement>" optional>
+ 
+A function to create the mention node.
+
+</APIItem>
+<APIItem name="id" type="string" optional>
+  A unique identifier for the mention plugin.
+</APIItem>
+<APIItem name="insertSpaceAfterMention" type="boolean" optional>
+  Whether to insert a space after the mention.
+</APIItem>
+<APIItem name="trigger" type="string" optional>
+  The character that triggers the mention (for example, '@' in the case of a
+  user mention).
+</APIItem>
+
+<APIItem name="inputCreation" type="{ key: string; value: string }" optional>
+
+An object containing the key-value pair for creating an input.
+
+<APISubList>
+  <APISubListItem parent="inputCreation" name="key" type="string">
+    The key for the input.
+  </APISubListItem>
+  <APISubListItem parent="inputCreation" name="value" type="string">
+    The value for the input.
+  </APISubListItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="query" type="(editor: PlateEditor) => boolean" optional>
+  A query function to enable the behavior.
+</APIItem>
+
+</APIAttributes>
+
+### getMentionOnSelectItem
+
+`Combobox.onSelectItem` prop value.
+
+### findMentionInput
+
+### isNodeMentionInput
+
+### isSelectionInMentionInput
+
+### mentionOnKeyDownHandler
+
+### moveSelectionByOffset
+
+### removeMentionInput

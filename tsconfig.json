@@ -18,19 +18,22 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017"
+    "target": "es2017",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/packages/*": ["packages/*"],
+      "@/plate/*": ["apps/www/src/lib/plate/*"],
+      "@/lib/*": ["apps/www/src/lib/*"],
+      "@/types/*": ["apps/www/src/types/*"],
+      "@/styles/*": ["apps/www/src/styles/*"],
+      "@/components/*": ["apps/www/src/components/*"],
+      "@/registry/*": ["apps/www/src/registry/*"],
+      "@/__registry__/*": ["apps/www/src/__registry__/*"],
+      "@/hooks/*": ["apps/www/src/hooks/*"],
+      "@/config/*": ["apps/www/src/config/*"],
+      "contentlayer/generated": ["apps/www/.contentlayer/generated"]
+    }
   },
-  "files": ["scripts/types/twin.d.ts"],
-  "exclude": [
-    "node_modules",
-    "**/node_modules",
-    "dist",
-    "**/dist",
-    "**/__tests__/**",
-    "**/*.stories.*",
-    "**/*.spec*",
-    "**/*fixture*",
-    "**/*template*"
-  ]
+  "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

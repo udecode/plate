@@ -1,20 +1,21 @@
 import {
-  createEditor as makeEditor,
   Descendant,
   Editor,
   Element,
   Node,
   Range,
   Text,
+  createEditor as makeEditor,
 } from 'slate';
+
 import {
-  addAnchorToken,
-  addFocusToken,
   AnchorToken,
   FocusToken,
+  Token,
+  addAnchorToken,
+  addFocusToken,
   getAnchorOffset,
   getFocusOffset,
-  Token,
 } from './tokens';
 
 /**
@@ -32,7 +33,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       return;
     }
 
-    const prev = nodes[nodes.length - 1];
+    const prev = nodes.at(-1);
 
     if (typeof child === 'string') {
       const text = { text: child };
@@ -56,11 +57,11 @@ const resolveDescendants = (children: any[]): Descendant[] => {
     } else if (Element.isElement(child)) {
       nodes.push(child);
     } else if (child instanceof Token) {
-      let n = nodes[nodes.length - 1];
+      let n = nodes.at(-1);
 
       if (!Text.isText(n)) {
         addChild('');
-        n = nodes[nodes.length - 1] as Text;
+        n = nodes.at(-1) as Text;
       }
 
       if (child instanceof AnchorToken) {
@@ -69,11 +70,11 @@ const resolveDescendants = (children: any[]): Descendant[] => {
         addFocusToken(n, child);
       }
     } else {
-      throw new Error(`Unexpected hyperscript child object: ${child}`);
+      throw new TypeError(`Unexpected hyperscript child object: ${child}`);
     }
   };
 
-  for (const child of children.flat(Infinity)) {
+  for (const child of children.flat(Number.POSITIVE_INFINITY)) {
     addChild(child);
   }
 

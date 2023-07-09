@@ -1,0 +1,301 @@
+---
+title: Autoformat
+description: Apply formatting automatically using shortcodes.
+docs:
+  - route: /docs/basic-elements
+    title: Basic Elements
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/horizontal-rule
+    title: Horizontal Rule
+  - route: /docs/list
+    title: List
+---
+
+<ComponentPreview name="playground-demo" id="autoformat" />
+
+<PackageInfo>
+
+## Features
+
+- Enables quick content formatting via shortcodes.
+- Offers markdown-like inline codes for real-time typing.
+- Enhances and simplifies editing by avoiding toolbar buttons and shortcuts for common formatting.
+- Auto conversion feature (e.g., **`#`** to H1).
+- Provides predefined formatting rules.
+
+**Formatting shortcodes:**
+
+- **`text*`** for bold text.
+- **`_text_`** for italicized text.
+- **`~~text~~`** for strikethrough text.
+- ... and more.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-autoformat
+```
+
+## Usage
+
+```tsx
+import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+
+const plugins = [
+  // ...otherPlugins,
+  createAutoformatPlugin({
+    // options
+  }),
+];
+```
+
+## API
+
+### createAutoformatPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="rules" type="AutoformatRule[]" optional>
+
+A list of triggering rules.
+
+- Can be one of the following: `AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`.
+- Extends `AutoformatCommonRule`.
+
+</APIItem>
+<APIItem name="enableUndoOnDelete" type="boolean" optional>
+
+Enable undo on delete.
+
+</APIItem>
+</APIAttributes>
+
+### Rules
+
+You can import the following rules:
+
+| Name                           | Description                          |
+| :----------------------------- | :----------------------------------- |
+| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.       |
+|                                | Converts `'text'` to `‘text’`.       |
+| `autoformatPunctuation`        | Converts `--` to `—`.                |
+|                                | Converts `...` to `…`.               |
+|                                | Converts `>>` to `»`.                |
+|                                | Converts `<<` to `«`.                |
+| `autoformatArrow`              | Converts `->` to `→`.                |
+|                                | Converts `<-` to `←`.                |
+|                                | Converts `=>` to `⇒`.                |
+|                                | Converts `<=` and `≤=` to `⇐`.       |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.   |
+|                                | Converts `(r)` and `(R)` to `®`.     |
+|                                | Converts `(c)` and `(C)` to `©`.     |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.           |
+|                                | Converts `&reg;` to `®`.             |
+|                                | Converts `&copy;` to `©`.            |
+|                                | Converts `&sect;` to `§`.            |
+| `autoformatComparison`         | Converts `!>` to `!>`.               |
+|                                | Converts `!<` to `≮`.                |
+|                                | Converts `>=` to `≥`.                |
+|                                | Converts `<=` to `≤`.                |
+|                                | Converts `!>=` to `≱`.               |
+|                                | Converts `!<=` to `≰`.               |
+| `autoformatEquality`           | Converts `!=` to `≠`.                |
+|                                | Converts `==` to `≡`.                |
+|                                | Converts `!==` and `≠=` to `≢`.      |
+|                                | Converts `~=` to `≈`.                |
+|                                | Converts `!~=` to `≉`.               |
+| `autoformatFraction`           | Converts `1/2` to `½`.               |
+|                                | Converts `1/3` to `⅓`.               |
+|                                | ...                                  |
+|                                | Converts `7/8` to `⅞`.               |
+| `autoformatDivision`           | Converts `//` to `÷`.                |
+| `autoformatOperation`          | Converts `+-` to `±`.                |
+|                                | Converts `%%` to `‰`.                |
+|                                | Converts `%%%` and `‰%` to `‱.       |
+|                                | `autoformatDivision` rules.          |
+| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                |
+|                                | Converts `~1` to `₁`.                |
+|                                | ...                                  |
+|                                | Converts `~9` to `₉`.                |
+| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                |
+|                                | Converts `~-` to `₋`.                |
+| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                |
+|                                | Converts `^1` to `¹`.                |
+|                                | ...                                  |
+|                                | Converts `^9` to `⁹`.                |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                |
+|                                | Converts `^-` to `⁺`.                |
+| `autoformatMath`               | `autoformatComparison` rules         |
+|                                | `autoformatEquality` rules           |
+|                                | `autoformatOperation` rules          |
+|                                | `autoformatFraction` rules           |
+|                                | `autoformatSubscriptNumbers` rules   |
+|                                | `autoformatSubscriptSymbols` rules   |
+|                                | `autoformatSuperscriptNumbers` rules |
+|                                | `autoformatSuperscriptSymbols` rules |
+
+### AutoformatCommonRule
+
+An interface for the common structure of autoformat rules, regardless of their mode.
+
+<APIAttributes>
+<APIItem
+  name="match"
+  type="string | string[] | MatchRange | MatchRange[]"
+>
+
+The rule applies when the trigger and the text just before the cursor matches.
+
+- For `mode: 'block'`: lookup for the end match(es) before the cursor.
+- For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
+- For `mode: 'mark'`: lookup for the start and end matches.
+- Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
+- `MatchRange`:
+
+<APISubList>
+
+<APISubListItem parent="match" name="start" type="string">
+
+The starting point of the range.
+
+</APISubListItem>
+<APISubListItem parent="match" name="end" type="string">
+
+The ending point of the range.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="trigger" type="string | string[]" optional>
+
+Triggering character to autoformat.
+
+</APIItem>
+<APIItem name="insertTrigger" type="boolean" optional>
+
+If true, insert the triggering character after autoformatting.
+
+- **Default:** `false`
+
+</APIItem>
+<APIItem
+  name="query"
+  type="(editor: TEditor<V>, options: AutoformatQueryOptions) => boolean"
+  optional
+>
+
+A query function to allow autoformat.
+
+- `AutoformatQueryOptions` extends `Omit<AutoformatCommonRule<V, E>, 'query'>`:
+
+<APISubList>
+<APISubListItem parent="options" name="text" type="string">
+
+`insertText` text.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatBlockRule
+
+An interface for autoformat rules for block mode.
+
+<APIAttributes>
+<APIItem name="mode" type="'block'">
+
+- Text: insert text.
+- Block: set block type or custom format.
+- Mark: insert mark(s) between matches.
+
+</APIItem>
+<APIItem name="match" type="string | string[]">
+
+A pattern to match for the autoformat rule to apply.
+
+</APIItem>
+<APIItem name="type" type="string" optional>
+
+- For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
+- For `mode: 'mark'`: Mark(s) to add.
+
+</APIItem>
+<APIItem name="triggerAtBlockStart" type="boolean" optional>
+
+If true, the trigger should be at block start to allow autoformatting.
+
+- **Default:** `true`
+
+</APIItem>
+<APIItem name="allowSameTypeAbove" type="boolean" optional>
+
+If true, allow to autoformat even if there is a block of the same type above
+the selected block.
+
+- **Default:** `false`
+
+</APIItem>
+<APIItem name="preFormat" type="(editor: TEditor<V>) => void" optional>
+
+Function called just before `format`. Generally used to reset the selected
+block.
+
+</APIItem>
+<APIItem name="format" type="(editor: TEditor<V>) => void" optional>
+
+Custom formatting function.
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatMarkRule
+
+An interface for autoformat rules for mark mode.
+
+<APIAttributes>
+<APIItem name="mode" type="'mark'">
+
+The mode is 'mark'.
+
+</APIItem>
+<APIItem name="type" type="string | string[]">
+
+Mark(s) to add.
+
+</APIItem>
+<APIItem name="ignoreTrim" type="boolean" optional>
+
+If false, do not format when the string can be trimmed.
+
+</APIItem>
+</APIAttributes>
+
+### AutoformatTextRule
+
+An interface for autoformat rules for text mode.
+
+<APIParameters>
+<APIItem name="mode" type="'text'">
+
+The mode is 'text'.
+
+</APIItem>
+<APIItem name="match" type="string | string[]">
+
+A pattern to match for the autoformat rule to apply.
+
+</APIItem>
+<APIItem name="format" type="string | string[] | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void)">
+
+The matched text is replaced by that string, the matched texts are replaced by these strings, or a function called when there is a match.
+
+</APIItem>
+</APIParameters>

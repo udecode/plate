@@ -1,0 +1,73 @@
+---
+title: Soft Break
+description: Insert line breaks within a block of text without starting a new block.
+---
+
+<ComponentPreview name="playground-demo" id="softbreak" />
+
+<PackageInfo>
+
+## Features
+
+- Allows insertion of line breaks within a text block without starting a new block.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+## Usage
+
+```tsx
+// ...
+import { createSoftBreakPlugin } from '@udecode/plate-break';
+
+const plugins = [
+  // ...otherPlugins,
+  createSoftBreakPlugin({
+    options: {
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          },
+        },
+      ],
+    },
+  }),
+];
+```
+
+## API
+
+### createSoftBreakPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="rules" type="object[]" optional>
+An array of rule objects specifying the hotkey to activate the soft break and an optional filter query.
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+The key combination that activates the soft break.
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
+Filter options to determine the block types where the rule applies.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIAttributes>
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Shift + Enter">
+    Insert a line break within a block of text without starting a new block.
+  </KeyTableItem>
+</KeyTable>

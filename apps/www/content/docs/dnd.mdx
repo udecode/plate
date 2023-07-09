@@ -1,0 +1,85 @@
+---
+title: Drag & Drop
+description: Allows movement of blocks, such as paragraph or tables, within the editor.
+docs:
+  - route: /docs/components/draggable
+    title: Draggable
+---
+
+<ComponentPreview name="playground-demo" id="dnd" />
+
+<PackageInfo>
+
+## Features
+
+- Drag & drop of blocks for content movement and insertion within the editor.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
+```
+
+## Usage
+
+```tsx
+import { createDndPlugin } from '@udecode/plate-dnd';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+
+const plugins = [
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createDndPlugin(),
+];
+```
+
+Then, wrap your plugin components with [Draggable](/docs/components/draggable).
+
+## API
+
+### createDndPlugin
+
+<APIAttributes>
+<APIItem name="enableScroller" type="boolean" optional>
+Enables the scroller feature.
+
+</APIItem>
+<APIItem name="scrollerProps" type="Partial<ScrollerProps>" optional>
+Props for the `Scroller` component.
+
+</APIItem>
+</APIAttributes>
+
+### focusBlockStartById
+
+### getBlocksWithId
+
+### selectBlockById
+
+## API Plugins
+
+### withDraggable
+
+## API Components
+
+### DndScroller
+
+### dndStore
+
+### useDndBlock
+
+### useDndNode
+
+### useDragBlock
+
+### useDragNode
+
+### useDraggable
+
+### useDraggableState
+
+### useDropBlock
+
+### useDropNode

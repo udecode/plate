@@ -5,17 +5,17 @@ index 7f2a126..3cf32b1 100644
 @@ -8,7 +8,8 @@ Object.defineProperty(exports, "__esModule", {
   * Constants.
   */
-
+ 
 -var IS_MAC = typeof window != 'undefined' && /Mac|iPod|iPhone|iPad/.test(window.navigator.platform);
 +// We make this a function so it can be tested in describe block mocks with Jest.
 +var IS_MAC = () => typeof window != 'undefined' && /Mac|iPod|iPhone|iPad/.test(window.navigator.platform);
-
+ 
  var MODIFIERS = {
    alt: 'altKey',
 @@ -17,7 +18,8 @@ var MODIFIERS = {
    shift: 'shiftKey'
  };
-
+ 
 -var ALIASES = {
 +// We make this a function so it can be tested in describe block mocks with Jest.
 +var ALIASES = () => ({
@@ -37,15 +37,15 @@ index 7f2a126..3cf32b1 100644
    windows: 'meta'
 -};
 +});
-
+ 
  var CODES = {
    backspace: 8,
 @@ -227,7 +229,7 @@ function toKeyCode(name) {
-
+ 
  function toKeyName(name) {
    name = name.toLowerCase();
 -  name = ALIASES[name] || name;
 +  name = ALIASES()[name] || name;
    return name;
  }
-
+ 

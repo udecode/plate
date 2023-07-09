@@ -1,0 +1,316 @@
+---
+title: Slate
+description: API reference for @udecode/slate.
+---
+
+`@udecode/slate` extends Slate API with generic types.
+
+## Editor
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+
+### `addMark`
+
+### `createPathRef`
+
+### `createPointRef`
+
+### `createRangeRef`
+
+### `deleteBackward`
+
+### `deleteForward`
+
+### `deleteFragment`
+
+### `deleteMerge`
+
+### `getAboveNode`
+
+### `getEdgePoints`
+
+### `getEditorString`
+
+### `getEndPoint`
+
+### `getFirstNode`
+
+### `getFragment`
+
+### `getLastNode`
+
+### `getLeafNode`
+
+### `getLevels`
+
+### `getMarks`
+
+### `getNextNode`
+
+### `getNodeEntries`
+
+### `getNodeEntry`
+
+### `getParentNode`
+
+### `getPath`
+
+### `getPathRefs`
+
+### `getPoint`
+
+### `getPointAfter`
+
+### `getPointBefore`
+
+### `getPointRefs`
+
+### `getPositions`
+
+### `getPreviousNode`
+
+### `getRange`
+
+### `getRangeRefs`
+
+### `getStartPoint`
+
+### `getVoidNode`
+
+### `hasBlocks`
+
+### `hasInlines`
+
+### `hasTexts`
+
+### `index`
+
+### `insertBreak`
+
+### `insertNode`
+
+### `isBlock`
+
+### `isEdgePoint`
+
+### `isEditor`
+
+### `isEditorNormalizing`
+
+### `isElementEmpty`
+
+### `isEndPoint`
+
+### `isInline`
+
+### `isStartPoint`
+
+### `isVoid`
+
+### `normalizeEditor`
+
+### `removeEditorMark`
+
+### `TEditor`
+
+### `unhangRange`
+
+### `withoutNormalizing`
+
+## Element
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/element).
+
+### `elementMatches`
+
+### `index`
+
+### `isElement`
+
+### `isElementList`
+
+### `TElement`
+
+## History
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/libraries/slate-history).
+
+### `isHistoryEditor`
+
+### `isHistoryMerging`
+
+### `isHistorySaving`
+
+### `THistoryEditor`
+
+### `withoutMergingHistory`
+
+### `withoutSavingHistory`
+
+## Node
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/node).
+
+### `TDescendant`
+
+### `getNodeDescendants`
+
+### `getNodeLastNode`
+
+### `getNodeString`
+
+### `getNodeFirstNode`
+
+### `hasNode`
+
+### `isNode`
+
+### `getNodeFragment`
+
+### `getNodeLeaf`
+
+### `getNodeLevels`
+
+### `isNodeList`
+
+### `getNodeProps`
+
+### `TAncestor`
+
+### `getNode`
+
+### `getNodeTexts`
+
+### `getNodes`
+
+### `getNodeChildren`
+
+### `getNodeAncestor`
+
+### `TNodeEntry`
+
+### `TNode`
+
+### `nodeMatches`
+
+### `getNodeChild`
+
+### `getNodeElements`
+
+### `getNodeAncestors`
+
+### `getNodeDescendant`
+
+### `getCommonNode`
+
+### `isAncestor`
+
+### `hasSingleChild`
+
+### `getNodeParent`
+
+## Range
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
+
+### `isCollapsed`
+
+### `isExpanded`
+
+## Text
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/text).
+
+### `isText`
+
+### `isTextList`
+
+### `textEquals`
+
+### `textMatches`
+
+### `TText`
+
+## Transforms
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+
+### `moveNodes`
+
+### `moveSelection`
+
+### `removeNodes`
+
+### `select`
+
+### `insertText`
+
+### `insertNodes`
+
+### `deleteText`
+
+### `setPoint`
+
+### `setNodes`
+
+### `unwrapNodes`
+
+### `deselect`
+
+### `mergeNodes`
+
+### `collapseSelection`
+
+### `unsetNodes`
+
+### `setSelection`
+
+### `splitNodes`
+
+### `insertFragment`
+
+### `wrapNodes`
+
+### `liftNodes`
+
+## Types
+
+### QueryNodeOptions
+
+An interface used to query node entries.
+
+<APIAttributes>
+<APIItem
+  name="filter"
+  type="(entry: TNodeEntry) => boolean"
+  optional
+>
+
+A function to filter node entries.
+
+- The function should take a node entry as a parameter and return a boolean.
+
+</APIItem>
+<APIItem name="allow" type="string[] | string | null" optional>
+
+List of types that are valid.
+
+- If empty or undefined, all types are allowed.
+
+</APIItem>
+<APIItem name="exclude" type="string[] | string | null" optional>
+
+List of types that are invalid.
+
+</APIItem>
+<APIItem name="level" type="number[] | number | null" optional>
+
+Valid path levels.
+
+</APIItem>
+<APIItem name="maxLevel" type="number | null" optional>
+
+Paths above this level are invalid.
+
+</APIItem>
+</APIAttributes>

@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../utils/plate/createPlateEditor';
+
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -19,7 +20,7 @@ describe('when element is a body', () => {
     );
 
     const body = document.createElement('body');
-    body.appendChild(parseHtmlElement(`<p>test</p>`));
+    body.append(parseHtmlElement(`<p>test</p>`));
 
     expect(
       htmlBodyToFragment(

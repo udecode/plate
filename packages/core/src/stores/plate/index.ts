@@ -3,6 +3,5 @@
  */
 
 export * from './createPlateStore';
-export * from './platesStore';
-export * from './usePlateStore';
+export * from './actions/index';
 export * from './selectors/index';

@@ -1,13 +1,12 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { selectEndOfBlockAboveSelection } from '@/packages/slate-utils/src/index';
 import { jsx } from '@udecode/plate-test-utils';
-import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { selectEndOfBlockAboveSelection } from '../../index';
 
 jsx;
 
-const input = ((
+const input = (
   <editor>
     <hp>
       te
@@ -15,7 +14,7 @@ const input = ((
       st
     </hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 it('should be', () => {
   selectEndOfBlockAboveSelection(input);

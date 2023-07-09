@@ -1,13 +1,14 @@
 /** @jsx jsx */
+
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
+import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
+import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
+import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createBoldPlugin } from '../../../../nodes/basic-marks/src/createBoldPlugin';
-import { createHeadingPlugin } from '../../../../nodes/heading/src/createHeadingPlugin';
-import { createLinkPlugin } from '../../../../nodes/link/src/createLinkPlugin';
-import { createMediaEmbedPlugin } from '../../../../nodes/media-embed/src/createMediaEmbedPlugin';
-import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
-import { PlateEditor } from '../../types/plate/PlateEditor';
-import { PlatePlugin } from '../../types/plugin/PlatePlugin';
 
 jsx;
 
@@ -32,14 +33,14 @@ describe('when inserting html', () => {
 
   describe('when inserting h1 inside p (not empty)', () => {
     it('should just insert h1 text inside p', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             test
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const expected = (
         <editor>
@@ -52,7 +53,7 @@ describe('when inserting html', () => {
 
       const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins,
       });
@@ -65,13 +66,13 @@ describe('when inserting html', () => {
 
   describe('when inserting h1 inside an empty p', () => {
     it('should set p type to h1 and insert h1 text', () => {
-      const input = ((
+      const input = (
         <editor>
           <hp>
             <cursor />
           </hp>
         </editor>
-      ) as any) as PlateEditor;
+      ) as any as PlateEditor;
 
       const expected = (
         <editor>
@@ -84,7 +85,7 @@ describe('when inserting html', () => {
 
       const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
-      const editor = createPlateUIEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins,
       });
@@ -96,13 +97,13 @@ describe('when inserting html', () => {
   });
 
   describe('when inserting a text node surrounded by elements', () => {
-    const input = ((
+    const input = (
       <editor>
         <hp>
           <cursor />
         </hp>
       </editor>
-    ) as any) as PlateEditor;
+    ) as any as PlateEditor;
 
     const expected = (
       <editor>
@@ -117,7 +118,7 @@ describe('when inserting html', () => {
 
     const plugins: PlatePlugin[] = [createParagraphPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -133,14 +134,14 @@ describe('when inserting html', () => {
 });
 
 describe('when inserting empty html', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
@@ -159,7 +160,7 @@ describe('when inserting empty html', () => {
   it('should do nothing', () => {
     const plugins: PlatePlugin[] = [createBoldPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -171,14 +172,14 @@ describe('when inserting empty html', () => {
 });
 
 describe('when inserting an iframe without src', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -199,7 +200,7 @@ describe('when inserting an iframe without src', () => {
   it('should do nothing', () => {
     const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -211,14 +212,14 @@ describe('when inserting an iframe without src', () => {
 });
 
 describe('when inserting link with href', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -231,7 +232,9 @@ describe('when inserting link with href', () => {
     <editor>
       <hp>
         test
-        <ha url="http://test.com">link</ha>
+        <ha target="_blank" url="http://test.com">
+          link
+        </ha>
         <cursor />
       </hp>
     </editor>
@@ -243,7 +246,7 @@ describe('when inserting link with href', () => {
       createLinkPlugin(),
     ];
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins,
     });
@@ -255,14 +258,14 @@ describe('when inserting link with href', () => {
 });
 
 describe('when inserting plain text', () => {
-  const input = ((
+  const input = (
     <editor>
       <hp>
         test
         <cursor />
       </hp>
     </editor>
-  ) as any) as PlateEditor;
+  ) as any as PlateEditor;
 
   const data = {
     getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),
@@ -280,7 +283,7 @@ describe('when inserting plain text', () => {
   it('should run default insert', () => {
     jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-    const editor = createPlateUIEditor({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [],
     });

@@ -1,0 +1,121 @@
+---
+title: Block Selection
+description: Select and manipulate entire text blocks.
+---
+
+<ComponentPreview name="playground-demo" id="blockselection" />
+
+<PackageInfo>
+
+## Features
+
+- Select entire blocks, as opposed to individual words or characters.
+- To select an entire block, mouse down outside the text area and then move the cursor into the block. Once it is selected, you'll see a background color.
+- Keep moving down or up to select multiple blocks.
+- Once selected, the available actions are: copy, cut, and delete.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+
+const plugins = [
+  // ...otherPlugins,
+  createNodeIdPlugin(),
+  createBlockSelectionPlugin(),
+];
+```
+
+### Styling
+
+You can style the selection area by using the `slate-selection-area` class:
+
+```css
+.slate-selection-area {
+  background: #4f90f22d;
+  border: 1px solid #4f90f2;
+}
+```
+
+## API
+
+### createBlockSelectionPlugin
+
+<APIAttributes>
+<APIItem
+  name="query"
+  type="function"
+  optional
+>
+
+A function to query block selections.
+
+</APIItem>
+<APIItem
+  name="onKeyDownSelecting"
+  type="(e: KeyboardEvent) => void"
+  optional
+>
+
+A function to handle the **`keydown`** event when selecting.
+
+</APIItem>
+<APIItem name="sizes" type="Object" optional>
+
+The dimensions of the selection.
+
+<APISubList>
+<APISubListItem parent="sizes" name="left" type="number" optional>
+
+The left size of the selection.
+
+</APISubListItem>
+<APISubListItem parent="sizes" name="top" type="number" optional>
+
+The top size of the selection.
+
+</APISubListItem>
+<APISubListItem parent="sizes" name="bottom" type="number" optional>
+
+The bottom size of the selection.
+
+</APISubListItem>
+<APISubListItem parent="sizes" name="right" type="number" optional>
+
+The right size of the selection.
+
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIAttributes>
+
+### copySelectedBlocks
+
+### extractSelectableIds
+
+### getSelectedBlocks
+
+### pasteSelectedBlocks
+
+### selectInsertedBlocks
+
+## API Components
+
+### BlockSelectable
+
+### BlockSelectionArea
+
+### blockSelectionStore
+
+### BlockStartArea
+
+### SelectionArea

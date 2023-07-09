@@ -1,8 +1,9 @@
-import { Value } from '../../slate/editor/TEditor';
-import { PlateRenderElementProps } from '../plate/PlateRenderElementProps';
-import { PlateRenderLeafProps } from '../plate/PlateRenderLeafProps';
-import { RenderFunction } from '../react/RenderFunction';
+import React from 'react';
+import { Value } from '@udecode/slate';
 
-export type SerializeHtml<V extends Value = Value> = RenderFunction<
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
+
+export type SerializeHtml<V extends Value = Value> = React.FC<
   PlateRenderElementProps<V> & PlateRenderLeafProps<V>
 >;

@@ -1,0 +1,11 @@
+{
+  "extends": "../www/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["../../www/src/*"],
+      "@/plate/*": ["../../www/src/lib/plate/*"]
+    }
+  },
+  "include": ["src", "../www/src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

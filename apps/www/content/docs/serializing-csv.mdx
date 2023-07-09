@@ -1,0 +1,65 @@
+---
+title: Serializing CSV
+description: Copy paste from CSV to Slate.
+---
+
+<ComponentPreview name="playground-demo" id="deserializecsv" />
+
+<PackageInfo>
+
+## Features
+
+- Convert CSV content to a Slate value.
+
+<Callout className="my-4">
+  **Note**: Converting a Slate value to CSV is not yet supported.
+</Callout>
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-serializer-csv
+```
+
+## Usage
+
+### CSV -> Slate
+
+```tsx
+import { createDeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
+
+const plugins = [
+  // ...otherPlugins,
+  createDeserializeCsvPlugin(),
+];
+```
+
+## API
+
+### createDeserializeCsvPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="errorTolerance" type="number" optional>
+
+The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
+
+- **Default:** **`0.25`** (This indicates that up to 25% of the rows can contain errors.)
+
+</APIItem>
+<APIItem name="parseOptions" type="ParseConfig" optional>
+
+Options to be passed to the PapaParse library for parsing CSV data.
+
+- **Default:** **`{ header: true }`** (Indicating that the first row of the CSV data should be treated as a header.)
+
+Refer to **[PapaParse documentation](https://www.papaparse.com/docs#config)** for more details about these options.
+
+</APIItem>
+</APIAttributes>
+
+### deserializeCsv

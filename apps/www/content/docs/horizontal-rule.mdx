@@ -1,0 +1,66 @@
+---
+title: Horizontal Rule
+description: Visually divide and organize content sections with a horizontal line.
+docs:
+  - route: /docs/components/hr-element
+    title: Hr Element
+---
+
+<ComponentPreview name="playground-demo" id="hr" />
+
+<PackageInfo>
+
+## Features
+
+- Insert horizontal lines to separate content or indicate topic shifts.
+- Using the autoformat plugin, type three dashes (**`---`**) at a new line start to transform it into a horizontal rule.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-horizontal-rule
+```
+
+## Usage
+
+```tsx
+import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+import { ELEMENT_DEFAULT, insertNodes, setNodes } from '@udecode/plate-common';
+import {
+  ELEMENT_HR,
+  createHorizontalRulePlugin,
+} from '@udecode/plate-horizontal-rule';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+
+const plugins = [
+  // ...otherPlugins,
+  createHorizontalRulePlugin(),
+  createSelectOnBackspacePlugin({
+    options: { query: { allow: [ELEMENT_HR] } },
+  }),
+  createAutoformatPlugin({
+    options: {
+      rules: [
+        {
+          mode: 'block',
+          type: ELEMENT_HR,
+          match: ['---', '—-', '___ '],
+          format: (editor) => {
+            setNodes(editor, { type: ELEMENT_HR });
+            insertNodes(editor, {
+              type: ELEMENT_DEFAULT,
+              children: [{ text: '' }],
+            });
+          },
+        },
+      ],
+    },
+  }),
+];
+```
+
+## API
+
+### createHorizontalRulePlugin

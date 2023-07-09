@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
+import { ToggleMarkPlugin } from '@/packages/core/src/types/plugin/ToggleMarkPlugin';
+import { getPlugin } from '@/packages/core/src/utils/getPlugin';
 import {
-  createBoldPlugin,
   MARK_BOLD,
+  createBoldPlugin,
 } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src/utils/createPlateUIEditor';
+import { onKeyDownToggleMark } from '@udecode/plate-utils/src/plate/onKeyDownToggleMark';
 import * as isHotkey from 'is-hotkey';
-import { onKeyDownToggleMark } from '../../../plugins/onKeyDownToggleMark';
-import { ToggleMarkPlugin } from '../../../types/plugin/ToggleMarkPlugin';
-import { getPlugin } from '../../plate/getPlugin';
 
 jsx;
 
@@ -37,7 +37,7 @@ const output = (
   </editor>
 ) as any;
 
-const editor = createPlateUIEditor({
+const editor = createPlateEditor({
   editor: input,
   plugins: [
     createBoldPlugin({

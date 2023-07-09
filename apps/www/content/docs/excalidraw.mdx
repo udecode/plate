@@ -1,0 +1,52 @@
+---
+title: Excalidraw
+description: Create drawings and diagrams as block nodes.
+docs:
+  - route: /docs/components/excalidraw-element
+    title: Excalidraw Element
+---
+
+<ComponentPreview name="playground-demo" id="excalidraw" />
+
+<PackageInfo>
+
+## Features
+
+- Integrates Excalidraw library for creation of drawings and diagrams.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-excalidraw
+```
+
+## Usage
+
+```tsx
+import {
+  ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+  createExcalidrawPlugin,
+} from '@udecode/plate-excalidraw';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+
+const plugins = [
+  // ...otherPlugins
+  createExcalidrawPlugin(),
+  createSelectOnBackspacePlugin({
+    options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
+  }),
+];
+```
+
+## API
+
+### createExcalidrawPlugin
+
+### insertExcalidraw
+
+## API Components
+
+### useExalidawElement

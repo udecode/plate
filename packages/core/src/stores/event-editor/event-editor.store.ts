@@ -1,18 +1,19 @@
-import { createStore } from '../../utils/index';
+import { createStore } from '../../libs';
+import { PlateId } from '../plate/index';
 
 export type EventEditorState = {
   /**
    * Last editor id that has been blurred.
    */
-  blur: string | null;
+  blur: PlateId | null;
   /**
    * Editor id that is currently being focused.
    */
-  focus: string | null;
+  focus: PlateId | null;
   /**
    * Last editor id.
    */
-  last: string | null;
+  last: PlateId | null;
 };
 
 /**

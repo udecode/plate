@@ -1,0 +1,143 @@
+---
+title: Basic Elements
+description: Enhance your editor with essential formatting elements.
+docs:
+  - route: /docs/components/blockquote-element
+    title: Block Quote Element
+  - route: /docs/components/code-block-element
+    title: Code Block Element
+  - route: /docs/components/code-line-element
+    title: Code Line Element
+  - route: /docs/components/code-syntax-leaf
+    title: Code Syntax Leaf
+  - route: /docs/components/heading-element
+    title: Heading Element
+  - route: /docs/components/paragraph-element
+    title: Paragraph Element
+---
+
+<ComponentPreview name="playground-demo" id="basicnodes" />
+
+<PackageInfo>
+
+## Features
+
+- Includes commonly used block elements: blockquote, code block, headings, and paragraph.
+
+</PackageInfo>
+
+**Plugins:**
+
+- **`createBlockquotePlugin()`** for `blockquote` element
+- **`createCodeBlockPlugin()`** for `code_block` element
+- **`createHeadingPlugin()`** for `h1`, `h2`,... elements
+- **`createParagraphPlugin()`** for `p` element
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-elements
+# or
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading @udecode/plate-paragraph
+```
+
+## Usage
+
+```tsx
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+
+const plugins = [
+  // ...otherPlugins,
+  createBasicElementsPlugin(),
+];
+```
+
+## API
+
+### createBasicElementsPlugin
+
+## API Block Quote
+
+### createBlockquotePlugin
+
+## API Heading
+
+### createHeadingPlugin
+
+<APIAttributes>
+<APIItem name="levels" type="number" optional>
+Specifies the heading levels supported, ranging from 1 to the specified levels.
+
+</APIItem>
+</APIAttributes>
+
+## API Paragraph
+
+### createParagraphPlugin
+
+## API Code Block
+
+### createCodeBlockPlugin
+
+<APIAttributes>
+
+Options.
+
+<APIItem name="syntax" type="boolean" optional>
+Determines if syntax highlighting is enabled.
+
+</APIItem>
+<APIItem name="syntaxPopularFirst" type="boolean" optional>
+Determines if popular syntax should be displayed first.
+
+</APIItem>
+<APIItem name="deserializers" type="string[]" optional>
+Defines deserializers for the code block plugin.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkeys to trigger a code block action.
+
+</APIItem>
+</APIAttributes>
+
+### isCodeBlockEmpty
+
+### isSelectionAtCodeBlockStart
+
+### indentCodeLine
+
+### insertCodeBlock
+
+### insertCodeLine
+
+### outdentCodeLine
+
+### toggleCodeBlock
+
+### unwrapCodeBlock
+
+### useCodeBlockCombobox
+
+### useCodeBlockComboboxState
+
+### useCodeBlockElement
+
+### useCodeBlockElementState
+
+### useCodeSyntaxLeaf
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 0">Toggle paragraph block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    Toggle the blockquote formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + A">
+    Select all text in the code block.
+  </KeyTableItem>
+</KeyTable>

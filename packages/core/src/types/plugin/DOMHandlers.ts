@@ -14,8 +14,9 @@ import {
   UIEvent,
   WheelEvent,
 } from 'react';
-import { Value } from '../../slate/editor/TEditor';
-import { PlateEditor } from '../plate/PlateEditor';
+import { Value } from '@udecode/slate';
+
+import { PlateEditor } from '../PlateEditor';
 import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
 /**

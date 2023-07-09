@@ -1,0 +1,165 @@
+---
+title: Basic Marks
+description: Set of essential text formatting options.
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="playground-demo" id="basicnodes" />
+
+<PackageInfo>
+
+## Features
+
+- Includes commonly used text styling features: bold, italic, underline, strikethrough, subscript, superscript, and code.
+
+</PackageInfo>
+
+**Plugins:**
+
+- `createBoldPlugin()` for `bold` mark
+- `createItalicPlugin()` for `italic` mark
+- `createUnderlinePlugin()` for `underline` mark
+- `createStrikethroughPlugin()` for `strikethrough` mark
+- `createSubscriptPlugin()` for `subscript` mark
+- `createSuperscriptPlugin()` for `superscript` mark
+- `createCodePlugin()` for `code` mark
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+
+const plugins = [
+  // ...otherPlugins,
+  createBasicMarksPlugin(),
+];
+```
+
+## API
+
+### createBasicMarksPlugin
+
+### createBoldPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createCodePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createItalicPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createUnderlinePlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createStrikethroughPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createSubscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+### createSuperscriptPlugin
+
+<APIAttributes>
+<APIItem name="clear" type="string | string[]" optional>
+Node properties to delete.
+
+</APIItem>
+<APIItem name="hotkey" type="string | string[]" optional>
+Hotkey to toggle mark.
+
+</APIItem>
+</APIAttributes>
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + B">
+    Toggle the bold formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + I">
+    Toggle the italic formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + U">
+    Toggle the underline formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + E">
+    Toggle the code formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + X">
+    Toggle the strikethrough formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + ,">
+    Toggle the subscript formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + .">
+    Toggle the superscript formatting for the selected text.
+  </KeyTableItem>
+</KeyTable>

@@ -1,5 +1,337 @@
 # @udecode/plate
 
+## 22.0.1
+
+## 22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Plate 2.0 – Headless UI.
+  Read the docs about the new UI pattern: https://platejs.org/docs/components.
+
+  - Removed `@udecode/plate-ui` dependency.
+  - Removed `@udecode/plate-emoji` dependency. You can install it separately.
+  - Removed `styled-components` peerDependency.
+
+  Replaced `@udecode/plate-headless` dependency (deprecated) by:
+
+  - `@udecode/plate-alignment`
+  - `@udecode/plate-autoformat`
+  - `@udecode/plate-basic-elements`
+  - `@udecode/plate-basic-marks`
+  - `@udecode/plate-block-quote`
+  - `@udecode/plate-break`
+  - `@udecode/plate-code-block`
+  - `@udecode/plate-combobox`
+  - `@udecode/plate-comments`
+  - `@udecode/plate-common`
+  - `@udecode/plate-find-replace`
+  - `@udecode/plate-floating`
+  - `@udecode/plate-font`
+  - `@udecode/plate-heading`
+  - `@udecode/plate-highlight`
+  - `@udecode/plate-horizontal-rule`
+  - `@udecode/plate-indent`
+  - `@udecode/plate-indent-list`
+  - `@udecode/plate-kbd`
+  - `@udecode/plate-line-height`
+  - `@udecode/plate-link`
+  - `@udecode/plate-list`
+  - `@udecode/plate-media`
+  - `@udecode/plate-mention`
+  - `@udecode/plate-node-id`
+  - `@udecode/plate-normalizers`
+  - `@udecode/plate-paragraph`
+  - `@udecode/plate-reset-node`
+  - `@udecode/plate-select`
+  - `@udecode/plate-serializer-csv`
+  - `@udecode/plate-serializer-docx`
+  - `@udecode/plate-serializer-html`
+  - `@udecode/plate-serializer-md`
+  - `@udecode/plate-suggestion`
+  - `@udecode/plate-tabbable`
+  - `@udecode/plate-table`
+  - `@udecode/plate-trailing-block`
+  - `@udecode/resizable`
+
+## 21.5.0
+
+## 21.4.3
+
+## 21.4.2
+
+## 21.4.1
+
+## 21.4.0
+
+## 21.3.5
+
+## 21.3.4
+
+## 21.3.3
+
+## 21.3.2
+
+## 21.3.1
+
+## 21.3.0
+
+## 21.2.0
+
+## 21.1.5
+
+## 21.1.4
+
+## 21.1.2
+
+## 21.1.0
+
+## 21.0.0
+
+## 20.7.2
+
+## 20.7.1
+
+## 20.7.0
+
+## 20.6.5
+
+## 20.6.3
+
+## 20.6.0
+
+## 20.5.1
+
+## 20.5.0
+
+## 20.4.1
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.3.1
+
+## 20.3.0
+
+## 20.2.0
+
+## 20.1.0
+
+## 20.0.1
+
+## 20.0.0
+
+## 19.7.0
+
+## 19.6.0
+
+## 19.5.0
+
+## 19.4.5
+
+## 19.4.4
+
+## 19.4.3
+
+## 19.4.2
+
+## 19.4.1
+
+## 19.4.0
+
+## 19.3.0
+
+## 19.2.0
+
+## 19.1.1
+
+## 19.1.0
+
+## 19.0.7
+
+## 19.0.6
+
+## 19.0.5
+
+## 19.0.4
+
+## 19.0.3
+
+## 19.0.2
+
+## 19.0.1
+
+## 19.0.0
+
+### Major Changes
+
+- [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
+  - due to esm issues, dnd plugin is not part of plate package anymore. To use it, install `@udecode/plate-ui-dnd`
+  ```ts
+  // before
+  import { createDndPlugin } from '@udecode/plate';
+  // after
+  import { createDndPlugin } from '@udecode/plate-ui-dnd';
+  ```
+  - upgrade peerDeps:
+  ```json
+  // from
+  "slate": ">=0.78.0",
+  "slate-history": ">=0.66.0",
+  "slate-react": ">=0.79.0"
+  // to
+  "slate": ">=0.87.0",
+  "slate-history": ">=0.86.0",
+  "slate-react": ">=0.88.0"
+  ```
+
+## 18.15.0
+
+## 18.14.4
+
+## 18.14.3
+
+## 18.14.2
+
+## 18.14.1
+
+## 18.14.0
+
+## 18.13.2
+
+## 18.13.1
+
+## 18.13.0
+
+### Minor Changes
+
+- [#1829](https://github.com/udecode/plate/pull/1829) by [@osamatanveer](https://github.com/osamatanveer) –
+  - new plugin: comments
+
+## 18.12.2
+
+## 18.12.1
+
+## 18.11.2
+
+## 18.11.1
+
+## 18.11.0
+
+## 18.10.3
+
+## 18.10.1
+
+## 18.9.2
+
+## 18.9.1
+
+## 18.9.0
+
+## 18.8.1
+
+## 18.8.0
+
+## 18.7.0
+
+## 18.6.0
+
+## 18.5.1
+
+## 18.5.0
+
+## 18.4.0
+
+## 18.3.1
+
+## 18.3.0
+
+## 18.2.1
+
+## 18.2.0
+
+## 18.1.3
+
+## 18.1.2
+
+## 18.1.1
+
+## 18.1.0
+
+## 18.0.0
+
+## 17.0.3
+
+## 17.0.2
+
+## 17.0.1
+
+## 17.0.0
+
+## 16.9.1
+
+## 16.9.0
+
+## 16.8.1
+
+## 16.8.0
+
+## 16.7.0
+
+## 16.6.1
+
+## 16.6.0
+
+## 16.5.0
+
+## 16.4.2
+
+## 16.4.1
+
+## 16.4.0
+
+## 16.3.0
+
+## 16.2.3
+
+## 16.2.2
+
+## 16.2.1
+
+## 16.2.0
+
+## 16.1.1
+
+## 16.1.0
+
+## 16.0.2
+
+## 16.0.1
+
+## 16.0.0
+
+### Major Changes
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+
+  - deprecate `@udecode/plate-ui-popover` for `@udecode/plate-floating`
+
+- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
+  - deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
+
+## 15.0.6
+
+## 15.0.5
+
+## 15.0.4
+
+## 15.0.3
+
+## 15.0.2
+
+## 15.0.1
+
 ## 15.0.0
 
 ### Major Changes

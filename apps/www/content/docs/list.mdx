@@ -1,0 +1,149 @@
+---
+title: List
+description: Organize nestable items in a bulleted or numbered list.
+docs:
+  - route: /docs/components/list-element
+    title: List Element
+  - route: /docs/components/list-toolbar-button
+    title: List Toolbar Button
+  - route: /docs/components/todo-list-element
+    title: Todo List Element
+---
+
+<ComponentPreview name="playground-demo" id="list" />
+
+<PackageInfo>
+
+## Features
+
+- Supports both unordered (bulleted) and ordered (numbered) lists.
+- Supports nesting to create complex hierarchical list structures.
+- Combined with the autoformat plugin, use markdown shortcuts (**``-, *``**, **`1.`**) to create lists.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-list
+```
+
+## Usage
+
+```tsx
+import { createListPlugin } from '@udecode/plate-list';
+
+const plugins = [
+  // ...otherPlugins,
+  createListPlugin(),
+];
+```
+
+## Todo List
+
+<ComponentPreview name="playground-demo" id="todoli" />
+
+## Installation Todo List
+
+```bash
+npm install @udecode/plate-list
+```
+
+## Usage Todo List
+
+```tsx
+import { createTodoListPlugin } from '@udecode/plate-list';
+
+const plugins = [
+  // ...otherPlugins,
+  createTodoListPlugin(),
+];
+```
+
+## API
+
+### createListPlugin
+
+<APIAttributes>
+  <APIItem name="validLiChildrenTypes" type="string[]" optional>
+    Specifies valid child node types for list items, in addition to `p` and `ul`
+    types.
+  </APIItem>
+  <APIItem name="enableResetOnShiftTab" type="boolean" optional>
+    Determines whether pressing Shift+Tab should reset the list indent level.
+  </APIItem>
+</APIAttributes>
+
+### getHighestEmptyList
+
+### getListItemEntry
+
+### getListRoot
+
+### getListTypes
+
+### hasListChild
+
+### indentListItems
+
+### insertListItem
+
+### insertTodoListItem
+
+### isAcrossListItems
+
+### isListNested
+
+### isListRoot
+
+### moveListItemDown
+
+### moveListItemSublistItemsToListItemSublist
+
+### moveListItemUp
+
+### moveListItems
+
+### moveListItemsToList
+
+### moveListSiblingsAfterCursor
+
+### removeFirstListItem
+
+### removeListItem
+
+### someList
+
+### toggleList
+
+### unindentListItems
+
+### unwrapList
+
+## API Components
+
+### useListToolbarButton
+
+## API Todo List
+
+<APIAttributes>
+  <APIItem name="inheritCheckStateOnLineStartBreak" type="boolean" optional>
+    Determines whether a new todo item created at the start of a line should
+    inherit the check state of the previous item.
+  </APIItem>
+  <APIItem name="inheritCheckStateOnLineEndBreak" type="boolean" optional>
+    Determines whether a new todo item created at the end of a line should
+    inherit the check state of the current item.
+  </APIItem>
+</APIAttributes>
+
+### getTodoListItemEntry
+
+### useTodoListElement
+
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
+</KeyTable>

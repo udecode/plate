@@ -1,0 +1,73 @@
+---
+title: Cloud
+description: Upload images and attachments to the cloud.
+docs:
+  - route: /docs/components/cloud
+    title: Cloud
+---
+
+<ComponentPreview name="cloud-demo" padding="md" />
+
+<PackageInfo>
+
+## Features
+
+- Image and attachment uploads, automatic server-side image resizing, and more.
+- Supports drag and drop, paste, and file picker uploads.
+- Automatic delivery of DPI-specific images.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-cloud
+```
+
+## Usage
+
+[Get a free Portive API key](https://www.portive.com/).
+
+To get the value to save to your database, use `editor.cloud.getSaveValue()`. This is required for Plate Cloud because of the asynchronous nature of uploads.
+
+## API
+
+### createCloudAttachmentPlugin
+
+### createCloudImagePlugin
+
+### createCloudPlugin
+
+### createUploadStore
+
+### finishUploads
+
+### generateSrcAndSrcSet
+
+### getInProgressUploads
+
+### getSaveValue
+
+### onDropCloud
+
+### onPasteCloud
+
+### uploadFiles
+
+### TCloudAttachmentElement
+
+## API Plugins
+
+### withCloud
+
+### withCloudAttachment
+
+### withCloudImage
+
+## API Components
+
+### useCloudAttachmentElement
+
+### useCloudImageElement
+
+### useUpload

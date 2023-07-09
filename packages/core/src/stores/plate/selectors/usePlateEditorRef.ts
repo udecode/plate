@@ -1,13 +1,7 @@
-import { Value } from '../../../slate/editor/TEditor';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { getPlateSelectors, usePlateSelectors } from '../platesStore';
+import { Value } from '@udecode/slate';
 
-export const getPlateEditorRef = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->(
-  id?: string
-) => getPlateSelectors<V, E>(id).editor();
+import { PlateEditor } from '../../../types/PlateEditor';
+import { PlateId, usePlateSelectors } from '../createPlateStore';
 
 /**
  * Get editor ref which is never updated.
@@ -16,5 +10,5 @@ export const usePlateEditorRef = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>
 >(
-  id?: string
+  id?: PlateId
 ) => usePlateSelectors<V, E>(id).editor();

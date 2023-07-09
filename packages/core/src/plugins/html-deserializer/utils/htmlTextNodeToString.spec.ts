@@ -19,10 +19,19 @@ describe('htmlTextNodeToString', () => {
     });
   });
 
-  describe('when text node with \n', () => {
+  describe('when text node with no characters except \n', () => {
     it('should be null', () => {
-      const input = document.createTextNode('\n');
+      const input = document.createTextNode('\n\n\n\n\n');
       const output = null;
+
+      expect(htmlTextNodeToString(input)).toEqual(output);
+    });
+  });
+
+  describe('when text node with text and \n characters', () => {
+    it('should strip \n characters from start and end', () => {
+      const input = document.createTextNode('\n\n\ntest\n\ntest\n\n');
+      const output = 'test\n\ntest';
 
       expect(htmlTextNodeToString(input)).toEqual(output);
     });

@@ -1,0 +1,246 @@
+---
+title: Plate
+description: API reference for Plate component.
+---
+
+`Plate` is the core component rendering the editor. It takes care of computing and passing `Slate` and `Editable` props from the `plugins`.
+
+`PlateProvider` is the component loading the Plate store. Any component rendered below has access to the Plate store. If `Plate` does not find any parent `PlateProvider`, it will take care of creating one (provider-less mode).
+
+## Plate Props
+
+<APIParameters>
+<APIItem name="id" type="symbol | string | number" optional>
+A unique identifier to store the editor state by id. This is mandatory when nesting **`Plate`** instances but optional otherwise.
+
+- **Default:** `'main'`.
+
+</APIItem>
+<APIItem name="children" type="ReactNode" optional>
+
+The last component rendered inside **`Slate`**, after **`Editable`**. Use **`firstChildren`** to render the first children.
+
+</APIItem>
+<APIItem name="decorate" type="(entry: TNodeEntry) => Range[]" optional>
+
+See [decorate](#decorate).
+
+</APIItem>
+<APIItem name="disableCorePlugins" type="object | boolean | undefined" optional>
+
+Can be **`true`** to disable all core plugins, an object to selectively disable core plugins, or **`undefined`**.
+
+<APISubList>
+<APISubListItem parent="disableCorePlugins" name="deserializeAst" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="deserializeHtml" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="editorProtocol" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="eventEditor" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="history" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="inlineVoid" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="insertData" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="nodeFactory" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="react" type="boolean" optional/>
+<APISubListItem parent="disableCorePlugins" name="selection" type="boolean" optional/>
+</APISubList>
+</APIItem>
+<APIItem name="editableProps" type="TEditableProps" optional>
+
+Props for the **`Editable`** component. Extends `TextareaHTMLAttributes<HTMLDivElement>`. See [Editable](https://docs.slatejs.org/libraries/slate-react/editable) docs.
+
+<APISubList open>
+
+<APISubListItem
+  parent="editableProps"
+  name="as"
+  type="React.ElementType"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="autoFocus"
+  type="boolean"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="decorate"
+  type="(entry: TNodeEntry) => Range[]"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="disableDefaultStyles"
+  type="boolean"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="onDOMBeforeInput"
+  type="(event: Event) => void"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="onKeyDown"
+  type="(event: KeyboardEvent) => void"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="placeholder"
+  type="string"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="readOnly"
+  type="boolean"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="renderElement"
+  type="FC<TRenderElementProps>"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="renderLeaf"
+  type="FC<TRenderLeafProps>"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="renderPlaceholder"
+  type="FC<RenderPlaceholderProps>"
+  optional
+/>
+<APISubListItem parent="editableProps" name="role" type="string" optional />
+<APISubListItem
+  parent="editableProps"
+  name="scrollSelectionIntoView"
+  type="(editor: ReactEditor, domRange: DOMRange) => void"
+  optional
+/>
+<APISubListItem
+  parent="editableProps"
+  name="style"
+  type="CSSProperties"
+  optional
+/>
+
+</APISubList>
+
+</APIItem>
+<APIItem name="editableRef" type="Ref<HTMLDivElement>" optional>
+
+Ref to the **`Editable`** component. [Not yet supported by Slate React](https://github.com/ianstormtaylor/slate/issues/4082).
+
+</APIItem>
+<APIItem name="editor" type="PlateEditor" optional>
+
+A controlled **`editor`**.
+
+- **Default:** **`createPlateEditor({ id, plugins, disableCorePlugins })`**
+
+</APIItem>
+<APIItem name="firstChildren" type="ReactNode" optional>
+
+The first children rendered inside **`Slate`**, before **`Editable`**. Use **`children`** instead if you need resolved Slate DOM on the first render.
+
+</APIItem>
+<APIItem name="initialValue" type="Value" optional>
+
+Initial editor value.
+
+- **Default:** **`editor.childrenFactory()`**
+
+</APIItem>
+<APIItem name="normalizeInitialValue" type="boolean" optional>
+
+If **`true`**, normalizes the initial **`editor`** value upon creation. This is useful for applying normalization rules on existing content.
+
+- **Default:** **`false`**
+
+</APIItem>
+<APIItem name="onChange" type="function" optional>
+
+Controlled callback called when the editor state changes.
+
+</APIItem>
+<APIItem name="plugins" type="PlatePlugin[]" optional>
+
+Plate plugins. See [Plugin](/docs/plugin) guide.
+
+</APIItem>
+<APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
+
+Custom **`Editable`** node.
+
+- **Default:** **`<Editable {...editableProps} />`**
+
+</APIItem>
+<APIItem name="renderElement" type="function" optional>
+
+See [renderElement](#renderelement).
+
+</APIItem>
+<APIItem name="renderLeaf" type="function" optional>
+
+See [renderLeaf](#renderleaf).
+
+</APIItem>
+<APIItem name="value" type="Value" optional>
+
+Alias to **`initialValue`**. Stored in the store on each change (**`Editable.onChange`**). To update **`value`** with history support, use **[Slate transforms](https://docs.slatejs.org/concepts/04-transforms)**. To reset **`value`**, use `useResetPlateEditor`, which will also reset the editor.
+
+- **Default:** **`editor.childrenFactory()`**
+
+</APIItem>
+</APIParameters>
+
+## PlateProvider Props
+
+A react component that provides the context for the Plate editor.
+
+Same props than [PlateProps](#plate-props) excluding:
+
+- `editableProps`
+- `editableRef`
+- `firstChildren`
+- `renderEditable`
+
+If used, only the listed props should be set on `Plate`.
+
+## How Plate Works
+
+**`Plate`** computes the **`Slate`** props: **`key`**, **`editor`**, **`onChange`**.
+
+In addition to **`editableProps`**, **`Plate`** computes **`Editable`** props if **`editor`** is defined:
+
+### decorate
+
+This prop integrates **`decorate`** plugins. If a **`decorate`** prop is defined, it will be added. Similarly, if **`editableProps.decorate`** is defined, it will be included as well.
+
+### renderElement
+
+When a plugin's **`isElement`** is **`true`** and its **`type`** matches **`props.element.type`**, an element is rendered with specific plugin properties:
+
+- **`inject.props`** are used to inject rendering props.
+- **`component`** is used to render the element itself.
+- **`inject.aboveComponent`** and **`inject.belowComponent`** can inject components above and below **`component`**, respectively.
+
+If no suitable plugin is found for a node type, **`editableProps.renderElement`** is used (if defined). In the absence of this prop, **`DefaultElement`** (a plain **`div`**) is used.
+
+### renderLeaf
+
+If a plugin's **`isLeaf`** is **`true`** and its **`type`** matches **`props.leaf.type`**, a leaf node is rendered with specific plugin properties:
+
+- **`inject.props`** are used to inject rendering props.
+- **`component`** is used to render the leaf.
+
+If no plugin is found for a node type, **`editableProps.renderLeaf`** is used (if defined). If this is also not defined, **`DefaultLeaf`** (a plain **`span`**) is used.
+
+### Handlers
+
+This integrates DOM handlers plugins, such as **`onDOMBeforeInput`**, **`onKeyDown`**, etc.

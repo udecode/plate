@@ -1,0 +1,16 @@
+{
+  "name": "outdent-toolbar-button",
+  "dependencies": [
+    "@udecode/plate-indent"
+  ],
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "files": [
+    {
+      "name": "outdent-toolbar-button.tsx",
+      "content": "import React from 'react';\nimport { useOutdentButton } from '@udecode/plate-indent';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function OutdentToolbarButton() {\n  const { props } = useOutdentButton();\n\n  return (\n    <ToolbarButton tooltip=\"Outdent\" {...props}>\n      <Icons.outdent />\n    </ToolbarButton>\n  );\n}\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

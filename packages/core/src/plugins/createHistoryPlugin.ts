@@ -1,7 +1,7 @@
+import { TEditor, THistoryEditor, Value } from '@udecode/slate';
 import { withHistory } from 'slate-history';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { THistoryEditor } from '../slate/history-editor/THistoryEditor';
-import { createPluginFactory } from '../utils/plate/createPluginFactory';
+
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const withTHistory = <
   V extends Value = Value,
@@ -9,7 +9,7 @@ export const withTHistory = <
   EE extends E = E & THistoryEditor<V>
 >(
   editor: E
-) => (withHistory(editor as any) as any) as EE;
+) => withHistory(editor as any) as any as EE;
 
 /**
  * @see {@link withHistory}

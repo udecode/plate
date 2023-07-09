@@ -1,9 +1,9 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "15.0.0",
+  "version": "22.0.1",
   "description": "Floating UI for Plate",
   "license": "MIT",
-  "homepage": "https://plate.udecode.io",
+  "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
@@ -18,16 +18,28 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
   "dependencies": {
-    "@floating-ui/react-dom-interactions": "^0.6.6",
-    "@udecode/plate-core": "15.0.0"
+    "@floating-ui/react": "^0.22.3",
+    "@radix-ui/react-dropdown-menu": "^2.0.5",
+    "@udecode/plate-common": "22.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.66.1",
-    "slate-history": ">=0.66.0",
-    "slate-react": ">=0.74.2"
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0",
+    "slate-react": ">=0.95.0"
   },
   "keywords": [
     "plate",

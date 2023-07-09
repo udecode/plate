@@ -17,7 +17,7 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
       return true;
     }
 
-    textNode.data = textNode.data.replace(/\n\s*/g, '\n');
+    textNode.data = textNode.data.replaceAll(/\n\s*/g, '\n');
 
     if (
       textNode.data.includes(CARRIAGE_RETURN) ||
@@ -44,20 +44,20 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
         textNode.previousSibling.nodeName === 'BR' &&
         textNode.parentElement
       ) {
-        textNode.parentElement.removeChild(textNode.previousSibling);
+        textNode.previousSibling.remove();
 
-        const matches = textNode.data.match(/^[\r\n]+/);
+        const matches = textNode.data.match(/^[\n\r]+/);
         const offset = matches ? matches[0].length : 0;
 
         textNode.data = textNode.data
-          .substring(offset)
-          .replace(new RegExp(LINE_FEED, 'g'), SPACE)
-          .replace(new RegExp(CARRIAGE_RETURN, 'g'), SPACE);
+          .slice(Math.max(0, offset))
+          .replaceAll(new RegExp(LINE_FEED, 'g'), SPACE)
+          .replaceAll(new RegExp(CARRIAGE_RETURN, 'g'), SPACE);
         textNode.data = `\n${textNode.data}`;
       } else {
         textNode.data = textNode.data
-          .replace(new RegExp(LINE_FEED, 'g'), SPACE)
-          .replace(new RegExp(CARRIAGE_RETURN, 'g'), SPACE);
+          .replaceAll(new RegExp(LINE_FEED, 'g'), SPACE)
+          .replaceAll(new RegExp(CARRIAGE_RETURN, 'g'), SPACE);
       }
     }
 

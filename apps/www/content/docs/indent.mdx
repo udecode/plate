@@ -1,0 +1,87 @@
+---
+title: Indent
+description: Customize text indentation.
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Button
+  - route: /docs/components/outdent-toolbar-button
+    title: Outdent Toolbar Button
+---
+
+<ComponentPreview name="playground-demo" id="indent" />
+
+<PackageInfo>
+
+## Features
+
+- Set text block indentation for differentiating structural elements or emphasizing certain content sections.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent
+```
+
+## Usage
+
+```tsx
+// ...
+import { createIndentPlugin } from '@udecode/plate-indent';
+
+const plugins = [
+  // ...otherPlugins,
+  createHeadingPlugin(),
+  createParagraphPlugin(),
+  createIndentPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+];
+```
+
+## API
+
+### createIndentPlugin
+
+<APIAttributes>
+<APIItem name="offset" type="number" optional>
+The indentation offset used in `(offset * element.indent) + unit`.
+
+- **Default:** `40`
+
+</APIItem>
+<APIItem name="unit" type="string" optional>
+The indentation unit used in `(offset * element.indent) + unit`.
+
+- **Default:** `'px'`
+
+</APIItem>
+<APIItem name="indentMax" type="number" optional>
+The maximum number of indentations that can be applied to an element.
+</APIItem>
+</APIAttributes>
+
+### createTextIndentPlugin
+
+### indent
+
+Increase the indentation of the selected blocks.
+
+### outdent
+
+Decrease the indentation of the selected blocks.
+
+### setIndent
+
+Add offset to the indentation of the selected blocks.
+
+## API Components
+
+### useIndentButton
+
+### useOutdentButton

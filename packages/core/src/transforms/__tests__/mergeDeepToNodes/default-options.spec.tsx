@@ -1,17 +1,17 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
+import { mergeDeepToNodes } from '@/packages/core/src/utils/mergeDeepToNodes';
 import { jsx } from '@udecode/plate-test-utils';
-import { TNode } from '../../../slate/node/TNode';
-import { PlateEditor } from '../../../types/plate/PlateEditor';
-import { mergeDeepToNodes } from '../../../utils/slate/mergeDeepToNodes';
+import { TNode } from '@udecode/slate/src/interfaces/node/TNode';
 
 jsx;
 
-const editor = ((
+const editor = (
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as PlateEditor;
+) as any as PlateEditor;
 
 const props = { a: 1 };
 

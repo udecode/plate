@@ -1,6 +1,6 @@
+import { TEditor, Value } from '@udecode/slate';
+import { TReactEditor } from '@udecode/slate-react';
 import { withReact } from 'slate-react';
-import { TEditor, Value } from '../slate/editor/TEditor';
-import { TReactEditor } from '../slate/react-editor/TReactEditor';
 
 export const withTReact = <
   V extends Value = Value,
@@ -8,4 +8,4 @@ export const withTReact = <
   EE extends E = E & TReactEditor<V>
 >(
   editor: E
-) => (withReact(editor as any) as any) as EE;
+) => withReact(editor as any) as any as EE;

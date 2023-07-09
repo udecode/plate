@@ -1,0 +1,21 @@
+name: Notify release
+
+on:
+  release:
+    types: [released] # Ignore prerelease
+
+jobs:
+  notify:
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/@udecode/plate@') }}
+    steps:
+      - name: get-version
+        id: version
+        run: echo "output=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+
+      - name: notify
+        uses: sebastianpopp/discord-action@releases/v2
+        with:
+          webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          message: '`${{ steps.version.outputs.output }}` is released :rocket: https://github.com/udecode/plate/commit/${{ github.sha }}'
