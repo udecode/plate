@@ -30,14 +30,6 @@ const plugins = [
       hocuspocusProviderOptions: {
         url, // hocuspocus url
         name, // room name
-        onStatus: ({ status }) => {
-          setSocketStatus(socketStatus => {
-            if (socketStatus !== status) {
-              return status
-            }
-            return socketStatus
-          })
-        }
       }
     }
   }),
