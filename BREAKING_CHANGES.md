@@ -11,7 +11,7 @@ Headless UI.
 Migration:
 
 - [Manual installation](https://platejs.org/docs/components/installation/manual).
-- For each unresolved import not listed in the following sub-sections (components from `@udecode/plate-ui-x`), generate the component using the [CLI](https://platejs.org/docs/components/cli).
+- For each unresolved import not listed in the following major changes (components from `@udecode/plate-ui-x`), generate the component using the [CLI](https://platejs.org/docs/components/cli).
 
 ## @udecode/plate-comments@22.0.0
 
