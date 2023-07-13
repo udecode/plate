@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 
 import { descriptions } from '@/config/descriptions';
 import {
-  CheckedId,
   SettingPlugin,
   settingPluginItems,
   settingPlugins,
@@ -55,6 +54,12 @@ export function SettingsSwitch({
   conflicts,
   dependencies,
 }: SettingPlugin) {
+  const description = descriptions[id];
+
+  if (!description) {
+    throw new Error(`No description found for ${id}`);
+  }
+
   return (
     <div className="flex w-full items-center justify-between">
       <div className="overflow-hidden text-left">
@@ -64,12 +69,9 @@ export function SettingsSwitch({
               <div className="flex items-center">
                 <Checkbox
                   id={id}
-                  checked={settingsStore.use.checkedIdNext(id as CheckedId)}
+                  checked={settingsStore.use.checkedIdNext(id)}
                   onCheckedChange={(_checked: boolean) => {
-                    settingsStore.set.setCheckedIdNext(
-                      id as CheckedId,
-                      _checked
-                    );
+                    settingsStore.set.setCheckedIdNext(id, _checked);
                   }}
                 />
                 <Label htmlFor={id} className="flex p-2">
@@ -79,7 +81,7 @@ export function SettingsSwitch({
             </TooltipTrigger>
 
             <TooltipContent className="max-w-[200px]">
-              {descriptions[id]}
+              {description}
             </TooltipContent>
           </Tooltip>
 
@@ -232,6 +234,7 @@ export function SettingsPanelSheetWrapper({
 
 export function SettingsPanel() {
   const showSettings = settingsStore.use.showSettings();
+  const checkedPlugins = settingsStore.use.checkedPlugins();
   const { width: viewportWidth } = useViewport();
 
   const isSheet = viewportWidth < 1024;
@@ -245,50 +248,76 @@ export function SettingsPanel() {
 
   const loaded = useFixHydration();
 
+  const generateEditorCodeHref = useMemo(() => {
+    const checkedPluginNames = Object.keys(checkedPlugins).filter(
+      (id) => checkedPlugins[id]
+    );
+
+    return {
+      pathname: '/generator',
+      query: {
+        plugins: checkedPluginNames.join(','),
+      },
+    };
+  }, [checkedPlugins]);
+
   if (!loaded) return null;
 
   return (
     <Wrapper
       isOpen={showSettings}
       onClose={() => settingsStore.set.showSettings(false)}
+      
     >
       <SettingsEffect />
 
-      <div className="flex justify-between pl-6 pr-3.5 pt-5">
-        <SettingsCombobox />
-      </div>
+      <div className="px-6 py-4 space-y-4">
+        <div>
+          <SettingsCombobox />
+        </div>
 
-      <div className="flex items-center gap-2 px-6 pb-1 pt-5">
-        <Switch
-          id="allPlugins"
-          defaultChecked
-          onCheckedChange={(checked) => {
-            if (checked) {
-              settingsStore.set.reset();
-            } else {
-              settingsStore.set.checkedPluginsNext({} as any);
-            }
-          }}
-        />
-        <Label htmlFor="allPlugins">All plugins</Label>
-      </div>
+        <div>
+          <Link
+            href={generateEditorCodeHref}
+            className={buttonVariants()}
+            target="_blank"
+          >
+            Generate Editor Code
+          </Link>
+        </div>
 
-      <Accordion type="multiple" defaultValue={categoryIds}>
-        {settingPlugins.map((item) => (
-          <AccordionItem key={item.id} value={item.id}>
-            <AccordionTrigger className="px-6 py-4">
-              {item.label}
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col gap-2 pl-6 pr-3.5">
-                {item.children.map((child) => (
-                  <SettingsSwitch key={child.id} {...child} />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="allPlugins"
+            defaultChecked
+            onCheckedChange={(checked) => {
+              if (checked) {
+                settingsStore.set.reset();
+              } else {
+                settingsStore.set.checkedPluginsNext({} as any);
+              }
+            }}
+          />
+          <Label htmlFor="allPlugins">All plugins</Label>
+        </div>
+
+        <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">
+          {settingPlugins.map((item) => (
+            <AccordionItem key={item.id} value={item.id}>
+              <AccordionTrigger className="px-6 py-4">
+                {item.label}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-2 pl-6 pr-3.5">
+                  {item.children.map((child) => (
+                    <SettingsSwitch key={child.id} {...child} />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
     </Wrapper>
   );
 }

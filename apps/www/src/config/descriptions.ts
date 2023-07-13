@@ -46,9 +46,7 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-import { CheckedId } from '@/config/setting-plugins';
-
-export const descriptions: Record<CheckedId, string> = {
+export const descriptions: Record<string, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
   code_block: 'Encapsulate blocks of code.',
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',

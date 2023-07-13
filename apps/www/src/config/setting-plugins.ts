@@ -50,29 +50,41 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { SettingBadge, settingBadges } from '@/config/setting-badges';
 import { settingValues } from '@/config/setting-values';
 
-export type CheckedId = keyof typeof settingPluginItems;
-
 export type SettingPlugin = {
   id: string;
   label: string;
   route?: string;
   badges?: SettingBadge[];
-  dependencies?: CheckedId[];
-  conflicts?: CheckedId[];
+  dependencies?: string[];
+  conflicts?: string[];
+  disablePlugins?: string[];
+  components?: {
+    id: string;
+    label: string;
+  }[];
 };
 
-export const settingPluginItems = {
+export const settingPluginItems: Record<string, SettingPlugin> = {
   [ELEMENT_BLOCKQUOTE]: {
     id: ELEMENT_BLOCKQUOTE,
     label: 'Blockquote',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
+    components: [
+      { id: 'x', label: 'Blockquote 1' },
+      { id: 'y', label: 'Blockquote 2' },
+      { id: 'z', label: 'Blockquote 3' },
+      { id: 'common', label: 'Common' },
+    ],
   },
-  code_block: {
+  [ELEMENT_CODE_BLOCK]: {
     id: ELEMENT_CODE_BLOCK,
     label: 'Code block',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
+    components: [
+      { id: 'common', label: 'Common' },
+    ],
   },
   [ELEMENT_EXCALIDRAW]: {
     id: ELEMENT_EXCALIDRAW,

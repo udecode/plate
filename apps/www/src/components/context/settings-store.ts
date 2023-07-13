@@ -1,7 +1,6 @@
 import { createStore } from '@udecode/plate-common';
 
 import {
-  CheckedId,
   SettingPlugin,
   settingPluginItems,
   settingPlugins,
@@ -16,7 +15,7 @@ const defaultCheckedPlugins = settingPlugins.reduce((acc, item) => {
     acc[child.id] = true;
   });
   return acc;
-}, {} as Record<CheckedId, boolean>);
+}, {} as Record<string, boolean>);
 
 export const getDefaultCheckedPlugins = () => {
   return {
@@ -24,7 +23,7 @@ export const getDefaultCheckedPlugins = () => {
     normalizeTypes: false,
     singleLine: false,
     list: false,
-  } as Record<CheckedId, boolean>;
+  } as Record<string, boolean>;
 };
 
 export const settingsStore = createStore('settings')({
@@ -50,7 +49,7 @@ export const settingsStore = createStore('settings')({
         });
       });
     },
-    setCheckedIdNext: (id: CheckedId | CheckedId[], checked: boolean) => {
+    setCheckedIdNext: (id: string | string[], checked: boolean) => {
       set.state((draft) => {
         draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
@@ -81,6 +80,6 @@ export const settingsStore = createStore('settings')({
     },
   }))
   .extendSelectors((get) => ({
-    checkedIdNext: (id: CheckedId) => get.checkedPluginsNext[id],
-    checkedId: (id: CheckedId) => get.checkedPlugins[id],
+    checkedIdNext: (id: string) => get.checkedPluginsNext[id],
+    checkedId: (id: string) => get.checkedPlugins[id],
   }));
