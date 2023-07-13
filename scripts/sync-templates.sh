@@ -12,7 +12,7 @@ for folder in $GLOB; do
 
   if [ -n "$(git status --porcelain)" ]; then
     git add .
-    git commit -m "chore: update template"
+    git commit -m "♻️"
     git push origin main
   fi
 
@@ -23,7 +23,7 @@ for folder in $GLOB; do
   # clone, delete files in the clone, and copy (new) files over
   # this handles file deletions, additions, and changes seamlessly
   # note: redirect output to dev/null to avoid any possibility of leaking token
-  git clone --quiet --depth 1 git@github.com:shadcn/${NAME}.git $CLONE_DIR > /dev/null
+  git clone --quiet --depth 1 git@github.com:udecode/${NAME}.git $CLONE_DIR > /dev/null
   cd $CLONE_DIR
   find . | grep -v ".git" | grep -v "^\.*$" | xargs rm -rf # delete all files (to handle deletions in monorepo)
   cp -r $BASE/$folder/. .
