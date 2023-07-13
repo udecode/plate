@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { VariantProps, cva } from 'class-variance-authority';
+import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';

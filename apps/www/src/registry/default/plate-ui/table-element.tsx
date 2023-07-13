@@ -2,9 +2,9 @@ import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
+  isCollapsed,
   PlateElement,
   PlateElementProps,
-  isCollapsed,
   someNode,
   useElement,
   usePlateEditorState,

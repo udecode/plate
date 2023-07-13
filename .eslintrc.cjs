@@ -60,6 +60,7 @@ module.exports = {
   overrides: [
     {
       files: ['apps/www/src/**/*'],
+      extends: ['plugin:@dword-design/import-alias/recommended'],
       rules: {
         'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [
