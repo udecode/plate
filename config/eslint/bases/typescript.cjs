@@ -12,7 +12,7 @@ module.exports = {
   // Parser options
   parserOptions: {
     parser: '@typescript-eslint/parser',
-    project: path.join(__dirname, '../../../tsconfig.json'),
+    // project: path.join(__dirname, '../../../tsconfig.json'),
   },
   // List of plugins to extend
   extends: [
@@ -30,7 +30,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/camelcase': 'off',
-    '@typescript-eslint/consistent-type-exports': 'error',
+    '@typescript-eslint/consistent-type-exports': 'off',
     '@typescript-eslint/consistent-type-imports': 'off',
     // not yet working with prettier + eslint (duplicate)
     // '@typescript-eslint/consistent-type-imports': [
