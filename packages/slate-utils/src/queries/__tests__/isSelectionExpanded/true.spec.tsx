@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
-import { isSelectionExpanded } from '@/packages/slate-utils/src/queries/index';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { isSelectionExpanded } from '../../isSelectionExpanded';
 
 jsx;
 

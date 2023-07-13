@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
-import { isMarkActive } from '@/packages/slate-utils/src/queries/isMarkActive';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { isMarkActive } from '../../isMarkActive';
 
 jsx;
 

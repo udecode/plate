@@ -1,9 +1,9 @@
-import { PlatePlugin } from '@/packages/core/src/types/plugin/PlatePlugin';
-import { getPlugin } from '@/packages/core/src/utils/getPlugin';
+import { PlatePlugin } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
 import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
 import { createTEditor } from '@udecode/slate/src/createTEditor';
 
+import { getPlugin } from '../utils/index';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
 import { KEY_EDITOR_PROTOCOL } from './createEditorProtocolPlugin';
 import { KEY_EVENT_EDITOR } from './createEventEditorPlugin';

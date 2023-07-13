@@ -1,26 +1,22 @@
 /** @jsx jsx */
 
-import { createJuicePlugin } from '@/packages/juice/src/createJuicePlugin';
 import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements/src/createBasicElementsPlugin';
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks/src/createBasicMarksPlugin';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
+  createPlateEditor,
   OverrideByKey,
   PlatePlugin,
-  createPlateEditor,
 } from '@udecode/plate-common';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-} from '@udecode/plate-heading/src/constants';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule/src/createHorizontalRulePlugin';
-import { createIndentPlugin } from '@udecode/plate-indent/src/createIndentPlugin';
-import { createLineHeightPlugin } from '@udecode/plate-line-height/src/createLineHeightPlugin';
+import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { createIndentPlugin } from '@udecode/plate-indent';
+import { createJuicePlugin } from '@udecode/plate-juice';
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createImagePlugin } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { createTablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
@@ -33,7 +29,7 @@ jsx;
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
     getData: (format: string) => (format === 'text/html' ? html : rtf),
-  } as any);
+  }) as any;
 
 export const getDocxTestName = (name: string) => `when pasting docx ${name}`;
 
