@@ -1,8 +1,5 @@
 import {
   ELEMENT_DEFAULT,
-  PlateEditor,
-  TElement,
-  Value,
   findNode,
   getBlockAbove,
   getCommonNode,
@@ -12,7 +9,10 @@ import {
   isCollapsed,
   isElement,
   isRangeAcrossBlocks,
+  PlateEditor,
   setElements,
+  TElement,
+  Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';

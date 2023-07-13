@@ -1,16 +1,16 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
-  PlateEditor,
-  TNode,
-  TText,
-  Value,
-  WithPlatePlugin,
   getEditorString,
   getNodeString,
   getPlugin,
   getPointBefore,
   getRange,
+  PlateEditor,
   setSelection,
+  TNode,
+  TText,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -25,7 +25,7 @@ import { MentionPlugin, TMentionInputElement } from './types';
 
 export const withMention = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   {

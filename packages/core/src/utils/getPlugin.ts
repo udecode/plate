@@ -11,7 +11,7 @@ import { getPluginsByKey } from './getPluginsByKey';
 export const getPlugin = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   key: PluginKey

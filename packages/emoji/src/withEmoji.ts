@@ -1,9 +1,9 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  isCollapsed,
   PlateEditor,
   Value,
   WithPlatePlugin,
-  isCollapsed,
 } from '@udecode/plate-common';
 
 import { getEmojiOnSelectItem, getFindTriggeringInput } from './handlers/index';
@@ -12,7 +12,7 @@ import { EmojiInlineIndexSearch } from './utils/index';
 
 export const withEmoji = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   {

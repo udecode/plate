@@ -1,10 +1,10 @@
 import {
-  TReactEditor,
-  Value,
   getNodeEntries,
   isText,
   toDOMNode,
   toDOMRange,
+  TReactEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 

@@ -1,8 +1,8 @@
 import {
-  ELEMENT_DEFAULT,
-  QueryNodeOptions,
   createPluginFactory,
+  ELEMENT_DEFAULT,
   getPluginType,
+  QueryNodeOptions,
 } from '@udecode/plate-common';
 
 import { withTrailingBlock } from './withTrailingBlock';

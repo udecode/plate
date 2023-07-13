@@ -6,7 +6,7 @@ import { EText, TText } from '../interfaces/text/TText';
 
 export type TRenderLeafProps<
   V extends Value = Value,
-  N extends TText = EText<V>
+  N extends TText = EText<V>,
 > = Modify<
   RenderLeafProps,
   {

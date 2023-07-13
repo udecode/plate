@@ -7,7 +7,7 @@ import {
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { useTableStore } from '../../stores/tableStore';
-import { TTableElement, TablePlugin } from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
 import { useTableColSizes } from './useTableColSizes';
 

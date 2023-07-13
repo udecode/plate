@@ -1,19 +1,19 @@
 /** @jsx jsx */
 
 import {
-  ComboboxState,
   comboboxActions,
   comboboxSelectors,
+  ComboboxState,
 } from '@udecode/plate-combobox';
 import {
-  PlateEditor,
-  Value,
   moveSelection,
+  PlateEditor,
   select,
+  Value,
 } from '@udecode/plate-common';
 import {
-  DataTransferDataMap,
   createDataTransfer,
+  DataTransferDataMap,
   jsx,
 } from '@udecode/plate-test-utils';
 import { Range } from 'slate';

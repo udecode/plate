@@ -1,16 +1,16 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
-  WithPlatePlugin,
   getEndPoint,
   getPluginType,
   getStartPoint,
   getTEditor,
   hasNode,
+  PlateEditor,
   replaceNodeChildren,
   select,
+  TElement,
+  Value,
   withoutNormalizing,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { cloneDeep } from 'lodash';
 import { Path } from 'slate';
@@ -28,7 +28,7 @@ import { TablePlugin } from './types';
  */
 export const withInsertFragmentTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options }: WithPlatePlugin<TablePlugin<V>, V, E>

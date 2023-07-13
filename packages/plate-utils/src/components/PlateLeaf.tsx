@@ -7,7 +7,7 @@ import { Text, TextProps, useComposedRef } from '..';
 
 export type PlateLeafProps<
   V extends Value = Value,
-  N extends TText = EText<V>
+  N extends TText = EText<V>,
 > = PlateRenderLeafProps<V, N> &
   TextProps & {
     /**

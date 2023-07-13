@@ -1,9 +1,9 @@
 import {
-  PlateEditor,
-  Value,
   insertNodes,
   isSelectionExpanded,
   nanoid,
+  PlateEditor,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

@@ -1,9 +1,9 @@
 import {
+  getPluginType,
+  insertNodes,
   InsertNodesOptions,
   PlateEditor,
   Value,
-  getPluginType,
-  insertNodes,
 } from '@udecode/plate-common';
 
 import { ELEMENT_IMAGE } from '../createImagePlugin';

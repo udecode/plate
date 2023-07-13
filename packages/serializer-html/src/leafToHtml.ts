@@ -1,10 +1,10 @@
 import {
+  pipeInjectProps,
   PlateEditor,
   PlateRenderLeafProps,
+  pluginRenderLeaf,
   SlateProps,
   Value,
-  pipeInjectProps,
-  pluginRenderLeaf,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
 import { renderToStaticMarkup } from 'react-dom/server';

@@ -1,8 +1,8 @@
 import {
   PlateEditor,
+  unsetNodes,
   Value,
   WithPlatePlugin,
-  unsetNodes,
 } from '@udecode/plate-common';
 
 import { MARK_COMMENT } from './constants';
@@ -12,7 +12,7 @@ import { getCommentCount } from './utils/getCommentCount';
 
 export const withComments = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   // eslint-disable-next-line unused-imports/no-unused-vars

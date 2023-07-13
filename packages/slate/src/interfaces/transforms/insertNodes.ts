@@ -18,7 +18,7 @@ export type InsertNodesOptions<V extends Value = Value> = Modify<
  */
 export const insertNodes = <
   N extends EElementOrText<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   nodes: N | N[],

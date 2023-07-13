@@ -1,10 +1,10 @@
 import {
   EElement,
+  insertNodes,
   InsertNodesOptions,
   TEditor,
   TElement,
   Value,
-  insertNodes,
 } from '@udecode/slate';
 
 export const insertElements = <V extends Value>(

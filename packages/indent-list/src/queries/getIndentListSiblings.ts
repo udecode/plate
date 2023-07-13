@@ -13,7 +13,7 @@ import { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
 export interface GetIndentListSiblingsOptions<
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 > extends Partial<GetSiblingIndentListOptions<N, V>> {
   previous?: boolean;
   current?: boolean;
@@ -22,7 +22,7 @@ export interface GetIndentListSiblingsOptions<
 
 export const getIndentListSiblings = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   entry: EElementEntry<V>,

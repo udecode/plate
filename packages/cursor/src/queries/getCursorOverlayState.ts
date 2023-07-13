@@ -9,7 +9,7 @@ import { getCaretPosition } from './getCaretPosition';
  * Get cursor overlay state from selection rects.
  */
 export const getCursorOverlayState = <
-  TCursorData extends UnknownObject = UnknownObject
+  TCursorData extends UnknownObject = UnknownObject,
 >({
   cursors: cursorStates,
   selectionRects,

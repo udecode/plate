@@ -1,13 +1,13 @@
 import {
-  InsertNodesOptions,
-  PlateEditor,
-  TElement,
-  Value,
   getPluginType,
+  InsertNodesOptions,
   isExpanded,
   isSelectionAtBlockStart,
+  PlateEditor,
   setElements,
   someNode,
+  TElement,
+  Value,
   wrapNodes,
 } from '@udecode/plate-common';
 

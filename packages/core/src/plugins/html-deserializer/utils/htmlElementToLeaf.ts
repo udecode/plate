@@ -1,9 +1,9 @@
 import {
   EDescendant,
-  TDescendant,
-  Value,
   isElement,
   isText,
+  TDescendant,
+  Value,
 } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 

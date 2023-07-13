@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   focusEditor,
   getPluginOptions,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 
 import {

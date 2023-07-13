@@ -1,6 +1,4 @@
 import {
-  PlateEditor,
-  Value,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -8,7 +6,9 @@ import {
   getParentNode,
   getPluginType,
   getStartPoint,
+  PlateEditor,
   removeNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Range } from 'slate';

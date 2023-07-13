@@ -1,13 +1,13 @@
 import {
-  PlateEditor,
-  SetNodesOptions,
-  TNodeProps,
-  Value,
   addRangeMarks,
   getNodeEntries,
   isInline,
   nanoid,
+  PlateEditor,
   setNodes,
+  SetNodesOptions,
+  TNodeProps,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

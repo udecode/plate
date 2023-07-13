@@ -1,22 +1,22 @@
 import {
+  comboboxActions,
   ComboboxOnSelectItem,
+  comboboxSelectors,
   Data,
   NoData,
   TComboboxItem,
-  comboboxActions,
-  comboboxSelectors,
 } from '@udecode/plate-combobox';
 import {
-  PlatePluginKey,
-  TNodeProps,
   getBlockAbove,
   getPlugin,
   insertNodes,
   insertText,
   isEndPoint,
   moveSelection,
+  PlatePluginKey,
   removeNodes,
   select,
+  TNodeProps,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';

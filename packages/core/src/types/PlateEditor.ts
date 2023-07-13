@@ -10,9 +10,9 @@ import {
 import { TReactEditor } from '@udecode/slate-react';
 import { Path } from 'slate';
 
+import { PlateEditorMethods } from './PlateEditorMethods';
 import { WithPlatePlugin } from './plugin/PlatePlugin';
 import { PluginKey } from './plugin/PlatePluginKey';
-import { PlateEditorMethods } from './PlateEditorMethods';
 
 export type PlateEditor<V extends Value = Value> = TEditor<V> &
   THistoryEditor<V> &

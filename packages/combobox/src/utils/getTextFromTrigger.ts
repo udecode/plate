@@ -1,10 +1,10 @@
 import {
-  TEditor,
-  Value,
   escapeRegExp,
   getEditorString,
   getPointBefore,
   getRange,
+  TEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 

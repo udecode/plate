@@ -4,7 +4,6 @@ import { TNodeEntry } from '../node/TNodeEntry';
 import { mergeNodes } from '../transforms/mergeNodes';
 import { removeNodes } from '../transforms/removeNodes';
 import { select } from '../transforms/select';
-import { TEditor, Value } from './TEditor';
 import { createPathRef } from './createPathRef';
 import { createPointRef } from './createPointRef';
 import { getAboveNode } from './getAboveNode';
@@ -17,6 +16,7 @@ import { getStartPoint } from './getStartPoint';
 import { getVoidNode } from './getVoidNode';
 import { isBlock } from './isBlock';
 import { isVoid } from './isVoid';
+import { TEditor, Value } from './TEditor';
 import { withoutNormalizing } from './withoutNormalizing';
 
 export const deleteMerge = <V extends Value>(

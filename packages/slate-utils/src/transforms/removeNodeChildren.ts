@@ -1,9 +1,9 @@
 import {
+  getNodeChildren,
+  removeNodes,
   RemoveNodesOptions,
   TEditor,
   Value,
-  getNodeChildren,
-  removeNodes,
   withoutNormalizing,
 } from '@udecode/slate';
 import { Path } from 'slate';

@@ -1,9 +1,9 @@
 import {
-  PlateEditor,
-  Value,
   findNode,
   getAboveNode,
   getPluginType,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
 

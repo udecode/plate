@@ -1,13 +1,13 @@
 import {
   EAncestor,
-  GetAboveNodeOptions,
-  TEditor,
-  Value,
   getAboveNode,
+  GetAboveNodeOptions,
   getMarks,
   isExpanded,
   isStartPoint,
   removeEditorMark,
+  TEditor,
+  Value,
 } from '@udecode/slate';
 
 import { PlateEditor } from '../types/index';
@@ -53,7 +53,7 @@ export const KEY_EDITOR_PROTOCOL = 'editorProtocol';
 
 export const withEditorProtocol = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {

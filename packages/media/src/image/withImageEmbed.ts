@@ -9,7 +9,7 @@ import { isImageUrl } from './utils/isImageUrl';
  */
 export const withImageEmbed = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   // eslint-disable-next-line unused-imports/no-unused-vars

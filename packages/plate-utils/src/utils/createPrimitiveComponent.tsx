@@ -39,7 +39,7 @@ type PropsHook<S> = (state: S) => {
  */
 export const createPrimitiveComponent = <
   T extends React.ElementType,
-  P extends React.ComponentPropsWithoutRef<T>
+  P extends React.ComponentPropsWithoutRef<T>,
 >(
   element: T
 ) => {

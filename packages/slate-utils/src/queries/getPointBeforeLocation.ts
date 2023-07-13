@@ -1,10 +1,10 @@
 /* eslint-disable no-constant-condition */
 import {
-  TEditor,
-  Value,
   getEditorString,
   getPoint,
   getPointBefore,
+  TEditor,
+  Value,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';

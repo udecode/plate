@@ -1,14 +1,14 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   getBlockAbove,
   getNodeEntries,
   getPluginOptions,
   isCollapsed,
   isExpanded,
+  PlateEditor,
   setElements,
+  TElement,
   unsetNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';

@@ -1,8 +1,4 @@
 import {
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   createPathRef,
   deleteMerge,
   getNodeEntry,
@@ -10,15 +6,19 @@ import {
   getPreviousPath,
   insertElements,
   isExpanded,
+  PlateEditor,
   removeNodes,
+  TElement,
+  TElementEntry,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
-import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
   list: TElementEntry;

@@ -5,8 +5,8 @@ import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 import {
-  MoveSelectionByOffsetOptions,
   moveSelectionByOffset,
+  MoveSelectionByOffsetOptions,
 } from './moveSelectionByOffset';
 
 export const mentionOnKeyDownHandler: <V extends Value>(

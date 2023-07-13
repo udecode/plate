@@ -1,10 +1,10 @@
 import {
-  GetNodeEntriesOptions,
-  TReactEditor,
-  Value,
   focusEditor,
+  GetNodeEntriesOptions,
   removeNodes,
+  TReactEditor,
   unhangRange,
+  Value,
 } from '@udecode/plate-common';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';

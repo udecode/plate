@@ -1,9 +1,9 @@
 import {
+  getNodeEntries,
   GetNodeEntriesOptions,
+  isBlock,
   TEditor,
   Value,
-  getNodeEntries,
-  isBlock,
 } from '@udecode/plate-common';
 
 /**

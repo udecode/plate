@@ -1,11 +1,11 @@
 import {
+  getNodeEntry,
+  match,
+  moveNodes,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
-  getNodeEntry,
-  match,
-  moveNodes,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';

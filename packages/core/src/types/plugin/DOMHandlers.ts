@@ -30,13 +30,13 @@ export type DOMHandler<
   P = PluginOptions,
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EV = {}
+  EV = {},
 > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => DOMHandlerReturnType<EV>;
 
 export interface DOMHandlers<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > {
   // Clipboard Events
   onCopy?: DOMHandler<P, V, E, ClipboardEvent>;

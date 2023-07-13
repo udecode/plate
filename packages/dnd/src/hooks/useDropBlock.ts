@@ -1,7 +1,7 @@
 import { TReactEditor, Value } from '@udecode/plate-common';
 
 import { DRAG_ITEM_BLOCK } from './useDragBlock';
-import { UseDropNodeOptions, useDropNode } from './useDropNode';
+import { useDropNode, UseDropNodeOptions } from './useDropNode';
 
 /**
  * {@link useDropNode}

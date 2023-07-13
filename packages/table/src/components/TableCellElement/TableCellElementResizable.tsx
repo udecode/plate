@@ -24,7 +24,7 @@ import {
   setTableMarginLeft,
   setTableRowSize,
 } from '../../transforms/index';
-import { TTableElement, TablePlugin } from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';

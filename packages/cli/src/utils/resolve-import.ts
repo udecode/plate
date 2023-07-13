@@ -1,7 +1,6 @@
-import {
-  createMatchPath,
-  type ConfigLoaderSuccessResult,
-} from 'tsconfig-paths';
+import { createMatchPath } from 'tsconfig-paths';
+
+import type { ConfigLoaderSuccessResult } from 'tsconfig-paths';
 
 /**
  * This module exports a function that helps to resolve import paths based on

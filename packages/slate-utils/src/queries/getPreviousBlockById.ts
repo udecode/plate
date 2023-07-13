@@ -1,15 +1,15 @@
 import {
   EElement,
-  QueryNodeOptions,
-  TEditor,
-  TElement,
-  TNodeEntry,
-  Value,
   findNode,
   getNodeEntries,
   getPreviousNode,
   isBlock,
   queryNode,
+  QueryNodeOptions,
+  TEditor,
+  TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/slate';
 
 /**
@@ -18,7 +18,7 @@ import {
  */
 export const getPreviousBlockById = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   id: string,

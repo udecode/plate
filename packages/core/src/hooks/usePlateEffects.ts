@@ -15,7 +15,7 @@ import { setPlatePlugins } from '../utils';
 
 export type UsePlateEffectsProps<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value' | 'readOnly'>> & {
   plugins?: PlatePlugin<PluginOptions, V, E>[];
 } & Nullable<{
@@ -77,7 +77,7 @@ const usePlateStoreOnChange = ({
 
 export const usePlateEffects = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >({
   id,
   disableCorePlugins,

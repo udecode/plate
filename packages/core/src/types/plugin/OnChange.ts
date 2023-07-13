@@ -12,7 +12,7 @@ import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 export type OnChange<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = (
   editor: E,
   plugin: WithPlatePlugin<P, V, E>

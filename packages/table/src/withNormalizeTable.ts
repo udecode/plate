@@ -1,7 +1,4 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
@@ -9,13 +6,16 @@ import {
   getTEditor,
   isElement,
   isText,
+  PlateEditor,
   setNodes,
+  TElement,
   unwrapNodes,
+  Value,
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
-import { TTableElement, TablePlugin } from './types';
+import { TablePlugin, TTableElement } from './types';
 import { getCellTypes } from './utils/index';
 
 /**
@@ -24,7 +24,7 @@ import { getCellTypes } from './utils/index';
  */
 export const withNormalizeTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {
