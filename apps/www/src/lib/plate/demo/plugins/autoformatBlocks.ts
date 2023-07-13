@@ -1,3 +1,4 @@
+import { AutoformatRule } from '@udecode/plate-autoformat';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
   ELEMENT_CODE_BLOCK,
@@ -14,11 +15,9 @@ import {
 } from '@udecode/plate-heading';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 
-import { MyAutoformatRule } from '@/types/plate-types';
-
 import { preFormat } from './autoformatUtils';
 
-export const autoformatBlocks: MyAutoformatRule[] = [
+export const autoformatBlocks: AutoformatRule[] = [
   {
     mode: 'block',
     type: ELEMENT_H1,
