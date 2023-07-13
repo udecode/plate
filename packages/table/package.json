@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table",
-  "version": "22.0.0",
+  "version": "22.0.1",
   "description": "Table plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,8 +30,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.0",
-    "@udecode/resizable": "22.0.0"
+    "@udecode/plate-common": "22.0.1",
+    "@udecode/resizable": "22.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

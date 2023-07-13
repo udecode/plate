@@ -56,7 +56,9 @@ Each element should have an associated component, which you can provide either a
 const plugins = createPlugins([
   createParagraphPlugin(),
 ], {
-  [ELEMENT_PARAGRAPH]: ParagraphElement,
+  components: {
+    [ELEMENT_PARAGRAPH]: ParagraphElement,
+  },
 });
 ```
 
@@ -201,7 +203,7 @@ const createAlignPlugin = createPluginFactory({
 });
 ```
 
-A paragraph node affected by the this plugin would look like this:
+A paragraph node affected by the above plugin would look like this:
 
 ```ts showLineNumbers {3}
 {
