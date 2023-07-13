@@ -1,5 +1,10 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { NpmCommands } from '@/types/unist';
+import { Event } from '@/lib/events';
+import { Style } from '@/registry/styles';
+import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { StyleWrapper } from './style-wrapper';
 
 export const H1 = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h1
@@ -136,6 +141,73 @@ export const TD = ({ className, ...props }: React.HTMLAttributes<HTMLTableCellEl
       'border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
       className
     )}
+    {...props}
+  />
+);
+
+export const Pre = ({
+  className,
+  __rawString__,
+  __npmCommand__,
+  __pnpmCommand__,
+  __yarnCommand__,
+  __withMeta__,
+  __src__,
+  __event__,
+  __style__,
+  ...props
+}: React.HTMLAttributes<HTMLPreElement> & {
+  __style__?: Style['name'];
+  __rawString__?: string;
+  __withMeta__?: boolean;
+  __src__?: string;
+  __event__?: Event['name'];
+} & NpmCommands) => {
+  return (
+    <StyleWrapper styleName={__style__}>
+      <pre
+        className={cn(
+          'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
+          className
+        )}
+        {...props}
+      />
+      {__rawString__ && !__npmCommand__ && (
+        <CopyButton
+          value={__rawString__}
+          src={__src__}
+          event={__event__}
+          className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+        />
+      )}
+      {__npmCommand__ && __yarnCommand__ && __pnpmCommand__ && (
+        <CopyNpmCommandButton
+          commands={{
+            __npmCommand__,
+            __pnpmCommand__,
+            __yarnCommand__,
+          }}
+          className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+        />
+      )}
+    </StyleWrapper>
+  );
+};
+
+export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
+  <h3
+    className={cn(
+      'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
+      className
+    )}
+    {...props}
+  />
+);
+
+export const Steps = ({ ...props }) => (
+  <div
+    // eslint-disable-next-line tailwindcss/no-custom-classname
+    className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
     {...props}
   />
 );

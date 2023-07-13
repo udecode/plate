@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { EditorCodeGenerator } from '@/components/editor-code-generator';
+import { H1 } from '@/components/typography';
 
 export default function GeneratorPage({
   searchParams: { plugins: pluginsString },
@@ -10,10 +11,7 @@ export default function GeneratorPage({
 
   return (
     <main className="container relative py-6 space-y-8">
-      <h1 className="mt-2 scroll-m-20 font-heading text-4xl font-bold">
-        Generate Editor Code
-      </h1>
-
+      <H1>Generate Editor Code</H1>
       <EditorCodeGenerator initialPluginIds={initialPluginIds} />
     </main>
   );

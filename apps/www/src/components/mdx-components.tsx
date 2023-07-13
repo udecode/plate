@@ -7,12 +7,9 @@ import Link from 'next/link';
 import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
-import { NpmCommands } from '@/types/unist';
-import { Event } from '@/lib/events';
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
-import { Style } from '@/registry/styles';
 import * as Typography from './typography';
 
 import {
@@ -32,10 +29,8 @@ import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
-import { CopyButton, CopyNpmCommandButton } from './copy-button';
 import { FrameworkDocs } from './framework-docs';
 import { PackageInfo } from './package-info';
-import { StyleWrapper } from './style-wrapper';
 import {
   Accordion,
   AccordionContent,
@@ -80,54 +75,7 @@ const components = {
   tr: Typography.TR,
   th: Typography.TH,
   td: Typography.TD,
-  pre: ({
-    className,
-    __rawString__,
-    __npmCommand__,
-    __pnpmCommand__,
-    __yarnCommand__,
-    __withMeta__,
-    __src__,
-    __event__,
-    __style__,
-    ...props
-  }: React.HTMLAttributes<HTMLPreElement> & {
-    __style__?: Style['name'];
-    __rawString__?: string;
-    __withMeta__?: boolean;
-    __src__?: string;
-    __event__?: Event['name'];
-  } & NpmCommands) => {
-    return (
-      <StyleWrapper styleName={__style__}>
-        <pre
-          className={cn(
-            'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
-            className
-          )}
-          {...props}
-        />
-        {__rawString__ && !__npmCommand__ && (
-          <CopyButton
-            value={__rawString__}
-            src={__src__}
-            event={__event__}
-            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
-          />
-        )}
-        {__npmCommand__ && __yarnCommand__ && __pnpmCommand__ && (
-          <CopyNpmCommandButton
-            commands={{
-              __npmCommand__,
-              __pnpmCommand__,
-              __yarnCommand__,
-            }}
-            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
-          />
-        )}
-      </StyleWrapper>
-    );
-  },
+  pre: Typography.Pre,
   code: Code,
   Image,
   Callout,
@@ -138,22 +86,8 @@ const components = {
   CodeBlockWrapper: ({ ...props }) => (
     <CodeBlockWrapper className="rounded-md border" {...props} />
   ),
-  Step: ({ className, ...props }: React.ComponentProps<'h3'>) => (
-    <h3
-      className={cn(
-        'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
-        className
-      )}
-      {...props}
-    />
-  ),
-  Steps: ({ ...props }) => (
-    <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
-      {...props}
-    />
-  ),
+  Step: Typography.Step,
+  Steps: Typography.Steps,
   KeyTableItem: ({
     hotkey,
     children,
@@ -270,7 +204,7 @@ export function Mdx({ code, packageInfo }: MdxProps) {
 
   return (
     // eslint-disable-next-line tailwindcss/no-custom-classname
-    <div className="mdx">
+    <div className="typography">
       <Provider>
         <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
           <Component components={components as any} />

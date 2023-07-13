@@ -7,7 +7,7 @@ import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import { Label } from './ui/label';
 import { uniqBy, sortBy } from 'lodash';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { P, A } from './typography';
+import { P, A, H2, Pre, Steps, Step } from './typography';
 import { Button } from '@/registry/default/plate-ui/button';
 
 const allPlugins = settingPlugins.flatMap((group) => group.children);
@@ -16,6 +16,17 @@ const allComponents = uniqBy(
   allPlugins.flatMap((plugin) => plugin.components ?? []),
   'id'
 );
+
+// Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
+function WrappedPre({ code }: { code: string }) {
+  return (
+    <div className="relative">
+      <Pre className="text-white p-4" __rawString__={code}>
+        {code}
+      </Pre>
+    </div>
+  );
+}
 
 interface TreeIconProps {
   isFirst: boolean;
@@ -125,21 +136,18 @@ function getEditorCodeGeneratorResult({
   checkedPlugins,
   checkedComponents,
 }: TEditorCodeGeneratorState) {
-  const pluginIds = Object.keys(checkedPlugins).filter(
-    (id) => checkedPlugins[id]
-  );
+  const plugins = allPlugins.filter((plugin) => checkedPlugins[plugin.id]);
 
-  const componentIds = uniqBy(
-    allPlugins
-      .filter((plugin) => checkedPlugins[plugin.id])
+  const components = uniqBy(
+    plugins
       .flatMap((plugin) => plugin.components ?? [])
       .filter((component) => checkedComponents[component.id]),
     'id'
-  ).map((component) => component.id);
+  );
 
   return {
-    pluginIds,
-    componentIds,
+    plugins,
+    components,
   };
 }
 
@@ -206,15 +214,65 @@ function SelectPluginsAndComponents({
 }
 
 export function EditorCodeGeneratorResult(state: TEditorCodeGeneratorState) {
-  const { pluginIds, componentIds } = useMemo(
+  const { plugins, components } = useMemo(
     () => getEditorCodeGeneratorResult(state),
     [state]
   );
 
+  const componentsWithPluginKey = useMemo(() =>
+    components.filter((component) => component.pluginKey),
+    [components]
+  );
+
+  const installPlugins = `npm install ${
+    plugins.map((plugin) => plugin.npmPackage).join(' ')
+  }`;
+
+  const installComponents = `npx @udecode/plate-ui@latest add ${
+    components.map((component) => component.id).join(' ')
+  }`;
+
+  const usage = [
+    'import {',
+    '  createPlugins,',
+    ...plugins.map((plugin) => `  ${plugin.pluginFactory},`),
+    '  Plate,',
+    '} from \'@udecode/plate\';',
+    ...componentsWithPluginKey.map((component) =>
+      `import { ${component.reactComponent} } from './components/plate-ui/${component.id}';`
+    ),
+    '',
+    'const plugins = createPlugins(',
+    '  [',
+    ...plugins.map((plugin) => `    ${plugin.pluginFactory}(),`),
+    '  ],',
+    '  {',
+    '    components: {',
+    ...componentsWithPluginKey.map((component) =>
+      `      [${component.pluginKey}]: ${component.reactComponent},`
+    ),
+    '    },',
+    '  }',
+    ');',
+    '',
+    'export default () => <Plate plugins={plugins} />;',
+  ].join('\n');
+
   return (
-    <pre className="p-2 text-sm text-slate-900 bg-slate-100 dark:bg-slate-800 rounded-md">
-      {JSON.stringify({ pluginIds, componentIds }, null, 2)}
-    </pre>
+    <>
+      <H2>Installation</H2>
+
+      <Steps>
+        <Step>Install Plugins</Step>
+        <WrappedPre code={installPlugins} />
+
+        <Step>Install Components</Step>
+        <WrappedPre code={installComponents} />
+
+        <Step>Usage</Step>
+        <WrappedPre code={usage} />
+      </Steps>
+    </>
   );
 }
 
