@@ -40,13 +40,19 @@ module.exports = {
     '^@/app/(.*)$',
     '',
     '^[./]',
+    '',
+    '<TYPES>^[./]',
+    '<TYPES>^react',
+    '<TYPES>^next',
+    '<TYPES>^@/',
+    '<TYPES>',
   ],
 
   // Specify the parser plugins to use for import sorting.
   importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
 
   // Combine type-only imports with value imports.
-  importOrderTypeScriptVersion: '5.0.0',
+  importOrderTypeScriptVersion: '5.1.6',
 
   // Use the `@ianvs/prettier-plugin-sort-imports` plugin to sort imports.
   // https://github.com/ianvs/prettier-plugin-sort-imports

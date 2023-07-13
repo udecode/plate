@@ -1,3 +1,5 @@
+const path = require('node:path');
+
 /**
  * Custom config base for projects using typescript / javascript.
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
@@ -10,7 +12,7 @@ module.exports = {
   // Parser options
   parserOptions: {
     parser: '@typescript-eslint/parser',
-    project: path.join(__dirname, '../../tsconfig.json'),
+    project: path.join(__dirname, '../../../tsconfig.json'),
   },
   // List of plugins to extend
   extends: [
@@ -29,13 +31,15 @@ module.exports = {
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/consistent-type-exports': 'error',
-    '@typescript-eslint/consistent-type-imports': [
-      'warn',
-      {
-        prefer: 'type-imports',
-        fixStyle: 'inline-type-imports',
-      },
-    ],
+    '@typescript-eslint/consistent-type-imports': 'off',
+    // not yet working with prettier + eslint (duplicate)
+    // '@typescript-eslint/consistent-type-imports': [
+    //   'warn',
+    //   {
+    //     prefer: 'type-imports',
+    //     fixStyle: 'inline-type-imports',
+    //   },
+    // ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
@@ -48,7 +52,7 @@ module.exports = {
     '@typescript-eslint/no-shadow': ['error'],
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
-    '@typescript-eslint/no-useless-constructor': 'error',
+    '@typescript-eslint/no-useless-constructor': 'off',
     '@typescript-eslint/no-var-requires': 'off',
   },
   // Overrides for specific files
