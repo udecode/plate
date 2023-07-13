@@ -10,6 +10,7 @@ module.exports = {
   // Parser options
   parserOptions: {
     parser: '@typescript-eslint/parser',
+    project: path.join(__dirname, '../../tsconfig.json'),
   },
   // List of plugins to extend
   extends: [
@@ -27,6 +28,14 @@ module.exports = {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/camelcase': 'off',
+    '@typescript-eslint/consistent-type-exports': 'error',
+    '@typescript-eslint/consistent-type-imports': [
+      'warn',
+      {
+        prefer: 'type-imports',
+        fixStyle: 'inline-type-imports',
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',

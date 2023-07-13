@@ -42,23 +42,11 @@ module.exports = {
     '^[./]',
   ],
 
-  // Do not separate imports by empty lines.
-  importOrderSeparation: false,
-
-  // Sort import specifiers alphabetically.
-  importOrderSortSpecifiers: true,
-
-  // Move built-in modules to the top of the import list.
-  importOrderBuiltinModulesToTop: true,
-
   // Specify the parser plugins to use for import sorting.
   importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
 
-  // Merge duplicate imports into a single statement.
-  importOrderMergeDuplicateImports: true,
-
   // Combine type-only imports with value imports.
-  importOrderCombineTypeAndValueImports: true,
+  importOrderTypeScriptVersion: '5.0.0',
 
   // Use the `@ianvs/prettier-plugin-sort-imports` plugin to sort imports.
   // https://github.com/ianvs/prettier-plugin-sort-imports
