@@ -3,13 +3,13 @@
 import React, { useEffect } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import {
+  comboboxActions,
   ComboboxContentItemProps,
   ComboboxContentProps,
   ComboboxProps,
   Data,
   NoData,
   TComboboxItem,
-  comboboxActions,
   useActiveComboboxStore,
   useComboboxContent,
   useComboboxContentState,

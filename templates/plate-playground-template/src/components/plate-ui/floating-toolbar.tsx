@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react';
 import { PortalBody } from '@udecode/plate-common';
 import {
-  UseVirtualFloatingOptions,
   useFloatingToolbar,
+  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 
 import { cn } from '@/lib/utils';

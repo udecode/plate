@@ -1,5 +1,4 @@
 import React from 'react';
-import { LibraryItems } from '@excalidraw/excalidraw/types/types';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TExcalidrawElement,
@@ -10,7 +9,7 @@ export interface ExcalidrawElementProps
   extends PlateElementProps<Value, TExcalidrawElement> {
   scrollToContent?: boolean;
 
-  libraryItems?: LibraryItems;
+  libraryItems?: any;
 }
 
 export function ExcalidrawElement({

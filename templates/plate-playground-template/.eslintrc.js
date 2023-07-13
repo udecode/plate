@@ -22,7 +22,7 @@ module.exports = {
         ignoreRestSiblings: true,
         vars: 'all',
         varsIgnorePattern: '^_',
-        args: 'after-used',
+        args: 'none',
         argsIgnorePattern: '^_',
       },
     ],

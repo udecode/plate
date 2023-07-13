@@ -6,10 +6,10 @@ import {
   usePlateEditorState,
 } from '@udecode/plate-common';
 import {
-  ELEMENT_TABLE,
   deleteColumn,
   deleteRow,
   deleteTable,
+  ELEMENT_TABLE,
   insertTable,
   insertTableColumn,
   insertTableRow,

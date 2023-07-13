@@ -4,10 +4,10 @@ import {
   ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
 import {
-  PlateEditor,
   getParentNode,
   isElement,
   isType,
+  PlateEditor,
 } from '@udecode/plate-common';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 

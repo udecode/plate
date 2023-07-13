@@ -2,9 +2,10 @@ import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
+  isCollapsed,
   PlateElement,
   PlateElementProps,
-  isCollapsed,
+  someNode,
   useElement,
   usePlateEditorState,
   useRemoveNodeButton,
@@ -15,7 +16,6 @@ import {
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
-import { someNode } from '@udecode/slate';
 import { useReadOnly } from 'slate-react';
 
 import { cn } from '@/lib/utils';

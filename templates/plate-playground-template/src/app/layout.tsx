@@ -7,6 +7,7 @@ import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { ThemeProvider } from '@/components/theme-provider';
 
 import '@/styles/globals.css';
+
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
