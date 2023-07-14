@@ -3,7 +3,6 @@
 set -e # bail on errors
 
 GLOB=$1
-API_TOKEN_GITHUB=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
 OWNER=udecode
 IS_CI="${CI:-false}"
 BASE=$(pwd)
@@ -23,7 +22,7 @@ for folder in $GLOB; do
   if [ -z "$API_TOKEN_GITHUB" ]; then
     REPO="https://github.com/${OWNER}/${NAME}.git"
   else
-    REPO="https://${API_TOKEN_GITHUB}:@github.com/${OWNER}/${NAME}.git"
+    REPO="https://${API_TOKEN_GITHUB}:x-oauth-basic@github.com/${OWNER}/${NAME}.git"
   fi
   CLONE_DIR="__${NAME}__clone__"
   
