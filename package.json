@@ -100,7 +100,7 @@
     "@types/node": "^20.4.2",
     "@types/prismjs": "^1.26.0",
     "@types/raf": "^3.4.0",
-    "@types/react": "18.2.14",
+    "@types/react": "18.2.15",
     "@types/react-dom": "18.2.7",
     "@types/scriptjs": "0.0.2",
     "@types/validator": "^13.7.17",
