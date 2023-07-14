@@ -1,11 +1,11 @@
-import { expect, test } from "vitest"
+import { expect, test } from 'vitest';
 
-import { transform } from "../../src/utils/transformers"
+import { transform } from '../../src/utils/transformers';
 
-test("transform import", async () => {
+test('transform import', async () => {
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
     import { Button } from "@/registry/new-york/ui/button"
@@ -16,20 +16,20 @@ import { Foo } from "bar"
     `,
       config: {
         tailwind: {
-          baseColor: "neutral",
+          baseColor: 'neutral',
           cssVariables: true,
         },
         aliases: {
-          components: "@/components",
-          utils: "@/lib/utils",
+          components: '@/components',
+          utils: '@/lib/utils',
         },
       },
     })
-  ).toMatchSnapshot()
+  ).toMatchSnapshot();
 
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
     import { Button } from "@/registry/new-york/ui/button"
@@ -41,16 +41,16 @@ import { Foo } from "bar"
     `,
       config: {
         aliases: {
-          components: "~/src/components",
-          utils: "~/lib",
+          components: '~/src/components',
+          utils: '~/lib',
         },
       },
     })
-  ).toMatchSnapshot()
+  ).toMatchSnapshot();
 
   expect(
     await transform({
-      filename: "test.ts",
+      filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
     import { Button } from "@/registry/new-york/ui/button"
@@ -62,10 +62,10 @@ import { Foo } from "bar"
     `,
       config: {
         aliases: {
-          components: "~/src/components",
-          utils: "~/src/utils",
+          components: '~/src/components',
+          utils: '~/src/utils',
         },
       },
     })
-  ).toMatchSnapshot()
-})
+  ).toMatchSnapshot();
+});
