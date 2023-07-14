@@ -21,9 +21,9 @@ for folder in $GLOB; do
 
   NAME=${folder##*/}
   if [ -z "$API_TOKEN_GITHUB" ]; then
-    REPO="git@github.com:${OWNER}/${NAME}.git"
+    REPO="https://github.com/${OWNER}/${NAME}.git"
   else
-    REPO="git@github.com:${API_TOKEN_GITHUB}/${OWNER}/${NAME}.git"
+    REPO="https://${API_TOKEN_GITHUB}:@github.com/${OWNER}/${NAME}.git"
   fi
   CLONE_DIR="__${NAME}__clone__"
   
