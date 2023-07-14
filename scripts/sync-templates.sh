@@ -8,6 +8,9 @@ IS_CI="${CI:-false}"
 BASE=$(pwd)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 
+git config user.email "zbeyens@udecode.io"
+git config user.name "zbeyens"
+
 for folder in $GLOB; do
   [ -d "$folder" ] || continue
   cd $BASE
