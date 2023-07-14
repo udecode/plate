@@ -12,11 +12,11 @@ for folder in $GLOB; do
   [ -d "$folder" ] || continue
   cd $BASE
 
-  if [ -n "$(git status --porcelain)" ]; then
-    git add .
-    git commit -m "♻️"
-    git push origin main
-  fi
+#  if [ -n "$(git status --porcelain)" ]; then
+#    git add .
+#    git commit -m "♻️"
+#    git push origin main
+#  fi
 
   NAME=${folder##*/}
   if [ -z "$API_TOKEN_GITHUB" ]; then
