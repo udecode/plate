@@ -7,7 +7,7 @@ on:
       - next
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/test.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'
@@ -25,7 +25,7 @@ on:
       - reopened
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/test.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'

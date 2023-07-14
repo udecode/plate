@@ -7,7 +7,7 @@ on:
       - next
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/lint-typecheck.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'

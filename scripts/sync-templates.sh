@@ -8,9 +8,6 @@ IS_CI="${CI:-false}"
 BASE=$(pwd)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 
-git config --global user.email "zbeyens@udecode.io"
-git config --global user.name "zbeyens"
-
 for folder in $GLOB; do
   [ -d "$folder" ] || continue
   cd $BASE
@@ -23,9 +20,9 @@ for folder in $GLOB; do
 
   NAME=${folder##*/}
   if [ -z "$API_TOKEN_GITHUB" ]; then
-    REPO="https://github.com/${OWNER}/${NAME}.git"
+    REPO="git@github.com:${OWNER}/${NAME}.git"
   else
-    REPO="https://${API_TOKEN_GITHUB}@github.com/${OWNER}/${NAME}.git"
+    REPO="git@github.com:${API_TOKEN_GITHUB}/${OWNER}/${NAME}.git"
   fi
   CLONE_DIR="__${NAME}__clone__"
   

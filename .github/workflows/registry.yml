@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'apps/www/src/registry'
+      - '.github/workflows/registry.yml'
+      - 'apps/www/src/registry/**'
 
 jobs:
   update-registry:

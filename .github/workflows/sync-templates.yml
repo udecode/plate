@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/sync-templates.yml'
       - 'templates/**'
 
 jobs:
