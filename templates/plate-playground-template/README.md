@@ -17,4 +17,4 @@ pnpm create next-app -e https://github.com/udecode/plate-playground-template
 - Tailwind CSS
 - Icons from [Lucide](https://lucide.dev)
 - Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+- Tailwind CSS class sorting, merging and linting
