@@ -10,10 +10,10 @@ import {
 import { useFocused } from 'slate-react';
 
 import {
-  UseVirtualFloatingOptions,
-  UseVirtualFloatingReturn,
   getSelectionBoundingClientRect,
   useVirtualFloating,
+  UseVirtualFloatingOptions,
+  UseVirtualFloatingReturn,
 } from '..';
 
 export const useFloatingToolbar = ({

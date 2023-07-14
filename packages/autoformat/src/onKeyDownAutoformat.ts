@@ -1,13 +1,13 @@
 import { KeyboardEvent } from 'react';
 import {
-  KeyboardHandlerReturnType,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   deleteBackward,
   getEditorString,
   getPointBefore,
   insertText,
+  KeyboardHandlerReturnType,
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';

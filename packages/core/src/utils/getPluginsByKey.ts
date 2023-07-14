@@ -10,7 +10,7 @@ import { PluginKey } from '../types/plugin/PlatePluginKey';
 export const getPluginsByKey = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor?: E
 ): Record<PluginKey, WithPlatePlugin<P, V, E>> => {

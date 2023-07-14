@@ -1,12 +1,12 @@
 import {
   EElement,
+  getNode,
   TEditor,
   TElement,
   Value,
-  WrapNodesOptions,
-  getNode,
   withoutNormalizing,
   wrapNodes,
+  WrapNodesOptions,
 } from '@udecode/slate';
 import { Modify } from '@udecode/utils';
 import { Path } from 'slate';
@@ -20,7 +20,7 @@ import { moveChildren } from './moveChildren';
  */
 export const wrapNodeChildren = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   element: N,

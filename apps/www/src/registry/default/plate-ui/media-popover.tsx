@@ -6,8 +6,8 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
-  FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,
+  FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media';
 import { useReadOnly, useSelected } from 'slate-react';

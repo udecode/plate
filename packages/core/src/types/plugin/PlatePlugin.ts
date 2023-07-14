@@ -2,11 +2,11 @@ import { FC, ReactNode } from 'react';
 import { Value } from '@udecode/slate';
 import { AnyObject, WithRequired } from '@udecode/utils';
 
-import { PlateEditor } from '../PlateEditor';
 import { Nullable } from '../misc';
-import { DOMHandlers } from './DOMHandlers';
+import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
+import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
 import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
@@ -24,7 +24,7 @@ import { WithOverride } from './WithOverride';
 export type PlatePlugin<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = Required<PlatePluginKey> & {
   editor?: Nullable<{
     /**
@@ -213,7 +213,7 @@ export type PluginOptions = AnyObject;
 export type WithPlatePlugin<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = WithRequired<
   PlatePlugin<P, V, E>,
   'type' | 'options' | 'inject' | 'editor'

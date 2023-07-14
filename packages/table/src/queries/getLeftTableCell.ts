@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   findNode,
   getNodeEntry,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

@@ -1,9 +1,9 @@
 import { Value } from '@udecode/slate';
 import defaultsDeep from 'lodash/defaultsDeep';
 
+import { NoInfer } from '../types/misc/NoInfer';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { NoInfer } from '../types/misc/NoInfer';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 
 /**
@@ -13,7 +13,7 @@ import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 export const overridePluginsByKey = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   plugin: PlatePlugin<NoInfer<P>, V, E>,
   overrideByKey: OverrideByKey<V, E> = {},

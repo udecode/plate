@@ -1,9 +1,9 @@
 import {
   GetAboveNodeOptions,
-  PlateEditor,
-  Value,
   getBlockAbove,
   getPluginType,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';

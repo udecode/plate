@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { EElement, EText, Value, isElement } from '@udecode/slate';
+import { EElement, EText, isElement, Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
 import clsx from 'clsx';
 

@@ -1,10 +1,10 @@
 import {
   EDescendant,
+  isElement,
+  isText,
   TDescendant,
   TEditor,
   Value,
-  isElement,
-  isText,
 } from '@udecode/slate';
 
 import { ELEMENT_DEFAULT } from '../constants';

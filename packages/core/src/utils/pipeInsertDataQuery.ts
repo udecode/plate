@@ -11,7 +11,7 @@ import { InjectedPlugin } from './getInjectedPlugins';
 export const pipeInsertDataQuery = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   plugins: InjectedPlugin<P, V, E>[],
   { data, dataTransfer }: PlatePluginInsertDataOptions

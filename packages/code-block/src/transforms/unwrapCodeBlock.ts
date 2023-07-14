@@ -1,12 +1,12 @@
 import {
   ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
   getChildren,
   getNodeEntries,
   getPluginType,
+  PlateEditor,
   setElements,
   unwrapNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Location } from 'slate';

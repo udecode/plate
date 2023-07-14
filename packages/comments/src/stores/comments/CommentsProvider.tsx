@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react';
 import {
-  JotaiProvider,
-  Value,
-  WithPartial,
   createAtomStore,
   getJotaiProviderInitialValues,
   getNodeString,
+  JotaiProvider,
   nanoid,
+  Value,
+  WithPartial,
 } from '@udecode/plate-common';
 
 import { CommentUser, TComment } from '../../types';

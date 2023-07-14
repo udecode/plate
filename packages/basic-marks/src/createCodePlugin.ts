@@ -1,8 +1,8 @@
 import {
-  ToggleMarkPlugin,
   createPluginFactory,
   findHtmlParentElement,
   onKeyDownToggleMark,
+  ToggleMarkPlugin,
 } from '@udecode/plate-common';
 
 export const MARK_CODE = 'code';

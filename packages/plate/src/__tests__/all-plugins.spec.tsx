@@ -9,7 +9,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
-import { Plate, createPlugins } from '@udecode/plate-common';
+import { createPlugins, Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createLinkPlugin } from '@udecode/plate-link';

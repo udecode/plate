@@ -6,13 +6,13 @@ import React, {
   useState,
 } from 'react';
 import {
-  TElement,
   createPrimitiveComponent,
   findNodePath,
   focusEditor,
   getNodeString,
   getPointAfter,
   setNodes,
+  TElement,
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';

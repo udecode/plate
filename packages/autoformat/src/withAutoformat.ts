@@ -1,8 +1,8 @@
 import {
+  isCollapsed,
   PlateEditor,
   Value,
   WithPlatePlugin,
-  isCollapsed,
 } from '@udecode/plate-common';
 
 import { autoformatBlock } from './transforms/autoformatBlock';
@@ -16,7 +16,7 @@ import { AutoformatPlugin } from './types';
  */
 export const withAutoformat = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options: { rules } }: WithPlatePlugin<AutoformatPlugin, V, E>

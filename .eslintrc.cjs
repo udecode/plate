@@ -60,6 +60,7 @@ module.exports = {
   overrides: [
     {
       files: ['apps/www/src/**/*'],
+      extends: ['plugin:@dword-design/import-alias/recommended'],
       rules: {
         'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [
@@ -80,26 +81,11 @@ module.exports = {
     },
     {
       files: ['**/*.spec.*'],
-      extends: [
-        'plugin:@dword-design/import-alias/recommended',
-        './config/eslint/bases/prettier.cjs',
-      ],
+      extends: ['./config/eslint/bases/prettier.cjs'],
       rules: {
         'react/jsx-key': 'off',
         'import/no-relative-packages': 'off',
         'import/no-unresolved': 'off',
-        '@dword-design/import-alias/prefer-alias': [
-          'warn',
-          {
-            alias: {
-              '@/plate': './apps/www/src/lib/plate',
-              '@/components': './apps/www/src/components',
-              '@/styles': './apps/www/src/styles',
-              '@/lib': './apps/www/src/lib',
-              '@': './packages',
-            },
-          },
-        ],
       },
     },
     {

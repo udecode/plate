@@ -1,4 +1,4 @@
-import { ApplyDeepToNodesOptions, applyDeepToNodes } from '@udecode/plate-core';
+import { applyDeepToNodes, ApplyDeepToNodesOptions } from '@udecode/plate-core';
 import { TNode } from '@udecode/slate';
 import defaults from 'lodash/defaults';
 

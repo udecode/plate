@@ -10,7 +10,7 @@ import { ListPlugin } from './types';
 
 export const withList = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options: { validLiChildrenTypes } }: WithPlatePlugin<ListPlugin, V, E>

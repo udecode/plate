@@ -1,12 +1,9 @@
 /** @jsx jsx */
 
-import {
-  KEY_SUGGESTION_ID,
-  MARK_SUGGESTION,
-} from '@/packages/suggestion/src/constants';
-import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { addSuggestionMark } from './addSuggestionMark';
 
 jsx;
@@ -37,14 +34,14 @@ describe('addSuggestionMark', () => {
   describe('when editor.activeSuggestionId is not defined', () => {
     describe('when editor.marks?.[MARK_SUGGESTION] is not defined', () => {
       it('should add marks', () => {
-        const input = ((
+        const input = (
           <editor>
             <hp>
               test
               <cursor />
             </hp>
           </editor>
-        ) as any) as PlateEditor;
+        ) as any as PlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

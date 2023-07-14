@@ -1,5 +1,5 @@
 import React, { HTMLAttributes } from 'react';
-import { PlateEditor, Value, getPluginOptions } from '@udecode/plate-common';
+import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
 import { MediaPlugin } from './types';
 

@@ -1,10 +1,10 @@
 import {
+  getBlockAbove,
   KeyboardHandlerReturnType,
   PlateEditor,
+  queryNode,
   Value,
   WithPlatePlugin,
-  getBlockAbove,
-  queryNode,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 

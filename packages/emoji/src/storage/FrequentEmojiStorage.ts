@@ -1,8 +1,8 @@
 import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../constants';
 import { EmojiCategory } from '../types';
 import {
-  FrequentEmojiStorageProps,
   FrequentEmojis,
+  FrequentEmojiStorageProps,
   IFrequentEmojiStorage,
 } from '../utils/index';
 import { LocalStorage } from './LocalStorage';

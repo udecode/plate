@@ -1,5 +1,4 @@
 import {
-  TElement,
   createPluginFactory,
   getEndPoint,
   getNode,
@@ -8,6 +7,7 @@ import {
   isCollapsed,
   resetEditorChildren,
   setNodes,
+  TElement,
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';

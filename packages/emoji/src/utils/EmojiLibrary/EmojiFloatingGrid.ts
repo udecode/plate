@@ -1,4 +1,4 @@
-import { RefObject, createRef } from 'react';
+import { createRef, RefObject } from 'react';
 
 import { EmojiCategoryList } from '../../types';
 import { AGridSection, Grid, IGrid } from '../Grid/index';

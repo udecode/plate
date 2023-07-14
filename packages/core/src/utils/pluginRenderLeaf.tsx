@@ -3,8 +3,8 @@ import { Value } from '@udecode/slate';
 
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
-import { RenderLeaf } from '../types/RenderLeaf';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
+import { RenderLeaf } from '../types/RenderLeaf';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**

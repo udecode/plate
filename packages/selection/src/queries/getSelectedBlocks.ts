@@ -1,8 +1,8 @@
 import {
+  getNodeEntries,
   TEditor,
   TElement,
   Value,
-  getNodeEntries,
 } from '@udecode/plate-common';
 
 import { blockSelectionSelectors } from '../blockSelectionStore';

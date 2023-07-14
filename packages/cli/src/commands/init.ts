@@ -17,7 +17,6 @@ import {
   getConfig,
   rawConfigSchema,
   resolveConfigPaths,
-  type Config,
 } from '../utils/get-config';
 import { getPackageManager } from '../utils/get-package-manager';
 import { handleError } from '../utils/handle-error';
@@ -28,6 +27,8 @@ import {
   getRegistryStyles,
 } from '../utils/registry';
 import * as templates from '../utils/templates';
+
+import type { Config } from '../utils/get-config';
 
 const PROJECT_DEPENDENCIES = [
   'tailwindcss-animate',

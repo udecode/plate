@@ -1,4 +1,4 @@
-import { PlateEditor, Value, toDOMNode } from '@udecode/plate-common';
+import { PlateEditor, toDOMNode, Value } from '@udecode/plate-common';
 import { clamp } from 'lodash';
 
 import { TCommentText } from '../types';

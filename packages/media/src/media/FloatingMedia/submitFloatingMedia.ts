@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  Value,
   focusEditor,
   getPluginOptions,
   isUrl,
+  PlateEditor,
   setNodes,
+  Value,
 } from '@udecode/plate-common';
 
 import { ELEMENT_MEDIA, MediaPlugin, TMediaElement } from '../types';

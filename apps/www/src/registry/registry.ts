@@ -189,7 +189,7 @@ const ui: Registry = [
   {
     name: 'dialog',
     type: 'components:plate-ui',
-    dependencies: [],
+    dependencies: ['@radix-ui/react-dialog'],
     registryDependencies: [],
     files: ['plate-ui/dialog.tsx'],
   },

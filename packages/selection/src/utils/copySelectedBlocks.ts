@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  Value,
   deselect,
   getEndPoint,
   getStartPoint,
+  PlateEditor,
   select,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import copyToClipboard from 'copy-to-clipboard';

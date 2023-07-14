@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { PlateEditor, findNode } from '@udecode/plate-common';
+import { findNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { removeListItem } from './removeListItem';

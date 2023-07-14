@@ -8,5 +8,5 @@ import { TRenderElementProps } from './slate-react/TRenderElementProps';
  */
 export type PlateRenderElementProps<
   V extends Value = Value,
-  N extends TElement = EElement<V>
+  N extends TElement = EElement<V>,
 > = PlateRenderNodeProps<V> & TRenderElementProps<V, N>;

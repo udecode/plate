@@ -5,7 +5,7 @@ import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { ENode, TNode } from '../node/TNode';
 import { TNodeEntry } from '../node/TNodeEntry';
 import { TEditor, Value } from './TEditor';
-import { UnhangRangeOptions, unhangRange } from './unhangRange';
+import { unhangRange, UnhangRangeOptions } from './unhangRange';
 
 export type GetNodeEntriesOptions<V extends Value = Value> = Modify<
   NonNullable<EditorNodesOptions<TNode>>,

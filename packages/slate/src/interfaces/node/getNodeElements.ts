@@ -12,7 +12,7 @@ import { TElementEntry, TNodeEntry } from './TNodeEntry';
  */
 export const getNodeElements = <
   N extends ElementOf<R>,
-  R extends TNode = TNode
+  R extends TNode = TNode,
 >(
   root: R,
   options?: Modify<

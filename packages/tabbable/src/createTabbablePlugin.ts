@@ -1,7 +1,7 @@
 import { createPluginFactory, isVoid } from '@udecode/plate-common';
 
-import { TabbableEffects } from './TabbableEffects';
 import { KEY_TABBABLE } from './constants';
+import { TabbableEffects } from './TabbableEffects';
 import { TabbablePlugin } from './types';
 
 export const createTabbablePlugin = createPluginFactory<TabbablePlugin>({

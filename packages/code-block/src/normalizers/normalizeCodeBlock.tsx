@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
-  TElement,
-  TNodeEntry,
-  Value,
   getChildren,
   getPluginType,
   isElement,
+  PlateEditor,
   setNodes,
+  TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-common';
 
 import { ELEMENT_CODE_BLOCK } from '../constants';

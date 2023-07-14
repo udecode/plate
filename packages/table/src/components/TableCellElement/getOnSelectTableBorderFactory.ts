@@ -1,8 +1,8 @@
 import {
+  focusEditor,
   PlateEditor,
   TElement,
   Value,
-  focusEditor,
 } from '@udecode/plate-common';
 
 import { isTableBorderHidden } from '../../queries/index';

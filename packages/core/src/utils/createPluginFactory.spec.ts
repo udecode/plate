@@ -1,5 +1,5 @@
-import { createBasicElementsPlugin } from '@/packages/basic-elements/src/index';
-import { ELEMENT_LINK, createLinkPlugin } from '@/packages/link/src/index';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { createLinkPlugin, ELEMENT_LINK } from '@udecode/plate-link';
 
 import { createPlateEditor } from './createPlateEditor';
 import { createPluginFactory } from './createPluginFactory';

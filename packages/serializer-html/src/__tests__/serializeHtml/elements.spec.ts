@@ -1,27 +1,28 @@
-import { createAlignPlugin } from '@/packages/alignment/src/index';
-import { createBlockquotePlugin } from '@/packages/block-quote/src/index';
-import { createHeadingPlugin } from '@/packages/heading/src/index';
-import { createLinkPlugin } from '@/packages/link/src/index';
-import { createListPlugin } from '@/packages/list/src/index';
+import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
+import { createTablePlugin } from '@udecode/plate';
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { htmlStringToDOMNode } from '@udecode/plate-common';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createListPlugin } from '@udecode/plate-list';
+import { createImagePlugin } from '@udecode/plate-media';
 import {
-  ELEMENT_PARAGRAPH,
   createParagraphPlugin,
-} from '@/packages/paragraph/src/index';
-import { serializeHtml } from '@/packages/serializer-html/src/index';
+  ELEMENT_PARAGRAPH,
+} from '@udecode/plate-paragraph';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '@/packages/table/src/index';
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
-import { createTablePlugin } from '@udecode/plate';
-import { htmlStringToDOMNode } from '@udecode/plate-common';
-import { createImagePlugin } from '@udecode/plate-media';
+} from '@udecode/plate-table';
 
 import { TableCellElement } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+
+import { serializeHtml } from '../../serializeHtml';
 
 it('serialize list to html', () => {
   const editor = createPlateUIEditor({

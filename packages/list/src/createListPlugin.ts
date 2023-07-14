@@ -1,7 +1,7 @@
 import {
+  createPluginFactory,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
-  createPluginFactory,
   someNode,
 } from '@udecode/plate-common';
 

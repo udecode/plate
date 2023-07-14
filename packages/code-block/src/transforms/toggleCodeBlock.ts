@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   getPluginType,
+  PlateEditor,
   setElements,
   someNode,
+  TElement,
+  Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';

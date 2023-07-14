@@ -9,7 +9,7 @@ export interface MatchRange {
 
 export interface AutoformatQueryOptions<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends Omit<AutoformatCommonRule<V, E>, 'query'> {
   /**
    * `insertText` text.
@@ -19,7 +19,7 @@ export interface AutoformatQueryOptions<
 
 export interface AutoformatCommonRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > {
   /**
    * The rule applies when the trigger and the text just before the cursor matches.
@@ -50,7 +50,7 @@ export interface AutoformatCommonRule<
 
 export interface AutoformatBlockRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends AutoformatCommonRule<V, E> {
   /**
    * - text: insert text.
@@ -95,7 +95,7 @@ export interface AutoformatBlockRule<
 
 export interface AutoformatMarkRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends AutoformatCommonRule<V, E> {
   mode: 'mark';
 
@@ -112,7 +112,7 @@ export interface AutoformatMarkRule<
 
 export interface AutoformatTextRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends AutoformatCommonRule<V, E> {
   mode: 'text';
 
@@ -131,7 +131,7 @@ export interface AutoformatTextRule<
 
 export type AutoformatRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > =
   | AutoformatBlockRule<V, E>
   | AutoformatMarkRule<V, E>
@@ -139,7 +139,7 @@ export type AutoformatRule<
 
 export interface AutoformatPlugin<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > {
   /**
    * A list of triggering rules.

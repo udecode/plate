@@ -1,11 +1,11 @@
 import {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   getAboveNode,
   getNodeString,
   getPluginType,
   isCollapsed,
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { Range } from 'slate';

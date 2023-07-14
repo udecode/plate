@@ -42,10 +42,10 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
+  createPlateEditor,
   Plate,
   PlatePluginComponent,
   PlateProvider,
-  createPlateEditor,
   usePlateActions,
   usePlateSelectors,
 } from '@udecode/plate-common';
@@ -86,7 +86,7 @@ import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { ValueId } from '@/config/setting-values';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';

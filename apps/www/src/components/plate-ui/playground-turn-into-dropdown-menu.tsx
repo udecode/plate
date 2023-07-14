@@ -2,12 +2,12 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
-  TElement,
   collapseSelection,
   findNode,
   focusEditor,
   isBlock,
   isCollapsed,
+  TElement,
   toggleNodeType,
   usePlateEditorState,
 } from '@udecode/plate-common';

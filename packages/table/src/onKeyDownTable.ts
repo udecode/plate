@@ -1,13 +1,13 @@
 import {
+  getAboveNode,
   Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
   PluginOptions,
+  select,
   TElement,
   Value,
   WithPlatePlugin,
-  getAboveNode,
-  select,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 
@@ -23,7 +23,7 @@ export const onKeyDownTable =
   <
     P = PluginOptions,
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>
+    E extends PlateEditor<V> = PlateEditor<V>,
   >(
     editor: E,
     { type }: WithPlatePlugin<P, V, E>
