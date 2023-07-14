@@ -1,5 +1,5 @@
 {
-  "packageManager": "yarn@4.0.0-rc.48",
+  "packageManager": "yarn@4.0.0-rc.46",
   "private": true,
   "license": "MIT",
   "scripts": {
