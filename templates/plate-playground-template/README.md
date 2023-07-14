@@ -14,7 +14,7 @@ pnpm create next-app -e https://github.com/udecode/plate-playground-template
 - [Plate](https://platejs.org/) Editor
 - [shadcn/ui](https://ui.shadcn.com/)
 - Radix UI Primitives
-- Tailwind CSS.
+- Tailwind CSS
 - Icons from [Lucide](https://lucide.dev)
 - Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+- Tailwind CSS class sorting, merging and linting

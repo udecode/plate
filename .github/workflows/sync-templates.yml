@@ -58,9 +58,9 @@ jobs:
         run: pnpm build
 
   sync:
-#    needs: build-playground
+    needs: build-playground
     runs-on: ubuntu-latest
-#    if: ${{ success() }}
+    if: ${{ success() }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
