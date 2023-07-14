@@ -15,7 +15,7 @@ jobs:
       startsWith(github.event.comment.body, '/rebase')
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -33,7 +33,7 @@ jobs:
       startsWith(github.event.comment.body, '/release:next')
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
