@@ -63,8 +63,7 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "templates/*"
+    "packages/*"
   ],
   "resolutions": {
     "terser": "4.8.0",

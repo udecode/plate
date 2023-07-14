@@ -3,16 +3,18 @@ import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
-import { getParentNode, isElement, isType } from '@udecode/plate-common';
+import {
+  PlateEditor,
+  getParentNode,
+  isElement,
+  isType,
+} from '@udecode/plate-common';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 
-import { MyEditor, MyValue } from '@/types/plate-types';
+export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
+  unwrapList(editor);
 
-export const preFormat: AutoformatBlockRule<MyValue, MyEditor>['preFormat'] = (
-  editor
-) => unwrapList(editor);
-
-export const format = (editor: MyEditor, customFormatting: any) => {
+export const format = (editor: PlateEditor, customFormatting: any) => {
   if (editor.selection) {
     const parentEntry = getParentNode(editor, editor.selection);
     if (!parentEntry) return;
@@ -27,7 +29,7 @@ export const format = (editor: MyEditor, customFormatting: any) => {
   }
 };
 
-export const formatList = (editor: MyEditor, elementType: string) => {
+export const formatList = (editor: PlateEditor, elementType: string) => {
   format(editor, () =>
     toggleList(editor, {
       type: elementType,
@@ -35,6 +37,6 @@ export const formatList = (editor: MyEditor, elementType: string) => {
   );
 };
 
-export const formatText = (editor: MyEditor, text: string) => {
+export const formatText = (editor: PlateEditor, text: string) => {
   format(editor, () => editor.insertText(text));
 };
