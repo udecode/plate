@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
-import { Project, ScriptKind } from 'ts-morph';
+import { Project, QuoteKind, ScriptKind } from 'ts-morph';
 import * as z from 'zod';
 
 import { Config } from '../get-config';
@@ -33,6 +33,9 @@ const transformers: Transformer[] = [
 
 const project = new Project({
   compilerOptions: {},
+  manipulationSettings: {
+    quoteKind: QuoteKind.Single,
+  },
 });
 
 async function createTempSourceFile(filename: string) {
