@@ -7,11 +7,6 @@ GLOB=$1
 IS_CI="${CI:-false}"
 BASE=$(pwd)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-if [ -z "$API_TOKEN_GITHUB" ]; then
-  REPO="https://github.com/${OWNER}/${NAME}.git"
-else
-  REPO="https://${API_TOKEN_GITHUB}@github.com/${OWNER}/${NAME}.git"
-fi
 
 git config --global user.email "zbeyens@udecode.io"
 git config --global user.name "zbeyens"
@@ -27,6 +22,11 @@ for folder in $GLOB; do
   fi
 
   NAME=${folder##*/}
+  if [ -z "$API_TOKEN_GITHUB" ]; then
+    REPO="https://github.com/${OWNER}/${NAME}.git"
+  else
+    REPO="https://${API_TOKEN_GITHUB}@github.com/${OWNER}/${NAME}.git"
+  fi
   CLONE_DIR="__${NAME}__clone__"
   
   # sync to read-only clones
