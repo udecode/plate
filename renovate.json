@@ -3,19 +3,23 @@
   "extends": ["config:recommended"],
   "packageRules": [
     {
+      "matchPaths": ["templates/"],
       "matchPackagePatterns": ["*"],
       "enabled": false
     },
     {
+      "matchPaths": ["templates/"],
       "matchPackagePatterns": ["^@udecode/"],
       "matchUpdateTypes": ["major"]
     },
     {
+      "matchPaths": ["templates/"],
       "matchPackagePatterns": ["^@udecode/"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
     },
     {
+      "matchPaths": ["templates/"],
       "matchPackagePatterns": ["^slate"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
