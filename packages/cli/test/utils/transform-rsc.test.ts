@@ -6,8 +6,8 @@ test('transform rsc', async () => {
   expect(
     await transform({
       filename: 'test.ts',
-      raw: `import * as React from "react"
-import { Foo } from "bar"
+      raw: `import * as React from 'react'
+import { Foo } from 'bar'
     `,
       config: {
         rsc: true,
@@ -18,10 +18,10 @@ import { Foo } from "bar"
   expect(
     await transform({
       filename: 'test.ts',
-      raw: `"use client"
+      raw: `'use client'
 
-      import * as React from "react"
-import { Foo } from "bar"
+      import * as React from 'react'
+import { Foo } from 'bar'
     `,
       config: {
         rsc: true,
@@ -32,10 +32,10 @@ import { Foo } from "bar"
   expect(
     await transform({
       filename: 'test.ts',
-      raw: `"use client"
+      raw: `'use client'
 
-     import * as React from "react"
-import { Foo } from "bar"
+     import * as React from 'react'
+import { Foo } from 'bar'
     `,
       config: {
         rsc: false,
@@ -46,12 +46,12 @@ import { Foo } from "bar"
   expect(
     await transform({
       filename: 'test.ts',
-      raw: `"use foo"
+      raw: `'use foo'
 
-      import * as React from "react"
-import { Foo } from "bar"
+      import * as React from 'react'
+import { Foo } from 'bar'
 
-"use client"
+'use client'
     `,
       config: {
         rsc: false,
