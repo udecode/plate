@@ -92,7 +92,7 @@ jobs:
         env:
           CI: true
 
-  notify:
+  notify-test-failure:
     name: Discord Notification
     runs-on: ubuntu-latest
     needs:
