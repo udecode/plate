@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/sync-templates.yml'
+      - 'scripts/sync-templates.sh'
       - 'templates/**'
 
 jobs:
