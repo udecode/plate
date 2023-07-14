@@ -8,9 +8,6 @@ IS_CI="${CI:-false}"
 BASE=$(pwd)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 
-git config user.email "zbeyens@udecode.io"
-git config user.name "zbeyens"
-
 for folder in $GLOB; do
   [ -d "$folder" ] || continue
   cd $BASE
@@ -35,6 +32,10 @@ for folder in $GLOB; do
   # note: redirect output to dev/null to avoid any possibility of leaking token
   git clone --quiet --depth 1 $REPO $CLONE_DIR > /dev/null
   cd $CLONE_DIR
+  
+  git config user.email "zbeyens@udecode.io"
+  git config user.name "zbeyens"
+  
   find . | grep -v ".git" | grep -v "^\.*$" | xargs rm -rf # delete all files (to handle deletions in monorepo)
   cp -r $BASE/$folder/. .
 
