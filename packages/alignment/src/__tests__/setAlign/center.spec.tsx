@@ -1,12 +1,10 @@
-import { createPlateEditor } from '@udecode/plate-common';
+/** @jsx jsx */
+
+import { createPlateEditor, type PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createAlignPlugin } from '../../createAlignPlugin';
 import { setAlign } from '../../transforms/index';
-
-import type { PlateEditor } from '@udecode/plate-common';
-
-/** @jsx jsx */
 
 jsx;
 
