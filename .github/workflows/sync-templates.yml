@@ -66,5 +66,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Sync Templates
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         run: ./scripts/sync-templates.sh "templates/plate-playground-template"
         shell: bash

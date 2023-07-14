@@ -2,8 +2,8 @@
 
 set -e # bail on errors
 
-OWNER=udecode
 GLOB=$1
+OWNER=udecode
 IS_CI="${CI:-false}"
 BASE=$(pwd)
 COMMIT_MESSAGE=$(git log -1 --pretty=%B)
