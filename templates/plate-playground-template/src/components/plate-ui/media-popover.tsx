@@ -42,7 +42,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   const element = useElement();
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
-  if (readOnly) return <>children</>;
+  if (readOnly) return <>{children}</>;
 
   return (
     <Popover open={isOpen}>

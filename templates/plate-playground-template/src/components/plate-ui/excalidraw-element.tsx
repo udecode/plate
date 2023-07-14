@@ -5,23 +5,14 @@ import {
   useExalidawElement,
 } from '@udecode/plate-excalidraw';
 
-export interface ExcalidrawElementProps
-  extends PlateElementProps<Value, TExcalidrawElement> {
-  scrollToContent?: boolean;
-
-  libraryItems?: any;
-}
-
 export function ExcalidrawElement({
   nodeProps,
   ...props
-}: ExcalidrawElementProps) {
-  const { children, element, scrollToContent, libraryItems } = props;
+}: PlateElementProps<Value, TExcalidrawElement>) {
+  const { children, element } = props;
 
   const { Excalidraw, excalidrawProps } = useExalidawElement({
     element,
-    scrollToContent,
-    libraryItems,
   });
 
   return (
