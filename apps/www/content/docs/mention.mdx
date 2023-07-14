@@ -88,16 +88,101 @@ An object containing the key-value pair for creating an input.
 
 ### getMentionOnSelectItem
 
-`Combobox.onSelectItem` prop value.
+Returns the `ComboboxOnSelectItem` handler for selecting an item in the mention combobox.
+
+<APIParameters>
+  <APIItem name="options" type="PlatePluginKey" optional>
+    <APISubList>
+  <APISubListItem parent="options" name="key" type="string" optional>
+    The plugin key of the mention plugin.
+
+    - **Default:** `ELEMENT_MENTION`
+
+  </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
 ### findMentionInput
 
+Finds the mention input node in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem
+    name="options"
+    type="Omit<FindNodeOptions<V>, 'match'>"
+    optional
+  ></APIItem>
+</APIParameters>
+
 ### isNodeMentionInput
+
+Checks if a node is a mention input node in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="node" type="TNode">
+    The node to check.
+  </APIItem>
+</APIParameters>
 
 ### isSelectionInMentionInput
 
+Checks if the current selection in the editor is within a mention input.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
 ### mentionOnKeyDownHandler
+
+Handles keydown events for mention-related functionality, such as removing mention inputs and moving the selection by offset.
+
+<APIParameters>
+  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
+    Options for moving the selection by offset. This is an optional parameter.
+    <APISubList>
+      <APISubListItem parent="options" name="query" type="function" optional>
+        A query function to enable the behavior.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
 ### moveSelectionByOffset
 
+Moves the selection by offset based on the keyboard arrow keys.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
+    Options for moving the selection by offset. This is an optional parameter.
+    <APISubList>
+      <APISubListItem parent="options" name="query" type="function" optional>
+        A query function to enable the behavior.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
 ### removeMentionInput
+
+Removes the mention input node at the specified path.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the mention input node to remove.
+  </APIItem>
+</APIParameters>

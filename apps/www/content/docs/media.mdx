@@ -64,21 +64,17 @@ const plugins = [
 Common attributes shared by image and media embed plugins.
 
 <APIAttributes>
-  <APIItem name="isUrl" type="(text: string) => boolean" optional>
+  <APIItem name="isUrl" type="function" optional>
     A function to check whether a text string is a URL.
   </APIItem>
-  <APIItem name="transformUrl" type="(url: string) => string" optional>
+  <APIItem name="transformUrl" type="function" optional>
     A function to transform the URL.
   </APIItem>
-  <APIItem name="rules" type="Array" optional>
+  <APIItem name="rules" type="MediaPluginRule[]" optional>
     List of rules. The first rule that matches the URL will be used, i.e. its
     component will be used to render the media.
     <APISubList>
-      <APISubListItem
-        parent="rules"
-        name="parser"
-        type="(url: string) => EmbedUrlData | undefined"
-      >
+      <APISubListItem parent="rules" name="parser" type="function">
         A function that parses the URL and returns data for embedding.
       </APISubListItem>
       <APISubListItem
@@ -110,20 +106,81 @@ A type defining the data returned from parsing an embed URL.
   <APIItem name="id" type="string" optional>
     The unique identifier for the embedded content.
   </APIItem>
-  <APIItem
-    name="component"
-    type="React.FC<EmbedUrlData & HTMLAttributes<HTMLDivElement>>"
-    optional
-  >
+  <APIItem name="component" type="React.FC<EmbedUrlData>" optional>
     The component to be rendered for the embedded content.
   </APIItem>
 </APIAttributes>
 
 ### insertMedia
 
+Inserts media (image or media embed) into the editor. The type of media to insert is determined by the `type` parameter.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="InsertMediaOptions" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="getUrl"
+        type="function"
+        optional
+      >
+        A function that returns a promise resolving to the URL of the media to
+        be inserted. If not provided, a prompt will be displayed to enter the
+        URL.
+      </APISubListItem>
+      <APISubListItem parent="options" name="type" type="string" optional>
+        The type of media to insert. Defaults to the editor's image element
+        type.
+
+        - **Default:** `getPluginType(editor, ELEMENT_IMAGE)`
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+</APIParameters>
+
 ### parseMediaUrl
 
+Parses a media URL and returns the data associated with it based on the configured rules of the media plugin.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="pluginKey" type="string">
+        The key of the media plugin.
+      </APISubListItem>
+      <APISubListItem parent="options" name="url" type="string" optional>
+        The URL of the media to be parsed.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
 ### submitFloatingMedia
+
+Submits the floating media element by setting its URL and performing necessary transformations.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="element" type="TMediaElement">
+        The floating media element to be submitted.
+      </APISubListItem>
+      <APISubListItem parent="options" name="pluginKey" type="string" optional>
+        The key of the media plugin.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
 ## API Image
 
@@ -148,11 +205,60 @@ Disables URL embed on data insertion if set to true.
 
 ### insertImage
 
+Inserts an image element into the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="url" type="string | ArrayBuffer">
+    The URL or ArrayBuffer of the image.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Additional options for inserting the image element.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="options" name="nextBlock" type="boolean" optional>
+      If true, the image will be inserted in the next block.
+    </APISubListItem>
+  </APISubList>
+</APIParameters>
+
 ### isImageUrl
+
+Checks if a given URL is a valid image URL.
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL to check.
+  </APIItem>
+</APIParameters>
 
 ### withImageUpload
 
+Enhances the editor to support pasting images from the clipboard.
+
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="WithPlatePlugin">
+    The Plate Plugin.
+  </APIItem>
+</APIParameters>
+
 ### withImageEmbed
+
+Enhances the editor to automatically insert an image when a URL is pasted.
+
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="WithPlatePlugin">
+    The Plate Plugin.
+  </APIItem>
+</APIParameters>
 
 ## API Media Embed
 
@@ -162,38 +268,355 @@ Options extends `MediaPlugin`.
 
 ### insertMediaEmbed
 
+Inserts a media embed element at the current selection.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="Partial<TMediaEmbedElement> & PlatePluginKey">
+    <APISubList>
+      <APISubListItem parent="options" name="url" type="string" optional>
+        The URL of the media embed.
+
+        - **Default:** `''`
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="key"
+        type="string"
+        optional
+      >
+        The key of the media embed element.
+
+        - **Default:** `ELEMENT_MEDIA_EMBED`
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+  <APIItem name="insertNodesOptions" type="InsertNodesOptions">
+  </APIItem>
+</APIParameters>
+
 ### parseIframeUrl
+
+Parses the URL of an iframe embed.
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL or embed code of the iframe.
+  </APIItem>
+</APIParameters>
 
 ### parseTwitterUrl
 
+Parses a Twitter URL and extracts the tweet ID.
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The Twitter URL.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData | undefined">
+    An object containing the tweet ID and provider if the parsing is successful.
+    Returns undefined if the URL is not valid or does not match any supported
+    video providers.
+  </APIItem>
+</APIReturns>
+
 ### parseVideoUrl
+
+Parses a video URL and extracts the video ID and provider-specific embed URL.
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The video URL.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData | undefined">
+    An object containing the video ID and provider if the parsing is successful.
+    Returns undefined if the URL is not valid or does not match any supported
+    video providers.
+  </APIItem>
+</APIReturns>
 
 ## API Components
 
-### floatingMediaStore
+### useResizable
 
-### mediaStore
+<APIState>
+  <APIItem name="align" type="'left' | 'center' | 'right'">
+    The alignment of the content within the resizable element.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Specifies whether the resizable element is read-only. If `true`, the element
+    cannot be resized.
+  </APIItem>
+  <APIItem name="minWidth" type="ResizeLength">
+    The minimum width that the resizable element can be adjusted to.
+  </APIItem>
+  <APIItem name="maxWidth" type="ResizeLength">
+    The maximum width that the resizable element can be adjusted to.
+  </APIItem>
+  <APIItem name="renderHandleLeft" type="function">
+    A function to render the left resize handle. This is typically a component
+    or JSX element.
+  </APIItem>
+  <APIItem name="renderHandleRight" type="function">
+    A function to render the right resize handle. This is typically a component
+    or JSX element.
+  </APIItem>
+  <APIItem name="setNodeWidth" type="function">
+    A function to set the width of the node, which is used when resizing.
+  </APIItem>
+  <APIItem name="setWidth" type="function">
+    A function to set the width of the resizable element directly.
+  </APIItem>
+  <APIItem name="width" type="Property.Width<string | number> | undefined">
+    The current width of the resizable element. This can be a string (e.g., a
+    percentage or 'auto') or a number (representing pixels).
+  </APIItem>
+</APIState>
 
-### resizableStore
-
-### Resizable
-
-### useFloatingMedia
+<APIReturns>
+  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
+    A React reference to the outermost div wrapping the resizable element.
+  </APIItem>
+  <APIItem name="wrapperProps" type="React.HTMLAttributes<HTMLDivElement>">
+    Props to be spread on the outermost div wrapping the resizable element.
+    <APISubList>
+      <APISubListItem parent="wrapperProps" name="style" type="CSSProperties">
+        CSS styles to be applied to the wrapper div.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="resizableProps" type="object">
+    Props to be spread on the resizable element.
+    <APISubList>
+      <APISubListItem parent="resizableProps" name="style" type="CSSProperties">
+        CSS styles to be applied to the resizable element.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="handleLeft" type="false | JSX.Element | undefined">
+    The element to be used as the left handle for resizing. If `false`, there
+    will be no left handle.
+  </APIItem>
+  <APIItem name="handleRight" type="false | JSX.Element | undefined">
+    The element to be used as the right handle for resizing. If `false`, there
+    will be no right handle.
+  </APIItem>
+</APIReturns>
 
 ### useFloatingMediaEditButton
 
+Custom hook for handling the behavior of a floating media edit button.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem name="onClick" type="function">
+        A callback function to handle the button click. It opens the editor for
+        editing the media element.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
 ### useFloatingMediaUrlInput
+
+<APIProps>
+  <APIItem name="defaultValue" type="string">
+    The default value for the URL input field.
+  </APIItem>
+</APIProps>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onChange" type="function">
+        A callback function to handle the button click. It opens the editor for
+        editing the media element.
+      </APISubListItem>
+      <APISubListItem parent="props" name="autoFocus" type="boolean">
+        If true, the URL input field will be focused on mount.
+      </APISubListItem>
+      <APISubListItem parent="props" name="defaultValue" type="string">
+        The default value for the URL input field.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
 
 ### useImage
 
+Custom hook for managing the props of an image element.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="src" type="string">
+        The URL of the media element.
+      </APISubListItem>
+      <APISubListItem parent="props" name="alt" type="string">
+        The caption string for the image.
+      </APISubListItem>
+      <APISubListItem parent="props" name="draggable" type="boolean">
+        Indicates whether the image is draggable.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
 ### useMediaEmbed
+
+Custom hook for managing media embed data.
+
+<APIReturns>
+  <APIItem
+    name="component"
+    type="string | React.FC<EmbedUrlData & React.HTMLAttributes<HTMLDivElement>>"
+  >
+    The component type for rendering the media embed. Defaults to `'iframe'` if
+    not specified.
+  </APIItem>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="id" type="string | undefined">
+        The ID of the media embed.
+      </APISubListItem>
+      <APISubListItem parent="props" name="src" type="string | undefined">
+        The URL of the media embed.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
 
 ### useMediaEmbedTweet
 
+Custom hook for handling media embed data specifically for tweets.
+
+<APIProps>
+  <APIItem name="id" type="string">
+    The ID of the tweet.
+  </APIItem>
+</APIProps>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData">
+    An object containing the tweet ID and provider.
+  </APIItem>
+</APIReturns>
+
 ### useMediaEmbedVideo
+
+Custom hook for handling media embed data specifically for videos.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubListItem parent="props" name="title" type="string">
+      The title of the embed.
+    </APISubListItem>
+    <APISubListItem parent="props" name="frameBorder" type="string">
+      The frame border of the embed.
+    </APISubListItem>
+    <APISubListItem parent="props" name="allowFullScreen" type="boolean">
+      Whether the embed allows fullscreen mode.
+    </APISubListItem>
+    <APIItem parent="props" name="src" type="string">
+      The URL of the video.
+    </APIItem>
+  </APIItem>
+</APIReturns>
 
 ### useMediaState
 
+Custom hook for managing the state of media elements.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+  <APISubList>
+    <APISubListItem parent="options" name="pluginKey" type="string" optional>
+    The key of the media plugin.
+
+    - **Default:** `ELEMENT_MEDIA_EMBED`
+
+  </APISubListItem>
+  </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="focus" type="boolean">
+    Whether the media element is currently focused.
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    Whether the media element is currently selected.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the editor is in read-only mode.
+  </APIItem>
+  <APIItem name="provider" type="string | undefined">
+    The media provider of the element.
+  </APIItem>
+</APIReturns>
+
 ### useMediaToolbarButton
 
+Custom hook for creating a toolbar button for inserting media.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="nodeType" type="string" optional>
+        The type of the media node to be inserted. If not provided, a default
+        media node type will be used.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function that inserts the media node into the editor and
+        focuses the editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
 ### Tweet
+
+A React component for rendering a Tweet.
+
+<APIProps>
+<APIItem name="tweetId" type="string">
+The ID of the tweet to embed.
+</APIItem>
+<APIItem name="onError" type="function" optional>
+A callback function that handles errors that occur during the embedding process.
+</APIItem>
+<APIItem  name="onLoad" type="function" optional>
+A callback function that is called when the tweet is successfully loaded.
+</APIItem>
+<APIItem  name="loadingComponent" type="string" optional>
+A loading component to be rendered while the tweet is being loaded. It can be
+a JSX element or a string.
+</APIItem>
+<APIItem
+name="twitterOptions"
+type="TwitterEmbedOptions"
+optional
+>
+An object that contains options for customizing the embedded tweet.
+
+- **Default:** `{}`
+
+</APIItem>
+</APIProps>

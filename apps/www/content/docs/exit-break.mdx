@@ -108,7 +108,80 @@ The default type of the node to be inserted upon exit.
 
 ### exitBreak
 
+Exit a large block using a shortcut.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="Omit<ExitBreakRule, 'hotkey'>">
+    The options for the exit break operation.
+    <APISubList>
+      <APISubListItem parent="options" name="level" type="number" optional>
+        Path level where to exit.
+
+        - **Default:** `0`
+      </APISubListItem>
+      <APISubListItem parent="options" name="relative" type="boolean" optional>
+        If true, exit relative to the selection.
+
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultType" type="function" optional>
+        The default type of the node to be inserted upon exit.
+
+        - **Default:** `getPluginType(editor, ELEMENT_DEFAULT)`
+      </APISubListItem>
+      <APISubListItem parent="options" name="query" type="object" optional>
+        Object determining the conditions under which to exit.
+
+        - **Default:** {}
+      </APISubListItem>
+      <APISubListItem parent="options" name="before" type="boolean" optional>
+        If true, exit before the selected block.
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    Indicates whether the exit break was successful.
+  </APIItem>
+</APIReturns>
+
 ### exitBreakAtEdges
+
+Checks if the selection is at the edge of its parent block and performs an "exit break" operation if specified.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="start" type="boolean" optional>
+        If true, check if the selection is at the start of its parent block.
+      </APISubListItem>
+      <APISubListItem parent="options" name="end" type="boolean" optional>
+        If true, check if the selection is at the end of its parent block.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="queryEdge" type="boolean">
+    Indicates whether the edge of the selection was queried.
+  </APIItem>
+  <APIItem name="isEdge" type="boolean">
+    Indicates whether the selection is at the edge of its parent block.
+  </APIItem>
+  <APIItem name="isStart" type="boolean">
+    Indicates whether the selection is at the start of its parent block.
+  </APIItem>
+</APIReturns>
 
 ## Keyboard Interactions
 

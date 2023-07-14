@@ -78,22 +78,166 @@ const plugins = [
 
 ### getNextIndentList
 
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="entry" type="EElementEntry">
+    The entry of the current element.
+  </APIItem>
+  <APIItem
+    name="options"
+    type="Partial<GetSiblingIndentListOptions>"
+    optional
+  ></APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="TNodeEntry | undefined">
+    The entry of the next sibling with an indent list, or `undefined` if not
+    found.
+  </APIItem>
+</APIReturns>
+
 ### getPreviousIndentList
+
+Gets the previous sibling entry with an indent list.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="entry" type="EElementEntry">
+    The entry of the current element.
+  </APIItem>
+  <APIItem
+    name="options"
+    type="Partial<GetSiblingIndentListOptions>"
+    optional
+  ></APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="TNodeEntry | undefined">
+    The entry of the previous sibling with an indent list, or `undefined` if not
+    found.
+  </APIItem>
+</APIReturns>
 
 ### indentList
 
-Increase the list indentation of the selected blocks.
+Increases the indentation of the selected blocks.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="IndentListOptions" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="listStyleType"
+        type="ListStyleType | string"
+        optional
+      >
+        The list style type to use.
+
+        - **Default:** `ListStyleType.Disc`
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+</APIParameters>
 
 ### outdentList
 
-Decrease the list indentation of the selected blocks.
+Decreases the indentation of the selected blocks.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="IndentListOptions" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="listStyleType"
+        type="ListStyleType | string"
+        optional
+      >
+        The list style type to use.
+
+        - **Default:** `ListStyleType.Disc`
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+</APIParameters>
 
 ### someIndentList
 
+Checks if some of the selected blocks have a specific list style type.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The list style type to check.
+  </APIItem>
+</APIParameters>
+
 ### toggleIndentList
 
-Toggle indent list.
+Toggles the indentation of a list in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="IndentListOptions">
+    The options for toggling the indentation of the list.
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="listStyleType"
+        type="ListStyleType | string"
+        optional
+      >
+        The list style type to use.
+
+      </APISubListItem>
+    </APISubList>
+
+  </APIItem>
+</APIParameters>
 
 ## API Components
 
 ### useIndentListToolbarButton
+
+A custom hook that provides functionality for an indent list toolbar button.
+
+<APIState>
+  <APIItem name="nodeType" type="string">
+    The node type of the indent list.
+  </APIItem>
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the button is pressed or not.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        A boolean indicating whether the button is pressed or not.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It toggles
+        the indent list of the specified node type in the editor and focuses the
+        editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

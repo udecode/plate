@@ -54,6 +54,62 @@ const plugins = [
 
 ### setAlign
 
+Sets the alignment for a node in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+ <APIItem name="options" type="object" optional>
+   <APISubList>
+     <APISubListItem parent="options" name="key" type="string" optional>
+       The key of the node to set the alignment.
+
+       - **Default:** `KEY_ALIGN`
+      </APISubListItem>
+     <APISubListItem parent="options" name="value" type="Alignment" optional>
+       The alignment value.
+      </APISubListItem>
+     <APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
+      </APISubListItem>
+
+   </APISubList>
+ </APIItem>
+</APIParameters>
+
 ## API Components
 
+### useAlignDropdownMenuState
+
+<APIReturns>
+  <APIItem name="value" type="Alignment">
+    The current alignment value. It can be one of the following values: 'left',
+    'right', 'center', 'justify'.
+  </APIItem>
+</APIReturns>
+
 ### useAlignDropdownMenu
+
+<APIState>
+  <APIItem name="value" type="Alignment">
+    The current alignment value.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="radioGroupProps" type="object">
+    Props for the radio group.
+    <APISubList>
+      <APISubListItem parent="radioGroupProps" name="value" type="Alignment">
+        The current alignment value.
+      </APISubListItem>
+      <APISubListItem
+        parent="radioGroupProps"
+        name="onValueChange"
+        type="function"
+      >
+        Callback to set the alignment value.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

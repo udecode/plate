@@ -208,13 +208,27 @@ Data available to `onRenderItem`.
 
 ## API Components
 
-### useComboboxControls
-
-Used in `Combobox` to control the combobox state. See [useCombobox](https://www.downshift-js.com/use-combobox).
-
-### useComboboxContentState
-
 ### useComboboxContent
+
+Custom hook that returns the menu props and target range for the combobox content.
+
+<APIState>
+  <APIItem name="items" type="TComboboxItem<TData>[] | undefined">
+    The items for the combobox.
+  </APIItem>
+  <APIItem name="combobox" type="function">
+    The combobox store.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="menuProps" type="any">
+    The menu props for the combobox content.
+  </APIItem>
+  <APIItem name="targetRange" type="BaseRange">
+    The target range of the combobox.
+  </APIItem>
+</APIReturns>
 
 ## Keyboard Interactions
 

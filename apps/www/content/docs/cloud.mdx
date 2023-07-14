@@ -42,27 +42,205 @@ To get the value to save to your database, use `editor.cloud.getSaveValue()`. Th
 
 ### finishUploads
 
+Finds all the in-progress uploads and waits for them all to finish before resolving the returned promise.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateCloudEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="FinishUploadsOptions" optional>
+    The options for finishing uploads.
+  </APIItem>
+  <APISubList>
+    <APISubListItem
+      parent="options"
+      name="maxTimeoutInMs"
+      type="number"
+      optional
+    >
+      The maximum timeout in milliseconds. If the timeout is reached, the method
+      will return.
+
+      - Default : `TEN_MINUTES`
+    </APISubListItem>
+
+  </APISubList>
+</APIParameters>
+
 ### generateSrcAndSrcSet
+
+Generates the `src` and `srcSet` attributes for an image.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    The options for generating the `src` and `srcSet`.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="options" name="url" type="string" optional>
+      The URL of the image.
+    </APISubListItem>
+    <APISubListItem parent="options" name="size" type="[number, number]">
+      The desired size of the image in pixels.
+    </APISubListItem>
+    <APISubListItem parent="options" name="maxSize" type="[number, number]">
+      The maximum size of the image in pixels.
+    </APISubListItem>
+  </APISubList>
+</APIParameters>
+
+<APIReturns>
+
+An object containing the `src` and `srcSet` attributes.
+
+</APIReturns>
 
 ### getInProgressUploads
 
+Takes an array of `nodes` and a lookup for `origins` and normalizes the nodes by replacing the `id` values with actual URLs for successfully uploaded files.
+
+<APIParameters>
+  <APIItem name="nodes" type="Descendant[]">
+    The array of nodes to be normalized.
+  </APIItem>
+  <APIItem name="origins" type="Record<string, Upload>">
+    The lookup for origin files, where the keys are the IDs and the values are
+    upload information.
+  </APIItem>
+</APIParameters>
+
 ### getSaveValue
+
+Normalizes the save value by replacing the `id` values with actual URLs for successfully uploaded files.
+
+<APIParameters>
+  <APIItem name="nodes" type="V">
+    The save value to be normalized.
+  </APIItem>
+  <APIItem name="uploads" type="Record<string, Upload>">
+    The lookup for origin files, where the keys are the IDs and the values are
+    upload information.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+
+The normalized save value with replaced `id` values.
+
+</APIReturns>
 
 ### onDropCloud
 
+Handles the drop event of cloud files.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateCloudEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="e" type="React.DragEvent">
+    The drag event object.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  A boolean indicating whether the drop event was handled successfully.
+</APIReturns>
+
 ### onPasteCloud
+
+Handles the paste event of cloud files.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateCloudEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="e" type="React.ClipboardEvent">
+    The clipboard event object.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  A boolean indicating whether the paste event was handled successfully.
+</APIReturns>
 
 ### uploadFiles
 
+Uploads a single file to the cloud.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateCloudEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="file" type="File">
+    The file to be uploaded.
+  </APIItem>
+</APIParameters>
+
 ### TCloudAttachmentElement
+
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL of the cloud attachment.
+  </APIItem>
+  <APIItem name="filename" type="string">
+    The filename of the cloud attachment.
+  </APIItem>
+  <APIItem name="bytes" type="number">
+    The size of the cloud attachment in bytes.
+  </APIItem>
+</APIParameters>
 
 ## API Plugins
 
 ### withCloud
 
+A higher-order function that enhances a Plate editor with cloud-related functionality.
+
+<APIParameters>
+  <APIItem name="e" type="E">
+    The Plate editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="WithPlatePlugin<CloudPlugin>">
+    The cloud plugin to be added to the editor.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The enhanced Plate editor instance with cloud functionality.
+</APIReturns>
+
 ### withCloudAttachment
 
+A higher-order function that enhances a Plate Cloud editor with cloud attachment functionality.
+
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The Plate Cloud editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="WithPlatePlugin<CloudAttachmentPlugin, V, E>">
+    The cloud attachment plugin to be added to the editor.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The enhanced Plate Cloud editor instance with cloud attachment functionality.
+</APIReturns>
+
 ### withCloudImage
+
+A higher-order function that enhances a Plate Cloud Image editor with cloud image functionality.
+
+<APIParameters>
+  <APIItem name="$editor" type="E">
+    The Plate Cloud Image editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="WithPlatePlugin<CloudImagePlugin>">
+    The cloud image plugin to be added to the editor.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The enhanced Plate Cloud Image editor instance with cloud image functionality.
+</APIReturns>
 
 ## API Components
 

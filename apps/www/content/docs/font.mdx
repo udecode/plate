@@ -63,6 +63,92 @@ const plugins = [
 
 ### useColorDropdownMenu
 
+A custom hook that returns the props for a color dropdown menu.
+
+<APIProps>
+  <APIItem name="open" type="boolean">
+    A boolean indicating whether the dropdown menu is open.
+  </APIItem>
+  <APIItem name="onToggle" type="function">
+    A callback function to toggle the open state of the dropdown menu.
+  </APIItem>
+</APIProps>
+
+<APIReturns>
+  <APIItem name="menuProps" type="object">
+    The props to be spread on the menu component.
+    <APISubList>
+      <APISubListItem parent="menuProps" name="open" type="boolean">
+        A boolean indicating whether the dropdown menu is open.
+      </APISubListItem>
+      <APISubListItem parent="menuProps" name="onOpenChange" type="function">
+        A callback function to toggle the open state of the dropdown menu.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="buttonProps" type="object">
+    The props to be spread on the button component.
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="pressed" type="boolean">
+        A boolean indicating whether the dropdown menu is open.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
 ### useColorInput
 
+A custom hook that provides functionality for a color input.
+
+<APIReturns>
+  <APIItem name="inputRef" type="React.MutableRefObject<HTMLInputElement">
+    A ref object that should be assigned to the color input element.
+  </APIItem>
+  <APIItem name="childProps" type="function">
+    The props to be spread on the child component that triggers the color
+    picker.
+    <APISubList>
+      <APISubListItem parent="childProps" name="onClick" type="function">
+        A callback function to handle the click event of the child component.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
 ### useColorsCustom
+
+A custom hook that provides functionality for custom colors in a color picker.
+
+<APIProps>
+  <APIItem name="updateCustomColor" type="function">
+    The callback function to update the custom color.
+  </APIItem>
+  <APIItem name="value" type="string">
+    The current value of the color input.
+  </APIItem>
+  <APIItem name="setValue" type="function">
+    The callback function to update the value of the color input.
+  </APIItem>
+</APIProps>
+
+<APIReturns>
+  <APIItem name="inputProps" type="object">
+    The props to be spread on the color input element.
+    <APISubList>
+      <APISubListItem parent="inputProps" name="value" type="string">
+        The current value of the color input.
+      </APISubListItem>
+      <APISubListItem parent="inputProps" name="onChange" type="function">
+        A callback function to handle the change event of the color input.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="menuItemProps" type="object">
+    The props to be spread on the menu item elements in the color picker.
+    <APISubList>
+      <APISubListItem parent="menuItemProps" name="onSelect" type="function">
+        A callback function to handle the select event of the menu item.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

@@ -1,3 +1,4 @@
+3,
 import { useCallback, useEffect, useState } from 'react';
 import {
   focusEditor,
