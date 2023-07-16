@@ -26,9 +26,9 @@ npm install @udecode/plate-excalidraw
 
 ```tsx
 import {
+  createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-  createExcalidrawPlugin,
 } from '@udecode/plate-excalidraw';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
@@ -50,57 +50,54 @@ const plugins = [
 Inserts an Excalidraw element into the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem
-    name="props"
-    type="TNodeProps<TExcalidrawElement> & PlatePluginKey"
-    optional
-  >
-    The props and key for the Excalidraw element.
-    <APISubList>
-      <APISubListItem parent="props" name="key" type="string">
-        The key for the Excalidraw element.
+<APIItem name="editor" type="PlateEditor">
+  The editor instance.
+</APIItem>
+<APIItem
+  name="props"
+  type="TNodeProps<TExcalidrawElement> & PlatePluginKey"
+  optional
+>
+The props and key for the Excalidraw element.
+<APISubList>
+<APISubListItem parent="props" name="key" type="string">
+The key for the Excalidraw element.
 
-        - **Default:** `ELEMENT_EXCALIDRAW`
-      </APISubListItem>
+- **Default:** `ELEMENT_EXCALIDRAW`
 
-    </APISubList>
+</APISubListItem>
 
-  </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
-    The options for inserting the Excalidraw element.
-  </APIItem>
+</APISubList>
+
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+  The options for inserting the Excalidraw element.
+</APIItem>
 </APIParameters>
-
-<APIReturns>
-  <APIItem name="void"></APIItem>
-</APIReturns>
 
 ## API Components
 
 ### useExcalidrawElement
 
-Custom hook for working with Excalidraw elements.
+Behavior hook for the Excalidraw component.
 
-<APIParameters>
-  <APIItem name="element" type="TExcalidrawElement">
-    The Excalidraw element.
-  </APIItem>
-  <APIItem name="libraryItems" type="LibraryItems" optional>
-    The library items to be displayed in the Excalidraw component.
+<APIState>
+<APIItem name="element" type="TExcalidrawElement">
+The Excalidraw element.
+</APIItem>
+<APIItem name="libraryItems" type="LibraryItems" optional>
+The library items to be displayed in the Excalidraw component.
 
-    - **Default:** `[]`
+- **Default:** `[]`
 
-  </APIItem>
-  <APIItem name="scrollToContent" type="boolean" optional>
-    Determines whether to scroll to the content inside the Excalidraw component.
+</APIItem>
+<APIItem name="scrollToContent" type="boolean" optional>
+Determines whether to scroll to the content inside the Excalidraw component.
 
-    - **Default:** `true`
+- **Default:** `true`
 
-  </APIItem>
-</APIParameters>
+</APIItem>
+</APIState>
 
 <APIReturns>
   <APIItem name="Excalidraw" type="any">

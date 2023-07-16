@@ -50,7 +50,7 @@ You can style the selection area by using the `slate-selection-area` class:
 
 ### createBlockSelectionPlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem
   name="query"
   type="function"
@@ -96,7 +96,7 @@ The right size of the selection.
 </APISubListItem>
 </APISubList>
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### copySelectedBlocks
 
@@ -133,7 +133,7 @@ Pastes the selected blocks from the clipboard into the editor.
 
 ### selectInsertedBlocks
 
-Selects the inserted blocks from the last operations.
+Selects the inserted blocks from the last editor insert operations.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -145,26 +145,26 @@ Selects the inserted blocks from the last operations.
 
 ### BlockSelectable
 
-<APIParameters>
-  <APIItem name="blockSelectableOptions" type="BlockSelectableOptions">
+<APIProps>
+  <APIItem name="options" type="BlockSelectableOptions">
     <APISubList>
-      <APISubListItem
-        parent="blockSelectableOptions"
-        name="options"
-        type="BlockSelectableOptions"
-      >
-        The options for configuring block selectability.
+      <APISubListItem parent="options" name="element" type="TElement">
+        The element to render the block selectable.
       </APISubListItem>
       <APISubListItem
-        parent="blockSelectableOptions"
-        name="children"
-        type="React.ReactNode"
+        parent="options"
+        name="selectedColor"
+        type="string"
+        optional
       >
-        The children components to be rendered within the block.
+        The color of the selected block.
+      </APISubListItem>
+      <APISubListItem parent="options" name="active" type="boolean" optional>
+        Whether the selection is active.
       </APISubListItem>
     </APISubList>
   </APIItem>
-</APIParameters>
+</APIProps>
 
 ### BlockStartArea
 
@@ -210,38 +210,6 @@ The behavior hook for the `BlockSelectionArea` component.
       </APISubListItem>
       <APISubListItem parent="props" name="style" type="object">
         The style of the start area.
-        <APISubList>
-          <APISubListItem parent="style" name="position" type="string">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="top" type="number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="left" type="number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="bottom" type="number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="right" type="number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="width" type="string | number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="height" type="string | number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="zIndex" type="number">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="userSelect" type="string">
-          The position of the start area.
-         </APISubListItem>
-          <APISubListItem parent="style" name="cursor" type="string">
-          The position of the start area.
-         </APISubListItem>
-        </APISubList>
       </APISubListItem>
 
     </APISubList>
@@ -265,10 +233,10 @@ The behavior hook for the `BlockSelectionArea` component.
     The callback to execute when the selection stops.
   </APIItem>
   <APIItem
-    name="props"
-    type="Omit<Partial<SelectionOptions>, 'boundaries'>,
-    React.HTMLAttributes<HTMLDivElement>"
+    name="getBoundaries"
+    type="(boundaries: SelectionOptions['boundaries']) => SelectionOptions['boundaries']"
+    optional
   >
-    The props to pass to the selection area.
+    Function to calculate the boundaries of the selection area.
   </APIItem>
 </APIProps>

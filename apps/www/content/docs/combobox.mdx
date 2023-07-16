@@ -110,7 +110,7 @@ Represents a combobox's state. The state resides in `comboboxStore`, which uses 
 Opened combobox id.
 </APIItem>
 <APIItem name="byId" type="Record<string, ComboboxStoreById>">
-A collection of combobox configuration stores, each identified by a unique combobox ID (e.g., one for tags, one for mentions).
+A collection of combobox configuration stores, each identified by a unique combobox id (e.g., one for tags, one for mentions).
 
 - `ComboboxStateById`:
 
@@ -210,7 +210,7 @@ Data available to `onRenderItem`.
 
 ### useComboboxContent
 
-Custom hook that returns the menu props and target range for the combobox content.
+Behavior hook for the `ComboboxContent` component.
 
 <APIState>
   <APIItem name="items" type="TComboboxItem<TData>[] | undefined">

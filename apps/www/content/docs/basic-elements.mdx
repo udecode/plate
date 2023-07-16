@@ -64,12 +64,12 @@ const plugins = [
 
 ### createHeadingPlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem name="levels" type="number" optional>
 Specifies the heading levels supported, ranging from 1 to the specified levels.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ## API Paragraph
 
@@ -79,9 +79,7 @@ Specifies the heading levels supported, ranging from 1 to the specified levels.
 
 ### createCodeBlockPlugin
 
-<APIAttributes>
-
-Options.
+<APIOptions>
 
 <APIItem name="syntax" type="boolean" optional>
 Determines if syntax highlighting is enabled.
@@ -99,11 +97,11 @@ Defines deserializers for the code block plugin.
 Hotkeys to trigger a code block action.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### isCodeBlockEmpty
 
-Checks if the selection inside the editor is an empty code block.
+Checks if the selection is inside an empty code block.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
@@ -113,8 +111,7 @@ Checks if the selection inside the editor is an empty code block.
 
 <APIReturns>
   <APIItem type="boolean">
-    Returns true if the selection is an empty code block. Otherwise, returns
-    false.
+    Returns true if the selection is in an empty code block.
   </APIItem>
 </APIReturns>
 
@@ -131,35 +128,36 @@ Checks if the selection is at the start of the first code line in a code block.
 <APIReturns>
   <APIItem type="boolean">
     Returns true if the selection is at the start of the first code line in a
-    code block. Otherwise, returns false.
+    code block.
   </APIItem>
 </APIReturns>
 
 ### indentCodeLine
 
-Indents the code line if the selection is expanded or there are no non-whitespace characters left of the cursor. The indentation is 2 spaces by default.
+Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentCodeLineOptions">
-    <APISubList>
-      <APISubListItem parent="options" name="codeLine" type="TElementEntry">
-        The code line to be indented.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="indentDepth"
-        type="number"
-      >
-        The depth of indentation for the code line.
+<APIItem name="editor" type="TEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="IndentCodeLineOptions">
+<APISubList>
+<APISubListItem parent="options" name="codeLine" type="TElementEntry">
+  The code line to be indented.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="indentDepth"
+  type="number"
+>
+The size of indentation for the code line.
 
-        - **Default:** `2`
-      </APISubListItem>
-    </APISubList>
+- **Default:** `2`
 
-  </APIItem>
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 ### insertCodeBlock
@@ -240,7 +238,7 @@ Unwraps the code block in the editor.
     The code block element.
   </APIItem>
   <APIItem name="setValue" type="function">
-    The setValue function from the usePlateEffects hook.
+    Set element value callback.
   </APIItem>
 </APIState>
 
@@ -269,7 +267,7 @@ Unwraps the code block in the editor.
     language.
   </APIItem>
   <APIItem name="syntax" type="boolean | undefined">
-    The syntax options for the code block element.
+    The syntax plugin option.
   </APIItem>
 </APIReturns>
 

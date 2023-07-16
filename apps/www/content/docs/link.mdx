@@ -41,7 +41,7 @@ const plugins = [
 
 ### createLinkPlugin
 
-<APIParameters>
+<APIOptions>
 <APIItem name="forceSubmit" type="boolean" optional>
 Determines whether to force the submission of the link form.
 </APIItem>
@@ -102,7 +102,7 @@ Callback function to optionally get the href for a URL. It returns an optional l
 On keyboard shortcut or toolbar mousedown, this function is called to get the link URL. The default behavior is to use the browser's native `prompt`.
 </APIItem>
 
-</APIParameters>
+</APIOptions>
 
 ### getLinkAttributes
 
@@ -145,7 +145,11 @@ Inserts a link if the URL is valid, closes the floating link, and focuses the ed
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="boolean">Returns `true` if the link was inserted.</APIItem>
+<APIItem type="boolean">
+
+Returns `true` if the link was inserted.
+
+</APIItem>
 </APIReturns>
 
 ### triggerFloatingLink
@@ -153,16 +157,17 @@ Inserts a link if the URL is valid, closes the floating link, and focuses the ed
 Triggers the floating link.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APIItem parent="options" name="focused" type="boolean" optional>
-        Options for triggering the floating link.
-      </APIItem>
-    </APISubList>
-  </APIItem>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="focused" type="boolean" optional>
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 ### triggerFloatingLinkEdit
@@ -176,7 +181,11 @@ Triggers the floating link edit.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="boolean">Returns `true` if the link was edited.</APIItem>
+<APIItem type="boolean">
+
+Returns `true` if the link was edited.
+
+</APIItem>
 </APIReturns>
 
 ### triggerFloatingLinkInsert
@@ -191,16 +200,16 @@ Do not trigger when:
 - Selection has a link node.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="focused" type="boolean" optional>
-        Options for triggering the floating link.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="focused" type="boolean" optional>
+
+</APISubListItem>
+</APISubList>
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -242,49 +251,50 @@ Then:
 - If `text` is defined and not empty, replace the link text with the new `text`.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="UpsertLinkOptions">
-    <APISubList>
-      <APISubListItem parent="options" name="url" type="string">
-        The URL of the link.
-      </APISubListItem>
-      <APISubListItem parent="options" name="text" type="string" optional>
-        The text content of the link.
-      </APISubListItem>
-      <APISubListItem parent="options" name="target" type="string" optional>
-        The target attribute of the link.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="insertTextInLink"
-        type="boolean"
-        optional
-      >
-        If `true`, insert the `url` as text in the link.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="insertNodesOptions"
-        type="InsertNodesOptions"
-        optional
-      >
-        The options for inserting nodes.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="skipValidation"
-        type="boolean"
-        optional
-      >
-        If `true`, skips URL validation.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="UpsertLinkOptions">
+<APISubList>
+<APISubListItem parent="options" name="url" type="string">
+The URL of the link.
+</APISubListItem>
+<APISubListItem parent="options" name="text" type="string" optional>
+The text content of the link.
+</APISubListItem>
+<APISubListItem parent="options" name="target" type="string" optional>
+The target attribute of the link.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="insertTextInLink"
+  type="boolean"
+  optional
+>
+If `true`, insert the `url` as text in the link.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="insertNodesOptions"
+  type="InsertNodesOptions"
+  optional
+>
+The options for inserting nodes.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="skipValidation"
+  type="boolean"
+  optional
+>
+If `true`, skips URL validation.
 
-        - **Default:** `false`
-      </APISubListItem>
-    </APISubList>
+- **Default:** `false`
 
-  </APIItem>
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -347,11 +357,34 @@ Wrap a link node with split.
   </APIItem>
 </APIParameters>
 
+### CreateLinkNodeOptions
+
+<APIAttributes>
+  <APIItem name="url" type="string">
+    The URL of the link node that is being created.
+  </APIItem>
+  <APIItem name="text" type="string">
+    The text that is displayed for the link node. This text is what users see
+    and click on. If not provided, the URL is used as the display text.
+  </APIItem>
+  <APIItem name="target" type="string">
+    Specifies where to open the URL. This can be `_blank` for a new tab, `_self`
+    for the same frame, `_parent` for the parent frame, or `_top` for the full
+    body of the window.
+  </APIItem>
+  <APIItem name="children" type="TText[]">
+    An array of `TText` objects that represent the child nodes of the link node.
+    These child nodes are displayed as the contents of the link node.
+  </APIItem>
+</APIAttributes>
+
 ## API Components
 
 ### FloatingLinkNewTabInput
 
-<APIProps>
+The input for the link new tab.
+
+<APIState>
   <APIItem name="checked" type="boolean">
     Whether the link should open in a new tab.
   </APIItem>
@@ -364,88 +397,31 @@ Wrap a link node with split.
   >
     Sets the checked state.
   </APIItem>
-</APIProps>
-
-<APIReturns>
-  <APIItem name="ref" type="RefObject">
-    The ref of the input element.
-  </APIItem>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onChange" type="function">
-        The function to call when the input value changes.
-      </APISubListItem>
-      <APISubListItem parent="props" name="checked" type="boolean">
-        Whether the link should open in a new tab.
-      </APISubListItem>
-      <APISubListItem parent="props" name="type" type="string">
-        The type of the input element.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
+</APIState>
 
 ### FloatingLinkUrlInput
 
-<APIProps>
-  <APIItem name="state" type="ReturnType<typeof useFloatingLinkUrlInputState>">
-    The state of the input.
-  </APIItem>
-</APIProps>
+The input for the link URL.
 
-<APIReturns>
-  <APIItem name="ref" type=" React.RefObject<HTMLInputElement>">
+<APIState>
+  <APIItem name="ref" type="RefObject">
     The ref of the input element.
   </APIItem>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onChange" type="function">
-        The function to call when the input value changes.
-      </APISubListItem>
-      <APISubListItem parent="props" name="defaultValue" type="string">
-        The default value of the input.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
+</APIState>
 
 ### LinkOpenButton
 
-<APIProps>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="element"
-        type="TLinkElement"
-        optional
-      >
-        The link element to open.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIProps>
+The button to open the link.
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="...linkAttributes" type="object">
-        The link attributes.
-      </APISubListItem>
-      <APISubListItem parent="props" name="target" type="string">
-        The target attribute of the link.
-      </APISubListItem>
-      <APISubListItem parent="props" name="'aria-label'" type="string">
-        The target attribute of the link.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onMouseOver" type="function">
-        The function to call when the mouse is over the button.
-      </APISubListItem>
-    </APISubList>
+<APIState>
+  <APIItem name="element" type="TLinkElement">
+    The link element to open.
   </APIItem>
-</APIReturns>
+</APIState>
 
 ### floatingLinkStore
+
+The store for the floating link.
 
 <APIState>
   <APIItem name="openEditorId" type="string">
@@ -476,13 +452,11 @@ Wrap a link node with split.
 
 ### useFloatingLinkEdit
 
+The behavior hook for the floating link edit.
+
 <APIState>
-  <APIItem
-    name="state"
-    type="ReturnType<typeof useFloatingLinkEditState>"
-    optional
-  >
-    The state of the floating link.
+  <APIItem name="floating" type="object" optional>
+    The virtual floating returned object.
   </APIItem>
 </APIState>
 
@@ -521,9 +495,15 @@ Listens for the Escape key press event and handles the behavior of the floating 
 
 ### useFloatingLinkInsert
 
+The behavior hook for inserting a link.
+
 <APIState>
-  <APIItem name="state" type="ReturnType<typeof useFloatingLinkInsertState>">
-    The state of the floating link.
+  <APIItem name="floating" type="ReturnType<typeof useFloatingLinkInsertState>">
+    The virtual floating returned object.
+  </APIItem>
+
+  <APIItem name="refClickOutside" type="React.Ref">
+    The ref of the floating element.
   </APIItem>
 </APIState>
 
@@ -558,13 +538,13 @@ Listens for the Escape key press event and handles the behavior of the floating 
 
 ### useLink
 
-Provides the props for a link element in the editor.
+The behavior hook for the link element.
 
 <APIParameters>
   <APIItem name="options" type="object">
     <APISubList>
       <APISubListItem parent="options" name="element" type="TLinkElement">
-        The link element to get the props for.
+        The link element.
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -573,13 +553,6 @@ Provides the props for a link element in the editor.
 <APIReturns>
   <APIItem name="props" type="object">
     <APISubList>
-      <APISubListItem
-        parent="props"
-        name="...getLinkAttributes()"
-        type="function"
-      >
-        The function to get the link attributes.
-      </APISubListItem>
       <APISubListItem parent="props" name="onMouseOver" type="function">
         The function to call when the mouse is over the link.
       </APISubListItem>
@@ -589,9 +562,11 @@ Provides the props for a link element in the editor.
 
 ### useLinkToolbarButton
 
+The behavior hook for the link toolbar button.
+
 <APIState>
-  <APIItem name="state" type="ReturnType<typeof useLinkToolbarButtonState>">
-    The state of the link toolbar button.
+  <APIItem name="pressed" type="boolean">
+    Whether the selection is in a link.
   </APIItem>
 </APIState>
 
@@ -614,20 +589,15 @@ Custom hook for managing virtual floating of a link.
 
 <APIParameters>
   <APIItem name="editorId" type="string">
-    The ID of the editor to which the link belongs.
+    The id of the editor to which the link belongs.
   </APIItem>
   <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
     Options for virtual floating.
-    <APISubList>
-      <APISubListItem parent="floatingOptions" name="editorId" type="string">
-        The ID of the editor to which the link belongs.
-      </APISubListItem>
-    </APISubList>
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="UseVirtualFloatingReturn()">
+  <APIItem type="UseVirtualFloatingReturn">
     The return value of the `useVirtualFloating` hook.
   </APIItem>
 </APIReturns>

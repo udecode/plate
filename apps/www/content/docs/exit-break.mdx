@@ -56,9 +56,7 @@ const plugins = [
 
 ### createExitBreakPlugin
 
-<APIParameters>
-
-Options.
+<APIOptions>
 
 <APIItem name="rules" type="ExitBreakRule[]" optional>
 
@@ -104,45 +102,47 @@ The default type of the node to be inserted upon exit.
 </APISubListItem>
 </APISubList>
 </APIItem>
-</APIParameters>
+</APIOptions>
 
 ### exitBreak
 
 Exit a large block using a shortcut.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="Omit<ExitBreakRule, 'hotkey'>">
-    The options for the exit break operation.
-    <APISubList>
-      <APISubListItem parent="options" name="level" type="number" optional>
-        Path level where to exit.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="Omit<ExitBreakRule, 'hotkey'>">
+The options for the exit break operation.
+<APISubList>
+<APISubListItem parent="options" name="level" type="number" optional>
+Path level where to exit.
 
-        - **Default:** `0`
-      </APISubListItem>
-      <APISubListItem parent="options" name="relative" type="boolean" optional>
-        If true, exit relative to the selection.
+- **Default:** `0`
 
-        - **Default:** `false`
-      </APISubListItem>
-      <APISubListItem parent="options" name="defaultType" type="function" optional>
-        The default type of the node to be inserted upon exit.
+</APISubListItem>
+<APISubListItem parent="options" name="relative" type="boolean" optional>
+If true, exit relative to the selection.
 
-        - **Default:** `getPluginType(editor, ELEMENT_DEFAULT)`
-      </APISubListItem>
-      <APISubListItem parent="options" name="query" type="object" optional>
-        Object determining the conditions under which to exit.
+- **Default:** `false`
 
-        - **Default:** {}
-      </APISubListItem>
-      <APISubListItem parent="options" name="before" type="boolean" optional>
-        If true, exit before the selected block.
-      </APISubListItem>
-    </APISubList>
+</APISubListItem>
+<APISubListItem parent="options" name="defaultType" type="function" optional>
+The default type of the node to be inserted upon exit.
 
-  </APIItem>
+- **Default:** `getPluginType(editor, ELEMENT_DEFAULT)`
+
+</APISubListItem>
+<APISubListItem parent="options" name="query" type="object" optional>
+Object determining the conditions under which to exit.
+
+</APISubListItem>
+<APISubListItem parent="options" name="before" type="boolean" optional>
+If true, exit before the selected block.
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>

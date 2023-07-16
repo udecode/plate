@@ -46,9 +46,7 @@ const plugins = [
 
 ### createMentionPlugin
 
-<APIAttributes>
-
-Options.
+<APIOptions>
 
 <APIItem name="createMentionNode" type="(item: TComboboxItem<TData>, meta: CreateMentionNodeMeta) => TNodeProps<TMentionElement>" optional>
  
@@ -56,7 +54,7 @@ A function to create the mention node.
 
 </APIItem>
 <APIItem name="id" type="string" optional>
-  A unique identifier for the mention plugin.
+  A unique id for the mention plugin.
 </APIItem>
 <APIItem name="insertSpaceAfterMention" type="boolean" optional>
   Whether to insert a space after the mention.
@@ -84,7 +82,7 @@ An object containing the key-value pair for creating an input.
   A query function to enable the behavior.
 </APIItem>
 
-</APIAttributes>
+</APIOptions>
 
 ### getMentionOnSelectItem
 

@@ -41,7 +41,7 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### createDndPlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem name="enableScroller" type="boolean" optional>
 Enables the scroller feature.
 
@@ -50,24 +50,24 @@ Enables the scroller feature.
 Props for the `Scroller` component.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### focusBlockStartById
 
-Selects the start of a block by ID and focuses the editor.
+Selects the start of a block by id and focuses the editor.
 
 <APIParameters>
   <APIItem name="editor" type="TReactEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The ID of the block to be focused.
+    The id of the block to be focused.
   </APIItem>
 </APIParameters>
 
 ### getBlocksWithId
 
-Returns an array of blocks that have an ID.
+Returns an array of blocks that have an id.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -78,6 +78,16 @@ Returns an array of blocks that have an ID.
   </APIItem>
 </APIParameters>
 
+<APIReturns>
+
+<APIItem type="TNodeEntry[]">
+
+An array of blocks that have an id.
+
+</APIItem>
+
+</APIReturns>
+
 ### selectBlockById
 
 <APIParameters>
@@ -85,7 +95,7 @@ Returns an array of blocks that have an ID.
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The ID of the block to select.
+    The id of the block to select.
   </APIItem>
 </APIParameters>
 
@@ -141,11 +151,33 @@ Enhances a component with draggable behavior.
 
 A wrapper component for the `Scroller` component that is conditionally rendered based on the dragging state from the `dndStore`.
 
-<APIProps>
-  <APIItem name="props" type="Partial<ScrollerProps>">
-    Props to be passed to the `Scroller` component.
+<APIState>
+  <APIItem name="enabled" type="boolean">
+    A flag indicating whether the scroll area is enabled. If set to false, the
+    scroll functionality is disabled.
   </APIItem>
-</APIProps>
+  <APIItem name="height" type="number">
+    The height of the scrollable area, specified in pixels.
+  </APIItem>
+  <APIItem name="zIndex" type="number">
+    The stack order of the scrollable area. An element with a higher z-index is
+    drawn in front of an element with a lower one.
+  </APIItem>
+  <APIItem name="minStrength" type="number">
+    The minimum strength (speed) of the scrolling action. Higher values will
+    make the scroll action more sensitive.
+  </APIItem>
+  <APIItem name="strengthMultiplier" type="number">
+    A multiplier that increases the scroll speed. Higher values will result in
+    faster scrolling.
+  </APIItem>
+  <APIItem name="containerRef" type="RefObject&lt;any&gt;">
+    A reference to the DOM element of the scrollable container.
+  </APIItem>
+  <APIItem name="scrollAreaProps" type="HTMLAttributes&lt;HTMLDivElement&gt;">
+    Additional props that can be spread onto the scroll area div element.
+  </APIItem>
+</APIState>
 
 ### useDndBlock
 
@@ -166,9 +198,9 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
   <APIItem name="options" type="UseDndNodeOptions">
     <APISubList>
       <APISubListItem parent="options" name="id" type="string">
-        The ID of the node to be dragged.
+        The id of the node to be dragged.
       </APISubListItem>
-      <APISubListItem parent="options" name="type" type="Identifier">
+      <APISubListItem parent="options" name="type" type="string">
         The type of the node to be dragged.
       </APISubListItem>
       <APISubListItem parent="options" name="nodeRef" type="any">
@@ -201,7 +233,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
 <APIItem name="isOver" type="boolean">
   Indicates whether the dragged node is currently over a drop target.
 </APIItem>
-<APIItem name="dropLine" type="DropLineDirection">
+<APIItem name="dropLine" type="'' | 'top' | 'bottom'">
   The direction of the drop line, indicating the position where the node can be
   dropped.
 </APIItem>
@@ -220,7 +252,7 @@ A custom hook that enables dragging of a block node from the editor. It internal
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The unique identifier of the block node to be dragged.
+    The unique id of the block node to be dragged.
   </APIItem>
 </APIParameters>
 
@@ -233,11 +265,11 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDragNodeOptions">
-    The options for the drag behavior, including the unique identifier of the
-    node to be dragged.
+    The options for the drag behavior, including the unique id of the node to be
+    dragged.
     <APISubList>
       <APISubListItem parent="options" name="id" type="string">
-        The unique identifier of the node to be dragged.
+        The unique id of the node to be dragged.
       </APISubListItem>
       <APISubListItem
         parent="options"
@@ -256,7 +288,7 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
 A custom hook that provides the necessary properties and event handlers for making an element draggable.
 
 <APIState>
-  <APIItem name="DropLine" type="DropLineDirection">
+  <APIItem name="DropLine" type="'' | 'top' | 'bottom'">
     The direction of the drop line, indicating the position where the node can
     be dropped.
   </APIItem>

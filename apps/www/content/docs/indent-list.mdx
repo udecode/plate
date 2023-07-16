@@ -59,7 +59,7 @@ const plugins = [
 
 ### createIndentListPlugin
 
-<APIParameters>
+<APIOptions>
   <APIItem
     name="getSiblingIndentListOptions"
     type="GetSiblingIndentListOptions<TElement>"
@@ -74,7 +74,7 @@ const plugins = [
   >
     A function mapping HTML elements to list style types.
   </APIItem>
-</APIParameters>
+</APIOptions>
 
 ### getNextIndentList
 
@@ -129,24 +129,28 @@ Gets the previous sibling entry with an indent list.
 Increases the indentation of the selected blocks.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions" optional>
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="listStyleType"
-        type="ListStyleType | string"
-        optional
-      >
-        The list style type to use.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="IndentListOptions" optional>
 
-        - **Default:** `ListStyleType.Disc`
-      </APISubListItem>
-    </APISubList>
+Extends `SetIndentOptions`.
 
-  </APIItem>
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="listStyleType"
+  type="ListStyleType | string"
+  optional
+>
+The list style type to use.
+
+- **Default:** `ListStyleType.Disc`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 ### outdentList
@@ -154,24 +158,28 @@ Increases the indentation of the selected blocks.
 Decreases the indentation of the selected blocks.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions" optional>
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="listStyleType"
-        type="ListStyleType | string"
-        optional
-      >
-        The list style type to use.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="IndentListOptions" optional>
 
-        - **Default:** `ListStyleType.Disc`
-      </APISubListItem>
-    </APISubList>
+Extends `SetIndentOptions`.
 
-  </APIItem>
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="listStyleType"
+  type="ListStyleType | string"
+  optional
+>
+The list style type to use.
+
+- **Default:** `ListStyleType.Disc`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 ### someIndentList
@@ -189,38 +197,75 @@ Checks if some of the selected blocks have a specific list style type.
 
 ### toggleIndentList
 
-Toggles the indentation of a list in the editor.
+Toggles the indent list.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions">
-    The options for toggling the indentation of the list.
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="listStyleType"
-        type="ListStyleType | string"
-        optional
-      >
-        The list style type to use.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="IndentListOptions">
+The options for toggling the indent list.
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="listStyleType"
+  type="ListStyleType | string"
+  optional
+>
+The list style type to use.
 
-      </APISubListItem>
-    </APISubList>
+</APISubListItem>
+</APISubList>
 
-  </APIItem>
+</APIItem>
 </APIParameters>
+
+### GetSiblingIndentListOptions
+
+Used to provide options for getting the sibling indent list in a block of text.
+
+<APIAttributes>
+  <APIItem name="getPreviousEntry" type="function">
+    This function is used to get the previous sibling entry from a given entry.
+  </APIItem>
+  <APIItem name="getNextEntry" type="function">
+    This function is used to get the next sibling entry from a given entry.
+  </APIItem>
+  <APIItem name="query" type="function">
+    This function is used to validate a sibling node during the lookup process.
+    If it returns false, the next sibling is checked.
+  </APIItem>
+  <APIItem name="eqIndent" type="boolean">
+    Indicates whether to break the lookup when the sibling node has an indent
+    level equal to the current node. If true, the lookup stops when a sibling
+    node with the same indent level is found.
+  </APIItem>
+  <APIItem name="breakQuery" type="function">
+    A function that takes a `TNode` and returns a boolean value or undefined.
+    This function is used to specify a condition under which the lookup process
+    should be stopped.
+  </APIItem>
+  <APIItem name="breakOnLowerIndent" type="boolean">
+    Indicates whether to break the lookup when a sibling node with a lower
+    indent level is found. If true, the lookup stops when a sibling node with a
+    lower indent level is found.
+  </APIItem>
+  <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
+    Indicates whether to break the lookup when a sibling node with the same
+    indent level but a different list style type is found. If true, the lookup
+    stops when such a sibling node is found.
+  </APIItem>
+</APIAttributes>
 
 ## API Components
 
 ### useIndentListToolbarButton
 
-A custom hook that provides functionality for an indent list toolbar button.
+A behavior hook for the indent list toolbar button.
 
 <APIState>
   <APIItem name="nodeType" type="string">
-    The node type of the indent list.
+    The list style type.
   </APIItem>
   <APIItem name="pressed" type="boolean">
     A boolean indicating whether the button is pressed or not.

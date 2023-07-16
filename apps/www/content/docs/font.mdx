@@ -63,16 +63,16 @@ const plugins = [
 
 ### useColorDropdownMenu
 
-A custom hook that returns the props for a color dropdown menu.
+A behavior hook for the color dropdown menu component.
 
-<APIProps>
+<APIState>
   <APIItem name="open" type="boolean">
     A boolean indicating whether the dropdown menu is open.
   </APIItem>
   <APIItem name="onToggle" type="function">
     A callback function to toggle the open state of the dropdown menu.
   </APIItem>
-</APIProps>
+</APIState>
 
 <APIReturns>
   <APIItem name="menuProps" type="object">
@@ -98,10 +98,10 @@ A custom hook that returns the props for a color dropdown menu.
 
 ### useColorInput
 
-A custom hook that provides functionality for a color input.
+A behavior hook for the color input component.
 
 <APIReturns>
-  <APIItem name="inputRef" type="React.MutableRefObject<HTMLInputElement">
+  <APIItem name="inputRef" type="React.Ref<HTMLInputElement>">
     A ref object that should be assigned to the color input element.
   </APIItem>
   <APIItem name="childProps" type="function">
@@ -117,9 +117,9 @@ A custom hook that provides functionality for a color input.
 
 ### useColorsCustom
 
-A custom hook that provides functionality for custom colors in a color picker.
+A behavior hook for custom colors in a color picker.
 
-<APIProps>
+<APIState>
   <APIItem name="updateCustomColor" type="function">
     The callback function to update the custom color.
   </APIItem>
@@ -129,7 +129,7 @@ A custom hook that provides functionality for custom colors in a color picker.
   <APIItem name="setValue" type="function">
     The callback function to update the value of the color input.
   </APIItem>
-</APIProps>
+</APIState>
 
 <APIReturns>
   <APIItem name="inputProps" type="object">

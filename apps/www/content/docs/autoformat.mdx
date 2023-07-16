@@ -57,39 +57,39 @@ const plugins = [
 
 ### `autoformatRules`
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatRules.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatRules.ts" />
 
 ### `autoformatBlocks`
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatBlocks.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatBlocks.ts" />
 
 ### `autoformatIndentLists`
 
 If using the [Indent List plugin](/docs/indent-list), you can use the following rules:
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatIndentLists.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatIndentLists.ts" />
 
 ### `autoformatLists`
 
 If using the [List plugin](/docs/list), you can use the following rules:
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatLists.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatLists.ts" />
 
 ### `autoformatMarks`
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatMarks.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatMarks.ts" />
 
 ### `autoformatUtils`
 
-<ComponentSource src="../../templates/plate-playground/src/lib/plate/autoformatUtils.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/autoformatUtils.ts" />
 
 ## API
 
 ### createAutoformatPlugin
 
-<APIAttributes>
+[//]: # '- **`key: KEY_AUTOFORMAT`**'
 
-Options.
+<APIOptions>
 
 <APIItem name="rules" type="AutoformatRule[]" optional>
 
@@ -104,7 +104,7 @@ A list of triggering rules.
 Enable undo on delete.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### Rules
 
@@ -122,12 +122,12 @@ You can import the following rules:
 |                                | Converts `<-` to `←`.                |
 |                                | Converts `=>` to `⇒`.                |
 |                                | Converts `<=` and `≤=` to `⇐`.       |
-| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.   |
-|                                | Converts `(r)` and `(R)` to `®`.     |
-|                                | Converts `(c)` and `(C)` to `©`.     |
-| `autoformatLegalHtml`          | Converts `&trade;` to `™`.           |
-|                                | Converts `&reg;` to `®`.             |
-|                                | Converts `&copy;` to `©`.            |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.  |
+|                                | Converts `(r)` and `(R)` to `®`.    |
+|                                | Converts `(c)` and `(C)` to `©`.    |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.          |
+|                                | Converts `&reg;` to `®`.            |
+|                                | Converts `&copy;` to `©`.           |
 |                                | Converts `&sect;` to `§`.            |
 | `autoformatComparison`         | Converts `!>` to `!>`.               |
 |                                | Converts `!<` to `≮`.                |

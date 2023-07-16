@@ -36,35 +36,68 @@ To get the value to save to your database, use `editor.cloud.getSaveValue()`. Th
 
 ### createCloudImagePlugin
 
+<APIOptions>
+  <APIItem name="maxInitialWidth" type="number" optional>
+    The maximum initial width of the cloud image.
+  </APIItem>
+  <APIItem name="maxInitialHeight" type="number" optional>
+    The maximum initial height of the cloud image.
+  </APIItem>
+  <APIItem name="minResizeWidth" type="number" optional>
+    The minimum width of the cloud image after resize.
+  </APIItem>
+  <APIItem name="maxResizeWidth" type="number" optional>
+    The maximum width of the cloud image after resize.
+  </APIItem>
+</APIOptions>
+
 ### createCloudPlugin
 
+<APIOptions>
+
+Extends `ClientOptions`.
+
+<APIItem name="uploadStoreInitialValue" type="Record<string, Upload>" optional>
+The initial state of the upload store. Each record maps a string key to an upload object.
+</APIItem>
+</APIOptions>
+
 ### createUploadStore
+
+<APIState>
+
+<APIItem name="uploads" type="Record<string, Upload>">
+  The lookup for origin files, where the keys are the IDs and the values are
+  upload information.
+</APIItem>
+
+</APIState>
 
 ### finishUploads
 
 Finds all the in-progress uploads and waits for them all to finish before resolving the returned promise.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateCloudEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="FinishUploadsOptions" optional>
-    The options for finishing uploads.
-  </APIItem>
-  <APISubList>
-    <APISubListItem
-      parent="options"
-      name="maxTimeoutInMs"
-      type="number"
-      optional
-    >
-      The maximum timeout in milliseconds. If the timeout is reached, the method
-      will return.
+<APIItem name="editor" type="PlateCloudEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="FinishUploadsOptions" optional>
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="maxTimeoutInMs"
+  type="number"
+  optional
+>
+The maximum timeout in milliseconds. If the timeout is reached, the method
+will return.
 
-      - Default : `TEN_MINUTES`
-    </APISubListItem>
+- **Default:** `TEN_MINUTES`
 
-  </APISubList>
+</APISubListItem>
+
+</APISubList>
+</APIItem>
 </APIParameters>
 
 ### generateSrcAndSrcSet
@@ -73,19 +106,18 @@ Generates the `src` and `srcSet` attributes for an image.
 
 <APIParameters>
   <APIItem name="options" type="object">
-    The options for generating the `src` and `srcSet`.
+    <APISubList>
+      <APISubListItem parent="options" name="url" type="string" optional>
+        The URL of the image.
+      </APISubListItem>
+      <APISubListItem parent="options" name="size" type="[number, number]">
+        The desired size of the image in pixels.
+      </APISubListItem>
+      <APISubListItem parent="options" name="maxSize" type="[number, number]">
+        The maximum size of the image in pixels.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APISubList>
-    <APISubListItem parent="options" name="url" type="string" optional>
-      The URL of the image.
-    </APISubListItem>
-    <APISubListItem parent="options" name="size" type="[number, number]">
-      The desired size of the image in pixels.
-    </APISubListItem>
-    <APISubListItem parent="options" name="maxSize" type="[number, number]">
-      The maximum size of the image in pixels.
-    </APISubListItem>
-  </APISubList>
 </APIParameters>
 
 <APIReturns>
@@ -175,6 +207,73 @@ Uploads a single file to the cloud.
   </APIItem>
 </APIParameters>
 
+### CloudEditorProps
+
+<APIAttributes>
+  <APIItem name="cloud" type="object">
+    Object containing methods and properties related to cloud operations.
+    <APISubList>
+      <APISubListItem parent="cloud" name="client" type="Client">
+        The client object for the cloud operations.
+      </APISubListItem>
+      <APISubListItem parent="cloud" name="uploadFiles" type="function">
+        A function to handle file upload.
+      </APISubListItem>
+      <APISubListItem
+        parent="cloud"
+        name="uploadStore"
+        type="ReturnType<typeof createUploadStore>"
+      >
+        The upload store object.
+      </APISubListItem>
+      <APISubListItem
+        parent="cloud"
+        name="genericFileHandlers"
+        type="object"
+        optional
+      >
+        Handlers for generic file upload events.
+      </APISubListItem>
+      <APISubListItem
+        parent="cloud"
+        name="imageFileHandlers"
+        type="object"
+        optional
+      >
+        Handlers for image file upload events.
+      </APISubListItem>
+      <APISubListItem parent="cloud" name="getSaveValue" type="function">
+        A function to get the current value of the editor.
+      </APISubListItem>
+      <APISubListItem parent="cloud" name="finishUploads" type="function">
+        A function to wait for all uploads to finish.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIAttributes>
+
+### CloudImageEditorProps
+
+<APIAttributes>
+  <APIItem name="cloudImage" type="object">
+    Object containing the dimensions of the cloud image.
+    <APISubList>
+      <APISubListItem parent="cloudImage" name="maxInitialWidth" type="number">
+        The maximum initial width of the cloud image.
+      </APISubListItem>
+      <APISubListItem parent="cloudImage" name="maxInitialHeight" type="number">
+        The maximum initial height of the cloud image.
+      </APISubListItem>
+      <APISubListItem parent="cloudImage" name="minResizeWidth" type="number">
+        The minimum width of the cloud image after resize.
+      </APISubListItem>
+      <APISubListItem parent="cloudImage" name="maxResizeWidth" type="number">
+        The maximum width of the cloud image after resize.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIAttributes>
+
 ### TCloudAttachmentElement
 
 <APIParameters>
@@ -189,6 +288,29 @@ Uploads a single file to the cloud.
   </APIItem>
 </APIParameters>
 
+### TCloudImageElement
+
+<APIAttributes>
+  <APIItem name="url" type="string">
+    The URL of the cloud image.
+  </APIItem>
+  <APIItem name="bytes" type="number">
+    The size of the image in bytes.
+  </APIItem>
+  <APIItem name="width" type="number">
+    The width of the cloud image.
+  </APIItem>
+  <APIItem name="height" type="number">
+    The height of the cloud image.
+  </APIItem>
+  <APIItem name="maxWidth" type="number">
+    The maximum width of the cloud image.
+  </APIItem>
+  <APIItem name="maxHeight" type="number">
+    The maximum height of the cloud image.
+  </APIItem>
+</APIAttributes>
+
 ## API Plugins
 
 ### withCloud
@@ -200,7 +322,7 @@ A higher-order function that enhances a Plate editor with cloud-related function
     The Plate editor instance.
   </APIItem>
   <APIItem name="plugin" type="WithPlatePlugin<CloudPlugin>">
-    The cloud plugin to be added to the editor.
+    The cloud plugin.
   </APIItem>
 </APIParameters>
 
@@ -214,10 +336,10 @@ A higher-order function that enhances a Plate Cloud editor with cloud attachment
 
 <APIParameters>
   <APIItem name="editor" type="E">
-    The Plate Cloud editor instance.
+    The Plate editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin<CloudAttachmentPlugin, V, E>">
-    The cloud attachment plugin to be added to the editor.
+  <APIItem name="plugin" type="WithPlatePlugin<CloudAttachmentPlugin>">
+    The cloud attachment plugin.
   </APIItem>
 </APIParameters>
 
@@ -230,11 +352,11 @@ A higher-order function that enhances a Plate Cloud editor with cloud attachment
 A higher-order function that enhances a Plate Cloud Image editor with cloud image functionality.
 
 <APIParameters>
-  <APIItem name="$editor" type="E">
-    The Plate Cloud Image editor instance.
+  <APIItem name="editor" type="E">
+    The Plate editor instance.
   </APIItem>
   <APIItem name="plugin" type="WithPlatePlugin<CloudImagePlugin>">
-    The cloud image plugin to be added to the editor.
+    The cloud image plugin.
   </APIItem>
 </APIParameters>
 
