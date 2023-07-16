@@ -3381,10 +3381,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/env@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/env@npm:13.4.10"
+  checksum: 6e12940aac2f8a383a5dfe5efcece80d53c4f5d267728074fba08fe1f68b7a31084357df91a015e4cee4406da5baf5fb48b4c347a99e0857b5d77b28ce96b520
+  languageName: node
+  linkType: hard
+
 "@next/env@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/env@npm:13.4.9"
   checksum: 89cec4baeb7a06042f55e3906a9b4fe34828431a959355d234be7a98bc1ff4097e9457edfd09989a3ba2bfbb38c08b65f3727f0dd42ffd6eca665b297c730165
+  languageName: node
+  linkType: hard
+
+"@next/eslint-plugin-next@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/eslint-plugin-next@npm:13.4.10"
+  dependencies:
+    glob: "npm:7.1.7"
+  checksum: ecc0cfb21d262dfedb04cf76209920f58a01df20dedec57d5d3ee2d8e0e5e2b335d88466460e92cbe71dca452ea0e59c7b17ae090d4aaaa563912df4ecde710e
   languageName: node
   linkType: hard
 
@@ -3397,10 +3413,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-darwin-arm64@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-darwin-arm64@npm:13.4.10"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@next/swc-darwin-arm64@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/swc-darwin-arm64@npm:13.4.9"
   conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@next/swc-darwin-x64@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-darwin-x64@npm:13.4.10"
+  conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
@@ -3411,10 +3441,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-linux-arm64-gnu@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-linux-arm64-gnu@npm:13.4.10"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@next/swc-linux-arm64-gnu@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/swc-linux-arm64-gnu@npm:13.4.9"
   conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@next/swc-linux-arm64-musl@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-linux-arm64-musl@npm:13.4.10"
+  conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
@@ -3425,10 +3469,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-linux-x64-gnu@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-linux-x64-gnu@npm:13.4.10"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@next/swc-linux-x64-gnu@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/swc-linux-x64-gnu@npm:13.4.9"
   conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@next/swc-linux-x64-musl@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-linux-x64-musl@npm:13.4.10"
+  conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
@@ -3439,6 +3497,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-win32-arm64-msvc@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-win32-arm64-msvc@npm:13.4.10"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@next/swc-win32-arm64-msvc@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/swc-win32-arm64-msvc@npm:13.4.9"
@@ -3446,10 +3511,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@next/swc-win32-ia32-msvc@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-win32-ia32-msvc@npm:13.4.10"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@next/swc-win32-ia32-msvc@npm:13.4.9":
   version: 13.4.9
   resolution: "@next/swc-win32-ia32-msvc@npm:13.4.9"
   conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@next/swc-win32-x64-msvc@npm:13.4.10":
+  version: 13.4.10
+  resolution: "@next/swc-win32-x64-msvc@npm:13.4.10"
+  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -4348,7 +4427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dropdown-menu@npm:^2.0.5":
+"@radix-ui/react-dropdown-menu@npm:2.0.5, @radix-ui/react-dropdown-menu@npm:^2.0.5":
   version: 2.0.5
   resolution: "@radix-ui/react-dropdown-menu@npm:2.0.5"
   dependencies:
@@ -5141,7 +5220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-toolbar@npm:^1.0.4":
+"@radix-ui/react-toolbar@npm:1.0.4, @radix-ui/react-toolbar@npm:^1.0.4":
   version: 1.0.4
   resolution: "@radix-ui/react-toolbar@npm:1.0.4"
   dependencies:
@@ -5167,7 +5246,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tooltip@npm:^1.0.6":
+"@radix-ui/react-tooltip@npm:1.0.6, @radix-ui/react-tooltip@npm:^1.0.6":
   version: 1.0.6
   resolution: "@radix-ui/react-tooltip@npm:1.0.6"
   dependencies:
@@ -5415,6 +5494,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-dnd/asap@npm:^5.0.1":
+  version: 5.0.2
+  resolution: "@react-dnd/asap@npm:5.0.2"
+  checksum: 6775539cf4cfc368791dc935e42ed33137af683d7de291dea5d475a50d24531689e9efc249da1fce9c707c04d52c30ee6b86c83c6de034f6cf4c7ea6ed541093
+  languageName: node
+  linkType: hard
+
 "@react-dnd/invariant@npm:3.0.1":
   version: 3.0.1
   resolution: "@react-dnd/invariant@npm:3.0.1"
@@ -5422,10 +5508,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-dnd/invariant@npm:^4.0.1":
+  version: 4.0.2
+  resolution: "@react-dnd/invariant@npm:4.0.2"
+  checksum: b69665aab308b9bdd0eb231dd839b6cf803e7df5d15231c5f3e96b6b42d7471dd188ee924301466d86e4df056e4e95376f603afad50b78773458103d1b83f02b
+  languageName: node
+  linkType: hard
+
 "@react-dnd/shallowequal@npm:3.0.1":
   version: 3.0.1
   resolution: "@react-dnd/shallowequal@npm:3.0.1"
   checksum: db18ecaacb2388e99ffcf6fb820e046a30dbb57d6e0a716426c7fc746d2860b9a27280e9f93b125ce5ccd508aef0a0f35ace3e834d76d98e3ba6304ba8f5c896
+  languageName: node
+  linkType: hard
+
+"@react-dnd/shallowequal@npm:^4.0.1":
+  version: 4.0.2
+  resolution: "@react-dnd/shallowequal@npm:4.0.2"
+  checksum: 1c23d7038e88a658b7264c6818ff6e9bcff9c1773153ce604a5e5f3728978a99b8966595733d97ebd444be7737fb62c9505ce35e43c5033ecfb151feab2e95e0
   languageName: node
   linkType: hard
 
@@ -6167,7 +6267,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:18.2.7":
+"@types/react-dom@npm:18.2.7, @types/react-dom@npm:^18.2.7":
   version: 18.2.7
   resolution: "@types/react-dom@npm:18.2.7"
   dependencies:
@@ -6196,7 +6296,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.2.14":
+"@types/react@npm:18.2.14, @types/react@npm:^18.2.14":
   version: 18.2.14
   resolution: "@types/react@npm:18.2.14"
   dependencies:
@@ -6590,7 +6690,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@udecode/plate-alignment@npm:22.0.2, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
+"@udecode/plate-alignment@npm:22.0.2, @udecode/plate-alignment@npm:^22.0.2, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
   dependencies:
@@ -6604,7 +6704,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-autoformat@npm:22.0.2, @udecode/plate-autoformat@workspace:^, @udecode/plate-autoformat@workspace:packages/autoformat":
+"@udecode/plate-autoformat@npm:22.0.2, @udecode/plate-autoformat@npm:^22.0.2, @udecode/plate-autoformat@workspace:^, @udecode/plate-autoformat@workspace:packages/autoformat":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-autoformat@workspace:packages/autoformat"
   dependencies:
@@ -6636,7 +6736,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-marks@npm:22.0.2, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
+"@udecode/plate-basic-marks@npm:22.0.2, @udecode/plate-basic-marks@npm:^22.0.2, @udecode/plate-basic-marks@workspace:*, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-marks@workspace:packages/basic-marks"
   dependencies:
@@ -6650,7 +6750,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-block-quote@npm:22.0.2, @udecode/plate-block-quote@workspace:^, @udecode/plate-block-quote@workspace:packages/block-quote":
+"@udecode/plate-block-quote@npm:22.0.2, @udecode/plate-block-quote@npm:^22.0.2, @udecode/plate-block-quote@workspace:*, @udecode/plate-block-quote@workspace:^, @udecode/plate-block-quote@workspace:packages/block-quote":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-block-quote@workspace:packages/block-quote"
   dependencies:
@@ -6664,7 +6764,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-break@npm:22.0.2, @udecode/plate-break@workspace:^, @udecode/plate-break@workspace:packages/break":
+"@udecode/plate-break@npm:22.0.2, @udecode/plate-break@npm:^22.0.2, @udecode/plate-break@workspace:^, @udecode/plate-break@workspace:packages/break":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-break@workspace:packages/break"
   dependencies:
@@ -6695,7 +6795,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:22.0.2, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@npm:22.0.2, @udecode/plate-code-block@npm:^22.0.2, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
@@ -6710,7 +6810,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-combobox@npm:22.0.2, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
+"@udecode/plate-combobox@npm:22.0.2, @udecode/plate-combobox@npm:^22.0.2, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-combobox@workspace:packages/combobox"
   dependencies:
@@ -6725,7 +6825,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:22.0.2, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:22.0.2, @udecode/plate-comments@npm:^22.0.2, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -6739,7 +6839,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-common@npm:22.0.2, @udecode/plate-common@workspace:^, @udecode/plate-common@workspace:packages/common":
+"@udecode/plate-common@npm:22.0.2, @udecode/plate-common@npm:^22.0.2, @udecode/plate-common@workspace:*, @udecode/plate-common@workspace:^, @udecode/plate-common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-common@workspace:packages/common"
   dependencies:
@@ -6782,7 +6882,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-cursor@workspace:^, @udecode/plate-cursor@workspace:packages/cursor":
+"@udecode/plate-cursor@npm:^22.0.2, @udecode/plate-cursor@workspace:^, @udecode/plate-cursor@workspace:packages/cursor":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cursor@workspace:packages/cursor"
   dependencies:
@@ -6796,7 +6896,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-dnd@workspace:^, @udecode/plate-dnd@workspace:packages/dnd":
+"@udecode/plate-dnd@npm:^22.0.2, @udecode/plate-dnd@workspace:^, @udecode/plate-dnd@workspace:packages/dnd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-dnd@workspace:packages/dnd"
   dependencies:
@@ -6813,7 +6913,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-emoji@workspace:^, @udecode/plate-emoji@workspace:packages/emoji":
+"@udecode/plate-emoji@npm:^22.0.2, @udecode/plate-emoji@workspace:^, @udecode/plate-emoji@workspace:packages/emoji":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-emoji@workspace:packages/emoji"
   dependencies:
@@ -6829,7 +6929,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-excalidraw@workspace:^, @udecode/plate-excalidraw@workspace:packages/excalidraw":
+"@udecode/plate-excalidraw@npm:^22.0.2, @udecode/plate-excalidraw@workspace:^, @udecode/plate-excalidraw@workspace:packages/excalidraw":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-excalidraw@workspace:packages/excalidraw"
   dependencies:
@@ -6858,7 +6958,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-floating@npm:22.0.2, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
+"@udecode/plate-floating@npm:22.0.2, @udecode/plate-floating@npm:^22.0.2, @udecode/plate-floating@workspace:*, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-floating@workspace:packages/floating"
   dependencies:
@@ -6874,7 +6974,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-font@npm:22.0.2, @udecode/plate-font@workspace:^, @udecode/plate-font@workspace:packages/font":
+"@udecode/plate-font@npm:22.0.2, @udecode/plate-font@npm:^22.0.2, @udecode/plate-font@workspace:^, @udecode/plate-font@workspace:packages/font":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-font@workspace:packages/font"
   dependencies:
@@ -6888,7 +6988,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-heading@npm:22.0.2, @udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
+"@udecode/plate-heading@npm:22.0.2, @udecode/plate-heading@npm:^22.0.2, @udecode/plate-heading@workspace:*, @udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-heading@workspace:packages/heading"
   dependencies:
@@ -6902,7 +7002,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-highlight@npm:22.0.2, @udecode/plate-highlight@workspace:^, @udecode/plate-highlight@workspace:packages/highlight":
+"@udecode/plate-highlight@npm:22.0.2, @udecode/plate-highlight@npm:^22.0.2, @udecode/plate-highlight@workspace:^, @udecode/plate-highlight@workspace:packages/highlight":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-highlight@workspace:packages/highlight"
   dependencies:
@@ -6916,7 +7016,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-horizontal-rule@npm:22.0.2, @udecode/plate-horizontal-rule@workspace:^, @udecode/plate-horizontal-rule@workspace:packages/horizontal-rule":
+"@udecode/plate-horizontal-rule@npm:22.0.2, @udecode/plate-horizontal-rule@npm:^22.0.2, @udecode/plate-horizontal-rule@workspace:^, @udecode/plate-horizontal-rule@workspace:packages/horizontal-rule":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-horizontal-rule@workspace:packages/horizontal-rule"
   dependencies:
@@ -6930,7 +7030,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:22.0.2, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:22.0.2, @udecode/plate-indent-list@npm:^22.0.2, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
@@ -6946,7 +7046,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent@npm:22.0.2, @udecode/plate-indent@workspace:^, @udecode/plate-indent@workspace:packages/indent":
+"@udecode/plate-indent@npm:22.0.2, @udecode/plate-indent@npm:^22.0.2, @udecode/plate-indent@workspace:^, @udecode/plate-indent@workspace:packages/indent":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent@workspace:packages/indent"
   dependencies:
@@ -6960,7 +7060,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-juice@workspace:^, @udecode/plate-juice@workspace:packages/juice":
+"@udecode/plate-juice@npm:^22.0.2, @udecode/plate-juice@workspace:^, @udecode/plate-juice@workspace:packages/juice":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-juice@workspace:packages/juice"
   dependencies:
@@ -6975,7 +7075,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-kbd@npm:22.0.2, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
+"@udecode/plate-kbd@npm:22.0.2, @udecode/plate-kbd@npm:^22.0.2, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-kbd@workspace:packages/kbd"
   dependencies:
@@ -6989,7 +7089,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-line-height@npm:22.0.2, @udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
+"@udecode/plate-line-height@npm:22.0.2, @udecode/plate-line-height@npm:^22.0.2, @udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-line-height@workspace:packages/line-height"
   dependencies:
@@ -7003,7 +7103,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-link@npm:22.0.2, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
+"@udecode/plate-link@npm:22.0.2, @udecode/plate-link@npm:^22.0.2, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-link@workspace:packages/link"
   dependencies:
@@ -7018,7 +7118,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-list@npm:22.0.2, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
+"@udecode/plate-list@npm:22.0.2, @udecode/plate-list@npm:^22.0.2, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
@@ -7033,7 +7133,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:22.0.2, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:22.0.2, @udecode/plate-media@npm:^22.0.2, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -7051,7 +7151,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-mention@npm:22.0.2, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
+"@udecode/plate-mention@npm:22.0.2, @udecode/plate-mention@npm:^22.0.2, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-mention@workspace:packages/mention"
   dependencies:
@@ -7066,7 +7166,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-node-id@npm:22.0.2, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
+"@udecode/plate-node-id@npm:22.0.2, @udecode/plate-node-id@npm:^22.0.2, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/node-id"
   dependencies:
@@ -7080,7 +7180,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-normalizers@npm:22.0.2, @udecode/plate-normalizers@workspace:^, @udecode/plate-normalizers@workspace:packages/normalizers":
+"@udecode/plate-normalizers@npm:22.0.2, @udecode/plate-normalizers@npm:^22.0.2, @udecode/plate-normalizers@workspace:^, @udecode/plate-normalizers@workspace:packages/normalizers":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-normalizers@workspace:packages/normalizers"
   dependencies:
@@ -7094,7 +7194,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-paragraph@npm:22.0.2, @udecode/plate-paragraph@workspace:^, @udecode/plate-paragraph@workspace:packages/paragraph":
+"@udecode/plate-paragraph@npm:22.0.2, @udecode/plate-paragraph@npm:^22.0.2, @udecode/plate-paragraph@workspace:*, @udecode/plate-paragraph@workspace:^, @udecode/plate-paragraph@workspace:packages/paragraph":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-paragraph@workspace:packages/paragraph"
   dependencies:
@@ -7108,7 +7208,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-reset-node@npm:22.0.2, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
+"@udecode/plate-reset-node@npm:22.0.2, @udecode/plate-reset-node@npm:^22.0.2, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-reset-node@workspace:packages/reset-node"
   dependencies:
@@ -7122,7 +7222,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-select@npm:22.0.2, @udecode/plate-select@workspace:^, @udecode/plate-select@workspace:packages/select":
+"@udecode/plate-select@npm:22.0.2, @udecode/plate-select@npm:^22.0.2, @udecode/plate-select@workspace:^, @udecode/plate-select@workspace:packages/select":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-select@workspace:packages/select"
   dependencies:
@@ -7136,7 +7236,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:^22.0.2, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -7152,7 +7252,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:22.0.2, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:22.0.2, @udecode/plate-serializer-csv@npm:^22.0.2, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
@@ -7170,7 +7270,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:22.0.2, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:22.0.2, @udecode/plate-serializer-docx@npm:^22.0.2, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -7192,7 +7292,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-html@npm:22.0.2, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
+"@udecode/plate-serializer-html@npm:22.0.2, @udecode/plate-serializer-html@npm:^22.0.2, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-html@workspace:packages/serializer-html"
   dependencies:
@@ -7209,7 +7309,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:22.0.2, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:22.0.2, @udecode/plate-serializer-md@npm:^22.0.2, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
@@ -7245,7 +7345,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-tabbable@npm:22.0.2, @udecode/plate-tabbable@workspace:^, @udecode/plate-tabbable@workspace:packages/tabbable":
+"@udecode/plate-tabbable@npm:22.0.2, @udecode/plate-tabbable@npm:^22.0.2, @udecode/plate-tabbable@workspace:^, @udecode/plate-tabbable@workspace:packages/tabbable":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-tabbable@workspace:packages/tabbable"
   dependencies:
@@ -7260,7 +7360,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:22.0.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:22.0.2, @udecode/plate-table@npm:^22.0.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -7284,7 +7384,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-trailing-block@npm:22.0.2, @udecode/plate-trailing-block@workspace:^, @udecode/plate-trailing-block@workspace:packages/trailing-block":
+"@udecode/plate-trailing-block@npm:22.0.2, @udecode/plate-trailing-block@npm:^22.0.2, @udecode/plate-trailing-block@workspace:^, @udecode/plate-trailing-block@workspace:packages/trailing-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-trailing-block@workspace:packages/trailing-block"
   dependencies:
@@ -8338,7 +8438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bl@npm:^4.1.0":
+"bl@npm:^4.0.3, bl@npm:^4.1.0":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
   dependencies:
@@ -8961,6 +9061,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chownr@npm:^1.1.1":
+  version: 1.1.4
+  resolution: "chownr@npm:1.1.4"
+  checksum: 011dfe9853fe7feed4fdcb25d2d3b2bf67957948f8e7988d7540aaf56e9cbfb5384d5b56808dfa140277be02401acdfa75f5b67b78576497e482ea8036666ed2
+  languageName: node
+  linkType: hard
+
 "chownr@npm:^2.0.0":
   version: 2.0.0
   resolution: "chownr@npm:2.0.0"
@@ -8992,7 +9099,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-variance-authority@npm:^0.6.1":
+"class-variance-authority@npm:0.6.1, class-variance-authority@npm:^0.6.1":
   version: 0.6.1
   resolution: "class-variance-authority@npm:0.6.1"
   dependencies:
@@ -9110,7 +9217,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cmdk@npm:^0.2.0":
+"cmdk@npm:0.2.0, cmdk@npm:^0.2.0":
   version: 0.2.0
   resolution: "cmdk@npm:0.2.0"
   dependencies:
@@ -9169,10 +9276,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-name@npm:^1.1.4, color-name@npm:~1.1.4":
+"color-name@npm:^1.0.0, color-name@npm:^1.1.4, color-name@npm:~1.1.4":
   version: 1.1.4
   resolution: "color-name@npm:1.1.4"
   checksum: 80acf64638343898f5b36825f4c9715ced380e738400b308f3f90ca2327f2f98f0c2cfb1f1a6447f267a2e1d1ea2214f26e948d8acab547e5478e2b0816c7c30
+  languageName: node
+  linkType: hard
+
+"color-string@npm:^1.9.0":
+  version: 1.9.1
+  resolution: "color-string@npm:1.9.1"
+  dependencies:
+    color-name: "npm:^1.0.0"
+    simple-swizzle: "npm:^0.2.2"
+  checksum: cf76db4143e9d375401d56831ec6bffdfff17aa90276a41dcbdb1723fd7242b2cb6ed2058901544af5823fdf152cdea02eda8546cdd3fe96d4a6a16920166902
   languageName: node
   linkType: hard
 
@@ -9182,6 +9299,16 @@ __metadata:
   bin:
     color-support: bin.js
   checksum: 8dc879a976be92306773276728e0bbb0925478b2373f133a98e563c497ccd58f220b9c30cea37c72678fe071627d7391b3751a1b92aaa5e872cd278b00b96b74
+  languageName: node
+  linkType: hard
+
+"color@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "color@npm:4.2.3"
+  dependencies:
+    color-convert: "npm:^2.0.1"
+    color-string: "npm:^1.9.0"
+  checksum: 6163589829b503c36000a0f2a5854661ecc1c1660d98a703a3230fb1b44b00a6b9804ac1cf8e77d05eab084e6ecac35c0a59d1791c6ff1508bee9636ae0b78b7
   languageName: node
   linkType: hard
 
@@ -9857,6 +9984,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"decompress-response@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "decompress-response@npm:6.0.0"
+  dependencies:
+    mimic-response: "npm:^3.1.0"
+  checksum: b4575b109e38fe4bc10a8dc1a9167490da2efc07449bdc2ac9e3444592ee892e84fa89974448639388ad1f56f3a16e95606f3ab9d0c3dbdb84f1cbe432252b9f
+  languageName: node
+  linkType: hard
+
 "dedent@npm:^0.7.0":
   version: 0.7.0
   resolution: "dedent@npm:0.7.0"
@@ -9896,6 +10032,13 @@ __metadata:
     which-collection: "npm:^1.0.1"
     which-typed-array: "npm:^1.1.9"
   checksum: ec4bf706218bf9fdabb1716f00fedebf47d4105ae3982f3d0812d452a40f1dc07c08cabda57c1f0615c67c55a416652ecb4184a5847165576f8c55728af88f8d
+  languageName: node
+  linkType: hard
+
+"deep-extend@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "deep-extend@npm:0.6.0"
+  checksum: 9320ad7378ceb509703180d40da1625393906f55beeb10b55d9a1d39dc77e6e56e76c09eef905320330f89738df2c40bdf0e85777d14d5d3a8059c3cabbf3919
   languageName: node
   linkType: hard
 
@@ -10068,6 +10211,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"detect-libc@npm:^2.0.0, detect-libc@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "detect-libc@npm:2.0.1"
+  checksum: 056a7941c5d60b4f40aa23b77f0bed29de4b3fe281f063812a67e4e6320a0efb1e4b811bf7b01e72b2b643ea009b14165e0b72588c08e1c8de2412945b4dcc6f
+  languageName: node
+  linkType: hard
+
 "detect-newline@npm:^3.0.0":
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
@@ -10154,6 +10304,17 @@ __metadata:
     "@react-dnd/invariant": "npm:3.0.1"
     redux: "npm:^4.1.2"
   checksum: 59a94a035e5dcc72d45867177ed502b439efa5ae7e8225e145bebad01c67b1a192ac25ace13bec00525cc4e505f146242fffb57183e24af45df4cc8d2e277e88
+  languageName: node
+  linkType: hard
+
+"dnd-core@npm:^16.0.1":
+  version: 16.0.1
+  resolution: "dnd-core@npm:16.0.1"
+  dependencies:
+    "@react-dnd/asap": "npm:^5.0.1"
+    "@react-dnd/invariant": "npm:^4.0.1"
+    redux: "npm:^4.2.0"
+  checksum: 9d9fdeb65e70f644d9b941b2fa28c78e86a1ec574a7048186a50f4f62b838e1bbf5188700452eb85ed5ab4be12b26209dc5c7dde9a9226cbd079bc67360eb896
   languageName: node
   linkType: hard
 
@@ -10359,6 +10520,15 @@ __metadata:
   dependencies:
     iconv-lite: "npm:^0.6.2"
   checksum: 954eb7d006c8d466207dcda57ddd15b1d6667607b8da15c7ce400d377504aafcc5e2f5507027cfb045cad7aefd15d18aa3f6e14f3a73ed2b26ad5ff08004536b
+  languageName: node
+  linkType: hard
+
+"end-of-stream@npm:^1.1.0, end-of-stream@npm:^1.4.1":
+  version: 1.4.4
+  resolution: "end-of-stream@npm:1.4.4"
+  dependencies:
+    once: "npm:^1.4.0"
+  checksum: fa73674a01c2e7a3e17c801cb916c1e0c77f2cc719a42cee1bb3ce3550b9425369e4d0a2b2ce6670cb8eff07d34e67333949c83a30e7ec94625cec68aa07664e
   languageName: node
   linkType: hard
 
@@ -10818,7 +10988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-next@npm:^13.4.9":
+"eslint-config-next@npm:13.4.9":
   version: 13.4.9
   resolution: "eslint-config-next@npm:13.4.9"
   dependencies:
@@ -10838,6 +11008,29 @@ __metadata:
     typescript:
       optional: true
   checksum: ef630d6cfad15632a9114d05253ed14fa31147c4d16138a6800c8ff8ed1dc93ef98a29eeb392ce892ef59c4b639bb7098541c62c998153dd28795e57357a28ed
+  languageName: node
+  linkType: hard
+
+"eslint-config-next@npm:^13.4.9":
+  version: 13.4.10
+  resolution: "eslint-config-next@npm:13.4.10"
+  dependencies:
+    "@next/eslint-plugin-next": "npm:13.4.10"
+    "@rushstack/eslint-patch": "npm:^1.1.3"
+    "@typescript-eslint/parser": "npm:^5.42.0"
+    eslint-import-resolver-node: "npm:^0.3.6"
+    eslint-import-resolver-typescript: "npm:^3.5.2"
+    eslint-plugin-import: "npm:^2.26.0"
+    eslint-plugin-jsx-a11y: "npm:^6.5.1"
+    eslint-plugin-react: "npm:^7.31.7"
+    eslint-plugin-react-hooks: "npm:5.0.0-canary-7118f5dd7-20230705"
+  peerDependencies:
+    eslint: ^7.23.0 || ^8.0.0
+    typescript: ">=3.3.1"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 4c0150cbd7abd43f3abca6b857f556b93fe25e5fb7c696cda61062f30a416645506a3ea92c5ddad2e0d741b5eb69ba2c1e6ecca7734bed937c2454af4a5f8f35
   languageName: node
   linkType: hard
 
@@ -11256,7 +11449,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.44.0":
+"eslint@npm:8.44.0, eslint@npm:^8.44.0":
   version: 8.44.0
   resolution: "eslint@npm:8.44.0"
   dependencies:
@@ -11526,6 +11719,13 @@ __metadata:
   version: 0.1.2
   resolution: "exit@npm:0.1.2"
   checksum: 591b85eb0248ae7ab8388c84412187655f5569e1dd3a7d45ee1951bc346f56606594772fdee0f9917d0c170eb3b201ee6a2d60a8114d47a2d7b07063be717c76
+  languageName: node
+  linkType: hard
+
+"expand-template@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "expand-template@npm:2.0.3"
+  checksum: 11824d593f92f9ea6b8b29574db3bf904d1d910570176e5abbaba6e891a052784a0131f67d1d7c0831d9ea21630cf649d5aa661f21c22e0b2536635cfb6cb1a8
   languageName: node
   linkType: hard
 
@@ -11988,6 +12188,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-constants@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "fs-constants@npm:1.0.0"
+  checksum: fc080f48eec0d9cef6750e804f31c6ceac3f4222dfd7003c7ac350f6be91979b084d27e4249e8e66f54caf5ea0465721078934ce44302d9d725209830c8fd730
+  languageName: node
+  linkType: hard
+
 "fs-extra@npm:^10.0.0":
   version: 10.1.0
   resolution: "fs-extra@npm:10.1.0"
@@ -12232,6 +12439,13 @@ __metadata:
   dependencies:
     resolve-pkg-maps: "npm:^1.0.0"
   checksum: f7e7d4e5853f9949a12b84ef5e4af64e2bd5dd0bf48670413300ea8bf818a1424c7af6fc8e218ed4bd1f1f1e9c78c282f3607825bdfc490ee8439792bbef24ce
+  languageName: node
+  linkType: hard
+
+"github-from-package@npm:0.0.0":
+  version: 0.0.0
+  resolution: "github-from-package@npm:0.0.0"
+  checksum: 5ef16dcb4ca336ddff2c479227ea252c808d785608f2851826d880e1c63c3e03855ffbf90f2f97f88a1858cba8c23e0687eba094da9b4f9fddde843bb7ca7502
   languageName: node
   linkType: hard
 
@@ -13108,7 +13322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ini@npm:^1.3.4":
+"ini@npm:^1.3.4, ini@npm:~1.3.0":
   version: 1.3.8
   resolution: "ini@npm:1.3.8"
   checksum: 37fad549288bc1d016dce7360166c87d28cd1e3ca4077bd30a1bd648285b9a4f6212062a121bec0f06673687a23642b1f945e940998055427c8c15fead710c3a
@@ -13255,6 +13469,13 @@ __metadata:
   version: 0.2.1
   resolution: "is-arrayish@npm:0.2.1"
   checksum: c701fd85259ab454cfacf4a30123e3e43542a3e60124a670e89f6e5847590ff4a6e4c0d8ccbe940df64f0001547f65856cf6a13b6528a7ce93da34cf2b2ea23d
+  languageName: node
+  linkType: hard
+
+"is-arrayish@npm:^0.3.1":
+  version: 0.3.2
+  resolution: "is-arrayish@npm:0.3.2"
+  checksum: aed0a701c526d97138e196db5e445da84fea5b649e9466c1d592d2fa7a2a12aa37acb03ca313c38341787dcec5c45b20559bb2abc101dad585d82227e6bc5480
   languageName: node
   linkType: hard
 
@@ -16296,6 +16517,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mimic-response@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "mimic-response@npm:3.1.0"
+  checksum: 1d485ca418ab93d27d5a90b0ad701eee79fdf6a7dfd0342f7c83e1f2b421703eadadf9d1c968bff4749dcb42bb2148dc4b6bce795b7b357b46d47731353b7077
+  languageName: node
+  linkType: hard
+
 "min-indent@npm:^1.0.0, min-indent@npm:^1.0.1":
   version: 1.0.1
   resolution: "min-indent@npm:1.0.1"
@@ -16364,7 +16592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimist@npm:^1.2.0, minimist@npm:^1.2.5, minimist@npm:^1.2.6":
+"minimist@npm:^1.2.0, minimist@npm:^1.2.3, minimist@npm:^1.2.5, minimist@npm:^1.2.6":
   version: 1.2.8
   resolution: "minimist@npm:1.2.8"
   checksum: 8598f846f2b7546b22b01ce486df27da216a302367afe17f2a032da12fcb8d33bfbf2c523051230864abf0b806748bd60d4cd0863fae35fe104da1ff6194a185
@@ -16462,6 +16690,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mkdirp-classic@npm:^0.5.2, mkdirp-classic@npm:^0.5.3":
+  version: 0.5.3
+  resolution: "mkdirp-classic@npm:0.5.3"
+  checksum: 5afc1f004d905d299db7f58035f77a23b8703802e89486f09635971be0e6d09f409c2c862fe4c9a5bcba563675e831840fd0fd8b5c2f5bd41f6aa5a9e4b3bb3a
+  languageName: node
+  linkType: hard
+
 "mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
@@ -16546,6 +16781,13 @@ __metadata:
   bin:
     nanoid: bin/nanoid.js
   checksum: 0e28bade6b10396bc0936980c7569e9710341b3dd8775bcd0645b7d23f59ff64e59c4413f48836bc336711ef1cc4f61f6453946a3bf69c4c235fab9d221f9216
+  languageName: node
+  linkType: hard
+
+"napi-build-utils@npm:^1.0.1":
+  version: 1.0.2
+  resolution: "napi-build-utils@npm:1.0.2"
+  checksum: f8135037d1e07905c414f8bfbd40e6cc28473c6b24becee470dde4599eb2e431e248f5cb2af9af3f6cc92dc82a3158de739550c24e32c8a13d2441df23b3536a
   languageName: node
   linkType: hard
 
@@ -16662,6 +16904,65 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next@npm:^13.4.9":
+  version: 13.4.10
+  resolution: "next@npm:13.4.10"
+  dependencies:
+    "@next/env": "npm:13.4.10"
+    "@next/swc-darwin-arm64": "npm:13.4.10"
+    "@next/swc-darwin-x64": "npm:13.4.10"
+    "@next/swc-linux-arm64-gnu": "npm:13.4.10"
+    "@next/swc-linux-arm64-musl": "npm:13.4.10"
+    "@next/swc-linux-x64-gnu": "npm:13.4.10"
+    "@next/swc-linux-x64-musl": "npm:13.4.10"
+    "@next/swc-win32-arm64-msvc": "npm:13.4.10"
+    "@next/swc-win32-ia32-msvc": "npm:13.4.10"
+    "@next/swc-win32-x64-msvc": "npm:13.4.10"
+    "@swc/helpers": "npm:0.5.1"
+    busboy: "npm:1.6.0"
+    caniuse-lite: "npm:^1.0.30001406"
+    postcss: "npm:8.4.14"
+    styled-jsx: "npm:5.1.1"
+    watchpack: "npm:2.4.0"
+    zod: "npm:3.21.4"
+  peerDependencies:
+    "@opentelemetry/api": ^1.1.0
+    fibers: ">= 3.1.0"
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    sass: ^1.3.0
+  dependenciesMeta:
+    "@next/swc-darwin-arm64":
+      optional: true
+    "@next/swc-darwin-x64":
+      optional: true
+    "@next/swc-linux-arm64-gnu":
+      optional: true
+    "@next/swc-linux-arm64-musl":
+      optional: true
+    "@next/swc-linux-x64-gnu":
+      optional: true
+    "@next/swc-linux-x64-musl":
+      optional: true
+    "@next/swc-win32-arm64-msvc":
+      optional: true
+    "@next/swc-win32-ia32-msvc":
+      optional: true
+    "@next/swc-win32-x64-msvc":
+      optional: true
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+    fibers:
+      optional: true
+    sass:
+      optional: true
+  bin:
+    next: dist/bin/next
+  checksum: 9764810930e0b838c8598940b3292bd887cc8a92ac22b7e79429b26a2545530033a448361fa4bc2449a87f316b8a2ef06f6f0c2acc7bed5bd02305b5faea9f71
+  languageName: node
+  linkType: hard
+
 "no-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "no-case@npm:3.0.4"
@@ -16669,6 +16970,24 @@ __metadata:
     lower-case: "npm:^2.0.2"
     tslib: "npm:^2.0.3"
   checksum: 862a2115a3eb27b2293be320faf1408cb0ee75a1da41a463463f53bfeb34f20c89805279fc2c6123b79c3d366f9e445cfcb8e0582611e2bd6712fa8edfaabbda
+  languageName: node
+  linkType: hard
+
+"node-abi@npm:^3.3.0":
+  version: 3.45.0
+  resolution: "node-abi@npm:3.45.0"
+  dependencies:
+    semver: "npm:^7.3.5"
+  checksum: 3d88d1503ba4e54a9f81389e6b70e03c9cded0a581fe4203e899ce68968844a2661cffae9bd9e8d705f0275bea91c6ad4c3e74feb44c3e3a8fe4ca60f9a2057b
+  languageName: node
+  linkType: hard
+
+"node-addon-api@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "node-addon-api@npm:6.1.0"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 868881a258ec40c180a540bc2eaf07844c44aad6965a5335a76eb05019790ef238412a6a23e757e462f5d1d9d9332dde97fb09a8642f7048b20c4313f708d98d
   languageName: node
   linkType: hard
 
@@ -17024,7 +17343,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"once@npm:^1.3.0":
+"once@npm:^1.3.0, once@npm:^1.3.1, once@npm:^1.4.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
   dependencies:
@@ -17770,6 +18089,149 @@ __metadata:
   languageName: node
   linkType: hard
 
+"plate-playground-template@workspace:templates/plate-playground-template":
+  version: 0.0.0-use.local
+  resolution: "plate-playground-template@workspace:templates/plate-playground-template"
+  dependencies:
+    "@ianvs/prettier-plugin-sort-imports": "npm:^4.0.2"
+    "@radix-ui/react-avatar": "npm:^1.0.3"
+    "@radix-ui/react-checkbox": "npm:^1.0.4"
+    "@radix-ui/react-dialog": "npm:^1.0.4"
+    "@radix-ui/react-dropdown-menu": "npm:2.0.5"
+    "@radix-ui/react-popover": "npm:^1.0.6"
+    "@radix-ui/react-scroll-area": "npm:^1.0.4"
+    "@radix-ui/react-separator": "npm:^1.0.3"
+    "@radix-ui/react-slot": "npm:^1.0.2"
+    "@radix-ui/react-toggle": "npm:^1.0.3"
+    "@radix-ui/react-toolbar": "npm:^1.0.4"
+    "@radix-ui/react-tooltip": "npm:^1.0.6"
+    "@types/node": "npm:^20.4.2"
+    "@types/react": "npm:^18.2.14"
+    "@types/react-dom": "npm:^18.2.7"
+    "@typescript-eslint/parser": "npm:^6.0.0"
+    "@udecode/plate-alignment": "npm:^22.0.2"
+    "@udecode/plate-autoformat": "npm:^22.0.2"
+    "@udecode/plate-basic-marks": "npm:^22.0.2"
+    "@udecode/plate-block-quote": "npm:^22.0.2"
+    "@udecode/plate-break": "npm:^22.0.2"
+    "@udecode/plate-code-block": "npm:^22.0.2"
+    "@udecode/plate-combobox": "npm:^22.0.2"
+    "@udecode/plate-comments": "npm:^22.0.2"
+    "@udecode/plate-common": "npm:^22.0.2"
+    "@udecode/plate-cursor": "npm:^22.0.2"
+    "@udecode/plate-dnd": "npm:^22.0.2"
+    "@udecode/plate-emoji": "npm:^22.0.2"
+    "@udecode/plate-excalidraw": "npm:^22.0.2"
+    "@udecode/plate-floating": "npm:^22.0.2"
+    "@udecode/plate-font": "npm:^22.0.2"
+    "@udecode/plate-heading": "npm:^22.0.2"
+    "@udecode/plate-highlight": "npm:^22.0.2"
+    "@udecode/plate-horizontal-rule": "npm:^22.0.2"
+    "@udecode/plate-indent": "npm:^22.0.2"
+    "@udecode/plate-indent-list": "npm:^22.0.2"
+    "@udecode/plate-juice": "npm:^22.0.2"
+    "@udecode/plate-kbd": "npm:^22.0.2"
+    "@udecode/plate-line-height": "npm:^22.0.2"
+    "@udecode/plate-link": "npm:^22.0.2"
+    "@udecode/plate-list": "npm:^22.0.2"
+    "@udecode/plate-media": "npm:^22.0.2"
+    "@udecode/plate-mention": "npm:^22.0.2"
+    "@udecode/plate-node-id": "npm:^22.0.2"
+    "@udecode/plate-normalizers": "npm:^22.0.2"
+    "@udecode/plate-paragraph": "npm:^22.0.2"
+    "@udecode/plate-reset-node": "npm:^22.0.2"
+    "@udecode/plate-select": "npm:^22.0.2"
+    "@udecode/plate-selection": "npm:^22.0.2"
+    "@udecode/plate-serializer-csv": "npm:^22.0.2"
+    "@udecode/plate-serializer-docx": "npm:^22.0.2"
+    "@udecode/plate-serializer-html": "npm:^22.0.2"
+    "@udecode/plate-serializer-md": "npm:^22.0.2"
+    "@udecode/plate-tabbable": "npm:^22.0.2"
+    "@udecode/plate-table": "npm:^22.0.2"
+    "@udecode/plate-trailing-block": "npm:^22.0.2"
+    autoprefixer: "npm:^10.4.14"
+    class-variance-authority: "npm:0.6.1"
+    clsx: "npm:1.2.1"
+    cmdk: "npm:0.2.0"
+    date-fns: "npm:^2.30.0"
+    encoding: "npm:^0.1.13"
+    eslint: "npm:^8.44.0"
+    eslint-config-next: "npm:13.4.9"
+    eslint-config-prettier: "npm:^8.8.0"
+    eslint-plugin-prettier: "npm:^5.0.0"
+    eslint-plugin-react: "npm:^7.32.2"
+    eslint-plugin-tailwindcss: "npm:^3.13.0"
+    eslint-plugin-unused-imports: "npm:^3.0.0"
+    lucide-react: "npm:0.260.0"
+    next: "npm:^13.4.9"
+    next-themes: "npm:^0.2.1"
+    postcss: "npm:^8.4.25"
+    prettier: "npm:^3.0.0"
+    react: "npm:^18.2.0"
+    react-dnd: "npm:15.1.2"
+    react-dnd-html5-backend: "npm:15.1.3"
+    react-dom: "npm:^18.2.0"
+    slate: "npm:0.94.1"
+    slate-history: "npm:0.93.0"
+    slate-react: "npm:^0.97.2"
+    tailwind-merge: "npm:1.13.2"
+    tailwindcss: "npm:^3.3.2"
+    tailwindcss-animate: "npm:1.0.6"
+    typescript: "npm:5.1.6"
+  languageName: unknown
+  linkType: soft
+
+"plate-template@workspace:templates/plate-template":
+  version: 0.0.0-use.local
+  resolution: "plate-template@workspace:templates/plate-template"
+  dependencies:
+    "@ianvs/prettier-plugin-sort-imports": "npm:^4.0.2"
+    "@radix-ui/react-dropdown-menu": "npm:2.0.5"
+    "@radix-ui/react-separator": "npm:1.0.3"
+    "@radix-ui/react-slot": "npm:1.0.2"
+    "@radix-ui/react-toggle": "npm:1.0.3"
+    "@radix-ui/react-toolbar": "npm:1.0.4"
+    "@radix-ui/react-tooltip": "npm:1.0.6"
+    "@types/node": "npm:^20.4.2"
+    "@types/react": "npm:^18.2.14"
+    "@types/react-dom": "npm:^18.2.7"
+    "@typescript-eslint/parser": "npm:^6.0.0"
+    "@udecode/plate-basic-marks": "workspace:*"
+    "@udecode/plate-block-quote": "workspace:*"
+    "@udecode/plate-common": "workspace:*"
+    "@udecode/plate-floating": "workspace:*"
+    "@udecode/plate-heading": "workspace:*"
+    "@udecode/plate-paragraph": "workspace:*"
+    autoprefixer: "npm:^10.4.14"
+    class-variance-authority: "npm:0.6.1"
+    clsx: "npm:1.2.1"
+    cmdk: "npm:0.2.0"
+    eslint: "npm:^8.44.0"
+    eslint-config-next: "npm:13.4.9"
+    eslint-config-prettier: "npm:^8.8.0"
+    eslint-plugin-react: "npm:^7.32.2"
+    eslint-plugin-tailwindcss: "npm:^3.13.0"
+    eslint-plugin-unused-imports: "npm:^3.0.0"
+    lucide-react: "npm:0.260.0"
+    next: "npm:^13.4.9"
+    next-themes: "npm:^0.2.1"
+    postcss: "npm:^8.4.25"
+    prettier: "npm:^3.0.0"
+    react: "npm:^18.2.0"
+    react-dnd: "npm:16.0.1"
+    react-dnd-html5-backend: "npm:16.0.1"
+    react-dom: "npm:^18.2.0"
+    sharp: "npm:^0.32.1"
+    slate: "npm:0.94.1"
+    slate-history: "npm:0.93.0"
+    slate-react: "npm:^0.97.1"
+    tailwind-merge: "npm:1.13.2"
+    tailwindcss: "npm:^3.3.2"
+    tailwindcss-animate: "npm:1.0.6"
+    typescript: "npm:5.1.6"
+  languageName: unknown
+  linkType: soft
+
 "playwright-core@npm:1.36.0":
   version: 1.36.0
   resolution: "playwright-core@npm:1.36.0"
@@ -18302,6 +18764,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prebuild-install@npm:^7.1.1":
+  version: 7.1.1
+  resolution: "prebuild-install@npm:7.1.1"
+  dependencies:
+    detect-libc: "npm:^2.0.0"
+    expand-template: "npm:^2.0.3"
+    github-from-package: "npm:0.0.0"
+    minimist: "npm:^1.2.3"
+    mkdirp-classic: "npm:^0.5.3"
+    napi-build-utils: "npm:^1.0.1"
+    node-abi: "npm:^3.3.0"
+    pump: "npm:^3.0.0"
+    rc: "npm:^1.2.7"
+    simple-get: "npm:^4.0.0"
+    tar-fs: "npm:^2.0.0"
+    tunnel-agent: "npm:^0.6.0"
+  bin:
+    prebuild-install: bin.js
+  checksum: 3ad2c49cbd7e7d52a6c6967ee3ca6f3f333f301a70866f21accadb9e29dbbf905e76ac543cfe3a1911fbd583bbe39f05b944278439e6ae402f0e9df768c3a0ee
+  languageName: node
+  linkType: hard
+
 "preferred-pm@npm:^3.0.0":
   version: 3.0.3
   resolution: "preferred-pm@npm:3.0.3"
@@ -18594,6 +19078,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pump@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "pump@npm:3.0.0"
+  dependencies:
+    end-of-stream: "npm:^1.1.0"
+    once: "npm:^1.3.1"
+  checksum: b2e6702ce154c091b2895cf6f09b35d4db783a3b9658c177387ff6ad00c0e9f6dd9fc5c70f64a3b360bc3624340fca69ff565fad586a206d6818f5e87d836420
+  languageName: node
+  linkType: hard
+
 "punycode@npm:^2.1.0, punycode@npm:^2.1.1":
   version: 2.3.0
   resolution: "punycode@npm:2.3.0"
@@ -18657,12 +19151,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dnd-html5-backend@npm:^15.1.3":
+"rc@npm:^1.2.7":
+  version: 1.2.8
+  resolution: "rc@npm:1.2.8"
+  dependencies:
+    deep-extend: "npm:^0.6.0"
+    ini: "npm:~1.3.0"
+    minimist: "npm:^1.2.0"
+    strip-json-comments: "npm:~2.0.1"
+  bin:
+    rc: ./cli.js
+  checksum: 3dec0a5ac3d9400f510ed9eccc86c5a503ba6bf6865c30e16d57bcf6c53f4f2854138ede1e645d7e3fa6f6cd293daa384a1e4e0bd505688e79b0150ef2642949
+  languageName: node
+  linkType: hard
+
+"react-dnd-html5-backend@npm:15.1.3, react-dnd-html5-backend@npm:^15.1.3":
   version: 15.1.3
   resolution: "react-dnd-html5-backend@npm:15.1.3"
   dependencies:
     dnd-core: "npm:15.1.2"
   checksum: 54f4254f5d7a98aa1b088f8997d276b4bec304e11b76f0137f462b68dad05ad39eb58b4286e3d5b0252e6c64ddd1b46159667b0d9abc5b20a8d279c9625a9264
+  languageName: node
+  linkType: hard
+
+"react-dnd-html5-backend@npm:16.0.1":
+  version: 16.0.1
+  resolution: "react-dnd-html5-backend@npm:16.0.1"
+  dependencies:
+    dnd-core: "npm:^16.0.1"
+  checksum: 03286ab7d67799264ded9014919972474a1249809e47bdb95ef91c594e85ea98f750b7fc2844758145fc50d5061a9ef4a2fc9bf7e7f4a0af6162743758ed4a73
   languageName: node
   linkType: hard
 
@@ -18697,6 +19214,31 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 81024b30eba682f1a994b7d6dfdd3080dfa6c619bdf700d7a690314f4269813650fac810a40c2814457a233444bee0ea3831ddf9f31ed3d1042a7b96288d2913
+  languageName: node
+  linkType: hard
+
+"react-dnd@npm:16.0.1":
+  version: 16.0.1
+  resolution: "react-dnd@npm:16.0.1"
+  dependencies:
+    "@react-dnd/invariant": "npm:^4.0.1"
+    "@react-dnd/shallowequal": "npm:^4.0.1"
+    dnd-core: "npm:^16.0.1"
+    fast-deep-equal: "npm:^3.1.3"
+    hoist-non-react-statics: "npm:^3.3.2"
+  peerDependencies:
+    "@types/hoist-non-react-statics": ">= 3.3.1"
+    "@types/node": ">= 12"
+    "@types/react": ">= 16"
+    react: ">= 16.14"
+  peerDependenciesMeta:
+    "@types/hoist-non-react-statics":
+      optional: true
+    "@types/node":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 371835b01d0e6e9163bf0cea0ebc43ab09a6b492b2e4c98ec48169aa09d5569fcd29c5030aa7a06e73ecd70a5bdeb9dcfdc38966b89dfe0cb5beb7f5b79d9a8d
   languageName: node
   linkType: hard
 
@@ -19050,7 +19592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^3.0.2, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
+"readable-stream@npm:^3.0.2, readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
   version: 3.6.2
   resolution: "readable-stream@npm:3.6.2"
   dependencies:
@@ -19101,7 +19643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redux@npm:^4.1.2":
+"redux@npm:^4.1.2, redux@npm:^4.2.0":
   version: 4.2.1
   resolution: "redux@npm:4.2.1"
   dependencies:
@@ -20249,6 +20791,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sharp@npm:^0.32.1":
+  version: 0.32.1
+  resolution: "sharp@npm:0.32.1"
+  dependencies:
+    color: "npm:^4.2.3"
+    detect-libc: "npm:^2.0.1"
+    node-addon-api: "npm:^6.1.0"
+    node-gyp: "npm:latest"
+    prebuild-install: "npm:^7.1.1"
+    semver: "npm:^7.5.0"
+    simple-get: "npm:^4.0.1"
+    tar-fs: "npm:^2.1.1"
+    tunnel-agent: "npm:^0.6.0"
+  checksum: 3bd31f361efae39f11ea0d74573beead26eeeb4a14b3ccea84c142d9f0fc57d32b7808c53f8e3f6b3ca1f31214d975b379478741d3c5f1097d2a0e5640957a03
+  languageName: node
+  linkType: hard
+
 "shebang-command@npm:^1.2.0":
   version: 1.2.0
   resolution: "shebang-command@npm:1.2.0"
@@ -20342,6 +20901,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"simple-concat@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "simple-concat@npm:1.0.1"
+  checksum: 1a041737314d8b49247072adf25990fa56430c2f71f3c129013fa275e0d725d935c2e2ca33bd10c22f1391047a8a94e01db3c149bda30b8e2480a833c99b9a30
+  languageName: node
+  linkType: hard
+
+"simple-get@npm:^4.0.0, simple-get@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "simple-get@npm:4.0.1"
+  dependencies:
+    decompress-response: "npm:^6.0.0"
+    once: "npm:^1.3.1"
+    simple-concat: "npm:^1.0.0"
+  checksum: f44b953899a2df12012150e834cc1d731d366e3e7b72f6e5d04d48d6750098afd21b7813a7e7aa1f8dcbf24915c80730df63c6c27c1b0f851b9245211cf8f0a2
+  languageName: node
+  linkType: hard
+
+"simple-swizzle@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "simple-swizzle@npm:0.2.2"
+  dependencies:
+    is-arrayish: "npm:^0.3.1"
+  checksum: da2f0812cd395009bbe2fd2fe803300a63025f7f330c1492ea41e2b4a819138806a2a99c05ae1527cb750da43ff9dc2ccde294ad1e998cedbd459cb068dc68a3
+  languageName: node
+  linkType: hard
+
 "sisteransi@npm:^1.0.5":
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
@@ -20410,6 +20996,27 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
   checksum: 8d4e21e97f77b472b50306d466f13885d67cd727b082017f086f65875c54391ef8d9b84778df995d3d7372cc75b98e1d1345f6ed99636bc85985cdf93fe7b352
+  languageName: node
+  linkType: hard
+
+"slate-react@npm:^0.97.2":
+  version: 0.97.2
+  resolution: "slate-react@npm:0.97.2"
+  dependencies:
+    "@juggle/resize-observer": "npm:^3.4.0"
+    "@types/is-hotkey": "npm:^0.1.1"
+    "@types/lodash": "npm:^4.14.149"
+    direction: "npm:^1.0.3"
+    is-hotkey: "npm:^0.1.6"
+    is-plain-object: "npm:^5.0.0"
+    lodash: "npm:^4.17.4"
+    scroll-into-view-if-needed: "npm:^2.2.20"
+    tiny-invariant: "npm:1.0.6"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.65.3"
+  checksum: d4d7670a28dbc04802ca84f6392381e945ce4c07b2ce59cb8b42ab65d2710a56761fab3c93905968856e6a05e66112f50dd36382e471c9cb68cabc79577cfdc5
   languageName: node
   linkType: hard
 
@@ -20923,6 +21530,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"strip-json-comments@npm:~2.0.1":
+  version: 2.0.1
+  resolution: "strip-json-comments@npm:2.0.1"
+  checksum: 4c86af52d848e6cddafdf933702453a3ab3210e9a014c882ce7e271a7d09d413642b796b07c9b597bc0ea5b93d5aab71756cf3d4b2a5ca2d9db2a7be84ae49d9
+  languageName: node
+  linkType: hard
+
 "strip-literal@npm:^1.0.1":
   version: 1.0.1
   resolution: "strip-literal@npm:1.0.1"
@@ -21090,14 +21704,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwind-merge@npm:^1.13.2":
+"tailwind-merge@npm:1.13.2, tailwind-merge@npm:^1.13.2":
   version: 1.13.2
   resolution: "tailwind-merge@npm:1.13.2"
   checksum: 9e4ecc2f26ce40bd632fdf21e4bfa4c0669950b3b35422fede0083eede46a272314dc35109fab4cff58270c3b702a6857cee1d29100b6f159b51829fecf0a406
   languageName: node
   linkType: hard
 
-"tailwindcss-animate@npm:^1.0.6":
+"tailwindcss-animate@npm:1.0.6, tailwindcss-animate@npm:^1.0.6":
   version: 1.0.6
   resolution: "tailwindcss-animate@npm:1.0.6"
   peerDependencies:
@@ -21144,6 +21758,31 @@ __metadata:
   version: 2.2.1
   resolution: "tapable@npm:2.2.1"
   checksum: d54320ef41e04b13e27e20bfc355bd27bccb4b1ac28123a35d36d903b393944a957a7629b56e808e1a2ef03dcaf1c114e97de7a1b7cbf16e522cd0630219702e
+  languageName: node
+  linkType: hard
+
+"tar-fs@npm:^2.0.0, tar-fs@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "tar-fs@npm:2.1.1"
+  dependencies:
+    chownr: "npm:^1.1.1"
+    mkdirp-classic: "npm:^0.5.2"
+    pump: "npm:^3.0.0"
+    tar-stream: "npm:^2.1.4"
+  checksum: eedd9484fb8f7301e7dfda1177c8db76427b99fbd6ea9c3bb056bce44301f59890bb4143dfc02aed30d454e92a3ca63189167a71595476f2f5b293d993a14d6d
+  languageName: node
+  linkType: hard
+
+"tar-stream@npm:^2.1.4":
+  version: 2.2.0
+  resolution: "tar-stream@npm:2.2.0"
+  dependencies:
+    bl: "npm:^4.0.3"
+    end-of-stream: "npm:^1.4.1"
+    fs-constants: "npm:^1.0.0"
+    inherits: "npm:^2.0.3"
+    readable-stream: "npm:^3.1.1"
+  checksum: c0c8df70dbca1da9fc5dc89046b972ee9703ee0d07e096749e5c60f4847dd912e99da1dbb9cb9bd87be0deba550e60dbec2477a1c44c000435ceb5a909f5db5f
   languageName: node
   linkType: hard
 
@@ -21640,6 +22279,15 @@ __metadata:
   bin:
     tty-table: adapters/terminal-adapter.js
   checksum: 3def1d401627f28ddeef2fc6c45d0a729d39a6239b7533cbcb73c841f82a46e2344bccfb8ed34d546bfd52494f8ee2116d9bc86b681f71d586d98d3eee24b897
+  languageName: node
+  linkType: hard
+
+"tunnel-agent@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "tunnel-agent@npm:0.6.0"
+  dependencies:
+    safe-buffer: "npm:^5.0.1"
+  checksum: 04bb1f31a4f757d78547536d3c58bf7d24645735ecc5af75536cf9ee46e8d4d8c802518a16062d9c07f78874946dd2ea600d2df42e5c538cdd9a414994bce54d
   languageName: node
   linkType: hard
 
