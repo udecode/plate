@@ -54,20 +54,20 @@ Props for the `Scroller` component.
 
 ### focusBlockStartById
 
-Selects the start of a block by id and focuses the editor.
+Selects the start of a block by ID and focuses the editor.
 
 <APIParameters>
   <APIItem name="editor" type="TReactEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the block to be focused.
+    The ID of the block to be focused.
   </APIItem>
 </APIParameters>
 
 ### getBlocksWithId
 
-Returns an array of blocks that have an id.
+Returns an array of blocks that have an ID.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -82,7 +82,7 @@ Returns an array of blocks that have an id.
 
 <APIItem type="TNodeEntry[]">
 
-An array of blocks that have an id.
+An array of blocks that have an ID.
 
 </APIItem>
 
@@ -95,7 +95,7 @@ An array of blocks that have an id.
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the block to select.
+    The ID of the block to select.
   </APIItem>
 </APIParameters>
 
@@ -198,7 +198,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
   <APIItem name="options" type="UseDndNodeOptions">
     <APISubList>
       <APISubListItem parent="options" name="id" type="string">
-        The id of the node to be dragged.
+        The ID of the node to be dragged.
       </APISubListItem>
       <APISubListItem parent="options" name="type" type="string">
         The type of the node to be dragged.
@@ -252,7 +252,7 @@ A custom hook that enables dragging of a block node from the editor. It internal
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The unique id of the block node to be dragged.
+    The unique ID of the block node to be dragged.
   </APIItem>
 </APIParameters>
 
@@ -265,11 +265,11 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDragNodeOptions">
-    The options for the drag behavior, including the unique id of the node to be
+    The options for the drag behavior, including the unique ID of the node to be
     dragged.
     <APISubList>
       <APISubListItem parent="options" name="id" type="string">
-        The unique id of the node to be dragged.
+        The unique ID of the node to be dragged.
       </APISubListItem>
       <APISubListItem
         parent="options"
@@ -364,7 +364,7 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
         The reference to the node being dragged.
       </APISubListItem>
       <APISubListItem parent="options" name="id" type="string">
-        The id of the node.
+        The ID of the node.
       </APISubListItem>
       <APISubListItem parent="options" name="dropLine" type="string">
         The current value of the drop line.

@@ -104,7 +104,7 @@ A type defining the data returned from parsing an embed URL.
     The provider of the embedded content.
   </APIItem>
   <APIItem name="id" type="string" optional>
-    The unique id for the embedded content.
+    The unique ID for the embedded content.
   </APIItem>
   <APIItem name="component" type="React.FC<EmbedUrlData>" optional>
     The component to be rendered for the embedded content.
@@ -310,7 +310,7 @@ Parses the URL of an iframe embed.
 
 ### parseTwitterUrl
 
-Parses a Twitter URL and extracts the tweet id.
+Parses a Twitter URL and extracts the tweet ID.
 
 <APIParameters>
   <APIItem name="url" type="string">
@@ -320,7 +320,7 @@ Parses a Twitter URL and extracts the tweet id.
 
 <APIReturns>
   <APIItem type="EmbedUrlData | undefined">
-    An object containing the tweet id and provider if the parsing is successful.
+    An object containing the tweet ID and provider if the parsing is successful.
     Returns undefined if the URL is not valid or does not match any supported
     video providers.
   </APIItem>
@@ -328,7 +328,7 @@ Parses a Twitter URL and extracts the tweet id.
 
 ### parseVideoUrl
 
-Parses a video URL and extracts the video id and provider-specific embed URL.
+Parses a video URL and extracts the video ID and provider-specific embed URL.
 
 <APIParameters>
   <APIItem name="url" type="string">
@@ -338,7 +338,7 @@ Parses a video URL and extracts the video id and provider-specific embed URL.
 
 <APIReturns>
   <APIItem type="EmbedUrlData | undefined">
-    An object containing the video id and provider if the parsing is successful.
+    An object containing the video ID and provider if the parsing is successful.
     Returns undefined if the URL is not valid or does not match any supported
     video providers.
   </APIItem>
@@ -487,7 +487,7 @@ Custom hook for managing media embed data.
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="id" type="string | undefined">
-        The id of the media embed.
+        The ID of the media embed.
       </APISubListItem>
       <APISubListItem parent="props" name="src" type="string | undefined">
         The URL of the media embed.
@@ -502,13 +502,13 @@ Custom hook for handling media embed data specifically for tweets.
 
 <APIProps>
   <APIItem name="id" type="string">
-    The id of the tweet.
+    The ID of the tweet.
   </APIItem>
 </APIProps>
 
 <APIReturns>
   <APIItem type="EmbedUrlData">
-    An object containing the tweet id and provider.
+    An object containing the tweet ID and provider.
   </APIItem>
 </APIReturns>
 
@@ -597,7 +597,7 @@ A React component for rendering a Tweet.
 
 <APIProps>
 <APIItem name="tweetId" type="string">
-The id of the tweet to embed.
+The ID of the tweet to embed.
 </APIItem>
 <APIItem name="onError" type="function" optional>
 A callback function that handles errors that occur during the embedding process.

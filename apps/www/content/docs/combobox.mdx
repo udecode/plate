@@ -107,17 +107,17 @@ Represents a combobox's state. The state resides in `comboboxStore`, which uses 
 
 <APIParameters>
 <APIItem name="activeId" type="string">
-Opened combobox id.
+Opened combobox ID.
 </APIItem>
 <APIItem name="byId" type="Record<string, ComboboxStoreById>">
-A collection of combobox configuration stores, each identified by a unique combobox id (e.g., one for tags, one for mentions).
+A collection of combobox configuration stores, each identified by a unique combobox ID (e.g., one for tags, one for mentions).
 
 - `ComboboxStateById`:
 
 <APISubList>
 
 <APISubListItem parent="byId" name="id" type="string">
-Combobox id.
+Combobox ID.
 </APISubListItem>
 <APISubListItem parent="byId" name="filter" type="function" optional>
 An optional function to filter items by text.

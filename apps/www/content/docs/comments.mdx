@@ -67,14 +67,14 @@ Finds the comment node in the editor.
 
 ### findCommentNodeById
 
-Finds the comment node in the editor by its id.
+Finds the comment node in the editor by its ID.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment node to find.
+    The ID of the comment node to find.
   </APIItem>
 </APIParameters>
 
@@ -90,17 +90,17 @@ Gets the count of comments in a comment node.
 
 ### getCommentKey
 
-Generates a comment key based on the provided id.
+Generates a comment key based on the provided ID.
 
 <APIParameters>
   <APIItem name="id" type="string">
-    The id of the comment.
+    The ID of the comment.
   </APIItem>
 </APIParameters>
 
 ### getCommentKeyId
 
-Extracts the comment id from a comment key.
+Extracts the comment ID from a comment key.
 
 <APIParameters>
   <APIItem name="key" type="string">
@@ -130,14 +130,14 @@ Returns an array of node entries for comment nodes in the editor.
 
 ### getCommentNodesById
 
-Returns an array of node entries for comment nodes with a specific id in the editor.
+Returns an array of node entries for comment nodes with a specific ID in the editor.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment nodes to retrieve.
+    The ID of the comment nodes to retrieve.
   </APIItem>
 </APIParameters>
 
@@ -156,11 +156,11 @@ Calculates the position of a comment node relative to the editor.
 
 ### getCommentUrl
 
-Generates a URL with a query parameter for a specific comment id.
+Generates a URL with a query parameter for a specific comment ID.
 
 <APIParameters>
   <APIItem name="commentId" type="string">
-    The id of the comment.
+    The ID of the comment.
   </APIItem>
 </APIParameters>
 
@@ -186,14 +186,14 @@ Checks if a given key is a comment key.
 
 ### isCommentNodeById
 
-Checks if a given node is a comment with the specified id.
+Checks if a given node is a comment with the specified ID.
 
 <APIParameters>
   <APIItem name="node" type="TNode">
     The node to check.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment.
+    The ID of the comment.
   </APIItem>
 </APIParameters>
 
@@ -223,14 +223,14 @@ Removes the comment mark from the editor.
 
 ### unsetCommentNodesById
 
-Unsets comment nodes with the specified id from the editor.
+Unsets comment nodes with the specified ID from the editor.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment nodes to unset.
+    The ID of the comment nodes to unset.
   </APIItem>
 </APIParameters>
 
@@ -240,7 +240,7 @@ An interface representing a user who can make comments.
 
 <APIParameters>
   <APIItem name="id" type="string">
-    The unique id of the user.
+    The unique ID of the user.
   </APIItem>
   <APIItem name="name" type="string">
     The name of the user.
@@ -254,7 +254,7 @@ An interface representing a user who can make comments.
 
 <APIState>
   <APIItem name="id" type="string">
-    The unique id of the comment.
+    The unique ID of the comment.
   </APIItem>
   <APIItem name="isMenuOpen" type="boolean">
     A flag indicating whether the menu associated with this comment is currently
@@ -272,22 +272,22 @@ An interface representing the state of the comments store.
 
 <APIState>
   <APIItem name="myUserId" type="string | null">
-    The unique id of the currently logged in or active user.
+    The unique ID of the currently logged in or active user.
   </APIItem>
   <APIItem name="users" type="Record&lt;string, CommentUser&gt;">
-    An object where each key is a user's unique id and the corresponding value
+    An object where each key is a user's unique ID and the corresponding value
     is an instance of the `CommentUser` type, representing the user's data.
   </APIItem>
   <APIItem name="comments" type="Record&lt;string, TComment&gt;">
-    An object where each key is a comment's unique id and the corresponding
+    An object where each key is a comment's unique ID and the corresponding
     value is an instance of the `TComment` type, representing the comment's
     data.
   </APIItem>
   <APIItem name="activeCommentId" type="string | null">
-    The unique id of the currently active or focused comment.
+    The unique ID of the currently active or focused comment.
   </APIItem>
   <APIItem name="addingCommentId" type="string | null">
-    The unique id of the comment that is currently being added.
+    The unique ID of the comment that is currently being added.
   </APIItem>
   <APIItem name="newValue" type="Value">
     The new value to be added to the comments.
@@ -297,15 +297,15 @@ An interface representing the state of the comments store.
   </APIItem>
   <APIItem name="onCommentAdd" type="function">
     A function that is invoked when a new comment is added. It accepts a partial
-    comment object, which must include the user's id.
+    comment object, which must include the user's ID.
   </APIItem>
   <APIItem name="onCommentUpdate" type="function">
     A function that is invoked when a comment is updated. It accepts a comment
-    object, which must include the comment's id.
+    object, which must include the comment's ID.
   </APIItem>
   <APIItem name="onCommentDelete" type="function">
     A function that is invoked when a comment is deleted. It accepts the unique
-    id of the comment to be deleted.
+    ID of the comment to be deleted.
   </APIItem>
 </APIState>
 
@@ -313,7 +313,7 @@ An interface representing the state of the comments store.
 
 <APIAttributes>
 <APIItem name="id" type="string">
-A unique id for the comment.
+A unique ID for the comment.
 </APIItem>
 <APIItem name="value" type="Value">
 The Slate value of the comment.
@@ -386,13 +386,13 @@ A button component for deleting a comment.
 
 <APIState>
   <APIItem name="activeCommentId" type="string">
-    The id of the active comment.
+    The ID of the active comment.
   </APIItem>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment.
+    The ID of the comment.
   </APIItem>
   <APIItem name="onCommentDelete" type="function">
     A function to call when the comment is deleted.
@@ -401,7 +401,7 @@ A button component for deleting a comment.
     A function to remove the comment.
   </APIItem>
   <APIItem name="setActiveCommentId" type="function">
-    A function to set the active comment id.
+    A function to set the active comment ID.
   </APIItem>
 </APIState>
 
@@ -437,7 +437,7 @@ A button component for saving the editing of a comment.
     A function to set the editing value.
   </APIItem>
   <APIItem name="id" type="string">
-    The id of the comment.
+    The ID of the comment.
   </APIItem>
   <APIItem name="onCommentUpdate" type="function">
     A function to call when the comment is updated.
@@ -490,7 +490,7 @@ A button component for submitting a new comment.
     A function to call when the comment is added.
   </APIItem>
   <APIItem name="activeCommentId" type="string">
-    The id of the active comment.
+    The ID of the active comment.
   </APIItem>
   <APIItem name="comment" type="TComment">
     The comment object.
@@ -545,7 +545,7 @@ A div component for positioning comments in the editor.
 
 <APIState>
   <APIItem name="activeCommentId" type="string">
-    The id for the active comment.
+    The ID for the active comment.
   </APIItem>
   <APIItem name="position" type="object">
     An object representing the current position of the comment (top and left
@@ -565,13 +565,13 @@ Extends `CommentsStoreState`.
 
 ### useActiveCommentNode
 
-A custom hook that retrieves the active comment node based on the active comment id.
+A custom hook that retrieves the active comment node based on the active comment ID.
 
 <APIReturns>
 
-- If there is an active comment id, it returns the corresponding comment node.
+- If there is an active comment ID, it returns the corresponding comment node.
 
-- If there is no active comment id or the comment node is not found, it returns `null`.
+- If there is no active comment ID or the comment node is not found, it returns `null`.
 
 </APIReturns>
 
@@ -615,7 +615,7 @@ A state hook for the comment item content component.
     The user associated with the comment.
   </APIItem>
   <APIItem name="myUserId" type="string">
-    The id of the current user.
+    The ID of the current user.
   </APIItem>
   <APIItem name="editingValue" type="Value">
     The value of the comment being edited.
@@ -631,10 +631,10 @@ A behavior hook for the comment leaf component.
 
 <APIParameters>
   <APIItem name="setActiveCommentId" type="function">
-    The function to set the active comment id.
+    The function to set the active comment ID.
   </APIItem>
   <APIItem name="lastCommentId" type="string">
-    The id of the last comment in the leaf.
+    The ID of the last comment in the leaf.
   </APIItem>
 </APIParameters>
 
