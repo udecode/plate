@@ -60,9 +60,23 @@ const plugins = [
 ];
 ```
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createListPlugin
+
+- `key: 'list'`
+- Contains the following element plugins:
+  - `ELEMENT_UL`: plugin options below.
+  - `ELEMENT_OL`: plugin options below.
+  - `ELEMENT_LI`
+  - `ELEMENT_LIC`
 
 <APIOptions>
   <APIItem name="validLiChildrenTypes" type="string[]" optional>
@@ -108,26 +122,33 @@ Finds the highest end list that can be deleted. The path of the list should be d
 Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`default = selection`).
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="at"
-        type="Location | null"
-        optional
-      >
-        The location to retrieve the nearest entries from. If not provided, uses
-        the current selection.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="at"
+  type="Location | null"
+  optional
+>
+The location to retrieve the nearest entries from. If not provided, uses
+the current selection.
 
-        - **Default:** `editor.selection`
-      </APISubListItem>
-    </APISubList>
+- **Default:** `editor.selection`
 
-  </APIItem>
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
+
+<APIReturns>
+  <APIItem type="TElementEntry | undefined">
+    The nearest `li` and `ul`/`ol` wrapping node entries.
+  </APIItem>
+</APIReturns>
 
 ### getListRoot
 
@@ -162,6 +183,10 @@ Returns an array of list types supported by the editor.
   </APIItem>
 </APIParameters>
 
+<APIReturns>
+  <APIItem type="[string, string]">The list types.</APIItem>
+</APIReturns>
+
 ### hasListChild
 
 Checks if a node has a list child.
@@ -170,10 +195,18 @@ Checks if a node has a list child.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="node" type="TEditor | TElement">
+  <APIItem name="node" type="TAncestor">
     The node to check.
   </APIItem>
 </APIParameters>
+
+<APIReturns>
+<APIItem type="boolean">
+
+`true` if the node has a list child, `false` otherwise.
+
+</APIItem>
+</APIReturns>
 
 ### indentListItems
 
@@ -206,36 +239,38 @@ Inserts a list item if the selection is in an li>p element.
 Inserts a todo list item if the selection is in an li>p element.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="TodoListPlugin">
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="inheritCheckStateOnLineStartBreak"
-        type="boolean"
-        optional
-      >
-        Whether to inherit the check state of the previous line when inserting a
-        new todo item at the start of a line.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="TodoListPlugin">
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="inheritCheckStateOnLineStartBreak"
+  type="boolean"
+  optional
+>
+Whether to inherit the check state of the previous line when inserting a
+new todo item at the start of a line.
 
-        - **Default:** `false`.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="inheritCheckStateOnLineEndBreak"
-        type="boolean"
-        optional
-      >
-        Whether to inherit the check state of the previous line when inserting a
-        new todo item at the end of a line.
+- **Default:** `false`
 
-        - **Default:** `false`.
-      </APISubListItem>
-    </APISubList>
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="inheritCheckStateOnLineEndBreak"
+  type="boolean"
+  optional
+>
+Whether to inherit the check state of the previous line when inserting a
+new todo item at the end of a line.
 
-  </APIItem>
+- **Default:** `false`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -329,30 +364,30 @@ Moves a list item down to the next list item.
 Moves sublist items from one list item to another list item's sublist.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem
-    name="options"
-    type="MoveListItemSublistItemsToListItemSublistOptions"
-    optional
-  >
-    <APISubList>
-      <APISubListItem parent="options" name="fromListItem" type="TElementEntry">
-        The entry of the list item containing the sublist items to move.
-      </APISubListItem>
-      <APISubListItem parent="options" name="toListItem" type="TElementEntry">
-        The entry of the list item where the sublist items will be moved.
-      </APISubListItem>
-      <APISubListItem parent="options" name="start" type="boolean" optional>
-        Move the sublist items to the start of the sublist instead of the end.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem
+  name="options"
+  type="MoveListItemSublistItemsToListItemSublistOptions"
+  optional
+>
+<APISubList>
+<APISubListItem parent="options" name="fromListItem" type="TElementEntry">
+The entry of the list item containing the sublist items to move.
+</APISubListItem>
+<APISubListItem parent="options" name="toListItem" type="TElementEntry">
+The entry of the list item where the sublist items will be moved.
+</APISubListItem>
+<APISubListItem parent="options" name="start" type="boolean" optional>
+Move the sublist items to the start of the sublist instead of the end.
 
-        - **Default:** `false`
+- **Default:** `false`
 
-      </APISubListItem>
-    </APISubList>
+</APISubListItem>
+</APISubList>
 
-  </APIItem>
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -390,41 +425,44 @@ Moves a list item up.
 Moves the selected list items up or down within their respective lists or increases/decreases their indentation level.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="MoveListItemsOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="increase" type="boolean" optional>
-        Determines whether to increase the indentation level
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="MoveListItemsOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="increase" type="boolean" optional>
+Determines whether to increase the indentation level
 
-        - **Default:** true.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="at"
-        type="Location | Span | Undefined"
-        optional
-      >
-        The location to move the list items. If not specified, the current
-        selection will be used.
+- **Default:** true.
 
-        - **Default:** `editor.selection ?? undefined`.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="enableResetOnShiftTab"
-        type="boolean"
-        optional
-      >
-        Enables resetting the indentation level to the parent list when using
-        Shift+Tab
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="at"
+  type="Location | Span | Undefined"
+  optional
+>
+The location to move the list items. If not specified, the current
+selection will be used.
 
-        - **Default:** false.
-      </APISubListItem>
-    </APISubList>
+- **Default:** `editor.selection ?? undefined`.
 
-  </APIItem>
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="enableResetOnShiftTab"
+  type="boolean"
+  optional
+>
+Enables resetting the indentation level to the parent list when using
+Shift+Tab
+
+- **Default:** false.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -438,77 +476,79 @@ Moves the selected list items up or down within their respective lists or increa
 Moves the list items from a sublist or a list to another list.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="MergeListItemIntoListOptions" optional>
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="fromList"
-        type="TElementEntry"
-        optional
-      >
-        The list whose list items will be moved.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="fromListItem"
-        type="TElementEntry"
-        optional
-      >
-        The list item whose sublist items will be moved.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="fromStartIndex"
-        type="MoveChildrenOptions['fromStartIndex']"
-        optional
-      >
-        The starting index of the list items to move (default: 0).
-      </APISubListItem>
-      <APISubListItem parent="options" name="to" type="Path" optional>
-        The specific path where the list items will be moved to. If specified,
-        it overrides the `toList` and `toListIndex` options.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="toList"
-        type="TElementEntry"
-        optional
-      >
-        The list where the list items will be moved to.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="toListIndex"
-        type="number | null"
-        optional
-      >
-        The index in the destination list where the list items will be inserted.
-        If not specified, the list items will be inserted at the end of the
-        list.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="MergeListItemIntoListOptions" optional>
+<APISubList>
+<APISubListItem
+  parent="options"
+  name="fromList"
+  type="TElementEntry"
+  optional
+>
+The list whose list items will be moved.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="fromListItem"
+  type="TElementEntry"
+  optional
+>
+The list item whose sublist items will be moved.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="fromStartIndex"
+  type="MoveChildrenOptions['fromStartIndex']"
+  optional
+>
+The starting index of the list items to move (default: 0).
+</APISubListItem>
+<APISubListItem parent="options" name="to" type="Path" optional>
+The specific path where the list items will be moved to. If specified,
+it overrides the `toList` and `toListIndex` options.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="toList"
+  type="TElementEntry"
+  optional
+>
+The list where the list items will be moved to.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="toListIndex"
+  type="number | null"
+  optional
+>
+The index in the destination list where the list items will be inserted.
+If not specified, the list items will be inserted at the end of the
+list.
 
-        - **Default:** `null`.
-      </APISubListItem>
-      <APISubListItem parent="options" name="to" type="Path" optional>
-        The specific path where the list items will be moved to. If specified,
-        it overrides the `toList` and `toListIndex` options.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="deleteFromList"
-        type="boolean"
-        optional
-      >
-        Determines whether to delete the sublist or list from which the items
-        are moved.
+- **Default:** `null`.
 
-        - **Default:** `true`.
-      </APISubListItem>
-    </APISubList>
+</APISubListItem>
+<APISubListItem parent="options" name="to" type="Path" optional>
+The specific path where the list items will be moved to. If specified,
+it overrides the `toList` and `toListIndex` options.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="deleteFromList"
+  type="boolean"
+  optional
+>
+Determines whether to delete the sublist or list from which the items
+are moved.
 
-  </APIItem>
+- **Default:** `true`.
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -572,25 +612,26 @@ Removes the first list item if the list is not nested and the list item is not t
 Removes a list item and moves its sublist to the parent list if any.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="RemoveListItemOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
-        The list entry containing the list item.
-      </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
-        The list item entry to be removed.
-      </APISubListItem>
-      <APISubListItem parent="options" name="reverse" type="boolean" optional>
-        Whether to reverse the sublist items before moving them.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="RemoveListItemOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="list" type="TElementEntry">
+The list entry containing the list item.
+</APISubListItem>
+<APISubListItem parent="options" name="listItem" type="TElementEntry">
+The list item entry to be removed.
+</APISubListItem>
+<APISubListItem parent="options" name="reverse" type="boolean" optional>
+Whether to reverse the sublist items before moving them.
 
-        - **Default:** `true`
-      </APISubListItem>
-    </APISubList>
+- **Default:** `true`
 
-  </APIItem>
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -624,22 +665,23 @@ Checks if the current selection is inside a list of a specific type.
 Toggles a list in the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="type" type="string">
-        The type of the list to toggle.
-      </APISubListItem>
-      <APISubListItem parent="options" name="pluginKey" type="string" optional>
-        The key of the plugin associated with the list.
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="type" type="string">
+The type of the list to toggle.
+</APISubListItem>
+<APISubListItem parent="options" name="pluginKey" type="string" optional>
+The key of the plugin associated with the list.
 
-        - **Default:** `type`
-      </APISubListItem>
-    </APISubList>
+- **Default:** `type`
 
-  </APIItem>
+</APISubListItem>
+</APISubList>
+
+</APIItem>
 </APIParameters>
 
 ### unindentListItems
@@ -678,19 +720,26 @@ Removes the list formatting from the selected list items or the list items at th
 
 ### useListToolbarButton
 
-A custom hook that provides functionality for a list toolbar button.
+A behavior hook for a list toolbar button.
 
 <APIState>
-  <APIItem name="state" type="ReturnType<typeof useListToolbarButtonState>">
-    The state object obtained from `useListToolbarButtonState`.
-  </APIItem>
+<APIItem name="pressed" type="boolean">
+The pressed state of the button.
+</APIItem>
+
+<APIItem name="nodeType" type="string">
+The node type of the list.
+
+- **Default:** `ELEMENT_UL`
+
+</APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="pressed" type="boolean">
-        The value of the `pressed` property in the `state` object.
+        The pressed state of the button.
       </APISubListItem>
       <APISubListItem parent="props" name="onClick" type="function">
         A callback function to handle the click event of the button. It toggles
@@ -703,36 +752,25 @@ A custom hook that provides functionality for a list toolbar button.
 
 ## API Todo List
 
-<APIAttributes>
-  <APIItem name="inheritCheckStateOnLineStartBreak" type="boolean" optional>
-    Determines whether a new todo item created at the start of a line should
-    inherit the check state of the previous item.
-  </APIItem>
-  <APIItem name="inheritCheckStateOnLineEndBreak" type="boolean" optional>
-    Determines whether a new todo item created at the end of a line should
-    inherit the check state of the current item.
-  </APIItem>
-</APIAttributes>
-
 ### getTodoListItemEntry
 
 Returns the nearest list and list item node entries for a given path (default = selection) in a todo list.
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-  The editor instance.
+The editor instance.
 </APIItem>
-  <APIItem name="options" type="object">
-  <APISubList>
+<APIItem name="options" type="object">
+<APISubList>
 <APISubListItem parent="options" name="at" type="Location | null" optional>
 
-    The location or path at which to search for the nearest list and list item nodes. Default is the current selection.
+The location or path at which to search for the nearest list and list item nodes. Default is the current selection.
 
-    - **Default:** `editor.selection`
+- **Default:** `editor.selection`
 
 </APISubListItem>
 </APISubList>
-  </APIItem>
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -745,11 +783,20 @@ Returns the nearest list and list item node entries for a given path (default = 
 
 ### useTodoListElement
 
-Custom hook for handling interactions with a todo list item element.
+A behavior hook a todo list item element.
 
 <APIState>
-  <APIItem name="state" type="ReturnType<typeof useTodoListElementState>">
-    The state object returned from useTodoListElementState hook.
+  <APIItem name="checked" type="boolean">
+    The checked state of the todo list item.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the todo list item is read-only.
+  </APIItem>
+  <APIItem name="element" type="TElement">
+    The todo list item element.
+  </APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
   </APIItem>
 </APIState>
 
@@ -770,10 +817,3 @@ Custom hook for handling interactions with a todo list item element.
     </APISubList>
   </APIItem>
 </APIReturns>
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
-</KeyTable>

@@ -37,6 +37,12 @@ const plugins = [
 ];
 ```
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + K">Add a link on the selected text.</KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createLinkPlugin
@@ -419,37 +425,6 @@ The button to open the link.
   </APIItem>
 </APIState>
 
-### floatingLinkStore
-
-The store for the floating link.
-
-<APIState>
-  <APIItem name="openEditorId" type="string">
-    The ID of the editor that has the floating link.
-  </APIItem>
-  <APIItem name="mouseDown" type="boolean">
-    Whether the mouse is down.
-  </APIItem>
-  <APIItem name="updated" type="boolean">
-    Whether the floating link has been updated.
-  </APIItem>
-  <APIItem name="url" type="string">
-    The URL of the floating link.
-  </APIItem>
-  <APIItem name="text" type="string">
-    The text of the floating link.
-  </APIItem>
-  <APIItem name="newTab" type="boolean">
-    Whether the floating link should open in a new tab.
-  </APIItem>
-  <APIItem name="mode" type="string">
-    The mode of the floating link.
-  </APIItem>
-  <APIItem name="isEditing" type="boolean">
-    Whether the floating link is being edited.
-  </APIItem>
-</APIState>
-
 ### useFloatingLinkEdit
 
 The behavior hook for the floating link edit.
@@ -536,6 +511,37 @@ The behavior hook for inserting a link.
   </APIProps>
 </APIReturns>
 
+### useFloatingLinkStore
+
+The store for the floating link.
+
+<APIState>
+  <APIItem name="openEditorId" type="string">
+    The ID of the editor that has the floating link.
+  </APIItem>
+  <APIItem name="mouseDown" type="boolean">
+    Whether the mouse is down.
+  </APIItem>
+  <APIItem name="updated" type="boolean">
+    Whether the floating link has been updated.
+  </APIItem>
+  <APIItem name="url" type="string">
+    The URL of the floating link.
+  </APIItem>
+  <APIItem name="text" type="string">
+    The text of the floating link.
+  </APIItem>
+  <APIItem name="newTab" type="boolean">
+    Whether the floating link should open in a new tab.
+  </APIItem>
+  <APIItem name="mode" type="string">
+    The mode of the floating link.
+  </APIItem>
+  <APIItem name="isEditing" type="boolean">
+    Whether the floating link is being edited.
+  </APIItem>
+</APIState>
+
 ### useLink
 
 The behavior hook for the link element.
@@ -601,9 +607,3 @@ Custom hook for managing virtual floating of a link.
     The return value of the `useVirtualFloating` hook.
   </APIItem>
 </APIReturns>
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + K">Add a link on the selected text.</KeyTableItem>
-</KeyTable>

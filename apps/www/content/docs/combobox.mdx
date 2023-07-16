@@ -51,6 +51,24 @@ const plugins = [
 
 Then render the combobox component inside `Plate`. You can use the [Combobox component](/docs/components/combobox) or create your own.
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="ArrowDown">
+    Highlights the next item in the list.
+  </KeyTableItem>
+  <KeyTableItem hotkey="ArrowUp">
+    Highlights the previous item in the list.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Esc">Closes the combobox.</KeyTableItem>
+  <KeyTableItem hotkey="Tab">
+    Selects the currently highlighted item.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Enter">
+    Selects the currently highlighted item.
+  </KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createComboboxPlugin
@@ -210,7 +228,7 @@ Data available to `onRenderItem`.
 
 ### useComboboxContent
 
-Behavior hook for the `ComboboxContent` component.
+A behavior hook for the `ComboboxContent` component.
 
 <APIState>
   <APIItem name="items" type="TComboboxItem<TData>[] | undefined">
@@ -229,21 +247,3 @@ Behavior hook for the `ComboboxContent` component.
     The target range of the combobox.
   </APIItem>
 </APIReturns>
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="ArrowDown">
-    Highlights the next item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="ArrowUp">
-    Highlights the previous item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Esc">Closes the combobox.</KeyTableItem>
-  <KeyTableItem hotkey="Tab">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Enter">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-</KeyTable>

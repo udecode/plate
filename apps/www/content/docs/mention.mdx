@@ -86,35 +86,52 @@ An object containing the key-value pair for creating an input.
 
 ### getMentionOnSelectItem
 
-Returns the `ComboboxOnSelectItem` handler for selecting an item in the mention combobox.
+Gets the `ComboboxOnSelectItem` handler for selecting an item in the mention combobox.
 
 <APIParameters>
-  <APIItem name="options" type="PlatePluginKey" optional>
-    <APISubList>
-  <APISubListItem parent="options" name="key" type="string" optional>
-    The plugin key of the mention plugin.
+<APIItem name="options" type="PlatePluginKey" optional>
+<APISubList>
+<APISubListItem parent="options" name="key" type="string" optional>
+The plugin key of the mention plugin.
 
-    - **Default:** `ELEMENT_MENTION`
+- **Default:** `ELEMENT_MENTION`
 
-  </APISubListItem>
-    </APISubList>
-  </APIItem>
+</APISubListItem>
+</APISubList>
+</APIItem>
 </APIParameters>
+
+<APIReturns>
+  <APIItem type="ComboboxOnSelectItem">
+    The `ComboboxOnSelectItem` handler for selecting an item in the mention
+    combobox.
+  </APIItem>
+</APIReturns>
 
 ### findMentionInput
 
 Finds the mention input node in the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem
-    name="options"
-    type="Omit<FindNodeOptions<V>, 'match'>"
-    optional
-  ></APIItem>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem
+  name="options"
+  type="Omit<FindNodeOptions, 'match'>"
+  optional
+>
+
+Additional options for finding the mention input node.
+
+</APIItem>
 </APIParameters>
+
+<APIReturns>
+  <APIItem type="TNodeEntry<TMentionInput> | undefined">
+    The mention input node entry if found, otherwise `undefined`.
+  </APIItem>
+</APIReturns>
 
 ### isNodeMentionInput
 
@@ -129,6 +146,12 @@ Checks if a node is a mention input node in the editor.
   </APIItem>
 </APIParameters>
 
+<APIReturns>
+  <APIItem type="node is TMentionInput">
+    `true` if the node is a mention input node, otherwise `false`.
+  </APIItem>
+</APIReturns>
+
 ### isSelectionInMentionInput
 
 Checks if the current selection in the editor is within a mention input.
@@ -139,13 +162,19 @@ Checks if the current selection in the editor is within a mention input.
   </APIItem>
 </APIParameters>
 
+<APIReturns>
+  <APIItem type="boolean">
+    `true` if the selection is within a mention input, otherwise `false`.
+  </APIItem>
+</APIReturns>
+
 ### mentionOnKeyDownHandler
 
 Handles keydown events for mention-related functionality, such as removing mention inputs and moving the selection by offset.
 
 <APIParameters>
   <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
-    Options for moving the selection by offset. This is an optional parameter.
+    Options for moving the selection by offset.
     <APISubList>
       <APISubListItem parent="options" name="query" type="function" optional>
         A query function to enable the behavior.

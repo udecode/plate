@@ -52,6 +52,17 @@ const plugins = [
 ];
 ```
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    Start a new block after the selected block.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    Start a new block before the selected block.
+  </KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createExitBreakPlugin
@@ -182,14 +193,3 @@ Checks if the selection is at the edge of its parent block and performs an "exit
     Indicates whether the selection is at the start of its parent block.
   </APIItem>
 </APIReturns>
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Enter">
-    Start a new block after the selected block.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Shift + Enter">
-    Start a new block before the selected block.
-  </KeyTableItem>
-</KeyTable>
