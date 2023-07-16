@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+
 import { useEditorRef } from '../hooks';
 import {
   PlateId,

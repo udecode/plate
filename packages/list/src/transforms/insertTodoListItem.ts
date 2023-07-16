@@ -1,6 +1,4 @@
 import {
-  PlateEditor,
-  Value,
   deleteText,
   getAboveNode,
   getMarks,
@@ -8,8 +6,10 @@ import {
   insertElements,
   isBlockTextEmptyAfterSelection,
   isStartPoint,
+  PlateEditor,
   select,
   splitNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';

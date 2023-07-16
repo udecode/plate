@@ -2,11 +2,11 @@ import {
   EElement,
   EElementEntry,
   EElementOrText,
+  isDefined,
   TEditor,
   TNode,
   TNodeEntry,
   Value,
-  isDefined,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
@@ -14,7 +14,7 @@ import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 > {
   getPreviousEntry?: (
     entry: TNodeEntry<EElementOrText<V>>
@@ -41,7 +41,7 @@ export interface GetSiblingIndentListOptions<
  */
 export const getSiblingIndentList = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   [node, path]: EElementEntry<V>,

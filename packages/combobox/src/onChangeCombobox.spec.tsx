@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
-import { HandlerReturnType, createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, HandlerReturnType } from '@udecode/plate-common';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
-  ComboboxState,
   comboboxActions,
   comboboxSelectors,
+  ComboboxState,
 } from './combobox.store';
 import { createComboboxPlugin } from './createComboboxPlugin';
 import { onChangeCombobox } from './onChangeCombobox';

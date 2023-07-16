@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
-import { Project, ScriptKind, type SourceFile } from 'ts-morph';
+import { Project, QuoteKind, ScriptKind } from 'ts-morph';
 import * as z from 'zod';
 
 import { Config } from '../get-config';
@@ -9,6 +9,8 @@ import { registryBaseColorSchema } from '../registry/schema';
 import { transformCssVars } from './transform-css-vars';
 import { transformImport } from './transform-import';
 import { transformRsc } from './transform-rsc';
+
+import type { SourceFile } from 'ts-morph';
 
 export type TransformOpts = {
   filename: string;
@@ -31,6 +33,9 @@ const transformers: Transformer[] = [
 
 const project = new Project({
   compilerOptions: {},
+  manipulationSettings: {
+    quoteKind: QuoteKind.Single,
+  },
 });
 
 async function createTempSourceFile(filename: string) {

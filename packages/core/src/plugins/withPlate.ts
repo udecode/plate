@@ -12,7 +12,7 @@ const shouldHaveBeenOverridden = (fnName: string) => () => {
 
 export interface WithPlateOptions<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends Pick<PlateProps<V, E>, 'disableCorePlugins' | 'plugins'> {
   id?: any;
 }
@@ -26,7 +26,7 @@ export interface WithPlateOptions<
  */
 export const withPlate = <
   V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>
+  E extends TEditor<V> = TEditor<V>,
 >(
   e: E,
   {

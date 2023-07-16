@@ -2,7 +2,7 @@ import { HotkeyPlugin, PlateEditor, Value } from '@udecode/plate-common';
 
 export interface ResetNodePluginRule<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends HotkeyPlugin {
   defaultType?: string;
 
@@ -24,7 +24,7 @@ export interface ResetNodePluginRule<
 
 export interface ResetNodePlugin<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > {
   rules?: ResetNodePluginRule<V, E>[];
   disableFirstBlockReset?: boolean;

@@ -11,7 +11,7 @@ import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
 export const withTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   plugin: WithPlatePlugin<TablePlugin<V>, V, E>

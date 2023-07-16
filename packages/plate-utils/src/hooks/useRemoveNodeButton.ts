@@ -1,5 +1,5 @@
 import { usePlateEditorRef } from '@udecode/plate-core';
-import { TElement, removeNodes } from '@udecode/slate';
+import { removeNodes, TElement } from '@udecode/slate';
 import { findNodePath, focusEditor } from '@udecode/slate-react';
 
 export const useRemoveNodeButton = ({ element }: { element: TElement }) => {

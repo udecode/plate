@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
-  Value,
   deselect,
   focusEditor,
   getStartPoint,
   insertData,
   insertNodes,
   isElementEmpty,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

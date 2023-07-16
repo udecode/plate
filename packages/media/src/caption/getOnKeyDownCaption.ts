@@ -1,7 +1,7 @@
 import {
-  KeyboardHandler,
   getBlockAbove,
   getPluginType,
+  KeyboardHandler,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 

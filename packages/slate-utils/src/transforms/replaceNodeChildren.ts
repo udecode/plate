@@ -1,10 +1,10 @@
 import {
   EElementOrText,
+  insertNodes,
   InsertNodesOptions,
   RemoveNodesOptions,
   TEditor,
   Value,
-  insertNodes,
   withoutNormalizing,
 } from '@udecode/slate';
 import { Path } from 'slate';
@@ -13,7 +13,7 @@ import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<
   N extends EElementOrText<V>,
-  V extends Value = Value
+  V extends Value = Value,
 > {
   at: Path;
   nodes: N | N[];
@@ -26,7 +26,7 @@ export interface ReplaceNodeChildrenOptions<
  */
 export const replaceNodeChildren = <
   N extends EElementOrText<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   { at, nodes, insertOptions, removeOptions }: ReplaceNodeChildrenOptions<N, V>

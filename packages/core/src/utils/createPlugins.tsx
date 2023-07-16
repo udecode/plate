@@ -14,7 +14,7 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  */
 export const createPlugins = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   plugins: PlatePlugin<PluginOptions, V, E>[],
   {

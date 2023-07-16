@@ -1,11 +1,11 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   getEndPoint,
   getPluginType,
   getStartPoint,
+  PlateEditor,
   select,
+  TElement,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -15,7 +15,7 @@ import { getTableGridAbove } from './queries/index';
 
 export const withSetFragmentDataTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {

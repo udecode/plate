@@ -1,11 +1,11 @@
 import {
-  TEditor,
-  Value,
   collapseSelection,
   deleteText,
   getEditorString,
   removeMark,
   select,
+  TEditor,
+  Value,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';

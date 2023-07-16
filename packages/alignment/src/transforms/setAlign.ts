@@ -1,14 +1,14 @@
 import {
   ENode,
-  PlateEditor,
-  PlatePluginKey,
-  SetNodesOptions,
-  TNodeMatch,
-  Value,
   getPluginInjectProps,
   isBlock,
+  PlateEditor,
+  PlatePluginKey,
   setElements,
+  SetNodesOptions,
+  TNodeMatch,
   unsetNodes,
+  Value,
 } from '@udecode/plate-common';
 
 import { KEY_ALIGN } from '../createAlignPlugin';

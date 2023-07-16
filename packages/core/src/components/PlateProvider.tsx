@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from 'react';
-import { Value, normalizeEditor } from '@udecode/slate';
+import { normalizeEditor, Value } from '@udecode/slate';
 
 import { JotaiProvider } from '../libs/jotai';
 import {
@@ -17,7 +17,7 @@ import {
 
 export interface PlateProviderProps<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends PlateProviderEffectsProps<V, E>,
     Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
   /**
@@ -36,7 +36,7 @@ export interface PlateProviderProps<
 
 function PlateProviderContent<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >({
   normalizeInitialValue: shouldNormalizeInitialValue,
   ...props
@@ -126,7 +126,7 @@ function PlateProviderContent<
 
 export function PlateProvider<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(props: PlateProviderProps<V, E>) {
   const { id } = props;
 

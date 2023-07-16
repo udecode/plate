@@ -9,7 +9,7 @@ import { TNode } from './TNode';
 export const getNodeChild = <
   N extends ChildOf<R, I>,
   R extends TNode = TNode,
-  I extends number = number
+  I extends number = number,
 >(
   root: R,
   index: I

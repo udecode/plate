@@ -1,8 +1,8 @@
 import {
+  isElement,
   PlateEditor,
   TDescendant,
   Value,
-  isElement,
 } from '@udecode/plate-common';
 
 import { getListTypes } from './getListTypes';

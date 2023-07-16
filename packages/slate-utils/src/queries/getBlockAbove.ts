@@ -1,9 +1,9 @@
 import {
   EAncestor,
+  getAboveNode,
   GetAboveNodeOptions,
   TEditor,
   Value,
-  getAboveNode,
 } from '@udecode/slate';
 
 /**

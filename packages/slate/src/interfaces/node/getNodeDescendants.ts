@@ -10,7 +10,7 @@ import { TDescendantEntry, TNodeEntry } from './TNodeEntry';
  */
 export const getNodeDescendants = <
   N extends DescendantOf<R>,
-  R extends TNode = TNode
+  R extends TNode = TNode,
 >(
   root: R,
   options?: Modify<

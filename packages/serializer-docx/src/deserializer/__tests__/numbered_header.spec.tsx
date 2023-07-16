@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createIndentListPlugin } from '@/packages/indent-list/src/createIndentListPlugin';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';

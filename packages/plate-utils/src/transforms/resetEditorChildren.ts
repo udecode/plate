@@ -1,8 +1,8 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { EElement, Value } from '@udecode/slate';
 import {
-  ReplaceNodeChildrenOptions,
   replaceNodeChildren,
+  ReplaceNodeChildrenOptions,
 } from '@udecode/slate-utils';
 
 /**

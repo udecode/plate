@@ -1,8 +1,8 @@
 import { AnchorHTMLAttributes } from 'react';
 import {
-  RangeBeforeOptions,
   createPluginFactory,
   isUrl,
+  RangeBeforeOptions,
 } from '@udecode/plate-common';
 
 import { TLinkElement } from './types';

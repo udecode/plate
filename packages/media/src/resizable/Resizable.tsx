@@ -18,8 +18,8 @@ import {
 import { useReadOnly } from 'slate-react';
 
 import { TMediaElement } from '../media/types';
-import { TResizableElement } from './TResizableElement';
 import { useResizableStore } from './resizableStore';
+import { TResizableElement } from './TResizableElement';
 
 export interface ResizableOptions {
   /**

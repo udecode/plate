@@ -1,5 +1,5 @@
 import React from 'react';
-import { QueryNodeOptions, createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common';
 
 import { BlockSelectable } from './components/BlockSelectable';
 import { BlockSelectionArea } from './components/BlockSelectionArea';

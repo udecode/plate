@@ -1,8 +1,8 @@
 import { TEditor, Value } from '../editor/TEditor';
-import { ElementOf, TElement } from '../element/TElement';
 import { isElement } from '../element/isElement';
-import { TText, TextOf } from '../text/TText';
+import { ElementOf, TElement } from '../element/TElement';
 import { isText } from '../text/isText';
+import { TextOf, TText } from '../text/TText';
 import { TNode } from './TNode';
 
 /**
@@ -31,7 +31,7 @@ export type DescendantOf<N extends TNode> = N extends TEditor
  */
 export type ChildOf<
   N extends TNode,
-  I extends number = number
+  I extends number = number,
 > = N extends TEditor
   ? N['children'][I]
   : N extends TElement

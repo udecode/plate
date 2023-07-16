@@ -1,6 +1,6 @@
 import { WithPartial } from '@udecode/plate-common';
 
-import { UseDndNodeOptions, useDndNode } from './useDndNode';
+import { useDndNode, UseDndNodeOptions } from './useDndNode';
 import { DRAG_ITEM_BLOCK } from './useDragBlock';
 
 /**

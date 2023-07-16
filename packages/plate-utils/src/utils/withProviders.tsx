@@ -9,12 +9,15 @@ export const withProviders =
   (...providers: any[]) =>
   <T,>(WrappedComponent: FunctionComponent<T>) =>
   (props: T) =>
-    providers.reduceRight((acc, prov) => {
-      let Provider = prov;
-      if (Array.isArray(prov)) {
-        [Provider] = prov;
-        return <Provider {...prov[1]}>{acc}</Provider>;
-      }
+    providers.reduceRight(
+      (acc, prov) => {
+        let Provider = prov;
+        if (Array.isArray(prov)) {
+          [Provider] = prov;
+          return <Provider {...prov[1]}>{acc}</Provider>;
+        }
 
-      return <Provider>{acc}</Provider>;
-    }, <WrappedComponent {...(props as any)} />);
+        return <Provider>{acc}</Provider>;
+      },
+      <WrappedComponent {...(props as any)} />
+    );

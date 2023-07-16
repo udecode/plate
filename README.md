@@ -11,7 +11,13 @@ Plate
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
 <div align="center">
-<a href="https://vercel.com/?utm_source=udecode&utm_campaign=oss"><img height="32" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
+<a href="https://console.algora.io/org/Udecode/bounties/new">
+<img style="border-radius: 100px;" height="24" src="https://img.shields.io/static/v1?labelColor=grey&color=6366f1&label=Algora&message=%F0%9F%92%8E+Bounty+issues&style=for-the-badge" alt="Udecode">
+</a>
+
+</div>
+<div align="center">
+  <a href="https://vercel.com/?utm_source=udecode&utm_campaign=oss"><img height="24" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
 </div>
 </p>
 

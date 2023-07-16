@@ -1,11 +1,11 @@
 import {
-  TEditor,
-  Value,
   deleteText,
   getEditorString,
   getPointAfter,
   getRange,
   getStartPoint,
+  TEditor,
+  Value,
 } from '@udecode/plate-common';
 
 import { OutdentCodeLineOptions } from './outdentCodeLine';

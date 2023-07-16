@@ -8,7 +8,7 @@ import { TNode } from './TNode';
  */
 export const getNodeDescendant = <
   N extends DescendantOf<R>,
-  R extends TNode = TNode
+  R extends TNode = TNode,
 >(
   root: R,
   path: Path

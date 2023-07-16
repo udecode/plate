@@ -7,7 +7,7 @@ on:
       - next
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/lint-typecheck.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'
@@ -92,7 +92,7 @@ jobs:
       - name: Test
         run: yarn typecheck
 
-  notify:
+  notify-lint-typecheck-failure:
     name: Discord Notification
     runs-on: ubuntu-latest
     needs:

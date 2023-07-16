@@ -1,12 +1,12 @@
 import {
   ELEMENT_DEFAULT,
+  getPlugin,
+  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
   TNode,
   Value,
-  getPlugin,
-  getPluginType,
 } from '@udecode/plate-common';
 import {
   ELEMENT_TABLE,

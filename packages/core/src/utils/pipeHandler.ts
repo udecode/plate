@@ -9,7 +9,7 @@ import { TEditableProps } from '../types/slate-react/TEditableProps';
  * Check if an event is overrided by a handler.
  */
 export const isEventHandled = <
-  EventType extends SyntheticEvent<unknown, unknown>
+  EventType extends SyntheticEvent<unknown, unknown>,
 >(
   event: EventType,
   handler?: (event: EventType) => void | boolean

@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-import { onKeyDownSoftBreak } from '@/packages/break/src/soft-break/onKeyDownSoftBreak';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
+
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsx;
 

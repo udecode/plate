@@ -1,9 +1,9 @@
 import {
   PlateEditor,
-  Value,
-  WithPlatePlugin,
   setElements,
   unsetNodes,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 
 import { IndentPlugin, TIndentElement } from './types';
@@ -14,7 +14,7 @@ import { IndentPlugin, TIndentElement } from './types';
  */
 export const withIndent = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   {

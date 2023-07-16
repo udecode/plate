@@ -5,10 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'apps/www/src/registry'
+      - '.github/workflows/registry.yml'
+      - 'apps/www/src/registry/**'
 
 jobs:
-  release:
+  update-registry:
     name: Update Registry
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +20,19 @@ jobs:
           # high or set it to zero to get all commits from the git repo.
           # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
           fetch-depth: 150
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+  
+      - name: Restore yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: yarn-cache-folder-${{ hashFiles('**/yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-cache-folder-
  
       - name: Install
         run: yarn install

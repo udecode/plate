@@ -1,9 +1,9 @@
 import {
+  getNode,
+  getPreviousPath,
   PlatePlugin,
   TElement,
   Value,
-  getNode,
-  getPreviousPath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

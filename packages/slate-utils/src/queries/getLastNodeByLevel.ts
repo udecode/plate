@@ -1,12 +1,12 @@
 import {
   ChildOf,
   EElementOrText,
+  getLastNode,
+  isAncestor,
   TEditor,
   TNode,
   TNodeEntry,
   Value,
-  getLastNode,
-  isAncestor,
 } from '@udecode/slate';
 
 const getLastChild = <N extends ChildOf<R>, R extends TNode>(
@@ -27,7 +27,7 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
  */
 export const getLastNodeByLevel = <
   N extends EElementOrText<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   level: number

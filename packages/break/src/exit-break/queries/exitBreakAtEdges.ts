@@ -1,9 +1,9 @@
 import {
-  TEditor,
-  Value,
   isExpanded,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
+  TEditor,
+  Value,
 } from '@udecode/plate-common';
 
 /**

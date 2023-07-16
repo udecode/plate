@@ -1,5 +1,5 @@
 import { ENode, TEditor, Value } from '../interfaces';
-import { FindNodeOptions, findNode } from './findNode';
+import { findNode, FindNodeOptions } from './findNode';
 
 /**
  * Iterate through all of the nodes in the editor and break early for the first truthy match. Otherwise

@@ -10,7 +10,7 @@ import { uploadFiles } from './uploadFiles';
 export const withCloud = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & CloudEditorProps<V> = E & CloudEditorProps<V>
+  EE extends E & CloudEditorProps<V> = E & CloudEditorProps<V>,
 >(
   e: E,
   plugin: WithPlatePlugin<CloudPlugin, V, E>

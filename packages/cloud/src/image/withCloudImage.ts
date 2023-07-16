@@ -1,5 +1,5 @@
 import { resizeIn } from '@portive/client';
-import { Value, WithPlatePlugin, insertNode } from '@udecode/plate-common';
+import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import { PlateCloudEditor } from '../cloud';
@@ -17,7 +17,7 @@ const DEFAULT_MAX_RESIZE_WIDTH = 640;
 
 export const withCloudImage = <
   V extends Value = Value,
-  E extends PlateCloudImageEditor<V> = PlateCloudImageEditor<V>
+  E extends PlateCloudImageEditor<V> = PlateCloudImageEditor<V>,
 >(
   $editor: E,
   plugin: WithPlatePlugin<CloudImagePlugin, V, E>

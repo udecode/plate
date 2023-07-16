@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { createTablePlugin } from '@/packages/table/src/createTablePlugin';
-import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createTablePlugin } from '../createTablePlugin';
 import { insertTableRow } from './insertTableRow';
 
 jsx;

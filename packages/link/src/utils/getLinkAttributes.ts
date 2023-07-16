@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   getPluginOptions,
+  PlateEditor,
   sanitizeUrl,
+  Value,
 } from '@udecode/plate-common';
 
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
