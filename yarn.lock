@@ -2893,6 +2893,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hocuspocus/common@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "@hocuspocus/common@npm:2.2.3"
+  dependencies:
+    lib0: "npm:^0.2.47"
+  checksum: 1227bea1277d5205bf651db8772888d52a30b927941e7b01ef3faf8ab511478c1c1c36e7cf94b264d591f87993ba6a2b82dcbb081ca0b32d0480ca0ac6c78a55
+  languageName: node
+  linkType: hard
+
+"@hocuspocus/provider@npm:^2.2.1":
+  version: 2.2.3
+  resolution: "@hocuspocus/provider@npm:2.2.3"
+  dependencies:
+    "@hocuspocus/common": "npm:^2.2.3"
+    "@lifeomic/attempt": "npm:^3.0.2"
+    lib0: "npm:^0.2.47"
+    ws: "npm:^7.5.9"
+  peerDependencies:
+    y-protocols: ^1.0.5
+    yjs: ^13.5.29
+  checksum: dfccfded82e4a4a8ee7a4e062843dd398bbf7b3ad7f145225312a3b6f8a189af5339c7f7e3300c8ba4c5f9950654ab46f53b130f58b43dd68d17b630757a9011
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.11.10":
   version: 0.11.10
   resolution: "@humanwhocodes/config-array@npm:0.11.10"
@@ -3314,6 +3338,13 @@ __metadata:
   version: 3.4.0
   resolution: "@juggle/resize-observer@npm:3.4.0"
   checksum: 5786abce4141d541f563d32a0c04dd0fb62f1f9f31620c0e92809418e73eb56610f7e10ddddf08ed2f09aad032c1eeac8c991eb708e042224002cc658716e67b
+  languageName: node
+  linkType: hard
+
+"@lifeomic/attempt@npm:^3.0.2":
+  version: 3.0.3
+  resolution: "@lifeomic/attempt@npm:3.0.3"
+  checksum: e7c96552894c65ac61bde595ab7ca45ec6fbd08e2d760d8f0eb250d8a59b69713a9f6e207477bf713791b075c016d91aa589ab7d259de3ea942a02b19ecdc654
   languageName: node
   linkType: hard
 
@@ -5540,6 +5571,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@slate-yjs/core@npm:^1.0.1":
+  version: 1.0.2
+  resolution: "@slate-yjs/core@npm:1.0.2"
+  dependencies:
+    y-protocols: "npm:^1.0.5"
+  peerDependencies:
+    slate: ">=0.70.0"
+    yjs: ^13.5.29
+  checksum: 87c43b81288741d28de595fee6084a94a3cf6c0c44d2bc519cf1612eba3460a77abf48d56134684fa8d829fbec6ddda829513178fe7633892fa861269189e75b
+  languageName: node
+  linkType: hard
+
 "@swc/helpers@npm:0.5.1, @swc/helpers@npm:^0.5.0":
   version: 0.5.1
   resolution: "@swc/helpers@npm:0.5.1"
@@ -7337,6 +7380,23 @@ __metadata:
     "@udecode/slate-react": "npm:22.0.2"
     "@udecode/slate-utils": "npm:22.0.2"
     "@udecode/utils": "npm:19.7.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-react: ">=0.95.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-yjs@workspace:packages/yjs":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-yjs@workspace:packages/yjs"
+  dependencies:
+    "@hocuspocus/provider": "npm:^2.2.1"
+    "@slate-yjs/core": "npm:^1.0.1"
+    "@udecode/plate-common": "npm:22.0.2"
+    yjs: "npm:^13.5.42"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -13809,6 +13869,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isomorphic.js@npm:^0.2.4":
+  version: 0.2.5
+  resolution: "isomorphic.js@npm:0.2.5"
+  checksum: b6b1a40f9b9b1e3055934897ec7814af5995bf9b234f0cc6bb5aba89e6d59fdeb3391df46f6649b609d79334942acf78bb46c4d118dc9cbaf68a447c8a433907
+  languageName: node
+  linkType: hard
+
 "istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0":
   version: 3.2.0
   resolution: "istanbul-lib-coverage@npm:3.2.0"
@@ -14884,6 +14951,18 @@ __metadata:
     prelude-ls: "npm:~1.1.2"
     type-check: "npm:~0.3.2"
   checksum: ca790d4b61d6ae2357b4e33f5a5da663c403c796f572b90f4fd9f1afd3cd71cf29903905638f81d7c5cb585619ae1d7f959deb0c86802bae02ba37c14a0902a8
+  languageName: node
+  linkType: hard
+
+"lib0@npm:^0.2.42, lib0@npm:^0.2.47, lib0@npm:^0.2.74":
+  version: 0.2.78
+  resolution: "lib0@npm:0.2.78"
+  dependencies:
+    isomorphic.js: "npm:^0.2.4"
+  bin:
+    0gentesthtml: bin/gentesthtml.js
+    0serve: bin/0serve.js
+  checksum: f07c1833155ea9b64a60192c4ebb9edf55d9dff93289c9465aed98072f20b5206dcea2f84d53e86de1e5a320b44751079ec17fe8b78c1b3dd0bd8ac35e3c5f6a
   languageName: node
   linkType: hard
 
@@ -22913,6 +22992,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ws@npm:^7.5.9":
+  version: 7.5.9
+  resolution: "ws@npm:7.5.9"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 5a4f52060e2a65194c324e5506021c998444ef5740365f7f04a59da38d2da5229221f5ab6e7ceee0d5999d03c2c1c73164a5ebdafa481043edeae4c5c42f988c
+  languageName: node
+  linkType: hard
+
 "ws@npm:^8.11.0":
   version: 8.13.0
   resolution: "ws@npm:8.13.0"
@@ -23115,6 +23209,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"y-protocols@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "y-protocols@npm:1.0.5"
+  dependencies:
+    lib0: "npm:^0.2.42"
+  checksum: 2b1d3912f660c6134a85dc39fde1b8b954106aade917c57e94fc1f3bceb6a31d0759d280b4c9009427d17c8a16d81d8881e9a9a0c81260ef1ac4bc05cdd6cf4a
+  languageName: node
+  linkType: hard
+
 "y18n@npm:^4.0.0":
   version: 4.0.3
   resolution: "y18n@npm:4.0.3"
@@ -23212,6 +23315,15 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 02578d19d9c9a21ed980903995a5a9b7d913e8dccefe182fadae1afee26c6903f912594524d13ea2950dbaad1024e9d255c380a150fbda957bd32e9d0d772eb0
+  languageName: node
+  linkType: hard
+
+"yjs@npm:^13.5.42":
+  version: 13.6.7
+  resolution: "yjs@npm:13.6.7"
+  dependencies:
+    lib0: "npm:^0.2.74"
+  checksum: 0b680d069b72cd9db118aa08f711ccd21b9f7cdd3e827449813bc5d57509c26b7683bc527e0fd48d77c34cda7ff31873d2df02626efb60e509fe42fa4c1953c6
   languageName: node
   linkType: hard
 

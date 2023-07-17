@@ -5,6 +5,7 @@ const plateOverrides = {
   'basic-marks': 'plate-basic-marks',
   'block-selection': 'plate-selection',
   cloud: 'plate-cloud',
+  collaboration: 'plate-yjs',
   combobox: 'plate-combobox',
   comments: 'plate-comments',
   dnd: 'plate-dnd',
