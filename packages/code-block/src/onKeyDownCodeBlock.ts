@@ -1,12 +1,12 @@
 import {
+  getNodeEntries,
+  getParentNode,
   Hotkeys,
   KeyboardHandlerReturnType,
   PlateEditor,
+  select,
   TElement,
   Value,
-  getNodeEntries,
-  getParentNode,
-  select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { TElement, createAtomStore } from '@udecode/plate-common';
+import { createAtomStore, TElement } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 

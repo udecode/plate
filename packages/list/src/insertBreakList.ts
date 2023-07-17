@@ -1,15 +1,15 @@
 import {
   ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
   getPluginType,
   isBlockAboveEmpty,
   mockPlugin,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import {
+  onKeyDownResetNode,
   ResetNodePlugin,
   SIMULATE_BACKSPACE,
-  onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 
 import { ELEMENT_LI } from './createListPlugin';

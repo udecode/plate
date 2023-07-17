@@ -50,7 +50,7 @@ You can style the selection area by using the `slate-selection-area` class:
 
 ### createBlockSelectionPlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem
   name="query"
   type="function"
@@ -96,26 +96,147 @@ The right size of the selection.
 </APISubListItem>
 </APISubList>
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### copySelectedBlocks
 
-### extractSelectableIds
+Copies the selected blocks in the editor to the clipboard.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
 
 ### getSelectedBlocks
 
+Gets the selected blocks in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
 ### pasteSelectedBlocks
 
+Pastes the selected blocks from the clipboard into the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="e" type="ClipboardEvent">
+    The clipboard event containing the clipboard data.
+  </APIItem>
+</APIParameters>
+
 ### selectInsertedBlocks
+
+Selects the inserted blocks from the last editor insert operations.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
 
 ## API Components
 
 ### BlockSelectable
 
-### BlockSelectionArea
-
-### blockSelectionStore
+<APIProps>
+  <APIItem name="options" type="BlockSelectableOptions">
+    <APISubList>
+      <APISubListItem parent="options" name="element" type="TElement">
+        The element to render the block selectable.
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="selectedColor"
+        type="string"
+        optional
+      >
+        The color of the selected block.
+      </APISubListItem>
+      <APISubListItem parent="options" name="active" type="boolean" optional>
+        Whether the selection is active.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>
 
 ### BlockStartArea
 
+A primitive component for rendering the start area of a block.
+
+<APIProps>
+<APIItem name="placement" type="'top' | 'bottom' | 'left' | 'right" optional>
+The placement of the start area.
+
+- **Default:** `'left'`
+
+</APIItem>
+<APIItem name="size" type="string | number" optional>
+The size of the start area.
+
+- **Default:** `'auto'`
+
+</APIItem>
+</APIProps>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="className" type="string">
+        The class name of the start area.
+      </APISubListItem>
+      <APISubListItem parent="props" name="style" type="object">
+        The style of the start area.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useBlockSelectionArea
+
+The behavior hook for the `BlockSelectionArea` component.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="className" type="string">
+        The class name of the start area.
+      </APISubListItem>
+      <APISubListItem parent="props" name="style" type="object">
+        The style of the start area.
+      </APISubListItem>
+
+    </APISubList>
+
+  </APIItem>
+</APIReturns>
+
 ### SelectionArea
+
+<APIProps>
+  <APIItem name="onBeforeStart" type="SelectionEvents['beforestart']" optional>
+    The callback to execute before the selection starts.
+  </APIItem>
+  <APIItem name="onStart" type="SelectionEvents['start']" optional>
+    The callback to execute when the selection starts.
+  </APIItem>
+  <APIItem name="onMove" type="SelectionEvents['move']" optional>
+    The callback to execute when the selection moves.
+  </APIItem>
+  <APIItem name="onStop" type="SelectionEvents['stop']" optional>
+    The callback to execute when the selection stops.
+  </APIItem>
+  <APIItem
+    name="getBoundaries"
+    type="(boundaries: SelectionOptions['boundaries']) => SelectionOptions['boundaries']"
+    optional
+  >
+    Function to calculate the boundaries of the selection area.
+  </APIItem>
+</APIProps>

@@ -25,7 +25,9 @@ import {
   Plate,
   PlateLeaf,
   PlateProvider,
+  TEditableProps,
   createPlugins,
+  withProps,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -37,9 +39,6 @@ import {
   ELEMENT_PARAGRAPH,
   createParagraphPlugin,
 } from '@udecode/plate-paragraph';
-import { withProps } from '@udecode/plate-utils';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { cn } from '@/lib/utils';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
@@ -94,33 +93,33 @@ export default function Editor() {
   ];
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="relative">
-        <PlateProvider plugins={plugins} initialValue={initialValue}>
-          <FixedToolbar>
-            <FixedToolbarButtons />
-          </FixedToolbar>
+    <div className="relative">
+      <PlateProvider plugins={plugins} initialValue={initialValue}>
+        <FixedToolbar>
+          <FixedToolbarButtons />
+        </FixedToolbar>
 
-          <div
-            ref={containerRef}
-            className={cn('relative flex max-w-[900px] overflow-x-auto')}
-          >
-            <Plate
-              editableProps={{
+        <div
+          ref={containerRef}
+          className={cn('relative flex max-w-[900px] overflow-x-auto')}
+        >
+          <Plate
+            editableProps={
+              {
                 autoFocus: true,
                 className: cn(
                   'relative max-w-full leading-[1.4] outline-none [&_strong]:font-bold',
                   '!min-h-[600px] w-[900px] px-[96px] py-16'
                 ),
-              }}
-            >
-              <FloatingToolbar>
-                <FloatingToolbarButtons />
-              </FloatingToolbar>
-            </Plate>
-          </div>
-        </PlateProvider>
-      </div>
-    </DndProvider>
+              } as TEditableProps
+            }
+          >
+            <FloatingToolbar>
+              <FloatingToolbarButtons />
+            </FloatingToolbar>
+          </Plate>
+        </div>
+      </PlateProvider>
+    </div>
   );
 }

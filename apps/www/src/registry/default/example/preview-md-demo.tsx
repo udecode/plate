@@ -1,19 +1,20 @@
 import 'prismjs/components/prism-markdown';
+
 import React from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
 import {
+  createPluginFactory,
+  isText,
   Plate,
   TRenderLeafProps,
   TText,
-  createPluginFactory,
-  isText,
 } from '@udecode/plate-common';
 import Prism from 'prismjs';
 
-import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { cn } from '@/lib/utils';
 
 /**

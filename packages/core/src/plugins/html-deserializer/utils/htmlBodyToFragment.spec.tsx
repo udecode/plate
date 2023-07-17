@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
+import { createPlateEditor } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 

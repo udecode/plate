@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { isBlockTextEmptyAfterSelection } from '@/packages/slate-utils/src/queries/isBlockTextEmptyAfterSelection';
-import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
-import { createPlateEditor } from '@udecode/plate-core/src/utils/createPlateEditor';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
 
 jsx;
 

@@ -1,11 +1,11 @@
 import {
-  ELEMENT_DEFAULT,
-  KEY_DESERIALIZE_HTML,
-  TElement,
   createPluginFactory,
+  ELEMENT_DEFAULT,
   getPluginType,
   isHtmlBlockElement,
+  KEY_DESERIALIZE_HTML,
   postCleanHtml,
+  TElement,
   traverseHtmlElements,
 } from '@udecode/plate-common';
 

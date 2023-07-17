@@ -1,11 +1,11 @@
 import {
-  GetNodeEntriesOptions,
-  PlateEditor,
-  Value,
   createPathRef,
   getNodeEntries,
+  GetNodeEntriesOptions,
   getParentNode,
   getPluginType,
+  PlateEditor,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, PathRef } from 'slate';

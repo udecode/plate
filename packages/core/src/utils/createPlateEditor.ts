@@ -1,6 +1,6 @@
-import { TEditor, Value, createTEditor, normalizeEditor } from '@udecode/slate';
+import { createTEditor, normalizeEditor, TEditor, Value } from '@udecode/slate';
 
-import { WithPlateOptions, withPlate } from '../plugins/withPlate';
+import { withPlate, WithPlateOptions } from '../plugins/withPlate';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
@@ -9,7 +9,7 @@ import { createPlugins } from './createPlugins';
 
 export interface CreatePlateEditorOptions<
   V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>
+  E extends TEditor<V> = TEditor<V>,
 > extends Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'> {
   /**
    * Initial editor (without `withPlate`).
@@ -45,7 +45,7 @@ export interface CreatePlateEditorOptions<
  */
 export const createPlateEditor = <
   V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>
+  E extends TEditor<V> = TEditor<V>,
 >({
   editor = createTEditor() as E,
   plugins = [],

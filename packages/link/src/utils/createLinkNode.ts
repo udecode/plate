@@ -1,8 +1,8 @@
 import {
+  getPluginType,
   PlateEditor,
   TText,
   Value,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { ELEMENT_LINK } from '../createLinkPlugin';

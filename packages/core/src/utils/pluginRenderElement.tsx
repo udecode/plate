@@ -4,8 +4,8 @@ import { DefaultElement } from 'slate-react';
 
 import { ElementProvider } from '../atoms';
 import { PlateEditor } from '../types/PlateEditor';
-import { RenderElement } from '../types/RenderElement';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
+import { RenderElement } from '../types/RenderElement';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**

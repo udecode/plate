@@ -7,7 +7,7 @@ import { Box, BoxProps, useComposedRef } from '..';
 
 export type PlateElementProps<
   V extends Value = Value,
-  N extends TElement = EElement<V>
+  N extends TElement = EElement<V>,
 > = PlateRenderElementProps<V, N> &
   BoxProps & {
     /**

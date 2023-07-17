@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  Value,
   getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
+  PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-common';
 
 import { ELEMENT_LI } from '../createListPlugin';

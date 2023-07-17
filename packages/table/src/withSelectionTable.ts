@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
-  Value,
   getBlockAbove,
   getEndPoint,
   getPluginType,
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -24,7 +24,7 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  */
 export const withSelectionTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {

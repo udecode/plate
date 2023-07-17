@@ -1,0 +1,72 @@
+name: Templates
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sync-templates.yml'
+      - 'scripts/sync-templates.sh'
+      - 'templates/**'
+
+jobs:
+  build-playground:
+    name: build-playground
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: templates/plate-playground-template
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          # Fetch all git history so that yarn workspaces --since can compare with the correct commits
+          # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v2.2.4
+        name: Install pnpm
+        with:
+          version: 8.6.1
+          run_install: false
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "pnpm"
+          cache-dependency-path: '**/pnpm-lock.yaml' # THIS PATTERN did the trick for me.
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      # Lint, typecheck, build
+      - name: Build
+        run: pnpm build
+
+  sync:
+    needs: build-playground
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Sync Templates
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        run: ./scripts/sync-templates.sh "templates/plate-playground-template"
+        shell: bash

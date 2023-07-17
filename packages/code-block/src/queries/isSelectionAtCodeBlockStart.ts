@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   isExpanded,
   isStartPoint,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 
 import { getCodeLineEntry } from './getCodeLineEntry';

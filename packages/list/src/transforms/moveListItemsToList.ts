@@ -1,12 +1,12 @@
 import {
-  MoveChildrenOptions,
-  PlateEditor,
-  TElementEntry,
-  Value,
   deleteText,
   findDescendant,
   getLastChildPath,
   moveChildren,
+  MoveChildrenOptions,
+  PlateEditor,
+  TElementEntry,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';

@@ -5,7 +5,7 @@ import { TodoListPlugin } from './types';
 
 export const withTodoList = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options }: WithPlatePlugin<TodoListPlugin, V, E>

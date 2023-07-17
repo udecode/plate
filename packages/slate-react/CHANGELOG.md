@@ -1,5 +1,7 @@
 # @udecode/slate-react
 
+## 22.0.2
+
 ## 22.0.1
 
 ### Patch Changes

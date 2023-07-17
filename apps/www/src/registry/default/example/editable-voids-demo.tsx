@@ -14,14 +14,14 @@ import {
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
 import {
+  createPluginFactory,
   Plate,
   PlateRenderElementProps,
   TElement,
-  createPluginFactory,
 } from '@udecode/plate-common';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
-import { MyEditor, MyValue, createMyPlugins } from '@/types/plate-types';
+import { createMyPlugins, MyEditor, MyValue } from '@/types/plate-types';
 
 export const ELEMENT_EDITABLE_VOID = 'editable-void';
 

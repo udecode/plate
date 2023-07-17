@@ -2,10 +2,10 @@ import { ComponentClass, FunctionComponent } from 'react';
 import {
   EDescendant,
   EElement,
+  isText,
   PlateEditor,
   SlateProps,
   Value,
-  isText,
 } from '@udecode/plate-common';
 import { encode } from 'html-entities';
 

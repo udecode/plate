@@ -256,7 +256,9 @@
   },
   {
     "name": "dialog",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-dialog"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/dialog.tsx"

@@ -1,9 +1,9 @@
 import {
+  getNode,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
-  getNode,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import {
+  findNodePath,
   PlateRenderElementProps,
   TEditor,
-  findNodePath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';

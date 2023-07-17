@@ -1,7 +1,5 @@
 /** @jsx jsx */
 
-import { AutoformatPlugin } from '@/packages/autoformat/src/types';
-import { withAutoformat } from '@/packages/autoformat/src/withAutoformat';
 import {
   getEditorString,
   insertText,
@@ -11,6 +9,9 @@ import {
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
+
+import { AutoformatPlugin } from '../../../types';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 

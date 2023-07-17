@@ -10,7 +10,7 @@ import { PlateSlate } from './PlateSlate';
 
 export interface PlateProps<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > extends Omit<PlateProviderProps<V, E>, 'children'>,
     PlateEditableExtendedProps {
   editableProps?: TEditableProps<V>;
@@ -18,7 +18,7 @@ export interface PlateProps<
 
 export function Plate<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >({
   children,
   editableRef,

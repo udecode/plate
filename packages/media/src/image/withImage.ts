@@ -12,7 +12,7 @@ import { withImageUpload } from './withImageUpload';
  */
 export const withImage = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   plugin: WithPlatePlugin<ImagePlugin, V, E>

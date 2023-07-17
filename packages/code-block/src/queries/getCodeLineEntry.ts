@@ -1,13 +1,13 @@
 import {
   EElement,
-  PlateEditor,
-  TElement,
-  TNodeEntry,
-  Value,
   getAboveNode,
   getParentNode,
   isElement,
+  PlateEditor,
   someNode,
+  TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-common';
 import { Location } from 'slate';
 
@@ -18,7 +18,7 @@ import { getCodeLineType } from '../options/index';
  */
 export const getCodeLineEntry = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: PlateEditor<V>,
   { at = editor.selection }: { at?: Location | null } = {}

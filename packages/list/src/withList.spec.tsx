@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
-import { createLinkPlugin } from '@/packages/link/src/createLinkPlugin';
-import { createParagraphPlugin } from '@/packages/paragraph/src/createParagraphPlugin';
 import {
+  createPlateEditor,
   PlateEditor,
   PlatePlugin,
-  createPlateEditor,
 } from '@udecode/plate-common';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { ELEMENT_UL, createListPlugin } from './createListPlugin';
+import { createListPlugin, ELEMENT_UL } from './createListPlugin';
 import { ListPlugin } from './types';
 
 jsx;

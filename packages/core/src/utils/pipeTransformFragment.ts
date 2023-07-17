@@ -9,7 +9,7 @@ import { InjectedPlugin } from './getInjectedPlugins';
  */
 export const pipeTransformFragment = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   plugins: InjectedPlugin<{}, V, E>[],
   {

@@ -1,18 +1,18 @@
 import {
-  ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
   deleteMerge,
+  ELEMENT_DEFAULT,
   getPluginType,
   isFirstChild,
   isSelectionAtBlockStart,
   mockPlugin,
+  PlateEditor,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
+  onKeyDownResetNode,
   ResetNodePlugin,
   SIMULATE_BACKSPACE,
-  onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 
 import { ELEMENT_LI } from './createListPlugin';

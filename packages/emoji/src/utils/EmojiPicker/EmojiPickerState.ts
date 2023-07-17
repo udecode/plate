@@ -36,7 +36,7 @@ const initialState: EmojiPickerStateProps = {
 
 export const EmojiPickerState = (): [
   EmojiPickerStateProps,
-  Dispatch<EmojiPickerStateDispatch>
+  Dispatch<EmojiPickerStateDispatch>,
 ] => {
   const [cache, dispatch] = useReducer<
     Reducer<EmojiPickerStateProps, EmojiPickerStateDispatch>

@@ -1,4 +1,4 @@
-import { PlateEditor, Value, isCollapsed } from '@udecode/plate-common';
+import { isCollapsed, PlateEditor, Value } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import { comboboxActions, comboboxSelectors } from './combobox.store';

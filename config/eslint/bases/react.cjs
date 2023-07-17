@@ -20,7 +20,6 @@ module.exports = {
   },
   extends: [
     // @see https://www.npmjs.com/package/eslint-plugin-react-hooks
-    'plugin:react-hooks/recommended',
     'plugin:mdx/recommended',
   ],
   rules: {

@@ -1,11 +1,11 @@
 import {
+  isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
-  Value,
-  WithPlatePlugin,
-  isCollapsed,
   setElements,
   someNode,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 

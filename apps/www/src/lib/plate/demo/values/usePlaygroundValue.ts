@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 
 import { MyValue } from '@/types/plate-types';
-import { ValueId, settingValues } from '@/config/setting-values';
+import { settingValues, ValueId } from '@/config/setting-values';
 import { settingsStore } from '@/components/context/settings-store';
 
 import { alignValue } from './alignValue';

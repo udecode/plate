@@ -40,9 +40,7 @@ const plugins = [
 
 ### createDeserializeCsvPlugin
 
-<APIAttributes>
-
-Options.
+<APIOptions>
 
 <APIItem name="errorTolerance" type="number" optional>
 
@@ -60,6 +58,44 @@ Options to be passed to the PapaParse library for parsing CSV data.
 Refer to **[PapaParse documentation](https://www.papaparse.com/docs#config)** for more details about these options.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### deserializeCsv
+
+Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="data" type="string">
+The CSV data string to be deserialized.
+</APIItem>
+<APIItem name="errorTolerance" type="number" optional>
+Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed. Percentage is based on number of errors compared to number of rows.
+
+- **Default:** `0.25`
+
+</APIItem>
+<APIItem name="parseOptions" type="ParseConfig">
+
+Options to be passed to the PapaParse library for parsing CSV data.
+
+- **Default:** **`{ header: true }`** (Indicating that the first row of the CSV data should be treated as a header.)
+
+Refer to **[PapaParse documentation](https://www.papaparse.com/docs#config)** for more details about these options.
+
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="TDescendant[]">
+    Returns an array of `TDescendant` objects that represent the structure of
+    the CSV data in a Slate compatible format. If parsing of the CSV data fails
+    or the data is not valid, this function returns `undefined`.
+  </APIItem>
+</APIReturns>
+
+This function creates a table representation of the CSV data. If the CSV file includes headers, they are added as the first row of the table. Each subsequent row represents the values from the CSV file. If the CSV file does not include headers, each row of data is represented as a row in the table.
+
+Please note that the function assumes the usage of specific plugins corresponding to `ELEMENT_DEFAULT`, `ELEMENT_TABLE`, `ELEMENT_TH`, `ELEMENT_TR`, and `ELEMENT_TD`.

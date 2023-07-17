@@ -1,7 +1,7 @@
 import {
+  createRef,
   MutableRefObject,
   RefObject,
-  createRef,
   useCallback,
   useEffect,
   useRef,
@@ -18,8 +18,8 @@ import {
 } from '../../types';
 import { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary/index';
 import {
-  SetFocusedAndVisibleSectionsType,
   observeCategories,
+  SetFocusedAndVisibleSectionsType,
 } from '../EmojiObserver';
 import { AIndexSearch } from '../IndexSearch/index';
 import { EmojiPickerState, MapEmojiCategoryList } from './EmojiPickerState';

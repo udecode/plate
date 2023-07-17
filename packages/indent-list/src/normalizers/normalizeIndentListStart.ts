@@ -1,11 +1,11 @@
 import {
   EElement,
   EElementEntry,
+  getNode,
+  setElements,
   TEditor,
   TNodeEntry,
   Value,
-  getNode,
-  setElements,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
@@ -42,7 +42,7 @@ export const normalizeNextIndentListStart = <V extends Value>(
 
 export const normalizeIndentListStart = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   entry: EElementEntry<V>,

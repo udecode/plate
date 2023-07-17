@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  Value,
   getEditorString,
   getPluginType,
   isRangeAcrossBlocks,
+  PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-common';
 
 import {

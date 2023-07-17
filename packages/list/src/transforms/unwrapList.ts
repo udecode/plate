@@ -1,14 +1,14 @@
 import {
   ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
   getAboveNode,
   getBlockAbove,
   getCommonNode,
   getPluginType,
   isElement,
+  PlateEditor,
   setElements,
   unwrapNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';

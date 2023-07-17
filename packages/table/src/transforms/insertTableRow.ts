@@ -1,13 +1,13 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   findNode,
   getBlockAbove,
   getPluginOptions,
   getPluginType,
   insertElements,
+  PlateEditor,
   select,
+  TElement,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';

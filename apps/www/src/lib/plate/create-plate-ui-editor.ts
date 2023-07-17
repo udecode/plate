@@ -1,9 +1,9 @@
 import {
+  createPlateEditor,
   CreatePlateEditorOptions,
   PlateEditor,
   TEditor,
   Value,
-  createPlateEditor,
 } from '@udecode/plate-common';
 
 import { createPlateUI } from './create-plate-ui';
@@ -13,7 +13,7 @@ import { createPlateUI } from './create-plate-ui';
  */
 export const createPlateUIEditor = <
   V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>
+  E extends TEditor<V> = TEditor<V>,
 >({ components, ...options }: CreatePlateEditorOptions<V, E> = {}): E &
   PlateEditor<V> =>
   createPlateEditor<V, E>({

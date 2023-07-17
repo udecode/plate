@@ -8,7 +8,7 @@ import { PlateEditor } from './PlateEditor';
  */
 export interface PlateRenderNodeProps<
   V extends Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > {
   className?: string;
 

@@ -9,7 +9,7 @@ import { TNode } from './TNode';
  */
 export const getNodeFragment = <
   N extends ElementOf<R> | TextOf<R>,
-  R extends TNode = TNode
+  R extends TNode = TNode,
 >(
   root: R,
   range: Range

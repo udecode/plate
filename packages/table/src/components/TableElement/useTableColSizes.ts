@@ -12,7 +12,7 @@ import {
   getTableOverriddenColSizes,
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
-import { TTableElement, TablePlugin } from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 
 /**
  * Returns colSizes with overrides applied.

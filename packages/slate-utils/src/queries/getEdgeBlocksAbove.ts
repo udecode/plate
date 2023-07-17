@@ -1,10 +1,10 @@
 import {
   EAncestor,
   GetAboveNodeOptions,
+  getEdgePoints,
   TEditor,
   TNodeEntry,
   Value,
-  getEdgePoints,
 } from '@udecode/slate';
 
 import { getBlockAbove } from './getBlockAbove';
@@ -15,7 +15,7 @@ import { getBlockAbove } from './getBlockAbove';
 export const getEdgeBlocksAbove = <
   N1 extends EAncestor<V>,
   N2 extends EAncestor<V> = N1,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   { at: _at, ...options }: GetAboveNodeOptions<V> = {}

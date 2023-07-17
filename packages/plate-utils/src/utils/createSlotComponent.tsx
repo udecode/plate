@@ -3,7 +3,7 @@ import { Slot } from '@radix-ui/react-slot';
 
 export const createSlotComponent = <
   T extends React.ElementType,
-  P extends React.ComponentPropsWithoutRef<T>
+  P extends React.ComponentPropsWithoutRef<T>,
 >(
   element: T
 ) =>

@@ -8,7 +8,7 @@ import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
  */
 export const getPlugins = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ): PlatePlugin<PluginOptions, V, E>[] => {

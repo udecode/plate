@@ -1,19 +1,19 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
-  WithPlatePlugin,
   getNode,
   insertElements,
   isElement,
+  PlateEditor,
   setElements,
+  TElement,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
 export const withNormalizeTypes = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options: { rules, onError } }: WithPlatePlugin<NormalizeTypesPlugin, V, E>

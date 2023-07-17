@@ -7,7 +7,7 @@ import { getPlugin } from './getPlugin';
 export const getPluginOptions = <
   P,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   key: PluginKey

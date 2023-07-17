@@ -1,5 +1,5 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
-import { SlateProps, createTEditor, withTReact } from '@udecode/plate-common';
+import { createTEditor, SlateProps, withTReact } from '@udecode/plate-common';
 import { Slate } from 'slate-react';
 
 /**

@@ -4,8 +4,8 @@ import { DropTargetMonitor } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 import { DragItemNode, DropLineDirection } from '../types';
-import { UseDragNodeOptions, useDragNode } from './useDragNode';
-import { UseDropNodeOptions, useDropNode } from './useDropNode';
+import { useDragNode, UseDragNodeOptions } from './useDragNode';
+import { useDropNode, UseDropNodeOptions } from './useDropNode';
 
 export interface UseDndNodeOptions
   extends Pick<UseDropNodeOptions, 'id' | 'nodeRef'>,

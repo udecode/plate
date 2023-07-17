@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
-  PlateEditor,
   createPlateEditor,
   insertNodes,
   mergeNodes,
+  PlateEditor,
   splitNodes,
 } from '@udecode/plate-common';
 import {

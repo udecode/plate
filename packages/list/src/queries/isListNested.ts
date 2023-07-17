@@ -1,9 +1,9 @@
 import {
+  getParentNode,
+  getPluginType,
   PlateEditor,
   TElement,
   Value,
-  getParentNode,
-  getPluginType,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

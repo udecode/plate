@@ -1,11 +1,11 @@
 import React from 'react';
-import { PlatePlugin } from '@/packages/core/src/types';
-import { createPlateEditor } from '@/packages/core/src/utils/createPlateEditor';
 import { render } from '@testing-library/react';
 import { isBlock } from '@udecode/slate/src/interfaces/editor/isBlock';
 import { setNodes } from '@udecode/slate/src/interfaces/transforms/setNodes';
 import { isEqual, memoize } from 'lodash';
 
+import { PlatePlugin } from '../types/index';
+import { createPlateEditor } from '../utils/index';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
@@ -63,6 +63,7 @@ describe('Plate', () => {
         }
       });
 
+      // @ts-ignore
       const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
         {
           key: 'a',

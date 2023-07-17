@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
-  HotkeyPlugin,
-  PlateEditor,
   createPlateEditor,
   getPlugin,
+  HotkeyPlugin,
+  PlateEditor,
 } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';

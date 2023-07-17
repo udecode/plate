@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest';
+
 import { resolveTree } from '../../src/utils/registry';
 
 test('resolve tree', async () => {

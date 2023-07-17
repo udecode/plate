@@ -9,7 +9,7 @@ import { usePlateEditorRef } from './usePlateEditorRef';
  */
 export const usePlateEditorState = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
 ) => {

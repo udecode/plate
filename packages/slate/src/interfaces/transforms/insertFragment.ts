@@ -9,7 +9,7 @@ import { EElementOrText } from '../element/TElement';
  */
 export const insertFragment = <
   N extends EElementOrText<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   fragment: N[],

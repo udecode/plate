@@ -13,7 +13,7 @@ import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 export const mergeDeepPlugins = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  P extends WithPlatePlugin<{}, V, E> = WithPlatePlugin<{}, V, E>
+  P extends WithPlatePlugin<{}, V, E> = WithPlatePlugin<{}, V, E>,
 >(
   editor: E,
   _plugin: P
