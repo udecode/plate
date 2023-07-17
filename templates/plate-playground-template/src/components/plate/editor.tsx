@@ -18,6 +18,16 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 
+const commentsUsers = {
+  1: {
+    id: '1',
+    name: 'zbeyens',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+  },
+};
+
+const myUserId = '1';
+
 export default function Editor() {
   const containerRef = useRef(null);
 
@@ -37,7 +47,7 @@ export default function Editor() {
           </FixedToolbar>
 
           <div className="flex">
-            <CommentsProvider>
+            <CommentsProvider users={commentsUsers} myUserId={myUserId}>
               <div
                 ref={containerRef}
                 className={cn(
