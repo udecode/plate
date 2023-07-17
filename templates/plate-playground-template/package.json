@@ -35,7 +35,7 @@
     "@udecode/plate-cursor": "^22.0.2",
     "@udecode/plate-dnd": "^22.0.2",
     "@udecode/plate-emoji": "^22.0.2",
-    "@udecode/plate-excalidraw": "^22.0.2",
+    "@udecode/plate-excalidraw": "^22.0.4",
     "@udecode/plate-floating": "^22.0.2",
     "@udecode/plate-font": "^22.0.2",
     "@udecode/plate-heading": "^22.0.2",
