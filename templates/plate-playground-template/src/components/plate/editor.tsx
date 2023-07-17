@@ -7,6 +7,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
+import { commentsUsers, myUserId } from '@/lib/plate/comments';
 import { MENTIONABLES } from '@/lib/plate/mentionables';
 import { plugins } from '@/lib/plate/plate-plugins';
 import { cn } from '@/lib/utils';
@@ -17,16 +18,6 @@ import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons
 import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
-
-const commentsUsers = {
-  1: {
-    id: '1',
-    name: 'zbeyens',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
-  },
-};
-
-const myUserId = '1';
 
 export default function Editor() {
   const containerRef = useRef(null);
