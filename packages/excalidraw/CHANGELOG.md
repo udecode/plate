@@ -10,4 +10,4 @@
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Renamed package to `@udecode/plate-excalidraw`.
   New hooks:
-  - `useExalidawElement`
+  - `useExcalidrawElement`

@@ -2,7 +2,7 @@ import React from 'react';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TExcalidrawElement,
-  useExalidawElement,
+  useExcalidrawElement,
 } from '@udecode/plate-excalidraw';
 
 export function ExcalidrawElement({
@@ -11,7 +11,7 @@ export function ExcalidrawElement({
 }: PlateElementProps<Value, TExcalidrawElement>) {
   const { children, element } = props;
 
-  const { Excalidraw, excalidrawProps } = useExalidawElement({
+  const { Excalidraw, excalidrawProps } = useExcalidrawElement({
     element,
   });
 
