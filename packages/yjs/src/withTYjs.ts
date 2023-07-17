@@ -1,10 +1,10 @@
-import { YjsEditor, withYjs } from '@slate-yjs/core';
+import { withYjs, YjsEditor } from '@slate-yjs/core';
 // eslint-disable-next-line import/no-unresolved
 import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
 import { TEditor, TOperation, Value } from '@udecode/plate-common';
 import * as Y from 'yjs';
 
-export type YjsEditorProps<V extends Value = Value> = Pick<
+export type YjsEditorProps = Pick<
   YjsEditor,
   | 'sharedRoot'
   | 'localOrigin'
@@ -21,7 +21,7 @@ export type YjsEditorProps<V extends Value = Value> = Pick<
 export const withTYjs = <
   V extends Value,
   E extends TEditor<V>,
-  EE extends E & YjsEditorProps<V> = E & YjsEditorProps<V>
+  EE extends E & YjsEditorProps = E & YjsEditorProps,
 >(
   editor: E,
   sharedRoot: Y.XmlText,

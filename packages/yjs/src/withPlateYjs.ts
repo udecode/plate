@@ -1,20 +1,19 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
+  getPluginOptions,
   PlateEditor,
   UnknownObject,
   Value,
-  getPluginOptions,
 } from '@udecode/plate-common';
 import * as Y from 'yjs';
 
 import { KEY_YJS, YjsPlugin } from './createYjsPlugin';
-import { TCursorEditor, withTCursors } from './withTCursors';
+import { CursorEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 import { yjsActions } from './yjsStore';
 
-export interface PlateYjsEditorProps<V extends Value = Value>
-  extends TCursorEditor<V> {
+export interface PlateYjsEditorProps extends CursorEditorProps {
   yjs: {
     provider: HocuspocusProvider;
   };
@@ -23,8 +22,8 @@ export interface PlateYjsEditorProps<V extends Value = Value>
 export const withPlateYjs = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & PlateYjsEditorProps<V> = E & PlateYjsEditorProps<V>,
-  TCursorData extends UnknownObject = UnknownObject
+  EE extends E & PlateYjsEditorProps = E & PlateYjsEditorProps,
+  TCursorData extends UnknownObject = UnknownObject,
 >(
   e: E
 ) => {

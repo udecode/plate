@@ -1,10 +1,10 @@
-import { CursorEditor, WithCursorsOptions, withCursors } from '@slate-yjs/core';
-import { Value } from '@udecode/plate-common';
+import { CursorEditor, withCursors, WithCursorsOptions } from '@slate-yjs/core';
+import { TEditor, Value } from '@udecode/plate-common';
 import { Awareness } from 'y-protocols/awareness';
 
 import { YjsEditorProps } from './withTYjs';
 
-export type TCursorEditor<V extends Value = Value> = YjsEditorProps<V> &
+export type CursorEditorProps = YjsEditorProps &
   Pick<
     CursorEditor,
     | 'awareness'
@@ -17,8 +17,8 @@ export type TCursorEditor<V extends Value = Value> = YjsEditorProps<V> &
 export const withTCursors = <
   TCursorData extends Record<string, unknown>,
   V extends Value,
-  E extends TCursorEditor<V>,
-  EE extends E & TCursorEditor<V> = E & TCursorEditor<V>
+  E extends TEditor<V> & YjsEditorProps,
+  EE extends E & CursorEditorProps = E & CursorEditorProps,
 >(
   editor: E,
   awareness: Awareness,

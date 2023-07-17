@@ -1,11 +1,11 @@
 # Plate yjs plugin
 
-This package implements the yjs plugin for Plate.
+This package implements the yjs plugin for Plate and Hocuspocus.
 
 ## Documentation
 
 Check out
-[Playground](https://platejs.org/docs/playground).
+[Collaboration](https://platejs.org/docs/collaboration).
 
 ## License
 

@@ -3,10 +3,10 @@ import { WithCursorsOptions } from '@slate-yjs/core';
 // eslint-disable-next-line import/no-unresolved
 import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
 import {
+  createPluginFactory,
   PlateEditor,
   UnknownObject,
   Value,
-  createPluginFactory,
 } from '@udecode/plate-common';
 
 import { RenderAboveEditableYjs } from './RenderAboveEditableYjs';

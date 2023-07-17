@@ -4,17 +4,17 @@ import {
   YHistoryEditor,
   // eslint-disable-next-line import/no-unresolved
 } from '@slate-yjs/core/dist/plugins/withYHistory';
-import { Value } from '@udecode/plate-common';
+import { TEditor, Value } from '@udecode/plate-common';
 
 import { YjsEditorProps } from './withTYjs';
 
-export type TYHistoryEditor<V extends Value = Value> = YjsEditorProps<V> &
+export type YHistoryEditorProps = YjsEditorProps &
   Pick<YHistoryEditor, 'undoManager' | 'withoutSavingOrigin' | 'undo' | 'redo'>;
 
 export const withTYHistory = <
   V extends Value,
-  E extends YjsEditorProps<V>,
-  EE extends E & TYHistoryEditor<V> = E & TYHistoryEditor<V>
+  E extends TEditor<V> & YjsEditorProps,
+  EE extends E & YHistoryEditorProps = E & YHistoryEditorProps,
 >(
   editor: E,
   options?: WithYHistoryOptions

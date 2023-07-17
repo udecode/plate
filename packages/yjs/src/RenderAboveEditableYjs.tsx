@@ -1,6 +1,6 @@
 import React, { FC, ReactNode, useEffect } from 'react';
 import { YjsEditor } from '@slate-yjs/core';
-import { PlateEditor, Value, usePlateEditorRef } from '@udecode/plate-common';
+import { PlateEditor, usePlateEditorRef, Value } from '@udecode/plate-common';
 
 import { PlateYjsEditorProps } from './withPlateYjs';
 import { useYjsSelectors } from './yjsStore';
