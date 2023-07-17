@@ -7,6 +7,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
+import { commentsUsers, myUserId } from '@/lib/plate/comments';
 import { MENTIONABLES } from '@/lib/plate/mentionables';
 import { plugins } from '@/lib/plate/plate-plugins';
 import { cn } from '@/lib/utils';
@@ -37,7 +38,7 @@ export default function Editor() {
           </FixedToolbar>
 
           <div className="flex">
-            <CommentsProvider>
+            <CommentsProvider users={commentsUsers} myUserId={myUserId}>
               <div
                 ref={containerRef}
                 className={cn(
