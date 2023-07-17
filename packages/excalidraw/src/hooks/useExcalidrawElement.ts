@@ -6,7 +6,7 @@ import {
 
 import { TExcalidrawElement, TExcalidrawProps } from '..';
 
-export const useExalidawElement = ({
+export const useExcalidrawElement = ({
   element,
   libraryItems = [],
   scrollToContent = true,

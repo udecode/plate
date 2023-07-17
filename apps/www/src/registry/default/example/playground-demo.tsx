@@ -6,7 +6,9 @@ import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
+import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
+import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
+import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -109,6 +111,21 @@ export const usePlaygroundPlugins = ({
 } = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
+  const autoformatOptions = {
+    rules: [...autoformatRules],
+    enableUndoOnDelete: true,
+  };
+
+  if (id === 'indentlist') {
+    autoformatOptions.rules.push(...autoformatIndentLists);
+  } else if (id === 'list') {
+    autoformatOptions.rules.push(...autoformatLists);
+  } else if (!!enabled.listStyleType) {
+    autoformatOptions.rules.push(...autoformatIndentLists);
+  } else if (!!enabled.list) {
+    autoformatOptions.rules.push(...autoformatLists);
+  }
+
   return useMemo(
     () =>
       createMyPlugins(
@@ -121,7 +138,7 @@ export const usePlaygroundPlugins = ({
           createHorizontalRulePlugin({ enabled: !!enabled.hr }),
           createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
           createListPlugin({
-            enabled: isEnabled('list', id) || !!enabled.list,
+            enabled: id === 'list' || !!enabled.list,
           }),
           createImagePlugin({ enabled: !!enabled.img }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
@@ -150,7 +167,7 @@ export const usePlaygroundPlugins = ({
           createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
           createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
           createIndentListPlugin({
-            enabled: isEnabled('indentlist', id) || !!enabled.listStyleType,
+            enabled: id === 'indentlist' || !!enabled.listStyleType,
           }),
           createLineHeightPlugin({
             ...lineHeightPlugin,
@@ -159,8 +176,8 @@ export const usePlaygroundPlugins = ({
 
           // Functionality
           createAutoformatPlugin({
-            ...(autoformatPlugin as any),
             enabled: !!enabled.autoformat,
+            options: autoformatOptions,
           }),
           createBlockSelectionPlugin({
             options: {

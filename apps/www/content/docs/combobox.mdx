@@ -51,6 +51,24 @@ const plugins = [
 
 Then render the combobox component inside `Plate`. You can use the [Combobox component](/docs/components/combobox) or create your own.
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="ArrowDown">
+    Highlights the next item in the list.
+  </KeyTableItem>
+  <KeyTableItem hotkey="ArrowUp">
+    Highlights the previous item in the list.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Esc">Closes the combobox.</KeyTableItem>
+  <KeyTableItem hotkey="Tab">
+    Selects the currently highlighted item.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Enter">
+    Selects the currently highlighted item.
+  </KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createComboboxPlugin
@@ -107,7 +125,7 @@ Represents a combobox's state. The state resides in `comboboxStore`, which uses 
 
 <APIParameters>
 <APIItem name="activeId" type="string">
-Opened combobox id.
+Opened combobox ID.
 </APIItem>
 <APIItem name="byId" type="Record<string, ComboboxStoreById>">
 A collection of combobox configuration stores, each identified by a unique combobox ID (e.g., one for tags, one for mentions).
@@ -117,7 +135,7 @@ A collection of combobox configuration stores, each identified by a unique combo
 <APISubList>
 
 <APISubListItem parent="byId" name="id" type="string">
-Combobox id.
+Combobox ID.
 </APISubListItem>
 <APISubListItem parent="byId" name="filter" type="function" optional>
 An optional function to filter items by text.
@@ -208,28 +226,24 @@ Data available to `onRenderItem`.
 
 ## API Components
 
-### useComboboxControls
-
-Used in `Combobox` to control the combobox state. See [useCombobox](https://www.downshift-js.com/use-combobox).
-
-### useComboboxContentState
-
 ### useComboboxContent
 
-## Keyboard Interactions
+A behavior hook for the `ComboboxContent` component.
 
-<KeyTable>
-  <KeyTableItem hotkey="ArrowDown">
-    Highlights the next item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="ArrowUp">
-    Highlights the previous item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Esc">Closes the combobox.</KeyTableItem>
-  <KeyTableItem hotkey="Tab">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Enter">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-</KeyTable>
+<APIState>
+  <APIItem name="items" type="TComboboxItem<TData>[] | undefined">
+    The items for the combobox.
+  </APIItem>
+  <APIItem name="combobox" type="function">
+    The combobox store.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="menuProps" type="any">
+    The menu props for the combobox content.
+  </APIItem>
+  <APIItem name="targetRange" type="BaseRange">
+    The target range of the combobox.
+  </APIItem>
+</APIReturns>

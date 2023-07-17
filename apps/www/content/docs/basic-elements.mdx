@@ -52,6 +52,21 @@ const plugins = [
 ];
 ```
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 0">Toggle paragraph block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    Toggle the blockquote formatting for selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + A">
+    Select all text in the code block.
+  </KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createBasicElementsPlugin
@@ -64,12 +79,12 @@ const plugins = [
 
 ### createHeadingPlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem name="levels" type="number" optional>
 Specifies the heading levels supported, ranging from 1 to the specified levels.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ## API Paragraph
 
@@ -79,9 +94,7 @@ Specifies the heading levels supported, ranging from 1 to the specified levels.
 
 ### createCodeBlockPlugin
 
-<APIAttributes>
-
-Options.
+<APIOptions>
 
 <APIItem name="syntax" type="boolean" optional>
 Determines if syntax highlighting is enabled.
@@ -99,45 +112,199 @@ Defines deserializers for the code block plugin.
 Hotkeys to trigger a code block action.
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### isCodeBlockEmpty
 
+Checks if the selection is inside an empty code block.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    Returns true if the selection is in an empty code block.
+  </APIItem>
+</APIReturns>
+
 ### isSelectionAtCodeBlockStart
+
+Checks if the selection is at the start of the first code line in a code block.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    Returns true if the selection is at the start of the first code line in a
+    code block.
+  </APIItem>
+</APIReturns>
 
 ### indentCodeLine
 
+Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
+
+<APIParameters>
+<APIItem name="editor" type="TEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="IndentCodeLineOptions">
+<APISubList>
+<APISubListItem parent="options" name="codeLine" type="TElementEntry">
+  The code line to be indented.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="indentDepth"
+  type="number"
+>
+The size of indentation for the code line.
+
+- **Default:** `2`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
+
 ### insertCodeBlock
+
+Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem
+    name="insertNodesOptions"
+    type="Omit<InsertNodesOptions, 'match'>"
+    optional
+  ></APIItem>
+</APIParameters>
 
 ### insertCodeLine
 
+Inserts a code line starting with the specified indentation depth.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="indentDepth" type="number" optional>
+    The depth of indentation for the code line.
+
+    - **Default:** `0`
+
+  </APIItem>
+</APIParameters>
+
 ### outdentCodeLine
+
+Outdents a code line, removing two whitespace characters if present.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="OutdentCodeLineOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="codeLine" type="TElementEntry">
+        The code line to be outdented.
+      </APISubListItem>
+      <APISubListItem parent="options" name="codeBlock" type="TElementEntry">
+        The code block containing the code line to be outdented.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
 ### toggleCodeBlock
 
+Toggles the code block in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
 ### unwrapCodeBlock
+
+Unwraps the code block in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
 
 ### useCodeBlockCombobox
 
-### useCodeBlockComboboxState
+<APIState>
+  <APIItem name="element" type="TCodeBlockElement">
+    The code block element.
+  </APIItem>
+  <APIItem name="setValue" type="function">
+    Set element value callback.
+  </APIItem>
+</APIState>
 
-### useCodeBlockElement
+<APIReturns>
+  <APIItem name="commandItemProps" type="object">
+    The props for the command item.
+    <APISubList>
+      <APISubListItem parent="commandItemProps" name="onSelect" type="function">
+        The function to call when the command item is selected.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
 
 ### useCodeBlockElementState
 
+<APIParameters>
+  <APIItem name="element" type="TCodeBlockElement">
+    The code block element.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="className" type="string | false">
+    The CSS class name for the code block element, representing the selected
+    language.
+  </APIItem>
+  <APIItem name="syntax" type="boolean | undefined">
+    The syntax plugin option.
+  </APIItem>
+</APIReturns>
+
 ### useCodeSyntaxLeaf
 
-## Keyboard Interactions
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="leaf" type="any">
+        The leaf node representing a code syntax token.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 0">Toggle paragraph block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Shift + .">
-    Toggle the blockquote formatting for selected text.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Cmd + A">
-    Select all text in the code block.
-  </KeyTableItem>
-</KeyTable>
+<APIReturns>
+  <APIItem name="tokenProps" type="object">
+    The props for the token.
+    <APISubList>
+      <APISubListItem parent="tokenProps" name="className" type="string">
+        The CSS class name for the token.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

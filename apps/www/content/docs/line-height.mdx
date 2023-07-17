@@ -39,6 +39,55 @@ const plugins = [
 
 ### setLineHeight
 
+Sets the line height for selected nodes in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    The options for setting the line height.
+    <APISubList>
+      <APISubListItem parent="options" name="value" type="number">
+        The line height value to be set.
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="setNodesOptions"
+        type="SetNodesOptions"
+      >
+        Additional options for setting nodes.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
 ## API Components
 
 ### useLineHeightDropdownMenu
+
+The behavior hook for the line height dropdown menu.
+
+<APIState>
+  <APIItem name="value" type="number">
+    The line height value.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="radioGroupProps" type="object">
+    The props for the radio group.
+    <APISubList>
+      <APISubListItem parent="radioGroupProps" name="value" type="string">
+        The line height value.
+      </APISubListItem>
+      <APISubListItem
+        parent="radioGroupProps"
+        name="onValueChange"
+        type="function"
+      >
+        Callback to set the line height value.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
