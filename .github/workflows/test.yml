@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
-    if: ${{ failure() }}
+    if: ${{ !github.event.pull_request.draft && failure() }}
     
     steps:
       - name: Notify

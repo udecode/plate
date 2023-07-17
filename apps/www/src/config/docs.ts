@@ -117,6 +117,11 @@ export const docsConfig: DocsConfig = {
           label: 'Element',
         },
         {
+          title: 'Collaboration',
+          href: '/docs/collaboration',
+          items: [],
+        },
+        {
           title: 'Combobox',
           href: '/docs/combobox',
           items: [],
