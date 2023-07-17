@@ -2,4 +2,4 @@
 '@udecode/plate-comments': patch
 ---
 
-Disable add comment button when myUserId is null
+Return `hidden: true` from `useCommentAddButton` when `myUserId` is not set

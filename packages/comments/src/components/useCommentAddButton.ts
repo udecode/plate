@@ -23,9 +23,7 @@ export const useCommentAddButton = () => {
   );
 
   return {
-    props: {
-      onClick,
-      disabled: !myUserId,
-    },
+    hidden: !myUserId,
+    props: { onClick },
   };
 };
