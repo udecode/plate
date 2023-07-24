@@ -1,6 +1,7 @@
 import React from 'react';
-import { PlateElement, PlateElementProps } from '@udecode/plate-common';
+import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
+  TTableCellElement,
   TableCellElementResizable,
   useTableCellElement,
   useTableCellElementState,
@@ -8,7 +9,7 @@ import {
 
 import { cn } from '@/lib/utils';
 
-export interface TableCellElementProps extends PlateElementProps {
+export interface TableCellElementProps extends PlateElementProps<Value, TTableCellElement> {
   hideBorder?: boolean;
   isHeader?: boolean;
 }
@@ -30,6 +31,9 @@ const TableCellElement = React.forwardRef<
     borders,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
+  const bgStyleValue = rootProps.element.background;
+  const bgStyle = { "--cellBackground": bgStyleValue } as React.CSSProperties;
+  const rootStyle = rootProps.style ? { ...bgStyle, ...rootProps.style } : bgStyle;
 
   const Cell = isHeader ? 'th' : 'td';
 
@@ -40,6 +44,7 @@ const TableCellElement = React.forwardRef<
       className={cn(
         'relative overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
+        bgStyleValue ? 'bg-[--cellBackground]' : 'bg-background',
         !hideBorder &&
           cn(
             isHeader && 'text-left [&_>_*]:m-0',
@@ -59,6 +64,7 @@ const TableCellElement = React.forwardRef<
       )}
       {...cellProps}
       {...rootProps}
+      style={rootStyle}
     >
       <Cell>
         <div
