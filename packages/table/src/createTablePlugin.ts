@@ -71,7 +71,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TH' }],
         getNode: (element) => ({
-          type: 'td',
+          type: 'th',
           background: element.style.background || element.style.backgroundColor,
         }),
       },
