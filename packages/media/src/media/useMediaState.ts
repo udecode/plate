@@ -1,42 +1,50 @@
-import { useEffect } from 'react';
-import { useElement, usePlateEditorRef } from '@udecode/plate-common';
+import { useMemo } from 'react';
+import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
-import { ELEMENT_MEDIA_EMBED } from '../media-embed/index';
-import { useMediaStore } from './mediaStore';
-import { parseMediaUrl } from './parseMediaUrl';
+import { VIDEO_PROVIDERS } from '../media-embed';
 import { TMediaElement } from './types';
 
+export type EmbedUrlData = {
+  url?: string;
+  provider?: string;
+  id?: string;
+};
+
+export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
+
 export const useMediaState = ({
-  pluginKey = ELEMENT_MEDIA_EMBED,
+  urlParsers,
 }: {
-  pluginKey?: string;
+  urlParsers?: EmbedUrlParser[];
 } = {}) => {
-  const editor = usePlateEditorRef();
   const element = useElement<TMediaElement>();
-  const { provider } = useMediaStore().get.urlData();
-  const setUrlData = useMediaStore().set.urlData();
   const focused = useFocused();
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { url: elementUrl } = element;
+  const { url } = element;
 
-  useEffect(() => {
-    const parsed = parseMediaUrl(editor, {
-      pluginKey,
-      url: elementUrl,
-    });
+  const embed = useMemo(() => {
+    if (!urlParsers) return;
 
-    if (parsed) {
-      setUrlData(parsed);
+    for (const parser of urlParsers) {
+      const data = parser(url);
+      if (data) {
+        return data;
+      }
     }
-  }, [editor, elementUrl, pluginKey, setUrlData]);
+  }, [urlParsers, url]);
+
+  const isTweet = embed?.provider === 'twitter';
+  const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
 
   return {
     focused,
     selected,
     readOnly,
-    provider,
+    embed,
+    isTweet,
+    isVideo,
   };
 };

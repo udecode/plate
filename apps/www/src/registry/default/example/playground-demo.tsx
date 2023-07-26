@@ -298,12 +298,12 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             <PlaygroundFixedToolbarButtons id={id} />
           </FixedToolbar>
 
-          <div className="flex">
+          <div className="flex w-full">
             <CommentsProvider>
               <div
                 ref={containerRef}
                 className={cn(
-                  'relative flex max-w-[900px] overflow-x-auto',
+                  'relative flex w-full max-w-[900px] overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
                   '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
                   !id &&

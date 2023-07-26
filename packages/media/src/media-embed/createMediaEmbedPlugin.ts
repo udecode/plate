@@ -3,8 +3,6 @@ import { createPluginFactory } from '@udecode/plate-common';
 import { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';
 import { getWithSelectionCaption } from '../caption/getWithSelectionCaption';
 import { MediaPlugin } from '../media/index';
-import { MediaEmbedTweet, parseTwitterUrl } from '../twitter/index';
-import { MediaEmbedVideo, parseVideoUrl } from '../video/index';
 import { parseIframeUrl } from './parseIframeUrl';
 
 export const ELEMENT_MEDIA_EMBED = 'media_embed';
@@ -33,16 +31,6 @@ export const createMediaEmbedPlugin = createPluginFactory<MediaPlugin>({
   },
   options: {
     transformUrl: parseIframeUrl,
-    rules: [
-      {
-        parser: parseTwitterUrl,
-        component: MediaEmbedTweet,
-      },
-      {
-        parser: parseVideoUrl,
-        component: MediaEmbedVideo,
-      },
-    ],
   },
   then: (editor, { type }) => ({
     deserializeHtml: {
