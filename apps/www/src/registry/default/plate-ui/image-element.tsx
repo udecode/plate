@@ -14,7 +14,6 @@ import {
   TImageElement,
   useMediaState,
 } from '@udecode/plate-media';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 
@@ -24,15 +23,11 @@ const align = 'center';
 
 export function ImageElement({
   className,
+  children,
+  nodeProps,
   ...props
 }: PlateElementProps<Value, TImageElement>) {
-  const { children, nodeProps } = props;
-
-  const focused = useFocused();
-  const selected = useSelected();
-  const readOnly = useReadOnly();
-
-  useMediaState();
+  const { readOnly, focused, selected } = useMediaState();
 
   return (
     <MediaPopover pluginKey={ELEMENT_IMAGE}>

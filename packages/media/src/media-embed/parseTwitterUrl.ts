@@ -1,4 +1,4 @@
-import { EmbedUrlData } from '../media/parseMediaUrl';
+import { EmbedUrlData } from '../media';
 
 const twitterRegex =
   /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(?<id>\d+)/;

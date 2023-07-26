@@ -9,22 +9,47 @@ import {
   Caption,
   CaptionTextarea,
   ELEMENT_MEDIA_EMBED,
+  parseTwitterUrl,
+  parseVideoUrl,
   Resizable,
   TMediaEmbedElement,
-  useMediaEmbed,
   useMediaState,
+  VIDEO_PROVIDERS,
 } from '@udecode/plate-media';
+import { cva } from 'class-variance-authority';
+import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 
 import { MediaPopover } from './media-popover';
 
+const iframeVariants = cva(
+  cn('absolute left-0 top-0 h-full w-full rounded-sm'),
+  {
+    variants: {
+      selected: {
+        true: 'ring-2 ring-ring ring-offset-2',
+        false: '',
+      },
+      provider: {
+        video: 'border-0',
+      },
+    },
+  }
+);
+
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
-  const { focused, provider, readOnly, selected } = useMediaState();
-  const { props: mediaEmbedProps, component: MediaComponent } = useMediaEmbed();
+  const { focused, readOnly, selected, embed } = useMediaState({
+    urlParsers: [parseTwitterUrl, parseVideoUrl],
+  });
+
+  const provider = embed?.provider;
+
+  const isTweet = embed?.provider === 'twitter';
+  const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
 
   return (
     <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
@@ -33,23 +58,12 @@ const MediaEmbedElement = React.forwardRef<
         className={cn('relative py-2.5', className)}
         {...props}
       >
-        <figure
-          className={cn(
-            'group relative m-0 w-full',
-            provider === 'twitter' &&
-              '[&_.twitter-tweet]: [&_.twitter-tweet]:!mx-auto [&_.twitter-tweet]:!my-0 [&_.twitter-tweet]:p-0.5',
-            provider === 'twitter' &&
-              !readOnly &&
-              selected &&
-              '[&_.twitter-tweet]:shadow-[0_0_1px_rgb(59,130,249)]'
-          )}
-          contentEditable={false}
-        >
+        <figure className="group relative m-0 w-full" contentEditable={false}>
           <Resizable
             className={cn('mx-auto')}
             options={{
-              maxWidth: provider === 'twitter' ? 550 : '100%',
-              minWidth: provider === 'twitter' ? 300 : 100,
+              maxWidth: isTweet ? 550 : '100%',
+              minWidth: isTweet ? 300 : 100,
               renderHandleLeft: (htmlProps) => (
                 <Box
                   {...htmlProps}
@@ -72,32 +86,46 @@ const MediaEmbedElement = React.forwardRef<
                     "after:w-[3px] after:rounded-[6px] after:content-['_']",
                     focused && selected && 'opacity-100',
                     // variant right
-                    '-right-3 -mr-3 items-end pr-3',
-                    provider === 'twitter' && '-mr-4'
+                    '-right-3 -mr-3 items-end pr-3'
                   )}
                 />
               ),
             }}
           >
-            <div
-              className={cn(
-                provider !== 'twitter' && 'pb-[56.0417%]',
-                provider === 'youtube' && 'pb-[56.2061%]',
-                provider === 'vimeo' && 'pb-[75%]',
-                provider === 'youku' && 'pb-[56.25%]',
-                provider === 'dailymotion' && 'pb-[56.0417%]',
-                provider === 'coub' && 'pb-[51.25%]'
-              )}
-            >
-              <MediaComponent
+            {isVideo && (
+              <div
                 className={cn(
-                  'absolute left-0 top-0 h-full w-full rounded-sm',
-                  selected && focused && 'ring-2 ring-ring ring-offset-2'
+                  provider === 'youtube' && 'pb-[56.2061%]',
+                  provider === 'vimeo' && 'pb-[75%]',
+                  provider === 'youku' && 'pb-[56.25%]',
+                  provider === 'dailymotion' && 'pb-[56.0417%]',
+                  provider === 'coub' && 'pb-[51.25%]'
                 )}
-                title="embed"
-                {...mediaEmbedProps}
-              />
-            </div>
+              >
+                <iframe
+                  className={cn(
+                    'absolute left-0 top-0 h-full w-full rounded-sm',
+                    isVideo && 'border-0',
+                    focused && selected && 'ring-2 ring-ring ring-offset-2'
+                  )}
+                  src={embed.url}
+                  title="embed"
+                  allowFullScreen
+                />
+              </div>
+            )}
+            {isTweet && (
+              <div
+                className={cn(
+                  '[&_.react-tweet-theme]:my-0',
+                  !readOnly &&
+                    selected &&
+                    '[&_.react-tweet-theme]:ring-2 [&_.react-tweet-theme]:ring-ring [&_.react-tweet-theme]:ring-offset-2'
+                )}
+              >
+                <Tweet id={embed.id!} />
+              </div>
+            )}
           </Resizable>
 
           <Caption className={cn('mx-auto')}>

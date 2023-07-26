@@ -7,5 +7,3 @@ export * from './image/index';
 export * from './media/index';
 export * from './media-embed/index';
 export * from './resizable/index';
-export * from './twitter/index';
-export * from './video/index';

@@ -372,7 +372,7 @@ const ui: Registry = [
   {
     name: 'media-embed-element',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-media'],
+    dependencies: ['@udecode/plate-media', 'react-tweet'],
     registryDependencies: ['media-popover'],
     files: ['plate-ui/media-embed-element.tsx'],
   },
