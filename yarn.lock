@@ -6768,7 +6768,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:22.0.2, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:22.1.0, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -7418,7 +7418,7 @@ __metadata:
     "@udecode/plate-break": "npm:22.0.2"
     "@udecode/plate-code-block": "npm:22.0.2"
     "@udecode/plate-combobox": "npm:22.0.2"
-    "@udecode/plate-comments": "npm:22.0.2"
+    "@udecode/plate-comments": "npm:22.1.0"
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/plate-find-replace": "npm:22.0.2"
     "@udecode/plate-floating": "npm:22.0.2"
@@ -20033,7 +20033,7 @@ __metadata:
     slate: "npm:0.94.1"
     slate-history: "npm:0.93.0"
     slate-hyperscript: "npm:0.77.0"
-    slate-react: "npm:^0.97.1"
+    slate-react: "npm:^0.98.0"
     slate-test-utils: "npm:1.3.2"
     tailwindcss: "npm:^3.3.2"
     ts-jest: "npm:^29.1.1"
@@ -20471,7 +20471,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-react@npm:0.97.1, slate-react@npm:^0.97.1":
+"slate-react@npm:0.97.1":
   version: 0.97.1
   resolution: "slate-react@npm:0.97.1"
   dependencies:
@@ -20489,6 +20489,27 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
   checksum: 8d4e21e97f77b472b50306d466f13885d67cd727b082017f086f65875c54391ef8d9b84778df995d3d7372cc75b98e1d1345f6ed99636bc85985cdf93fe7b352
+  languageName: node
+  linkType: hard
+
+"slate-react@npm:^0.98.0":
+  version: 0.98.0
+  resolution: "slate-react@npm:0.98.0"
+  dependencies:
+    "@juggle/resize-observer": "npm:^3.4.0"
+    "@types/is-hotkey": "npm:^0.1.1"
+    "@types/lodash": "npm:^4.14.149"
+    direction: "npm:^1.0.3"
+    is-hotkey: "npm:^0.1.6"
+    is-plain-object: "npm:^5.0.0"
+    lodash: "npm:^4.17.4"
+    scroll-into-view-if-needed: "npm:^2.2.20"
+    tiny-invariant: "npm:1.0.6"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.65.3"
+  checksum: d1fff58aa2447d3c1b3dd820b45e3e314735b693d3d006021cf42901a7c130efe9646df16f69b6d486ac96f55b2d51774b7d5243f30f21e9add3f336e5ab5d79
   languageName: node
   linkType: hard
 
