@@ -52,10 +52,17 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TD' }],
-        getNode: (element) => ({
-          type: 'td',
-          background: element.style.background || element.style.backgroundColor,
-        }),
+        getNode: (element) => {
+          const background = element.style.background || element.style.backgroundColor;
+          if(background) {
+            return {
+              type: 'td',
+              background,
+            };
+          }
+
+          return { type: 'td'};
+        },
       },
       props: ({ element }) => ({
         nodeProps: {
@@ -70,10 +77,17 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TH' }],
-        getNode: (element) => ({
-          type: 'th',
-          background: element.style.background || element.style.backgroundColor,
-        }),
+        getNode: (element) => {
+          const background = element.style.background || element.style.backgroundColor;
+          if(background) {
+            return {
+              type: 'th',
+              background,
+            };
+          }
+
+          return { type: 'th'};
+        },
       },
       props: ({ element }) => ({
         nodeProps: {
