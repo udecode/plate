@@ -16,27 +16,11 @@ import {
   useMediaState,
   VIDEO_PROVIDERS,
 } from '@udecode/plate-media';
-import { cva } from 'class-variance-authority';
 import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 
 import { MediaPopover } from './media-popover';
-
-const iframeVariants = cva(
-  cn('absolute left-0 top-0 h-full w-full rounded-sm'),
-  {
-    variants: {
-      selected: {
-        true: 'ring-2 ring-ring ring-offset-2',
-        false: '',
-      },
-      provider: {
-        video: 'border-0',
-      },
-    },
-  }
-);
 
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
