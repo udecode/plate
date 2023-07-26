@@ -38,7 +38,7 @@ export const useMediaState = ({
 
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
-
+  const isYoutube = embed?.provider === 'youtube';
   return {
     align,
     focused,
@@ -47,5 +47,6 @@ export const useMediaState = ({
     embed,
     isTweet,
     isVideo,
+    isYoutube,
   };
 };
