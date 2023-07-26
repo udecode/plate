@@ -16,6 +16,10 @@ import {
   useMediaState,
 } from '@udecode/plate-media';
 import { cva } from 'class-variance-authority';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
+
 import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
@@ -42,7 +46,7 @@ const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
-  const { focused, readOnly, selected, embed, isTweet, isVideo } =
+  const { focused, readOnly, selected, embed, isTweet, isYoutube, isVideo } =
     useMediaState({
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
@@ -79,7 +83,8 @@ const MediaEmbedElement = React.forwardRef<
               ),
             }}
           >
-            {isVideo && (
+            {isYoutube && <LiteYouTubeEmbed id={embed!.id!} title="youtube" />}
+            {isVideo && !isYoutube && (
               <div
                 className={cn(
                   provider === 'youtube' && 'pb-[56.2061%]',

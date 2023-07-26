@@ -7083,6 +7083,7 @@ __metadata:
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/resizable": "npm:22.0.2"
     js-video-url-parser: "npm:^0.5.1"
+    react-lite-youtube-embed: "npm:2.3.52"
     react-textarea-autosize: "npm:^8.5.2"
     react-tweet: "npm:3.0.3"
     scriptjs: "npm:2.5.9"
@@ -18856,6 +18857,16 @@ __metadata:
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 24af7af3abd0bf94d4eb018a70db25fd4e23648eec7bb8b203bf59e24a715ac4eec8279939e15a4d90cbad19ed6be243a0f2c9aa0b1faec0a1c102d9c89ca3f9
+  languageName: node
+  linkType: hard
+
+"react-lite-youtube-embed@npm:2.3.52":
+  version: 2.3.52
+  resolution: "react-lite-youtube-embed@npm:2.3.52"
+  peerDependencies:
+    react: ">=16.0.8"
+    react-dom: ">=16.0.8"
+  checksum: 35cab134acbf6d8364bf2338114dfc72fa34692711afb24e3ffcabbeed230429247d5e87393bb6e473a6055337fcf5c50d47d019567576c34e7679e65a03787b
   languageName: node
   linkType: hard
 
