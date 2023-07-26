@@ -379,7 +379,11 @@ const ui: Registry = [
   {
     name: 'media-embed-element',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-media', 'react-tweet'],
+    dependencies: [
+      '@udecode/plate-media',
+      'react-tweet',
+      'react-lite-youtube-embed',
+    ],
     registryDependencies: ['media-popover', 'caption', 'resizable'],
     files: ['plate-ui/media-embed-element.tsx'],
   },

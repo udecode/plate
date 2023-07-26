@@ -33,9 +33,7 @@
     "@udecode/plate-common": "22.0.2",
     "@udecode/resizable": "22.0.2",
     "js-video-url-parser": "^0.5.1",
-    "react-lite-youtube-embed": "2.3.52",
     "react-textarea-autosize": "^8.5.2",
-    "react-tweet": "3.0.3",
     "scriptjs": "2.5.9"
   },
   "peerDependencies": {
