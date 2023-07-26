@@ -5583,7 +5583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/helpers@npm:0.5.1, @swc/helpers@npm:^0.5.0":
+"@swc/helpers@npm:0.5.1, @swc/helpers@npm:^0.5.0, @swc/helpers@npm:^0.5.1":
   version: 0.5.1
   resolution: "@swc/helpers@npm:0.5.1"
   dependencies:
@@ -6768,7 +6768,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:22.0.2, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:22.1.0, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -7084,6 +7084,7 @@ __metadata:
     "@udecode/resizable": "npm:22.0.2"
     js-video-url-parser: "npm:^0.5.1"
     react-textarea-autosize: "npm:^8.5.2"
+    react-tweet: "npm:3.0.3"
     scriptjs: "npm:2.5.9"
   peerDependencies:
     react: ">=16.8.0"
@@ -7418,7 +7419,7 @@ __metadata:
     "@udecode/plate-break": "npm:22.0.2"
     "@udecode/plate-code-block": "npm:22.0.2"
     "@udecode/plate-combobox": "npm:22.0.2"
-    "@udecode/plate-comments": "npm:22.0.2"
+    "@udecode/plate-comments": "npm:22.1.0"
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/plate-find-replace": "npm:22.0.2"
     "@udecode/plate-floating": "npm:22.0.2"
@@ -19030,6 +19031,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-tweet@npm:3.0.3":
+  version: 3.0.3
+  resolution: "react-tweet@npm:3.0.3"
+  dependencies:
+    "@swc/helpers": "npm:^0.5.1"
+    clsx: "npm:^1.2.1"
+    date-fns: "npm:^2.30.0"
+    swr: "npm:^2.2.0"
+  peerDependencies:
+    react: ">= 18.0.0"
+    react-dom: ">= 18.0.0"
+  checksum: e28f047c60c83c56b3128f29cc9cc59cfcbba1781d23d6072d693bb50c682ff951e810f3a1f2058fa6eb28d0f1d25ca75579de4b3af43ffe0eeb2c88a8b559c2
+  languageName: node
+  linkType: hard
+
 "react-wrap-balancer@npm:^1.0.0":
   version: 1.0.0
   resolution: "react-wrap-balancer@npm:1.0.0"
@@ -21138,6 +21154,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"swr@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "swr@npm:2.2.0"
+  dependencies:
+    use-sync-external-store: "npm:^1.2.0"
+  peerDependencies:
+    react: ^16.11.0 || ^17.0.0 || ^18.0.0
+  checksum: 1bd254bb3f3e8abf7b663c29b2636271a210b383d537417056716a6785fa96323653097dc3cf6a129ee3deb01b69999d125540dd1b39652b7edeb83870c7021c
+  languageName: node
+  linkType: hard
+
 "symbol-tree@npm:^3.2.4":
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
@@ -22343,6 +22370,15 @@ __metadata:
     "@types/react":
       optional: true
   checksum: a1990ab1207b2bd98fd35386b8a4ee58081f77c297226ef1e2d5f3cd42dea2234245730e5f7125a62665bdd7c30926df3682adfd935f0f6fc2c2a4c2ddb41a4d
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "use-sync-external-store@npm:1.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: bed3d1f68ca3dd33647035dbeb9d3a5ece12fced0245cb0fa831426192e52e4948b0fc6e9187d9d4dce9f58269af605f8feeeda100d2928f8b865f9cd9cc4a4a
   languageName: node
   linkType: hard
 
