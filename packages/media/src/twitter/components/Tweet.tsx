@@ -2,9 +2,8 @@ import React from 'react';
 import { Tweet as PlateTweet } from 'react-tweet';
 
 export type TweetProps = Readonly<{
-  loadingComponent?: JSX.Element | string;
   onError?: (error: string) => void;
-  onLoad?: () => void;
+  loadingComponent?: JSX.Element | string;
   tweetId: string;
   twitterTheme?: 'light' | 'dark';
 }>;
