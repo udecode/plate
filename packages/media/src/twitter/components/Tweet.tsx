@@ -18,7 +18,7 @@ export function Tweet({
   const theme = twitterTheme || 'light';
   return (
     <div data-theme={theme}>
-      <PlateTweet id={tweetId} onError={onError} fallback={loadingComponent} />;
+      <PlateTweet id={tweetId} onError={onError} fallback={loadingComponent} />
     </div>
   );
 }
