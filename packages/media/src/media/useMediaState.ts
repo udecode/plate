@@ -23,7 +23,7 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { url } = element;
+  const { url, align } = element;
 
   const embed = useMemo(() => {
     if (!urlParsers) return;
@@ -40,6 +40,7 @@ export const useMediaState = ({
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
 
   return {
+    align,
     focused,
     selected,
     readOnly,
