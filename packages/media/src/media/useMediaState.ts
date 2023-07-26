@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
+import { VIDEO_PROVIDERS } from '../media-embed';
 import { TMediaElement } from './types';
 
 export type EmbedUrlData = {
@@ -35,10 +36,15 @@ export const useMediaState = ({
     }
   }, [urlParsers, url]);
 
+  const isTweet = embed?.provider === 'twitter';
+  const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
+
   return {
     focused,
     selected,
     readOnly,
     embed,
+    isTweet,
+    isVideo,
   };
 };

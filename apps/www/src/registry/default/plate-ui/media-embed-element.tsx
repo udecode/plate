@@ -14,26 +14,39 @@ import {
   Resizable,
   TMediaEmbedElement,
   useMediaState,
-  VIDEO_PROVIDERS,
 } from '@udecode/plate-media';
+import { cva } from 'class-variance-authority';
 import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 
 import { MediaPopover } from './media-popover';
 
+export const handleVariants = cva(
+  cn(
+    'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
+    'after:flex after:h-16 after:bg-ring after:opacity-0 group-hover:after:opacity-100',
+    "after:w-[3px] after:rounded-[6px] after:content-['_']"
+  ),
+  {
+    variants: {
+      placement: {
+        left: '-left-3 -ml-3 pl-3',
+        right: '-right-3 -mr-3 items-end pr-3',
+      },
+    },
+  }
+);
+
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
-  const { focused, readOnly, selected, embed } = useMediaState({
-    urlParsers: [parseTwitterUrl, parseVideoUrl],
-  });
-
+  const { focused, readOnly, selected, embed, isTweet, isVideo } =
+    useMediaState({
+      urlParsers: [parseTwitterUrl, parseVideoUrl],
+    });
   const provider = embed?.provider;
-
-  const isTweet = embed?.provider === 'twitter';
-  const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
 
   return (
     <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
@@ -51,27 +64,17 @@ const MediaEmbedElement = React.forwardRef<
               renderHandleLeft: (htmlProps) => (
                 <Box
                   {...htmlProps}
-                  className={cn(
-                    'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
-                    'after:flex after:h-16 after:bg-ring after:opacity-0 group-hover:after:opacity-100',
-                    "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    focused && selected && 'opacity-100',
-                    // variant left
-                    '-left-3 -ml-3 pl-3'
-                  )}
+                  className={handleVariants({
+                    placement: 'left',
+                  })}
                 />
               ),
               renderHandleRight: (htmlProps) => (
                 <Box
                   {...htmlProps}
-                  className={cn(
-                    'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
-                    'after:flex after:h-16 after:bg-ring  after:opacity-0 group-hover:after:opacity-100',
-                    "after:w-[3px] after:rounded-[6px] after:content-['_']",
-                    focused && selected && 'opacity-100',
-                    // variant right
-                    '-right-3 -mr-3 items-end pr-3'
-                  )}
+                  className={handleVariants({
+                    placement: 'right',
+                  })}
                 />
               ),
             }}
@@ -92,7 +95,7 @@ const MediaEmbedElement = React.forwardRef<
                     isVideo && 'border-0',
                     focused && selected && 'ring-2 ring-ring ring-offset-2'
                   )}
-                  src={embed.url}
+                  src={embed!.url}
                   title="embed"
                   allowFullScreen
                 />
@@ -107,7 +110,7 @@ const MediaEmbedElement = React.forwardRef<
                     '[&_.react-tweet-theme]:ring-2 [&_.react-tweet-theme]:ring-ring [&_.react-tweet-theme]:ring-offset-2'
                 )}
               >
-                <Tweet id={embed.id!} />
+                <Tweet id={embed!.id!} />
               </div>
             )}
           </Resizable>
