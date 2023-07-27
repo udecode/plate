@@ -65,7 +65,7 @@ A function to create the mention node.
 </APIItem>
 <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
   The pattern that matches the char before the trigger character
-  (for example, /[\s"]/ to match space and double quote)
+  (default to `/^$|^\s$/` that matches beginning of line or space)
 </APIItem>
 
 <APIItem name="inputCreation" type="{ key: string; value: string }" optional>

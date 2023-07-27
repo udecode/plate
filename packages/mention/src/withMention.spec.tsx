@@ -196,12 +196,13 @@ describe('withMention', () => {
     });
 
     it('should insert a mention input when the trigger is inserted after the specified pattern', () => {
+      const emptyOrSpaceOrQuotePattern = /^$|^[\s"']$/;
       const editor = createEditor(
         <hp>
           hello "<cursor />"
         </hp>,
         {
-          triggerPreviousCharPattern: /[\s"]/,
+          triggerPreviousCharPattern: emptyOrSpaceOrQuotePattern,
         }
       );
 

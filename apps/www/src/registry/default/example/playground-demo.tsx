@@ -145,7 +145,7 @@ export const usePlaygroundPlugins = ({
           createMentionPlugin({
             enabled: !!enabled.mention,
             options: {
-              triggerPreviousCharPattern: /[\s()]/,
+              triggerPreviousCharPattern: /^$|^[\s"']$/,
             },
           }),
           createTablePlugin({ enabled: !!enabled.table }),

@@ -115,11 +115,12 @@ export const withMention = <
       )
     );
 
-    const previousCharPattern = triggerPreviousCharPattern ?? /\s/;
+    const spaceOrEmptyPattern = /^$|^\s$/;
+    const previousCharPattern =
+      triggerPreviousCharPattern ?? spaceOrEmptyPattern;
     const matchesPreviousCharPattern = previousCharPattern.test(previousChar);
-    const beginningOfLine = previousChar === '';
 
-    if ((beginningOfLine || matchesPreviousCharPattern) && text === trigger) {
+    if (matchesPreviousCharPattern && text === trigger) {
       const data: TMentionInputElement = {
         type,
         children: [{ text: '' }],
