@@ -16,6 +16,7 @@ export interface MentionPlugin<TData extends Data = NoData> {
   id?: string;
   insertSpaceAfterMention?: boolean;
   trigger?: string;
+  triggerPreviousCharPattern?: RegExp;
   inputCreation?: { key: string; value: string };
   query?: (editor: PlateEditor) => boolean;
 }

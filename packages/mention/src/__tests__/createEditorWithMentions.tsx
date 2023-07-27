@@ -13,6 +13,7 @@ export type CreateEditorOptions = {
   pluginOptions?: {
     key?: string;
     trigger?: string;
+    triggerPreviousCharPattern?: RegExp;
   };
 };
 
@@ -20,12 +21,15 @@ export const createEditorWithMentions = <V extends Value>(
   state: JSX.Element,
   {
     multipleMentionPlugins,
-    pluginOptions: { trigger, key } = {},
+    pluginOptions: { trigger, key, triggerPreviousCharPattern } = {},
   }: CreateEditorOptions = {}
 ): PlateEditor<V> => {
   const plugins = [
     createParagraphPlugin(),
-    createMentionPlugin({ key, options: { trigger } }),
+    createMentionPlugin({
+      key,
+      options: { trigger, triggerPreviousCharPattern },
+    }),
   ];
   if (multipleMentionPlugins) {
     plugins.push(
