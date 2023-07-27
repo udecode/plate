@@ -114,11 +114,8 @@ export const withMention = <
         getPointBefore(editor, editor.selection)
       )
     );
-
-    const spaceOrEmptyPattern = /^$|^\s$/;
-    const previousCharPattern =
-      triggerPreviousCharPattern ?? spaceOrEmptyPattern;
-    const matchesPreviousCharPattern = previousCharPattern.test(previousChar);
+    const matchesPreviousCharPattern =
+      triggerPreviousCharPattern?.test(previousChar);
 
     if (matchesPreviousCharPattern && text === trigger) {
       const data: TMentionInputElement = {
