@@ -11,7 +11,7 @@ import {
   useAtom,
 } from '@udecode/plate-common';
 
-import { ResizeEvent } from '../types';
+import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
 export const resizeHandleAtoms = {
@@ -50,7 +50,7 @@ export const ResizeHandleProvider = ({
 };
 
 export type ResizeHandleOptions = {
-  direction?: 'left' | 'right';
+  direction?: ResizeDirection;
   style?: HTMLDivElement['style'];
   width?: number;
   startMargin?: number;

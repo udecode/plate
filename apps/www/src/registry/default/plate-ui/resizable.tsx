@@ -1,8 +1,10 @@
 'use client';
 
 import React, { ComponentProps } from 'react';
-import { Resizable as ResizablePrimitive } from '@udecode/plate-media';
-import { ResizeHandle as ResizeHandlePrimitive } from '@udecode/plate-resizable';
+import {
+  Resizable as ResizablePrimitive,
+  ResizeHandle as ResizeHandlePrimitive,
+} from '@udecode/plate-resizable';
 import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';

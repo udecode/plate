@@ -549,7 +549,7 @@ const ui: Registry = [
   {
     name: 'resizable',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
+    dependencies: ['@udecode/plate-resizable'],
     registryDependencies: [],
     files: ['plate-ui/resizable.tsx'],
   },
