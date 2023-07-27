@@ -1,5 +1,4 @@
 import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
-import { createTablePlugin } from '@udecode/plate';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
@@ -12,6 +11,7 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import {
+  createTablePlugin,
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
