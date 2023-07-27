@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "22.0.2",
-    "@udecode/resizable": "22.0.2",
+    "@udecode/plate-resizable": "22.0.2",
     "js-video-url-parser": "^0.5.1",
     "react-textarea-autosize": "^8.5.2",
     "scriptjs": "2.5.9"

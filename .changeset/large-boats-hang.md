@@ -5,20 +5,19 @@
 `MediaEmbedElement` is now more headless with a smaller bundle size.
 Update the following components:
 - `npx @udecode/plate-ui@latest add media-embed-element`
+  - now uses `react-lite-youtube-embed` for YouTube videos.
+  - now uses `react-tweet` for Twitter tweets.
 - `npx @udecode/plate-ui@latest add image-element`
 
+Moved:
+- `Resizable` to `@udecode/plate-resizable`
+
 Removed:
-- `useMediaEmbed`
 - `rules` from `MediaPlugin` options. Use `parsers` option in `useinstead.
+- `MediaEmbedTweet`
+- `MediaEmbedVideo`
+- `Tweet`
 - `mediaStore`
 - `parseMediaUrl`
-- `MediaEmbedTweet`
-- `Tweet`
-- `MediaEmbedVideo`
+- `useMediaEmbed`
 
-- `Resizable` is now more headless, you can add your own `Resizable` component:
-  - `npx @udecode/plate-ui@latest add resizable`
-
-`MediaEmbedElement`:
-- now uses `react-lite-youtube-embed` for YouTube videos.
-- now uses `react-tweet` for Twitter tweets.

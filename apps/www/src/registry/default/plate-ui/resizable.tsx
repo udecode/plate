@@ -2,7 +2,7 @@
 
 import React, { ComponentProps } from 'react';
 import { Resizable as ResizablePrimitive } from '@udecode/plate-media';
-import { ResizeHandle as ResizeHandlePrimitive } from '@udecode/resizable';
+import { ResizeHandle as ResizeHandlePrimitive } from '@udecode/plate-resizable';
 import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';

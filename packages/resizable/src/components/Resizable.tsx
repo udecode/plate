@@ -12,16 +12,12 @@ import {
   useElement,
   usePlateEditorRef,
 } from '@udecode/plate-common';
-import {
-  ResizeEvent,
-  ResizeHandleProvider,
-  ResizeLength,
-  resizeLengthClamp,
-} from '@udecode/resizable';
 
-import { TMediaElement } from '../media/types';
-import { useResizableStore } from './resizableStore';
+import { ResizeEvent, ResizeLength } from '../types';
+import { resizeLengthClamp } from '../utils';
+import { ResizeHandleProvider } from './ResizeHandle';
 import { TResizableElement } from './TResizableElement';
+import { useResizableStore } from './useResizableStore';
 
 export interface ResizableOptions {
   /**
@@ -40,7 +36,7 @@ export const useResizableState = ({
   minWidth = 92,
   maxWidth = '100%',
 }: ResizableOptions = {}) => {
-  const element = useElement<TMediaElement>();
+  const element = useElement<TResizableElement>();
   const editor = usePlateEditorRef();
 
   const nodeWidth = element?.width ?? '100%';

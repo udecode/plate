@@ -1,5 +1,6 @@
+import { TResizableElement } from '@udecode/plate-resizable';
+
 import { TCaptionElement } from '../caption/index';
-import { TResizableElement } from '../resizable/index';
 
 export interface TMediaElement extends TCaptionElement, TResizableElement {
   url: string;

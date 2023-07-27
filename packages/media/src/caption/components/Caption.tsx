@@ -1,8 +1,8 @@
 import { ComponentPropsWithoutRef } from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
+import { useResizableStore } from '@udecode/plate-resizable';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import { useResizableStore } from '../../resizable/resizableStore';
 import { useCaptionString } from '../hooks/useCaptionString';
 
 export interface CaptionOptions {
