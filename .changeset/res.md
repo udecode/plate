@@ -1,3 +1,0 @@
----
-'@udecode/resizable': major
----
