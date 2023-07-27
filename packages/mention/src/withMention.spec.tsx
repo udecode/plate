@@ -27,7 +27,10 @@ describe('withMention', () => {
   const trigger = '@';
   const key = 'mention';
 
-  type CreateEditorOptions = { multipleMentionPlugins?: boolean };
+  type CreateEditorOptions = {
+    multipleMentionPlugins?: boolean;
+    triggerPreviousCharPattern?: RegExp;
+  };
 
   const createEditor = <V extends Value>(
     state: JSX.Element,
@@ -35,7 +38,11 @@ describe('withMention', () => {
   ): PlateEditor<V> =>
     createEditorWithMentions(state, {
       ...options,
-      pluginOptions: { ...options, key, trigger },
+      pluginOptions: {
+        ...options,
+        key,
+        trigger,
+      },
     });
 
   const createEditorWithMentionInput = <V extends Value>(
@@ -186,6 +193,31 @@ describe('withMention', () => {
       editor.insertText('a');
 
       expect(editor.children).toEqual([<hp>a</hp>]);
+    });
+
+    it('should insert a mention input when the trigger is inserted after the specified pattern', () => {
+      const emptyOrSpaceOrQuotePattern = /^$|^[\s"']$/;
+      const editor = createEditor(
+        <hp>
+          hello "<cursor />"
+        </hp>,
+        {
+          triggerPreviousCharPattern: emptyOrSpaceOrQuotePattern,
+        }
+      );
+
+      editor.insertText(trigger);
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello "</htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+            <cursor />
+          </hmentioninput>
+          <htext>"</htext>
+        </hp>,
+      ]);
     });
   });
 

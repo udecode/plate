@@ -142,7 +142,12 @@ export const usePlaygroundPlugins = ({
           }),
           createImagePlugin({ enabled: !!enabled.img }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
-          createMentionPlugin({ enabled: !!enabled.mention }),
+          createMentionPlugin({
+            enabled: !!enabled.mention,
+            options: {
+              triggerPreviousCharPattern: /^$|^[\s"']$/,
+            },
+          }),
           createTablePlugin({ enabled: !!enabled.table }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
           createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
