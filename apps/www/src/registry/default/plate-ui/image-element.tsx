@@ -34,14 +34,13 @@ export function ImageElement({
           >
             <ResizeHandle options={{ direction: 'left' }} />
             <Image
-              {...nodeProps}
               className={cn(
                 'block w-full max-w-full cursor-pointer object-cover px-0',
                 'rounded-sm',
-                focused && selected && 'ring-2 ring-ring ring-offset-2',
-                nodeProps?.className
+                focused && selected && 'ring-2 ring-ring ring-offset-2'
               )}
               alt=""
+              {...nodeProps}
             />
             <ResizeHandle options={{ direction: 'right' }} />
           </Resizable>
