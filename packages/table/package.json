@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "22.0.2",
-    "@udecode/resizable": "22.0.2"
+    "@udecode/plate-resizable": "22.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

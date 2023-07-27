@@ -35,6 +35,7 @@ npm install @udecode/plate-media
 ### Plugins
 
 ```tsx
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
   createImagePlugin,
   createMediaEmbedPlugin,
@@ -45,6 +46,7 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
+  createCaptionPlugin({ options: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] }),
   createImagePlugin(),
   createMediaEmbedPlugin(),
   createSelectOnBackspacePlugin({
@@ -141,26 +143,6 @@ Common attributes shared by image and media embed plugins.
   </APIItem>
   <APIItem name="transformUrl" type="function" optional>
     A function to transform the URL.
-  </APIItem>
-  <APIItem name="rules" type="MediaPluginRule[]" optional>
-    List of rules. The first rule that matches the URL will be used, i.e. its
-    component will be used to render the media.
-    <APISubList>
-      <APISubListItem parent="rules" name="parser" type="function">
-        A function that parses the URL and returns data for embedding.
-      </APISubListItem>
-      <APISubListItem
-        parent="rules"
-        name="component"
-        type="React.FC<EmbedUrlData>"
-        optional
-      >
-        A React component to render the media embedding.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="disableCaption" type="boolean" optional>
-    Disables captions for media if set to true.
   </APIItem>
 </APIAttributes>
 
@@ -357,23 +339,11 @@ A behavior hook for resizable elements.
   <APIItem name="align" type="'left' | 'center' | 'right'">
     The alignment of the content within the resizable element.
   </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Specifies whether the resizable element is read-only. If `true`, the element
-    cannot be resized.
-  </APIItem>
   <APIItem name="minWidth" type="ResizeLength">
     The minimum width that the resizable element can be adjusted to.
   </APIItem>
   <APIItem name="maxWidth" type="ResizeLength">
     The maximum width that the resizable element can be adjusted to.
-  </APIItem>
-  <APIItem name="renderHandleLeft" type="function">
-    A function to render the left resize handle. This is typically a component
-    or JSX element.
-  </APIItem>
-  <APIItem name="renderHandleRight" type="function">
-    A function to render the right resize handle. This is typically a component
-    or JSX element.
   </APIItem>
   <APIItem name="setNodeWidth" type="function">
     A function to set the width of the node, which is used when resizing.
@@ -399,21 +369,20 @@ A behavior hook for resizable elements.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="resizableProps" type="object">
+  <APIItem name="props" type="object">
     Props to be spread on the resizable element.
     <APISubList>
-      <APISubListItem parent="resizableProps" name="style" type="CSSProperties">
+      <APISubListItem parent="props" name="style" type="CSSProperties">
         CSS styles to be applied to the resizable element.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="handleLeft" type="false | JSX.Element | undefined">
-    The element to be used as the left handle for resizing. If `false`, there
-    will be no left handle.
-  </APIItem>
-  <APIItem name="handleRight" type="false | JSX.Element | undefined">
-    The element to be used as the right handle for resizing. If `false`, there
-    will be no right handle.
+  <APIItem name="context" type="object">
+    <APISubList>
+      <APISubListItem parent="context" name="onResize" type="function">
+        A callback function to be called when the resizable element is resized.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIReturns>
 
@@ -477,69 +446,6 @@ A behavior hook for an image element.
   </APIItem>
 </APIReturns>
 
-### useMediaEmbed
-
-A behavior hook for a media embed element.
-
-<APIReturns>
-<APIItem
-  name="component"
-  type="React.FC"
->
-The component for rendering the media embed.
-
-- **Default:** `'iframe'`
-
-</APIItem>
-<APIItem name="props" type="object">
-<APISubList>
-<APISubListItem parent="props" name="id" type="string | undefined">
-The ID of the media embed.
-</APISubListItem>
-<APISubListItem parent="props" name="src" type="string | undefined">
-The URL of the media embed.
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIReturns>
-
-### useMediaEmbedTweet
-
-A behavior hook for a media embed tweet element.
-
-<APIProps>
-  <APIItem name="id" type="string">
-    The ID of the tweet.
-  </APIItem>
-</APIProps>
-
-<APIReturns>
-  <APIItem type="EmbedUrlData">
-    An object containing the tweet ID and provider.
-  </APIItem>
-</APIReturns>
-
-### useMediaEmbedVideo
-
-A behavior hook for a media embed video element.
-
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubListItem parent="props" name="title" type="string">
-      The title of the embed.
-    </APISubListItem>
-    <APISubListItem parent="props" name="frameBorder" type="string">
-      The frame border of the embed.
-    </APISubListItem>
-    <APISubListItem parent="props" name="allowFullScreen" type="boolean">
-      Whether the embed allows fullscreen mode.
-    </APISubListItem>
-    <APIItem parent="props" name="src" type="string">
-      The URL of the video.
-    </APIItem>
-  </APIItem>
-</APIReturns>
-
 ### useMediaState
 
 A state hook for a media element.
@@ -547,10 +453,10 @@ A state hook for a media element.
 <APIParameters>
 <APIItem name="options" type="object">
 <APISubList>
-<APISubListItem parent="options" name="pluginKey" type="string" optional>
-The key of the media plugin.
+<APISubListItem parent="options" name="urlParsers" type="EmbedUrlParser[]" optional>
+An array of URL parsers to be used to parse the URL of the media element.
 
-- **Default:** `ELEMENT_MEDIA_EMBED`
+- **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
 
 </APISubListItem>
 </APISubList>
@@ -558,6 +464,9 @@ The key of the media plugin.
 </APIParameters>
 
 <APIReturns>
+  <APIItem name="align" type="string">
+    The alignment of the media element.
+  </APIItem>
   <APIItem name="focus" type="boolean">
     Whether the media element is currently focused.
   </APIItem>
@@ -567,8 +476,17 @@ The key of the media plugin.
   <APIItem name="readOnly" type="boolean">
     Whether the editor is in read-only mode.
   </APIItem>
-  <APIItem name="provider" type="string | undefined">
-    The media provider of the element.
+  <APIItem name="embed" type="EmbedUrlData">
+    The parsed embed data of the media element.
+  </APIItem>
+  <APIItem name="isTweet" type="boolean">
+    Whether the media element is a tweet.
+  </APIItem>
+  <APIItem name="isVideo" type="boolean">
+    Whether the media element is a video.
+  </APIItem>
+  <APIItem name="isYoutube" type="boolean">
+    Whether the media element is a YouTube video.
   </APIItem>
 </APIReturns>
 
@@ -596,32 +514,3 @@ A behavior hook for a media toolbar button.
     </APISubList>
   </APIItem>
 </APIReturns>
-
-### Tweet
-
-A React component for rendering a Tweet.
-
-<APIProps>
-<APIItem name="tweetId" type="string">
-The ID of the tweet to embed.
-</APIItem>
-<APIItem name="onError" type="function" optional>
-A callback function that handles errors that occur during the embedding process.
-</APIItem>
-<APIItem  name="onLoad" type="function" optional>
-A callback function that is called when the tweet is successfully loaded.
-</APIItem>
-<APIItem  name="loadingComponent" type="string" optional>
-A loading component to be rendered while the tweet is being loaded.
-</APIItem>
-<APIItem
-  name="twitterOptions"
-  type="TwitterEmbedOptions"
-  optional
->
-An object that contains options for customizing the embedded tweet.
-
-- **Default:** `{}`
-
-</APIItem>
-</APIProps>

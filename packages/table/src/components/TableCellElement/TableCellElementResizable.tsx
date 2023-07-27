@@ -10,7 +10,7 @@ import {
   ResizeHandle,
   ResizeHandleProps,
   resizeLengthClampStatic,
-} from '@udecode/resizable';
+} from '@udecode/plate-resizable';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {

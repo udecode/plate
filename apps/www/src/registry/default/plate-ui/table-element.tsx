@@ -122,7 +122,7 @@ const TableFloatingToolbar = React.forwardRef<
     isCollapsed(editor.selection);
 
   return (
-    <Popover open={open}>
+    <Popover open={open} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         ref={ref}

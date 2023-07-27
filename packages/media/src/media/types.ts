@@ -1,8 +1,8 @@
-import { TCaptionElement } from '../caption/index';
-import { TResizableElement } from '../resizable/index';
+import { TElement } from '@udecode/plate-common';
 
-export interface TMediaElement extends TCaptionElement, TResizableElement {
+export interface TMediaElement extends TElement {
   url: string;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface MediaPlugin {
@@ -12,8 +12,6 @@ export interface MediaPlugin {
    * Transforms the url.
    */
   transformUrl?: (url: string) => string;
-
-  disableCaption?: boolean;
 }
 
 export const ELEMENT_MEDIA = 'media';

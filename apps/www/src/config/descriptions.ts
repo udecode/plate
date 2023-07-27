@@ -50,6 +50,7 @@ import { CheckedId } from '@/config/setting-plugins';
 
 export const descriptions: Record<CheckedId, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
+  caption: 'Add captions to your blocks.',
   code_block: 'Encapsulate blocks of code.',
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',
   [ELEMENT_HR]: 'Insert horizontal lines.',

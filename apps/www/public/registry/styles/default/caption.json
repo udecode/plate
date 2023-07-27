@@ -1,0 +1,14 @@
+{
+  "name": "caption",
+  "dependencies": [
+    "@udecode/plate-caption"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "caption.tsx",
+      "content": "import React, { ComponentProps } from 'react';\nimport {\n  Caption as CaptionPrimitive,\n  CaptionTextarea as CaptionTextareaPrimitive,\n} from '@udecode/plate-caption';\nimport { cva, VariantProps } from 'class-variance-authority';\n\nimport { cn } from '@/lib/utils';\n\nconst captionVariants = cva('max-w-full', {\n  variants: {\n    align: {\n      left: 'mr-auto',\n      center: 'mx-auto',\n      right: 'ml-auto',\n    },\n  },\n  defaultVariants: {\n    align: 'center',\n  },\n});\n\nconst Caption = React.forwardRef<\n  React.ElementRef<typeof CaptionPrimitive>,\n  ComponentProps<typeof CaptionPrimitive> & VariantProps<typeof captionVariants>\n>(({ className, style, align, ...props }, ref) => (\n  <CaptionPrimitive\n    ref={ref}\n    className={cn(captionVariants({ align }), className)}\n    {...props}\n  />\n));\nCaption.displayName = 'Caption';\n\nconst CaptionTextarea = React.forwardRef<\n  React.ElementRef<typeof CaptionTextareaPrimitive>,\n  ComponentProps<typeof CaptionTextareaPrimitive>\n>(({ className, ...props }, ref) => (\n  <CaptionTextareaPrimitive\n    ref={ref}\n    className={cn(\n      'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',\n      'focus:outline-none focus:[&::placeholder]:opacity-0',\n      'text-center',\n      className\n    )}\n    {...props}\n  />\n));\nCaptionTextarea.displayName = 'CaptionTextarea';\n\nexport { Caption, CaptionTextarea };\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

@@ -111,6 +111,11 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
+          title: 'Caption',
+          href: '/docs/caption',
+          items: [],
+        },
+        {
           title: 'Cloud',
           href: '/docs/cloud',
           items: [],
@@ -780,6 +785,11 @@ export const docsConfig: DocsConfig = {
           items: [],
         },
         {
+          title: 'Caption',
+          href: '/docs/components/caption',
+          items: [],
+        },
+        {
           title: 'Checkbox',
           href: '/docs/components/checkbox',
           items: [],
@@ -1054,6 +1064,11 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Popover',
           href: '/docs/components/popover',
+          items: [],
+        },
+        {
+          title: 'Resizable',
+          href: '/docs/components/resizable',
           items: [],
         },
         {
