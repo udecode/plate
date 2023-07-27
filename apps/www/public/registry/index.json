@@ -556,7 +556,8 @@
   {
     "name": "media-embed-element",
     "dependencies": [
-      "@udecode/plate-media"
+      "@udecode/plate-media",
+      "react-tweet"
     ],
     "registryDependencies": [
       "media-popover"
