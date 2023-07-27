@@ -56,7 +56,6 @@ export const withCaption = <
           at: newSelection,
           match: { type: types },
         });
-        console.log(2, entry);
 
         if (entry) {
           const [node] = entry;

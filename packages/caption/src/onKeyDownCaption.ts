@@ -18,9 +18,8 @@ export const onKeyDownCaption: KeyboardHandler<CaptionPlugin> =
       const types = getPluginTypes(editor, options.pluginKeys);
 
       const entry = getBlockAbove(editor, {
-        match: { type: types[0] },
+        match: { type: types },
       });
-      console.log(options.pluginKeys);
       if (!entry) return;
 
       captionGlobalStore.set.focusEndCaptionPath(entry[1]);
