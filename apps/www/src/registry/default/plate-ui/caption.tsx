@@ -2,7 +2,7 @@ import React, { ComponentProps } from 'react';
 import {
   Caption as CaptionPrimitive,
   CaptionTextarea as CaptionTextareaPrimitive,
-} from '@udecode/plate-media';
+} from '@udecode/plate-caption';
 import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ const captionVariants = cva('max-w-full', {
 const Caption = React.forwardRef<
   React.ElementRef<typeof CaptionPrimitive>,
   ComponentProps<typeof CaptionPrimitive> & VariantProps<typeof captionVariants>
->(({ className, align, ...props }, ref) => (
+>(({ className, style, align, ...props }, ref) => (
   <CaptionPrimitive
     ref={ref}
     className={cn(captionVariants({ align }), className)}

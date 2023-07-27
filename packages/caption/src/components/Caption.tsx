@@ -1,6 +1,5 @@
 import { ComponentPropsWithoutRef } from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
-import { useResizableStore } from '@udecode/plate-resizable';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { useCaptionString } from '../hooks/useCaptionString';
@@ -28,12 +27,7 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
 };
 
 export const useCaption = (state: ReturnType<typeof useCaptionState>) => {
-  const width = useResizableStore().get.width();
-
   return {
-    props: {
-      style: { width },
-    },
     hidden:
       state.captionString.length === 0 && (state.readOnly || !state.selected),
   };

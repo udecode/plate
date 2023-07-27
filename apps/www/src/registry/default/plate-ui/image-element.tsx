@@ -6,6 +6,7 @@ import {
   TImageElement,
   useMediaState,
 } from '@udecode/plate-media';
+import { useResizableStore } from '@udecode/plate-resizable';
 
 import { cn } from '@/lib/utils';
 
@@ -20,6 +21,7 @@ export function ImageElement({
   ...props
 }: PlateElementProps<Value, TImageElement>) {
   const { readOnly, focused, selected, align } = useMediaState();
+  const width = useResizableStore().get.width();
 
   return (
     <MediaPopover pluginKey={ELEMENT_IMAGE}>
@@ -45,7 +47,7 @@ export function ImageElement({
             <ResizeHandle options={{ direction: 'right' }} />
           </Resizable>
 
-          <Caption align={align}>
+          <Caption align={align} style={{ width }}>
             <CaptionTextarea
               placeholder="Write a caption..."
               options={{}}

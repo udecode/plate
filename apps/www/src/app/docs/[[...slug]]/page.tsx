@@ -178,7 +178,13 @@ export default async function DocPage({ params }: DocPageProps) {
               <Link
                 key={item.route}
                 href={item.route as any}
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(
+                  badgeVariants({
+                    variant: item.route?.includes('components')
+                      ? 'default'
+                      : 'secondary',
+                  })
+                )}
               >
                 {item.title}
               </Link>

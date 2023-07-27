@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { getNodeString, useElement } from '@udecode/plate-common';
 
-import { TCaptionElement } from '../types/TCaptionElement';
+import { TCaptionElement } from '../TCaptionElement';
 
 export const useCaptionString = () => {
   const { caption: nodeCaption = [{ children: [{ text: '' }] }] } =

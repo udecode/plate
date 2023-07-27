@@ -122,7 +122,7 @@ const ui: Registry = [
   {
     name: 'caption',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-media'],
+    dependencies: ['@udecode/plate-caption'],
     registryDependencies: [],
     files: ['plate-ui/caption.tsx'],
   },

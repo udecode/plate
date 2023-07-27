@@ -9,6 +9,7 @@ import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
+import { captionPlugin } from '@/plate/demo/plugins/captionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -40,6 +41,7 @@ import {
   createSingleLinePlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
@@ -142,6 +144,7 @@ export const usePlaygroundPlugins = ({
           }),
           createImagePlugin({ enabled: !!enabled.img }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
+          createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
           createMentionPlugin({ enabled: !!enabled.mention }),
           createTablePlugin({ enabled: !!enabled.table }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),

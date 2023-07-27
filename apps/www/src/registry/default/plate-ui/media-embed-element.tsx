@@ -7,6 +7,7 @@ import {
   TMediaEmbedElement,
   useMediaState,
 } from '@udecode/plate-media';
+import { useResizableStore } from '@udecode/plate-resizable';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
@@ -32,6 +33,7 @@ const MediaEmbedElement = React.forwardRef<
   } = useMediaState({
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
+  const width = useResizableStore().get.width();
   const provider = embed?.provider;
 
   return (
@@ -113,7 +115,7 @@ const MediaEmbedElement = React.forwardRef<
             <ResizeHandle options={{ direction: 'right' }} />
           </Resizable>
 
-          <Caption align={align}>
+          <Caption align={align} style={{ width }}>
             <CaptionTextarea placeholder="Write a caption..." />
           </Caption>
         </figure>

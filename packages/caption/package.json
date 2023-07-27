@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-media",
+  "name": "@udecode/plate-caption",
   "version": "22.0.2",
-  "description": "Plate Media plugin",
+  "description": "Primitive components for caption.",
   "license": "MIT",
   "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/media"
+    "directory": "packages/caption"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "22.0.2",
-    "js-video-url-parser": "^0.5.1"
+    "react-textarea-autosize": "^8.5.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -42,8 +42,7 @@
   },
   "keywords": [
     "plate",
-    "plugin",
-    "slate"
+    "caption"
   ],
   "publishConfig": {
     "access": "public"

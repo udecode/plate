@@ -35,6 +35,7 @@ npm install @udecode/plate-media
 ### Plugins
 
 ```tsx
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
   createImagePlugin,
   createMediaEmbedPlugin,
@@ -45,6 +46,7 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
+  createCaptionPlugin({ options: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] }),
   createImagePlugin(),
   createMediaEmbedPlugin(),
   createSelectOnBackspacePlugin({
@@ -141,9 +143,6 @@ Common attributes shared by image and media embed plugins.
   </APIItem>
   <APIItem name="transformUrl" type="function" optional>
     A function to transform the URL.
-  </APIItem>
-  <APIItem name="disableCaption" type="boolean" optional>
-    Disables captions for media if set to true.
   </APIItem>
 </APIAttributes>
 
@@ -378,13 +377,13 @@ A behavior hook for resizable elements.
       </APISubListItem>
     </APISubList>
   </APIItem>
-<APIItem name="context" type="object">
-  <APISubList>
-    <APISubListItem parent="context" name="onResize" type="function">
-      A callback function to be called when the resizable element is resized.
-    </APISubListItem>
-  </APISubList>
-</APIItem>
+  <APIItem name="context" type="object">
+    <APISubList>
+      <APISubListItem parent="context" name="onResize" type="function">
+        A callback function to be called when the resizable element is resized.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
 </APIReturns>
 
 ### useFloatingMediaEditButton
