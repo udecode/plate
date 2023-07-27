@@ -29,7 +29,7 @@ export const withMention = <
 >(
   editor: E,
   {
-    options: { id, trigger, query, inputCreation },
+    options: { id, trigger, triggerPreviousCharPattern, query, inputCreation },
   }: WithPlatePlugin<MentionPlugin, V, E>
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
@@ -115,10 +115,11 @@ export const withMention = <
       )
     );
 
+    const previousCharPattern = triggerPreviousCharPattern ?? /\s/;
+    const matchesPreviousCharPattern = previousCharPattern.test(previousChar);
     const beginningOfLine = previousChar === '';
-    const precededByWhitespace = previousChar === ' ';
 
-    if ((beginningOfLine || precededByWhitespace) && text === trigger) {
+    if ((beginningOfLine || matchesPreviousCharPattern) && text === trigger) {
       const data: TMentionInputElement = {
         type,
         children: [{ text: '' }],
