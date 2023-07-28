@@ -32,6 +32,10 @@ import {
 import { Popover, PopoverContent, popoverVariants } from './popover';
 import { Separator } from './separator';
 
+const IS_FIREFOX =
+  typeof navigator !== 'undefined' &&
+  /^(?!.*seamonkey)(?=.*firefox).*/i.test(navigator.userAgent);
+
 const TableBordersDropdownMenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
@@ -175,7 +179,7 @@ const TableElement = React.forwardRef<
           {...tableProps}
           {...props}
         >
-          <table contentEditable={false} suppressContentEditableWarning={true} plate-firefox-fix="">
+          <table contentEditable={IS_FIREFOX ? "false" : "inherit"} suppressContentEditableWarning={true} plate-firefox-fix="">
             <colgroup {...colGroupProps}>
               {colSizes.map((width, index) => (
                 <col
