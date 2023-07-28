@@ -175,7 +175,7 @@ const TableElement = React.forwardRef<
           {...tableProps}
           {...props}
         >
-          <table>
+          <table contentEditable={false} suppressContentEditableWarning={true} plate-firefox-fix="">
             <colgroup {...colGroupProps}>
               {colSizes.map((width, index) => (
                 <col
