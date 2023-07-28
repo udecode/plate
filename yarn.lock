@@ -6908,7 +6908,6 @@ __metadata:
     "@floating-ui/react": "npm:^0.22.3"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.5"
     "@udecode/plate-common": "npm:22.0.2"
-    "@udecode/utils": "npm:19.7.1"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"

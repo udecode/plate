@@ -10,6 +10,7 @@ import {
   usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
+import { IS_FIREFOX } from '@udecode/utils';
 import {
   TTableElement,
   useTableBordersDropdownMenuContentState,
@@ -31,10 +32,6 @@ import {
 } from './dropdown-menu';
 import { Popover, PopoverContent, popoverVariants } from './popover';
 import { Separator } from './separator';
-
-const IS_FIREFOX =
-  typeof navigator !== 'undefined' &&
-  /^(?!.*seamonkey)(?=.*firefox).*/i.test(navigator.userAgent);
 
 const TableBordersDropdownMenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,

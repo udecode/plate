@@ -1,10 +1,7 @@
 import { ClientRectObject } from '@floating-ui/core';
+import { IS_FIREFOX } from '@udecode/utils';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
-
-const IS_FIREFOX =
-  typeof navigator !== 'undefined' &&
-  /^(?!.*seamonkey)(?=.*firefox).*/i.test(navigator.userAgent);
 
 /**
  * Get bounding client rect of the window selection
