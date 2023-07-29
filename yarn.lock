@@ -20494,7 +20494,7 @@ __metadata:
 
 "slate-react@patch:slate-react@npm%3A0.98.0#~/.yarn/patches/slate-react-npm-0.98.0-2fb88a7df1.patch":
   version: 0.98.0
-  resolution: "slate-react@patch:slate-react@npm%3A0.98.0#~/.yarn/patches/slate-react-npm-0.98.0-2fb88a7df1.patch::version=0.98.0&hash=8a9413"
+  resolution: "slate-react@patch:slate-react@npm%3A0.98.0#~/.yarn/patches/slate-react-npm-0.98.0-2fb88a7df1.patch::version=0.98.0&hash=f14898"
   dependencies:
     "@juggle/resize-observer": "npm:^3.4.0"
     "@types/is-hotkey": "npm:^0.1.1"
@@ -20509,7 +20509,7 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
-  checksum: acd68f4d6ca6f3eaf71cf3be980dfc29ebd6b9f06af8d5f00e73a63de03f3be3051ba17e4b75e0de832f055746bba58f4383fc295d879e96b8c07d9a7521137f
+  checksum: 31e18157ab6f50cf4d5127d106763d9aed57e06c605e77dccfd66b0e683543c26c85fbf209f96f798d56014263ca26fcc8cedf6e4fabb1fbf18cac549b07bfa1
   languageName: node
   linkType: hard
 

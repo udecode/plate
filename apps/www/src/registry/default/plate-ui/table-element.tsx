@@ -162,6 +162,9 @@ const TableElement = React.forwardRef<
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
 
+  const isSelectionCollapsed = (typeof window !== 'undefined') ? window?.getSelection()?.isCollapsed : null;
+//contentEditable={IS_FIREFOX ? (isSelectionCollapsed != null && isSelectionCollapsed) : "inherit"}
+//{...((IS_FIREFOX && isSelectionCollapsed != null && !isSelectionCollapsed) ? {contentEditable: 'false'} : {})}
   return (
     <TableFloatingToolbar>
       <div style={{ paddingLeft: marginLeft }}>
@@ -176,7 +179,7 @@ const TableElement = React.forwardRef<
           {...tableProps}
           {...props}
         >
-          <table contentEditable={IS_FIREFOX ? "false" : "inherit"} suppressContentEditableWarning={true} plate-firefox-fix="">
+          <table>
             <colgroup {...colGroupProps}>
               {colSizes.map((width, index) => (
                 <col

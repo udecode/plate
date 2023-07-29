@@ -6,6 +6,7 @@ import {
   useTableCellElementState,
   useTableElementState
 } from '@udecode/plate-table';
+import { IS_FIREFOX } from '@udecode/utils';
 
 import { cn } from '@/lib/utils';
 
@@ -77,6 +78,7 @@ const TableCellElement = React.forwardRef<
           <div
             className="group absolute top-0 h-full w-full select-none"
             contentEditable={false}
+            suppressContentEditableWarning={true}
           >
             <TableCellElementResizable
               colIndex={colIndex}

@@ -13,18 +13,7 @@ export const getSelectionBoundingClientRect = (): ClientRectObject => {
     return getDefaultBoundingClientRect();
   }
 
-  if (IS_FIREFOX && domSelection.rangeCount > 1) {
-    const firstRange = domSelection.getRangeAt(0);
-    const lastRange = domSelection.getRangeAt(domSelection.rangeCount - 1);
+  const domRange = domSelection.getRangeAt(0);
 
-    const domRange =
-      firstRange.startContainer === domSelection.focusNode
-        ? lastRange
-        : firstRange;
-    return domRange.getBoundingClientRect();
-  } else {
-    const domRange = domSelection.getRangeAt(0);
-
-    return domRange.getBoundingClientRect();
-  }
+  return domRange.getBoundingClientRect();
 };
