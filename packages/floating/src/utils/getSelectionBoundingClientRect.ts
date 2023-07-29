@@ -1,5 +1,4 @@
 import { ClientRectObject } from '@floating-ui/core';
-import { IS_FIREFOX } from '@udecode/utils';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 

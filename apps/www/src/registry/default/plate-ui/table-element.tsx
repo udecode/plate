@@ -162,9 +162,7 @@ const TableElement = React.forwardRef<
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
 
-  const isSelectionCollapsed = (typeof window !== 'undefined') ? window?.getSelection()?.isCollapsed : null;
-//contentEditable={IS_FIREFOX ? (isSelectionCollapsed != null && isSelectionCollapsed) : "inherit"}
-//{...((IS_FIREFOX && isSelectionCollapsed != null && !isSelectionCollapsed) ? {contentEditable: 'false'} : {})}
+  const isSelectionCollapsed = (typeof window === 'undefined') ? null: window?.getSelection()?.isCollapsed;
   return (
     <TableFloatingToolbar>
       <div style={{ paddingLeft: marginLeft }}>
