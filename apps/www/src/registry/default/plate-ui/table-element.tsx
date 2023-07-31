@@ -10,7 +10,6 @@ import {
   usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
-import { IS_FIREFOX } from '@udecode/utils';
 import {
   TTableElement,
   useTableBordersDropdownMenuContentState,

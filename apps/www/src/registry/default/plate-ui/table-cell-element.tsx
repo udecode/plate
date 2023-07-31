@@ -6,7 +6,6 @@ import {
   useTableCellElementState,
   useTableElementState
 } from '@udecode/plate-table';
-import { IS_FIREFOX } from '@udecode/utils';
 
 import { cn } from '@/lib/utils';
 
