@@ -4,7 +4,7 @@ import {
   TableCellElementResizable,
   useTableCellElement,
   useTableCellElementState,
-  useTableElementState
+  useTableElementState,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
@@ -73,7 +73,7 @@ const TableCellElement = React.forwardRef<
           {children}
         </div>
 
-        {!isSelectingCell && 
+        {!isSelectingCell && (
           <div
             className="group absolute top-0 h-full w-full select-none"
             contentEditable={false}
@@ -103,7 +103,7 @@ const TableCellElement = React.forwardRef<
               />
             )}
           </div>
-        }
+        )}
       </Cell>
     </PlateElement>
   );

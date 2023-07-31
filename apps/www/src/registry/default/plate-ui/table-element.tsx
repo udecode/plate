@@ -161,7 +161,6 @@ const TableElement = React.forwardRef<
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
 
-  const isSelectionCollapsed = (typeof window === 'undefined') ? null: window?.getSelection()?.isCollapsed;
   return (
     <TableFloatingToolbar>
       <div style={{ paddingLeft: marginLeft }}>
