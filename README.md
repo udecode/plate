@@ -35,6 +35,10 @@ Plate
 
 You can learn more about Plate by checking out our [documentation](https://platejs.org/docs).
 
+## Running locally
+
+To get started, check out our [contributing guide](CONTRIBUTING.md).
+
 ## Contributing
 
 ### Ideas and discussions
@@ -48,4 +52,4 @@ We'd love for you to join us! Whether it's through giving us a 🌟 star, making
 
 [![Star History Chart](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
 
-To get started, check out our [contributing guide](CONTRIBUTING.md). Need more help? Join us on [Discord](https://discord.gg/mAZRuBzGM3). We're always here to guide you.
+Need more help? Join us on [Discord](https://discord.gg/mAZRuBzGM3). We're always here to guide you.
