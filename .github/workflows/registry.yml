@@ -11,7 +11,7 @@ on:
 jobs:
   update-registry:
     name: Update Registry
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@master

@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release and changelog
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@master
