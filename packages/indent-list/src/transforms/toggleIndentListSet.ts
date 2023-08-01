@@ -2,7 +2,7 @@ import { TEditor, TNodeEntry, Value } from '@udecode/plate-common';
 
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
-import { IndentListOptions, indentList } from './indentList';
+import { indentList, IndentListOptions } from './indentList';
 
 /**
  * Set indent list if not set.

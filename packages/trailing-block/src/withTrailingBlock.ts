@@ -1,12 +1,12 @@
 import {
   ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   getLastNodeByLevel,
   getPluginType,
   insertElements,
+  PlateEditor,
   queryNode,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -17,7 +17,7 @@ import { TrailingBlockPlugin } from './createTrailingBlockPlugin';
  */
 export const withTrailingBlock = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   {

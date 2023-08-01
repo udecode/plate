@@ -1,9 +1,9 @@
 import {
+  isDefined,
   TEditor,
   TNodeEntry,
-  Value,
-  isDefined,
   unsetNodes,
+  Value,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 

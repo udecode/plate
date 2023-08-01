@@ -1,9 +1,9 @@
 import {
+  applyDeepToNodes,
+  nanoid,
   PlateEditor,
   TDescendant,
   Value,
-  applyDeepToNodes,
-  nanoid,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

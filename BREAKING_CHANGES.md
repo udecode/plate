@@ -1,6 +1,199 @@
+# 23.0.0
+
+## @udecode/plate-media@23.0.0
+
+### Major Changes
+
+-   [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
+    Update the following components:
+
+    -   `npx @udecode/plate-ui@latest add media-embed-element`
+        -   now uses `react-lite-youtube-embed` for YouTube videos.
+        -   now uses `react-tweet` for Twitter tweets.
+    -   `npx @udecode/plate-ui@latest add image-element`
+
+    Breaking changes:
+
+    -   Moved `Resizable` to `@udecode/plate-resizable`
+    -   Moved `Caption`, `CaptionTextarea` to `@udecode/plate-caption`
+    -   Removed `useMediaEmbed`, `MediaEmbedVideo`, `MediaEmbedTweet`, `Tweet`, `parseMediaUrl`, `mediaStore`
+    -   Removed `@udecode/resizable`, `scriptjs`, `react-textarea-autosize` dependencies
+    -   `MediaPlugin`
+        -   removed `rules`. Use `parsers` option instead.
+        -   removed `disableCaption`. Use `createCaptionPlugin` instead.
+    -   Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
+
+    ```ts
+    import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+
+    createCaptionPlugin({
+      options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    });
+    ```
+
+ ## @udecode/plate-resizable@23.0.0
+
+### Major Changes
+
+-   [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
+    -   Package renamed to `@udecode/plate-resizable`.
+    -   `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
+        -   `npx @udecode/plate-ui@latest add resizable`
+
 # 22.0.0
 
 Headless UI.
+
+## @udecode/plate-ui@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – This package is now a CLI to generate components. Install it as a dev dependency. See <https://platejs.org/docs/components/cli>.
+
+Migration:
+
+- [Manual installation](https://platejs.org/docs/components/installation/manual).
+- For each unresolved import not listed in the following major changes (components from `@udecode/plate-ui-x`), generate the component using the [CLI](https://platejs.org/docs/components/cli).
+
+## @udecode/plate-comments@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `AccountCircleIcon`
+  - `CheckIcon`
+  - `MoreVertIcon`
+  - `RefreshIcon`
+  - `AvatarImage`
+  - `CommentLinkButton`
+  - `CommentLinkDialog`
+  - `CommentLinkDialogCloseButton`
+  - `CommentLinkDialogCopyLink`
+  - `CommentLinkDialogInput`
+  - `PlateCommentLeaf` for `useCommentLeafState`
+
+## @udecode/plate-dnd@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `Draggable`
+  - `DraggableBlock`
+  - `DraggableBlockToolbar`
+  - `DraggableBlockToolbarWrapper`
+  - `DraggableDropline`
+  - `DraggableGutterLeftProps`
+  - `DraggableRoot`
+  - `DragHandle`
+
+## @udecode/plate-link@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `FloatingLink`
+  - `FloatingLinkEditButton`
+  - `FloatingLinkTextInput`
+  - `UnlinkButton`
+  - `LaunchIcon`
+  - `Link`
+  - `LinkIcon`
+  - `LinkOffIcon`
+  - `ShortTextIcon`
+
+## @udecode/plate-media@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `MediaEmbed`
+
+## @udecode/plate@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Plate 2.0 – Headless UI.
+  Read the docs about the new UI pattern: <https://platejs.org/docs/components>.
+
+  - Removed `@udecode/plate-ui` dependency.
+  - Removed `@udecode/plate-emoji` dependency. You can install it separately.
+  - Removed `styled-components` peerDependency.
+
+  Replaced `@udecode/plate-headless` dependency (deprecated) by:
+
+  - `@udecode/plate-alignment`
+  - `@udecode/plate-autoformat`
+  - `@udecode/plate-basic-elements`
+  - `@udecode/plate-basic-marks`
+  - `@udecode/plate-block-quote`
+  - `@udecode/plate-break`
+  - `@udecode/plate-code-block`
+  - `@udecode/plate-combobox`
+  - `@udecode/plate-comments`
+  - `@udecode/plate-common`
+  - `@udecode/plate-find-replace`
+  - `@udecode/plate-floating`
+  - `@udecode/plate-font`
+  - `@udecode/plate-heading`
+  - `@udecode/plate-highlight`
+  - `@udecode/plate-horizontal-rule`
+  - `@udecode/plate-indent`
+  - `@udecode/plate-indent-list`
+  - `@udecode/plate-kbd`
+  - `@udecode/plate-line-height`
+  - `@udecode/plate-link`
+  - `@udecode/plate-list`
+  - `@udecode/plate-media`
+  - `@udecode/plate-mention`
+  - `@udecode/plate-node-id`
+  - `@udecode/plate-normalizers`
+  - `@udecode/plate-paragraph`
+  - `@udecode/plate-reset-node`
+  - `@udecode/plate-select`
+  - `@udecode/plate-serializer-csv`
+  - `@udecode/plate-serializer-docx`
+  - `@udecode/plate-serializer-html`
+  - `@udecode/plate-serializer-md`
+  - `@udecode/plate-suggestion`
+  - `@udecode/plate-tabbable`
+  - `@udecode/plate-table`
+  - `@udecode/plate-trailing-block`
+  - `@udecode/resizable`
+
+## @udecode/plate-utils@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
+  - `slate-react: >=0.95.0`
+    Removed:
+  - `useElementPrpos`
+  - `useWrapElement`
+  - `createComponentAs`
+  - `createElementAs`
+
+## @udecode/plate-table@22.0.0
+
+### Major Changes
+
+- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `TableCellElement`
+  - `TableCellElementResizableWrapper`
+  - `TableCellElementRoot`
+  - `TableElement`
+  - `TableElementCol`
+  - `TableElementColGroup`
+  - `TableElementRoot`
+  - `TableElementTBody`
+  - `TableRowElement`
+  - `ArrowDropDownCircleIcon`
+  - `BorderAllIcon`
+  - `BorderBottomIcon`
+  - `BorderLeftIcon`
+  - `BorderNoneIcon`
+  - `BorderOuterIcon`
+  - `BorderRightIcon`
+  - `BorderTopIcon`
 
 # 21.0.0
 

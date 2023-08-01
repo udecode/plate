@@ -1,10 +1,10 @@
 import {
-  TElement,
   findNode,
   focusEditor,
   getPluginInjectProps,
   isBlock,
   isCollapsed,
+  TElement,
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-common';

@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react';
 import {
-  JotaiProvider,
-  WithPartial,
   createAtomStore,
   getJotaiProviderInitialValues,
+  JotaiProvider,
   nanoid,
+  WithPartial,
 } from '@udecode/plate-common';
 
 import { SuggestionUser, TSuggestion } from '../types';

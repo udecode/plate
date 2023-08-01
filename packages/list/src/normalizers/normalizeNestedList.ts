@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   getNodeEntry,
   getParentNode,
   match,
   moveNodes,
+  PlateEditor,
+  TElement,
+  TElementEntry,
+  Value,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

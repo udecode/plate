@@ -1,15 +1,15 @@
 import {
-  ELEMENT_DEFAULT,
-  PlateEditor,
-  Value,
   deleteText,
+  ELEMENT_DEFAULT,
   getEditorString,
   getRangeBefore,
   getRangeFromBlockStart,
   isBlock,
   isVoid,
+  PlateEditor,
   setElements,
   someNode,
+  Value,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Range } from 'slate';

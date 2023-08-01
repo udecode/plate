@@ -6,5 +6,5 @@ import { PluginKey } from './plugin/PlatePluginKey';
 
 export type OverrideByKey<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = Record<PluginKey, Partial<PlatePlugin<{}, V, E>>>;

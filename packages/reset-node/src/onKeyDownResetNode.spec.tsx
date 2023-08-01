@@ -1,20 +1,19 @@
 /** @jsx jsx */
 
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
+  ELEMENT_CODE_BLOCK,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
-} from '@/packages/code-block/src/index';
-import { mockPlugin } from '@/packages/core/src/index';
-import { unwrapList } from '@/packages/list/src/index';
+} from '@udecode/plate-code-block';
 import {
+  createPlateEditor,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-} from '@/packages/slate-utils/src/index';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { createPlateEditor } from '@udecode/plate-common';
-import { ELEMENT_LI } from '@udecode/plate-list';
+  mockPlugin,
+} from '@udecode/plate-common';
+import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';

@@ -1,14 +1,14 @@
 /* eslint-disable unused-imports/no-unused-imports,unused-imports/no-unused-vars */
 import {
   DecorateEntry,
-  PlateEditor,
-  Value,
   getNodeString,
   getParentNode,
   getPlugin,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 // noinspection ES6UnusedImports
-import Prism, { Token, languages, tokenize } from 'prismjs';
+import Prism, { languages, Token, tokenize } from 'prismjs';
 
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';
@@ -57,6 +57,7 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
+
 import { Range } from 'slate';
 
 import {
@@ -73,7 +74,7 @@ export interface CodeSyntaxRange extends Range {
 
 export const decorateCodeLine = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ): DecorateEntry => {

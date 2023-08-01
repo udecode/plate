@@ -1,7 +1,4 @@
 import {
-  PlateEditor,
-  TElement,
-  Value,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -11,8 +8,11 @@ import {
   isCollapsed,
   isRangeInSameBlock,
   moveSelection,
+  PlateEditor,
   replaceNodeChildren,
   select,
+  TElement,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
@@ -76,7 +76,7 @@ export const preventDeleteTableCell = <V extends Value = Value>(
  */
 export const withDeleteTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {

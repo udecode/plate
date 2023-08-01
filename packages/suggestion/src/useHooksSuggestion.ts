@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import {
   PlateEditor,
+  usePlateSelectors,
   Value,
   WithPlatePlugin,
-  usePlateSelectors,
 } from '@udecode/plate-common';
 
 import { findSuggestionNode } from './queries/index';
@@ -13,7 +13,7 @@ import { getSuggestionId } from './utils/getSuggestionId';
 
 export const useHooksSuggestion = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   // eslint-disable-next-line unused-imports/no-unused-vars

@@ -15,7 +15,7 @@ import { getKeysByTypes } from './getKeysByTypes';
 export const mapInjectPropsToPlugin = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   plugin: WithPlatePlugin<P, V, E>,

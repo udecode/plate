@@ -1,6 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-common';
 
-import { getOnKeyDownCaption } from '../caption/getOnKeyDownCaption';
 import { ImagePlugin } from './types';
 import { withImage } from './withImage';
 
@@ -14,9 +13,6 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   isElement: true,
   isVoid: true,
   withOverrides: withImage,
-  handlers: {
-    onKeyDown: getOnKeyDownCaption(ELEMENT_IMAGE),
-  },
   then: (editor, { type }) => ({
     deserializeHtml: {
       rules: [

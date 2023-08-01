@@ -1,6 +1,6 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
 
-import { SetIndentOptions, setIndent } from './setIndent';
+import { setIndent, SetIndentOptions } from './setIndent';
 
 /**
  * Increase the indentation of the selected blocks.

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-break",
-  "version": "22.0.0",
+  "version": "22.0.2",
   "description": "Insert break plugins for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.0"
+    "@udecode/plate-common": "22.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

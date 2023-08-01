@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
-import { toggleNodeType } from '@/packages/core/src/transforms/toggleNodeType';
-import { PlateEditor } from '@/packages/core/src/types/PlateEditor';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
+import { PlateEditor, toggleNodeType } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

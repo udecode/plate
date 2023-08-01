@@ -1,7 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 packages/cli/components
-tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
 apps/www/tsconfig.tsbuildinfo
 
 .yarn/*

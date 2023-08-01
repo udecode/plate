@@ -14,7 +14,10 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
   protected _rowsNum = 0;
   protected _indexRowStart = 0;
 
-  constructor(protected _id: T, protected perLine = 8) {
+  constructor(
+    protected _id: T,
+    protected perLine = 8
+  ) {
     this.createRootRef();
   }
 

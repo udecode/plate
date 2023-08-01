@@ -1,9 +1,9 @@
 import {
+  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
   Value,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
@@ -14,7 +14,7 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  */
 export const withGetFragmentTable = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {

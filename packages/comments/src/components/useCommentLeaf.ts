@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
+import { usePlateEditorRef } from '@udecode/plate-common';
 
 import {
-  TCommentText,
   getCommentKeyId,
   isCommentKey,
+  TCommentText,
+  unsetCommentNodesById,
   useCommentsActions,
   useCommentsSelectors,
 } from '..';
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
+  const editor = usePlateEditorRef();
   const [commentIds, setCommentIds] = useState<string[]>([]);
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
@@ -40,11 +43,18 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
 
     if (!_isActive && isActive) {
       setIsActive(false);
+
+      // Remove comment nodes for unsubmitted comments
+      ids.forEach((id) => {
+        if (!comments[id]) {
+          unsetCommentNodesById(editor, { id });
+        }
+      });
     }
 
     setCommentCount(count);
     setCommentIds(ids);
-  }, [activeCommentId, comments, isActive, leaf]);
+  }, [editor, activeCommentId, comments, isActive, leaf]);
 
   const lastCommentId = commentIds.at(-1)!;
 

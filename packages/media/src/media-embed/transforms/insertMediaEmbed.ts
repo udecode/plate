@@ -1,10 +1,10 @@
 import {
+  getParentNode,
+  insertNodes,
   InsertNodesOptions,
   PlateEditor,
   PlatePluginKey,
   Value,
-  getParentNode,
-  insertNodes,
 } from '@udecode/plate-common';
 
 import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';

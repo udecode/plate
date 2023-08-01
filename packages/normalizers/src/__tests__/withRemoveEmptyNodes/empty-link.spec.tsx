@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-import { ELEMENT_LINK } from '@/packages/link/src/createLinkPlugin';
-import { createRemoveEmptyNodesPlugin } from '@/packages/normalizers/src/createRemoveEmptyNodesPlugin';
-import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
 
 jsx;
 

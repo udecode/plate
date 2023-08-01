@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
-import { createBasicElementsPlugin } from '@/packages/basic-elements/src/index';
-import { createHorizontalRulePlugin } from '@/packages/horizontal-rule/src/index';
-import { createLineHeightPlugin } from '@/packages/line-height/src/index';
-import { createLinkPlugin } from '@/packages/link/src/index';
 import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-core';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createJuicePlugin } from '@udecode/plate-juice';
+import { createLineHeightPlugin } from '@udecode/plate-line-height';
+import { createLinkPlugin } from '@udecode/plate-link';
 import { createImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
@@ -25,7 +25,7 @@ jsx;
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
     getData: (format: string) => (format === 'text/html' ? html : rtf),
-  } as any);
+  }) as any;
 
 describe('when insertData disc and decimal from gdocs', () => {
   it('should ', () => {

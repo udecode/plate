@@ -10,7 +10,7 @@ import {
 export type InjectedPlugin<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = Partial<PlatePlugin<P, V, E>>;
 
 /**
@@ -20,7 +20,7 @@ export type InjectedPlugin<
 export const getInjectedPlugins = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: PlateEditor<V>,
   plugin: WithPlatePlugin<P, V, E>

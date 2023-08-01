@@ -10,7 +10,7 @@ import {
   ResizeHandle,
   ResizeHandleProps,
   resizeLengthClampStatic,
-} from '@udecode/resizable';
+} from '@udecode/plate-resizable';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
@@ -24,7 +24,7 @@ import {
   setTableMarginLeft,
   setTableRowSize,
 } from '../../transforms/index';
-import { TTableElement, TablePlugin } from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';

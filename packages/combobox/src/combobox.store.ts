@@ -1,4 +1,4 @@
-import { StateActions, StoreApi, createStore } from '@udecode/plate-common';
+import { createStore, StateActions, StoreApi } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';

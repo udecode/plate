@@ -120,6 +120,13 @@ const ui: Registry = [
     files: ['plate-ui/button.tsx'],
   },
   {
+    name: 'caption',
+    type: 'components:plate-ui',
+    dependencies: ['@udecode/plate-caption'],
+    registryDependencies: [],
+    files: ['plate-ui/caption.tsx'],
+  },
+  {
     name: 'checkbox',
     type: 'components:plate-ui',
     dependencies: ['@radix-ui/react-checkbox'],
@@ -189,7 +196,7 @@ const ui: Registry = [
   {
     name: 'dialog',
     type: 'components:plate-ui',
-    dependencies: [],
+    dependencies: ['@radix-ui/react-dialog'],
     registryDependencies: [],
     files: ['plate-ui/dialog.tsx'],
   },
@@ -278,7 +285,7 @@ const ui: Registry = [
     name: 'image-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-media'],
-    registryDependencies: ['media-popover'],
+    registryDependencies: ['media-popover', 'caption', 'resizable'],
     files: ['plate-ui/image-element.tsx'],
   },
   {
@@ -372,8 +379,12 @@ const ui: Registry = [
   {
     name: 'media-embed-element',
     type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-media'],
-    registryDependencies: ['media-popover'],
+    dependencies: [
+      '@udecode/plate-media',
+      'react-tweet',
+      'react-lite-youtube-embed',
+    ],
+    registryDependencies: ['media-popover', 'caption', 'resizable'],
     files: ['plate-ui/media-embed-element.tsx'],
   },
   {
@@ -534,6 +545,13 @@ const ui: Registry = [
     ],
     registryDependencies: ['dropdown-menu', 'toolbar'],
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
+  },
+  {
+    name: 'resizable',
+    type: 'components:plate-ui',
+    dependencies: ['@udecode/plate-resizable'],
+    registryDependencies: [],
+    files: ['plate-ui/resizable.tsx'],
   },
 ];
 

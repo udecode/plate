@@ -1,19 +1,9 @@
-import React from 'react';
+import { TElement } from '@udecode/plate-common';
 
-import { TCaptionElement } from '../caption/index';
-import { TResizableElement } from '../resizable/index';
-import { EmbedUrlData } from './parseMediaUrl';
-
-export interface TMediaElement extends TCaptionElement, TResizableElement {
+export interface TMediaElement extends TElement {
   url: string;
+  align?: 'left' | 'center' | 'right';
 }
-
-export type MediaUrlParser = (url: string) => EmbedUrlData | undefined;
-
-export type MediaPluginRule = {
-  parser: MediaUrlParser;
-  component?: React.FC<EmbedUrlData>;
-};
 
 export interface MediaPlugin {
   isUrl?: (text: string) => boolean;
@@ -22,14 +12,6 @@ export interface MediaPlugin {
    * Transforms the url.
    */
   transformUrl?: (url: string) => string;
-
-  /**
-   * List of rules. The first rule that matches the url will be used,
-   * i.e. its component will be used to render the media. Used by `MediaEmbed`.
-   */
-  rules?: MediaPluginRule[];
-
-  disableCaption?: boolean;
 }
 
 export const ELEMENT_MEDIA = 'media';

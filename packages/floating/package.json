@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "22.0.0",
+  "version": "22.0.2",
   "description": "Floating UI for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -32,7 +32,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.22.3",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
-    "@udecode/plate-common": "22.0.0"
+    "@udecode/plate-common": "22.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

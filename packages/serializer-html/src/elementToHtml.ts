@@ -1,11 +1,11 @@
 import { ComponentClass, FunctionComponent } from 'react';
 import {
+  pipeInjectProps,
   PlateEditor,
   PlateRenderElementProps,
+  pluginRenderElement,
   SlateProps,
   Value,
-  pipeInjectProps,
-  pluginRenderElement,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
 import { renderToStaticMarkup } from 'react-dom/server';

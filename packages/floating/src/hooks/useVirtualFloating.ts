@@ -4,12 +4,12 @@ import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
 import { createVirtualElement } from '../createVirtualElement';
 import {
+  autoUpdate,
   ReferenceType,
+  useFloating,
   UseFloatingProps,
   UseFloatingReturn,
   VirtualElement,
-  autoUpdate,
-  useFloating,
 } from '../libs/floating-ui';
 import { getSelectionBoundingClientRect } from '../utils/index';
 
@@ -19,7 +19,7 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingProps> {
 }
 
 export interface UseVirtualFloatingReturn<
-  RT extends ReferenceType = ReferenceType
+  RT extends ReferenceType = ReferenceType,
 > extends UseFloatingReturn<RT> {
   virtualElementRef: MutableRefObject<VirtualElement>;
   style: CSSProperties;

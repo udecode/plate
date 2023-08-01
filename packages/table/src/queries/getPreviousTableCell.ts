@@ -1,9 +1,9 @@
 import {
+  getNodeEntry,
+  getPreviousPath,
   TEditor,
   TNodeEntry,
   Value,
-  getNodeEntry,
-  getPreviousPath,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

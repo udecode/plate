@@ -1,7 +1,7 @@
 import {
-  ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
+  ToggleMarkPlugin,
 } from '@udecode/plate-common';
 
 export const MARK_SUPERSCRIPT = 'superscript';

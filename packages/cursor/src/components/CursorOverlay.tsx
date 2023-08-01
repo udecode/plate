@@ -49,7 +49,7 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
 }
 
 export interface CursorOverlayProps<
-  TCursorData extends UnknownObject = UnknownObject
+  TCursorData extends UnknownObject = UnknownObject,
 > extends Pick<
     CursorProps<CursorData>,
     | 'disableCaret'
@@ -82,7 +82,7 @@ export interface CursorOverlayProps<
 }
 
 export function CursorOverlayContent<
-  TCursorData extends UnknownObject = UnknownObject
+  TCursorData extends UnknownObject = UnknownObject,
 >({
   classNames,
   onRenderCursor: CursorComponent,
@@ -114,7 +114,7 @@ export function CursorOverlayContent<
 }
 
 export function CursorOverlay<
-  TCursorData extends UnknownObject = UnknownObject
+  TCursorData extends UnknownObject = UnknownObject,
 >(props: CursorOverlayProps<TCursorData>) {
   const isRendered = usePlateSelectors().isRendered();
 

@@ -1,18 +1,18 @@
 import {
   GetAboveNodeOptions,
+  getEdgeBlocksAbove,
   PlateEditor,
   TElement,
   TElementEntry,
   Value,
-  getEdgeBlocksAbove,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 import {
-  GetTableGridByRangeOptions,
   getTableGridByRange,
+  GetTableGridByRangeOptions,
 } from './getTableGridByRange';
 
 export type GetTableGridAboveOptions<V extends Value = Value> =

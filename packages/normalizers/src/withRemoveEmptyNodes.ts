@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   getNodeString,
   isElement,
+  PlateEditor,
   removeNodes,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 
@@ -15,7 +15,7 @@ import { RemoveEmptyNodesPlugin } from './createRemoveEmptyNodesPlugin';
  */
 export const withRemoveEmptyNodes = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options: { types: _types } }: WithPlatePlugin<RemoveEmptyNodesPlugin, V, E>

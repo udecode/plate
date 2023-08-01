@@ -1,9 +1,9 @@
 import {
+  findNode,
   FindNodeOptions,
+  getPluginType,
   PlateEditor,
   Value,
-  findNode,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { ELEMENT_MENTION_INPUT } from '../createMentionPlugin';

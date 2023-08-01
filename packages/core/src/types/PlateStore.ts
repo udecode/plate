@@ -2,8 +2,8 @@ import { ForwardedRef } from 'react';
 import { Value } from '@udecode/slate';
 
 import { PlateId } from '../stores';
-import { PlateEditor } from './PlateEditor';
 import { Nullable } from './misc/Nullable';
+import { PlateEditor } from './PlateEditor';
 import {
   PlatePlugin,
   PluginOptions,
@@ -15,7 +15,7 @@ export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';
 
 export type PlateStoreState<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = {
   /**
    * A unique id used as a provider scope.

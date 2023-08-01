@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
-  UnwrapNodesOptions,
-  Value,
   getAboveNode,
   getPluginType,
   isElement,
+  PlateEditor,
   splitNodes,
   unwrapNodes,
+  UnwrapNodesOptions,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

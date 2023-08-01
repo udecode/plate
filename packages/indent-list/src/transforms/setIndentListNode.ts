@@ -1,4 +1,4 @@
-import { TEditor, Value, setElements } from '@udecode/plate-common';
+import { setElements, TEditor, Value } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { Path } from 'slate';
 

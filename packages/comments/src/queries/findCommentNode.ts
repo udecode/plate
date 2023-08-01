@@ -1,8 +1,8 @@
 import {
+  findNode,
   FindNodeOptions,
   PlateEditor,
   Value,
-  findNode,
 } from '@udecode/plate-common';
 
 import { MARK_COMMENT } from '../constants';

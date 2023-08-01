@@ -1,10 +1,7 @@
-import {
-  LinkPlugin,
-  createLinkPlugin,
-} from '@/packages/link/src/createLinkPlugin';
-import { TLinkElement } from '@/packages/link/src/types';
 import { createPlateEditor } from '@udecode/plate-common';
 
+import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
+import { TLinkElement } from '../types';
 import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {

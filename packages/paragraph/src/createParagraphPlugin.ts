@@ -1,6 +1,6 @@
 import {
-  HotkeyPlugin,
   createPluginFactory,
+  HotkeyPlugin,
   onKeyDownToggleElement,
 } from '@udecode/plate-common';
 

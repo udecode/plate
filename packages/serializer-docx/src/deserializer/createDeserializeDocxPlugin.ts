@@ -1,8 +1,8 @@
 import {
+  createPluginFactory,
   DeserializeHtml,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
-  createPluginFactory,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,

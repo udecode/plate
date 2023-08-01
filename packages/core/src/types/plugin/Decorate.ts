@@ -16,7 +16,7 @@ export type DecorateEntry<V extends Value = Value> = (
 export type Decorate<
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 > = (
   editor: PlateEditor<V>,
   plugin: WithPlatePlugin<P, V, E>

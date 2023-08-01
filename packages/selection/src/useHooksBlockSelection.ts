@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   findNode,
   focusEditor,
   getEndPoint,
   isEditorReadOnly,
+  PlateEditor,
   removeNodes,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 
@@ -23,7 +23,7 @@ import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
 export const useHooksBlockSelection = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options }: WithPlatePlugin<BlockSelectionPlugin>

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
+  createPlateEditor,
   PlateEditor,
   TDescendant,
-  createPlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 

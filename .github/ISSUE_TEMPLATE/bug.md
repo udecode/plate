@@ -1,7 +1,7 @@
 ---
 
 name: "🚨 Bug"
-about: A bug that occurs in plate logic
+about: Report a bug that occurs in plate
 title: ''
 labels: bug
 assignees: ''
@@ -14,38 +14,39 @@ assignees: ''
 
 <!-- A clear and concise description of what the bug is. -->
 
-**Steps**
+**Steps to Reproduce**
 
 
 
-<!-- Can be a list of steps, a GIF or video showing the issue happening. -->
+<!-- Provide a list of steps, a GIF, or a video demonstrating the issue. -->
 <!-- To reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
-4. See error -->
+4. See the error -->
 
 **Sandbox**
 
-https://codesandbox.io/s/rxo5rl?file=%2FApp.tsx
 
-<!-- A link to a sandbox where the error can be reproduced. (You can start
-from the
+
+<!-- 
+[Link to CodeSandbox](https://codesandbox.io/s/rxo5rl?file=%2FApp.tsx)
+Share a link to a CodeSandbox where the error can be reproduced. You can start from the
 [base sandbox here](https://codesandbox.io/s/rxo5rl?file=%2FApp.tsx)
-or refer to the examples too.) -->
+or refer to the examples too. -->
+
+**Expected Behavior**
 
 
-**Expectation**
 
-
-
-<!-- A clear and concise description of what you expected to
-happen. (Often it's helpful to test out the behavior of other editors
-like Google Docs, Medium, Notion, etc. to see how they handle the same
-issue.) -->
+<!-- A clear and concise description of what you expected to happen. It's often helpful to test the behavior of other editors like Google Docs, Medium, Notion, etc., to see how they handle the same issue. -->
 
 **Environment**
 
 - slate: 
 - slate-react: 
 - browser: chrome
+
+**Bounty**
+
+Click [here](https://console.algora.io/org/Udecode/bounties/new) to add a bounty via Algora.

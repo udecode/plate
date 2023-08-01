@@ -1,9 +1,9 @@
 import {
-  TEditor,
-  Value,
   getParentNode,
   isEndPoint,
   isText,
+  TEditor,
+  Value,
 } from '@udecode/slate';
 
 import { getBlockAbove } from './getBlockAbove';

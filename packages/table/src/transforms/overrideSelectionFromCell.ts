@@ -1,9 +1,9 @@
 import {
+  isRangeAcrossBlocks,
+  isRangeInSameBlock,
   PlateEditor,
   TRange,
   Value,
-  isRangeAcrossBlocks,
-  isRangeInSameBlock,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 

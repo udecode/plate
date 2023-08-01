@@ -6,14 +6,14 @@ import {
   EDescendant,
   ENodeEntry,
   FindNodeOptions,
-  TEditor,
-  TNodeEntry,
-  Value,
   getNodeDescendants,
   getNodeEntry,
   getPath,
   isVoid,
   match,
+  TEditor,
+  TNodeEntry,
+  Value,
 } from '@udecode/slate';
 import { Path, Range, Span } from 'slate';
 
@@ -22,7 +22,7 @@ import { Path, Range, Span } from 'slate';
  */
 export const findDescendant = <
   N extends EDescendant<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   options: FindNodeOptions<V>

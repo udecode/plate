@@ -156,6 +156,17 @@
     "type": "components:plate-ui"
   },
   {
+    "name": "caption",
+    "dependencies": [
+      "@udecode/plate-caption"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/caption.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
     "name": "checkbox",
     "dependencies": [
       "@radix-ui/react-checkbox"
@@ -256,7 +267,9 @@
   },
   {
     "name": "dialog",
-    "dependencies": [],
+    "dependencies": [
+      "@radix-ui/react-dialog"
+    ],
     "registryDependencies": [],
     "files": [
       "plate-ui/dialog.tsx"
@@ -391,7 +404,9 @@
       "@udecode/plate-media"
     ],
     "registryDependencies": [
-      "media-popover"
+      "media-popover",
+      "caption",
+      "resizable"
     ],
     "files": [
       "plate-ui/image-element.tsx"
@@ -554,10 +569,14 @@
   {
     "name": "media-embed-element",
     "dependencies": [
-      "@udecode/plate-media"
+      "@udecode/plate-media",
+      "react-tweet",
+      "react-lite-youtube-embed"
     ],
     "registryDependencies": [
-      "media-popover"
+      "media-popover",
+      "caption",
+      "resizable"
     ],
     "files": [
       "plate-ui/media-embed-element.tsx"
@@ -833,6 +852,17 @@
     ],
     "files": [
       "plate-ui/turn-into-dropdown-menu.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "resizable",
+    "dependencies": [
+      "@udecode/plate-resizable"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/resizable.tsx"
     ],
     "type": "components:plate-ui"
   }

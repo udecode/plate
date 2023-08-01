@@ -1,10 +1,10 @@
 import {
-  PlateEditor,
-  SetNodesOptions,
-  Value,
   findNode,
   isElement,
+  PlateEditor,
   setNodes,
+  SetNodesOptions,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';

@@ -1,8 +1,4 @@
 import {
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -13,7 +9,11 @@ import {
   getPluginType,
   getPointAfter,
   isSelectionAtBlockEnd,
+  PlateEditor,
   removeNodes,
+  TElement,
+  TElementEntry,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -21,8 +21,8 @@ import { Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries/index';
 import {
-  moveListItemUp,
   moveListItemsToList,
+  moveListItemUp,
   removeFirstListItem,
   removeListItem,
 } from './transforms/index';

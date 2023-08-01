@@ -6,7 +6,7 @@ import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { Plate } from '@udecode/plate-common';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 
-import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { Icons } from '@/components/icons';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 

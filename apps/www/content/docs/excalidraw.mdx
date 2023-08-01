@@ -26,9 +26,9 @@ npm install @udecode/plate-excalidraw
 
 ```tsx
 import {
+  createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-  createExcalidrawPlugin,
 } from '@udecode/plate-excalidraw';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
@@ -47,6 +47,63 @@ const plugins = [
 
 ### insertExcalidraw
 
+Inserts an Excalidraw element into the editor.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+  The editor instance.
+</APIItem>
+<APIItem
+  name="props"
+  type="TNodeProps<TExcalidrawElement> & PlatePluginKey"
+  optional
+>
+The props and key for the Excalidraw element.
+<APISubList>
+<APISubListItem parent="props" name="key" type="string">
+The key for the Excalidraw element.
+
+- **Default:** `ELEMENT_EXCALIDRAW`
+
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+  The options for inserting the Excalidraw element.
+</APIItem>
+</APIParameters>
+
 ## API Components
 
-### useExalidawElement
+### useExcalidrawElement
+
+A behavior hook for the Excalidraw component.
+
+<APIState>
+<APIItem name="element" type="TExcalidrawElement">
+The Excalidraw element.
+</APIItem>
+<APIItem name="libraryItems" type="LibraryItems" optional>
+The library items to be displayed in the Excalidraw component.
+
+- **Default:** `[]`
+
+</APIItem>
+<APIItem name="scrollToContent" type="boolean" optional>
+Determines whether to scroll to the content inside the Excalidraw component.
+
+- **Default:** `true`
+
+</APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="Excalidraw" type="any">
+    The Excalidraw component.
+  </APIItem>
+  <APIItem name="excalidrawProps" type="ExcalidrawProps">
+    The props to be passed to the Excalidraw component.
+  </APIItem>
+</APIReturns>

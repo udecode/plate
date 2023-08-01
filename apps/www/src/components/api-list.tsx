@@ -77,6 +77,30 @@ export function APIAttributes({ children, ...props }: APIListProps) {
   );
 }
 
+export function APIOptions({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="options" {...props}>
+      {children}
+    </APIList>
+  );
+}
+
+export function APIProps({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="props" {...props}>
+      {children}
+    </APIList>
+  );
+}
+
+export function APIState({ children, ...props }: APIListProps) {
+  return (
+    <APIList type="state" {...props}>
+      {children}
+    </APIList>
+  );
+}
+
 export function APIReturns({ children, ...props }: APIListProps) {
   return (
     <APIList type="returns" {...props}>
@@ -127,6 +151,9 @@ export function APIList({
               {type === 'parameters' && 'Parameters'}
               {type === 'attributes' && 'Attributes'}
               {type === 'returns' && 'Returns'}
+              {type === 'props' && 'Props'}
+              {type === 'state' && 'State'}
+              {type === 'options' && 'Options'}
             </h3>
 
             {hasItems && (
