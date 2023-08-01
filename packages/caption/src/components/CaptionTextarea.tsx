@@ -22,7 +22,7 @@ import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 
 import { captionGlobalStore } from '../captionGlobalStore';
-import { TCaptionElement } from '../types/TCaptionElement';
+import { TCaptionElement } from '../TCaptionElement';
 import { TextareaAutosize } from './TextareaAutosize';
 
 /**

@@ -234,7 +234,7 @@ export default ({ initialHtml }: { initialHtml: string }) => {
    */
   const initialValue = useMemo(() => {
     const tmpEditor = createPlateEditor({ plugins });
-    return deserializeHtml(editor, {
+    return deserializeHtml(tmpEditor, {
       element: initialHtml,
     });
   }, []);

@@ -5583,7 +5583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/helpers@npm:0.5.1, @swc/helpers@npm:^0.5.0":
+"@swc/helpers@npm:0.5.1, @swc/helpers@npm:^0.5.0, @swc/helpers@npm:^0.5.1":
   version: 0.5.1
   resolution: "@swc/helpers@npm:0.5.1"
   dependencies:
@@ -6282,13 +6282,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/scriptjs@npm:0.0.2":
-  version: 0.0.2
-  resolution: "@types/scriptjs@npm:0.0.2"
-  checksum: cc0aa5c882e0a58414be928a85165a15e151876fbc4eecc896139cca029a6c2e0ae9c9e7b53a6b464504a4e237e8d46cf6f809459cd9ecc9484ba82301bdbe53
-  languageName: node
-  linkType: hard
-
 "@types/semver@npm:^7.3.12, @types/semver@npm:^7.5.0":
   version: 7.5.0
   resolution: "@types/semver@npm:7.5.0"
@@ -6721,6 +6714,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-caption@workspace:^, @udecode/plate-caption@workspace:packages/caption":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-caption@workspace:packages/caption"
+  dependencies:
+    "@udecode/plate-common": "npm:22.0.2"
+    react-textarea-autosize: "npm:^8.5.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-react: ">=0.95.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-cloud@workspace:^, @udecode/plate-cloud@workspace:packages/cloud":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cloud@workspace:packages/cloud"
@@ -7081,10 +7089,7 @@ __metadata:
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
-    "@udecode/resizable": "npm:22.0.2"
     js-video-url-parser: "npm:^0.5.1"
-    react-textarea-autosize: "npm:^8.5.2"
-    scriptjs: "npm:2.5.9"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7154,6 +7159,20 @@ __metadata:
 "@udecode/plate-reset-node@npm:22.0.2, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-reset-node@workspace:packages/reset-node"
+  dependencies:
+    "@udecode/plate-common": "npm:22.0.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-react: ">=0.95.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-resizable@npm:22.0.2, @udecode/plate-resizable@workspace:^, @udecode/plate-resizable@workspace:packages/resizable":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-resizable@workspace:packages/resizable"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
   peerDependencies:
@@ -7308,7 +7327,7 @@ __metadata:
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
-    "@udecode/resizable": "npm:22.0.2"
+    "@udecode/plate-resizable": "npm:22.0.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7438,6 +7457,7 @@ __metadata:
     "@udecode/plate-normalizers": "npm:22.0.2"
     "@udecode/plate-paragraph": "npm:22.0.2"
     "@udecode/plate-reset-node": "npm:22.0.2"
+    "@udecode/plate-resizable": "npm:22.0.2"
     "@udecode/plate-select": "npm:22.0.2"
     "@udecode/plate-serializer-csv": "npm:22.0.2"
     "@udecode/plate-serializer-docx": "npm:22.0.2"
@@ -7447,27 +7467,12 @@ __metadata:
     "@udecode/plate-tabbable": "npm:22.0.2"
     "@udecode/plate-table": "npm:22.0.2"
     "@udecode/plate-trailing-block": "npm:22.0.2"
-    "@udecode/resizable": "npm:22.0.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.95.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/resizable@npm:22.0.2, @udecode/resizable@workspace:packages/resizable":
-  version: 0.0.0-use.local
-  resolution: "@udecode/resizable@workspace:packages/resizable"
-  dependencies:
-    "@udecode/plate-common": "npm:22.0.2"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -18858,6 +18863,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-lite-youtube-embed@npm:^2.3.52":
+  version: 2.3.52
+  resolution: "react-lite-youtube-embed@npm:2.3.52"
+  peerDependencies:
+    react: ">=16.0.8"
+    react-dom: ">=16.0.8"
+  checksum: 35cab134acbf6d8364bf2338114dfc72fa34692711afb24e3ffcabbeed230429247d5e87393bb6e473a6055337fcf5c50d47d019567576c34e7679e65a03787b
+  languageName: node
+  linkType: hard
+
 "react-modal-sheet@npm:2.0.0":
   version: 2.0.0
   resolution: "react-modal-sheet@npm:2.0.0"
@@ -19027,6 +19042,21 @@ __metadata:
     react-native:
       optional: true
   checksum: b30152d08d34e0fe0a833018697359dc71ad66306bf099660c72ccb74ca51be4b767fe420f4a52078a594d7b50b24d2364284a3e7efb1cce8674c533e3bfa2a2
+  languageName: node
+  linkType: hard
+
+"react-tweet@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "react-tweet@npm:3.0.3"
+  dependencies:
+    "@swc/helpers": "npm:^0.5.1"
+    clsx: "npm:^1.2.1"
+    date-fns: "npm:^2.30.0"
+    swr: "npm:^2.2.0"
+  peerDependencies:
+    react: ">= 18.0.0"
+    react-dom: ">= 18.0.0"
+  checksum: e28f047c60c83c56b3128f29cc9cc59cfcbba1781d23d6072d693bb50c682ff951e810f3a1f2058fa6eb28d0f1d25ca75579de4b3af43ffe0eeb2c88a8b559c2
   languageName: node
   linkType: hard
 
@@ -19964,7 +19994,6 @@ __metadata:
     "@types/raf": "npm:^3.4.0"
     "@types/react": "npm:18.2.14"
     "@types/react-dom": "npm:18.2.7"
-    "@types/scriptjs": "npm:0.0.2"
     "@types/validator": "npm:^13.7.17"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
@@ -19979,6 +20008,7 @@ __metadata:
     babel-plugin-prismjs: "npm:^2.1.0"
     barrelsby: "npm:^2.8.0"
     change-case: "npm:^4.1.2"
+    concurrently: "npm:^8.2.0"
     cross-env: "npm:^7.0.3"
     dotenv: "npm:^16.3.1"
     eslint: "npm:8.44.0"
@@ -20191,13 +20221,6 @@ __metadata:
     ajv-formats: "npm:^2.1.1"
     ajv-keywords: "npm:^5.1.0"
   checksum: f072805a595b8345f7ab6bcb131b37c1523a3734180128c0b6c7f2875a707b452857a60d812dc52baed4bff692436d30352cf059a74c3f6051f39c611d4bb65d
-  languageName: node
-  linkType: hard
-
-"scriptjs@npm:2.5.9":
-  version: 2.5.9
-  resolution: "scriptjs@npm:2.5.9"
-  checksum: 155b10ae4dc9b30baaf121b935ae6c8a2b818282ebe5e63b8c20f771d4caba41c1e28e3415b03b9d0b81f99ab7fef2b12eda8d25318bb24538d15e27fc0a178b
   languageName: node
   linkType: hard
 
@@ -21135,6 +21158,17 @@ __metadata:
   bin:
     svgo: bin/svgo
   checksum: f475df0d8cf24ad6c8498049abd1bc07753f77aa96ae0ca28f323b7e236fc2d94e680a694e8783a95db9e50d4275b76aa993653c45ed60dc985d8dd8609e2650
+  languageName: node
+  linkType: hard
+
+"swr@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "swr@npm:2.2.0"
+  dependencies:
+    use-sync-external-store: "npm:^1.2.0"
+  peerDependencies:
+    react: ^16.11.0 || ^17.0.0 || ^18.0.0
+  checksum: 1bd254bb3f3e8abf7b663c29b2636271a210b383d537417056716a6785fa96323653097dc3cf6a129ee3deb01b69999d125540dd1b39652b7edeb83870c7021c
   languageName: node
   linkType: hard
 
@@ -22346,6 +22380,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"use-sync-external-store@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "use-sync-external-store@npm:1.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: bed3d1f68ca3dd33647035dbeb9d3a5ece12fced0245cb0fa831426192e52e4948b0fc6e9187d9d4dce9f58269af605f8feeeda100d2928f8b865f9cd9cc4a4a
+  languageName: node
+  linkType: hard
+
 "util-deprecate@npm:^1.0.1, util-deprecate@npm:^1.0.2, util-deprecate@npm:~1.0.1":
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
@@ -23066,6 +23109,7 @@ __metadata:
     "@udecode/plate-basic-marks": "workspace:^"
     "@udecode/plate-block-quote": "workspace:^"
     "@udecode/plate-break": "workspace:^"
+    "@udecode/plate-caption": "workspace:^"
     "@udecode/plate-cloud": "workspace:^"
     "@udecode/plate-code-block": "workspace:^"
     "@udecode/plate-combobox": "workspace:^"
@@ -23095,6 +23139,7 @@ __metadata:
     "@udecode/plate-normalizers": "workspace:^"
     "@udecode/plate-paragraph": "workspace:^"
     "@udecode/plate-reset-node": "workspace:^"
+    "@udecode/plate-resizable": "workspace:^"
     "@udecode/plate-select": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
     "@udecode/plate-serializer-csv": "workspace:^"
@@ -23118,7 +23163,6 @@ __metadata:
     class-variance-authority: "npm:^0.6.1"
     clsx: "npm:^1.2.1"
     cmdk: "npm:^0.2.0"
-    concurrently: "npm:^8.2.0"
     contentlayer: "npm:0.3.4"
     date-fns: "npm:^2.30.0"
     framer-motion: "npm:10.12.20"
@@ -23135,7 +23179,9 @@ __metadata:
     react-dnd: "patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch"
     react-dnd-html5-backend: "npm:^15.1.3"
     react-dom: "npm:^18.2.0"
+    react-lite-youtube-embed: "npm:^2.3.52"
     react-modal-sheet: "npm:2.0.0"
+    react-tweet: "npm:^3.0.3"
     react-wrap-balancer: "npm:^1.0.0"
     rehype: "npm:^12.0.1"
     rehype-autolink-headings: "npm:^6.1.1"

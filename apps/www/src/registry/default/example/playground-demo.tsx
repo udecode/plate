@@ -9,6 +9,7 @@ import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
+import { captionPlugin } from '@/plate/demo/plugins/captionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -40,6 +41,7 @@ import {
   createSingleLinePlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
@@ -142,7 +144,13 @@ export const usePlaygroundPlugins = ({
           }),
           createImagePlugin({ enabled: !!enabled.img }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
-          createMentionPlugin({ enabled: !!enabled.mention }),
+          createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
+          createMentionPlugin({
+            enabled: !!enabled.mention,
+            options: {
+              triggerPreviousCharPattern: /^$|^[\s"']$/,
+            },
+          }),
           createTablePlugin({ enabled: !!enabled.table }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
           createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
@@ -298,12 +306,12 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             <PlaygroundFixedToolbarButtons id={id} />
           </FixedToolbar>
 
-          <div className="flex">
+          <div className="flex w-full">
             <CommentsProvider>
               <div
                 ref={containerRef}
                 className={cn(
-                  'relative flex max-w-[900px] overflow-x-auto',
+                  'relative flex w-full max-w-[900px] overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
                   '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
                   !id &&

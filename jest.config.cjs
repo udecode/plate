@@ -51,7 +51,7 @@ module.exports = {
   testRegex: '(test|spec).tsx?$',
   testPathIgnorePatterns: ['/playwright/'],
   transform: {
-    '^.+\\.tsx?$': [
+    "^.+\\.[tj]s$": [
       'ts-jest',
       {
         diagnostics: true,
@@ -61,6 +61,6 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   transformIgnorePatterns: [
-    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd)/)',
+    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-tweet)/)',
   ],
 };

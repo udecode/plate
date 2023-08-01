@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/resizable",
-  "version": "22.0.2",
+  "name": "@udecode/plate-resizable",
+  "version": "23.0.0",
   "description": "Resize components",
   "license": "MIT",
   "homepage": "https://platejs.org",
