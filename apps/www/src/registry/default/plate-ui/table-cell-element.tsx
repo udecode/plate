@@ -4,7 +4,6 @@ import {
   TableCellElementResizable,
   useTableCellElement,
   useTableCellElementState,
-  useTableElementState,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
@@ -29,9 +28,9 @@ const TableCellElement = React.forwardRef<
     hoveredLeft,
     rowSize,
     borders,
+    isSelectingCell,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
-  const { isSelectingCell } = useTableElementState();
 
   const Cell = isHeader ? 'th' : 'td';
 
@@ -64,7 +63,6 @@ const TableCellElement = React.forwardRef<
     >
       <Cell>
         <div
-          plate-firefox-fix=""
           className="relative z-20 box-border h-full px-3 py-2"
           style={{
             minHeight: rowSize,

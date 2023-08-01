@@ -7084,7 +7084,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:22.0.2, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:23.0.0, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -7099,7 +7099,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-mention@npm:22.0.2, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
+"@udecode/plate-mention@npm:23.0.0, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-mention@workspace:packages/mention"
   dependencies:
@@ -7170,7 +7170,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-resizable@npm:22.0.2, @udecode/plate-resizable@workspace:^, @udecode/plate-resizable@workspace:packages/resizable":
+"@udecode/plate-resizable@npm:23.0.0, @udecode/plate-resizable@workspace:^, @udecode/plate-resizable@workspace:packages/resizable":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-resizable@workspace:packages/resizable"
   dependencies:
@@ -7214,13 +7214,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:22.0.2, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:23.0.0, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.7"
     "@udecode/plate-common": "npm:22.0.2"
-    "@udecode/plate-table": "npm:22.0.2"
+    "@udecode/plate-table": "npm:23.0.0"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7232,7 +7232,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:22.0.2, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:23.0.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -7240,9 +7240,9 @@ __metadata:
     "@udecode/plate-heading": "npm:22.0.2"
     "@udecode/plate-indent": "npm:22.0.2"
     "@udecode/plate-indent-list": "npm:22.0.2"
-    "@udecode/plate-media": "npm:22.0.2"
+    "@udecode/plate-media": "npm:23.0.0"
     "@udecode/plate-paragraph": "npm:22.0.2"
-    "@udecode/plate-table": "npm:22.0.2"
+    "@udecode/plate-table": "npm:23.0.0"
     validator: "npm:^13.9.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -7322,18 +7322,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:22.0.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:23.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
-    "@udecode/plate-resizable": "npm:22.0.2"
+    "@udecode/plate-resizable": "npm:23.0.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
-    slate-react: ">=0.95.0"
+    slate-react: ">=0.98.1"
   languageName: unknown
   linkType: soft
 
@@ -7451,21 +7451,21 @@ __metadata:
     "@udecode/plate-line-height": "npm:22.0.2"
     "@udecode/plate-link": "npm:22.0.2"
     "@udecode/plate-list": "npm:22.0.2"
-    "@udecode/plate-media": "npm:22.0.2"
-    "@udecode/plate-mention": "npm:22.0.2"
+    "@udecode/plate-media": "npm:23.0.0"
+    "@udecode/plate-mention": "npm:23.0.0"
     "@udecode/plate-node-id": "npm:22.0.2"
     "@udecode/plate-normalizers": "npm:22.0.2"
     "@udecode/plate-paragraph": "npm:22.0.2"
     "@udecode/plate-reset-node": "npm:22.0.2"
-    "@udecode/plate-resizable": "npm:22.0.2"
+    "@udecode/plate-resizable": "npm:23.0.0"
     "@udecode/plate-select": "npm:22.0.2"
-    "@udecode/plate-serializer-csv": "npm:22.0.2"
-    "@udecode/plate-serializer-docx": "npm:22.0.2"
+    "@udecode/plate-serializer-csv": "npm:23.0.0"
+    "@udecode/plate-serializer-docx": "npm:23.0.0"
     "@udecode/plate-serializer-html": "npm:22.0.2"
     "@udecode/plate-serializer-md": "npm:22.0.2"
     "@udecode/plate-suggestion": "npm:22.0.2"
     "@udecode/plate-tabbable": "npm:22.0.2"
-    "@udecode/plate-table": "npm:22.0.2"
+    "@udecode/plate-table": "npm:23.0.0"
     "@udecode/plate-trailing-block": "npm:22.0.2"
   peerDependencies:
     react: ">=16.8.0"
@@ -20063,7 +20063,7 @@ __metadata:
     slate: "npm:0.94.1"
     slate-history: "npm:0.93.0"
     slate-hyperscript: "npm:0.77.0"
-    slate-react: "npm:0.98.1-2023631115050"
+    slate-react: "npm:0.98.1"
     slate-test-utils: "npm:1.3.2"
     tailwindcss: "npm:^3.3.2"
     ts-jest: "npm:^29.1.1"
@@ -20494,9 +20494,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-react@npm:0.98.1-2023631115050":
-  version: 0.98.1-2023631115050
-  resolution: "slate-react@npm:0.98.1-2023631115050"
+"slate-react@npm:0.98.1":
+  version: 0.98.1
+  resolution: "slate-react@npm:0.98.1"
   dependencies:
     "@juggle/resize-observer": "npm:^3.4.0"
     "@types/is-hotkey": "npm:^0.1.1"
@@ -20511,7 +20511,7 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
-  checksum: cd1e2fc2546abcf748bba7614dbe393eb5a3caa1cf00dd9b3cbeb5eeb50957f1bdb0501b23e2252be063ff20305e287cb864950b4bbb21a3302372c39562891a
+  checksum: 9291b5a50ce0f893e8cb09d8b085dacd8912d5e52ff1760ba4747c6d0b1027b97d1795eb02343dbc7f4141fe17f04217c80ce6d363406c6bf2b2f225278e0abe
   languageName: node
   linkType: hard
 
@@ -23196,7 +23196,7 @@ __metadata:
     slate: "npm:0.94.1"
     slate-history: "npm:0.93.0"
     slate-hyperscript: "npm:0.77.0"
-    slate-react: "npm:0.98.1-2023631115050"
+    slate-react: "npm:0.98.1"
     slate-test-utils: "npm:1.3.2"
     tailwind-merge: "npm:^1.13.2"
     tailwindcss: "npm:^3.3.2"
