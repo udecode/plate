@@ -225,3 +225,43 @@ describe('list + list when selection is at the end of the first list', () => {
     expect(editor.children).toEqual(expected.children);
   });
 });
+
+describe('list item (empty) + list item when selection is at the end of the first item', () => {
+  it('should remove the first item', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+          <cursor />
+          </hli>
+          <hli>
+            <hlic>
+              onetwo 
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const expected = (
+      <editor>
+       <hul>
+          <hli>
+            <hlic>
+              onetwo 
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    editor.deleteForward('character');
+
+    expect(editor.children).toEqual(expected.children);
+  });
+});
