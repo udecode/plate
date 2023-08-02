@@ -51,11 +51,6 @@ export const ResizeHandleProvider = ({
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
-  style?: HTMLDivElement['style'];
-  width?: number;
-  startMargin?: number;
-  endMargin?: number;
-  zIndex?: number;
   onResize?: (event: ResizeEvent) => void;
   onMouseDown?: MouseEventHandler;
   onTouchStart?: TouchEventHandler;
@@ -65,16 +60,11 @@ export type ResizeHandleOptions = {
 
 export const useResizeHandleState = ({
   direction = 'left',
-  width = 10,
-  startMargin = 0,
-  endMargin = 0,
-  zIndex = 40,
   onResize,
   onMouseDown,
   onTouchStart,
   onHover,
   onHoverEnd,
-  style,
 }: ResizeHandleOptions) => {
   const [_onResize] = useAtom(resizeHandleAtoms.onResize);
   if (!onResize) onResize = _onResize?.fn;
@@ -140,16 +130,11 @@ export const useResizeHandleState = ({
     setInitialSize,
     isHorizontal,
     direction,
-    width,
-    startMargin,
-    endMargin,
-    zIndex,
     onResize,
     onMouseDown,
     onTouchStart,
     onHover,
     onHoverEnd,
-    style,
   };
 };
 

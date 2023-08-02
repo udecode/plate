@@ -9,23 +9,31 @@ import { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-const resizeHandleVariants = cva(
+export const mediaResizeHandleVariants = cva(
   cn(
-    'absolute top-0 z-10 flex h-full w-6 select-none flex-col justify-center',
-    'after:flex after:h-16 after:bg-ring after:opacity-0 group-hover:after:opacity-100',
-    "after:w-[3px] after:rounded-[6px] after:content-['_']"
+    'top-0 flex w-6 select-none flex-col justify-center',
+    "after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:bg-ring after:opacity-0 after:content-['_'] group-hover:after:opacity-100"
   ),
   {
     variants: {
       direction: {
-        left: '-left-3 -ml-3 cursor-col-resize pl-3',
-        right: '-right-3 -mr-3 cursor-col-resize items-end pr-3',
-        top: 'cursor-row-resize',
-        bottom: 'cursor-row-resize',
+        left: '-left-3 -ml-3 pl-3',
+        right: '-right-3 -mr-3 items-end pr-3',
       },
     },
   }
 );
+
+const resizeHandleVariants = cva(cn('absolute z-40'), {
+  variants: {
+    direction: {
+      left: 'h-full cursor-col-resize',
+      right: 'h-full cursor-col-resize',
+      top: 'w-full cursor-row-resize',
+      bottom: 'w-full cursor-row-resize',
+    },
+  },
+});
 
 const ResizeHandle = React.forwardRef<
   React.ElementRef<typeof ResizeHandlePrimitive>,
@@ -50,9 +58,6 @@ const resizableVariants = cva('', {
       center: 'mx-auto',
       right: 'ml-auto',
     },
-  },
-  defaultVariants: {
-    align: 'center',
   },
 });
 
