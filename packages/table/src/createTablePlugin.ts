@@ -53,15 +53,16 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TD' }],
         getNode: (element) => {
-          const background = element.style.background || element.style.backgroundColor;
-          if(background) {
+          const background =
+            element.style.background || element.style.backgroundColor;
+          if (background) {
             return {
               type: 'td',
               background,
             };
           }
 
-          return { type: 'td'};
+          return { type: 'td' };
         },
       },
       props: ({ element }) => ({
@@ -78,15 +79,16 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TH' }],
         getNode: (element) => {
-          const background = element.style.background || element.style.backgroundColor;
-          if(background) {
+          const background =
+            element.style.background || element.style.backgroundColor;
+          if (background) {
             return {
               type: 'th',
               background,
             };
           }
 
-          return { type: 'th'};
+          return { type: 'th' };
         },
       },
       props: ({ element }) => ({
