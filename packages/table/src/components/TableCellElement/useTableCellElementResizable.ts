@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { ComponentPropsWithoutRef, useCallback } from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -8,7 +8,6 @@ import {
 import {
   ResizeEvent,
   ResizeHandle,
-  ResizeHandleProps,
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
 
@@ -29,9 +28,9 @@ import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';
 
-export type TableCellElementResizableProps = Pick<
+export type TableCellElementResizableOptions = Pick<
   TableCellElementState,
-  'colIndex' | 'rowIndex' | 'readOnly'
+  'colIndex' | 'rowIndex'
 > & {
   /**
    * Resize by step instead of by pixel.
@@ -45,16 +44,39 @@ export type TableCellElementResizableProps = Pick<
   stepY?: number;
 };
 
-export const useTableCellElementResizable = ({
+export const useTableCellElementResizableState = ({
   colIndex,
   rowIndex,
   step,
   stepX = step,
   stepY = step,
-}: TableCellElementResizableProps): {
-  rightProps: ResizeHandleProps;
-  bottomProps: ResizeHandleProps;
-  leftProps: ResizeHandleProps;
+}: TableCellElementResizableOptions) => {
+  const editor = usePlateEditorRef();
+  const { disableMarginLeft } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
+
+  return {
+    disableMarginLeft,
+    colIndex,
+    rowIndex,
+    stepX,
+    stepY,
+  };
+};
+
+export const useTableCellElementResizable = ({
+  disableMarginLeft,
+  colIndex,
+  rowIndex,
+  stepX,
+  stepY,
+}: ReturnType<typeof useTableCellElementResizableState>): {
+  rightProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
+  bottomProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
+  leftProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
+  hiddenLeft: boolean;
 } => {
   const editor = usePlateEditorRef();
   const element = useElement();
@@ -218,9 +240,7 @@ export const useTableCellElementResizable = ({
     },
   });
 
-  const commonHandleProps = {
-    startMargin: -12,
-  };
+  const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
   return {
     rightProps: {
@@ -228,46 +248,21 @@ export const useTableCellElementResizable = ({
         direction: 'right',
         onResize: handleResizeRight,
         ...getHandleHoverProps(colIndex),
-        ...commonHandleProps,
       },
     },
     bottomProps: {
       options: {
         direction: 'bottom',
         onResize: handleResizeBottom,
-        ...commonHandleProps,
       },
     },
+    hiddenLeft: !hasLeftHandle,
     leftProps: {
       options: {
         direction: 'left',
         onResize: handleResizeLeft,
         ...getHandleHoverProps(-1),
-        ...commonHandleProps,
       },
     },
   };
 };
-
-export function TableCellElementResizable(
-  props: TableCellElementResizableProps
-) {
-  const editor = usePlateEditorRef();
-  const { disableMarginLeft } = getPluginOptions<TablePlugin>(
-    editor,
-    ELEMENT_TABLE
-  );
-  const { readOnly, colIndex } = props;
-  const { rightProps, bottomProps, leftProps } =
-    useTableCellElementResizable(props);
-
-  const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
-
-  return readOnly ? null : (
-    <>
-      <ResizeHandle {...rightProps} />
-      <ResizeHandle {...bottomProps} />
-      {hasLeftHandle && <ResizeHandle {...leftProps} />}
-    </>
-  );
-}

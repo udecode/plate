@@ -1,13 +1,15 @@
 import React from 'react';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
-  TTableCellElement,
-  TableCellElementResizable,
   useTableCellElement,
+  useTableCellElementResizable,
+  useTableCellElementResizableState,
   useTableCellElementState,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
+
+import { ResizeHandle } from './resizable';
 
 export interface TableCellElementProps extends PlateElementProps<Value, TTableCellElement> {
   hideBorder?: boolean;
@@ -32,6 +34,13 @@ const TableCellElement = React.forwardRef<
     isSelectingCell,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
+  const resizableState = useTableCellElementResizableState({
+    colIndex,
+    rowIndex,
+  });
+  const { rightProps, bottomProps, leftProps, hiddenLeft } =
+    useTableCellElementResizable(resizableState);
+  
   const bgStyleValue = rootProps.element.background;
   const bgStyle = { "--cellBackground": bgStyleValue } as React.CSSProperties;
   const rootStyle = rootProps.style ? { ...bgStyle, ...rootProps.style } : bgStyle;
@@ -83,28 +92,40 @@ const TableCellElement = React.forwardRef<
             contentEditable={false}
             suppressContentEditableWarning={true}
           >
-            <TableCellElementResizable
-              colIndex={colIndex}
-              rowIndex={rowIndex}
-              readOnly={readOnly}
-            />
-
-            {!readOnly && hovered && (
-              <div
-                className={cn(
-                  'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                  'right-[-1.5px]'
+            {!readOnly && (
+              <>
+                <ResizeHandle
+                  {...rightProps}
+                  className="-top-3 right-[-5px] w-[10px]"
+                />
+                <ResizeHandle
+                  {...bottomProps}
+                  className="bottom-[-5px] h-[10px]"
+                />
+                {!hiddenLeft && (
+                  <ResizeHandle
+                    {...leftProps}
+                    className="-top-3 left-[-5px] w-[10px]"
+                  />
                 )}
-              />
-            )}
 
-            {!readOnly && hoveredLeft && (
-              <div
-                className={cn(
-                  'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                  'left-[-1.5px]'
+                {hovered && (
+                  <div
+                    className={cn(
+                      'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                      'right-[-1.5px]'
+                    )}
+                  />
                 )}
-              />
+                {hoveredLeft && (
+                  <div
+                    className={cn(
+                      'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                      'left-[-1.5px]'
+                    )}
+                  />
+                )}
+              </>
             )}
           </div>
         )}
