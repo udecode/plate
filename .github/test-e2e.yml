@@ -44,7 +44,7 @@ on:
 jobs:
   test-e2e:
     name: ${{ matrix.command }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -105,7 +105,7 @@ jobs:
 
   notify:
     name: Discord Notification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs:
       - test-e2e
     if: ${{ failure() }}

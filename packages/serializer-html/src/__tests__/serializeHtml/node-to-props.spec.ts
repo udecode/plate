@@ -64,6 +64,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://via.placeholder.com/300" alt="Placeholder" draggable="true">'
+    '<img src="https://via.placeholder.com/300" draggable="true" alt="Placeholder">'
   );
 });

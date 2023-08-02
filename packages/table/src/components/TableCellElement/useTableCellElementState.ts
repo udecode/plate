@@ -25,6 +25,7 @@ export type TableCellElementState = {
   selected: boolean;
   rowSize: number | undefined;
   borders: BorderStylesDefault;
+  isSelectingCell: boolean;
 };
 
 export const useTableCellElementState = ({
@@ -45,6 +46,7 @@ export const useTableCellElementState = ({
 
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
+  const selectedCells = useTableStore().get.selectedCells();
 
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
@@ -69,6 +71,7 @@ export const useTableCellElementState = ({
     hoveredLeft: isFirstCell && hoveredColIndex === -1,
     rowSize,
     borders,
+    isSelectingCell: !!selectedCells,
   };
 };
 

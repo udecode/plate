@@ -55,6 +55,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true">'
+    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" draggable="true" alt="Never gonna give you up">'
   );
 });

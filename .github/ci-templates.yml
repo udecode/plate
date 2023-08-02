@@ -17,7 +17,7 @@ on:
 jobs:
   build:
     name: ${{ matrix.command }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
 
   notify:
     name: Discord Notification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs:
       - build
     if: ${{ !github.event.pull_request.draft && failure() }}
