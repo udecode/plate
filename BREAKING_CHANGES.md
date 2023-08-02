@@ -39,6 +39,12 @@
     -   Package renamed to `@udecode/plate-resizable`.
     -   `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
         -   `npx @udecode/plate-ui@latest add resizable`
+ 
+## @udecode/plate-table@23.0
+
+### Major Changes
+
+-  Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
 
 # 22.0.0
 
