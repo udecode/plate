@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 23.0.1
+
+### Patch Changes
+
+- [#2550](https://github.com/udecode/plate/pull/2550) by [@zbeyens](https://github.com/zbeyens) – Fix cell selection in firefox
+
 ## 23.0.0
 
 ## 22.0.2
