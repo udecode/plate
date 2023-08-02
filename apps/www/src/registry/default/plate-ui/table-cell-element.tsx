@@ -29,6 +29,7 @@ const TableCellElement = React.forwardRef<
     hoveredLeft,
     rowSize,
     borders,
+    isSelectingCell,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
   const bgStyleValue = rootProps.element.background;
@@ -76,34 +77,37 @@ const TableCellElement = React.forwardRef<
           {children}
         </div>
 
-        <div
-          className="group absolute top-0 h-full w-full select-none"
-          contentEditable={false}
-        >
-          <TableCellElementResizable
-            colIndex={colIndex}
-            rowIndex={rowIndex}
-            readOnly={readOnly}
-          />
-
-          {!readOnly && hovered && (
-            <div
-              className={cn(
-                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                'right-[-1.5px]'
-              )}
+        {!isSelectingCell && (
+          <div
+            className="group absolute top-0 h-full w-full select-none"
+            contentEditable={false}
+            suppressContentEditableWarning={true}
+          >
+            <TableCellElementResizable
+              colIndex={colIndex}
+              rowIndex={rowIndex}
+              readOnly={readOnly}
             />
-          )}
 
-          {!readOnly && hoveredLeft && (
-            <div
-              className={cn(
-                'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                'left-[-1.5px]'
-              )}
-            />
-          )}
-        </div>
+            {!readOnly && hovered && (
+              <div
+                className={cn(
+                  'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                  'right-[-1.5px]'
+                )}
+              />
+            )}
+
+            {!readOnly && hoveredLeft && (
+              <div
+                className={cn(
+                  'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                  'left-[-1.5px]'
+                )}
+              />
+            )}
+          </div>
+        )}
       </Cell>
     </PlateElement>
   );
