@@ -12,7 +12,11 @@ import { cn } from '@/lib/utils';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
-import { Resizable, ResizeHandle } from './resizable';
+import {
+  mediaResizeHandleVariants,
+  Resizable,
+  ResizeHandle,
+} from './resizable';
 
 export function ImageElement({
   className,
@@ -20,7 +24,7 @@ export function ImageElement({
   nodeProps,
   ...props
 }: PlateElementProps<Value, TImageElement>) {
-  const { readOnly, focused, selected, align } = useMediaState();
+  const { readOnly, focused, selected, align = 'center' } = useMediaState();
   const width = useResizableStore().get.width();
 
   return (
@@ -34,7 +38,10 @@ export function ImageElement({
               readOnly,
             }}
           >
-            <ResizeHandle options={{ direction: 'left' }} />
+            <ResizeHandle
+              options={{ direction: 'left' }}
+              className={mediaResizeHandleVariants({ direction: 'left' })}
+            />
             <Image
               className={cn(
                 'block w-full max-w-full cursor-pointer object-cover px-0',
@@ -44,7 +51,10 @@ export function ImageElement({
               alt=""
               {...nodeProps}
             />
-            <ResizeHandle options={{ direction: 'right' }} />
+            <ResizeHandle
+              options={{ direction: 'right' }}
+              className={mediaResizeHandleVariants({ direction: 'right' })}
+            />
           </Resizable>
 
           <Caption align={align} style={{ width }}>

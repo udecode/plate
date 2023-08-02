@@ -1003,17 +1003,17 @@ Enhance the editor instance with table-related functionality by applying the fol
 
 ## API Components
 
-### TableCellElementResizable
+### useTableCellElementResizableState
 
-A component that represents the resizable handles for a table cell element.
+A state for the table resize handles.
 
-<APIProps>
-<APIItem name="colIndex" type="number">
-  The index of the column of the cell.
-</APIItem>
-<APIItem name="rowIndex" type="number">
-  The index of the row of the cell.
-</APIItem>
+<APIOptions>
+  <APIItem name="colIndex" type="number">
+    The index of the column of the cell.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+    The index of the row of the cell.
+  </APIItem>
   <APIItem name="step" type="number" optional>
     The step size for resizing the table cell element.
   </APIItem>
@@ -1029,7 +1029,50 @@ A component that represents the resizable handles for a table cell element.
     - **Default:** `step`
 
   </APIItem>
-</APIProps>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="disableMarginLeft" type="boolean">
+      Whether to disable the margin left.
+  </APIItem>
+  <APIItem name="colIndex" type="number">
+      The index of the column of the cell.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+      The index of the row of the cell.
+  </APIItem>
+  <APIItem name="stepX" type="number">
+      The step size for resizing the table cell element horizontally.
+  </APIItem>
+  <APIItem name="stepY" type="number">
+      The step size for resizing the table cell element vertically.
+  </APIItem>
+</APIReturns>
+
+### useTableCellElementResizable
+
+A behavior hook for the table resize handles.
+
+<APIParameters>
+<APIItem name="state" type="object">
+The state returned by [useTableCellElementResizableState](#usetablecellelementresizablestate).
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem name="rightProps" type="object">
+The props for the right resize handle.
+</APIItem>
+<APIItem name="bottomProps" type="object">
+The props for the bottom resize handle.
+</APIItem>
+<APIItem name="leftProps" type="object">
+The props for the left resize handle.
+</APIItem>
+<APIItem name="hiddenLeft" type="boolean">
+Whether the left resize handle is hidden.
+</APIItem>
+</APIReturns>
 
 ### getOnSelectTableBorderFactory
 

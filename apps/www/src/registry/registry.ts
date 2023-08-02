@@ -482,7 +482,7 @@ const ui: Registry = [
     name: 'table-cell-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-table'],
-    registryDependencies: [],
+    registryDependencies: ['resizable'],
     files: ['plate-ui/table-cell-element.tsx'],
   },
   {
