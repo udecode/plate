@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
+  TTableCellElement,
   useTableCellElement,
   useTableCellElementResizable,
   useTableCellElementResizableState,
@@ -11,7 +12,8 @@ import { cn } from '@/lib/utils';
 
 import { ResizeHandle } from './resizable';
 
-export interface TableCellElementProps extends PlateElementProps<Value, TTableCellElement> {
+export interface TableCellElementProps
+  extends PlateElementProps<Value, TTableCellElement> {
   hideBorder?: boolean;
   isHeader?: boolean;
 }
@@ -19,8 +21,8 @@ export interface TableCellElementProps extends PlateElementProps<Value, TTableCe
 const TableCellElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   TableCellElementProps
->(({ className, ...props }, ref) => {
-  const { children, hideBorder, isHeader, ...rootProps } = props;
+>(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
+  const { element } = props;
 
   const {
     colIndex,
@@ -40,10 +42,6 @@ const TableCellElement = React.forwardRef<
   });
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
-  
-  const bgStyleValue = rootProps.element.background;
-  const bgStyle = { "--cellBackground": bgStyleValue } as React.CSSProperties;
-  const rootStyle = rootProps.style ? { ...bgStyle, ...rootProps.style } : bgStyle;
 
   const Cell = isHeader ? 'th' : 'td';
 
@@ -54,7 +52,7 @@ const TableCellElement = React.forwardRef<
       className={cn(
         'relative overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
-        bgStyleValue ? 'bg-[--cellBackground]' : 'bg-background',
+        element.background ? 'bg-[--cellBackground]' : 'bg-background',
         !hideBorder &&
           cn(
             isHeader && 'text-left [&_>_*]:m-0',
@@ -73,8 +71,13 @@ const TableCellElement = React.forwardRef<
         className
       )}
       {...cellProps}
-      {...rootProps}
-      style={rootStyle}
+      {...props}
+      style={
+        {
+          '--cellBackground': element.background,
+          ...style,
+        } as React.CSSProperties
+      }
     >
       <Cell>
         <div
