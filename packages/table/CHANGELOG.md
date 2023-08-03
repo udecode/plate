@@ -1,5 +1,19 @@
 # @udecode/plate-table
 
+## 23.1.0
+
+### Minor Changes
+
+- [#2557](https://github.com/udecode/plate/pull/2557) by [@zbeyens](https://github.com/zbeyens) – Add support of table cell background styles. To update the component, run:
+  ```bash
+  npx @udecode/plate-ui@latest add table-cell-element
+  ```
+
+### Patch Changes
+
+- [#2555](https://github.com/udecode/plate/pull/2555) by [@zbeyens](https://github.com/zbeyens) – Major changes missing from 23.0.0:
+  - Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
+
 ## 23.0.1
 
 ### Patch Changes
