@@ -1,5 +1,12 @@
 # @udecode/plate-resizable
 
+## 23.1.0
+
+### Patch Changes
+
+- [#2555](https://github.com/udecode/plate/pull/2555) by [@zbeyens](https://github.com/zbeyens) – Major changes missing from 23.0.0:
+  - `ResizeHandleOptions`: removed `style`, `width`, `startMargin`, `endMargin`, `zIndex`.
+
 ## 23.0.0
 
 ### Major Changes
