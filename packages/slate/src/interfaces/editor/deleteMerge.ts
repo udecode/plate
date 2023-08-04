@@ -179,6 +179,9 @@ export const deleteMerge = <V extends Value>(
 
     const point = endRef.unref() || startRef.unref();
 
+
+    console.log('selecting at point', options.at, point);
+
     if (options.at == null && point) {
       select(editor as any, point);
     }
