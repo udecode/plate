@@ -34,7 +34,7 @@ export const withInlineVoid = <
   };
 
   editor.isVoid = (element) => {
-    voidTypes.includes(element.type) ? true : isVoid(element);
+    return voidTypes.includes(element.type) ? true : isVoid(element);
   };
 
   editor.isMarkableVoid = (element) => {

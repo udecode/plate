@@ -1,5 +1,3 @@
-import { Editor } from 'slate';
-
 import { isElement } from '../element';
 import { TEditor, Value } from './TEditor';
 
@@ -10,5 +8,5 @@ export const isMarkableVoid = <V extends Value>(
   editor: TEditor<V>,
   value: any
 ): boolean => {
-  return isElement(value) && Editor.isMarkableVoid(editor as any, value);
+  return isElement(value) && editor.markableVoid(value);
 };
