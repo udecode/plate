@@ -83,6 +83,11 @@ export type PlatePlugin<
   isInline?: boolean;
 
   /**
+   * Property used by `isMarkableVoid` core plugin to set elements of this `type` as inline.
+   */
+  isMarkableVoid?: boolean;
+
+  /**
    * Property used by Plate to render nodes of this `type` as leaves, i.e. `renderLeaf`.
    */
   isLeaf?: boolean;
