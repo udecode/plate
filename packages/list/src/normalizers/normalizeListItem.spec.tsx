@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-import { createListPlugin } from '@/packages/list/src/createListPlugin';
-import { PlateEditor, createPlateEditor, getNode } from '@udecode/plate-common';
+import { createPlateEditor, getNode, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { createListPlugin } from '../createListPlugin';
 
 jsx;
 

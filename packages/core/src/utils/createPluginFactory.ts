@@ -1,8 +1,8 @@
 import { Value } from '@udecode/slate';
 
+import { NoInfer } from '../types/misc/NoInfer';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { NoInfer } from '../types/misc/NoInfer';
 import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
@@ -18,7 +18,7 @@ export const createPluginFactory =
   <
     P = PluginOptions,
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>
+    E extends PlateEditor<V> = PlateEditor<V>,
   >(
     defaultPlugin: PlatePlugin<NoInfer<P>, V, E>
   ) =>

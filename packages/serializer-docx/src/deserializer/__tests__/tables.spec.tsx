@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createIndentListPlugin } from '@/packages/indent-list/src/createIndentListPlugin';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
@@ -45,16 +45,16 @@ describe(getDocxTestName(name), () => {
           </htr>
 
           <htr>
-            <htd>
+            <htd background="silver">
               <hp>Lebron James</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>Basketball</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>Very High</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>Leaving Cleveland</hp>
             </htd>
           </htr>
@@ -75,16 +75,16 @@ describe(getDocxTestName(name), () => {
           </htr>
 
           <htr>
-            <htd>
+            <htd background="silver">
               <hp>Russell Wilson</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>Football</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>High</hp>
             </htd>
-            <htd>
+            <htd background="silver">
               <hp>Tacky uniform</hp>
             </htd>
           </htr>

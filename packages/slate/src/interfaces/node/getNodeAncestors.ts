@@ -12,7 +12,7 @@ import { TNodeEntry } from './TNodeEntry';
  */
 export const getNodeAncestors = <
   N extends AncestorOf<R>,
-  R extends TNode = TNode
+  R extends TNode = TNode,
 >(
   root: R,
   path: Path,

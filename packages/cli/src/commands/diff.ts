@@ -2,7 +2,7 @@ import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { diffLines, type Change } from 'diff';
+import { diffLines } from 'diff';
 import * as z from 'zod';
 
 import { Config, getConfig } from '../utils/get-config';
@@ -16,6 +16,8 @@ import {
 } from '../utils/registry';
 import { registryIndexSchema } from '../utils/registry/schema';
 import { transform } from '../utils/transformers';
+
+import type { Change } from 'diff';
 
 const updateOptionsSchema = z.object({
   component: z.string().optional(),

@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
 import * as React from 'react';
+import { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Provider } from 'jotai';
@@ -16,8 +16,11 @@ import {
   APIAttributes,
   APIItem,
   APIList,
+  APIOptions,
   APIParameters,
+  APIProps,
   APIReturns,
+  APIState,
   APISubList,
   APISubListItem,
 } from './api-list';
@@ -181,7 +184,10 @@ const components = {
   BadgePopover,
   APIParameters,
   APIAttributes,
+  APIProps,
+  APIState,
   APIReturns,
+  APIOptions,
   APIList,
   APISubList,
   APISubListItem,

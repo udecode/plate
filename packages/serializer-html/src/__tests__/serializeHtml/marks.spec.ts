@@ -1,9 +1,10 @@
-import { createBasicMarksPlugin } from '@/packages/basic-marks/src/createBasicMarksPlugin';
-import { createHighlightPlugin } from '@/packages/highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '@/packages/kbd/src/createKbdPlugin';
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
+import { createHighlightPlugin } from '@udecode/plate-highlight';
+import { createKbdPlugin } from '@udecode/plate-kbd';
+
+import { serializeHtml } from '../../serializeHtml';
 
 const plugins = [
   createBasicMarksPlugin(),

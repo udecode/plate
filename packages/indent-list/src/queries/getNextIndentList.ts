@@ -1,16 +1,16 @@
 import {
   EElement,
   EElementEntry,
+  getNode,
   TEditor,
   TNodeEntry,
   Value,
-  getNode,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import {
-  GetSiblingIndentListOptions,
   getSiblingIndentList,
+  GetSiblingIndentListOptions,
 } from './getSiblingIndentList';
 
 /**
@@ -18,7 +18,7 @@ import {
  */
 export const getNextIndentList = <
   N extends EElement<V>,
-  V extends Value = Value
+  V extends Value = Value,
 >(
   editor: TEditor<V>,
   entry: EElementEntry<V>,

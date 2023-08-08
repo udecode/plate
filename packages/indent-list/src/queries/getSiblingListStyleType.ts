@@ -8,7 +8,7 @@ import {
 
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
-import { GetIndentListSiblingsOptions, getIndentListSiblings } from './index';
+import { getIndentListSiblings, GetIndentListSiblingsOptions } from './index';
 
 /**
  * Get the first sibling list style type at the given indent.

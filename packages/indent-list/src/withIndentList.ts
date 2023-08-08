@@ -1,10 +1,10 @@
 import {
+  createPathRef,
+  getNode,
   PlateEditor,
   TElement,
   Value,
   WithPlatePlugin,
-  createPathRef,
-  getNode,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { PathRef } from 'slate';
@@ -21,7 +21,7 @@ import { ListStyleType } from './types';
 
 export const withIndentList = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   { options }: WithPlatePlugin<IndentListPlugin, V, E>

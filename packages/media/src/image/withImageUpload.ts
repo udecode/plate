@@ -1,9 +1,9 @@
 import {
+  getInjectedPlugins,
+  pipeInsertDataQuery,
   PlateEditor,
   Value,
   WithPlatePlugin,
-  getInjectedPlugins,
-  pipeInsertDataQuery,
 } from '@udecode/plate-common';
 
 import { insertImage } from './transforms/insertImage';
@@ -15,7 +15,7 @@ import { ImagePlugin } from './types';
  */
 export const withImageUpload = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   plugin: WithPlatePlugin<ImagePlugin, V, E>

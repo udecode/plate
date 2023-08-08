@@ -1,5 +1,5 @@
 import '@/styles/mdx.css';
-import type { Metadata } from 'next';
+
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { allDocs } from 'contentlayer/generated';
@@ -18,6 +18,8 @@ import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
+
+import type { Metadata } from 'next';
 
 interface DocPageProps {
   params: {
@@ -176,7 +178,13 @@ export default async function DocPage({ params }: DocPageProps) {
               <Link
                 key={item.route}
                 href={item.route as any}
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(
+                  badgeVariants({
+                    variant: item.route?.includes('components')
+                      ? 'default'
+                      : 'secondary',
+                  })
+                )}
               >
                 {item.title}
               </Link>

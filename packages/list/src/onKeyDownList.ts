@@ -1,14 +1,14 @@
 import {
+  getPluginType,
   Hotkeys,
+  isCollapsed,
   KeyboardHandlerReturnType,
   PlateEditor,
-  Value,
-  WithPlatePlugin,
-  getPluginType,
-  isCollapsed,
   select,
   someNode,
   unhangRange,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';

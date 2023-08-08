@@ -1,8 +1,8 @@
 import {
-  TReactEditor,
-  Value,
   getRange,
   toDOMRange,
+  TReactEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Location, Path, Range } from 'slate';
 

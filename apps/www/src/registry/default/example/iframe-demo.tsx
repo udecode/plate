@@ -6,11 +6,11 @@ import { iframeValue } from '@/plate/demo/values/iframeValue';
 import { Plate } from '@udecode/plate-common';
 import { createPortal } from 'react-dom';
 
-import { MyValue, createMyPlugins } from '@/types/plate-types';
+import { createMyPlugins, MyValue } from '@/types/plate-types';
 
 import {
-  EditableVoidElement,
   createEditableVoidPlugin,
+  EditableVoidElement,
 } from './editable-voids-demo';
 
 const plugins = createMyPlugins(

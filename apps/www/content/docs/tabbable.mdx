@@ -98,7 +98,7 @@ insertTabbableEntries: (editor) => {
 
 ### createTabbablePlugin
 
-<APIAttributes>
+<APIOptions>
 <APIItem name="query" type="(editor: PlateEditor<V>, event: KeyboardEvent) => boolean" optional>
 Dynamically enables or disables the plugin. Returns `true` by default.
 
@@ -123,7 +123,7 @@ Determines whether an element should be included in the tabbable list. Returns `
 - **Default:** **`(editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`**
 
 </APIItem>
-</APIAttributes>
+</APIOptions>
 
 ### TabbableEntry
 

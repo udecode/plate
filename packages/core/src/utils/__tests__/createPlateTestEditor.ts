@@ -4,8 +4,8 @@ import { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarn
 
 import { PlateTest } from '../../components/PlateTest';
 import {
-  CreatePlateEditorOptions,
   createPlateEditor,
+  CreatePlateEditorOptions,
 } from '../createPlateEditor';
 
 /**
@@ -15,7 +15,7 @@ import {
  */
 export const createPlateTestEditor = async <
   V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>
+  E extends TEditor<V> = TEditor<V>,
 >(
   options: CreatePlateEditorOptions<V, E>,
   buildTestHarnessOptions?: Omit<

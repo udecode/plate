@@ -16,6 +16,7 @@ import {
   KEY_SINGLE_LINE,
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
+import { KEY_CAPTION } from '@udecode/plate-caption';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
@@ -340,6 +341,12 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     dependencies: [KEY_NODE_ID],
     route: settingValues.blockselection.route,
   },
+  [KEY_CAPTION]: {
+    id: KEY_CAPTION,
+    label: 'Caption',
+    badges: [settingBadges.handler],
+    route: settingValues.media.route,
+  },
   [KEY_COMBOBOX]: {
     id: KEY_COMBOBOX,
     npmPackage: 'TODO',
@@ -542,6 +549,7 @@ export const settingPlugins = [
     children: [
       settingPluginItems[KEY_AUTOFORMAT],
       settingPluginItems[KEY_BLOCK_SELECTION],
+      settingPluginItems[KEY_CAPTION],
       settingPluginItems[KEY_COMBOBOX],
       settingPluginItems[KEY_DND],
       settingPluginItems[KEY_DRAG_OVER_CURSOR],

@@ -3,8 +3,6 @@
  */
 
 export * from './insertMedia';
-export * from './mediaStore';
-export * from './parseMediaUrl';
 export * from './types';
 export * from './useMediaState';
 export * from './useMediaToolbarButton';

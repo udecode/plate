@@ -6,8 +6,8 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
-  FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,
+  FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media';
 import { useReadOnly, useSelected } from 'slate-react';
@@ -45,10 +45,13 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
-      <PopoverContent className="w-auto p-1">
+      <PopoverContent
+        className="w-auto p-1"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">

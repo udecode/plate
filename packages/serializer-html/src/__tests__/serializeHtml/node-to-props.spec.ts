@@ -1,8 +1,9 @@
-import { createLinkPlugin } from '@/packages/link/src/index';
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
+import { createLinkPlugin } from '@udecode/plate-link';
 import { createImagePlugin } from '@udecode/plate-media';
+
+import { serializeHtml } from '../../serializeHtml';
 
 const plugins = [
   createLinkPlugin({
@@ -63,6 +64,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://via.placeholder.com/300" alt="Placeholder" draggable="true">'
+    '<img src="https://via.placeholder.com/300" draggable="true" alt="Placeholder">'
   );
 });

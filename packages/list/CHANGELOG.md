@@ -1,5 +1,14 @@
 # @udecode/plate-list
 
+## 23.2.0
+
+### Patch Changes
+
+- [#2559](https://github.com/udecode/plate/pull/2559) by [@dimaanj](https://github.com/dimaanj) –
+  - list plugin: call `deleteFragmentList` only if in a list
+
+## 22.0.2
+
 ## 22.0.1
 
 ## 22.0.0

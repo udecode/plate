@@ -1,13 +1,13 @@
 import {
+  insertNodes,
   InsertNodesOptions,
   PlateEditor,
   TText,
   Value,
-  insertNodes,
 } from '@udecode/plate-common';
 
 import { TLinkElement } from '../types';
-import { CreateLinkNodeOptions, createLinkNode } from '../utils/index';
+import { createLinkNode, CreateLinkNodeOptions } from '../utils/index';
 
 /**
  * Insert a link node.

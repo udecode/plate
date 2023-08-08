@@ -1,13 +1,13 @@
 import {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   getNode,
   getPointAfter,
   getPointBefore,
+  PlateEditor,
   removeNodes,
   setNodes,
   unsetNodes,
+  Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
@@ -25,7 +25,7 @@ import { getSuggestionId, getSuggestionKeys } from './utils/index';
 export const withSuggestion = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & SuggestionEditorProps = E & SuggestionEditorProps
+  EE extends E & SuggestionEditorProps = E & SuggestionEditorProps,
 >(
   e: E,
   // eslint-disable-next-line unused-imports/no-unused-vars

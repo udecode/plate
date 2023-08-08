@@ -43,13 +43,19 @@ const plugins = [
 ];
 ```
 
+## Keyboard Interactions
+
+<KeyTable>
+  <KeyTableItem hotkey="Shift + Enter">
+    Insert a line break within a block of text without starting a new block.
+  </KeyTableItem>
+</KeyTable>
+
 ## API
 
 ### createSoftBreakPlugin
 
-<APIAttributes>
-
-Options.
+<APIOptions>
 
 <APIItem name="rules" type="object[]" optional>
 An array of rule objects specifying the hotkey to activate the soft break and an optional filter query.
@@ -62,12 +68,4 @@ Filter options to determine the block types where the rule applies.
 </APISubListItem>
 </APISubList>
 </APIItem>
-</APIAttributes>
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="Shift + Enter">
-    Insert a line break within a block of text without starting a new block.
-  </KeyTableItem>
-</KeyTable>
+</APIOptions>

@@ -35,10 +35,10 @@ export const transformCssVars: Transformer = async ({
     const value = node.getText();
     if (value) {
       const valueWithColorMapping = applyColorMapping(
-        value.replace(/"/g, ''),
+        value.replace(/'/g, '').replace(/"/g, ''),
         baseColor.inlineColors
       );
-      node.replaceWithText(`"${valueWithColorMapping.trim()}"`);
+      node.replaceWithText(`'${valueWithColorMapping.trim()}'`);
     }
   });
 

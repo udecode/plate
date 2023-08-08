@@ -4,11 +4,11 @@ import {
   ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
 import {
+  getPluginType,
   TDescendant,
   TElement,
   TText,
   Value,
-  getPluginType,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -71,7 +71,7 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
               child.type === getPluginType(options.editor, ELEMENT_PARAGRAPH)
                 ? getPluginType(options.editor, ELEMENT_LIC)
                 : child.type,
-          } as TDescendant)
+          }) as TDescendant
       ),
     }),
   },

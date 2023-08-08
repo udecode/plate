@@ -1,4 +1,4 @@
-import { isFirstChild } from '@/packages/slate-utils/src/queries/index';
+import { isFirstChild } from '../../isFirstChild';
 
 const input = [0, 0, 1];
 

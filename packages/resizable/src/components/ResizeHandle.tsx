@@ -1,21 +1,56 @@
-import {
+import React, {
   MouseEventHandler,
   TouchEventHandler,
   useEffect,
   useState,
 } from 'react';
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import {
+  atom,
+  createPrimitiveComponent,
+  JotaiProvider,
+  useAtom,
+} from '@udecode/plate-common';
 
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
+export const resizeHandleAtoms = {
+  onResize: atom<{ fn: any } | null>(null),
+};
+
+export const ResizeHandleEffects = ({
+  onResize,
+}: {
+  onResize?: ResizeHandleOptions['onResize'];
+}) => {
+  const [, setHandleResize] = useAtom(resizeHandleAtoms.onResize);
+
+  useEffect(() => {
+    setHandleResize({ fn: onResize });
+  }, [onResize, setHandleResize]);
+
+  return null;
+};
+
+export const ResizeHandleProvider = ({
+  children,
+  onResize,
+}: {
+  children: React.ReactNode;
+  onResize?: ResizeHandleOptions['onResize'];
+}) => {
+  return (
+    <JotaiProvider
+      initialValues={[[resizeHandleAtoms.onResize, { fn: onResize }]]}
+    >
+      <ResizeHandleEffects onResize={onResize} />
+      {children}
+    </JotaiProvider>
+  );
+};
+
 export type ResizeHandleOptions = {
-  style?: HTMLDivElement['style'];
-  direction: ResizeDirection;
-  width?: number;
-  startMargin?: number;
-  endMargin?: number;
-  zIndex?: number;
+  direction?: ResizeDirection;
   onResize?: (event: ResizeEvent) => void;
   onMouseDown?: MouseEventHandler;
   onTouchStart?: TouchEventHandler;
@@ -24,18 +59,16 @@ export type ResizeHandleOptions = {
 };
 
 export const useResizeHandleState = ({
-  direction,
-  width = 10,
-  startMargin = 0,
-  endMargin = 0,
-  zIndex = 40,
+  direction = 'left',
   onResize,
   onMouseDown,
   onTouchStart,
   onHover,
   onHoverEnd,
-  style,
 }: ResizeHandleOptions) => {
+  const [_onResize] = useAtom(resizeHandleAtoms.onResize);
+  if (!onResize) onResize = _onResize?.fn;
+
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
   const [initialSize, setInitialSize] = useState(0);
@@ -97,16 +130,11 @@ export const useResizeHandleState = ({
     setInitialSize,
     isHorizontal,
     direction,
-    width,
-    startMargin,
-    endMargin,
-    zIndex,
     onResize,
     onMouseDown,
     onTouchStart,
     onHover,
     onHoverEnd,
-    style,
   };
 };
 
@@ -116,16 +144,10 @@ export const useResizeHandle = ({
   setIsResizing,
   onMouseDown,
   onTouchStart,
-  direction,
-  endMargin,
   isHorizontal,
   isResizing,
   onHover,
   onHoverEnd,
-  startMargin,
-  style,
-  width,
-  zIndex,
 }: ReturnType<typeof useResizeHandleState>) => {
   const handleMouseDown: MouseEventHandler = (event) => {
     const { clientX, clientY } = event;
@@ -161,22 +183,8 @@ export const useResizeHandle = ({
     }
   };
 
-  const start = isHorizontal ? 'top' : 'left';
-  const end = isHorizontal ? 'bottom' : 'right';
-  const size = isHorizontal ? 'width' : 'height';
-
   return {
     props: {
-      style: {
-        position: 'absolute',
-        [direction]: -width / 2,
-        [start]: startMargin,
-        [end]: endMargin,
-        [size]: width,
-        zIndex,
-        cursor: isHorizontal ? 'col-resize' : 'row-resize',
-        ...style,
-      },
       onMouseDown: handleMouseDown,
       onTouchStart: handleTouchStart,
       onMouseOver: handleMouseOver,

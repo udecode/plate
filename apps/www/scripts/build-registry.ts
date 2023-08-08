@@ -60,11 +60,11 @@ for (const style of styles) {
           ? `items: [${item.items.map((i) => `'${i}'`)}],`
           : `files: [${resolveFiles.map((file) => `'${file}'`)}],`
       }${
-      item.items
-        ? ''
-        : `
+        item.items
+          ? ''
+          : `
       component: React.lazy(() => import('${importPath}')),`
-    }
+      }
     },`;
 
     if (item.files.length > 1) {

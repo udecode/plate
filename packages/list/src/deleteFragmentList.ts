@@ -1,6 +1,4 @@
 import {
-  PlateEditor,
-  Value,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -8,7 +6,9 @@ import {
   getParentNode,
   getPluginType,
   getStartPoint,
+  PlateEditor,
   removeNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
@@ -17,6 +17,14 @@ import { ELEMENT_LI } from './createListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
+
+const getLiStart = <V extends Value>(editor: PlateEditor<V>) => {
+  const start = getStartPoint(editor, editor.selection as Range);
+  return getAboveNode(editor, {
+    at: start,
+    match: { type: getPluginType(editor, ELEMENT_LI) },
+  });
+};
 
 export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   let deleted = false;
@@ -39,16 +47,18 @@ export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       ? createPathRef(editor, liEnd![1])
       : undefined;
 
+    // use deleteFragment when selection wrapped around list
+    if (!getLiStart(editor) || !liEnd) {
+      deleted = false;
+      return;
+    }
+
     /**
      * Delete fragment and move end block children to start block
      */
     deleteMerge(editor);
 
-    const start = getStartPoint(editor, editor.selection as Range);
-    const liStart = getAboveNode(editor, {
-      at: start,
-      match: { type: getPluginType(editor, ELEMENT_LI) },
-    });
+    const liStart = getLiStart(editor);
 
     if (liEndPathRef) {
       const liEndPath = liEndPathRef.unref()!;

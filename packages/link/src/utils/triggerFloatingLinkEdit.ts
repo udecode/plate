@@ -1,9 +1,9 @@
 import {
-  PlateEditor,
-  Value,
   findNode,
   getEditorString,
   getPluginType,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';

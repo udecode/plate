@@ -1,5 +1,4 @@
-import { TTableElement } from '@/packages/table/src/types';
-
+import { TTableElement } from '../types';
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
 
 const makeTableElement = (
@@ -14,7 +13,7 @@ const makeTableElement = (
       },
     ],
     colSizes,
-  } as unknown as TTableElement);
+  }) as unknown as TTableElement;
 
 describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is not defined', () => {

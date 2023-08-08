@@ -3,7 +3,7 @@ import { RenderElementProps } from 'slate-react';
 
 export type TRenderElementProps<
   V extends Value = Value,
-  N extends TElement = EElement<V>
+  N extends TElement = EElement<V>,
 > = Omit<RenderElementProps, 'element'> & {
   element: N;
 };

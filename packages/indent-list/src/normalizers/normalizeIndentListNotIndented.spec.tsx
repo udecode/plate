@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-import { createIndentListPlugin } from '@/packages/indent-list/src/createIndentListPlugin';
-import { PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
+
+import { createIndentListPlugin } from '../createIndentListPlugin';
 
 jsx;
 

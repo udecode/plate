@@ -1,5 +1,13 @@
 # @udecode/plate-mention
 
+## 23.0.0
+
+### Minor Changes
+
+- [#2542](https://github.com/udecode/plate/pull/2542) by [@cacosandon](https://github.com/cacosandon) – Add `triggerPreviousCharPattern` option to mention plugin.
+
+## 22.0.2
+
 ## 22.0.1
 
 ## 22.0.0

@@ -24,7 +24,7 @@ export const mediaValue: any = (
     <hmediaembed url="https://www.youtube.com/watch?v=MyiBAziEWUA">
       <htext />
     </hmediaembed>
-    <hmediaembed url="https://twitter.com/zbeyens/status/1572197541097410560">
+    <hmediaembed url="https://twitter.com/zbeyens/status/1677214892212776960">
       <htext />
     </hmediaembed>
   </fragment>

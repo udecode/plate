@@ -1,7 +1,4 @@
 import {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
   collapseSelection,
   getAboveNode,
   getEditorString,
@@ -15,9 +12,12 @@ import {
   isEndPoint,
   isStartPoint,
   mockPlugin,
+  PlateEditor,
   select,
   someNode,
+  Value,
   withoutNormalizing,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Path, Point, Range } from 'slate';
@@ -37,7 +37,7 @@ import { upsertLink } from './transforms/index';
 
 export const withLink = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   {

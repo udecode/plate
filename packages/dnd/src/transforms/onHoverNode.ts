@@ -1,9 +1,9 @@
 import {
-  TReactEditor,
-  Value,
   collapseSelection,
   focusEditor,
   isExpanded,
+  TReactEditor,
+  Value,
 } from '@udecode/plate-common';
 import { DropTargetMonitor } from 'react-dnd';
 

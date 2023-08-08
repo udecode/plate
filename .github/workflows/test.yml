@@ -7,7 +7,7 @@ on:
       - next
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/test.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'
@@ -25,7 +25,7 @@ on:
       - reopened
     paths:
       - 'packages/**'
-      - '.github/workflows/**'
+      - '.github/workflows/test.yml'
       - '.yarnrc.yml'
       - 'yarn.lock'
       - '.prettier*'
@@ -40,7 +40,7 @@ on:
 jobs:
   test:
     name: ${{ matrix.command }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -92,12 +92,12 @@ jobs:
         env:
           CI: true
 
-  notify:
+  notify-test-failure:
     name: Discord Notification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs:
       - test
-    if: ${{ failure() }}
+    if: ${{ !github.event.pull_request.draft && failure() }}
     
     steps:
       - name: Notify

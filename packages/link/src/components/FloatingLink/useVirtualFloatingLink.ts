@@ -1,8 +1,8 @@
 import {
-  UseVirtualFloatingOptions,
   flip,
   offset,
   useVirtualFloating,
+  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 
 import { floatingLinkActions } from './floatingLinkStore';

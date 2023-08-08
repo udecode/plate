@@ -1,8 +1,8 @@
 import {
-  PlateEditor,
-  Value,
   deleteText,
   insertText,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray';
 import { Point, Range } from 'slate';

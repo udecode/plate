@@ -8,7 +8,7 @@ import { PlateId, usePlateSelectors } from '../createPlateStore';
  */
 export const usePlateEditorRef = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
 ) => usePlateSelectors<V, E>(id).editor();

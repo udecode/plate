@@ -38,6 +38,7 @@ import {
   KEY_SINGLE_LINE,
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
+import { KEY_CAPTION } from '@udecode/plate-caption';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -107,6 +108,13 @@ export const settingValues = {
       ELEMENT_IMAGE,
       ELEMENT_MEDIA_EMBED,
     ],
+  },
+  caption: {
+    id: 'caption',
+    label: 'Caption',
+    value: mediaValue,
+    route: '/docs/caption',
+    plugins: [KEY_CAPTION],
   },
   comment: {
     id: 'comment',

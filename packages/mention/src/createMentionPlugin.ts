@@ -22,6 +22,7 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   withOverrides: withMention,
   options: {
     trigger: '@',
+    triggerPreviousCharPattern: /^\s?$/,
     createMentionNode: (item) => ({ value: item.text }),
   },
   plugins: [

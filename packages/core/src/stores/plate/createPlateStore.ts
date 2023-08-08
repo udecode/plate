@@ -3,10 +3,10 @@ import { isDefined } from '@udecode/utils';
 import { atom } from 'jotai';
 
 import {
+  createAtomStore,
   GetRecord,
   SetRecord,
   UseRecord,
-  createAtomStore,
 } from '../../atoms/index';
 import { Scope, useAtom } from '../../libs/index';
 import { PlateEditor } from '../../types/PlateEditor';
@@ -31,7 +31,7 @@ export const usePlateId = () => useAtom(plateIdAtom, GLOBAL_PLATE_SCOPE)[0];
 
 export const createPlateStore = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >({
   decorate = null,
   editor = null as any,
@@ -94,19 +94,19 @@ export const { plateStore, usePlateStore } = createPlateStore();
 
 export const usePlateSelectors = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
 ): GetRecord<PlateStoreState<V, E>> => usePlateStore(id).get as any;
 export const usePlateActions = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
 ): SetRecord<PlateStoreState<V, E>> => usePlateStore(id).set as any;
 export const usePlateStates = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
 ): UseRecord<PlateStoreState<V, E>> => usePlateStore(id).use as any;

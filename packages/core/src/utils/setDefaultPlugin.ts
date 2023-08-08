@@ -10,7 +10,7 @@ import {
 export const setDefaultPlugin = <
   P = PluginOptions,
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   plugin: PlatePlugin<P, V, E>
 ): WithPlatePlugin<P, V, E> => {

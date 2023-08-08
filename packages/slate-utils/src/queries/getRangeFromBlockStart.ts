@@ -1,8 +1,8 @@
 import {
   GetAboveNodeOptions,
+  getStartPoint,
   TEditor,
   Value,
-  getStartPoint,
 } from '@udecode/slate';
 
 import { getBlockAbove } from './getBlockAbove';

@@ -1,4 +1,4 @@
-import { PlateEditor, Value, getNodeEntries } from '@udecode/plate-common';
+import { getNodeEntries, PlateEditor, Value } from '@udecode/plate-common';
 
 import { isCommentNodeById } from '../utils/isCommentNodeById';
 

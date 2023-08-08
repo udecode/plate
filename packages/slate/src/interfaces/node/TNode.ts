@@ -2,7 +2,7 @@ import { Path } from 'slate';
 
 import { TEditor, Value } from '../editor/TEditor';
 import { ElementOf, TElement } from '../element/TElement';
-import { TText, TextOf } from '../text/TText';
+import { TextOf, TText } from '../text/TText';
 
 export type TNode = TEditor | TElement | TText;
 

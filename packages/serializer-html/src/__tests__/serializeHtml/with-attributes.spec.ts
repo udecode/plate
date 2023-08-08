@@ -1,8 +1,9 @@
-import { createLinkPlugin } from '@/packages/link/src/index';
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
+import { createLinkPlugin } from '@udecode/plate-link';
 import { createImagePlugin } from '@udecode/plate-media';
+
+import { serializeHtml } from '../../serializeHtml';
 
 it('serialize link to html with attributes', () => {
   const plugins = [
@@ -54,6 +55,6 @@ it('serialize image with alt to html', () => {
       })
     ).querySelectorAll('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up" draggable="true">'
+    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" draggable="true" alt="Never gonna give you up">'
   );
 });

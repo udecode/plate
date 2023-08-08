@@ -1,6 +1,6 @@
 import {
-  ELEMENT_DEFAULT,
   createPluginFactory,
+  ELEMENT_DEFAULT,
   getPluginType,
 } from '@udecode/plate-common';
 

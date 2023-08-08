@@ -1,5 +1,15 @@
 # @udecode/plate-comments
 
+## 22.1.0
+
+### Patch Changes
+
+- [#2518](https://github.com/udecode/plate/pull/2518) by [@12joan](https://github.com/12joan) – Remove comment node when new comment form is closed
+
+- [#2520](https://github.com/udecode/plate/pull/2520) by [@12joan](https://github.com/12joan) – Return `hidden: true` from `useCommentAddButton` when `myUserId` is not set
+
+## 22.0.2
+
 ## 22.0.1
 
 ## 22.0.0

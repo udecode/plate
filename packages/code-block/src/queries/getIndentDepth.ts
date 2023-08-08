@@ -1,4 +1,4 @@
-import { TEditor, Value, getEditorString } from '@udecode/plate-common';
+import { getEditorString, TEditor, Value } from '@udecode/plate-common';
 
 import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 

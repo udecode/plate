@@ -21,14 +21,14 @@ labels:
 # For more details see https://docs.reviewpad.com/guides/syntax#workflow.
 workflows:
   # This workflow calls Reviewpad AI agent to summarize the pull request.
-  - name: summarize
-    description: Summarize the pull request
-    always-run: true
-    if:
-      # Summarize the pull request on pull request opening.
-      - rule: $eventType() == "opened"
-        extra-actions:
-          - $summarize()
+  # - name: summarize
+  #   description: Summarize the pull request
+  #   always-run: true
+  #   if:
+  #     # Summarize the pull request on pull request opening.
+  #     - rule: $eventType() == "opened"
+  #       extra-actions:
+  #         - $summarize()
 
   # This workflow assigns the most relevant reviewer to pull requests.
   # This helps guarantee that most pull requests are reviewed by at least one person.

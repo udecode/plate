@@ -1,5 +1,15 @@
 import {
+  findNode,
+  getCommonNode,
+  getNode,
+  getNodes,
+  getNodeString,
+  getNodeTexts,
+  getPlugin,
+  insertElements,
+  isElement,
   PlateEditor,
+  removeNodes,
   TAncestor,
   TAncestorEntry,
   TDescendant,
@@ -9,16 +19,6 @@ import {
   TText,
   Value,
   WithPlatePlugin,
-  findNode,
-  getCommonNode,
-  getNode,
-  getNodeString,
-  getNodeTexts,
-  getNodes,
-  getPlugin,
-  insertElements,
-  isElement,
-  removeNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 

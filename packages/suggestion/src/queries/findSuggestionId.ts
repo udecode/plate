@@ -1,9 +1,9 @@
 import {
-  PlateEditor,
-  Value,
   getEdgePoints,
   getPointAfter,
   getPointBefore,
+  PlateEditor,
+  Value,
 } from '@udecode/plate-common';
 import { Location, Point } from 'slate';
 

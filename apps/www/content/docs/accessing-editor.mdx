@@ -171,7 +171,7 @@ const MyEditor = ({
 
 If you want your ancestor component to re-render when the editor content changes, you may want to use **`useState`** to store your **`editor`** instance. Since the **`editorRef`** callback is only called once when the editor first mounts, you'll also need to manually trigger a re-render by updating a counter whenever the **`onChange`** handler of **`Plate`** is called.
 
-Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`usePlateEditorRef`** instead of **`usePlateEdtiorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
+Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`usePlateEditorRef`** instead of **`usePlateEditorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
 
 ```tsx showLineNumbers {2-3,34-35}
 const App = () => {
@@ -234,7 +234,7 @@ export default ({ initialHtml }: { initialHtml: string }) => {
    */
   const initialValue = useMemo(() => {
     const tmpEditor = createPlateEditor({ plugins });
-    return deserializeHtml(editor, {
+    return deserializeHtml(tmpEditor, {
       element: initialHtml,
     });
   }, []);

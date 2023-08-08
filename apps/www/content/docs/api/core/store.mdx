@@ -14,12 +14,12 @@ description: API reference for Plate store.
 
 ### State
 
-The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's id, its current value, its plugins, and other settings.
+The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
 
 <APIAttributes>
 <APIItem name="id" type="PlateId">
 
-A unique id used as a provider scope. Use it if you have multiple `PlateProvider` in the same React tree.
+A unique ID used as a provider scope. Use it if you have multiple `PlateProvider` in the same React tree.
 
 - **Default:** `PLATE_SCOPE`
 
@@ -135,7 +135,7 @@ Redecorate the editor.
 
 <APIParameters>
   <APIItem name="id" type="string" optional>
-    Editor id.
+    Editor ID.
   </APIItem>
 </APIParameters>
 
@@ -146,14 +146,14 @@ Reset an editor with the same plugins.
 <APIParameters>
   
 <APIItem name="id" type="string" optional>
-Editor id.
+Editor ID.
 </APIItem>
 
 </APIParameters>
 
 ## Event Editor Store
 
-This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor ids](Plate#id).
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor IDs](Plate#id).
 
 - This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
 - One of the core plugins of [Plate](Plate) will store the following events.
@@ -163,19 +163,19 @@ This store is an object whose property keys are event names (e.g. `'focus'`) and
 <APIAttributes>
 <APIItem name="blur" type="PlateId | null">
 
-Last editor id that has been blurred.
+Last editor ID that has been blurred.
 
 </APIItem>
 
 <APIItem name="focus" type="PlateId | null">
 
-Editor id that is currently being focused.
+Editor ID that is currently being focused.
 
 </APIItem>
 
 <APIItem name="last" type="PlateId | null">
 
-Last editor id.
+Last editor ID.
 
 </APIItem>
 </APIAttributes>
@@ -185,21 +185,21 @@ Last editor id.
 Hook selectors.
 
 - **Example:** `useEventEditorSelectors().focus()` will get the
-  last focused editor id.
+  last focused editor ID.
 
 ### `useEventPlateId`
 
-Get the last event editor id.
+Get the last event editor ID.
 
 <APIParameters>
 <APIItem name="id" type="PlateId | null">
 
-Returned id if defined.
+Returned ID if defined.
 
 </APIItem>
 </APIParameters>
 
 <APIReturns>
   The `PlateId` from the context if available, otherwise the last event editor
-  id or `PLATE_SCOPE`.
+  ID or `PLATE_SCOPE`.
 </APIReturns>

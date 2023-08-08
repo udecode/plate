@@ -1,13 +1,13 @@
 import {
   AnyObject,
-  GetNodeEntriesOptions,
-  PlateEditor,
-  UnhangRangeOptions,
-  Value,
   getNodeEntries,
+  GetNodeEntriesOptions,
   getPluginInjectProps,
+  PlateEditor,
   setElements,
+  UnhangRangeOptions,
   unsetNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

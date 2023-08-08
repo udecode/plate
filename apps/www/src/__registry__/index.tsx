@@ -263,6 +263,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/button.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/button')),
     },
+    'caption': {
+      name: 'caption',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/caption.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/caption')),
+    },
     'checkbox': {
       name: 'checkbox',
       type: 'components:plate-ui',
@@ -406,7 +413,7 @@ export const Index: Record<string, any> = {
     'image-element': {
       name: 'image-element',
       type: 'components:plate-ui',
-      registryDependencies: ["media-popover"],
+      registryDependencies: ["media-popover","caption","resizable"],
       files: ['registry/default/plate-ui/image-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/image-element')),
     },
@@ -497,7 +504,7 @@ export const Index: Record<string, any> = {
     'media-embed-element': {
       name: 'media-embed-element',
       type: 'components:plate-ui',
-      registryDependencies: ["media-popover"],
+      registryDependencies: ["media-popover","caption","resizable"],
       files: ['registry/default/plate-ui/media-embed-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/media-embed-element')),
     },
@@ -595,7 +602,7 @@ export const Index: Record<string, any> = {
     'table-cell-element': {
       name: 'table-cell-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["resizable"],
       files: ['registry/default/plate-ui/table-cell-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/table-cell-element')),
     },
@@ -654,6 +661,13 @@ export const Index: Record<string, any> = {
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/turn-into-dropdown-menu.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/turn-into-dropdown-menu')),
+    },
+    'resizable': {
+      name: 'resizable',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/resizable.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/resizable')),
     },
     'basic-editor-default-demo': {
       name: 'basic-editor-default-demo',

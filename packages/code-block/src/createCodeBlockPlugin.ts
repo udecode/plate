@@ -1,10 +1,10 @@
 import {
-  KEY_DESERIALIZE_HTML,
-  PlateEditor,
-  Value,
   createPluginFactory,
   getPlugin,
+  KEY_DESERIALIZE_HTML,
+  PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-common';
 
 import {

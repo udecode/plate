@@ -1,9 +1,9 @@
 import { ComboboxOnSelectItem } from '@udecode/plate-combobox';
 import {
-  PlatePluginKey,
   focusEditor,
   getPlugin,
   insertText,
+  PlatePluginKey,
   withoutNormalizing,
 } from '@udecode/plate-common';
 

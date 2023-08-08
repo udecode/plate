@@ -1,10 +1,13 @@
-import { createBoldPlugin } from '@/packages/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '@/packages/basic-marks/src/createItalicPlugin';
-import { createListPlugin } from '@/packages/list/src/createListPlugin';
-import { createParagraphPlugin } from '@/packages/paragraph/src/createParagraphPlugin';
-import { serializeHtml } from '@/packages/serializer-html/src/serializeHtml';
 import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
-import { Value, htmlStringToDOMNode } from '@udecode/plate-common';
+import {
+  createBoldPlugin,
+  createItalicPlugin,
+} from '@udecode/plate-basic-marks';
+import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
+import { createListPlugin } from '@udecode/plate-list';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+
+import { serializeHtml } from '../../serializeHtml';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [
