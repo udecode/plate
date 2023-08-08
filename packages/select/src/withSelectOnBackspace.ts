@@ -24,7 +24,9 @@ export const withSelectOnBackspace = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  { options: { query } }: WithPlatePlugin<SelectOnBackspacePlugin, V, E>
+  {
+    options: { query, removeNodeIfEmpty },
+  }: WithPlatePlugin<SelectOnBackspacePlugin, V, E>
 ) => {
   const { deleteBackward } = editor;
 
@@ -45,7 +47,11 @@ export const withSelectOnBackspace = <
         if (!!prevCell && pointBefore) {
           const point = getPoint(editor, selection as Slate.Location);
           const selectedNode = getNode(editor, point.path);
-          if (selectedNode && !getNodeString(selectedNode as any)) {
+          if (
+            removeNodeIfEmpty &&
+            selectedNode &&
+            !getNodeString(selectedNode as any)
+          ) {
             // remove node if empty
             removeNodes(editor);
           }
