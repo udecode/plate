@@ -68,22 +68,22 @@ workflows:
 
   # This workflow validates best practices for pull request management.
   # This helps developers follow best practices.
-  - name: best-practices
-    description: Validate best practices for pull request management
-    always-run: true
-    if:
+  # - name: best-practices
+  #   description: Validate best practices for pull request management
+  #   always-run: true
+  #   if:
       # Warn pull requests that do not have an associated GitHub issue.
 #       - rule: $hasLinkedIssues() == false
 #         extra-actions:
 #           - $warn("Please link an issue to the pull request")
       # Warn pull requests if their description is empty.
-      - rule: $description() == ""
-        extra-actions:
-          - $warn("Please provide a description for the pull request")
+      # - rule: $description() == ""
+      #   extra-actions:
+      #     - $warn("Please provide a description for the pull request")
       # Warn pull request do not have a clean linear history.
-      - rule: $hasLinearHistory() == false
-        extra-actions:
-          - $warn("Please rebase your pull request on the latest changes")
+      # - rule: $hasLinearHistory() == false
+      #   extra-actions:
+      #     - $warn("Please rebase your pull request on the latest changes")
 
   # This workflow labels pull requests based on the total number of lines changed.
   # This helps pick pull requests based on their size and to incentivize small pull requests.
@@ -106,14 +106,14 @@ workflows:
 
   # This workflow signals pull requests waiting for reviews.
   # This helps guarantee that pull requests are reviewed and approved by at least one person.
-  - name: check-approvals
-    description: Check that pull requests have the required number of approvals
-    always-run: true
-    if:
-      # Label pull requests with `waiting-for-review` if there are no approvals;
-      - rule: $isDraft() == false && $approvalsCount() < 1
-        extra-actions:
-          - $addLabel("waiting-for-review")
+  # - name: check-approvals
+  #   description: Check that pull requests have the required number of approvals
+  #   always-run: true
+  #   if:
+  #     # Label pull requests with `waiting-for-review` if there are no approvals;
+  #     - rule: $isDraft() == false && $approvalsCount() < 1
+  #       extra-actions:
+  #         - $addLabel("waiting-for-review")
 
   # This workflow labels pull requests based on the pull request change type.
   # This helps pick pull requests based on their change type.
