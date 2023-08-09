@@ -7,7 +7,7 @@ export const KEY_INLINE_VOID = 'inline-void';
 
 /**
  * Merge and register all the inline types and void types from the plugins and options,
- * using `editor.isInline`, `editor.isMarkableVoid` and `editor.isVoid`
+ * using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
  */
 export const withInlineVoid = <
   V extends Value = Value,
@@ -15,7 +15,7 @@ export const withInlineVoid = <
 >(
   editor: E
 ) => {
-  const { isInline, isVoid, isMarkableVoid } = editor;
+  const { isInline, isVoid, markableVoid } = editor;
 
   const voidTypes: string[] = [];
   const inlineTypes: string[] = [];
@@ -37,7 +37,7 @@ export const withInlineVoid = <
     return voidTypes.includes(element.type) ? true : isVoid(element);
   };
 
-  editor.isMarkableVoid = (element) => {
+  editor.markableVoid = (element) => {
     return voidTypes.includes(element.type) ? true : isMarkableVoid(element);
   };
 
