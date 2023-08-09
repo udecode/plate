@@ -1,5 +1,7 @@
 # @udecode/plate-yjs
 
+## 23.3.0
+
 ## 22.1.0
 
 ### Minor Changes

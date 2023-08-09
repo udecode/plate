@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 23.3.0
+
 ## 23.0.0
 
 ### Major Changes
