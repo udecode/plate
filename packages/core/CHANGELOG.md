@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 23.3.0
+
+### Minor Changes
+
+- [#2568](https://github.com/udecode/plate/pull/2568) by [@zbeyens](https://github.com/zbeyens) – New `PlatePlugin` attribute: `isMarkableVoid: boolean`.
+
 ## 22.0.2
 
 ## 22.0.1
@@ -388,7 +394,7 @@
   ```tsx
   export interface PlateProviderProps<
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>
+    E extends PlateEditor<V> = PlateEditor<V>,
   > extends PlateProviderEffectsProps<V, E>,
       Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
     /**
