@@ -1,5 +1,11 @@
 # @udecode/plate
 
+## 23.3.0
+
+### Minor Changes
+
+- [#2564](https://github.com/udecode/plate/pull/2564) by [@rishi-raj-jain](https://github.com/rishi-raj-jain) – add isMarkableVoid core plugin
+
 ## 23.2.0
 
 ## 23.1.0
