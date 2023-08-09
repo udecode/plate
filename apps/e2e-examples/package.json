@@ -8,8 +8,7 @@
     "preview": "vite preview",
     "start": "yarn build && yarn preview",
     "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "typecheck": "yarn p:typecheck"
+    "lint:fix": "yarn p:lint:fix"
   },
   "dependencies": {
     "@udecode/plate": "workspace:^",
