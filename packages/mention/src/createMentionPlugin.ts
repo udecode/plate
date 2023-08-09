@@ -16,6 +16,7 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   isElement: true,
   isInline: true,
   isVoid: true,
+  isMarkableVoid: true,
   handlers: {
     onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
   },

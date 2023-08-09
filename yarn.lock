@@ -6981,13 +6981,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:23.2.0, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:22.0.2, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/plate-indent": "npm:22.0.2"
-    "@udecode/plate-list": "npm:23.2.0"
+    "@udecode/plate-list": "npm:22.0.2"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7069,7 +7069,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-list@npm:23.2.0, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
+"@udecode/plate-list@npm:22.0.2, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
@@ -7184,7 +7184,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-select@npm:23.2.0, @udecode/plate-select@workspace:^, @udecode/plate-select@workspace:packages/select":
+"@udecode/plate-select@npm:22.0.2, @udecode/plate-select@workspace:^, @udecode/plate-select@workspace:packages/select":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-select@workspace:packages/select"
   dependencies:
@@ -7232,14 +7232,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:23.2.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:23.1.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/plate-heading": "npm:22.0.2"
     "@udecode/plate-indent": "npm:22.0.2"
-    "@udecode/plate-indent-list": "npm:23.2.0"
+    "@udecode/plate-indent-list": "npm:22.0.2"
     "@udecode/plate-media": "npm:23.0.0"
     "@udecode/plate-paragraph": "npm:22.0.2"
     "@udecode/plate-table": "npm:23.1.0"
@@ -7271,7 +7271,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:23.2.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:22.0.2, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
@@ -7280,7 +7280,7 @@ __metadata:
     "@udecode/plate-common": "npm:22.0.2"
     "@udecode/plate-heading": "npm:22.0.2"
     "@udecode/plate-link": "npm:22.0.2"
-    "@udecode/plate-list": "npm:23.2.0"
+    "@udecode/plate-list": "npm:22.0.2"
     "@udecode/plate-paragraph": "npm:22.0.2"
     remark-parse: "npm:^9.0.0"
     unified: "npm:^9.2.2"
@@ -7446,11 +7446,11 @@ __metadata:
     "@udecode/plate-highlight": "npm:22.0.2"
     "@udecode/plate-horizontal-rule": "npm:22.0.2"
     "@udecode/plate-indent": "npm:22.0.2"
-    "@udecode/plate-indent-list": "npm:23.2.0"
+    "@udecode/plate-indent-list": "npm:22.0.2"
     "@udecode/plate-kbd": "npm:22.0.2"
     "@udecode/plate-line-height": "npm:22.0.2"
     "@udecode/plate-link": "npm:22.0.2"
-    "@udecode/plate-list": "npm:23.2.0"
+    "@udecode/plate-list": "npm:22.0.2"
     "@udecode/plate-media": "npm:23.0.0"
     "@udecode/plate-mention": "npm:23.0.0"
     "@udecode/plate-node-id": "npm:22.0.2"
@@ -7458,11 +7458,11 @@ __metadata:
     "@udecode/plate-paragraph": "npm:22.0.2"
     "@udecode/plate-reset-node": "npm:22.0.2"
     "@udecode/plate-resizable": "npm:23.1.0"
-    "@udecode/plate-select": "npm:23.2.0"
+    "@udecode/plate-select": "npm:22.0.2"
     "@udecode/plate-serializer-csv": "npm:23.1.0"
-    "@udecode/plate-serializer-docx": "npm:23.2.0"
+    "@udecode/plate-serializer-docx": "npm:23.1.0"
     "@udecode/plate-serializer-html": "npm:22.0.2"
-    "@udecode/plate-serializer-md": "npm:23.2.0"
+    "@udecode/plate-serializer-md": "npm:22.0.2"
     "@udecode/plate-suggestion": "npm:22.0.2"
     "@udecode/plate-tabbable": "npm:22.0.2"
     "@udecode/plate-table": "npm:23.1.0"

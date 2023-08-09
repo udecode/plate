@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-juice",
-  "version": "22.0.2",
+  "version": "23.3.0",
   "description": "HTML juice plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.2",
+    "@udecode/plate-common": "23.3.0",
     "juice": "^8.1.0"
   },
   "peerDependencies": {

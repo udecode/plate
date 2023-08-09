@@ -1,5 +1,7 @@
 # @udecode/plate-caption
 
+## 23.3.0
+
 ## 23.0.0
 
 ### Minor Changes
