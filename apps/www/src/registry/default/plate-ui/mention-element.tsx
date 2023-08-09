@@ -35,9 +35,9 @@ const MentionElement = forwardRef<
       className={cn(
         'inline-block cursor-pointer rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
         selected && focused && 'ring-2 ring-ring',
-        children[0]?.bold && 'font-bold',
-        children[0]?.italic && 'italic',
-        children[0]?.underline && 'underline',
+        element.children[0].bold === true && 'font-bold',
+        element.children[0].italic === true && 'italic',
+        element.children[0].underline === true && 'underline',
         className
       )}
       data-slate-value={element.value}
