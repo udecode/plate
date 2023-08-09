@@ -11,7 +11,7 @@ import {
 } from '@/components/page-header';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
-import { HomeTabs } from '@/app/home-tabs';
+import { HomeTabs } from '@/app/_components/home-tabs';
 
 export default function IndexPage() {
   return (

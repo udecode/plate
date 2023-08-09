@@ -3,10 +3,10 @@ import { sortBy, uniqBy } from 'lodash';
 
 import { settingPlugins } from '@/config/setting-plugins';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { A, H2, P, Pre, Step, Steps } from '@/components/typography';
+import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
-
-import { H2, Pre, Step, Steps } from './typography';
-import { Label } from './ui/label';
 
 const allPlugins = settingPlugins.flatMap((group) => group.children);
 const allComponents = uniqBy(
@@ -157,6 +157,8 @@ export function SelectPluginsAndComponents({
   checkedComponents,
   setPluginChecked,
   setComponentChecked,
+  setAllComponentsChecked,
+  setAllPluginsChecked,
 }: TEditorCodeGeneratorState) {
   const allPluginsInitialFirst = useMemo(
     () =>
@@ -166,64 +168,118 @@ export function SelectPluginsAndComponents({
     [initialPluginIds]
   );
 
+  const anyPluginChecked = useMemo(
+    () => Object.values(checkedPlugins).some(Boolean),
+    [checkedPlugins]
+  );
+
+  const anyComponentChecked = useMemo(
+    () => Object.values(checkedComponents).some(Boolean),
+    [checkedComponents]
+  );
+
   return (
-    <div className="space-y-2 rounded-lg bg-muted p-4">
-      {allPluginsInitialFirst.map(
-        ({ id: pluginId, label: pluginLabel, components = [] }) => {
-          const isChecked = checkedPlugins[pluginId];
-          const pluginHtmlId = `plugin-${pluginId}`;
+    <>
+      <div className="flex justify-between">
+        <P>
+          Select the plugins and components you want to install. The components
+          are provided by{' '}
+          <A href="/docs/components" target="_blank">
+            Plate UI
+          </A>{' '}
+          and should be{' '}
+          <Button
+            variant="inlineLink"
+            size="none"
+            onClick={() => setAllComponentsChecked(false)}
+          >
+            disabled
+          </Button>{' '}
+          if you want to use your own components.
+        </P>
+      </div>
 
-          return (
-            <div key={pluginId}>
-              <div className="flex items-center">
-                <Checkbox
-                  id={pluginHtmlId}
-                  checked={isChecked}
-                  onCheckedChange={setPluginChecked(pluginId)}
-                />
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setAllPluginsChecked(!anyPluginChecked)}
+        >
+          {anyPluginChecked ? 'Disable' : 'Enable'} All Plugins
+        </Button>
 
-                <Label htmlFor={pluginHtmlId} className="flex p-2">
-                  {pluginLabel} Plugin
-                </Label>
+        <Button
+          variant="outline"
+          onClick={() => setAllComponentsChecked(!anyComponentChecked)}
+          disabled={!anyPluginChecked}
+        >
+          {anyComponentChecked ? 'Disable' : 'Enable'} All Components
+        </Button>
+        <Button
+          // onClick={() => setTab('result')}
+          disabled={!anyPluginChecked}
+        >
+          Done
+        </Button>
+      </div>
+
+      <div className="mt-4 space-y-2 rounded-lg bg-muted p-4">
+        {allPluginsInitialFirst.map(
+          ({ id: pluginId, label: pluginLabel, components = [] }) => {
+            const isChecked = checkedPlugins[pluginId];
+            const pluginHtmlId = `plugin-${pluginId}`;
+
+            return (
+              <div key={pluginId}>
+                <div className="flex items-center">
+                  <Checkbox
+                    id={pluginHtmlId}
+                    checked={isChecked}
+                    onCheckedChange={setPluginChecked(pluginId)}
+                  />
+
+                  <Label htmlFor={pluginHtmlId} className="flex p-2">
+                    {pluginLabel} Plugin
+                  </Label>
+                </div>
+
+                {isChecked &&
+                  components.length > 0 &&
+                  components.map(
+                    (
+                      { id: componentId, label: componentLabel },
+                      componentIndex
+                    ) => {
+                      const isFirst = componentIndex === 0;
+                      const isLast = componentIndex === components.length - 1;
+                      const componentHtmlId = `${pluginHtmlId}-${componentId}`;
+
+                      return (
+                        <div key={componentId} className="flex items-center">
+                          <TreeIcon
+                            isFirst={isFirst}
+                            isLast={isLast}
+                            className="mx-1"
+                          />
+
+                          <Checkbox
+                            id={componentHtmlId}
+                            checked={checkedComponents[componentId]}
+                            onCheckedChange={setComponentChecked(componentId)}
+                          />
+
+                          <Label htmlFor={componentHtmlId} className="flex p-2">
+                            {componentLabel} Component
+                          </Label>
+                        </div>
+                      );
+                    }
+                  )}
               </div>
-
-              {isChecked &&
-                components.length > 0 &&
-                components.map(
-                  (
-                    { id: componentId, label: componentLabel },
-                    componentIndex
-                  ) => {
-                    const isFirst = componentIndex === 0;
-                    const isLast = componentIndex === components.length - 1;
-                    const componentHtmlId = `${pluginHtmlId}-${componentId}`;
-
-                    return (
-                      <div key={componentId} className="flex items-center">
-                        <TreeIcon
-                          isFirst={isFirst}
-                          isLast={isLast}
-                          className="mx-1"
-                        />
-
-                        <Checkbox
-                          id={componentHtmlId}
-                          checked={checkedComponents[componentId]}
-                          onCheckedChange={setComponentChecked(componentId)}
-                        />
-
-                        <Label htmlFor={componentHtmlId} className="flex p-2">
-                          {componentLabel} Component
-                        </Label>
-                      </div>
-                    );
-                  }
-                )}
-            </div>
-          );
-        }
-      )}
-    </div>
+            );
+          }
+        )}
+      </div>
+    </>
   );
 }
 
