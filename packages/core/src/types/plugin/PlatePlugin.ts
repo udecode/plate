@@ -83,7 +83,7 @@ export type PlatePlugin<
   isInline?: boolean;
 
   /**
-   * Property used by `isMarkableVoid` core plugin to set elements of this `type` as inline.
+   * Property used by `isMarkableVoid` core plugin to set void elements of this `type` as markable.
    */
   isMarkableVoid?: boolean;
 
