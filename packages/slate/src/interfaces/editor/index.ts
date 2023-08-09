@@ -51,6 +51,7 @@ export * from './isEndPoint';
 export * from './isInline';
 export * from './isStartPoint';
 export * from './isVoid';
+export * from './isMarkableVoid';
 export * from './normalizeEditor';
 export * from './removeEditorMark';
 export * from './unhangRange';
