@@ -9,14 +9,14 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
-import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
+import { HomeTabs } from '@/app/home-tabs';
 
 export default function IndexPage() {
   return (
     <div className="container relative">
-      <PageHeader className="pb-8">
+      <PageHeader>
         <Link
           // TODO:
           href="/docs/components"
@@ -55,9 +55,7 @@ export default function IndexPage() {
       {/* </section> */}
 
       <section className="relative">
-        <div className="max-w-[1336px] rounded-lg border bg-background shadow">
-          <PlaygroundDemo />
-        </div>
+        <HomeTabs />
       </section>
     </div>
   );

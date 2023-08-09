@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { descriptions } from '@/config/descriptions';
@@ -234,7 +234,6 @@ export function SettingsPanelSheetWrapper({
 
 export function SettingsPanel() {
   const showSettings = settingsStore.use.showSettings();
-  const checkedPlugins = settingsStore.use.checkedPlugins();
   const { width: viewportWidth } = useViewport();
 
   const isSheet = viewportWidth < 1024;
@@ -248,42 +247,18 @@ export function SettingsPanel() {
 
   const loaded = useFixHydration();
 
-  const generateEditorCodeHref = useMemo(() => {
-    const checkedPluginNames = Object.keys(checkedPlugins).filter(
-      (id) => checkedPlugins[id]
-    );
-
-    return {
-      pathname: '/generator',
-      query: {
-        plugins: checkedPluginNames.join(','),
-      },
-    };
-  }, [checkedPlugins]);
-
   if (!loaded) return null;
 
   return (
     <Wrapper
       isOpen={showSettings}
       onClose={() => settingsStore.set.showSettings(false)}
-      
     >
       <SettingsEffect />
 
-      <div className="px-6 py-4 space-y-4">
-        <div>
+      <div className="space-y-4 px-6 py-4">
+        <div className="flex justify-between">
           <SettingsCombobox />
-        </div>
-
-        <div>
-          <Link
-            href={generateEditorCodeHref}
-            className={buttonVariants()}
-            target="_blank"
-          >
-            Generate Editor Code
-          </Link>
         </div>
 
         <div className="flex items-center gap-2">
