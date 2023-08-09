@@ -13,6 +13,7 @@ import {
 import {
   TTableElement,
   useTableBordersDropdownMenuContentState,
+  useTableCellsMerge,
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
@@ -112,17 +113,59 @@ const TableFloatingToolbar = React.forwardRef<
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
+  const { onMergeCells } = useTableCellsMerge();
+
   const readOnly = useReadOnly();
   const editor = usePlateEditorState();
-  const open =
+  const mergeToolbar =
+    !readOnly &&
+    someNode(editor, {
+      match: (n) => n === element,
+    }) &&
+    !isCollapsed(editor.selection);
+
+  const bordersToolbar =
     !readOnly &&
     someNode(editor, {
       match: (n) => n === element,
     }) &&
     isCollapsed(editor.selection);
 
+  const mergeContent = mergeToolbar && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={onMergeCells}
+    >
+      <Icons.combine className="mr-2 h-4 w-4" />
+      Merge
+    </Button>
+  );
+  const bordersContent = bordersToolbar && (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" isMenu>
+            <Icons.borderAll className="mr-2 h-4 w-4" />
+            Borders
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuPortal>
+          <TableBordersDropdownMenuContent />
+        </DropdownMenuPortal>
+      </DropdownMenu>
+
+      <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
+        <Icons.delete className="mr-2 h-4 w-4" />
+        Delete
+      </Button>
+    </>
+  );
+
   return (
-    <Popover open={open} modal={false}>
+    <Popover open={mergeToolbar || bordersToolbar} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         ref={ref}
@@ -130,23 +173,8 @@ const TableFloatingToolbar = React.forwardRef<
         onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
-              <Icons.borderAll className="mr-2 h-4 w-4" />
-              Borders
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <TableBordersDropdownMenuContent />
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
-          <Icons.delete className="mr-2 h-4 w-4" />
-          Delete
-        </Button>
+        {mergeContent}
+        {bordersContent}
       </PopoverContent>
     </Popover>
   );

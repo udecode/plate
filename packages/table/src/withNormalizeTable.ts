@@ -92,9 +92,15 @@ export const withNormalizeTable = <
       if (getCellTypes(editor).includes(node.type)) {
         const { children } = node;
 
+        // TODO: normalize tables pasted from somewhere and set normalized flag.
+        // handle ones which have colSpan > 1, the same for rowIndex > 1
+        // then at least getColIndex should work as expected. think about getRowIndex.
+        const [rowIndex, colIndex] = path.slice(-2);
+
         const parentEntry = getParentNode(editor, path);
 
         if (parentEntry?.[0].type !== getPluginType(editor, ELEMENT_TR)) {
+          // console.log('unwrapping cell');
           unwrapNodes(editor, {
             at: path,
           });
@@ -102,6 +108,7 @@ export const withNormalizeTable = <
         }
 
         if (isText(children[0])) {
+          // console.log('wrapping cell');
           wrapNodeChildren<TElement>(editor, editor.blockFactory({}, path), {
             at: path,
           });

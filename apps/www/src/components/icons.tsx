@@ -76,6 +76,7 @@ import {
   Unlink,
   WrapText,
   X,
+  Combine
 } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
@@ -281,6 +282,7 @@ export const Icons = {
   codeblock: FileCode,
   color: Baseline,
   column: RectangleVertical,
+  combine: Combine,
   comment: MessageSquare,
   commentAdd: MessageSquarePlus,
   conflict: Unlink,

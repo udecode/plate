@@ -16,6 +16,7 @@ export const useSelectedCells = () => {
   const editor = usePlateEditorRef();
 
   const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
+  const [, setSelectedCellEntries] = useTableStore().use.selectedCellEntries();
 
   useEffect(() => {
     if (!selected || readOnly) setSelectedCells(null);
@@ -30,9 +31,18 @@ export const useSelectedCells = () => {
 
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
+        setSelectedCellEntries(cellEntries);
       }
     } else if (selectedCells) {
       setSelectedCells(null);
+      setSelectedCellEntries(null);
     }
-  }, [editor, editor?.selection, readOnly, selectedCells, setSelectedCells]);
+  }, [
+    editor,
+    editor.selection,
+    readOnly,
+    selectedCells,
+    setSelectedCellEntries,
+    setSelectedCells,
+  ]);
 };

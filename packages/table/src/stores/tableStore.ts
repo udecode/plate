@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { createAtomStore, TElement } from '@udecode/plate-common';
+import { createAtomStore, TElementEntry } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
+import { TTableCellElement } from '../types';
 
 export type TableStoreSizeOverrides = Map<number, number>;
 
@@ -11,7 +12,8 @@ export const { tableStore, useTableStore } = createAtomStore(
     rowSizeOverrides: new Map() as TableStoreSizeOverrides,
     marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
-    selectedCells: null as TElement[] | null,
+    selectedCells: null as TTableCellElement[] | null,
+    selectedCellEntries: null as TElementEntry[] | null,
   },
   { name: 'table' as const, scope: ELEMENT_TABLE }
 );

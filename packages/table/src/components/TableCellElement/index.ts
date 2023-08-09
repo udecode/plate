@@ -9,3 +9,4 @@ export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableBordersDropdownMenuContentState';
 export * from './useTableCellElementState';
+export * from './useTableCellsMerge';

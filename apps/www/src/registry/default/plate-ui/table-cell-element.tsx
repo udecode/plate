@@ -45,6 +45,10 @@ const TableCellElement = React.forwardRef<
 
   const Cell = isHeader ? 'th' : 'td';
 
+  if (element.merged) {
+    return null;
+  }
+
   return (
     <PlateElement
       asChild
