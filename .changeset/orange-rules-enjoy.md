@@ -1,5 +1,5 @@
 ---
-'@udecode/plate': minor
+'@udecode/plate-core': minor
 ---
 
-add isMarkableVoid core plugin
+New `PlatePlugin` attribute: `isMarkableVoid: boolean`.
