@@ -33,9 +33,16 @@
       "dependsOn": [],
       "outputs": []
     },
+    "www#lint": {
+      "dependsOn": ["prebuild"],
+      "outputs": []
+    },
     "lint:fix": {
       "cache": false,
       "dependsOn": []
+    },
+    "prebuild": {
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": ["build"],
