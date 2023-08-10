@@ -19,6 +19,7 @@ export const withInlineVoid = <
 
   const voidTypes: string[] = [];
   const inlineTypes: string[] = [];
+  const markableVoidTypes: string[] = [];
 
   editor.plugins.forEach((plugin) => {
     if (plugin.isInline) {
@@ -26,6 +27,9 @@ export const withInlineVoid = <
     }
     if (plugin.isVoid) {
       voidTypes.push(plugin.type);
+    }
+    if (plugin.isMarkableVoid) {
+      markableVoidTypes.push(plugin.type);
     }
   });
 
@@ -38,7 +42,9 @@ export const withInlineVoid = <
   };
 
   editor.markableVoid = (element) => {
-    return voidTypes.includes(element.type) ? true : markableVoid(element);
+    return markableVoidTypes.includes(element.type)
+      ? true
+      : markableVoid(element);
   };
 
   return editor;
