@@ -39,7 +39,8 @@ export const useTableCellsMerge = () => {
     );
 
     const firstRowIndex = lastRowIndex + 1 - rowSpan;
-
+    //TODO: fix rowIndex
+    // TODO: fix resize for right handle
     // console.log(
     //   'settings',
     //   colSpan,
@@ -50,29 +51,23 @@ export const useTableCellsMerge = () => {
     // );
 
     const contents = [];
+
+    const latInFirstRow = selectedCellEntries.find(([el, path]) => {
+      const [rowIndex, colIndex] = path.slice(-2);
+      if (rowIndex === firstRowIndex && colIndex === lastColIndex) {
+        return true;
+      }
+      return false;
+    })!;
+
     for (const cellEntry of selectedCellEntries) {
       const [el, path] = cellEntry;
-      const [rowIndex, colIndex] = path.slice(-2);
       const cellElement: TTableCellElement = el;
 
       contents.push(...el.children);
 
-      if (rowIndex === firstRowIndex && colIndex === lastColIndex) {
-        removeNodes(editor, { at: path });
-        insertNodes<TTableCellElement>(
-          editor,
-          {
-            ...getEmptyCellNode(editor, {
-              header: cellElement.type === 'th',
-              newCellChildren: contents, // TODO: update content
-            }),
-            colSpan,
-            rowSpan,
-          },
-          { at: path }
-        );
-      } else {
-        removeNodes(editor, { at: path });
+      removeNodes(editor, { at: path });
+      if (cellEntry !== latInFirstRow) {
         insertNodes(
           editor,
           {
@@ -83,9 +78,23 @@ export const useTableCellsMerge = () => {
           },
           { at: path }
         );
-      }
+      } 
     }
-    console.log('contents', contents);
+
+    insertNodes<TTableCellElement>(
+      editor,
+      {
+        ...getEmptyCellNode(editor, {
+          header: latInFirstRow[0].type === 'th',
+          newCellChildren: contents, // TODO: update content
+        }),
+        colSpan,
+        // rowSpan,
+      },
+      { at: latInFirstRow[1] }
+    );
+
+    // console.log('contents 2', contents);
   };
 
   return { onMergeCells };

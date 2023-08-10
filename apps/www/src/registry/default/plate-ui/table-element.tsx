@@ -164,8 +164,9 @@ const TableFloatingToolbar = React.forwardRef<
     </>
   );
 
+  
   return (
-    <Popover open={mergeToolbar || bordersToolbar} modal={false}>
+    <Popover open={mergeToolbar} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         ref={ref}
@@ -174,7 +175,6 @@ const TableFloatingToolbar = React.forwardRef<
         {...props}
       >
         {mergeContent}
-        {bordersContent}
       </PopoverContent>
     </Popover>
   );

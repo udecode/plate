@@ -1,5 +1,12 @@
 import React from 'react';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
+import {
+  findNodePath,
+  PlateElement,
+  PlateElementProps,
+  TElement,
+  usePlateEditorRef,
+  Value,
+} from '@udecode/plate-common';
 import {
   TTableCellElement,
   useTableCellElement,
@@ -23,9 +30,8 @@ const TableCellElement = React.forwardRef<
   TableCellElementProps
 >(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
   const { element } = props;
-
   const {
-    colIndex,
+    // colIndex,
     rowIndex,
     readOnly,
     selected,
@@ -36,6 +42,25 @@ const TableCellElement = React.forwardRef<
     isSelectingCell,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
+  const editor = usePlateEditorRef();
+  const nodePath = findNodePath(editor, element)!;
+
+  const [__rowIndex, __colIndex] = nodePath.slice(-2);
+  // const colIndex = __colIndex + ((element.colSpan || 1) - 1);
+  const colIndex = __colIndex;
+
+  // console.log(
+  //   element.children.map((node: TElement) => node.children[0].text).join(' '),
+  //   nodePath,
+  //   '__rowIndex',
+  //   __rowIndex,
+  //   '__colIndex',
+  //   __colIndex,
+  //   'rowIndex',
+  //   rowIndex,
+  //   'colIndex',
+  //   colIndex
+  // );
   const resizableState = useTableCellElementResizableState({
     colIndex,
     rowIndex,
@@ -45,8 +70,24 @@ const TableCellElement = React.forwardRef<
 
   const Cell = isHeader ? 'th' : 'td';
 
+  // console.log('render cell', element);
+
+  // if (element.children[0].children[0].text === 'Void') {
+  //   console.log('render void cell', nodePath);
+  // }
   if (element.merged) {
-    return null;
+    // console.log('return null for', nodePath);
+    return (
+      <PlateElement
+        asChild
+        editor={editor}
+        attributes={props.attributes}
+        element={element}
+        style={{ display: 'none' }}
+      >
+        {children}
+      </PlateElement>
+    );
   }
 
   return (
