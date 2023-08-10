@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 23.3.1
+
+### Patch Changes
+
+- [#2571](https://github.com/udecode/plate/pull/2571) by [@zbeyens](https://github.com/zbeyens) – fix: markable void were set on all void nodes
+
 ## 23.3.0
 
 ### Minor Changes
