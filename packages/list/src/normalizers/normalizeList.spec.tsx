@@ -5,7 +5,7 @@ import {
   normalizeEditor,
   PlateEditor,
 } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list';
+import { createListPlugin } from '../createListPlugin';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

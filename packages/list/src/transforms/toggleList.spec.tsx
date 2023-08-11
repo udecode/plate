@@ -5,7 +5,8 @@ import {
   getPluginType,
   PlateEditor,
 } from '@udecode/plate-common';
-import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
+
+import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
