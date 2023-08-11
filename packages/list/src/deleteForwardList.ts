@@ -1,3 +1,4 @@
+import { log } from 'console';
 import {
   getBlockAbove,
   getChildren,
