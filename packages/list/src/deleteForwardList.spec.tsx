@@ -252,8 +252,10 @@ describe('list item (empty) + list item when selection is at the end of the firs
         <hul>
           <hli>
             <hlic>
-              <cursor />
-              <htext>one</htext>
+              <htext>
+                <cursor />
+                one
+              </htext>
               <htext>two</htext>
             </hlic>
           </hli>
