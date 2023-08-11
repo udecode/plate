@@ -235,10 +235,6 @@ describe('list item (empty) + list item when selection is at the end of the firs
             <hlic>
               <htext />
               <cursor />
-            </hlic>
-          </hli>
-          <hli>
-            <hlic>
               <htext>one</htext>
               <htext bold>two</htext>
             </hlic>
@@ -253,9 +249,9 @@ describe('list item (empty) + list item when selection is at the end of the firs
           <hli>
             <hlic>
               <htext>
-                <cursor />
                 one
               </htext>
+              <cursor />
               <htext bold>two</htext>
             </hlic>
           </hli>
@@ -269,6 +265,9 @@ describe('list item (empty) + list item when selection is at the end of the firs
     });
 
     editor.deleteForward('character');
+
+    console.log(editor.children);
+    console.log(expected.children);
 
     expect(editor.children).toEqual(expected.children);
   });
