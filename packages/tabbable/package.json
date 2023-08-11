@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-tabbable",
-  "version": "23.3.0",
+  "version": "23.3.1",
   "description": "Tab into and out of void nodes and other elements",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "23.3.0",
+    "@udecode/plate-common": "23.3.1",
     "tabbable": "^6.2.0"
   },
   "peerDependencies": {

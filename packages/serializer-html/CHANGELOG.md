@@ -1,5 +1,7 @@
 # @udecode/plate-serializer-html
 
+## 23.3.1
+
 ## 23.3.0
 
 ## 22.0.2
