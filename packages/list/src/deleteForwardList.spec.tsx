@@ -226,7 +226,7 @@ describe('list + list when selection is at the end of the first list', () => {
   });
 });
 
-describe('list item (empty) + list item when selection is at the end of the first item', () => {
+describe('list item (empty) + list item when there are not multiple items when selection is at the end of the first item', () => {
   it('should remove the first item', () => {
     const input = (
       <editor>
@@ -239,8 +239,8 @@ describe('list item (empty) + list item when selection is at the end of the firs
           </hli>
           <hli>
             <hlic>
-              <htext>one</htext>
-              <htext>two</htext>
+              <htext bold={true}>one</htext>
+              {/* <htext bold>two</htext> */}
             </hlic>
           </hli>
         </hul>
@@ -252,11 +252,11 @@ describe('list item (empty) + list item when selection is at the end of the firs
         <hul>
           <hli>
             <hlic>
-              <htext>
+              <htext bold={true}>
                 <cursor />
                 one
               </htext>
-              <htext>two</htext>
+              {/* <htext bold>two</htext> */}
             </hlic>
           </hli>
         </hul>
@@ -269,9 +269,6 @@ describe('list item (empty) + list item when selection is at the end of the firs
     });
 
     editor.deleteForward('character');
-
-    console.log(editor.children);
-    console.log(expected.children);
 
     expect(editor.children).toEqual(expected.children);
   });
