@@ -1,7 +1,8 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, Fragment, useCallback } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
+  findNodePath,
   isCollapsed,
   PlateElement,
   PlateElementProps,
@@ -11,11 +12,21 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
+  ResizeDirection,
+  ResizeEvent,
+  ResizeHandle,
+  ResizeLengthClampOptions,
+  ResizeLengthStatic,
+} from '@udecode/plate-resizable';
+import {
+  setTableColSize,
   TTableElement,
+  useOverrideColSize,
   useTableBordersDropdownMenuContentState,
   useTableCellsMerge,
   useTableElement,
   useTableElementState,
+  useTableStore,
 } from '@udecode/plate-table';
 import { useReadOnly } from 'slate-react';
 
@@ -142,6 +153,7 @@ const TableFloatingToolbar = React.forwardRef<
       Merge
     </Button>
   );
+
   const bordersContent = bordersToolbar && (
     <>
       <DropdownMenu modal={false}>
@@ -164,7 +176,6 @@ const TableFloatingToolbar = React.forwardRef<
     </>
   );
 
-  
   return (
     <Popover open={mergeToolbar} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
@@ -181,6 +192,26 @@ const TableFloatingToolbar = React.forwardRef<
 });
 TableFloatingToolbar.displayName = 'TableFloatingToolbar';
 
+const resizeLengthClampStatic = (
+  length: ResizeLengthStatic,
+  { min, max }: ResizeLengthClampOptions<ResizeLengthStatic>
+): ResizeLengthStatic => {
+  if (min !== undefined) {
+    length = Math.max(length, min);
+  }
+
+  if (max !== undefined) {
+    length = Math.min(length, max);
+  }
+
+  return length;
+};
+
+const roundCellSizeToStep = (size: number, step?: number) => {
+  return step ? Math.round(size / step) * step : size;
+};
+
+
 const TableElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps
@@ -189,9 +220,133 @@ const TableElement = React.forwardRef<
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
 
+  const editor = props.editor;
+
+  const [hoveredColIndex, setHoveredColIndex] =
+    useTableStore().use.hoveredColIndex();
+
+
+
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const getHandleHoverProps = (colIndex: number) => ({
+    onHover: () => {
+      if (hoveredColIndex === null) {
+        // console.log('set hovered col index', colIndex);
+        setHoveredColIndex(colIndex);
+      }
+    },
+    onHoverEnd: () => {
+      if (hoveredColIndex === colIndex) {
+        // console.log('set hovered col index end', colIndex);
+        setHoveredColIndex(null);
+      }
+    },
+  });
+
+  const overrideColSize = useOverrideColSize();
+
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const setColSize = useCallback(
+    (colIndex: number, width: number) => {
+      setTableColSize(
+        editor,
+        { colIndex, width },
+        { at: findNodePath(editor, props.element)! }
+      );
+
+      // Prevent flickering
+      setTimeout(() => overrideColSize(colIndex, null), 0);
+    },
+    [editor, overrideColSize, props.element]
+  );
+
+  const handleResizeRight = useCallback(
+    (
+      { initialSize: currentInitial, delta, finished }: ResizeEvent,
+      colIndex: number
+    ) => {
+      const nextInitial = colSizes[colIndex + 1];
+
+      const complement = (width: number) =>
+        currentInitial + nextInitial - width;
+
+      console.log(
+        'currentInitial',
+        currentInitial,
+        'nextInitial',
+        nextInitial,
+        'minColumnWidth',
+        minColumnWidth
+      );
+
+      const currentNew = roundCellSizeToStep(
+        resizeLengthClampStatic(currentInitial + delta, {
+          min: minColumnWidth,
+          max: nextInitial ? complement(minColumnWidth) : undefined,
+        })
+        // stepX
+      );
+      // console.log('calc', currentInitial, nextInitial, currentNew);
+      const nextNew = nextInitial ? complement(currentNew) : undefined;
+      // console.log('currentNew', currentNew, 'nextNew', nextNew);
+      const fn = finished ? setColSize : overrideColSize;
+      fn(colIndex, currentNew);
+
+      // if (nextNew) fn(colIndex + 1, nextNew);
+    },
+    [colSizes, minColumnWidth, overrideColSize, setColSize]
+  );
+
+  const { realColSizes, width } = colSizes.reduce(
+    (acc, cur) => {
+      if (Number.isInteger(cur)) {
+        acc.width += cur;
+        acc.realColSizes.push(cur);
+      }
+      return acc;
+    },
+    { width: 0, realColSizes: [] }
+  );
+
+
+  
+
+
+  const tableColumnResizer = (
+    <div style={{ width, display: 'flex' }}>
+      {realColSizes.map((width, index) => {
+        return (
+          <div key={index} style={{ width: width, height: 5 }}>
+            <div
+              className="group absolute top-0 h-full select-none"
+              style={{ width: width }}
+              contentEditable={false}
+              suppressContentEditableWarning={true}
+            >
+              <ResizeHandle
+                className={cn(
+                  'absolute z-30 h-full w-1',
+                  'right-[-1.5px]',
+                  hoveredColIndex === index && 'bg-ring'
+                )}
+                options={{
+                  direction: 'right' as ResizeDirection,
+                  onResize: (resizeEvent) =>
+                    handleResizeRight(resizeEvent, index),
+                  ...getHandleHoverProps(index),
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <TableFloatingToolbar>
-      <div style={{ paddingLeft: marginLeft }}>
+      <div style={{ paddingLeft: marginLeft, position: 'relative' }}>
+        {tableColumnResizer}
         <PlateElement
           asChild
           ref={ref}

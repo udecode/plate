@@ -230,7 +230,7 @@ export const useTableCellElementResizable = ({
   const getHandleHoverProps = (colIndex: number) => ({
     onHover: () => {
       if (hoveredColIndex === null) {
-        // console.log('set hovered col index', colIndex);
+        console.log('set hovered col index', colIndex);
         setHoveredColIndex(colIndex);
       }
     },

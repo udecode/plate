@@ -13,11 +13,10 @@ import {
   useTableCellElementResizable,
   useTableCellElementResizableState,
   useTableCellElementState,
+  useTableStore,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
-
-import { ResizeHandle } from './resizable';
 
 export interface TableCellElementProps
   extends PlateElementProps<Value, TTableCellElement> {
@@ -31,7 +30,7 @@ const TableCellElement = React.forwardRef<
 >(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
   const { element } = props;
   const {
-    // colIndex,
+    colIndex,
     rowIndex,
     readOnly,
     selected,
@@ -43,24 +42,13 @@ const TableCellElement = React.forwardRef<
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
   const editor = usePlateEditorRef();
-  const nodePath = findNodePath(editor, element)!;
 
-  const [__rowIndex, __colIndex] = nodePath.slice(-2);
-  // const colIndex = __colIndex + ((element.colSpan || 1) - 1);
-  const colIndex = __colIndex;
+  const hoveredColIndex = useTableStore().get.hoveredColIndex();
 
-  // console.log(
-  //   element.children.map((node: TElement) => node.children[0].text).join(' '),
-  //   nodePath,
-  //   '__rowIndex',
-  //   __rowIndex,
-  //   '__colIndex',
-  //   __colIndex,
-  //   'rowIndex',
-  //   rowIndex,
-  //   'colIndex',
-  //   colIndex
-  // );
+  const content = element.children
+    .map((node: TElement) => node.children[0].text)
+    .join(' ');
+
   const resizableState = useTableCellElementResizableState({
     colIndex,
     rowIndex,
@@ -75,20 +63,6 @@ const TableCellElement = React.forwardRef<
   // if (element.children[0].children[0].text === 'Void') {
   //   console.log('render void cell', nodePath);
   // }
-  if (element.merged) {
-    // console.log('return null for', nodePath);
-    return (
-      <PlateElement
-        asChild
-        editor={editor}
-        attributes={props.attributes}
-        element={element}
-        style={{ display: 'none' }}
-      >
-        {children}
-      </PlateElement>
-    );
-  }
 
   return (
     <PlateElement
@@ -142,7 +116,7 @@ const TableCellElement = React.forwardRef<
           >
             {!readOnly && (
               <>
-                <ResizeHandle
+                {/* <ResizeHandle
                   {...rightProps}
                   className="-top-3 right-[-5px] w-[10px]"
                 />
@@ -155,20 +129,32 @@ const TableCellElement = React.forwardRef<
                     {...leftProps}
                     className="-top-3 left-[-5px] w-[10px]"
                   />
-                )}
+                )} */}
 
-                {hovered && (
+                {/* {rowIndex === 0 && (
+                  <ResizeHandle
+                    className={cn(
+                      'absolute -top-3 z-30 h-[150px] w-1',
+                      'right-[-1.5px]',
+                      hovered && 'bg-ring'
+                    )}
+                    {...rightProps}
+                  />
+                )} */}
+
+                {/* {hovered && rowIndex === 0 && (
                   <div
                     className={cn(
-                      'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                      'absolute -top-3 z-30 h-[150px] w-1 bg-ring',
                       'right-[-1.5px]'
                     )}
                   />
-                )}
-                {hoveredLeft && (
+                )} */}
+
+                {hoveredLeft && rowIndex === 0 && (
                   <div
                     className={cn(
-                      'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
+                      'absolute -top-3 z-30 h-[150px] w-1 bg-ring',
                       'left-[-1.5px]'
                     )}
                   />

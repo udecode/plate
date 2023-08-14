@@ -1,4 +1,5 @@
 import {
+  insertElements,
   insertNodes,
   removeNodes,
   usePlateEditorState,
@@ -16,85 +17,84 @@ export const useTableCellsMerge = () => {
       colSpan,
       rowSpan,
       currentRowIndex: lastRowIndex,
-      currentColIndex: lastColIndex,
     } = selectedCellEntries.reduce(
-      (acc, current) => {
+      (acc, current, index) => {
         const [el, path] = current;
         const cellElement: TTableCellElement = el;
         const [rowIndex, colIndex] = path.slice(-2);
 
-        if (acc.currentRowIndex !== rowIndex) {
+        if (acc.currentRowIndex !== rowIndex || index === 0) {
           acc.rowSpan += cellElement.rowSpan || 1;
           acc.currentRowIndex = rowIndex;
         }
 
-        if (colIndex > acc.currentColIndex) {
+        if (colIndex > acc.currentColIndex || index === 0) {
           acc.colSpan += cellElement.colSpan || 1;
           acc.currentColIndex = colIndex;
         }
 
         return acc;
       },
-      { colSpan: 0, rowSpan: 0, currentRowIndex: 0, currentColIndex: 0 }
+      {
+        colSpan: 0,
+        rowSpan: 0,
+        currentRowIndex: 0,
+        currentColIndex: 0,
+      }
     );
 
     const firstRowIndex = lastRowIndex + 1 - rowSpan;
-    //TODO: fix rowIndex
-    // TODO: fix resize for right handle
-    // console.log(
-    //   'settings',
-    //   colSpan,
-    //   rowSpan,
-    //   lastRowIndex,
-    //   firstRowIndex,
-    //   lastColIndex
-    // );
+
+    console.log(
+      'settings:',
+      'rowSpan',
+      rowSpan,
+      'colSpan',
+      colSpan,
+      'lastRowIndex',
+      lastRowIndex,
+      'firstRowIndex',
+      firstRowIndex
+    );
 
     const contents = [];
 
-    const latInFirstRow = selectedCellEntries.find(([el, path]) => {
-      const [rowIndex, colIndex] = path.slice(-2);
-      if (rowIndex === firstRowIndex && colIndex === lastColIndex) {
-        return true;
-      }
-      return false;
-    })!;
-
     for (const cellEntry of selectedCellEntries) {
-      const [el, path] = cellEntry;
-      const cellElement: TTableCellElement = el;
+      const [el] = cellEntry;
 
       contents.push(...el.children);
-
-      removeNodes(editor, { at: path });
-      if (cellEntry !== latInFirstRow) {
-        insertNodes(
-          editor,
-          {
-            ...getEmptyCellNode(editor, {
-              header: cellElement.type === 'th',
-            }),
-            merged: true,
-          },
-          { at: path }
-        );
-      } 
     }
 
-    insertNodes<TTableCellElement>(
-      editor,
-      {
-        ...getEmptyCellNode(editor, {
-          header: latInFirstRow[0].type === 'th',
-          newCellChildren: contents, // TODO: update content
-        }),
-        colSpan,
-        // rowSpan,
-      },
-      { at: latInFirstRow[1] }
-    );
+    // cols to remove
+    const cols: any = {};
+    let hasHeaderCell = false;
+    selectedCellEntries.forEach(([entry, path]) => {
+      if (!hasHeaderCell && entry.type === 'table_header_cell') {
+        hasHeaderCell = true;
+      }
+      if (cols[path[1]]) {
+        cols[path[1]].push(path);
+      } else {
+        cols[path[1]] = [path];
+      }
+    });
 
-    // console.log('contents 2', contents);
+    Object.values(cols).forEach((paths: any) => {
+      paths?.forEach(() => {
+        removeNodes(editor, { at: paths[0] });
+      });
+    });
+
+    const mergedCell = {
+      ...getEmptyCellNode(editor, {
+        header: selectedCellEntries[0][0].type === 'th',
+        newCellChildren: contents,
+      }),
+      colSpan,
+      rowSpan,
+    };
+
+    insertElements(editor, mergedCell, { at: selectedCellEntries[0][1] });
   };
 
   return { onMergeCells };
