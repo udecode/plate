@@ -88,13 +88,13 @@ export const useResizeHandleState = ({
 
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      console.log(
-        'resize handle executed',
-        initialSize,
-        delta,
-        finished,
-        direction
-      );
+      // console.log(
+      //   'resize handle executed',
+      //   initialSize,
+      //   delta,
+      //   finished,
+      //   direction
+      // );
       onResize?.({ initialSize, delta, finished, direction });
     };
 
@@ -161,11 +161,11 @@ export const useResizeHandle = ({
     setInitialPosition(isHorizontal ? clientX : clientY);
 
     const element = (event.target as HTMLElement).parentElement!;
-    console.log(
-      'setting initial size',
-      event.target,
-      isHorizontal ? element.offsetWidth : element.offsetHeight
-    );
+    // console.log(
+    //   'setting initial size',
+    //   event.target,
+    //   isHorizontal ? element.offsetWidth : element.offsetHeight
+    // );
     setInitialSize(isHorizontal ? element.offsetWidth : element.offsetHeight);
 
     setIsResizing(true);

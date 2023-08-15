@@ -270,14 +270,14 @@ const TableElement = React.forwardRef<
       const complement = (width: number) =>
         currentInitial + nextInitial - width;
 
-      console.log(
-        'currentInitial',
-        currentInitial,
-        'nextInitial',
-        nextInitial,
-        'minColumnWidth',
-        minColumnWidth
-      );
+      // console.log(
+      //   'currentInitial',
+      //   currentInitial,
+      //   'nextInitial',
+      //   nextInitial,
+      //   'minColumnWidth',
+      //   minColumnWidth
+      // );
 
       const currentNew = roundCellSizeToStep(
         resizeLengthClampStatic(currentInitial + delta, {

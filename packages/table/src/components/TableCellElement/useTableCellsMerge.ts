@@ -1,9 +1,10 @@
 import {
+  getRange,
   insertElements,
-  insertNodes,
   removeNodes,
   usePlateEditorState,
 } from '@udecode/plate-common';
+import { Path } from 'slate';
 
 import { useTableStore } from '../../stores/index';
 import { TTableCellElement } from '../../types';
@@ -16,7 +17,8 @@ export const useTableCellsMerge = () => {
     const {
       colSpan,
       rowSpan,
-      currentRowIndex: lastRowIndex,
+      // currentRowIndex: lastRowIndex,
+      // currentColIndex: lastColIndex
     } = selectedCellEntries.reduce(
       (acc, current, index) => {
         const [el, path] = current;
@@ -43,46 +45,36 @@ export const useTableCellsMerge = () => {
       }
     );
 
-    const firstRowIndex = lastRowIndex + 1 - rowSpan;
-
-    console.log(
-      'settings:',
-      'rowSpan',
-      rowSpan,
-      'colSpan',
-      colSpan,
-      'lastRowIndex',
-      lastRowIndex,
-      'firstRowIndex',
-      firstRowIndex
-    );
+    // const firstRowIndex = lastRowIndex + 1 - rowSpan;
+    // console.log(
+    //   'settings:',
+    //   'rowSpan',
+    //   rowSpan,
+    //   'colSpan',
+    //   colSpan,
+    //   'lastRowIndex',
+    //   lastRowIndex,
+    //   'firstRowIndex',
+    //   firstRowIndex
+    // );
 
     const contents = [];
 
+    const paths: Path[] = [];
     for (const cellEntry of selectedCellEntries) {
-      const [el] = cellEntry;
-
+      const [el, path] = cellEntry;
+      paths.push(path);
       contents.push(...el.children);
     }
 
-    // cols to remove
-    const cols: any = {};
-    let hasHeaderCell = false;
-    selectedCellEntries.forEach(([entry, path]) => {
-      if (!hasHeaderCell && entry.type === 'table_header_cell') {
-        hasHeaderCell = true;
-      }
-      if (cols[path[1]]) {
-        cols[path[1]].push(path);
-      } else {
-        cols[path[1]] = [path];
-      }
-    });
-
-    Object.values(cols).forEach((paths: any) => {
-      paths?.forEach(() => {
-        removeNodes(editor, { at: paths[0] });
-      });
+    removeNodes(editor, {
+      at: getRange(editor, paths.at(0)!, paths.at(-1)!),
+      match: (_, path) => {
+        if (paths.some((p) => Path.equals(p, path))) {
+          return true;
+        }
+        return false;
+      },
     });
 
     const mergedCell = {

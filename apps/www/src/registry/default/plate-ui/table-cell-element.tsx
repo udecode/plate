@@ -13,10 +13,11 @@ import {
   useTableCellElementResizable,
   useTableCellElementResizableState,
   useTableCellElementState,
-  useTableStore,
 } from '@udecode/plate-table';
 
 import { cn } from '@/lib/utils';
+
+import { ResizeHandle } from './resizable';
 
 export interface TableCellElementProps
   extends PlateElementProps<Value, TTableCellElement> {
@@ -43,8 +44,6 @@ const TableCellElement = React.forwardRef<
   const { props: cellProps } = useTableCellElement({ element: props.element });
   const editor = usePlateEditorRef();
 
-  const hoveredColIndex = useTableStore().get.hoveredColIndex();
-
   const content = element.children
     .map((node: TElement) => node.children[0].text)
     .join(' ');
@@ -57,12 +56,6 @@ const TableCellElement = React.forwardRef<
     useTableCellElementResizable(resizableState);
 
   const Cell = isHeader ? 'th' : 'td';
-
-  // console.log('render cell', element);
-
-  // if (element.children[0].children[0].text === 'Void') {
-  //   console.log('render void cell', nodePath);
-  // }
 
   return (
     <PlateElement
@@ -119,17 +112,17 @@ const TableCellElement = React.forwardRef<
                 {/* <ResizeHandle
                   {...rightProps}
                   className="-top-3 right-[-5px] w-[10px]"
-                />
+                /> */}
                 <ResizeHandle
                   {...bottomProps}
                   className="bottom-[-5px] h-[10px]"
                 />
-                {!hiddenLeft && (
+                {/* {!hiddenLeft && (
                   <ResizeHandle
                     {...leftProps}
                     className="-top-3 left-[-5px] w-[10px]"
                   />
-                )} */}
+                )}  */}
 
                 {/* {rowIndex === 0 && (
                   <ResizeHandle
@@ -140,7 +133,7 @@ const TableCellElement = React.forwardRef<
                     )}
                     {...rightProps}
                   />
-                )} */}
+                )}
 
                 {/* {hovered && rowIndex === 0 && (
                   <div
@@ -151,14 +144,14 @@ const TableCellElement = React.forwardRef<
                   />
                 )} */}
 
-                {hoveredLeft && rowIndex === 0 && (
+                {/* {hoveredLeft && rowIndex === 0 && (
                   <div
                     className={cn(
                       'absolute -top-3 z-30 h-[150px] w-1 bg-ring',
                       'left-[-1.5px]'
                     )}
                   />
-                )}
+                )} */}
               </>
             )}
           </div>
