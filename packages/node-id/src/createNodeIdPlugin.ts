@@ -29,7 +29,7 @@ export interface NodeIdPlugin extends QueryNodeOptions {
   reuseId?: boolean;
 
   /**
-   * By default, when a node inserted using editor.insertNode(s) has an id, it will be used instead of generating a new one, except if it already exists in the document.
+   * By default, when a node inserted using editor.insertNode(s) has an id, it will be used instead of the id generator, except if it already exists in the document.
    * Set this option to true to disable this behavior.
    */
   disableInsertOverrides?: boolean;
