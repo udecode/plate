@@ -1,6 +1,7 @@
 import {
   applyDeepToNodes,
   defaultsDeepToNodes,
+  isDefined,
   PlateEditor,
   queryNode,
   someNode,
@@ -25,6 +26,7 @@ export const withNodeId = <
   {
     options: {
       idKey = '',
+      idOverrideKey,
       idCreator,
       filterText,
       filter,
@@ -53,6 +55,14 @@ export const withNodeId = <
     }
   };
 
+  const overrideIdIfSet = (node: TNode) => {
+    if (idOverrideKey && isDefined(node[idOverrideKey])) {
+      const id = node[idOverrideKey];
+      delete node[idOverrideKey];
+      node[idKey] = id;
+    }
+  };
+
   const query = {
     filter: filterNode,
     allow,
@@ -77,6 +87,14 @@ export const withNodeId = <
         path: operation.path,
         source: idPropsCreator,
         query,
+      });
+
+      // Override id if set
+      applyDeepToNodes({
+        node,
+        query,
+        source: {},
+        apply: overrideIdIfSet,
       });
 
       return apply({
