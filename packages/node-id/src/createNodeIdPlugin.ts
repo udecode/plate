@@ -10,12 +10,6 @@ export interface NodeIdPlugin extends QueryNodeOptions {
   idKey?: string;
 
   /**
-   * To manually insert a node with a custom id, use this node key. For example, inserting a node with `_id: 1` will turn into `id: 1`.
-   * @default '_id'
-   */
-  idOverrideKey?: string;
-
-  /**
    * ID factory, e.g. `uuid`
    * @default () => Date.now()
    */
@@ -33,6 +27,12 @@ export interface NodeIdPlugin extends QueryNodeOptions {
    * @default false
    */
   reuseId?: boolean;
+
+  /**
+   * By default, when a node inserted using editor.insertNode(s) has an id, it will be used instead of generating a new one, except if it already exists in the document.
+   * Set this option to true to disable this behavior.
+   */
+  disableInsertOverrides?: boolean;
 }
 
 export const KEY_NODE_ID = 'nodeId';
@@ -45,7 +45,6 @@ export const createNodeIdPlugin = createPluginFactory<NodeIdPlugin>({
   withOverrides: withNodeId,
   options: {
     idKey: 'id',
-    idOverrideKey: '_id',
     idCreator: () => Math.random().toString(36).slice(2, 7),
     filterText: true,
     filter: () => true,
