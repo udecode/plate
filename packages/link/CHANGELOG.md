@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 23.4.0
+
+### Patch Changes
+
+- [#2579](https://github.com/udecode/plate/pull/2579) by [@zbeyens](https://github.com/zbeyens) – Add missing dependency `@udecode/plate-floating`
+
 ## 23.3.1
 
 ## 23.3.0
