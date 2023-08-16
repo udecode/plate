@@ -7059,6 +7059,7 @@ __metadata:
   resolution: "@udecode/plate-link@workspace:packages/link"
   dependencies:
     "@udecode/plate-common": "npm:23.3.1"
+    "@udecode/plate-floating": "npm:23.3.1"
     "@udecode/plate-normalizers": "npm:23.3.1"
   peerDependencies:
     react: ">=16.8.0"
