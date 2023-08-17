@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "23.4.0",
+  "version": "23.4.1",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -63,13 +63,13 @@
     "@udecode/plate-reset-node": "23.3.1",
     "@udecode/plate-resizable": "23.3.1",
     "@udecode/plate-select": "23.3.1",
-    "@udecode/plate-serializer-csv": "23.3.1",
-    "@udecode/plate-serializer-docx": "23.3.1",
+    "@udecode/plate-serializer-csv": "23.4.1",
+    "@udecode/plate-serializer-docx": "23.4.1",
     "@udecode/plate-serializer-html": "23.3.1",
     "@udecode/plate-serializer-md": "23.4.0",
     "@udecode/plate-suggestion": "23.3.1",
     "@udecode/plate-tabbable": "23.3.1",
-    "@udecode/plate-table": "23.3.1",
+    "@udecode/plate-table": "23.4.1",
     "@udecode/plate-trailing-block": "23.3.1"
   },
   "peerDependencies": {
