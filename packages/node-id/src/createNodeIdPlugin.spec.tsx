@@ -771,4 +771,49 @@ describe('when merging nodes', () => {
       expect(input.children).toEqual(output.children);
     });
   });
+
+  describe('when id override', () => {
+    it('should work', () => {
+      const input = (
+        <editor>
+          <hp id={10}>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as PlateEditor;
+
+      const output = (
+        <editor>
+          <hp id={10}>test</hp>
+          <hli id={1}>
+            <hp id={11}>inserted</hp>
+          </hli>
+          <hp id={12}>test</hp>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+            },
+          }),
+        ],
+      });
+
+      editor.insertNodes([
+        (
+          <hli>
+            <hp _id={11}>inserted</hp>
+          </hli>
+        ) as any,
+        <hp _id={12}>test</hp>,
+      ]);
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
 });

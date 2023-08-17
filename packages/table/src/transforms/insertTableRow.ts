@@ -12,9 +12,9 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { TablePlugin } from '../types';
-import { getCellTypes, getEmptyRowNode } from '../utils/index';
+import { getCellTypes, getEmptyCellNode } from '../utils/index';
 
 export const insertTableRow = <V extends Value>(
   editor: PlateEditor<V>,
@@ -57,18 +57,24 @@ export const insertTableRow = <V extends Value>(
     ELEMENT_TABLE
   );
 
+  const getEmptyRowNode = () => ({
+    type: getPluginType(editor, ELEMENT_TR),
+    children: (trNode.children as TElement[]).map((_, i) =>
+      getEmptyCellNode(editor, {
+        header:
+          header ??
+          (tableEntry[0].children as TElement[]).every(
+            (n) => n.children[i].type === ELEMENT_TH
+          ),
+        ...newCellChildren,
+      })
+    ),
+  });
+
   withoutNormalizing(editor, () => {
-    insertElements(
-      editor,
-      getEmptyRowNode(editor, {
-        header,
-        colCount: (trNode.children as TElement[]).length,
-        newCellChildren,
-      }),
-      {
-        at: Path.isPath(at) ? at : Path.next(trPath),
-      }
-    );
+    insertElements(editor, getEmptyRowNode(), {
+      at: Path.isPath(at) ? at : Path.next(trPath),
+    });
   });
 
   if (!disableSelect) {

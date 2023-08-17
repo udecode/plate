@@ -91,8 +91,9 @@ export const insertTableColumn = <V extends Value>(
 
       const isHeaderRow =
         header === undefined
-          ? (row as TElement).children[0].type ===
-            getPluginType(editor, ELEMENT_TH)
+          ? (row as TElement).children.every(
+              (c) => c.type === getPluginType(editor, ELEMENT_TH)
+            )
           : header;
 
       insertElements(

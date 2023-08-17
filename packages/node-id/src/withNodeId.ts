@@ -1,6 +1,7 @@
 import {
   applyDeepToNodes,
   defaultsDeepToNodes,
+  isDefined,
   PlateEditor,
   queryNode,
   someNode,
@@ -10,6 +11,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
+import { castArray } from 'lodash';
 import cloneDeep from 'lodash/cloneDeep';
 
 import { NodeIdPlugin } from './createNodeIdPlugin';
@@ -31,10 +33,11 @@ export const withNodeId = <
       reuseId,
       allow,
       exclude,
+      disableInsertOverrides,
     },
   }: WithPlatePlugin<NodeIdPlugin, V, E>
 ) => {
-  const { apply } = editor;
+  const { apply, insertNode, insertNodes } = editor;
 
   const idPropsCreator = () => ({ [idKey]: idCreator!() });
 
@@ -53,10 +56,43 @@ export const withNodeId = <
     }
   };
 
+  const overrideIdIfSet = (node: TNode) => {
+    if (isDefined(node._id)) {
+      const id = node._id;
+      delete node._id;
+
+      if (!someNode(editor, { match: { [idKey]: id }, at: [] })) {
+        node[idKey] = id;
+      }
+    }
+  };
+
   const query = {
     filter: filterNode,
     allow,
     exclude,
+  };
+
+  editor.insertNodes = (_nodes, options) => {
+    const nodes = castArray<TNode>(_nodes as any);
+
+    insertNodes(
+      nodes.map((node) => {
+        if (!disableInsertOverrides && node[idKey]) {
+          node._id = node[idKey];
+        }
+        return node;
+      }),
+      options
+    );
+  };
+
+  editor.insertNode = (node) => {
+    if (!disableInsertOverrides && node[idKey]) {
+      node._id = node[idKey];
+    }
+
+    insertNode(node);
   };
 
   editor.apply = (operation) => {
@@ -78,6 +114,15 @@ export const withNodeId = <
         source: idPropsCreator,
         query,
       });
+
+      if (!disableInsertOverrides) {
+        applyDeepToNodes({
+          node,
+          query,
+          source: {},
+          apply: overrideIdIfSet,
+        });
+      }
 
       return apply({
         ...operation,

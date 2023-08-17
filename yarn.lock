@@ -7059,6 +7059,7 @@ __metadata:
   resolution: "@udecode/plate-link@workspace:packages/link"
   dependencies:
     "@udecode/plate-common": "npm:23.3.1"
+    "@udecode/plate-floating": "npm:23.3.1"
     "@udecode/plate-normalizers": "npm:23.3.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -19045,9 +19046,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-tweet@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "react-tweet@npm:3.0.3"
+"react-tweet@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "react-tweet@npm:3.1.0"
   dependencies:
     "@swc/helpers": "npm:^0.5.1"
     clsx: "npm:^1.2.1"
@@ -19056,7 +19057,7 @@ __metadata:
   peerDependencies:
     react: ">= 18.0.0"
     react-dom: ">= 18.0.0"
-  checksum: e28f047c60c83c56b3128f29cc9cc59cfcbba1781d23d6072d693bb50c682ff951e810f3a1f2058fa6eb28d0f1d25ca75579de4b3af43ffe0eeb2c88a8b559c2
+  checksum: c01424b5e1f613cf9d0ad28e32689ee546d55cdd85f81e3f7da979892ad56500525193b40c2c57d668290755f1c03539f1d2e4d9746fa2b5d17930c4201101ba
   languageName: node
   linkType: hard
 
@@ -23181,7 +23182,7 @@ __metadata:
     react-dom: "npm:^18.2.0"
     react-lite-youtube-embed: "npm:^2.3.52"
     react-modal-sheet: "npm:2.0.0"
-    react-tweet: "npm:^3.0.3"
+    react-tweet: "npm:^3.1.0"
     react-wrap-balancer: "npm:^1.0.0"
     rehype: "npm:^12.0.1"
     rehype-autolink-headings: "npm:^6.1.1"
