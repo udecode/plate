@@ -1,8 +1,8 @@
 ---
-"@udecode/plate-floating": major
+"@udecode/plate-floating": minor
 ---
 
-Breaking changes for `FloatingToolbar`:
+`FloatingToolbar`:
 
-- `useFloatingToolbarState`: new
-- `useFloatingToolbar`: now returns `{ ref, props, hidden }`
+- soft br: `useFloatingToolbar` now returns `{ ref, props, hidden }`
+- feat: `useFloatingToolbarState`
