@@ -9,16 +9,16 @@ import {
   someNode,
   useHotkeys,
   usePlateEditorRef,
+  usePlateReadOnly,
   usePlateSelectors,
 } from '@udecode/plate-common';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
-  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
-import { unwrapLink } from '../../index';
+import { LinkFloatingToolbarState, unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import {
   floatingLinkActions,
@@ -31,14 +31,14 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
 export const useFloatingLinkEditState = ({
   floatingOptions,
-}: {
-  floatingOptions?: UseVirtualFloatingOptions;
-} = {}) => {
+}: LinkFloatingToolbarState = {}) => {
   const editor = usePlateEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK
   );
+  const readOnly = usePlateReadOnly();
+  const isEditing = useFloatingLinkSelectors().isEditing();
   const keyEditor = usePlateSelectors().keyEditor();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
@@ -71,8 +71,11 @@ export const useFloatingLinkEditState = ({
   return {
     editor,
     triggerFloatingLinkHotkeys,
+    isOpen,
     floating,
     keyEditor,
+    isEditing,
+    readOnly,
   };
 };
 
@@ -81,6 +84,8 @@ export const useFloatingLinkEdit = ({
   triggerFloatingLinkHotkeys,
   keyEditor,
   floating,
+  isOpen,
+  readOnly,
 }: ReturnType<typeof useFloatingLinkEditState>) => {
   useEffect(() => {
     if (
@@ -97,7 +102,8 @@ export const useFloatingLinkEdit = ({
     if (floatingLinkSelectors.mode() === 'edit') {
       floatingLinkActions.hide();
     }
-  }, [editor, triggerFloatingLinkHotkeys, keyEditor, floating]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, keyEditor, floating.update]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,
@@ -127,6 +133,7 @@ export const useFloatingLinkEdit = ({
         zIndex: 1,
       },
     },
+    hidden: !isOpen || readOnly,
     editButtonProps: {
       onClick: useCallback(() => {
         triggerFloatingLinkEdit(editor);

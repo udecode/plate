@@ -6,6 +6,7 @@ import {
   useHotkeys,
   useOnClickOutside,
   usePlateEditorRef,
+  usePlateReadOnly,
 } from '@udecode/plate-common';
 import {
   getSelectionBoundingClientRect,
@@ -23,16 +24,19 @@ import {
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
+export type LinkFloatingToolbarState = {
+  floatingOptions?: UseVirtualFloatingOptions;
+};
+
 export const useFloatingLinkInsertState = ({
   floatingOptions,
-}: {
-  floatingOptions?: UseVirtualFloatingOptions;
-} = {}) => {
+}: LinkFloatingToolbarState = {}) => {
   const editor = usePlateEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK
   );
+  const readOnly = usePlateReadOnly();
   const focused = useFocused();
   const mode = useFloatingLinkSelectors().mode();
   const isOpen = useFloatingLinkSelectors().isOpen(editor.id);
@@ -51,6 +55,7 @@ export const useFloatingLinkInsertState = ({
     floating,
     focused,
     isOpen,
+    readOnly,
   };
 };
 
@@ -60,6 +65,7 @@ export const useFloatingLinkInsert = ({
   floating,
   focused,
   isOpen,
+  readOnly,
 }: ReturnType<typeof useFloatingLinkInsertState>) => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingLinkActions.text(e.target.value);
@@ -85,7 +91,8 @@ export const useFloatingLinkInsert = ({
     } else {
       floatingLinkActions.updated(false);
     }
-  }, [isOpen, floating.update, floating]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, floating.update]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,
@@ -110,6 +117,7 @@ export const useFloatingLinkInsert = ({
         zIndex: 1,
       },
     },
+    hidden: readOnly,
     textInputProps: {
       onChange,
       defaultValue: floatingLinkSelectors.text(),
