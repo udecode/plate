@@ -35,6 +35,10 @@ export const useFloatingLinkEditState = ({
   floatingOptions?: UseVirtualFloatingOptions;
 } = {}) => {
   const editor = usePlateEditorRef();
+  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
+    editor,
+    ELEMENT_LINK
+  );
   const keyEditor = usePlateSelectors().keyEditor();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
@@ -63,8 +67,21 @@ export const useFloatingLinkEditState = ({
     getBoundingClientRect,
     ...floatingOptions,
   });
-  const { update } = floating;
 
+  return {
+    editor,
+    triggerFloatingLinkHotkeys,
+    floating,
+    keyEditor,
+  };
+};
+
+export const useFloatingLinkEdit = ({
+  editor,
+  triggerFloatingLinkHotkeys,
+  keyEditor,
+  floating,
+}: ReturnType<typeof useFloatingLinkEditState>) => {
   useEffect(() => {
     if (
       editor.selection &&
@@ -73,28 +90,14 @@ export const useFloatingLinkEditState = ({
       })
     ) {
       floatingLinkActions.show('edit', editor.id);
-      update();
+      floating.update();
       return;
     }
 
     if (floatingLinkSelectors.mode() === 'edit') {
       floatingLinkActions.hide();
     }
-  }, [editor, keyEditor, update]);
-
-  return {
-    floating,
-  };
-};
-
-export const useFloatingLinkEdit = ({
-  floating,
-}: ReturnType<typeof useFloatingLinkEditState>) => {
-  const editor = usePlateEditorRef();
-  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
-    editor,
-    ELEMENT_LINK
-  );
+  }, [editor, triggerFloatingLinkHotkeys, keyEditor, floating]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,

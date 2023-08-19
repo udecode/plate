@@ -29,12 +29,7 @@ const floatingOptions: UseVirtualFloatingOptions = {
     offset(12),
     flip({
       padding: 12,
-      fallbackPlacements: [
-        'top-start',
-        'top-end',
-        'bottom-start',
-        'bottom-end',
-      ],
+      fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],
     }),
   ],
 };

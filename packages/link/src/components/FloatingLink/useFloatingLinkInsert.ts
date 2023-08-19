@@ -29,45 +29,38 @@ export const useFloatingLinkInsertState = ({
   floatingOptions?: UseVirtualFloatingOptions;
 } = {}) => {
   const editor = usePlateEditorRef();
-  const focused = useFocused();
-  const mode = useFloatingLinkSelectors().mode();
-  const open = useFloatingLinkSelectors().isOpen(editor.id);
-
-  const floating = useVirtualFloatingLink({
-    editorId: editor.id,
-    open: open && mode === 'insert',
-    getBoundingClientRect: getSelectionBoundingClientRect,
-    whileElementsMounted: () => {},
-    ...floatingOptions,
-  });
-  const { update } = floating;
-
-  // wait for update before focusing input
-  useEffect(() => {
-    if (open) {
-      update();
-      floatingLinkActions.updated(true);
-    } else {
-      floatingLinkActions.updated(false);
-    }
-  }, [open, update]);
-
-  return {
-    floating,
-    focused,
-  };
-};
-
-export const useFloatingLinkInsert = ({
-  floating,
-  focused,
-}: ReturnType<typeof useFloatingLinkInsertState>) => {
-  const editor = usePlateEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK
   );
+  const focused = useFocused();
+  const mode = useFloatingLinkSelectors().mode();
+  const isOpen = useFloatingLinkSelectors().isOpen(editor.id);
 
+  const floating = useVirtualFloatingLink({
+    editorId: editor.id,
+    open: isOpen && mode === 'insert',
+    getBoundingClientRect: getSelectionBoundingClientRect,
+    whileElementsMounted: () => {},
+    ...floatingOptions,
+  });
+
+  return {
+    editor,
+    triggerFloatingLinkHotkeys,
+    floating,
+    focused,
+    isOpen,
+  };
+};
+
+export const useFloatingLinkInsert = ({
+  editor,
+  triggerFloatingLinkHotkeys,
+  floating,
+  focused,
+  isOpen,
+}: ReturnType<typeof useFloatingLinkInsertState>) => {
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingLinkActions.text(e.target.value);
   }, []);
@@ -80,9 +73,19 @@ export const useFloatingLinkInsert = ({
       }
     },
     {
-      disabled: !open,
+      disabled: !isOpen,
     }
   );
+
+  // wait for update before focusing input
+  useEffect(() => {
+    if (isOpen) {
+      floating.update();
+      floatingLinkActions.updated(true);
+    } else {
+      floatingLinkActions.updated(false);
+    }
+  }, [isOpen, floating.update, floating]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,
