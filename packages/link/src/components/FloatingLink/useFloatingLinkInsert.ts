@@ -33,36 +33,6 @@ export const useFloatingLinkInsertState = ({
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 
-  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
-    editor,
-    ELEMENT_LINK
-  );
-
-  useHotkeys(
-    triggerFloatingLinkHotkeys!,
-    (e) => {
-      if (triggerFloatingLinkInsert(editor, { focused })) {
-        e.preventDefault();
-      }
-    },
-    {
-      enableOnContentEditable: true,
-    },
-    [focused]
-  );
-
-  const ref = useOnClickOutside(
-    () => {
-      if (floatingLinkSelectors.mode() === 'insert') {
-        floatingLinkActions.hide();
-        focusEditor(editor, editor.selection!);
-      }
-    },
-    {
-      disabled: !open,
-    }
-  );
-
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
     open: open && mode === 'insert',
@@ -82,29 +52,58 @@ export const useFloatingLinkInsertState = ({
     }
   }, [open, update]);
 
-  useFloatingLinkEscape();
-
   return {
     floating,
-    refClickOutside: ref,
+    focused,
   };
 };
 
-export const useFloatingLinkInsert = (
-  state: ReturnType<typeof useFloatingLinkInsertState>
-) => {
+export const useFloatingLinkInsert = ({
+  floating,
+  focused,
+}: ReturnType<typeof useFloatingLinkInsertState>) => {
+  const editor = usePlateEditorRef();
+  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
+    editor,
+    ELEMENT_LINK
+  );
+
   const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     floatingLinkActions.text(e.target.value);
   }, []);
 
+  const ref = useOnClickOutside(
+    () => {
+      if (floatingLinkSelectors.mode() === 'insert') {
+        floatingLinkActions.hide();
+        focusEditor(editor, editor.selection!);
+      }
+    },
+    {
+      disabled: !open,
+    }
+  );
+
+  useHotkeys(
+    triggerFloatingLinkHotkeys!,
+    (e) => {
+      if (triggerFloatingLinkInsert(editor, { focused })) {
+        e.preventDefault();
+      }
+    },
+    {
+      enableOnContentEditable: true,
+    },
+    [focused]
+  );
+
+  useFloatingLinkEscape();
+
   return {
-    ref: useComposedRef<HTMLDivElement>(
-      state.floating.refs.setFloating,
-      state.refClickOutside
-    ),
+    ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
     props: {
       style: {
-        ...state.floating.style,
+        ...floating.style,
         zIndex: 1,
       },
     },

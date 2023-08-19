@@ -1,6 +1,11 @@
 import React from 'react';
 import { TEditableProps } from '@udecode/plate-common';
 import {
+  flip,
+  offset,
+  UseVirtualFloatingOptions,
+} from '@udecode/plate-floating';
+import {
   FloatingLinkUrlInput,
   LinkOpenButton,
   useFloatingLinkEdit,
@@ -18,17 +23,33 @@ import { inputVariants } from './input';
 import { popoverVariants } from './popover';
 import { Separator } from './separator';
 
+const floatingOptions: UseVirtualFloatingOptions = {
+  placement: 'bottom-start',
+  middleware: [
+    offset(12),
+    flip({
+      padding: 12,
+      fallbackPlacements: [
+        'top-start',
+        'top-end',
+        'bottom-start',
+        'bottom-end',
+      ],
+    }),
+  ],
+};
+
 export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const isEditing = useFloatingLinkSelectors().isEditing();
 
-  const state = useFloatingLinkInsertState();
+  const state = useFloatingLinkInsertState({ floatingOptions });
   const {
     props: insertProps,
     ref: insertRef,
     textInputProps,
   } = useFloatingLinkInsert(state);
 
-  const editState = useFloatingLinkEditState();
+  const editState = useFloatingLinkEditState({ floatingOptions });
   const {
     props: editProps,
     ref: editRef,

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { flip, offset } from '@floating-ui/react';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -79,13 +78,6 @@ export const useFloatingToolbar = ({
   const floatingResult = useVirtualFloating(
     mergeProps(
       {
-        middleware: [
-          offset(12),
-          flip({
-            padding: 96,
-          }),
-        ],
-        placement: 'top',
         getBoundingClientRect: getSelectionBoundingClientRect,
         open,
         onOpenChange: setOpen,

@@ -39,11 +39,6 @@ export const useFloatingLinkEditState = ({
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 
-  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
-    editor,
-    ELEMENT_LINK
-  );
-
   const getBoundingClientRect = useCallback(() => {
     const entry = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_LINK) },
@@ -87,6 +82,20 @@ export const useFloatingLinkEditState = ({
     }
   }, [editor, keyEditor, update]);
 
+  return {
+    floating,
+  };
+};
+
+export const useFloatingLinkEdit = ({
+  floating,
+}: ReturnType<typeof useFloatingLinkEditState>) => {
+  const editor = usePlateEditorRef();
+  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
+    editor,
+    ELEMENT_LINK
+  );
+
   useHotkeys(
     triggerFloatingLinkHotkeys!,
     (e) => {
@@ -108,20 +117,10 @@ export const useFloatingLinkEditState = ({
   useFloatingLinkEscape();
 
   return {
-    floating,
-  };
-};
-
-export const useFloatingLinkEdit = (
-  state: ReturnType<typeof useFloatingLinkEditState>
-) => {
-  const editor = usePlateEditorRef();
-
-  return {
-    ref: state.floating.refs.setFloating,
+    ref: floating.refs.setFloating,
     props: {
       style: {
-        ...state.floating.style,
+        ...floating.style,
         zIndex: 1,
       },
     },

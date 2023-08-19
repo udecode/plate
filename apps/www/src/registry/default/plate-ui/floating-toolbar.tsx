@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { PortalBody } from '@udecode/plate-common';
+import { flip, offset } from '@floating-ui/react';
+import { PortalBody, useComposedRef } from '@udecode/plate-common';
 import {
   useFloatingToolbar,
   UseVirtualFloatingOptions,
@@ -12,8 +13,6 @@ import { Toolbar, ToolbarProps } from './toolbar';
 export interface FloatingToolbarProps extends ToolbarProps {
   children: ReactNode;
 
-  portalElement?: Element;
-
   floatingOptions?: UseVirtualFloatingOptions;
 
   ignoreReadOnly?: boolean;
@@ -21,34 +20,54 @@ export interface FloatingToolbarProps extends ToolbarProps {
   hideToolbar?: boolean;
 }
 
-export function FloatingToolbar({
-  portalElement,
-  floatingOptions,
-  ignoreReadOnly,
-  hideToolbar,
-  children,
-  ...props
-}: FloatingToolbarProps) {
-  const { refs, style, open } = useFloatingToolbar({
-    floatingOptions,
-    ignoreReadOnly,
-    hideToolbar,
-  });
+const FloatingToolbar = React.forwardRef<
+  React.ElementRef<typeof Toolbar>,
+  FloatingToolbarProps
+>(
+  (
+    { floatingOptions, ignoreReadOnly, hideToolbar, children, ...props },
+    _ref
+  ) => {
+    const { refs, style, open } = useFloatingToolbar({
+      floatingOptions: {
+        placement: 'top',
+        middleware: [
+          offset(12),
+          flip({
+            padding: 12,
+            fallbackPlacements: [
+              'top-start',
+              'top-end',
+              'bottom-start',
+              'bottom-end',
+            ],
+          }),
+        ],
+      },
+      ignoreReadOnly,
+      hideToolbar,
+    });
 
-  if (!open) return null;
+    const ref = useComposedRef<HTMLDivElement>(_ref, refs.setFloating);
 
-  return (
-    <PortalBody element={portalElement}>
-      <Toolbar
-        className={cn(
-          'absolute z-50 whitespace-nowrap border bg-popover px-1 opacity-100 shadow-md'
-        )}
-        ref={refs.setFloating}
-        style={style}
-        {...props}
-      >
-        {children}
-      </Toolbar>
-    </PortalBody>
-  );
-}
+    if (!open) return null;
+
+    return (
+      <PortalBody>
+        <Toolbar
+          ref={ref}
+          className={cn(
+            'absolute z-50 whitespace-nowrap border bg-popover px-1 opacity-100 shadow-md'
+          )}
+          style={style}
+          {...props}
+        >
+          {children}
+        </Toolbar>
+      </PortalBody>
+    );
+  }
+);
+FloatingToolbar.displayName = 'FloatingToolbar';
+
+export { FloatingToolbar };
