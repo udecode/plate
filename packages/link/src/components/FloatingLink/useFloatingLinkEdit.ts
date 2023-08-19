@@ -133,7 +133,6 @@ export const useFloatingLinkEdit = ({
         zIndex: 1,
       },
     },
-    hidden: !isOpen || readOnly,
     editButtonProps: {
       onClick: useCallback(() => {
         triggerFloatingLinkEdit(editor);
