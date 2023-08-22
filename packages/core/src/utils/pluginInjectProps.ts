@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 import { EElement, EText, isElement, Value } from '@udecode/slate';
-import { AnyObject } from '@udecode/utils';
+import { AnyObject, isDefined } from '@udecode/utils';
 import clsx from 'clsx';
 
 import { PlateEditor } from '../types/PlateEditor';
@@ -58,12 +58,17 @@ export const pluginInjectProps = <V extends Value>(
     classNames,
     transformClassName,
     transformNodeValue,
+    transformProps,
     transformStyle,
     validNodeValues,
     defaultNodeValue,
+    query,
   } = props;
 
+  const queryResult = query?.(props, nodeProps);
+
   if (
+    !queryResult &&
     validTypes &&
     isElement(node) &&
     node.type &&
@@ -73,27 +78,27 @@ export const pluginInjectProps = <V extends Value>(
   }
 
   const nodeValue = node[nodeKey!] as any;
+  const transformOptions = { ...nodeProps, nodeValue };
+  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
+  transformOptions.nodeValue = value;
 
-  // early return if there is now reason to add styles
+  // early return if there is no reason to inject props
   if (
-    !nodeValue ||
-    (validNodeValues && !validNodeValues.includes(nodeValue)) ||
-    nodeValue === defaultNodeValue
+    !queryResult &&
+    (!isDefined(value) ||
+      (validNodeValues && !validNodeValues.includes(value)) ||
+      value === defaultNodeValue)
   ) {
     return;
   }
 
-  const res: GetInjectPropsReturnType = {};
-
-  const transformOptions = { ...nodeProps, nodeValue };
-
-  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
+  let res: GetInjectPropsReturnType = {};
 
   if (element) {
-    res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
+    res.className = clsx(className, `slate-${nodeKey}-${value}`);
   }
 
-  if (classNames?.[nodeValue] || transformClassName) {
+  if (classNames?.[value] || transformClassName) {
     res.className =
       transformClassName?.(transformOptions) ??
       clsx(className, classNames?.[value]);
@@ -104,6 +109,10 @@ export const pluginInjectProps = <V extends Value>(
       ...style,
       [styleKey as string]: value,
     };
+  }
+
+  if (transformProps) {
+    res = transformProps(res, transformOptions) ?? res;
   }
 
   return res;
