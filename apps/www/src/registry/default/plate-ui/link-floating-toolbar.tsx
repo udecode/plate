@@ -69,7 +69,7 @@ export function LinkFloatingToolbar({ readOnly }: TEditableProps) {
   const editContent = isEditing ? (
     input
   ) : (
-    <div className="box-content flex h-9 items-center gap-1">
+    <div className="print:hidden box-content flex h-9 items-center gap-1">
       <button
         type="button"
         className={buttonVariants({ variant: 'ghost', size: 'sm' })}
