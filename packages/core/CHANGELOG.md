@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 23.6.0
+
+### Minor Changes
+
+- [#2588](https://github.com/udecode/plate/pull/2588) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin`
+  - `inject.props.query` (new): Whether to inject the props. If true, overrides all other checks.
+  - `inject.props.transformProps` (new): Transform the injected props.
+
 ## 23.3.1
 
 ### Patch Changes
