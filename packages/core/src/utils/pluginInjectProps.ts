@@ -3,6 +3,7 @@ import { EElement, EText, isElement, Value } from '@udecode/slate';
 import { AnyObject, isDefined } from '@udecode/utils';
 import clsx from 'clsx';
 
+import { TransformOptions } from '../types';
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 
@@ -78,27 +79,28 @@ export const pluginInjectProps = <V extends Value>(
   }
 
   const nodeValue = node[nodeKey!] as any;
-  const transformOptions = { ...nodeProps, nodeValue };
-  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
-  transformOptions.nodeValue = value;
 
   // early return if there is no reason to inject props
   if (
     !queryResult &&
-    (!isDefined(value) ||
-      (validNodeValues && !validNodeValues.includes(value)) ||
-      value === defaultNodeValue)
+    (!isDefined(nodeValue) ||
+      (validNodeValues && !validNodeValues.includes(nodeValue)) ||
+      nodeValue === defaultNodeValue)
   ) {
     return;
   }
 
+  const transformOptions: TransformOptions<V> = { ...nodeProps, nodeValue };
+  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
+  transformOptions.value = value;
+
   let res: GetInjectPropsReturnType = {};
 
   if (element) {
-    res.className = clsx(className, `slate-${nodeKey}-${value}`);
+    res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
   }
 
-  if (classNames?.[value] || transformClassName) {
+  if (classNames?.[nodeValue] || transformClassName) {
     res.className =
       transformClassName?.(transformOptions) ??
       clsx(className, classNames?.[value]);

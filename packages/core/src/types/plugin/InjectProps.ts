@@ -10,6 +10,7 @@ import {
 export interface TransformOptions<V extends Value = Value>
   extends GetInjectPropsOptions<V> {
   nodeValue?: any;
+  value?: any;
 }
 
 export interface InjectProps<V extends Value> {
@@ -35,7 +36,7 @@ export interface InjectProps<V extends Value> {
       nodeKey?: string;
 
       /**
-       * Full control of the props to inject. If true, overrides all other checks.
+       * Whether to inject the props. If true, overrides all other checks.
        */
       query?: (
         options: NonNullable<NonNullable<InjectProps<V>['inject']>['props']>,
