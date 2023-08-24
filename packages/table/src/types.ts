@@ -77,9 +77,16 @@ export interface TTableRowElement extends TElement {
 }
 
 export interface TTableCellElement extends TElement {
-  colSpan?: number;
   size?: number;
   background?: string;
+  colSpan?: number;
+  rowSpan?: number;
+  colIndex?: number;
+  rowIndex?: number;
+  attributes?: {
+    colspan?: string;
+    rowspan?: string;
+  };
   borders?: {
     top?: BorderStyle;
     left?: BorderStyle;

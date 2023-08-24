@@ -13,6 +13,7 @@ import { useTableColSizes } from './useTableColSizes';
 
 export interface TableElementState {
   colSizes: number[];
+  tableWidth: number;
   isSelectingCell: boolean;
   minColumnWidth: number;
   marginLeft: number;
@@ -47,13 +48,14 @@ export const useTableElementState = ({
     colSizes = transformColSizes(colSizes);
   }
 
-  // add a last col to fill the remaining space
-  if (!colSizes.includes(0)) {
-    colSizes.push('100%' as any);
-  }
+  // TODO: get rid of mutating here
+  element.colSizes = colSizes;
+
+  const tableWidth = colSizes.reduce((acc, cur) => acc + cur, 0);
 
   return {
     colSizes,
+    tableWidth,
     isSelectingCell: !!selectedCells,
     minColumnWidth: minColumnWidth!,
     marginLeft,

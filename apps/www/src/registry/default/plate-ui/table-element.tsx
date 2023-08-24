@@ -11,8 +11,10 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
+  getTableGridAbove,
   TTableElement,
   useTableBordersDropdownMenuContentState,
+  useTableCellsMerge,
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
@@ -114,15 +116,76 @@ const TableFloatingToolbar = React.forwardRef<
 
   const readOnly = useReadOnly();
   const editor = usePlateEditorState();
-  const open =
+
+  const { onMergeCells, onUnmerge } = useTableCellsMerge();
+
+  const collapsedToolbar =
     !readOnly &&
     someNode(editor, {
       match: (n) => n === element,
     }) &&
     isCollapsed(editor.selection);
 
+  const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+
+  const canUnmerge =
+    collapsedToolbar &&
+    cellEntries &&
+    cellEntries.length === 1 &&
+    ((cellEntries[0][0] as any)?.colSpan > 1 ||
+      (cellEntries[0][0] as any)?.rowSpan > 1);
+
+  const mergeToolbar =
+    !readOnly &&
+    someNode(editor, {
+      match: (n) => n === element,
+    }) &&
+    !isCollapsed(editor.selection);
+
+  const mergeContent = mergeToolbar && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={onMergeCells}
+    >
+      <Icons.combine className="mr-2 h-4 w-4" />
+      Merge
+    </Button>
+  );
+
+  const unmergeButton = canUnmerge && (
+    <Button contentEditable={false} variant="ghost" isMenu onClick={onUnmerge}>
+      <Icons.combine className="mr-2 h-4 w-4" />
+      Unmerge
+    </Button>
+  );
+  
+
+  const bordersContent = collapsedToolbar && (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" isMenu>
+            <Icons.borderAll className="mr-2 h-4 w-4" />
+            Borders
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuPortal>
+          <TableBordersDropdownMenuContent />
+        </DropdownMenuPortal>
+      </DropdownMenu>
+
+      <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
+        <Icons.delete className="mr-2 h-4 w-4" />
+        Delete
+      </Button>
+    </>
+  );
+
   return (
-    <Popover open={open} modal={false}>
+    <Popover open={collapsedToolbar || mergeToolbar} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         ref={ref}
@@ -130,23 +193,9 @@ const TableFloatingToolbar = React.forwardRef<
         onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
-              <Icons.borderAll className="mr-2 h-4 w-4" />
-              Borders
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <TableBordersDropdownMenuContent />
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
-          <Icons.delete className="mr-2 h-4 w-4" />
-          Delete
-        </Button>
+        {bordersContent}
+        {unmergeButton}
+        {mergeContent}
       </PopoverContent>
     </Popover>
   );
@@ -157,9 +206,11 @@ const TableElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps
 >(({ className, children, ...props }, ref) => {
-  const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
+  const { colSizes, tableWidth, isSelectingCell, minColumnWidth, marginLeft } =
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
+
+  // console.log('colSizes', colSizes);
 
   return (
     <TableFloatingToolbar>
@@ -168,14 +219,14 @@ const TableElement = React.forwardRef<
           asChild
           ref={ref}
           className={cn(
-            'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
+            'relative my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
             isSelectingCell && '[&_*::selection]:bg-none',
             className
           )}
           {...tableProps}
           {...props}
         >
-          <table>
+          <table style={{ width: tableWidth }}>
             <colgroup {...colGroupProps}>
               {colSizes.map((width, index) => (
                 <col

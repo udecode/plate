@@ -145,6 +145,7 @@ export const useTableCellElementResizable = ({
   const handleResizeRight = useCallback(
     ({ initialSize: currentInitial, delta, finished }: ResizeEvent) => {
       const nextInitial = colSizesWithoutOverrides[colIndex + 1];
+      console.log('handle resize', currentInitial, nextInitial, minColumnWidth);
 
       const complement = (width: number) =>
         currentInitial + nextInitial - width;
@@ -157,11 +158,11 @@ export const useTableCellElementResizable = ({
         stepX
       );
 
-      const nextNew = nextInitial ? complement(currentNew) : undefined;
+      // const nextNew = nextInitial ? complement(currentNew) : undefined;
 
       const fn = finished ? setColSize : overrideColSize;
       fn(colIndex, currentNew);
-      if (nextNew) fn(colIndex + 1, nextNew);
+      // if (nextNew) fn(colIndex + 1, nextNew);
     },
     [
       colIndex,
@@ -229,12 +230,15 @@ export const useTableCellElementResizable = ({
   /* eslint-disable @typescript-eslint/no-shadow */
   const getHandleHoverProps = (colIndex: number) => ({
     onHover: () => {
+      console.log('hovering over handle', colIndex);
       if (hoveredColIndex === null) {
+        console.log('setting hovered col index', colIndex);
         setHoveredColIndex(colIndex);
       }
     },
     onHoverEnd: () => {
       if (hoveredColIndex === colIndex) {
+        console.log('unsetting hovered col index');
         setHoveredColIndex(null);
       }
     },
