@@ -114,7 +114,7 @@ export const pluginInjectProps = <V extends Value>(
   }
 
   if (transformProps) {
-    res = transformProps(res, transformOptions) ?? res;
+    res = transformProps(transformOptions, res) ?? res;
   }
 
   return res;

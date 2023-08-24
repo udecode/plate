@@ -65,8 +65,8 @@ export interface InjectProps<V extends Value> {
        * Transform the injected props.
        */
       transformProps?: (
-        props: GetInjectPropsReturnType,
-        options: TransformOptions<V>
+        options: TransformOptions<V>,
+        props: GetInjectPropsReturnType
       ) => AnyObject | undefined;
 
       /**
