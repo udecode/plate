@@ -6909,7 +6909,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-floating@npm:23.3.1, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
+"@udecode/plate-floating@npm:23.5.0, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-floating@workspace:packages/floating"
   dependencies:
@@ -7054,12 +7054,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-link@npm:23.3.1, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
+"@udecode/plate-link@npm:23.5.0, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-link@workspace:packages/link"
   dependencies:
     "@udecode/plate-common": "npm:23.3.1"
-    "@udecode/plate-floating": "npm:23.3.1"
+    "@udecode/plate-floating": "npm:23.5.0"
     "@udecode/plate-normalizers": "npm:23.3.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7115,7 +7115,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-node-id@npm:23.3.1, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
+"@udecode/plate-node-id@npm:23.4.0, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/node-id"
   dependencies:
@@ -7215,13 +7215,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:23.3.1, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:23.4.1, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.7"
     "@udecode/plate-common": "npm:23.3.1"
-    "@udecode/plate-table": "npm:23.3.1"
+    "@udecode/plate-table": "npm:23.4.1"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7233,7 +7233,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:23.3.1, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:23.4.1, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -7243,7 +7243,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:23.3.1"
     "@udecode/plate-media": "npm:23.3.1"
     "@udecode/plate-paragraph": "npm:23.3.1"
-    "@udecode/plate-table": "npm:23.3.1"
+    "@udecode/plate-table": "npm:23.4.1"
     validator: "npm:^13.9.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -7272,7 +7272,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:23.3.1, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:23.5.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
@@ -7280,7 +7280,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:23.3.1"
     "@udecode/plate-common": "npm:23.3.1"
     "@udecode/plate-heading": "npm:23.3.1"
-    "@udecode/plate-link": "npm:23.3.1"
+    "@udecode/plate-link": "npm:23.5.0"
     "@udecode/plate-list": "npm:23.3.1"
     "@udecode/plate-paragraph": "npm:23.3.1"
     remark-parse: "npm:^9.0.0"
@@ -7323,7 +7323,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:23.3.1, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:23.4.1, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -7441,7 +7441,7 @@ __metadata:
     "@udecode/plate-comments": "npm:23.3.1"
     "@udecode/plate-common": "npm:23.3.1"
     "@udecode/plate-find-replace": "npm:23.3.1"
-    "@udecode/plate-floating": "npm:23.3.1"
+    "@udecode/plate-floating": "npm:23.5.0"
     "@udecode/plate-font": "npm:23.3.1"
     "@udecode/plate-heading": "npm:23.3.1"
     "@udecode/plate-highlight": "npm:23.3.1"
@@ -7450,23 +7450,23 @@ __metadata:
     "@udecode/plate-indent-list": "npm:23.3.1"
     "@udecode/plate-kbd": "npm:23.3.1"
     "@udecode/plate-line-height": "npm:23.3.1"
-    "@udecode/plate-link": "npm:23.3.1"
+    "@udecode/plate-link": "npm:23.5.0"
     "@udecode/plate-list": "npm:23.3.1"
     "@udecode/plate-media": "npm:23.3.1"
     "@udecode/plate-mention": "npm:23.3.1"
-    "@udecode/plate-node-id": "npm:23.3.1"
+    "@udecode/plate-node-id": "npm:23.4.0"
     "@udecode/plate-normalizers": "npm:23.3.1"
     "@udecode/plate-paragraph": "npm:23.3.1"
     "@udecode/plate-reset-node": "npm:23.3.1"
     "@udecode/plate-resizable": "npm:23.3.1"
     "@udecode/plate-select": "npm:23.3.1"
-    "@udecode/plate-serializer-csv": "npm:23.3.1"
-    "@udecode/plate-serializer-docx": "npm:23.3.1"
+    "@udecode/plate-serializer-csv": "npm:23.4.1"
+    "@udecode/plate-serializer-docx": "npm:23.4.1"
     "@udecode/plate-serializer-html": "npm:23.3.1"
-    "@udecode/plate-serializer-md": "npm:23.3.1"
+    "@udecode/plate-serializer-md": "npm:23.5.0"
     "@udecode/plate-suggestion": "npm:23.3.1"
     "@udecode/plate-tabbable": "npm:23.3.1"
-    "@udecode/plate-table": "npm:23.3.1"
+    "@udecode/plate-table": "npm:23.4.1"
     "@udecode/plate-trailing-block": "npm:23.3.1"
   peerDependencies:
     react: ">=16.8.0"
