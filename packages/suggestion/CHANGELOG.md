@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 23.6.0
+
 ## 23.3.1
 
 ## 23.3.0

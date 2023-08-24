@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-marks",
-  "version": "23.3.1",
+  "version": "23.6.0",
   "description": "Basic marks plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -29,7 +29,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "23.3.1"
+    "@udecode/plate-common": "23.6.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

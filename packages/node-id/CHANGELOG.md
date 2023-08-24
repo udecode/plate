@@ -1,5 +1,7 @@
 # @udecode/plate-node-id
 
+## 23.6.0
+
 ## 23.4.0
 
 ### Minor Changes
