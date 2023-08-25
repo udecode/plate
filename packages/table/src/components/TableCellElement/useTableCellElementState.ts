@@ -18,7 +18,6 @@ import {
   getTableCellBorders,
 } from './getTableCellBorders';
 import { useIsCellSelected } from './useIsCellSelected';
-import { useTableCellElementResizableState } from './useTableCellElementResizable';
 
 export type TableCellElementState = {
   colIndex: number;
@@ -32,14 +31,6 @@ export type TableCellElementState = {
   borders: BorderStylesDefault;
   isSelectingCell: boolean;
   cellRef: MutableRefObject<HTMLTableCellElement | undefined>;
-  resizableState: {
-    disableMarginLeft: boolean | undefined;
-    colIndex: number;
-    rowIndex: number;
-    colSpan: number;
-    stepX: number | undefined;
-    stepY: number | undefined;
-  };
 };
 
 export const useTableCellElementState = ({
@@ -66,6 +57,7 @@ export const useTableCellElementState = ({
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
   const selectedCells = useTableStore().get.selectedCells();
+  const cellOffsets = useTableStore().get.cellsOffsets();
 
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
@@ -76,75 +68,13 @@ export const useTableCellElementState = ({
   const endColIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
   const startCIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
 
-  if (cellRef.current && hoveredColIndex === null) {
-    const cellOffset = cellRef.current?.offsetLeft;
+  if (cellRef.current && hoveredColIndex === null && cellOffsets) {
+    const cellOffset = cellRef.current.offsetLeft;
 
-    // TODO: improve typing. colSizes always presented when rendering cell
-    const colSizes = tableElement.colSizes!;
-    const { offsets } = colSizes.reduce(
-      (acc, current) => {
-        const currentOffset = acc.prevOffset + current;
-        acc.offsets.push(currentOffset);
-        acc.prevOffset = currentOffset;
-        return acc;
-      },
-      {
-        offsets: [0],
-        prevOffset: 0,
-      }
-    );
-
-    const startColIndex = getClosest(cellOffset, offsets);
-    cellElement.colIndex = startColIndex;
+    const startColIndex = getClosest(cellOffset, cellOffsets);
     startCIndex.current = startColIndex;
     endColIndex.current = startColIndex + cellElement.colSpan - 1;
   }
-
-  const resizableState = useTableCellElementResizableState({
-    colIndex: endColIndex.current,
-    rowIndex,
-    colSpan: cellElement.colSpan!,
-  });
-
-  const content = cellElement.children
-    .map((node) => (node as TTableCellElement).children[0].text)
-    .join(' ');
-
-  console.log('cell element component');
-
-  // console.log(
-  //   'content',
-  //   content,
-  //   resizableState
-  //   // 'rowIndex',
-  //   // rowIndex,
-  //   // 'colIndex',
-  //   // cIndex.current,
-  //   // 'path',
-  //   // path,
-  //   // 'props.nodeProps',
-  //   // props.nodeProps,
-  //   // 'cellRef.current',
-  //   // cellRef.current,
-  //   // 'offset',
-  //   // cellOffset,
-
-  //   // 'cellElement.colSpan',
-  //   // cellElement.colSpan,
-  //   // 'cellWidth',
-  //   // cellWidth,
-  //   // 'offsets',
-  //   // offsets,
-  //   // 'colSpan',
-  //   // cellElement.colSpan,
-  //   // 'rowSpan',
-  //   // cellElement.rowSpan,
-  //   // 'startColIndex',
-  //   // startCIndex.current,
-  //   // 'endColIndex',
-  //   // endColIndex.current
-  //   // colSizes,
-  // );
 
   const isFirstCell = startCIndex.current === 0;
   const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -166,7 +96,6 @@ export const useTableCellElementState = ({
     borders,
     isSelectingCell: !!selectedCells,
     cellRef,
-    resizableState,
   };
 };
 

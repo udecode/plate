@@ -90,12 +90,6 @@ export const useResizeHandleState = ({
 
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      // console.log(
-      //   'send resize event, _initialSize',
-      //   _initialSize,
-      //   'initialSize',
-      //   initialSize
-      // );
       onResize?.({
         initialSize: _initialSize ?? initialSize,
         delta,

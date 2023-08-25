@@ -167,20 +167,6 @@ export const useTableCellElementResizable = ({
       );
 
       const nextNew = nextInitial ? complement(currentNew) : undefined;
-      // console.log(
-      //   'currentInitial',
-      //   currentInitial,
-      //   'currentNew',
-      //   currentNew,
-      //   'colSizesWithoutOverrides',
-      //   colSizesWithoutOverrides,
-      //   'nextInitial',
-      //   nextInitial,
-      //   'nextNew',
-      //   nextNew,
-      //   'finished',
-      //   finished
-      // );
 
       const fn = finished ? setColSize : overrideColSize;
       fn(colIndex, currentNew);
@@ -252,15 +238,12 @@ export const useTableCellElementResizable = ({
   /* eslint-disable @typescript-eslint/no-shadow */
   const getHandleHoverProps = (colIndex: number) => ({
     onHover: () => {
-      // console.log('hovering over handle', colIndex);
       if (hoveredColIndex === null) {
-        // console.log('setting hovered col index', colIndex);
         setHoveredColIndex(colIndex);
       }
     },
     onHoverEnd: () => {
       if (hoveredColIndex === colIndex) {
-        // console.log('unsetting hovered col index');
         setHoveredColIndex(null);
       }
     },

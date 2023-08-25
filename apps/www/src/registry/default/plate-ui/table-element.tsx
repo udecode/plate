@@ -161,7 +161,6 @@ const TableFloatingToolbar = React.forwardRef<
     </Button>
   );
   
-
   const bordersContent = collapsedToolbar && (
     <>
       <DropdownMenu modal={false}>
@@ -193,9 +192,9 @@ const TableFloatingToolbar = React.forwardRef<
         onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
-        {bordersContent}
         {unmergeButton}
         {mergeContent}
+        {bordersContent}
       </PopoverContent>
     </Popover>
   );
@@ -209,8 +208,6 @@ const TableElement = React.forwardRef<
   const { colSizes, tableWidth, isSelectingCell, minColumnWidth, marginLeft } =
     useTableElementState();
   const { props: tableProps, colGroupProps } = useTableElement();
-
-  // console.log('colSizes', colSizes);
 
   return (
     <TableFloatingToolbar>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -13,6 +13,7 @@ import {
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
+import { getCellOffsets } from '../TableCellElement/getCellsOffsets';
 
 /**
  * Returns colSizes with overrides applied.
@@ -30,12 +31,23 @@ export const useTableColSizes = (
     ELEMENT_TABLE
   );
 
-  const overriddenColSizes = getTableOverriddenColSizes(
-    tableNode,
-    disableOverrides ? undefined : colSizeOverrides
+  const colCount = getTableColumnCount(tableNode);
+
+  // spread needed here to apply new array, not a reference
+  const overriddenColSizes = useMemo(
+    () =>
+      getTableOverriddenColSizes(
+        colCount,
+        tableNode.colSizes ? [...tableNode.colSizes] : undefined,
+        disableOverrides ? undefined : colSizeOverrides
+      ),
+    [colCount, colSizeOverrides, disableOverrides, tableNode.colSizes]
   );
 
-  const colCount = getTableColumnCount(tableNode);
+  const setCellsOffsets = useTableStore().set.cellsOffsets();
+  useEffect(() => {
+    setCellsOffsets(getCellOffsets(overriddenColSizes));
+  }, [overriddenColSizes, setCellsOffsets]);
 
   useEffect(() => {
     if (

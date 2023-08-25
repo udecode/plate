@@ -81,8 +81,6 @@ export interface TTableCellElement extends TElement {
   background?: string;
   colSpan?: number;
   rowSpan?: number;
-  colIndex?: number;
-  rowIndex?: number;
   attributes?: {
     colspan?: string;
     rowspan?: string;

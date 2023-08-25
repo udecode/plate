@@ -12,8 +12,10 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
+import { getRowSpan } from '../components/TableCellElement/getRowSpan';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { TablePlugin } from '../types';
+import { getTableColumnCount } from '../queries';
+import * as types from '../types';
 import { getCellTypes, getEmptyRowNode } from '../utils/index';
 
 export const insertTableRow = <V extends Value>(
@@ -44,7 +46,7 @@ export const insertTableRow = <V extends Value>(
       });
   if (!trEntry) return;
 
-  const [trNode, trPath] = trEntry;
+  const [, trPath] = trEntry;
 
   const tableEntry = getBlockAbove(editor, {
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -52,21 +54,35 @@ export const insertTableRow = <V extends Value>(
   });
   if (!tableEntry) return;
 
-  const { newCellChildren } = getPluginOptions<TablePlugin, V>(
+  const { newCellChildren } = getPluginOptions<types.TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
+
+  const currentCellEntry = findNode(editor, {
+    at: fromRow,
+    match: { type: getCellTypes(editor) },
+  });
+  if (!currentCellEntry) return;
+
+  const [cellNode] = currentCellEntry;
+  const cellElement = cellNode as types.TTableCellElement;
+  const rowSpan = getRowSpan(cellElement);
+
+  // consider merged cell with rowSpan > 1
+  const rowIndex = trPath.at(-1)!; // TODO: improve typing
+  const updateTrPath = [...trPath.slice(0, -1), rowIndex + rowSpan - 1];
 
   withoutNormalizing(editor, () => {
     insertElements(
       editor,
       getEmptyRowNode(editor, {
         header,
-        colCount: (trNode.children as TElement[]).length,
+        colCount: getTableColumnCount(tableEntry[0] as TElement),
         newCellChildren,
       }),
       {
-        at: Path.isPath(at) ? at : Path.next(trPath),
+        at: Path.isPath(at) ? at : Path.next(updateTrPath),
       }
     );
   });

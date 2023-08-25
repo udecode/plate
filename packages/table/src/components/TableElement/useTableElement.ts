@@ -43,11 +43,10 @@ export const useTableElementState = ({
     : marginLeftOverride ?? element.marginLeft ?? 0;
 
   let colSizes = useTableColSizes(element);
-
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);
   }
-
+  
   const tableWidth = colSizes.reduce((acc, cur) => acc + cur, 0);
 
   return {

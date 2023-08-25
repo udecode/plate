@@ -27,6 +27,7 @@ const TableCellElement = React.forwardRef<
   const {
     colIndex,
     rowIndex,
+    colSpan,
     readOnly,
     selected,
     hovered,
@@ -35,15 +36,19 @@ const TableCellElement = React.forwardRef<
     borders,
     isSelectingCell,
     cellRef,
-    resizableState,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
+
+  const resizableState = useTableCellElementResizableState({
+    colIndex,
+    rowIndex,
+    colSpan,
+  });
 
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
 
   const Cell = isHeader ? 'th' : 'td';
-
 
   return (
     <PlateElement
