@@ -156,7 +156,7 @@ const TableFloatingToolbar = React.forwardRef<
 
   const unmergeButton = canUnmerge && (
     <Button contentEditable={false} variant="ghost" isMenu onClick={onUnmerge}>
-      <Icons.combine className="mr-2 h-4 w-4" />
+      <Icons.ungroup className="mr-2 h-4 w-4" />
       Unmerge
     </Button>
   );
