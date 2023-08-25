@@ -68,10 +68,12 @@ export const useTableCellElementState = ({
   const endColIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
   const startCIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
 
+  // TODO: measure performance on huge table with the following approach.
+  // consider using lodash memoize for getting closest
   if (cellRef.current && hoveredColIndex === null && cellOffsets) {
     const cellOffset = cellRef.current.offsetLeft;
-
     const startColIndex = getClosest(cellOffset, cellOffsets);
+
     startCIndex.current = startColIndex;
     endColIndex.current = startColIndex + cellElement.colSpan - 1;
   }
