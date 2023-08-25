@@ -48,9 +48,6 @@ export const useTableElementState = ({
     colSizes = transformColSizes(colSizes);
   }
 
-  // TODO: get rid of mutating here
-  element.colSizes = colSizes;
-
   const tableWidth = colSizes.reduce((acc, cur) => acc + cur, 0);
 
   return {

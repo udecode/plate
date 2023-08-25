@@ -22,6 +22,7 @@ import { useTableCellElementResizableState } from './useTableCellElementResizabl
 
 export type TableCellElementState = {
   colIndex: number;
+  colSpan: number;
   rowIndex: number;
   readOnly: boolean;
   hovered: boolean;
@@ -35,6 +36,7 @@ export type TableCellElementState = {
     disableMarginLeft: boolean | undefined;
     colIndex: number;
     rowIndex: number;
+    colSpan: number;
     stepX: number | undefined;
     stepY: number | undefined;
   };
@@ -101,45 +103,48 @@ export const useTableCellElementState = ({
   const resizableState = useTableCellElementResizableState({
     colIndex: endColIndex.current,
     rowIndex,
+    colSpan: cellElement.colSpan!,
   });
 
   const content = cellElement.children
     .map((node) => (node as TTableCellElement).children[0].text)
     .join(' ');
 
-  console.log(
-    'content',
-    content,
-    resizableState
-    // 'rowIndex',
-    // rowIndex,
-    // 'colIndex',
-    // cIndex.current,
-    // 'path',
-    // path,
-    // 'props.nodeProps',
-    // props.nodeProps,
-    // 'cellRef.current',
-    // cellRef.current,
-    // 'offset',
-    // cellOffset,
+  console.log('cell element component');
 
-    // 'cellElement.colSpan',
-    // cellElement.colSpan,
-    // 'cellWidth',
-    // cellWidth,
-    // 'offsets',
-    // offsets,
-    // 'colSpan',
-    // cellElement.colSpan,
-    // 'rowSpan',
-    // cellElement.rowSpan,
-    // 'startColIndex',
-    // startCIndex.current,
-    // 'endColIndex',
-    // endColIndex.current
-    // colSizes,
-  );
+  // console.log(
+  //   'content',
+  //   content,
+  //   resizableState
+  //   // 'rowIndex',
+  //   // rowIndex,
+  //   // 'colIndex',
+  //   // cIndex.current,
+  //   // 'path',
+  //   // path,
+  //   // 'props.nodeProps',
+  //   // props.nodeProps,
+  //   // 'cellRef.current',
+  //   // cellRef.current,
+  //   // 'offset',
+  //   // cellOffset,
+
+  //   // 'cellElement.colSpan',
+  //   // cellElement.colSpan,
+  //   // 'cellWidth',
+  //   // cellWidth,
+  //   // 'offsets',
+  //   // offsets,
+  //   // 'colSpan',
+  //   // cellElement.colSpan,
+  //   // 'rowSpan',
+  //   // cellElement.rowSpan,
+  //   // 'startColIndex',
+  //   // startCIndex.current,
+  //   // 'endColIndex',
+  //   // endColIndex.current
+  //   // colSizes,
+  // );
 
   const isFirstCell = startCIndex.current === 0;
   const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -152,6 +157,7 @@ export const useTableCellElementState = ({
   return {
     colIndex: endColIndex.current,
     rowIndex,
+    colSpan: cellElement.colSpan,
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
     hovered: hoveredColIndex === endColIndex.current,
