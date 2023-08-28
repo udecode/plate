@@ -46,6 +46,7 @@ export const useTableCellElementState = ({
   const cellRef = useRef<HTMLTableDataCellElement>();
 
   // TODO: get rid of mutating element here
+  // currently needed only for pasting tables from clipboard to gather span attributes
   cellElement.colSpan = getColSpan(cellElement);
   cellElement.rowSpan = getRowSpan(cellElement);
 
@@ -68,8 +69,8 @@ export const useTableCellElementState = ({
   const endColIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
   const startCIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
 
-  // TODO: measure performance on huge table with the following approach.
-  // consider using lodash memoize for getting closest
+  // TODO: measure performance on huge tables with the following approach.
+  // consider using cached offsets to calculate "closest" per column only (not for each cell)
   if (cellRef.current && hoveredColIndex === null && cellOffsets) {
     const cellOffset = cellRef.current.offsetLeft;
     const startColIndex = getClosest(cellOffset, cellOffsets);
