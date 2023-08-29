@@ -46,7 +46,7 @@ export const useTableElementState = ({
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);
   }
-  
+
   const tableWidth = colSizes.reduce((acc, cur) => acc + cur, 0);
 
   return {

@@ -43,7 +43,7 @@ export const useTableCellElementState = ({
 } = {}): TableCellElementState => {
   const editor = usePlateEditorRef();
   const cellElement = useElement<TTableCellElement>();
-  const cellRef = useRef<HTMLTableDataCellElement>();
+  const cellRef = useRef<HTMLTableCellElement>();
 
   // TODO: get rid of mutating element here
   // currently needed only for pasting tables from clipboard to gather span attributes

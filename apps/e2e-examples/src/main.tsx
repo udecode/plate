@@ -13,6 +13,7 @@ const router = createBrowserRouter([
 
 const rootElement = document.querySelector('#root');
 
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.render(
   <React.StrictMode>
     <RouterProvider router={router} />
