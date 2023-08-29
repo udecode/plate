@@ -13,10 +13,10 @@ import {
 import { Path } from 'slate';
 
 import { getRowSpan } from '../components/TableCellElement/getRowSpan';
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import * as types from '../types';
-import { getCellTypes, getEmptyRowNode } from '../utils/index';
+import { getCellTypes, getEmptyCellNode } from '../utils/index';
 
 export const insertTableRow = <V extends Value>(
   editor: PlateEditor<V>,
@@ -73,18 +73,27 @@ export const insertTableRow = <V extends Value>(
   const rowIndex = trPath.at(-1)!; // TODO: improve typing
   const updateTrPath = [...trPath.slice(0, -1), rowIndex + rowSpan - 1];
 
+  const colCount = getTableColumnCount(tableEntry[0] as TElement);
+  const getEmptyRowNode = () => ({
+    type: getPluginType(editor, ELEMENT_TR),
+    children: Array.from({ length: colCount })
+      .fill(colCount)
+      .map((_, i) =>
+        getEmptyCellNode(editor, {
+          header:
+            header ??
+            (tableEntry[0].children as TElement[]).every(
+              (n) => n.children[i].type === ELEMENT_TH
+            ),
+          ...newCellChildren,
+        })
+      ),
+  });
+
   withoutNormalizing(editor, () => {
-    insertElements(
-      editor,
-      getEmptyRowNode(editor, {
-        header,
-        colCount: getTableColumnCount(tableEntry[0] as TElement),
-        newCellChildren,
-      }),
-      {
-        at: Path.isPath(at) ? at : Path.next(updateTrPath),
-      }
-    );
+    insertElements(editor, getEmptyRowNode(), {
+      at: Path.isPath(at) ? at : Path.next(updateTrPath),
+    });
   });
 
   if (!disableSelect) {

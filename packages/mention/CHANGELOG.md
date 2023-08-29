@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
 ## 23.0.0
 
 ### Minor Changes

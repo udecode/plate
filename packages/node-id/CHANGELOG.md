@@ -1,5 +1,18 @@
 # @udecode/plate-node-id
 
+## 23.6.0
+
+## 23.4.0
+
+### Minor Changes
+
+- [#2579](https://github.com/udecode/plate/pull/2579) by [@zbeyens](https://github.com/zbeyens) – New plugin option `disableInsertOverrides`: when a node inserted using editor.insertNode(s) has an id, it will be used instead of the id generator, except if it already exists in the document.
+  Set this option to `true` to disable this behavior.
+
+## 23.3.1
+
+## 23.3.0
+
 ## 22.0.2
 
 ## 22.0.1

@@ -1,5 +1,20 @@
 # @udecode/plate-floating
 
+## 23.6.0
+
+## 23.5.0
+
+### Minor Changes
+
+- [#2585](https://github.com/udecode/plate/pull/2585) by [@zbeyens](https://github.com/zbeyens) – `FloatingToolbar`:
+
+  - soft br: `useFloatingToolbar` now returns `{ ref, props, hidden }`
+  - feat: `useFloatingToolbarState`
+
+## 23.3.1
+
+## 23.3.0
+
 ## 22.0.2
 
 ## 22.0.1

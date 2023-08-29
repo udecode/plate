@@ -1,5 +1,11 @@
 # @udecode/plate-resizable
 
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
 ## 23.1.0
 
 ### Patch Changes

@@ -4,14 +4,16 @@
   "version": "0.0.1",
   "description": "A simple NextJS app with Plate",
   "scripts": {
-    "build": "contentlayer build && yarn build:registry && next build",
+    "prebuild": "yarn build:contentlayer",
+    "build": "yarn prebuild && yarn build:registry && next build",
+    "build:contentlayer": "contentlayer build",
     "build:registry": "ts-node --esm --project ./scripts/tsconfig.scripts.json ./scripts/build-registry.ts",
     "dev": "concurrently \"contentlayer dev\" \"NODE_OPTIONS=--max-old-space-size=16192 next dev\"",
     "start": "next start",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn lint --fix",
     "preview": "next build && next start",
-    "typecheck": "contentlayer build && tsc --noEmit"
+    "typecheck": "yarn prebuild && tsc --noEmit"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
@@ -121,7 +123,7 @@
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.3.52",
     "react-modal-sheet": "2.0.0",
-    "react-tweet": "^3.0.3",
+    "react-tweet": "^3.1.0",
     "react-wrap-balancer": "^1.0.0",
     "sass": "^1.63.6",
     "slate": "0.94.1",
