@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { LegacyRef } from 'react';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TTableCellElement,
@@ -84,7 +84,7 @@ const TableCellElement = React.forwardRef<
         } as React.CSSProperties
       }
     >
-      <Cell ref={cellRef}>
+      <Cell ref={cellRef as LegacyRef<HTMLTableDataCellElement> | undefined}>
         <div
           className="relative z-20 box-border h-full px-3 py-2"
           style={{
