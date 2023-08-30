@@ -2,7 +2,7 @@ import {
   insertElements,
   removeNodes,
   TDescendant,
-  usePlateEditorState,
+  useEditorRef,
 } from '@udecode/plate-common';
 
 import { getTableGridAbove } from '../../queries';
@@ -11,7 +11,7 @@ import { getColSpan } from './getColSpan';
 import { getRowSpan } from './getRowSpan';
 
 export const useTableCellsMerge = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorRef();
   const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
   const onMergeCells = () => {
