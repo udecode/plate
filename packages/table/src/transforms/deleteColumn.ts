@@ -58,8 +58,14 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         tableNode.children.forEach((row, rowIdx) => {
           pathToDelete[replacePathPos] = rowIdx;
 
-          // for rows with different lengths
-          if (colIndex > (row.children as TElement[]).length - 1) return;
+          // for tables containing rows of different lengths
+          // - don't delete if only one cell in row
+          // - don't delete if row doesn't have this cell
+          if (
+            (row.children as TElement[]).length === 1 ||
+            colIndex > (row.children as TElement[]).length - 1
+          )
+            return;
 
           removeNodes(editor, {
             at: pathToDelete,

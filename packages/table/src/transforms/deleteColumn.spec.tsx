@@ -119,7 +119,7 @@ describe('deleteColumn', () => {
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 11', () => {
-    it('should do nothing', () => {
+    it('should delete 11', () => {
       const input = (
         <editor>
           <htable>
