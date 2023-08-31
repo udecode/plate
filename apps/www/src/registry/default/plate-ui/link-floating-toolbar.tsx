@@ -21,7 +21,6 @@ import { buttonVariants } from './button';
 import { inputVariants } from './input';
 import { popoverVariants } from './popover';
 import { Separator } from './separator';
-import { ToolbarProps } from './toolbar';
 
 const floatingOptions: UseVirtualFloatingOptions = {
   placement: 'bottom-start',
@@ -34,11 +33,11 @@ const floatingOptions: UseVirtualFloatingOptions = {
   ],
 };
 
-export interface LinkFloatingToolbarProps extends ToolbarProps {
+export interface LinkFloatingToolbarProps {
   state?: LinkFloatingToolbarState;
 }
 
-export function LinkFloatingToolbar({ state, children, ...props }) {
+export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const insertState = useFloatingLinkInsertState({
     ...state,
     floatingOptions: {
