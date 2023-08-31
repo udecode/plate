@@ -55,11 +55,11 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       const replacePathPos = pathToDelete.length - 2;
 
       withoutNormalizing(editor, () => {
-        tableEntry[0].children.forEach((row, rowIdx) => {
+        tableNode.children.forEach((row, rowIdx) => {
           pathToDelete[replacePathPos] = rowIdx;
 
           // for rows with different lengths
-          if ((row.children as TElement[]).length < replacePathPos + 1) return;
+          if (colIndex > (row.children as TElement[]).length - 1) return;
 
           removeNodes(editor, {
             at: pathToDelete,
