@@ -1,5 +1,7 @@
 # @udecode/plate-serializer-csv
 
+## 23.6.1
+
 ## 23.6.0
 
 ## 23.4.1
