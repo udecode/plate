@@ -16,10 +16,15 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { Path, TextUnit } from 'slate';
 
-import { ELEMENT_LI } from './createListPlugin';
-import { getListItemEntry, getListRoot, hasListChild } from './queries/index';
+import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';
+import {
+  getListItemEntry,
+  getListRoot,
+  hasListChild,
+  isAcrossListItems,
+} from './queries/index';
 import {
   moveListItemsToList,
   moveListItemUp,
@@ -71,7 +76,9 @@ const selectionIsNotInAListHandler = <V extends Value>(
 
 const selectionIsInAListHandler = <V extends Value>(
   editor: PlateEditor<V>,
-  res: { list: TElementEntry; listItem: TElementEntry }
+  res: { list: TElementEntry; listItem: TElementEntry },
+  defaultDelete: (unit: TextUnit) => void,
+  unit: 'character' | 'word' | 'line' | 'block'
 ): boolean => {
   const { listItem } = res;
 
@@ -141,9 +148,46 @@ const selectionIsInAListHandler = <V extends Value>(
       return true;
     }
 
-    // if (skipDefaultDelete) return skipDefaultDelete;
+    const pointAfterListItem = getPointAfter(editor, editor.selection!.focus);
+    if (
+      !pointAfterListItem ||
+      !isAcrossListItems({
+        ...editor,
+        selection: {
+          anchor: editor.selection!.anchor,
+          focus: pointAfterListItem,
+        },
+      })
+    ) {
+      return false;
+    }
 
-    return false;
+    // get closest lic ancestor of next selectable
+    const licType = getPluginType(editor, ELEMENT_LIC);
+    const _licNodes = getNodeEntries<TElement>(editor, {
+      at: pointAfterListItem.path,
+      mode: 'lowest',
+      match: (node) => node.type === licType,
+    });
+    const nextSelectableLic = [..._licNodes][0];
+
+    // let slate handle single child cases
+    if (nextSelectableLic[0].children.length < 2) return false;
+
+    // manually run default delete
+    defaultDelete(unit);
+
+    const leftoverListItem = getNodeEntry<TElement>(
+      editor,
+      Path.parent(nextSelectableLic[1])
+    )!;
+
+    if (leftoverListItem && leftoverListItem[0].children.length === 0) {
+      // remove the leftover empty list item
+      removeNodes(editor, { at: leftoverListItem[1] });
+    }
+
+    return true;
   }
 
   // if it has children
@@ -176,7 +220,11 @@ const selectionIsInAListHandler = <V extends Value>(
   return false;
 };
 
-export const deleteForwardList = <V extends Value>(editor: PlateEditor<V>) => {
+export const deleteForwardList = <V extends Value>(
+  editor: PlateEditor<V>,
+  defaultDelete: (unit: TextUnit) => void,
+  unit: TextUnit
+) => {
   let skipDefaultDelete = false;
 
   if (!editor?.selection) {
@@ -195,7 +243,12 @@ export const deleteForwardList = <V extends Value>(editor: PlateEditor<V>) => {
       return;
     }
 
-    skipDefaultDelete = selectionIsInAListHandler(editor, res);
+    skipDefaultDelete = selectionIsInAListHandler(
+      editor,
+      res,
+      defaultDelete,
+      unit
+    );
   });
 
   return skipDefaultDelete;
