@@ -15,6 +15,7 @@ import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 export const metadata: Metadata = {
   title: {
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </div>
           <TailwindIndicator />
         </Providers>
+        <ThemeSwitcher />
         <Analytics />
 
         <NewYorkToaster />

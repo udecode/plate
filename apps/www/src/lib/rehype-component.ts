@@ -9,6 +9,7 @@ import { UnistNode, UnistTree } from '@/types/unist';
 import { Index } from '../__registry__';
 import { styles } from '../registry/styles';
 
+// NOTE: shadcn fork
 export function rehypeComponent() {
   return async (tree: UnistTree) => {
     visit(tree, (node: UnistNode) => {

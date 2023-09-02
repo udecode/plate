@@ -1,13 +1,34 @@
 'use client';
 
+/* eslint-disable tailwindcss/no-custom-classname */
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 
-export function ThemeWrapper({ children }: React.ComponentProps<'div'>) {
+interface ThemeWrapperProps extends React.ComponentProps<'div'> {
+  defaultTheme?: string;
+}
+
+export function ThemeWrapper({
+  defaultTheme,
+  children,
+  className,
+}: ThemeWrapperProps) {
   const [config] = useConfig();
 
   return (
-    // eslint-disable-next-line tailwindcss/no-custom-classname
-    <div className={cn(`theme-${config.theme}`, 'w-full')}>{children}</div>
+    <div
+      className={cn(
+        `theme-${defaultTheme || config.theme}`,
+        'w-full',
+        className
+      )}
+      style={
+        {
+          '--radius': `${defaultTheme ? 0.5 : config.radius}rem`,
+        } as React.CSSProperties
+      }
+    >
+      {children}
+    </div>
   );
 }

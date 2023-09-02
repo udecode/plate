@@ -207,7 +207,7 @@ const components = {
       <StyleWrapper styleName={__style__}>
         <pre
           className={cn(
-            'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
+            'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-slate-950 py-4 dark:bg-slate-900',
             className
           )}
           {...props}
@@ -338,6 +338,12 @@ const components = {
     ...props
   }: React.ComponentProps<typeof FrameworkDocs>) => (
     <FrameworkDocs className={cn(className)} {...props} />
+  ),
+  Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
+    <Link
+      className={cn('font-medium underline underline-offset-4', className)}
+      {...props}
+    />
   ),
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link

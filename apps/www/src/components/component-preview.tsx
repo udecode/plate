@@ -100,7 +100,7 @@ export function ComponentPreview({
               )}
             </div>
           )}
-          <ThemeWrapper>
+          <ThemeWrapper defaultTheme="slate">
             <React.Suspense
               fallback={
                 // eslint-disable-next-line tailwindcss/no-custom-classname

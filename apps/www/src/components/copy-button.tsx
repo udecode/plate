@@ -22,7 +22,7 @@ interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   event?: Event['name'];
 }
 
-async function copyToClipboardWithMeta(value: string, event?: Event) {
+export async function copyToClipboardWithMeta(value: string, event?: Event) {
   navigator.clipboard.writeText(value);
   if (event) {
     trackEvent(event);
@@ -49,7 +49,7 @@ export function CopyButton({
       size="icon"
       variant="ghost"
       className={cn(
-        'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
+        'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
         className
       )}
       onClick={() => {
@@ -109,7 +109,7 @@ export function CopyWithClassNames({
           size="icon"
           variant="ghost"
           className={cn(
-            'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
+            'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
         >
@@ -172,7 +172,7 @@ export function CopyNpmCommandButton({
           size="icon"
           variant="ghost"
           className={cn(
-            'relative z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50',
+            'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
         >
