@@ -1,5 +1,13 @@
 # @udecode/plate-utils
 
+## 23.7.0
+
+### Minor Changes
+
+- [#2593](https://github.com/udecode/plate/pull/2593) by [@zbeyens](https://github.com/zbeyens) –
+  - New prop in `createPrimitiveComponent`: `setProps` where the first parameter is the props returned by the "props hook". Returned attributes are passed to the component. You can use this prop to merge or override all props.
+  - Plate components `className` and `style` props are now merged with the "props hook" ones if defined. To override instead of merging, use `setProps`.
+
 ## 23.6.0
 
 ## 23.3.1
