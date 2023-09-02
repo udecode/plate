@@ -1,18 +1,11 @@
 /* eslint-disable react/display-name */
 
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { isDefined } from '@udecode/utils';
+import { clsx } from 'clsx';
 
 import { useComposedRef } from '../hooks';
 import { createSlotComponent } from './createSlotComponent';
-
-type StateHook<O> = (options: O) => any;
-type PropsHook<S> = (state: S) => {
-  ref?: any;
-  props?: any;
-  hidden?: boolean;
-  [key: string]: unknown;
-};
 
 /**
  * Primitive component factory. It uses hooks for managing
@@ -21,6 +14,9 @@ type PropsHook<S> = (state: S) => {
  * - `asChild`: If true, the component will be rendered as a `Slot` {@link https://www.radix-ui.com/docs/primitives/utilities/slot}.
  * - `options`: Options passed to the state hook.
  * - `state`: Provide your state instead of using the state hook.
+ * - `className`: Class name to be merged to the component.
+ * - `style`: Style object to be merged to the component.
+ * - `setProps`: Function to set props from the props hook.
  * - `...props`: Props to be passed to the component.
  * Props hook return value:
  * - `ref`: Reference to be forwarded to the component.
@@ -45,40 +41,73 @@ export const createPrimitiveComponent = <
 ) => {
   const Comp = createSlotComponent<T, P>(element);
 
-  return <S = {}, O = {}>({
+  return <SH extends (options: any) => any, PH extends (state: any) => any>({
     propsHook,
     stateHook,
   }: {
-    propsHook?: PropsHook<S>;
-    stateHook?: StateHook<O>;
+    stateHook?: SH;
+    propsHook?: PH;
   } = {}) => {
     return React.forwardRef<
       any,
       {
         as?: React.ElementType;
         asChild?: boolean;
-        state?: S;
-        options?: O;
+        className?: string;
+        style?: CSSProperties;
+        options?: Parameters<SH>[0];
+        state?: Parameters<PH>[0];
+        setProps?: (hookProps: NonNullable<ReturnType<PH>['props']>) => P;
       } & P
-    >(({ asChild, options, state: _state, ...props }, ref) => {
-      const state = isDefined(_state)
-        ? _state
-        : stateHook
-        ? stateHook(options as any)
-        : undefined;
-      const {
-        ref: hookRef,
-        props: hookProps,
-        hidden,
-      } = propsHook
-        ? propsHook(state)
-        : { props: {}, hidden: false, ref: null };
+    >(
+      (
+        {
+          asChild,
+          options,
+          state: stateProp,
+          className: classNameProp,
+          getClassName,
+          ...props
+        },
+        ref
+      ) => {
+        const state = isDefined(stateProp)
+          ? stateProp
+          : stateHook
+          ? stateHook(options as any)
+          : undefined;
+        const {
+          ref: hookRef,
+          props: hookProps,
+          hidden,
+        } = propsHook
+          ? propsHook(state)
+          : { props: {}, hidden: false, ref: null };
 
-      const _ref = useComposedRef(ref, hookRef);
+        const _ref = useComposedRef(ref, hookRef);
+        const className =
+          isDefined(hookProps?.className) || isDefined(classNameProp)
+            ? clsx(hookProps?.className, classNameProp)
+            : undefined;
+        const style =
+          hookProps?.style || props.style
+            ? { ...hookProps?.style, ...props.style }
+            : undefined;
 
-      if (!asChild && hidden) return null;
+        if (!asChild && hidden) return null;
 
-      return <Comp ref={_ref} asChild={asChild} {...hookProps} {...props} />;
-    });
+        return (
+          <Comp
+            ref={_ref}
+            asChild={asChild}
+            {...hookProps}
+            className={className}
+            style={style}
+            {...props}
+            {...(props.setProps?.(hookProps ?? {}) ?? {})}
+          />
+        );
+      }
+    );
   };
 };
