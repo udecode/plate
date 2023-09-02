@@ -60,7 +60,6 @@ export function ImageElement({
           <Caption align={align} style={{ width }}>
             <CaptionTextarea
               placeholder="Write a caption..."
-              options={{}}
               readOnly={readOnly}
             />
           </Caption>
