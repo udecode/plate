@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 23.6.1
+
+### Patch Changes
+
+- [#2594](https://github.com/udecode/plate/pull/2594) by [@OliverWales](https://github.com/OliverWales) – Fix column deletion early return
+
 ## 23.6.0
 
 ## 23.4.1
