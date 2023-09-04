@@ -9,6 +9,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
+import { ThemeWrapper } from '@/components/theme-wrapper';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
@@ -55,9 +56,11 @@ export default function IndexPage() {
       {/* </section> */}
 
       <section className="relative">
-        <div className="max-w-[1336px] rounded-lg border bg-background shadow">
-          <PlaygroundDemo />
-        </div>
+        <ThemeWrapper defaultTheme="green">
+          <div className="max-w-[1336px] rounded-lg border bg-background shadow">
+            <PlaygroundDemo />
+          </div>
+        </ThemeWrapper>
       </section>
     </div>
   );
