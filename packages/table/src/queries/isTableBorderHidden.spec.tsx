@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
-import { createTablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createTablePlugin } from '../createTablePlugin';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
 jsx;

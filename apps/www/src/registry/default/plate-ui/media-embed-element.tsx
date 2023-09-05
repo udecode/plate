@@ -51,6 +51,7 @@ const MediaEmbedElement = React.forwardRef<
           <Resizable
             align={align}
             options={{
+              align,
               maxWidth: isTweet ? 550 : '100%',
               minWidth: isTweet ? 300 : 100,
             }}

@@ -1,5 +1,7 @@
 # @udecode/plate-floating
 
+## 23.7.0
+
 ## 23.6.0
 
 ## 23.5.0
