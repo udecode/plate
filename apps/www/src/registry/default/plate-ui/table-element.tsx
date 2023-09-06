@@ -5,7 +5,6 @@ import {
   isCollapsed,
   PlateElement,
   PlateElementProps,
-  someNode,
   useEditorRef,
   useElement,
   useRemoveNodeButton,
@@ -18,7 +17,7 @@ import {
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
-import { useReadOnly } from 'slate-react';
+import { useReadOnly, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 import { Icons, iconVariants } from '@/components/icons';
@@ -116,33 +115,29 @@ const TableFloatingToolbar = React.forwardRef<
 
   const readOnly = useReadOnly();
   const editor = useEditorRef();
+  const isSelected = useSelected();
 
   const { onMergeCells, onUnmerge } = useTableCellsMerge();
 
-  const collapsedToolbar =
-    !readOnly &&
-    someNode(editor, {
-      match: (n) => n === element,
-    }) &&
-    isCollapsed(editor.selection);
+  const collapsedToolbarActive =
+    isSelected && !readOnly && isCollapsed(editor.selection);
 
   const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-
+  const hasEntries = !!cellEntries?.length;
   const canUnmerge =
-    collapsedToolbar &&
-    cellEntries &&
+    hasEntries &&
     cellEntries.length === 1 &&
     ((cellEntries[0][0] as any)?.colSpan > 1 ||
       (cellEntries[0][0] as any)?.rowSpan > 1);
 
-  const mergeToolbar =
+  const mergeToolbarActive =
+    isSelected &&
     !readOnly &&
-    someNode(editor, {
-      match: (n) => n === element,
-    }) &&
+    hasEntries &&
+    cellEntries.length > 1 &&
     !isCollapsed(editor.selection);
 
-  const mergeContent = mergeToolbar && (
+  const mergeButton = (
     <Button
       contentEditable={false}
       variant="ghost"
@@ -154,15 +149,19 @@ const TableFloatingToolbar = React.forwardRef<
     </Button>
   );
 
-  const unmergeButton = canUnmerge && (
-    <Button contentEditable={false} variant="ghost" isMenu onClick={onUnmerge}>
-      <Icons.ungroup className="mr-2 h-4 w-4" />
-      Unmerge
-    </Button>
-  );
-  
-  const bordersContent = collapsedToolbar && (
+  const collapsedContent = (
     <>
+      {canUnmerge && (
+        <Button
+          contentEditable={false}
+          variant="ghost"
+          isMenu
+          onClick={onUnmerge}
+        >
+          <Icons.ungroup className="mr-2 h-4 w-4" />
+          Unmerge
+        </Button>
+      )}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" isMenu>
@@ -175,7 +174,6 @@ const TableFloatingToolbar = React.forwardRef<
           <TableBordersDropdownMenuContent />
         </DropdownMenuPortal>
       </DropdownMenu>
-
       <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
         <Icons.delete className="mr-2 h-4 w-4" />
         Delete
@@ -184,18 +182,28 @@ const TableFloatingToolbar = React.forwardRef<
   );
 
   return (
-    <Popover open={collapsedToolbar || mergeToolbar} modal={false}>
+    <Popover open={mergeToolbarActive || collapsedToolbarActive} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
-      <PopoverContent
-        ref={ref}
-        className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        {...props}
-      >
-        {unmergeButton}
-        {mergeContent}
-        {bordersContent}
-      </PopoverContent>
+      {mergeToolbarActive && (
+        <PopoverContent
+          ref={ref}
+          className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          {...props}
+        >
+          {mergeButton}
+        </PopoverContent>
+      )}
+      {collapsedToolbarActive && (
+        <PopoverContent
+          ref={ref}
+          className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          {...props}
+        >
+          {collapsedContent}
+        </PopoverContent>
+      )}
     </Popover>
   );
 });
