@@ -1,5 +1,6 @@
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
 
+import { deleteBackwardTodoList } from './deleteBackwardTodoList';
 import { insertBreakTodoList } from './insertBreakTodoList';
 import { TodoListPlugin } from './types';
 
@@ -10,11 +11,17 @@ export const withTodoList = <
   editor: E,
   { options }: WithPlatePlugin<TodoListPlugin, V, E>
 ) => {
-  const { insertBreak } = editor;
+  const { insertBreak, deleteBackward } = editor;
 
   editor.insertBreak = () => {
     if (insertBreakTodoList(editor, options)) return;
     insertBreak();
+  };
+
+  editor.deleteBackward = (unit) => {
+    if (deleteBackwardTodoList(editor, unit)) return;
+
+    deleteBackward(unit);
   };
 
   return editor;

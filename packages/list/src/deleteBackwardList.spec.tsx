@@ -83,3 +83,44 @@ describe('li with selection at start', () => {
     expect(editor.children).toEqual(expected.children);
   });
 });
+
+describe('empty li followed by text node with content, selection at start of text node', () => {
+  it('should move content into list item', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <htext />
+            </hlic>
+          </hli>
+        </hul>
+        <hp>
+          <cursor />
+          <htext>two</htext>
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const expected = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <htext>two</htext>
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    editor.deleteBackward('character');
+
+    expect(editor.children).toEqual(expected.children);
+  });
+});
