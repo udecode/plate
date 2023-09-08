@@ -11,21 +11,29 @@ import { Path } from 'slate';
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 import {
+  FormatType,
   getTableGridByRange,
   GetTableGridByRangeOptions,
+  GetTableGridReturnType,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions<V extends Value = Value> =
-  GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
+export type GetTableGridAboveOptions<
+  T extends FormatType,
+  V extends Value = Value,
+> = GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions<T>, 'format'>;
 
 /**
  * Get sub table above anchor and focus.
  * Format: tables or cells.
  */
-export const getTableGridAbove = <V extends Value = Value>(
+export const getTableGridAbove = <
+  T extends FormatType,
+  V extends Value = Value,
+>(
   editor: PlateEditor<V>,
-  { format = 'table', ...options }: GetTableGridAboveOptions<V> = {}
-): TElementEntry[] => {
+  { format, ...options }: GetTableGridAboveOptions<T, V>
+): GetTableGridReturnType<T> => {
+  const formatType = (format as string) || 'table';
   const edges = getEdgeBlocksAbove<TElement>(editor, {
     match: {
       type: getCellTypes(editor),
@@ -37,7 +45,7 @@ export const getTableGridAbove = <V extends Value = Value>(
     const [start, end] = edges;
 
     if (!Path.equals(start[1], end[1])) {
-      return getTableGridByRange(editor, {
+      const entryResult = getTableGridByRange(editor, {
         at: {
           anchor: {
             path: start[1],
@@ -50,16 +58,26 @@ export const getTableGridAbove = <V extends Value = Value>(
         },
         format,
       });
+
+      return entryResult;
     }
 
-    if (format === 'table') {
-      const table = getEmptyTableNode(editor, { rowCount: 1 });
-      table.children[0].children = [start[0]];
-      return [[table, start[1].slice(0, -2)]];
+    const table = getEmptyTableNode(editor, { rowCount: 1 });
+    table.children[0].children = [start[0]];
+    if (formatType === 'table') {
+      return [[table, start[1].slice(0, -2)]] as GetTableGridReturnType<T>;
     }
 
-    return [start];
+    if (formatType === 'cell') {
+      return [start] as GetTableGridReturnType<T>;
+    }
+
+    console.log('return all', start, table);
+
+    return {
+      tableEntries: [[table, start[1].slice(0, -2)]],
+      cellEntries: [start],
+    } as GetTableGridReturnType<T>;
   }
-
-  return [];
+  return [] as TElementEntry[] as GetTableGridReturnType<T>;
 };

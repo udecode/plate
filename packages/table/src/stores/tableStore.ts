@@ -1,5 +1,9 @@
 import { useCallback } from 'react';
-import { createAtomStore, TElement } from '@udecode/plate-common';
+import {
+  createAtomStore,
+  TElement,
+  TElementEntry,
+} from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 
@@ -12,6 +16,8 @@ export const { tableStore, useTableStore } = createAtomStore(
     marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,
+    selectedCellEntries: null as TElementEntry[] | null,
+    selectedSubTable: null as TElementEntry[] | null,
     cellsOffsets: null as number[] | null,
   },
   { name: 'table' as const, scope: ELEMENT_TABLE }

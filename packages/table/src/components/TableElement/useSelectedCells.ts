@@ -16,6 +16,8 @@ export const useSelectedCells = () => {
   const editor = usePlateEditorRef();
 
   const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
+  const setSelectedSubTable = useTableStore().set.selectedSubTable();
+  const setSelectedCellEntries = useTableStore().set.selectedCellEntries();
 
   useEffect(() => {
     if (!selected || readOnly) setSelectedCells(null);
@@ -24,15 +26,29 @@ export const useSelectedCells = () => {
   useEffect(() => {
     if (readOnly) return;
 
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-    if (cellEntries.length > 1) {
+    const { cellEntries, tableEntries } = getTableGridAbove(editor, {
+      format: 'all',
+    });
+    setSelectedSubTable(tableEntries);
+    setSelectedCellEntries(cellEntries);
+
+    if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
 
+      console.log('current cells', cells);
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
       }
     } else if (selectedCells) {
       setSelectedCells(null);
     }
-  }, [editor, editor?.selection, readOnly, selectedCells, setSelectedCells]);
+  }, [
+    editor,
+    editor.selection,
+    readOnly,
+    selectedCells,
+    setSelectedCellEntries,
+    setSelectedCells,
+    setSelectedSubTable,
+  ]);
 };

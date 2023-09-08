@@ -50,8 +50,9 @@ export const useTableCellElementState = ({
   cellElement.colSpan = getColSpan(cellElement);
   cellElement.rowSpan = getRowSpan(cellElement);
 
-  const rowIndex =
-    getTableRowIndex(editor, cellElement) + cellElement.rowSpan - 1;
+  const rowIndex = getTableRowIndex(editor, cellElement);
+  cellElement.rowIndex = rowIndex; // TODO: get rid of mutation or make it more explicit
+  const endRowIndex = rowIndex + cellElement.rowSpan - 1;
 
   const readOnly = useReadOnly();
 
@@ -64,7 +65,7 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
-    rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
+    rowSizeOverrides.get(endRowIndex) ?? rowElement?.size ?? undefined;
 
   const endColIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
   const startCIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
@@ -74,6 +75,7 @@ export const useTableCellElementState = ({
   if (cellRef.current && hoveredColIndex === null && cellOffsets) {
     const cellOffset = cellRef.current.offsetLeft;
     const startColIndex = getClosest(cellOffset, cellOffsets);
+    cellElement.colIndex = startColIndex; // TODO: get rid of mutation or make it more explicit
 
     startCIndex.current = startColIndex;
     endColIndex.current = startColIndex + cellElement.colSpan - 1;
@@ -89,7 +91,7 @@ export const useTableCellElementState = ({
 
   return {
     colIndex: endColIndex.current,
-    rowIndex,
+    rowIndex: endRowIndex,
     colSpan: cellElement.colSpan,
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,

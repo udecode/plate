@@ -10,7 +10,7 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
-  getTableGridAbove,
+  isTableRectangular,
   TTableElement,
   useTableBordersDropdownMenuContentState,
   useTableCellsMerge,
@@ -117,25 +117,39 @@ const TableFloatingToolbar = React.forwardRef<
   const editor = useEditorRef();
   const isSelected = useSelected();
 
-  const { onMergeCells, onUnmerge } = useTableCellsMerge();
+  const { onMergeCells, onUnmerge, cellEntries, subTable } =
+    useTableCellsMerge();
+  const tableSelection = subTable?.[0]?.[0];
 
   const collapsedToolbarActive =
     isSelected && !readOnly && isCollapsed(editor.selection);
 
-  const cellEntries = getTableGridAbove(editor, { format: 'cell' });
   const hasEntries = !!cellEntries?.length;
   const canUnmerge =
     hasEntries &&
-    cellEntries.length === 1 &&
+    cellEntries?.length === 1 &&
     ((cellEntries[0][0] as any)?.colSpan > 1 ||
       (cellEntries[0][0] as any)?.rowSpan > 1);
+
+  console.log(
+    'canUnmerge',
+    canUnmerge,
+    'hasEntries',
+    hasEntries,
+    isCollapsed(editor.selection),
+    cellEntries,
+    cellEntries?.length === 1,
+    (cellEntries?.[0]?.[0] as any)?.colSpan,
+    (cellEntries?.[0]?.[0] as any)?.rowSpan
+  );
 
   const mergeToolbarActive =
     isSelected &&
     !readOnly &&
     hasEntries &&
     cellEntries.length > 1 &&
-    !isCollapsed(editor.selection);
+    !isCollapsed(editor.selection) &&
+    isTableRectangular(tableSelection);
 
   const mergeButton = (
     <Button
