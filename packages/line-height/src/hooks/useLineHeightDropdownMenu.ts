@@ -14,7 +14,7 @@ export const useLineHeightDropdownMenuState = () => {
   const editor = usePlateEditorState();
   const { validNodeValues: values = [], defaultNodeValue } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
-  let value: string = defaultNodeValue;
+  let value: string | undefined;
 
   if (isCollapsed(editor?.selection)) {
     const entry = getBlockAbove<TElement>(editor);
