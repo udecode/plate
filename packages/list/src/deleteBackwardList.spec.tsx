@@ -83,3 +83,63 @@ describe('li with selection at start', () => {
     expect(editor.children).toEqual(expected.children);
   });
 });
+
+describe('list + sublist where second item has multiple children', () => {
+  it('should merge all text into first sublist item', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>one</hlic>
+            <hul>
+              <hli>
+                <hlic>
+                  <htext />
+                </hlic>
+              </hli>
+              <hli>
+                <hlic>
+                  <htext>
+                    <cursor />
+                    two
+                  </htext>
+                  <htext bold>three</htext>
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const expected = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>one</hlic>
+            <hul>
+              <hli>
+                <hlic>
+                  <htext>
+                    <cursor />
+                    two
+                  </htext>
+                  <htext bold>three</htext>
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    editor.deleteBackward('character');
+
+    expect(editor.children).toEqual(expected.children);
+  });
+});
