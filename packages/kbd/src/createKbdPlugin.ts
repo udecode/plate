@@ -17,11 +17,6 @@ export const createKbdPlugin = createPluginFactory({
   deserializeHtml: {
     rules: [
       { validNodeName: ['KBD'] },
-      {
-        validStyle: {
-          wordWrap: 'break-word',
-        },
-      },
     ],
   },
 });
