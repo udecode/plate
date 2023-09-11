@@ -225,3 +225,111 @@ describe('list + list when selection is at the end of the first list', () => {
     expect(editor.children).toEqual(expected.children);
   });
 });
+
+describe('list where second item has multiple children', () => {
+  it('should merge all text into first list item', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <htext />
+              <cursor />
+            </hlic>
+          </hli>
+          <hli>
+            <hlic>
+              <htext>one</htext>
+              <htext bold>two</htext>
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const expected = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <htext>
+                <cursor />
+                one
+              </htext>
+              <htext bold>two</htext>
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    editor.deleteForward('character');
+
+    expect(editor.children).toEqual(expected.children);
+  });
+});
+
+describe('list + sublist where second item has multiple children', () => {
+  it('should merge all text into first sublist item', () => {
+    const input = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>one</hlic>
+            <hul>
+              <hli>
+                <hlic>
+                  <htext />
+                  <cursor />
+                  <hul>
+                    <hli>
+                      <hlic>
+                        <htext>two</htext>
+                        <htext bold>three</htext>
+                      </hlic>
+                    </hli>
+                  </hul>
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const expected = (
+      <editor>
+        <hul>
+          <hli>
+            <hlic>one</hlic>
+            <hul>
+              <hli>
+                <hlic>
+                  <htext>
+                    <cursor />
+                    two
+                  </htext>
+                  <htext bold>three</htext>
+                </hlic>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    editor.deleteForward('character');
+
+    expect(editor.children).toEqual(expected.children);
+  });
+});

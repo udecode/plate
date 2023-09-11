@@ -30,7 +30,7 @@ export const withList = <
   };
 
   editor.deleteForward = (unit) => {
-    if (deleteForwardList(editor)) return;
+    if (deleteForwardList(editor, deleteForward, unit)) return;
 
     deleteForward(unit);
   };
