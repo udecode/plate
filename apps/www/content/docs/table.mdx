@@ -1003,17 +1003,17 @@ Enhance the editor instance with table-related functionality by applying the fol
 
 ## API Components
 
-### TableCellElementResizable
+### useTableCellElementResizableState
 
-A component that represents the resizable handles for a table cell element.
+A state for the table resize handles.
 
-<APIProps>
-<APIItem name="colIndex" type="number">
-  The index of the column of the cell.
-</APIItem>
-<APIItem name="rowIndex" type="number">
-  The index of the row of the cell.
-</APIItem>
+<APIOptions>
+  <APIItem name="colIndex" type="number">
+    The index of the column of the cell.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+    The index of the row of the cell.
+  </APIItem>
   <APIItem name="step" type="number" optional>
     The step size for resizing the table cell element.
   </APIItem>
@@ -1029,7 +1029,50 @@ A component that represents the resizable handles for a table cell element.
     - **Default:** `step`
 
   </APIItem>
-</APIProps>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="disableMarginLeft" type="boolean">
+      Whether to disable the margin left.
+  </APIItem>
+  <APIItem name="colIndex" type="number">
+      The index of the column of the cell.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+      The index of the row of the cell.
+  </APIItem>
+  <APIItem name="stepX" type="number">
+      The step size for resizing the table cell element horizontally.
+  </APIItem>
+  <APIItem name="stepY" type="number">
+      The step size for resizing the table cell element vertically.
+  </APIItem>
+</APIReturns>
+
+### useTableCellElementResizable
+
+A behavior hook for the table resize handles.
+
+<APIParameters>
+<APIItem name="state" type="object">
+The state returned by [useTableCellElementResizableState](#usetablecellelementresizablestate).
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem name="rightProps" type="object">
+The props for the right resize handle.
+</APIItem>
+<APIItem name="bottomProps" type="object">
+The props for the bottom resize handle.
+</APIItem>
+<APIItem name="leftProps" type="object">
+The props for the left resize handle.
+</APIItem>
+<APIItem name="hiddenLeft" type="boolean">
+Whether the left resize handle is hidden.
+</APIItem>
+</APIReturns>
 
 ### getOnSelectTableBorderFactory
 
@@ -1259,5 +1302,118 @@ A behavior hook for a table element.
         A function that is called when the table is clicked.
       </APISubListItem>
     </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useTableElementState
+
+A state hook for a table element.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="transformColSizes"
+        type="(colSizes: number[]) => number[]"
+        optional
+      >
+        A function that transforms the column sizes.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="colSizes" type="number[]">
+    The column sizes of the table.
+  </APIItem>
+  <APIItem name="isSelectingCell" type="boolean">
+    Indicates whether the user is currently selecting cells.
+  </APIItem>
+  <APIItem name="minColumnWidth" type="number">
+    The minimum column width.
+  </APIItem>
+  <APIItem name="marginLeft" type="number">
+    The margin left of the table.
+  </APIItem>
+</APIReturns>
+
+### useTableCellElement
+
+A behavior hook for a table cell element.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="element"
+        type="TTableCellElement"
+        optional
+      >
+        A function that transforms the column sizes.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    The props of the table cell element.
+    <APISubList>
+      <APISubListItem parent="props" name="colSpan" type="number">
+        The column span of the table cell.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useTableCellElementState
+
+A state hook for a table cell element.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="ignoreReadOnly"
+        type="boolean"
+        optional
+      >
+        Ignores editable readOnly mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="colIndex" type="number">
+    The column index of the table cell.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+    The row index of the table cell.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Indicates whether the table cell is read only.
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    Indicates whether the table cell is selected.
+  </APIItem>
+  <APIItem name="hovered" type="boolean">
+    Indicates whether the table cell is hovered.
+  </APIItem>
+  <APIItem name="hoveredLeft" type="boolean">
+    Indicates whether the table cell is hovered left.
+  </APIItem>
+  <APIItem name="rowSize" type="number">
+    The row size of the table cell.
+  </APIItem>
+  <APIItem name="borders" type="BorderStylesDefault">
+    The border styles of the table cell.
+  </APIItem>
+  <APIItem name="isSelectingCell" type="boolean">
+    Indicates whether the user is currently selecting cells.
   </APIItem>
 </APIReturns>

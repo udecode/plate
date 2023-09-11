@@ -2,11 +2,15 @@ import { CSSProperties } from 'react';
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
 
-import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
+import {
+  GetInjectPropsOptions,
+  GetInjectPropsReturnType,
+} from '../../utils/pluginInjectProps';
 
 export interface TransformOptions<V extends Value = Value>
   extends GetInjectPropsOptions<V> {
   nodeValue?: any;
+  value?: any;
 }
 
 export interface InjectProps<V extends Value> {
@@ -32,6 +36,14 @@ export interface InjectProps<V extends Value> {
       nodeKey?: string;
 
       /**
+       * Whether to inject the props. If true, overrides all other checks.
+       */
+      query?: (
+        options: NonNullable<NonNullable<InjectProps<V>['inject']>['props']>,
+        nodeProps: GetInjectPropsOptions<V>
+      ) => boolean;
+
+      /**
        * Style key to override.
        * @default nodeKey
        */
@@ -48,6 +60,14 @@ export interface InjectProps<V extends Value> {
        * @default nodeValue
        */
       transformNodeValue?: (options: TransformOptions<V>) => any;
+
+      /**
+       * Transform the injected props.
+       */
+      transformProps?: (
+        options: TransformOptions<V>,
+        props: GetInjectPropsReturnType
+      ) => AnyObject | undefined;
 
       /**
        * Transform the style.

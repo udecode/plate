@@ -15,14 +15,18 @@ import { cn } from '@/lib/utils';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
-import { Resizable, ResizeHandle } from './resizable';
+import {
+  mediaResizeHandleVariants,
+  Resizable,
+  ResizeHandle,
+} from './resizable';
 
 const MediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
   const {
-    align,
+    align = 'center',
     focused,
     readOnly,
     selected,
@@ -47,11 +51,15 @@ const MediaEmbedElement = React.forwardRef<
           <Resizable
             align={align}
             options={{
+              align,
               maxWidth: isTweet ? 550 : '100%',
               minWidth: isTweet ? 300 : 100,
             }}
           >
-            <ResizeHandle options={{ direction: 'left' }} />
+            <ResizeHandle
+              options={{ direction: 'left' }}
+              className={mediaResizeHandleVariants({ direction: 'left' })}
+            />
 
             {isVideo ? (
               isYoutube ? (
@@ -112,7 +120,10 @@ const MediaEmbedElement = React.forwardRef<
               </div>
             )}
 
-            <ResizeHandle options={{ direction: 'right' }} />
+            <ResizeHandle
+              options={{ direction: 'right' }}
+              className={mediaResizeHandleVariants({ direction: 'right' })}
+            />
           </Resizable>
 
           <Caption align={align} style={{ width }}>

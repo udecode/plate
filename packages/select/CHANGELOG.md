@@ -1,5 +1,19 @@
 # @udecode/plate-select
 
+## 23.7.0
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
+## 23.2.0
+
+### Minor Changes
+
+- [#2562](https://github.com/udecode/plate/pull/2562) by [@dimaanj](https://github.com/dimaanj) – select plugin: add support for removing empty nodes
+
 ## 22.0.2
 
 ## 22.0.1

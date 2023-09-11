@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table",
-  "version": "23.0.0",
+  "version": "23.7.0",
   "description": "Table plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,15 +30,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.2",
-    "@udecode/plate-resizable": "23.0.0"
+    "@udecode/plate-common": "23.7.0",
+    "@udecode/plate-resizable": "23.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
-    "slate-react": ">=0.95.0"
+    "slate-react": ">=0.98.1"
   },
   "keywords": [
     "plate",

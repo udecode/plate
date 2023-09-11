@@ -1,9 +1,13 @@
 import {
+  getNode,
   getNodeEntries,
+  getNodeString,
+  getPoint,
   getPointBefore,
   isCollapsed,
   PlateEditor,
   queryNode,
+  removeNodes,
   select,
   Value,
   WithPlatePlugin,
@@ -20,7 +24,9 @@ export const withSelectOnBackspace = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  { options: { query } }: WithPlatePlugin<SelectOnBackspacePlugin, V, E>
+  {
+    options: { query, removeNodeIfEmpty },
+  }: WithPlatePlugin<SelectOnBackspacePlugin, V, E>
 ) => {
   const { deleteBackward } = editor;
 
@@ -39,6 +45,17 @@ export const withSelectOnBackspace = <
         });
 
         if (!!prevCell && pointBefore) {
+          const point = getPoint(editor, selection as Slate.Location);
+          const selectedNode = getNode(editor, point.path);
+          if (
+            removeNodeIfEmpty &&
+            selectedNode &&
+            !getNodeString(selectedNode as any)
+          ) {
+            // remove node if empty
+            removeNodes(editor);
+          }
+
           // don't delete image, set selection there
           select(editor, pointBefore);
         } else {

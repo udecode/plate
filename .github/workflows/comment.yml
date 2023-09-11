@@ -9,7 +9,7 @@ on:
 jobs:
   rebase:
     name: rebase
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: |
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/rebase')
@@ -26,7 +26,7 @@ jobs:
 
   release_next:
     name: release:next
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: |
       github.event.issue.pull_request &&
       github.event.sender.login == 'zbeyens' &&

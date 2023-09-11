@@ -1,5 +1,13 @@
 # @udecode/plate-excalidraw
 
+## 23.7.0
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
 ## 22.0.4
 
 ### Patch Changes

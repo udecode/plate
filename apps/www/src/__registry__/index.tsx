@@ -602,7 +602,7 @@ export const Index: Record<string, any> = {
     'table-cell-element': {
       name: 'table-cell-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["resizable"],
       files: ['registry/default/plate-ui/table-cell-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/table-cell-element')),
     },

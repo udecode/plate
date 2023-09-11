@@ -1,5 +1,45 @@
 # @udecode/plate-table
 
+## 23.7.0
+
+## 23.6.1
+
+### Patch Changes
+
+- [#2594](https://github.com/udecode/plate/pull/2594) by [@OliverWales](https://github.com/OliverWales) – Fix column deletion early return
+
+## 23.6.0
+
+## 23.4.1
+
+### Patch Changes
+
+- [#2581](https://github.com/udecode/plate/pull/2581) by [@OliverWales](https://github.com/OliverWales) – Modify insertTableRow and insertTableColumn to support header columns to preserve header columns if they exist + not blindly assume that it's a header row if the first cell in that row is a header cell.
+
+## 23.3.1
+
+## 23.3.0
+
+## 23.1.0
+
+### Minor Changes
+
+- [#2557](https://github.com/udecode/plate/pull/2557) by [@zbeyens](https://github.com/zbeyens) – Add support of table cell background styles. To update the component, run:
+  ```bash
+  npx @udecode/plate-ui@latest add table-cell-element
+  ```
+
+### Patch Changes
+
+- [#2555](https://github.com/udecode/plate/pull/2555) by [@zbeyens](https://github.com/zbeyens) – Major changes missing from 23.0.0:
+  - Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
+
+## 23.0.1
+
+### Patch Changes
+
+- [#2550](https://github.com/udecode/plate/pull/2550) by [@zbeyens](https://github.com/zbeyens) – Fix cell selection in firefox
+
 ## 23.0.0
 
 ## 22.0.2

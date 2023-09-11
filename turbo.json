@@ -33,27 +33,23 @@
       "dependsOn": [],
       "outputs": []
     },
+    "www#lint": {
+      "dependsOn": ["prebuild"],
+      "outputs": []
+    },
     "lint:fix": {
       "cache": false,
       "dependsOn": []
     },
-    "e2e-examples#lint": {
-      "dependsOn": [],
+    "prebuild": {
       "outputs": []
     },
-    "e2e-examples#lint:fix": {
-      "dependsOn": [],
-      "outputs": []
+    "typecheck": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": true
     },
     "e2e-examples#typecheck": {
-      "dependsOn": [],
-      "outputs": []
-    },
-    "www#lint": {
-      "dependsOn": [],
-      "outputs": []
-    },
-    "www#lint:fix": {
       "dependsOn": [],
       "outputs": []
     },
@@ -69,11 +65,6 @@
       "dependsOn": [],
       "cache": false,
       "persistent": true
-    },
-    "typecheck": {
-      "dependsOn": ["build"],
-      "outputs": [],
-      "cache": true
     }
   }
 }

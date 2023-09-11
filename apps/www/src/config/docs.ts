@@ -758,6 +758,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/components/cli',
           items: [],
         },
+        {
+          title: 'Changelog',
+          href: '/docs/components/changelog',
+          items: [],
+        },
       ],
     },
     {

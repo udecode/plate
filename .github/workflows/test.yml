@@ -40,7 +40,7 @@ on:
 jobs:
   test:
     name: ${{ matrix.command }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -94,10 +94,10 @@ jobs:
 
   notify-test-failure:
     name: Discord Notification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs:
       - test
-    if: ${{ !github.event.pull_request.draft && failure() }}
+    if: ${{ github.event_name == 'push' && failure() }}
     
     steps:
       - name: Notify

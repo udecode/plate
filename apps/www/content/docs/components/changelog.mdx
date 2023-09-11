@@ -1,0 +1,82 @@
+---
+title: Changelog
+description: Latest component updates and announcements.
+toc: true
+---
+
+Since Plate UI is not a component library, a changelog is maintained here.
+
+Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
+
+## September 2023 #4
+
+### 2 Sept #4.1
+
+- `link-floating-toolbar`
+  - [fix](https://github.com/udecode/plate/pull/2593/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202): props type
+- `media-embed-element`
+  - [fix](https://github.com/udecode/plate/pull/2593/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bdR54): use `align` option
+- `caption`
+  - fix: `style` prop
+
+## August 2023 #3
+
+### 19 August #3.4
+
+- `floating-toolbar` - [changes](https://github.com/udecode/plate/pull/2585/files#diff-c3329bdae6493e8868acb88f985b2929109dae7a04d756359346f0c614913766):
+  - feat: `ref` support
+  - refactor: using `useFloatingToolbarState`, control `floatingOptions` default value
+  - fix: added `fallbackPlacements` to keep the floating in the viewport
+  - br: remove the following props: `portalElement`, `floatingOptions`, `ignoreReadOnly`, `hideToolbar`
+  - feat: `state` prop
+- `link-floating-toolbar` - [changes](https://github.com/udecode/plate/pull/2585/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202):
+  - refactor: control `floatingOptions` default value
+  - fix: added `fallbackPlacements` to keep the floating in the viewport
+
+### 9 August #3.3
+
+- `mention-element` - [feat](https://github.com/udecode/plate/pull/2564/files#diff-b008c662509a2be20fae922f91462771d69105ba04e5731184427e37dc86b236): support bold, italic, underline
+
+### 3 August #3.2
+
+- `table-cell-element` - [feat](https://github.com/udecode/plate/pull/2557/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): support table cell backround styles
+
+### 2 August #3.1
+
+- `image-element`: [refactor](https://github.com/udecode/plate/pull/2555/files#diff-932738209da6d341356f451777ebf380ae116fd70bf73124a786ede5ca7eb77e): use `mediaResizeHandleVariants`
+- `media-embed-element`: [refactor](https://github.com/udecode/plate/pull/2555/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bd): use `mediaResizeHandleVariants`
+- `resizable` - [changes](https://github.com/udecode/plate/pull/2555/files#diff-514a5137146b81612a86bf85717ed3185ec745889f6aa5beeddf9dc8f03acae7):
+  - refactor
+  - feat: `mediaResizeHandleVariants`
+- `table-cell-element`:
+  - [fix](https://github.com/udecode/plate/pull/2555/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): resizable
+  - [fix](https://github.com/udecode/plate/pull/2550/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): table selection in firefox
+
+## July 2023 #2
+
+### 27 July #2.2
+
+- `caption` - new component
+- `image-element`:
+  - refactor: state
+  - new registry deps: `caption`, `resizable`
+- `media-embed-element` is now fully headless:
+  - new deps: `react-lite-youtube-embed`, `react-tweet` to decrease the bundle size
+  - new registry deps: `caption`, `resizable`
+- `media-popover` - fix: popover closing
+- `resizable` - new component
+- `table-element` - fix: popover closing
+
+### 17 July #2.1
+
+- `comments-popover` - fix: popover not opening on new comment
+- `comment-toolbar-button` - feat: hide when `myUserId` is null
+- `excalidraw-element` - fix: typo
+
+### Launch #1
+
+Plate headless components are now available:
+
+- [Manual Installation](https://platejs.org/docs/components/installation/manual)
+- [Theming](https://platejs.org/docs/components/theming)
+- [CLI](https://platejs.org/docs/components/cli)
