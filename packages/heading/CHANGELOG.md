@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 23.7.0
+
 ## 23.6.0
 
 ## 23.3.1

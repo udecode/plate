@@ -1,5 +1,13 @@
 # @udecode/plate-kbd
 
+## 23.7.1
+
+### Patch Changes
+
+- [#2614](https://github.com/udecode/plate/pull/2614) by [@12joan](https://github.com/12joan) – Do not deserialize break-word style (fixes #2612)
+
+## 23.7.0
+
 ## 23.6.0
 
 ## 23.3.1
