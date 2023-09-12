@@ -1,6 +1,4 @@
 import {
-  flip,
-  offset,
   useVirtualFloating,
   UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
@@ -12,15 +10,8 @@ export const useVirtualFloatingLink = ({
   ...floatingOptions
 }: { editorId: string } & UseVirtualFloatingOptions) => {
   return useVirtualFloating({
-    placement: 'bottom-start',
     onOpenChange: (open) =>
       floatingLinkActions.openEditorId(open ? editorId : null),
-    middleware: [
-      offset(12),
-      flip({
-        padding: 96,
-      }),
-    ],
     ...floatingOptions,
   });
 };

@@ -6,7 +6,12 @@ import { ThemeProvider } from './theme-provider';
 
 export function Providers({ children }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
       <TooltipProvider
         disableHoverableContent
         delayDuration={500}

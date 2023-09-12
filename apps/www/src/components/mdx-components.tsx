@@ -171,6 +171,12 @@ const components = {
   }: React.ComponentProps<typeof FrameworkDocs>) => (
     <FrameworkDocs className={cn(className)} {...props} />
   ),
+  Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
+    <Link
+      className={cn('font-medium underline underline-offset-4', className)}
+      {...props}
+    />
+  ),
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(

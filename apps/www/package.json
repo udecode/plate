@@ -123,7 +123,7 @@
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.3.52",
     "react-modal-sheet": "2.0.0",
-    "react-tweet": "^3.0.3",
+    "react-tweet": "^3.1.0",
     "react-wrap-balancer": "^1.0.0",
     "sass": "^1.63.6",
     "slate": "0.94.1",
@@ -159,7 +159,8 @@
     "tailwindcss": "^3.3.2",
     "tailwindcss-animate": "^1.0.6",
     "ts-node": "^10.9.1",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "vaul": "^0.4.5"
   },
   "browserslist": {
     "production": [

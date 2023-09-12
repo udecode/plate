@@ -722,6 +722,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/components/installation',
           items: [
             {
+              title: 'Manual',
+              href: '/docs/components/installation/manual',
+              items: [],
+            },
+            {
               title: 'Next.js',
               href: '/docs/components/installation/next',
               items: [],
@@ -736,12 +741,12 @@ export const docsConfig: DocsConfig = {
               href: '/docs/components/installation/remix',
               items: [],
             },
-            {
-              title: 'Manual',
-              href: '/docs/components/installation/manual',
-              items: [],
-            },
           ],
+        },
+        {
+          title: 'components.json',
+          href: '/docs/components/components-json',
+          items: [],
         },
         {
           title: 'Theming',
@@ -756,6 +761,26 @@ export const docsConfig: DocsConfig = {
         {
           title: 'CLI',
           href: '/docs/components/cli',
+          items: [],
+        },
+        {
+          title: 'Changelog',
+          href: '/docs/components/changelog',
+          items: [],
+        },
+      ],
+    },
+    {
+      title: 'Dark Mode',
+      items: [
+        {
+          title: 'Next.js',
+          href: '/docs/components/dark-mode/next',
+          items: [],
+        },
+        {
+          title: 'Vite',
+          href: '/docs/components/dark-mode/vite',
           items: [],
         },
       ],

@@ -70,16 +70,14 @@ const ParagraphElement = ({
   ...props
 }: PlateElementProps) => {
   const editor = usePlateEditorRef();
-  
+
   const handleClick = useCallback(() => {
-    console.log('You clicked on a paragraph, and the editor is ', editor);
+    console.info('You clicked on a paragraph, and the editor is ', editor);
   }, [editor]);
-  
+
   return (
     <PlateElement asChild className={className} {...props}>
-      <p onClick={handleClick}>
-        {children}
-      </p>
+      <p onClick={handleClick}>{children}</p>
     </PlateElement>
   );
 };
@@ -90,15 +88,15 @@ One common pattern is to add an effect component as a child of **`Plate`** that 
 ```tsx showLineNumbers {2,17}
 const CustomEffect = () => {
   const editor = usePlateEditorRef();
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('The editor is ', editor);
+      console.info('The editor is ', editor);
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [editor]);
-  
+
   return null;
 };
 
@@ -110,8 +108,12 @@ export default () => (
 ```
 
 <Callout className="my-4">
-  **If **`editor`** is modified by reference, why include it in dependency lists?**<br />
-  Good question! Even though **`editor`** is usually modified by reference, there are some situations in which it's replaced with a fresh instance, such as when the editor is reset.
+  **If **`editor`** is modified by reference, why include it in dependency
+  lists?**
+  <br />
+  Good question! Even though **`editor`** is usually modified by reference,
+  there are some situations in which it's replaced with a fresh instance, such
+  as when the editor is reset.
 </Callout>
 
 ## From a Sibling of Plate
@@ -146,16 +148,16 @@ The **`editorRef`** prop can be used with **`useRef`**, **`useState`**, or a cus
 ```tsx showLineNumbers {2,21}
 const App = () => {
   const editorRef = useRef<PlateEditor | null>(null);
-  
+
   const handleSomeEvent = useCallback(() => {
     // editor has type PlateEditor | null
     const editor = editorRef.current;
-    
+
     if (editor) {
       // Do something with editor
     }
   }, []);
-  
+
   // Pass editorRef and handleSomeEvent down to where they're needed
   // ...
 };
@@ -177,24 +179,22 @@ Using **`editorRef`** with **`useState`** without a counter is equivalent to usi
 const App = () => {
   const [editor, setEditor] = useState<PlateEditor | null>(null);
   const [, handleUpdateEditor] = useReducer((x) => x + 1, 0);
-  
+
   // Pass editor, setEditor and handleUpdateEditor down to where they're needed
   // ...
 };
 
-const EditorPreview = ({
-  editor,
-}: {
-  editor: PlateEditor | null;
-}) => {
+const EditorPreview = ({ editor }: { editor: PlateEditor | null }) => {
   // html has type string | null
   const html = useMemo(
-    () => editor && serializeHtml(editor, {
-      nodes: editor.children,
-    }),
+    () =>
+      editor &&
+      serializeHtml(editor, {
+        nodes: editor.children,
+      }),
     [editor, editor?.children]
   );
-  
+
   if (!html) return null;
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };
@@ -205,12 +205,7 @@ const MyEditor = ({
 }: {
   setEditor: (editor: PlateEditor | null) => void;
   handleUpdateEditor: () => void;
-}) => (
-  <Plate
-    editorRef={setEditor}
-    onChange={handleUpdateEditor}
-  />
-);
+}) => <Plate editorRef={setEditor} onChange={handleUpdateEditor} />;
 ```
 
 ## Temporary Editor Instance
@@ -238,13 +233,7 @@ export default ({ initialHtml }: { initialHtml: string }) => {
       element: initialHtml,
     });
   }, []);
-  
-  return (
-    <Plate
-      plugins={plugins}
-      initialValue={initialValue}
-    />
-  );
+
+  return <Plate plugins={plugins} initialValue={initialValue} />;
 };
 ```
-

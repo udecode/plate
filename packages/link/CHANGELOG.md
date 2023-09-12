@@ -1,5 +1,26 @@
 # @udecode/plate-link
 
+## 23.7.0
+
+## 23.6.0
+
+## 23.5.0
+
+### Minor Changes
+
+- [#2585](https://github.com/udecode/plate/pull/2585) by [@zbeyens](https://github.com/zbeyens) – `LinkFloatingToolbar`:
+
+  - soft br: `useVirtualFloatingLink` removed `placement` and `middleware` default values from floating options.
+  - refactor: `useFloatingLinkEdit` and `useFloatingLinkEditState`
+  - refactor: `useFloatingLinkInsert` and `useFloatingLinkInsertState`
+  - feat: `useFloatingLinkInsert` return new field: `hidden`
+
+## 23.4.0
+
+### Patch Changes
+
+- [#2579](https://github.com/udecode/plate/pull/2579) by [@zbeyens](https://github.com/zbeyens) – Add missing dependency `@udecode/plate-floating`
+
 ## 23.3.1
 
 ## 23.3.0

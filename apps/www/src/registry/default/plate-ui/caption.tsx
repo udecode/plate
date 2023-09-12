@@ -23,7 +23,7 @@ const captionVariants = cva('max-w-full', {
 const Caption = React.forwardRef<
   React.ElementRef<typeof CaptionPrimitive>,
   ComponentProps<typeof CaptionPrimitive> & VariantProps<typeof captionVariants>
->(({ className, style, align, ...props }, ref) => (
+>(({ className, align, ...props }, ref) => (
   <CaptionPrimitive
     ref={ref}
     className={cn(captionVariants({ align }), className)}
@@ -41,7 +41,7 @@ const CaptionTextarea = React.forwardRef<
     className={cn(
       'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',
       'focus:outline-none focus:[&::placeholder]:opacity-0',
-      'text-center',
+      'text-center print:placeholder:text-transparent',
       className
     )}
     {...props}

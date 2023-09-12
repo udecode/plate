@@ -16,7 +16,6 @@ export const transformCssVars: Transformer = async ({
 
   // Find jsx attributes with the name className.
   // const openingElements = sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement)
-  // console.log(openingElements)
   // const jsxAttributes = sourceFile
   //   .getDescendantsOfKind(SyntaxKind.JsxAttribute)
   //   .filter((node) => node.getName() === "className")
@@ -61,7 +60,6 @@ export const transformCssVars: Transformer = async ({
 //       if (node?.value?.type) {
 //         if (node.value.type === "StringLiteral") {
 //           node.value.value = applyColorMapping(node.value.value)
-//           console.log(node.value.value)
 //         }
 
 //         if (

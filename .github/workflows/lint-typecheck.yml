@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs:
       - lint-typecheck
-    if: ${{ !github.event.pull_request.draft && failure() }}
+    if: ${{ github.event_name == 'push' && failure() }}
     
     steps:
       - name: Notify

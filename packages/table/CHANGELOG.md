@@ -1,5 +1,21 @@
 # @udecode/plate-table
 
+## 23.7.0
+
+## 23.6.1
+
+### Patch Changes
+
+- [#2594](https://github.com/udecode/plate/pull/2594) by [@OliverWales](https://github.com/OliverWales) – Fix column deletion early return
+
+## 23.6.0
+
+## 23.4.1
+
+### Patch Changes
+
+- [#2581](https://github.com/udecode/plate/pull/2581) by [@OliverWales](https://github.com/OliverWales) – Modify insertTableRow and insertTableColumn to support header columns to preserve header columns if they exist + not blindly assume that it's a header row if the first cell in that row is a header cell.
+
 ## 23.3.1
 
 ## 23.3.0
