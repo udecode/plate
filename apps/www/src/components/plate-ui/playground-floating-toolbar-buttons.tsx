@@ -23,7 +23,7 @@ export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = usePlateReadOnly();
 
   return (
-    <>
+    <div className="print:hidden">
       {!readOnly && (
         <>
           <PlaygroundTurnIntoDropdownMenu />
@@ -59,6 +59,6 @@ export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
       {isEnabled('comment', id) && <CommentToolbarButton />}
 
       <PlaygroundMoreDropdownMenu />
-    </>
+    </div>
   );
 }
