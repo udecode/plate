@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "23.7.2",
+  "version": "23.7.3",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -56,7 +56,7 @@
     "@udecode/plate-link": "23.7.0",
     "@udecode/plate-list": "23.7.2",
     "@udecode/plate-media": "23.7.0",
-    "@udecode/plate-mention": "23.7.0",
+    "@udecode/plate-mention": "23.7.3",
     "@udecode/plate-node-id": "23.7.0",
     "@udecode/plate-normalizers": "23.7.0",
     "@udecode/plate-paragraph": "23.7.0",
