@@ -38,7 +38,6 @@ import { Theme, themes } from '@/registry/themes';
 
 import { copyToClipboardWithMeta } from './copy-button';
 import { DrawerContent, DrawerTrigger } from './drawer';
-import { ThemeWrapper } from './theme-wrapper';
 import { Label } from './ui/label';
 import { Skeleton } from './ui/skeleton';
 
@@ -146,7 +145,7 @@ export function ThemeCustomizer() {
           </PopoverTrigger>
           <PopoverContent
             align="end"
-            className="z-40 w-[340px] rounded-[0.5rem] bg-white p-6 dark:bg-slate-950"
+            className="w-[340px] rounded-[0.5rem] bg-white p-6 dark:bg-slate-950"
           >
             <Customizer />
           </PopoverContent>
@@ -167,10 +166,7 @@ function Customizer() {
   }, []);
 
   return (
-    <ThemeWrapper
-      defaultTheme="slate"
-      className="flex flex-col space-y-4 md:space-y-6"
-    >
+    <div className="flex flex-col space-y-4 md:space-y-6">
       <div className="flex items-start">
         <div className="space-y-1 pr-2">
           <div className="font-semibold leading-none tracking-tight">
@@ -341,7 +337,7 @@ function Customizer() {
           </div>
         </div>
       </div>
-    </ThemeWrapper>
+    </div>
   );
 }
 
@@ -391,7 +387,7 @@ function CopyCodeButton() {
               Copy and paste the following code into your CSS file.
             </DialogDescription>
           </DialogHeader>
-          <ThemeWrapper defaultTheme="slate" className="relative">
+          <div className="relative">
             <CustomizerCode />
             {activeTheme && (
               <Button
@@ -419,7 +415,7 @@ function CopyCodeButton() {
                 Copy
               </Button>
             )}
-          </ThemeWrapper>
+          </div>
         </DialogContent>
       </Dialog>
     </>
@@ -431,7 +427,7 @@ function CustomizerCode() {
   const activeTheme = themes.find((theme) => theme.name === config.theme);
 
   return (
-    <ThemeWrapper defaultTheme="slate" className="relative space-y-4">
+    <div className="relative space-y-4">
       <div data-rehype-pretty-code-fragment="">
         <pre className="max-h-[450px] overflow-x-auto rounded-lg border bg-slate-950 py-4 dark:bg-slate-900">
           <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
@@ -548,7 +544,7 @@ function CustomizerCode() {
           </code>
         </pre>
       </div>
-    </ThemeWrapper>
+    </div>
   );
 }
 

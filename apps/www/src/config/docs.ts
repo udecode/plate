@@ -17,10 +17,6 @@ export const docsConfig: DocsConfig = {
       href: '/docs/components',
     },
     {
-      title: 'Themes',
-      href: '/themes',
-    },
-    {
       title: 'GitHub',
       href: 'https://github.com/udecode/plate',
       external: true,

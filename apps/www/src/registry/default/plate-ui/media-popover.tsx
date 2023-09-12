@@ -69,7 +69,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
             </div>
           </div>
         ) : (
-          <div className="box-content print:hidden flex h-9 items-center gap-1">
+          <div className="box-content flex h-9 items-center gap-1">
             <FloatingMediaPrimitive.EditButton
               className={buttonVariants({ variant: 'ghost', size: 'sm' })}
             >

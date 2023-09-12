@@ -41,7 +41,11 @@ export const usePlaygroundValue = (id?: ValueId) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
-    const value = [...basicElementsValue, ...basicMarksValue];
+    const value = [...basicElementsValue];
+
+    if (enabled.action_item) value.push(...todoListValue);
+
+    value.push(...basicMarksValue);
 
     if (valueId !== settingValues.playground.id) {
       const newValue = settingValues[valueId].value ?? [];
@@ -71,7 +75,6 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.list) value.push(...listValue);
     if (enabled.img || enabled.media_embed) value.push(...mediaValue);
     if (enabled.table) value.push(...tableValue);
-    if (enabled.action_item) value.push(...todoListValue);
 
     // Functionalities
     if (enabled.autoformat) value.push(...autoformatValue);

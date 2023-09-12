@@ -10,7 +10,6 @@ import { styles } from '@/registry/styles';
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { Icons } from './icons';
 import { StyleSwitcher } from './style-switcher';
-import { ThemeWrapper } from './theme-wrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -100,32 +99,30 @@ export function ComponentPreview({
               )}
             </div>
           )}
-          <ThemeWrapper defaultTheme="slate">
-            <React.Suspense
-              fallback={
-                // eslint-disable-next-line tailwindcss/no-custom-classname
-                <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </div>
-              }
-            >
-              <div
-                // eslint-disable-next-line tailwindcss/no-custom-classname
-                className={cn(
-                  'preview relative flex h-full min-h-[350px] w-full flex-col p-0',
-                  padding === 'md' && 'p-4',
-                  {
-                    'items-center': align === 'center',
-                    'items-start': align === 'start',
-                    'items-end': align === 'end',
-                  }
-                )}
-              >
-                <div className="h-full w-full grow">{Preview}</div>
+          <React.Suspense
+            fallback={
+              // eslint-disable-next-line tailwindcss/no-custom-classname
+              <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
               </div>
-            </React.Suspense>
-          </ThemeWrapper>
+            }
+          >
+            <div
+              // eslint-disable-next-line tailwindcss/no-custom-classname
+              className={cn(
+                'preview relative flex h-full min-h-[350px] w-full flex-col p-0',
+                padding === 'md' && 'p-4',
+                {
+                  'items-center': align === 'center',
+                  'items-start': align === 'start',
+                  'items-end': align === 'end',
+                }
+              )}
+            >
+              <div className="h-full w-full grow">{Preview}</div>
+            </div>
+          </React.Suspense>
         </TabsContent>
         <TabsContent value="code">
           <div className="flex flex-col space-y-4">

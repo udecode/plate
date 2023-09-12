@@ -59,7 +59,6 @@ export function ImageElement({
 
           <Caption align={align} style={{ width }}>
             <CaptionTextarea
-              className="print:placeholder:text-transparent"
               placeholder="Write a caption..."
               readOnly={readOnly}
             />

@@ -6672,7 +6672,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-marks@npm:23.7.0, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
+"@udecode/plate-basic-marks@npm:23.7.1, @udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-marks@workspace:packages/basic-marks"
   dependencies:
@@ -7026,7 +7026,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-kbd@npm:23.7.0, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
+"@udecode/plate-kbd@npm:23.7.1, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-kbd@workspace:packages/kbd"
   dependencies:
@@ -7433,7 +7433,7 @@ __metadata:
     "@udecode/plate-alignment": "npm:23.7.0"
     "@udecode/plate-autoformat": "npm:23.7.0"
     "@udecode/plate-basic-elements": "npm:23.7.0"
-    "@udecode/plate-basic-marks": "npm:23.7.0"
+    "@udecode/plate-basic-marks": "npm:23.7.1"
     "@udecode/plate-block-quote": "npm:23.7.0"
     "@udecode/plate-break": "npm:23.7.0"
     "@udecode/plate-code-block": "npm:23.7.0"
@@ -7448,7 +7448,7 @@ __metadata:
     "@udecode/plate-horizontal-rule": "npm:23.7.0"
     "@udecode/plate-indent": "npm:23.7.0"
     "@udecode/plate-indent-list": "npm:23.7.0"
-    "@udecode/plate-kbd": "npm:23.7.0"
+    "@udecode/plate-kbd": "npm:23.7.1"
     "@udecode/plate-line-height": "npm:23.7.0"
     "@udecode/plate-link": "npm:23.7.0"
     "@udecode/plate-list": "npm:23.7.0"

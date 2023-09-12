@@ -41,7 +41,7 @@ const CaptionTextarea = React.forwardRef<
     className={cn(
       'mt-2 w-full resize-none border-none bg-inherit p-0 font-[inherit] text-inherit',
       'focus:outline-none focus:[&::placeholder]:opacity-0',
-      'text-center',
+      'text-center print:placeholder:text-transparent',
       className
     )}
     {...props}

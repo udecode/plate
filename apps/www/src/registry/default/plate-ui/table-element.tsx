@@ -162,7 +162,7 @@ const TableElement = React.forwardRef<
   const { props: tableProps, colGroupProps } = useTableElement();
 
   return (
-    <TableFloatingToolbar className="print:hidden">
+    <TableFloatingToolbar>
       <div style={{ paddingLeft: marginLeft }}>
         <PlateElement
           asChild
