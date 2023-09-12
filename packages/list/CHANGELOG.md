@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 23.7.2
+
+### Patch Changes
+
+- [#2597](https://github.com/udecode/plate/pull/2597) by [@nicktrn](https://github.com/nicktrn) – Prevent `deleteBackward` and `deleteForward` from creating empty nodes when merging sibling list items with multiple children
+
 ## 23.7.0
 
 ## 23.6.0
