@@ -1,8 +1,7 @@
 import {
-  findNode,
   focusEditor,
+  getBlockAbove,
   getPluginInjectProps,
-  isBlock,
   isCollapsed,
   TElement,
   usePlateEditorRef,
@@ -15,12 +14,10 @@ export const useLineHeightDropdownMenuState = () => {
   const editor = usePlateEditorState();
   const { validNodeValues: values = [], defaultNodeValue } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
-  let value: string = defaultNodeValue;
+  let value: string | undefined;
 
   if (isCollapsed(editor?.selection)) {
-    const entry = findNode<TElement>(editor!, {
-      match: (n) => isBlock(editor, n),
-    });
+    const entry = getBlockAbove<TElement>(editor);
     if (entry) {
       value =
         values.find((item) => item === entry[0][KEY_LINE_HEIGHT]) ??
