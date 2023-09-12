@@ -20,11 +20,6 @@ export const createCodePlugin = createPluginFactory<ToggleMarkPlugin>({
       },
       {
         validStyle: {
-          wordWrap: 'break-word',
-        },
-      },
-      {
-        validStyle: {
           fontFamily: 'Consolas',
         },
       },
