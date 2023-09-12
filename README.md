@@ -35,16 +35,9 @@ Plate
 
 You can learn more about Plate by checking out our [documentation](https://platejs.org/docs).
 
-## Running locally
-
-To get started, check out our [contributing guide](CONTRIBUTING.md).
-
 ## Contributing
 
-### Ideas and discussions
-
-[Discussions](https://github.com/udecode/plate/discussions) is the best
-place for bringing opinions and contributions. Your feedback and contributions are welcome and will help us ensure that we are heading in the right direction with the project.
+To get started, check out our [contributing guide](CONTRIBUTING.md).
 
 ### Contributors
 
