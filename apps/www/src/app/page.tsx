@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 
-import { ThemeCustomizer } from '@/components/theme-customizer';
+import { PlaygroundCustomizer } from '@/components/playground-customizer';
+import { SettingsToggle } from '@/components/settings-toggle';
 
 import '../../public/registry/themes.css';
 
@@ -14,10 +15,10 @@ import {
   PageHeaderHeading,
 } from '@/components/page-header';
 import { ThemeWrapper } from '@/components/theme-wrapper';
-import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
-import { HomeTabs } from '@/app/_components/home-tabs';
+
+import { HomeTabs } from './_components/home-tabs';
 
 export default function IndexPage() {
   return (
@@ -39,7 +40,7 @@ export default function IndexPage() {
                 Build your rich-text editor.
               </PageHeaderHeading>
               <div className="hidden md:block">
-                <ThemeCustomizer />
+                <PlaygroundCustomizer />
               </div>
             </div>
             <PageHeaderDescription>
@@ -61,7 +62,7 @@ export default function IndexPage() {
               </Link>
             </section>
             <div className="block md:hidden">
-              <ThemeCustomizer />
+              <PlaygroundCustomizer />
             </div>
           </PageHeader>
         </div>
@@ -75,8 +76,11 @@ export default function IndexPage() {
 
         <section className="relative">
           <HomeTabs />
-          <div className="max-w-[1336px] rounded-lg border bg-background shadow">
-            <PlaygroundDemo />
+
+          <div className="fixed right-0 top-full z-[100]">
+            <div className="-translate-y-full p-4">
+              <SettingsToggle />
+            </div>
           </div>
         </section>
       </div>

@@ -1,53 +1,28 @@
-import { useCallback, useMemo, useState } from 'react';
-import { sortBy, uniqBy } from 'lodash';
+import { ReactNode, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { uniqBy } from 'lodash';
 
-import { settingPlugins } from '@/config/setting-plugins';
-import { cn } from '@/lib/utils';
-import { Label } from '@/components/ui/label';
-import { A, H2, P, Pre, Step, Steps } from '@/components/typography';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Checkbox } from '@/registry/default/plate-ui/checkbox';
-
-const allPlugins = settingPlugins.flatMap((group) => group.children);
-const allComponents = uniqBy(
-  allPlugins.flatMap((plugin) => plugin.components ?? []),
-  'id'
-);
+import { allPlugins, orderedPluginKeys } from '@/config/setting-plugins';
+import { settingsStore } from '@/components/context/settings-store';
+import { Link } from '@/components/link';
+import * as Typography from '@/components/typography';
+import { H2, Pre, Step, Steps } from '@/components/typography';
 
 // Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
-function WrappedPre({ code }: { code: string }) {
+function WrappedPre({
+  code,
+  children,
+}: {
+  code: string;
+  children?: ReactNode;
+}) {
   return (
     <div className="relative">
+      {!!children && <Typography.P className="mt-6">{children}</Typography.P>}
       <Pre className="p-4 text-white" __rawString__={code}>
         {code}
       </Pre>
     </div>
-  );
-}
-
-interface TreeIconProps {
-  isFirst: boolean;
-  isLast: boolean;
-  className?: string;
-}
-
-function TreeIcon({ isFirst, isLast, className }: TreeIconProps) {
-  return (
-    <svg
-      viewBox="0 0 12 24"
-      aria-hidden="true"
-      strokeWidth={1.2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn(
-        'aspect-[1/2] w-5 fill-none stroke-slate-300 dark:stroke-slate-600',
-        className
-      )}
-    >
-      <path d={`M 2 ${isFirst ? 2 : 0} L 2 12 L 10 12`} />
-
-      {!isLast && <path d="M 2 12 L 2 24" />}
-    </svg>
   );
 }
 
@@ -61,82 +36,87 @@ type TEditorCodeGeneratorState = {
   setAllComponentsChecked: (checked: boolean) => void;
 };
 
-export function useEditorCodeGeneratorState({
-  initialPluginIds = [],
-}: {
-  initialPluginIds?: string[];
-}): TEditorCodeGeneratorState {
-  const [checkedPlugins, setCheckedPlugins] = useState(() => {
-    return Object.fromEntries(
-      allPlugins.map((plugin) => [
-        plugin.id,
-        initialPluginIds.includes(plugin.id),
-      ])
-    );
-  });
+export function useEditorCodeGeneratorState() {
+  const searchParams = useSearchParams();
+  const pluginsString = searchParams?.get('plugins');
+
+  const initialPluginIds = useMemo(
+    () => pluginsString?.split(',') ?? [],
+    [pluginsString]
+  );
+
+  // const [checkedPlugins, setCheckedPlugins] = useState(() => {
+  //   return Object.fromEntries(
+  //     allPlugins.map((plugin) => [
+  //       plugin.id,
+  //       initialPluginIds.includes(plugin.id),
+  //     ])
+  //   );
+  // });
 
   /**
    * All components are checked by default, including those that are not
    * used by any checked plugin. Only a subset of these components will
    * be installed.
    */
-  const [checkedComponents, setCheckedComponents] = useState(() =>
-    Object.fromEntries(allComponents.map((component) => [component.id, true]))
-  );
+  // const [checkedComponents, setCheckedComponents] = useState(() =>
+  //   Object.fromEntries(allComponents.map((component) => [component.id, true]))
+  // );
 
-  const setPluginChecked = useCallback(
-    (id: string) => (checked: boolean) => {
-      setCheckedPlugins((prev) => ({ ...prev, [id]: checked }));
-    },
-    []
-  );
+  // const setPluginChecked = useCallback(
+  //   (id: string) => (checked: boolean) => {
+  //     setCheckedPlugins((prev) => ({ ...prev, [id]: checked }));
+  //   },
+  //   []
+  // );
+  //
+  // const setComponentChecked = useCallback(
+  //   (id: string) => (checked: boolean) => {
+  //     setCheckedComponents((prev) => ({ ...prev, [id]: checked }));
+  //   },
+  //   []
+  // );
 
-  const setComponentChecked = useCallback(
-    (id: string) => (checked: boolean) => {
-      setCheckedComponents((prev) => ({ ...prev, [id]: checked }));
-    },
-    []
-  );
-
-  const setAllPluginsChecked = useCallback((checked: boolean) => {
-    setCheckedPlugins((prev) =>
-      Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
-    );
-  }, []);
-
-  const setAllComponentsChecked = useCallback((checked: boolean) => {
-    setCheckedComponents((prev) =>
-      Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
-    );
-  }, []);
-
-  return useMemo(
-    () => ({
-      initialPluginIds,
-      checkedPlugins,
-      checkedComponents,
-      setPluginChecked,
-      setComponentChecked,
-      setAllPluginsChecked,
-      setAllComponentsChecked,
-    }),
-    [
-      initialPluginIds,
-      checkedPlugins,
-      checkedComponents,
-      setPluginChecked,
-      setComponentChecked,
-      setAllPluginsChecked,
-      setAllComponentsChecked,
-    ]
-  );
+  // const setAllPluginsChecked = useCallback((checked: boolean) => {
+  //   setCheckedPlugins((prev) =>
+  //     Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
+  //   );
+  // }, []);
+  //
+  // const setAllComponentsChecked = useCallback((checked: boolean) => {
+  //   setCheckedComponents((prev) =>
+  //     Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
+  //   );
+  // }, []);
+  //
+  // return useMemo(
+  //   () => ({
+  //     initialPluginIds,
+  //     checkedPlugins,
+  //     checkedComponents,
+  //     setPluginChecked,
+  //     setComponentChecked,
+  //     setAllPluginsChecked,
+  //     setAllComponentsChecked,
+  //   }),
+  //   [
+  //     initialPluginIds,
+  //     checkedPlugins,
+  //     checkedComponents,
+  //     setPluginChecked,
+  //     setComponentChecked,
+  //     setAllPluginsChecked,
+  //     setAllComponentsChecked,
+  //   ]
+  // );
 }
 
-function getEditorCodeGeneratorResult({
-  checkedPlugins,
-  checkedComponents,
-}: TEditorCodeGeneratorState) {
-  const plugins = allPlugins.filter((plugin) => checkedPlugins[plugin.id]);
+function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
+  const plugins = allPlugins.filter((plugin) => {
+    if (!plugin.pluginFactory) return false;
+
+    return checkedPlugins[plugin.id];
+  });
 
   const components = uniqBy(
     plugins
@@ -145,148 +125,36 @@ function getEditorCodeGeneratorResult({
     'id'
   );
 
+  const orderedPlugins = plugins.sort((a, b) => {
+    const indexOfA = orderedPluginKeys.indexOf(a.id);
+    const indexOfB = orderedPluginKeys.indexOf(b.id);
+
+    if (indexOfA === -1 || indexOfB === -1) {
+      throw new Error(
+        `plugin key not found in orderedPluginKeys ${indexOfA} ${indexOfB}`
+      );
+    }
+
+    return indexOfA - indexOfB;
+  });
+
   return {
-    plugins,
+    plugins: orderedPlugins,
     components,
   };
 }
 
-export function SelectPluginsAndComponents({
-  initialPluginIds,
-  checkedPlugins,
-  checkedComponents,
-  setPluginChecked,
-  setComponentChecked,
-  setAllComponentsChecked,
-  setAllPluginsChecked,
-}: TEditorCodeGeneratorState) {
-  const allPluginsInitialFirst = useMemo(
-    () =>
-      sortBy(allPlugins, (plugin) =>
-        initialPluginIds.includes(plugin.id) ? 0 : 1
-      ),
-    [initialPluginIds]
-  );
+export function EditorCodeGeneratorResult() {
+  const checkedPlugins = settingsStore.use.checkedPlugins();
+  const checkedComponents = settingsStore.use.checkedComponents();
 
-  const anyPluginChecked = useMemo(
-    () => Object.values(checkedPlugins).some(Boolean),
-    [checkedPlugins]
-  );
-
-  const anyComponentChecked = useMemo(
-    () => Object.values(checkedComponents).some(Boolean),
-    [checkedComponents]
-  );
-
-  return (
-    <>
-      <div className="flex justify-between">
-        <P>
-          Select the plugins and components you want to install. The components
-          are provided by{' '}
-          <A href="/docs/components" target="_blank">
-            Plate UI
-          </A>{' '}
-          and should be{' '}
-          <Button
-            variant="inlineLink"
-            size="none"
-            onClick={() => setAllComponentsChecked(false)}
-          >
-            disabled
-          </Button>{' '}
-          if you want to use your own components.
-        </P>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          onClick={() => setAllPluginsChecked(!anyPluginChecked)}
-        >
-          {anyPluginChecked ? 'Disable' : 'Enable'} All Plugins
-        </Button>
-
-        <Button
-          variant="outline"
-          onClick={() => setAllComponentsChecked(!anyComponentChecked)}
-          disabled={!anyPluginChecked}
-        >
-          {anyComponentChecked ? 'Disable' : 'Enable'} All Components
-        </Button>
-        <Button
-          // onClick={() => setTab('result')}
-          disabled={!anyPluginChecked}
-        >
-          Done
-        </Button>
-      </div>
-
-      <div className="mt-4 space-y-2 rounded-lg bg-muted p-4">
-        {allPluginsInitialFirst.map(
-          ({ id: pluginId, label: pluginLabel, components = [] }) => {
-            const isChecked = checkedPlugins[pluginId];
-            const pluginHtmlId = `plugin-${pluginId}`;
-
-            return (
-              <div key={pluginId}>
-                <div className="flex items-center">
-                  <Checkbox
-                    id={pluginHtmlId}
-                    checked={isChecked}
-                    onCheckedChange={setPluginChecked(pluginId)}
-                  />
-
-                  <Label htmlFor={pluginHtmlId} className="flex p-2">
-                    {pluginLabel} Plugin
-                  </Label>
-                </div>
-
-                {isChecked &&
-                  components.length > 0 &&
-                  components.map(
-                    (
-                      { id: componentId, label: componentLabel },
-                      componentIndex
-                    ) => {
-                      const isFirst = componentIndex === 0;
-                      const isLast = componentIndex === components.length - 1;
-                      const componentHtmlId = `${pluginHtmlId}-${componentId}`;
-
-                      return (
-                        <div key={componentId} className="flex items-center">
-                          <TreeIcon
-                            isFirst={isFirst}
-                            isLast={isLast}
-                            className="mx-1"
-                          />
-
-                          <Checkbox
-                            id={componentHtmlId}
-                            checked={checkedComponents[componentId]}
-                            onCheckedChange={setComponentChecked(componentId)}
-                          />
-
-                          <Label htmlFor={componentHtmlId} className="flex p-2">
-                            {componentLabel} Component
-                          </Label>
-                        </div>
-                      );
-                    }
-                  )}
-              </div>
-            );
-          }
-        )}
-      </div>
-    </>
-  );
-}
-
-export function EditorCodeGeneratorResult(state: TEditorCodeGeneratorState) {
   const { plugins, components } = useMemo(
-    () => getEditorCodeGeneratorResult(state),
-    [state]
+    () =>
+      getEditorCodeGeneratorResult({
+        checkedPlugins,
+        checkedComponents,
+      }),
+    [checkedComponents, checkedPlugins]
   );
 
   const componentsWithPluginKey = useMemo(
@@ -302,17 +170,19 @@ export function EditorCodeGeneratorResult(state: TEditorCodeGeneratorState) {
     .map((component) => component.id)
     .join(' ')}`;
 
-  const usage = [
-    'import {',
-    '  createPlugins,',
-    ...plugins.map((plugin) => `  ${plugin.pluginFactory},`),
-    '  Plate,',
-    "} from '@udecode/plate';",
+  const imports = [
+    `import { createPlugins, Plate } from '@udecode/plate-common';`,
+    ...plugins.map(
+      (plugin) =>
+        `import { ${plugin.pluginFactory} } from '${plugin.npmPackage}';`
+    ),
     ...componentsWithPluginKey.map(
       (component) =>
         `import { ${component.reactComponent} } from './components/plate-ui/${component.id}';`
     ),
-    '',
+  ].join('\n');
+
+  const usage = [
     'const plugins = createPlugins(',
     '  [',
     ...plugins.map((plugin) => `    ${plugin.pluginFactory}(),`),
@@ -326,23 +196,52 @@ export function EditorCodeGeneratorResult(state: TEditorCodeGeneratorState) {
     '    },',
     '  }',
     ');',
-    '',
-    'export default () => <Plate plugins={plugins} />;',
   ].join('\n');
+
+  const plate = ['export default () => <Plate plugins={plugins} />;'].join(
+    '\n'
+  );
 
   return (
     <>
       <H2>Installation</H2>
 
+      <Typography.P>
+        Here is your personalized installation guide based on the plugins and
+        components you have selected. For a more general guide, please refer to
+        the <Link href="/docs/getting-started">Getting Started</Link> section.
+      </Typography.P>
+
       <Steps>
+        <Step>Install Plate</Step>
+        <WrappedPre
+          code={[
+            `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
+            `npm install @udecode/plate-common`,
+          ].join('\n')}
+        >
+          Install the peer dependencies and Plate:
+        </WrappedPre>
         <Step>Install Plugins</Step>
-        <WrappedPre code={installPlugins} />
-
-        <Step>Install Components</Step>
-        <WrappedPre code={installComponents} />
-
-        <Step>Usage</Step>
-        <WrappedPre code={usage} />
+        <WrappedPre code={installPlugins}>
+          Install your selected plugins:
+        </WrappedPre>
+        <Step>Add Components</Step>
+        <WrappedPre code={installComponents}>
+          <Link href="/docs/components/installation">
+            Install the dependencies for the components
+          </Link>{' '}
+          and <Link href="/docs/components/cli">configure the CLI</Link>. Then,
+          add the components you have selected:
+        </WrappedPre>
+        <Step>Imports</Step>
+        <WrappedPre code={imports}>All the imports you need:</WrappedPre>
+        <Step>Create Plugins</Step>
+        <WrappedPre code={usage}>
+          Create your plugins and link your components into them.
+        </WrappedPre>
+        <Step>Finally, render the editor</Step>
+        <WrappedPre code={plate} />
       </Steps>
     </>
   );

@@ -3,14 +3,12 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
-import * as Typography from './typography';
 
 import {
   APIAttributes,
@@ -33,7 +31,9 @@ import { ComponentPreview } from './component-preview';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
+import { Link } from './link';
 import { PackageInfo } from './package-info';
+import * as Typography from './typography';
 import {
   Accordion,
   AccordionContent,
@@ -171,12 +171,7 @@ const components = {
   }: React.ComponentProps<typeof FrameworkDocs>) => (
     <FrameworkDocs className={cn(className)} {...props} />
   ),
-  Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
-    <Link
-      className={cn('font-medium underline underline-offset-4', className)}
-      {...props}
-    />
-  ),
+  Link,
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(

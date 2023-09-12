@@ -10,12 +10,15 @@ import { toast } from '@/components/ui/use-toast';
 
 export const categoryIds = settingPlugins.map((item) => item.id);
 
-const defaultCheckedPlugins = settingPlugins.reduce((acc, item) => {
-  item.children.forEach((child) => {
-    acc[child.id] = true;
-  });
-  return acc;
-}, {} as Record<string, boolean>);
+const defaultCheckedPlugins = settingPlugins.reduce(
+  (acc, item) => {
+    item.children.forEach((child) => {
+      acc[child.id] = true;
+    });
+    return acc;
+  },
+  {} as Record<string, boolean>
+);
 
 export const getDefaultCheckedPlugins = () => {
   return {
@@ -26,17 +29,22 @@ export const getDefaultCheckedPlugins = () => {
   } as Record<string, boolean>;
 };
 
+export const getDefaultCheckedComponents = () => {
+  return {} as Record<string, boolean>;
+};
+
 export const settingsStore = createStore('settings')({
-  showSettings: true,
+  showSettings: false,
 
   valueId: settingValues.playground.id,
 
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
   checkedPlugins: getDefaultCheckedPlugins(),
+  checkedComponents: getDefaultCheckedComponents(),
 })
   .extendActions((set) => ({
-    reset: ({
+    resetPlugins: ({
       exclude,
     }: {
       exclude?: string[];
@@ -46,6 +54,19 @@ export const settingsStore = createStore('settings')({
 
         exclude?.forEach((item) => {
           draft.checkedPluginsNext[item] = false;
+        });
+      });
+    },
+    resetComponents: ({
+      exclude,
+    }: {
+      exclude?: string[];
+    } = {}) => {
+      set.state((draft) => {
+        draft.checkedComponents = getDefaultCheckedComponents();
+
+        exclude?.forEach((item) => {
+          draft.checkedComponents[item] = false;
         });
       });
     },
@@ -73,6 +94,11 @@ export const settingsStore = createStore('settings')({
         draft.checkedPluginsNext[id as string] = checked;
       });
     },
+    setCheckedComponentId: (id: string | string[], checked: boolean) => {
+      set.state((draft) => {
+        draft.checkedComponents[id as string] = checked;
+      });
+    },
     syncChecked: () => {
       set.state((draft) => {
         draft.checkedPlugins = { ...draft.checkedPluginsNext };
@@ -82,4 +108,5 @@ export const settingsStore = createStore('settings')({
   .extendSelectors((get) => ({
     checkedIdNext: (id: string) => get.checkedPluginsNext[id],
     checkedId: (id: string) => get.checkedPlugins[id],
+    checkedComponentId: (id: string) => get.checkedComponents[id],
   }));

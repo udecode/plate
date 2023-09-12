@@ -96,8 +96,6 @@ import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
-import { SettingsPanel } from '@/components/settings-panel';
-import { SettingsToggle } from '@/components/settings-toggle';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
@@ -311,7 +309,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               <div
                 ref={containerRef}
                 className={cn(
-                  'relative flex w-full max-w-[900px] overflow-x-auto',
+                  'relative flex w-full overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
                   '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
                   !id &&
@@ -325,8 +323,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     className: cn(
                       editableProps.className,
                       'px-8 outline-none',
-                      !id &&
-                        'min-h-[920px] w-[900px] pb-[20vh] pt-4 md:px-[96px]',
+                      !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
                       id && 'pb-8 pt-2'
                     ),
                   }}
@@ -347,18 +344,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
 
               {isEnabled('comment', id) && <CommentsPopover />}
             </CommentsProvider>
-
-            {!id && (
-              <>
-                <div className="fixed right-0 top-full z-[100]">
-                  <div className="-translate-y-full p-4">
-                    <SettingsToggle />
-                  </div>
-                </div>
-
-                <SettingsPanel />
-              </>
-            )}
           </div>
         </PlateProvider>
       </div>
