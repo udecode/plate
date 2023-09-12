@@ -58,7 +58,7 @@ export function ThemeCustomizer() {
     <div className="flex items-center space-x-2">
       <Drawer.Root>
         <DrawerTrigger asChild>
-          <Button variant="outline" className="md:hidden">
+          <Button variant="outline" className="whitespace-nowrap md:hidden">
             <Paintbrush className="mr-2 h-4 w-4" />
             Customize
           </Button>
