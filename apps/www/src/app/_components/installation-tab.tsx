@@ -175,7 +175,16 @@ export function InstallationTab() {
     ');',
   ].join('\n');
 
-  const plateCode = `export default () => <Plate plugins={plugins} />;`;
+  const plateCode = [
+    `const initialValue = [`,
+    `  {`,
+    `    type: ELEMENT_PARAGRAPH,`,
+    `    children: [{ text: 'Hello, World!' }],`,
+    `  },`,
+    `];`,
+    ``,
+    `export default () => <Plate plugins={plugins} initialValue={initialValue} />;`,
+  ].join('\n');
 
   const fullCode = [importsCode, usageCode, plateCode].join('\n\n');
 

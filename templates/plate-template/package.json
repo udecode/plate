@@ -14,8 +14,6 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.6",
-    "@udecode/plate-basic-elements": "^23.7.0",
-    "@udecode/plate-basic-marks": "^23.7.1",
     "@udecode/plate-common": "^23.7.0",
     "class-variance-authority": "0.7.0",
     "clsx": "2.0.0",
