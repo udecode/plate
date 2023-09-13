@@ -45,10 +45,13 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
-      <PopoverContent className="w-auto p-1">
+      <PopoverContent
+        className="w-auto p-1"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">

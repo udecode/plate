@@ -42,7 +42,7 @@ export default function Editor() {
               <div
                 ref={containerRef}
                 className={cn(
-                  'relative flex max-w-[900px] overflow-x-auto',
+                  'relative flex w-full overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
                   '[&_.slate-start-area-left]:!w-[64px] [&_.slate-start-area-right]:!w-[64px]'
                 )}
@@ -52,7 +52,7 @@ export default function Editor() {
                     autoFocus: true,
                     className: cn(
                       'relative max-w-full leading-[1.4] outline-none [&_strong]:font-bold',
-                      '!min-h-[600px] w-[900px] px-[96px] py-16'
+                      '!min-h-[600px] px-[96px] py-16'
                     ),
                   }}
                 >

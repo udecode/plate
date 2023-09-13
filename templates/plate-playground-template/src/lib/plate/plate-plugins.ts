@@ -24,6 +24,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
   createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
@@ -178,6 +179,9 @@ export const plugins = createPlugins(
     }),
     createImagePlugin(),
     createMediaEmbedPlugin(),
+    createCaptionPlugin({
+      options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    }),
     createMentionPlugin(),
     createTablePlugin(),
     createTodoListPlugin(),
