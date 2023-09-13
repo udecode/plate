@@ -34,8 +34,12 @@ export function HomeTabs() {
             active && 'border-2 border-primary'
           )}
           onClick={() => {
-            settingsStore.set.customizerTab('plugins');
-            settingsStore.set.showSettings(true);
+            if (active) {
+              settingsStore.set.showSettings(false);
+            } else {
+              settingsStore.set.customizerTab('plugins');
+              settingsStore.set.showSettings(true);
+            }
           }}
         >
           <Settings2 className="mr-2 h-4 w-4" /> Customize

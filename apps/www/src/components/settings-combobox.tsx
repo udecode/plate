@@ -20,11 +20,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
 
 import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
@@ -85,82 +80,77 @@ export function SettingsCombobox() {
 
   return (
     <>
-      <Tooltip>
-        <TooltipTrigger>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              {loaded && (
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="min-w-fit justify-between md:w-[220px]"
-                >
-                  {settingValues[valueId]?.label ?? 'Select a value...'}
-                  <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              )}
-            </PopoverTrigger>
-            <PopoverContent className="z-[99999999] w-[220px] p-0">
-              <Command defaultValue={valueId}>
-                <CommandInput placeholder="Search value..." />
-                <CommandEmpty>No value found.</CommandEmpty>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          {loaded && (
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="min-w-fit justify-between md:w-[220px]"
+              onClick={() => {
+                // quick fix: drawer is closing it
+                setTimeout(() => {
+                  setOpen(!open);
+                }, 0);
+              }}
+            >
+              {settingValues[valueId]?.label ?? 'Select a value...'}
+              <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          )}
+        </PopoverTrigger>
+        <PopoverContent className="z-[99999999] w-[220px] p-0" align="start">
+          <Command defaultValue={valueId}>
+            <CommandInput placeholder="Search example..." />
+            <CommandEmpty>No value found.</CommandEmpty>
 
-                <CommandList>
-                  {categories.map((category) => (
-                    <CommandGroup key={category.value} heading={category.label}>
-                      {category.items.map((item) => {
-                        return (
-                          <CommandItem
-                            key={item.id}
-                            value={item.id}
-                            onSelect={(newId) => {
-                              settingsStore.set.valueId(newId);
+            <CommandList>
+              {categories.map((category) => (
+                <CommandGroup key={category.value} heading={category.label}>
+                  {category.items.map((item) => {
+                    return (
+                      <CommandItem
+                        key={item.id}
+                        value={item.id}
+                        onSelect={(newId) => {
+                          settingsStore.set.valueId(newId);
 
-                              const valuePlugins =
-                                settingValues[newId]?.plugins ?? [];
+                          const valuePlugins =
+                            settingValues[newId]?.plugins ?? [];
 
-                              valuePlugins.forEach((pluginKey) => {
-                                const deps = (
-                                  settingPluginItems[pluginKey] as
-                                    | SettingPlugin
-                                    | undefined
-                                )?.dependencies;
+                          valuePlugins.forEach((pluginKey) => {
+                            const deps = (
+                              settingPluginItems[pluginKey] as
+                                | SettingPlugin
+                                | undefined
+                            )?.dependencies;
 
-                                deps?.forEach((dep) => {
-                                  settingsStore.set.setCheckedIdNext(dep, true);
-                                });
-                                settingsStore.set.setCheckedIdNext(
-                                  pluginKey,
-                                  true
-                                );
-                              });
+                            deps?.forEach((dep) => {
+                              settingsStore.set.setCheckedIdNext(dep, true);
+                            });
+                            settingsStore.set.setCheckedIdNext(pluginKey, true);
+                          });
 
-                              setOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                valueId === item.id
-                                  ? 'opacity-100'
-                                  : 'opacity-0'
-                              )}
-                            />
-                            {item.label}
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  ))}
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </TooltipTrigger>
-
-        <TooltipContent align="start">Select an example</TooltipContent>
-      </Tooltip>
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            valueId === item.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {item.label}
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              ))}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       {!!route && (
         <Link

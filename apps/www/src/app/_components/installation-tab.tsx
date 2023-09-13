@@ -6,6 +6,12 @@ import { uniqBy } from 'lodash';
 
 import { allPlugins, orderedPluginKeys } from '@/config/setting-plugins';
 import { useMounted } from '@/hooks/use-mounted';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { settingsStore } from '@/components/context/settings-store';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
@@ -142,7 +148,7 @@ export function InstallationTab() {
       ([componentId, importValues]) =>
         `import { ${Array.from(importValues).join(
           ', '
-        )} } from './components/plate-ui/${componentId}';`
+        )} } from '@/components/plate-ui/${componentId}';`
     );
     return [
       `import { createPlugins, Plate${
@@ -170,6 +176,8 @@ export function InstallationTab() {
   ].join('\n');
 
   const plateCode = `export default () => <Plate plugins={plugins} />;`;
+
+  const fullCode = [importsCode, usageCode, plateCode].join('\n\n');
 
   if (!mounted) return null;
 
@@ -231,6 +239,22 @@ export function InstallationTab() {
         </InstallationCode>
         <Step>Finally, render the editor</Step>
         <InstallationCode code={plateCode} />
+
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue=""
+          // onValueChange={setValue}
+        >
+          <AccordionItem value="1" className="">
+            <AccordionTrigger className="justify-start gap-1">
+              Full code
+            </AccordionTrigger>
+            <AccordionContent>
+              <InstallationCode code={fullCode}></InstallationCode>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Steps>
     </>
   );
