@@ -83,6 +83,8 @@ export function SettingsCombobox() {
 
   const route = settingValues[valueId]?.route;
 
+  console.log(open);
+
   return (
     <>
       <Tooltip>
@@ -94,7 +96,7 @@ export function SettingsCombobox() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
-                  className="w-[220px] justify-between"
+                  className="min-w-fit justify-between md:w-[220px]"
                 >
                   {settingValues[valueId]?.label ?? 'Select a value...'}
                   <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

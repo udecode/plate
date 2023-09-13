@@ -1,3 +1,5 @@
+'use client';
+
 import { createStore } from '@udecode/plate-common';
 
 import {
@@ -35,6 +37,8 @@ export const getDefaultCheckedComponents = () => {
 
 export const settingsStore = createStore('settings')({
   showSettings: false,
+  homeTab: 'playground',
+  customizerTab: 'plugins',
 
   valueId: settingValues.playground.id,
 

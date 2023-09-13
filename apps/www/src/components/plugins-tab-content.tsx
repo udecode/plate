@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { descriptions } from '@/config/descriptions';
@@ -11,8 +11,6 @@ import {
 } from '@/config/setting-plugins';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useFixHydration } from '@/hooks/use-fix-hydration';
-import { useViewport } from '@/hooks/use-viewport';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import {
@@ -232,9 +230,7 @@ export function SettingsEffect() {
   return null;
 }
 
-export function SettingsPanel() {
-  const { width: viewportWidth } = useViewport();
-
+export function PluginsTabContent() {
   const checkedPlugins = settingsStore.use.checkedPluginsNext();
   const checkedComponents = settingsStore.use.checkedComponents();
 
@@ -257,12 +253,6 @@ export function SettingsPanel() {
   //               '?plugins=' + checkedPluginNames.join(',')
   //             );
 
-  const isSheet = viewportWidth < 1024;
-
-  useLayoutEffect(() => {
-    settingsStore.set.showSettings(!isSheet);
-  }, [isSheet]);
-
   // const allPluginsInitialFirst = useMemo(
   //   () =>
   //     sortBy(allPlugins, (plugin) =>
@@ -281,10 +271,6 @@ export function SettingsPanel() {
     [checkedComponents]
   );
 
-  const loaded = useFixHydration();
-
-  if (!loaded) return null;
-
   return (
     <div>
       <SettingsEffect />
@@ -294,10 +280,12 @@ export function SettingsPanel() {
           <SettingsCombobox />
 
           <Button
-          // onClick={() => setTab('result')}
-          // disabled={!somePluginChecked}
+            onClick={() => {
+              settingsStore.set.homeTab('installation');
+              settingsStore.set.showSettings(false);
+            }}
           >
-            Done
+            Installation
           </Button>
         </div>
 

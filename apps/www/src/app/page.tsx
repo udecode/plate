@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 
-import { PlaygroundCustomizer } from '@/components/playground-customizer';
-import { SettingsToggle } from '@/components/settings-toggle';
+import { CustomizerDrawer } from '@/components/customizer-drawer';
+import { ThemesButton } from '@/components/themes-button';
 
 import '../../public/registry/themes.css';
+
+import * as React from 'react';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
@@ -40,7 +42,7 @@ export default function IndexPage() {
                 Build your rich-text editor.
               </PageHeaderHeading>
               <div className="hidden md:block">
-                <PlaygroundCustomizer />
+                <ThemesButton />
               </div>
             </div>
             <PageHeaderDescription>
@@ -62,7 +64,7 @@ export default function IndexPage() {
               </Link>
             </section>
             <div className="block md:hidden">
-              <PlaygroundCustomizer />
+              <ThemesButton />
             </div>
           </PageHeader>
         </div>
@@ -77,11 +79,7 @@ export default function IndexPage() {
         <section className="relative">
           <HomeTabs />
 
-          <div className="fixed right-0 top-full z-[100]">
-            <div className="-translate-y-full p-4">
-              <SettingsToggle />
-            </div>
-          </div>
+          <CustomizerDrawer />
         </section>
       </div>
     </ThemeWrapper>

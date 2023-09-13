@@ -22469,15 +22469,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vaul@npm:^0.4.5":
-  version: 0.4.6
-  resolution: "vaul@npm:0.4.6"
+"vaul@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "vaul@npm:0.6.0"
   dependencies:
     "@radix-ui/react-dialog": "npm:^1.0.4"
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0
     react-dom: ^16.8 || ^17.0 || ^18.0
-  checksum: 97894d74dffd9bb93dfc7ee5ea494cd9f39d8089622850d49d35ba6ba171f74b8a857c6057eafdabc73d62843f3cf961a03e8ae823c5e13bed5f6f3a6a7c91dc
+  checksum: c9ea7c9470eb1d99347729feed76f17a14c2963c6168f916032194c6688453d2ca47842c600b35c470fe6804b8b48e42940726a21f3ba40dd20ed301d66f36f5
   languageName: node
   linkType: hard
 
@@ -23218,7 +23218,7 @@ __metadata:
     typescript: "npm:5.1.6"
     unist-builder: "npm:3.0.0"
     unist-util-visit: "npm:^4.1.2"
-    vaul: "npm:^0.4.5"
+    vaul: "npm:^0.6.0"
   languageName: unknown
   linkType: soft
 
