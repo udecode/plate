@@ -55,6 +55,7 @@ import { settingValues } from '@/config/setting-values';
 export type SettingPlugin = {
   id: string;
   npmPackage: string;
+  plateImports?: string[];
   pluginFactory: string;
   label: string;
   route?: string;
@@ -94,6 +95,26 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Code block',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
+    components: [
+      {
+        id: 'code-block-element',
+        label: 'Code Block',
+        pluginKey: 'ELEMENT_CODE_BLOCK',
+        reactComponent: 'CodeBlockElement',
+      },
+      {
+        id: 'code-line-element',
+        label: 'Code Line',
+        pluginKey: 'ELEMENT_CODE_LINE',
+        reactComponent: 'CodeLineElement',
+      },
+      {
+        id: 'code-syntax-leaf',
+        label: 'Code Syntax',
+        pluginKey: 'ELEMENT_CODE_SYNTAX',
+        reactComponent: 'CodeSyntaxLeaf',
+      },
+    ],
   },
   [ELEMENT_EXCALIDRAW]: {
     id: ELEMENT_EXCALIDRAW,
@@ -102,6 +123,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Excalidraw',
     badges: [settingBadges.element, settingBadges.void],
     route: settingValues.excalidraw.route,
+    components: [
+      {
+        id: 'excalidraw-element',
+        label: 'Excalidraw',
+        pluginKey: 'ELEMENT_EXCALIDRAW',
+        reactComponent: 'ExcalidrawElement',
+      },
+    ],
   },
   [ELEMENT_HR]: {
     id: ELEMENT_HR,
@@ -131,9 +160,18 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     id: 'heading',
     npmPackage: '@udecode/plate-heading',
     pluginFactory: 'createHeadingPlugin',
+    plateImports: ['withProps'],
     label: 'Heading',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
+    components: [
+      {
+        id: 'heading-element',
+        label: 'HeadingElement',
+        pluginKey: 'ELEMENT_H1',
+        reactComponent: `withProps(HeadingElement, { variant: 'h1' })`,
+      },
+    ],
   },
   list: {
     id: 'list',
@@ -208,6 +246,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Comments',
     badges: [settingBadges.leaf],
     route: settingValues.comment.route,
+    components: [
+      {
+        id: 'comment-leaf',
+        label: 'Comment',
+        pluginKey: 'MARK_COMMENT',
+        reactComponent: 'CommentLeaf',
+      },
+    ],
   },
   [MARK_BG_COLOR]: {
     id: MARK_BG_COLOR,

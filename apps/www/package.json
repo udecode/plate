@@ -123,6 +123,7 @@
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.3.52",
     "react-modal-sheet": "2.0.0",
+    "react-syntax-highlighter": "^15.5.0",
     "react-tweet": "^3.1.0",
     "react-wrap-balancer": "^1.0.0",
     "sass": "^1.63.6",
@@ -144,6 +145,7 @@
   "devDependencies": {
     "@types/lodash.template": "^4.5.1",
     "@types/react-color": "^3.0.6",
+    "@types/react-syntax-highlighter": "^15.5.7",
     "autoprefixer": "^10.4.14",
     "mdast-util-toc": "^6.1.1",
     "postcss": "^8.4.25",

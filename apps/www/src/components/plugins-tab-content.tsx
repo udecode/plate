@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { descriptions } from '@/config/descriptions';
 import {
@@ -233,6 +234,7 @@ export function SettingsEffect() {
 export function PluginsTabContent() {
   const checkedPlugins = settingsStore.use.checkedPluginsNext();
   const checkedComponents = settingsStore.use.checkedComponents();
+  const showComponents = settingsStore.use.showComponents();
 
   // const state = useEditorCodeGeneratorState();
   // const {
@@ -286,38 +288,62 @@ export function PluginsTabContent() {
             }}
           >
             Installation
+            <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => {
-              if (somePluginChecked) {
-                settingsStore.set.checkedPluginsNext({} as any);
-              } else {
-                settingsStore.set.resetPlugins();
-              }
-              // return setAllPluginsChecked(!anyPluginChecked);
-            }}
-          >
-            {somePluginChecked ? 'Disable' : 'Enable'} All Plugins
-          </Button>
+        <div className="gap-2">
+          <div className="flex items-center">
+            <Checkbox
+              id="check-plugins"
+              checked={somePluginChecked}
+              onCheckedChange={(_checked: boolean) => {
+                if (somePluginChecked) {
+                  settingsStore.set.checkedPluginsNext({} as any);
+                } else {
+                  settingsStore.set.resetPlugins();
+                }
+              }}
+            />
+            <Label htmlFor="check-plugins" className="flex p-2">
+              Plugins
+            </Label>
+          </div>
 
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => {
-              if (someComponentChecked) {
-                settingsStore.set.checkedComponents({} as any);
-              } else {
-                settingsStore.set.resetComponents();
-              }
-            }}
-          >
-            {someComponentChecked ? 'Disable' : 'Enable'} All Components
-          </Button>
+          <div className="flex items-center">
+            <Checkbox
+              id="check-components"
+              checked={someComponentChecked}
+              onCheckedChange={(_checked: boolean) => {
+                if (someComponentChecked) {
+                  settingsStore.set.checkedComponents({} as any);
+                } else {
+                  settingsStore.set.resetComponents();
+                }
+              }}
+            />
+            <Label htmlFor="check-components" className="flex p-2">
+              Components
+            </Label>
+
+            <Button
+              size="xs"
+              variant="ghost"
+              className="px-2"
+              onClick={() => {
+                if (showComponents) {
+                  settingsStore.set.checkedComponents({} as any);
+                }
+                settingsStore.set.showComponents(!showComponents);
+              }}
+            >
+              {showComponents ? (
+                <Eye className="h-4 w-4" />
+              ) : (
+                <EyeOff className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
 
         <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">

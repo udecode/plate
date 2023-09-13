@@ -1,40 +1,48 @@
+import * as React from 'react';
 import { ReactNode, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { uniqBy } from 'lodash';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { allPlugins, orderedPluginKeys } from '@/config/setting-plugins';
+import { cn } from '@/lib/utils';
+import { useMounted } from '@/hooks/use-mounted';
 import { settingsStore } from '@/components/context/settings-store';
+import { CopyButton } from '@/components/copy-button';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
-import { H2, Pre, Step, Steps } from '@/components/typography';
+import { H2, Step, Steps } from '@/components/typography';
 
 // Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
 function WrappedPre({
   code,
   children,
+  bash,
 }: {
   code: string;
   children?: ReactNode;
+  bash?: boolean;
 }) {
   return (
-    <div className="relative">
+    <div>
       {!!children && <Typography.P className="mt-6">{children}</Typography.P>}
-      <Pre className="p-4 text-white" __rawString__={code}>
-        {code}
-      </Pre>
+
+      <div className="relative">
+        <SyntaxHighlighter
+          language={bash ? 'bash' : 'typescript'}
+          style={theme}
+          className="rounded-lg border py-4"
+          showLineNumbers={!bash}
+        >
+          {code}
+        </SyntaxHighlighter>
+
+        <CopyButton value={code} className={cn('absolute right-4 top-4')} />
+      </div>
     </div>
   );
 }
-
-type TEditorCodeGeneratorState = {
-  initialPluginIds: string[];
-  checkedPlugins: Record<string, boolean>;
-  checkedComponents: Record<string, boolean>;
-  setPluginChecked: (id: string) => (checked: boolean) => void;
-  setComponentChecked: (id: string) => (checked: boolean) => void;
-  setAllPluginsChecked: (checked: boolean) => void;
-  setAllComponentsChecked: (checked: boolean) => void;
-};
 
 export function useEditorCodeGeneratorState() {
   const searchParams = useSearchParams();
@@ -144,9 +152,10 @@ function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
   };
 }
 
-export function EditorCodeGeneratorResult() {
+export function InstallationTab() {
   const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
+  const mounted = useMounted();
 
   const { plugins, components } = useMemo(
     () =>
@@ -162,6 +171,13 @@ export function EditorCodeGeneratorResult() {
     [components]
   );
 
+  let plateImports = '';
+  plugins.forEach((plugin) => {
+    plugin.plateImports?.forEach((item) => {
+      plateImports += ', ' + item;
+    });
+  });
+
   const installPlugins = `npm install ${plugins
     .map((plugin) => plugin.npmPackage)
     .join(' ')}`;
@@ -171,7 +187,7 @@ export function EditorCodeGeneratorResult() {
     .join(' ')}`;
 
   const imports = [
-    `import { createPlugins, Plate } from '@udecode/plate-common';`,
+    `import { createPlugins, Plate${plateImports} } from '@udecode/plate-common';`,
     ...plugins.map(
       (plugin) =>
         `import { ${plugin.pluginFactory} } from '${plugin.npmPackage}';`
@@ -202,6 +218,8 @@ export function EditorCodeGeneratorResult() {
     '\n'
   );
 
+  if (!mounted) return null;
+
   return (
     <>
       <H2>Installation</H2>
@@ -209,12 +227,17 @@ export function EditorCodeGeneratorResult() {
       <Typography.P>
         Here is your personalized installation guide based on the plugins and
         components you have selected. For a more general guide, please refer to
-        the <Link href="/docs/getting-started">Getting Started</Link> section.
+        the{' '}
+        <Link href="/docs/getting-started" target="_blank">
+          Getting Started
+        </Link>{' '}
+        section.
       </Typography.P>
 
       <Steps>
         <Step>Install Plate</Step>
         <WrappedPre
+          bash
           code={[
             `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
             `npm install @udecode/plate-common`,
@@ -223,16 +246,19 @@ export function EditorCodeGeneratorResult() {
           Install the peer dependencies and Plate:
         </WrappedPre>
         <Step>Install Plugins</Step>
-        <WrappedPre code={installPlugins}>
+        <WrappedPre code={installPlugins} bash>
           Install your selected plugins:
         </WrappedPre>
         <Step>Add Components</Step>
-        <WrappedPre code={installComponents}>
-          <Link href="/docs/components/installation">
+        <WrappedPre code={installComponents} bash>
+          <Link href="/docs/components/installation" target="_blank">
             Install the dependencies for the components
           </Link>{' '}
-          and <Link href="/docs/components/cli">configure the CLI</Link>. Then,
-          add the components you have selected:
+          and{' '}
+          <Link href="/docs/components/cli" target="_blank">
+            configure the CLI
+          </Link>
+          . Then, add the components you have selected:
         </WrappedPre>
         <Step>Imports</Step>
         <WrappedPre code={imports}>All the imports you need:</WrappedPre>

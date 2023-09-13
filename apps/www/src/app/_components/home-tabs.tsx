@@ -8,7 +8,7 @@ import { settingsStore } from '@/components/context/settings-store';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { EditorCodeGeneratorResult } from './editor-code-generator-result';
+import { InstallationTab } from './installation-tab';
 
 export function HomeTabs() {
   const active = settingsStore.use.showSettings();
@@ -29,7 +29,10 @@ export function HomeTabs() {
 
         <Button
           variant="outline"
-          className={cn('ml-2 translate-y-[3px]', active && 'border')}
+          className={cn(
+            'ml-2 translate-y-[3px]',
+            active && 'border-2 border-primary'
+          )}
           onClick={() => {
             settingsStore.set.customizerTab('plugins');
             settingsStore.set.showSettings(true);
@@ -45,7 +48,7 @@ export function HomeTabs() {
         </TabsContent>
         <TabsContent value="installation" className="pt-2">
           <div className="max-w-[1336px] p-4">
-            <EditorCodeGeneratorResult />
+            <InstallationTab />
           </div>
         </TabsContent>
       </Tabs>

@@ -63,18 +63,8 @@ export default function IndexPage() {
                 GitHub
               </Link>
             </section>
-            <div className="block md:hidden">
-              <ThemesButton />
-            </div>
           </PageHeader>
         </div>
-
-        {/* <section className="mb-4 flex w-full justify-between"> */}
-        {/*  <h2 className="ml-4 font-bold">Playground</h2> */}
-        {/*  <div> */}
-        {/*    <ExampleCodeLink /> */}
-        {/*  </div> */}
-        {/* </section> */}
 
         <section className="relative">
           <HomeTabs />
