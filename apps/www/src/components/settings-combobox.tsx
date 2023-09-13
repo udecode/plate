@@ -83,8 +83,6 @@ export function SettingsCombobox() {
 
   const route = settingValues[valueId]?.route;
 
-  console.log(open);
-
   return (
     <>
       <Tooltip>

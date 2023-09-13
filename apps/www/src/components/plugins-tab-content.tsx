@@ -24,8 +24,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
+// eslint-disable-next-line import/no-unresolved
 import { TreeIcon } from '@/app/_components/tree-icon';
 
+import { Code } from './code';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingsCombobox } from './settings-combobox';
@@ -54,6 +56,7 @@ export function SettingsSwitch({
   }
 
   const checked = settingsStore.use.checkedIdNext(id);
+  const showComponents = settingsStore.use.showComponents();
   const checkedComponents = settingsStore.use.checkedComponents();
   const pluginHtmlId = `plugin-${id}`;
 
@@ -176,7 +179,8 @@ export function SettingsSwitch({
         )}
       </div>
 
-      {checked &&
+      {showComponents &&
+        checked &&
         components?.map(
           ({ id: componentId, label: componentLabel }, componentIndex) => {
             const isFirst = componentIndex === 0;
@@ -190,16 +194,16 @@ export function SettingsSwitch({
                 <Checkbox
                   id={componentHtmlId}
                   checked={checkedComponents[componentId]}
-                  onCheckedChange={(value) =>
+                  onCheckedChange={(value) => {
                     settingsStore.set.setCheckedComponentId(
                       componentId,
                       !!value
-                    )
-                  }
+                    );
+                  }}
                 />
 
                 <Label htmlFor={componentHtmlId} className="flex p-2">
-                  {componentLabel} Component
+                  <Code>{componentLabel}</Code>
                 </Label>
               </div>
             );
@@ -236,33 +240,6 @@ export function PluginsTabContent() {
   const checkedComponents = settingsStore.use.checkedComponents();
   const showComponents = settingsStore.use.showComponents();
 
-  // const state = useEditorCodeGeneratorState();
-  // const {
-  //   checkedComponents,
-  //   setPluginChecked,
-  //   setComponentChecked,
-  //   setAllComponentsChecked,
-  //   setAllPluginsChecked,
-  // } = state;
-
-  // const checkedPluginNames = Object.keys(checkedPlugins).filter(
-  //               (id) => checkedPlugins[id]
-  //             );
-  //
-  //             history.replaceState(
-  //               {},
-  //               '',
-  //               '?plugins=' + checkedPluginNames.join(',')
-  //             );
-
-  // const allPluginsInitialFirst = useMemo(
-  //   () =>
-  //     sortBy(allPlugins, (plugin) =>
-  //       initialPluginIds.includes(plugin.id) ? 0 : 1
-  //     ),
-  //   [initialPluginIds]
-  // );
-
   const somePluginChecked = useMemo(
     () => Object.values(checkedPlugins).some(Boolean),
     [checkedPlugins]
@@ -280,19 +257,30 @@ export function PluginsTabContent() {
       <div className="space-y-4">
         <div className="flex justify-between">
           <SettingsCombobox />
-
-          <Button
-            onClick={() => {
-              settingsStore.set.homeTab('installation');
-              settingsStore.set.showSettings(false);
-            }}
-          >
-            Installation
-            <ArrowUpRight className="ml-2 h-4 w-4" />
-          </Button>
         </div>
 
         <div className="gap-2">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1 pb-4 pr-2 pt-2">
+              <div className="font-semibold leading-none tracking-tight">
+                Customize
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Pick the plugins and components for your editor.
+              </div>
+            </div>
+
+            <Button
+              onClick={() => {
+                settingsStore.set.homeTab('installation');
+                settingsStore.set.showSettings(false);
+              }}
+            >
+              Done
+              <ArrowUpRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+
           <div className="flex items-center">
             <Checkbox
               id="check-plugins"
@@ -311,6 +299,8 @@ export function PluginsTabContent() {
           </div>
 
           <div className="flex items-center">
+            <TreeIcon isFirst isLast className="mx-1" />
+
             <Checkbox
               id="check-components"
               checked={someComponentChecked}
@@ -318,10 +308,12 @@ export function PluginsTabContent() {
                 if (someComponentChecked) {
                   settingsStore.set.checkedComponents({} as any);
                 } else {
+                  settingsStore.set.showComponents(true);
                   settingsStore.set.resetComponents();
                 }
               }}
             />
+
             <Label htmlFor="check-components" className="flex p-2">
               Components
             </Label>

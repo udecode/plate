@@ -1,123 +1,17 @@
+'use client';
+
 import * as React from 'react';
-import { ReactNode, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 import { uniqBy } from 'lodash';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { allPlugins, orderedPluginKeys } from '@/config/setting-plugins';
-import { cn } from '@/lib/utils';
 import { useMounted } from '@/hooks/use-mounted';
 import { settingsStore } from '@/components/context/settings-store';
-import { CopyButton } from '@/components/copy-button';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
 import { H2, Step, Steps } from '@/components/typography';
 
-// Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
-function WrappedPre({
-  code,
-  children,
-  bash,
-}: {
-  code: string;
-  children?: ReactNode;
-  bash?: boolean;
-}) {
-  return (
-    <div>
-      {!!children && <Typography.P className="mt-6">{children}</Typography.P>}
-
-      <div className="relative">
-        <SyntaxHighlighter
-          language={bash ? 'bash' : 'typescript'}
-          style={theme}
-          className="rounded-lg border py-4"
-          showLineNumbers={!bash}
-        >
-          {code}
-        </SyntaxHighlighter>
-
-        <CopyButton value={code} className={cn('absolute right-4 top-4')} />
-      </div>
-    </div>
-  );
-}
-
-export function useEditorCodeGeneratorState() {
-  const searchParams = useSearchParams();
-  const pluginsString = searchParams?.get('plugins');
-
-  const initialPluginIds = useMemo(
-    () => pluginsString?.split(',') ?? [],
-    [pluginsString]
-  );
-
-  // const [checkedPlugins, setCheckedPlugins] = useState(() => {
-  //   return Object.fromEntries(
-  //     allPlugins.map((plugin) => [
-  //       plugin.id,
-  //       initialPluginIds.includes(plugin.id),
-  //     ])
-  //   );
-  // });
-
-  /**
-   * All components are checked by default, including those that are not
-   * used by any checked plugin. Only a subset of these components will
-   * be installed.
-   */
-  // const [checkedComponents, setCheckedComponents] = useState(() =>
-  //   Object.fromEntries(allComponents.map((component) => [component.id, true]))
-  // );
-
-  // const setPluginChecked = useCallback(
-  //   (id: string) => (checked: boolean) => {
-  //     setCheckedPlugins((prev) => ({ ...prev, [id]: checked }));
-  //   },
-  //   []
-  // );
-  //
-  // const setComponentChecked = useCallback(
-  //   (id: string) => (checked: boolean) => {
-  //     setCheckedComponents((prev) => ({ ...prev, [id]: checked }));
-  //   },
-  //   []
-  // );
-
-  // const setAllPluginsChecked = useCallback((checked: boolean) => {
-  //   setCheckedPlugins((prev) =>
-  //     Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
-  //   );
-  // }, []);
-  //
-  // const setAllComponentsChecked = useCallback((checked: boolean) => {
-  //   setCheckedComponents((prev) =>
-  //     Object.fromEntries(Object.entries(prev).map(([id]) => [id, checked]))
-  //   );
-  // }, []);
-  //
-  // return useMemo(
-  //   () => ({
-  //     initialPluginIds,
-  //     checkedPlugins,
-  //     checkedComponents,
-  //     setPluginChecked,
-  //     setComponentChecked,
-  //     setAllPluginsChecked,
-  //     setAllComponentsChecked,
-  //   }),
-  //   [
-  //     initialPluginIds,
-  //     checkedPlugins,
-  //     checkedComponents,
-  //     setPluginChecked,
-  //     setComponentChecked,
-  //     setAllPluginsChecked,
-  //     setAllComponentsChecked,
-  //   ]
-  // );
-}
+import { InstallationCode } from './installation-code';
 
 function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
   const plugins = allPlugins.filter((plugin) => {
@@ -126,12 +20,11 @@ function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
     return checkedPlugins[plugin.id];
   });
 
-  const components = uniqBy(
-    plugins
-      .flatMap((plugin) => plugin.components ?? [])
-      .filter((component) => checkedComponents[component.id]),
-    'id'
-  );
+  const components = plugins
+    .flatMap((plugin) => plugin.components ?? [])
+    .filter((component) => checkedComponents[component.id]);
+
+  const componentsById = uniqBy(components, 'id');
 
   const orderedPlugins = plugins.sort((a, b) => {
     const indexOfA = orderedPluginKeys.indexOf(a.id);
@@ -149,6 +42,7 @@ function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
   return {
     plugins: orderedPlugins,
     components,
+    componentsById,
   };
 }
 
@@ -157,66 +51,125 @@ export function InstallationTab() {
   const checkedComponents = settingsStore.use.checkedComponents();
   const mounted = useMounted();
 
+  // Assign initial values to plugins and components using useMemo
   const { plugins, components } = useMemo(
-    () =>
-      getEditorCodeGeneratorResult({
-        checkedPlugins,
-        checkedComponents,
-      }),
+    () => getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }),
     [checkedComponents, checkedPlugins]
   );
+  const somePlugins = useMemo(() => plugins.length > 0, [plugins]);
+  const someComponents = useMemo(() => components.length > 0, [components]);
 
+  // Assign componentsWithPluginKey using useMemo
   const componentsWithPluginKey = useMemo(
     () => components.filter((component) => component.pluginKey),
     [components]
   );
 
-  let plateImports = '';
-  plugins.forEach((plugin) => {
-    plugin.plateImports?.forEach((item) => {
-      plateImports += ', ' + item;
-    });
-  });
+  // Create plateImports string
+  const plateImports = useMemo(() => {
+    const combinedArray = [...plugins, ...componentsWithPluginKey];
 
-  const installPlugins = `npm install ${plugins
-    .map((plugin) => plugin.npmPackage)
-    .join(' ')}`;
+    const uniqueImports = combinedArray.reduce(
+      (acc, { plateImports: _plateImports }) => {
+        if (_plateImports) {
+          _plateImports.forEach((importItem) => acc.add(importItem));
+        }
+        return acc;
+      },
+      new Set<string>()
+    );
 
-  const installComponents = `npx @udecode/plate-ui@latest add ${components
-    .map((component) => component.id)
-    .join(' ')}`;
+    return Array.from(uniqueImports).join(', ');
+  }, [plugins, componentsWithPluginKey]);
 
-  const imports = [
-    `import { createPlugins, Plate${plateImports} } from '@udecode/plate-common';`,
-    ...plugins.map(
-      (plugin) =>
-        `import { ${plugin.pluginFactory} } from '${plugin.npmPackage}';`
-    ),
-    ...componentsWithPluginKey.map(
-      (component) =>
-        `import { ${component.reactComponent} } from './components/plate-ui/${component.id}';`
-    ),
-  ].join('\n');
+  const installCommands = useMemo(() => {
+    return {
+      plugins: `npm install ${Array.from(
+        plugins.reduce((uniquePackages, { npmPackage }) => {
+          uniquePackages.add(npmPackage);
+          return uniquePackages;
+        }, new Set<string>())
+      ).join(' ')}`,
+      components: `npx @udecode/plate-ui@latest add ${Array.from(
+        components.reduce((uniqueFilenames, { id, filename, noImport }) => {
+          if (noImport) return uniqueFilenames;
 
-  const usage = [
+          uniqueFilenames.add(filename ?? id);
+          return uniqueFilenames;
+        }, new Set<string>())
+      ).join(' ')}`,
+    };
+  }, [plugins, components]);
+
+  const componentImports = useMemo(() => {
+    return componentsWithPluginKey.reduce(
+      (acc, component) => {
+        if (component.noImport) return acc;
+
+        const importKey = component.filename ?? component.id;
+        const importValue = component.import ?? component.usage;
+
+        if (!acc[importKey]) {
+          acc[importKey] = new Set();
+        }
+        acc[importKey].add(importValue);
+
+        return acc;
+      },
+      {} as Record<string, Set<string>>
+    );
+  }, [componentsWithPluginKey]);
+
+  const groupedImportsByPackage = useMemo(() => {
+    return plugins.reduce(
+      (acc, { pluginFactory, npmPackage }) => {
+        if (!acc[npmPackage]) {
+          acc[npmPackage] = new Set();
+        }
+        acc[npmPackage].add(pluginFactory);
+        return acc;
+      },
+      {} as Record<string, Set<string>>
+    );
+  }, [plugins]);
+
+  const importsCode = useMemo(() => {
+    const importsGroups = Object.entries(groupedImportsByPackage).map(
+      ([packageName, factories]) =>
+        `import { ${Array.from(factories).join(', ')} } from '${packageName}';`
+    );
+    const componentImportsGroup = Object.entries(componentImports).map(
+      ([componentId, importValues]) =>
+        `import { ${Array.from(importValues).join(
+          ', '
+        )} } from './components/plate-ui/${componentId}';`
+    );
+    return [
+      `import { createPlugins, Plate${
+        plateImports.length > 0 ? ', ' + plateImports : ''
+      } } from '@udecode/plate-common';`,
+      ...importsGroups,
+      '',
+      ...componentImportsGroup,
+    ].join('\n');
+  }, [componentImports, groupedImportsByPackage, plateImports]);
+
+  const usageCode = [
     'const plugins = createPlugins(',
     '  [',
-    ...plugins.map((plugin) => `    ${plugin.pluginFactory}(),`),
+    ...plugins.map(({ pluginFactory }) => `    ${pluginFactory}(),`),
     '  ],',
     '  {',
     '    components: {',
     ...componentsWithPluginKey.map(
-      (component) =>
-        `      [${component.pluginKey}]: ${component.reactComponent},`
+      ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
     '    },',
     '  }',
     ');',
   ].join('\n');
 
-  const plate = ['export default () => <Plate plugins={plugins} />;'].join(
-    '\n'
-  );
+  const plateCode = `export default () => <Plate plugins={plugins} />;`;
 
   if (!mounted) return null;
 
@@ -225,9 +178,9 @@ export function InstallationTab() {
       <H2>Installation</H2>
 
       <Typography.P>
-        Here is your personalized installation guide based on the plugins and
-        components you have selected. For a more general guide, please refer to
-        the{' '}
+        Here is your <em>personalized</em> installation guide based on the
+        plugins and components you have selected. <br />
+        For a more general guide, please refer to the{' '}
         <Link href="/docs/getting-started" target="_blank">
           Getting Started
         </Link>{' '}
@@ -236,7 +189,7 @@ export function InstallationTab() {
 
       <Steps>
         <Step>Install Plate</Step>
-        <WrappedPre
+        <InstallationCode
           bash
           code={[
             `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
@@ -244,30 +197,40 @@ export function InstallationTab() {
           ].join('\n')}
         >
           Install the peer dependencies and Plate:
-        </WrappedPre>
-        <Step>Install Plugins</Step>
-        <WrappedPre code={installPlugins} bash>
-          Install your selected plugins:
-        </WrappedPre>
-        <Step>Add Components</Step>
-        <WrappedPre code={installComponents} bash>
-          <Link href="/docs/components/installation" target="_blank">
-            Install the dependencies for the components
-          </Link>{' '}
-          and{' '}
-          <Link href="/docs/components/cli" target="_blank">
-            configure the CLI
-          </Link>
-          . Then, add the components you have selected:
-        </WrappedPre>
+        </InstallationCode>
+        {somePlugins && (
+          <>
+            <Step>Install Plugins</Step>
+            <InstallationCode code={installCommands.plugins} bash>
+              Install your selected plugins:
+            </InstallationCode>
+          </>
+        )}
+        {someComponents && (
+          <>
+            <Step>Add Components</Step>
+            <InstallationCode code={installCommands.components} bash>
+              <Link href="/docs/components/installation" target="_blank">
+                Install the dependencies for the components
+              </Link>{' '}
+              and{' '}
+              <Link href="/docs/components/cli" target="_blank">
+                configure the CLI
+              </Link>
+              . Then, add the components you have selected:
+            </InstallationCode>
+          </>
+        )}
         <Step>Imports</Step>
-        <WrappedPre code={imports}>All the imports you need:</WrappedPre>
+        <InstallationCode code={importsCode}>
+          All the imports you need:
+        </InstallationCode>
         <Step>Create Plugins</Step>
-        <WrappedPre code={usage}>
+        <InstallationCode code={usageCode}>
           Create your plugins and link your components into them.
-        </WrappedPre>
+        </InstallationCode>
         <Step>Finally, render the editor</Step>
-        <WrappedPre code={plate} />
+        <InstallationCode code={plateCode} />
       </Steps>
     </>
   );

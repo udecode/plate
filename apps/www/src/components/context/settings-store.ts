@@ -12,9 +12,15 @@ import { toast } from '@/components/ui/use-toast';
 
 export const categoryIds = settingPlugins.map((item) => item.id);
 
+const defaultCheckedComponents = {} as Record<string, boolean>;
+
 const defaultCheckedPlugins = settingPlugins.reduce(
   (acc, item) => {
     item.children.forEach((child) => {
+      child.components?.forEach((component) => {
+        defaultCheckedComponents[component.id] = true;
+      });
+
       acc[child.id] = true;
     });
     return acc;
@@ -32,7 +38,9 @@ export const getDefaultCheckedPlugins = () => {
 };
 
 export const getDefaultCheckedComponents = () => {
-  return {} as Record<string, boolean>;
+  return {
+    ...defaultCheckedComponents,
+  } as Record<string, boolean>;
 };
 
 export const settingsStore = createStore('settings')({

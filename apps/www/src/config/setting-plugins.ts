@@ -65,9 +65,13 @@ export type SettingPlugin = {
   disablePlugins?: string[];
   components?: {
     id: string; // e.g. 'blockquote-element'
+    filename?: string; // e.g. 'blockquote-element' (default: id)
+    plateImports?: string[];
     label: string; // e.g. 'Blockquote'
     pluginKey?: string; // Plugin components only, e.g. 'ELEMENT_BLOCKQUOTE'
-    reactComponent: string; // e.g. 'BlockquoteElement'
+    import?: string;
+    noImport?: boolean;
+    usage: string; // e.g. 'BlockquoteElement'
   }[];
 };
 
@@ -82,9 +86,9 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'blockquote-element',
-        label: 'Blockquote',
+        label: 'BlockquoteElement',
         pluginKey: 'ELEMENT_BLOCKQUOTE',
-        reactComponent: 'BlockquoteElement',
+        usage: 'BlockquoteElement',
       },
     ],
   },
@@ -98,21 +102,21 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'code-block-element',
-        label: 'Code Block',
+        label: 'CodeBlockElement',
         pluginKey: 'ELEMENT_CODE_BLOCK',
-        reactComponent: 'CodeBlockElement',
+        usage: 'CodeBlockElement',
       },
       {
         id: 'code-line-element',
-        label: 'Code Line',
+        label: 'CodeLineElement',
         pluginKey: 'ELEMENT_CODE_LINE',
-        reactComponent: 'CodeLineElement',
+        usage: 'CodeLineElement',
       },
       {
         id: 'code-syntax-leaf',
-        label: 'Code Syntax',
+        label: 'CodeSyntaxLeaf',
         pluginKey: 'ELEMENT_CODE_SYNTAX',
-        reactComponent: 'CodeSyntaxLeaf',
+        usage: 'CodeSyntaxLeaf',
       },
     ],
   },
@@ -126,9 +130,9 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'excalidraw-element',
-        label: 'Excalidraw',
+        label: 'ExcalidrawElement',
         pluginKey: 'ELEMENT_EXCALIDRAW',
-        reactComponent: 'ExcalidrawElement',
+        usage: 'ExcalidrawElement',
       },
     ],
   },
@@ -139,6 +143,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Horizontal Rule',
     badges: [settingBadges.element, settingBadges.void],
     route: settingValues.hr.route,
+    components: [
+      {
+        id: 'horizontal-rule-element',
+        label: 'HrElement',
+        pluginKey: 'ELEMENT_HR',
+        usage: 'HrElement',
+      },
+    ],
   },
   [ELEMENT_IMAGE]: {
     id: ELEMENT_IMAGE,
@@ -147,6 +159,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Image',
     badges: [settingBadges.element, settingBadges.void],
     route: settingValues.media.route,
+    components: [
+      {
+        id: 'image-element',
+        label: 'ImageElement',
+        pluginKey: 'ELEMENT_IMAGE',
+        usage: 'ImageElement',
+      },
+    ],
   },
   [ELEMENT_LINK]: {
     id: ELEMENT_LINK,
@@ -155,6 +175,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Link',
     badges: [settingBadges.element, settingBadges.inline],
     route: settingValues.link.route,
+    components: [
+      {
+        id: 'link-element',
+        label: 'LinkElement',
+        pluginKey: 'ELEMENT_LINK',
+        usage: 'LinkElement',
+      },
+    ],
   },
   heading: {
     id: 'heading',
@@ -166,10 +194,52 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     route: settingValues.basicnodes.route,
     components: [
       {
-        id: 'heading-element',
-        label: 'HeadingElement',
+        id: 'h1',
+        filename: 'heading-element',
+        label: 'H1Element',
         pluginKey: 'ELEMENT_H1',
-        reactComponent: `withProps(HeadingElement, { variant: 'h1' })`,
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h1' })`,
+      },
+      {
+        id: 'h2',
+        filename: 'heading-element',
+        label: 'H2Element',
+        pluginKey: 'ELEMENT_H2',
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h2' })`,
+      },
+      {
+        id: 'h3',
+        filename: 'heading-element',
+        label: 'H3Element',
+        pluginKey: 'ELEMENT_H3',
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h3' })`,
+      },
+      {
+        id: 'h4',
+        filename: 'heading-element',
+        label: 'H4Element',
+        pluginKey: 'ELEMENT_H4',
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h4' })`,
+      },
+      {
+        id: 'h5',
+        filename: 'heading-element',
+        label: 'H5Element',
+        pluginKey: 'ELEMENT_H5',
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h5' })`,
+      },
+      {
+        id: 'h6',
+        filename: 'heading-element',
+        label: 'H6Element',
+        pluginKey: 'ELEMENT_H6',
+        import: 'HeadingElement',
+        usage: `withProps(HeadingElement, { variant: 'h6' })`,
       },
     ],
   },
@@ -181,6 +251,34 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     badges: [settingBadges.element],
     conflicts: [KEY_LIST_STYLE_TYPE],
     route: settingValues.list.route,
+    components: [
+      {
+        id: 'ul',
+        filename: 'list-element',
+        label: 'BulletedListElement',
+        pluginKey: 'ELEMENT_UL',
+        import: 'ListElement',
+        usage: `withProps(ListElement, { variant: 'ul' })`,
+      },
+      {
+        id: 'ol',
+        filename: 'list-element',
+        label: 'NumberedListElement',
+        pluginKey: 'ELEMENT_OL',
+        noImport: true,
+        import: 'ListElement',
+        usage: `withProps(ListElement, { variant: 'ol' })`,
+      },
+      {
+        id: 'li',
+        filename: 'list-element',
+        plateImports: ['PlateElement'],
+        label: 'ListItemElement',
+        pluginKey: 'ELEMENT_LI',
+        noImport: true,
+        usage: `withProps(PlateElement, { as: 'li' })`,
+      },
+    ],
   },
   [ELEMENT_MEDIA_EMBED]: {
     id: ELEMENT_MEDIA_EMBED,
@@ -189,6 +287,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Media Embed',
     badges: [settingBadges.element, settingBadges.void],
     route: settingValues.media.route,
+    components: [
+      {
+        id: 'media-embed-element',
+        label: 'MediaEmbedElement',
+        pluginKey: 'ELEMENT_MEDIA_EMBED',
+        usage: 'MediaEmbedElement',
+      },
+    ],
   },
   [ELEMENT_MENTION]: {
     id: ELEMENT_MENTION,
@@ -198,6 +304,20 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     badges: [settingBadges.element, settingBadges.inline, settingBadges.void],
     dependencies: [KEY_COMBOBOX],
     route: settingValues.mention.route,
+    components: [
+      {
+        id: 'mention-element',
+        label: 'MentionElement',
+        pluginKey: 'ELEMENT_MENTION',
+        usage: 'MentionElement',
+      },
+      {
+        id: 'mention-input-element',
+        label: 'MentionInputElement',
+        pluginKey: 'ELEMENT_MENTION_INPUT',
+        usage: 'MentionInputElement',
+      },
+    ],
   },
   [ELEMENT_PARAGRAPH]: {
     id: ELEMENT_PARAGRAPH,
@@ -206,6 +326,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Paragraph',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
+    components: [
+      {
+        id: 'paragraph-element',
+        label: 'ParagraphElement',
+        pluginKey: 'ELEMENT_PARAGRAPH',
+        usage: 'ParagraphElement',
+      },
+    ],
   },
   [ELEMENT_TABLE]: {
     id: ELEMENT_TABLE,
@@ -214,6 +342,34 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Table',
     badges: [settingBadges.element],
     route: settingValues.table.route,
+    components: [
+      {
+        id: 'table-element',
+        label: 'TableElement',
+        pluginKey: 'ELEMENT_TABLE',
+        usage: 'TableElement',
+      },
+      {
+        id: 'table-row-element',
+        label: 'TableRowElement',
+        pluginKey: 'ELEMENT_TR',
+        usage: 'TableRowElement',
+      },
+      {
+        id: 'td',
+        filename: 'table-cell-element',
+        label: 'TableCellElement',
+        pluginKey: 'ELEMENT_TD',
+        usage: 'TableCellElement',
+      },
+      {
+        id: 'th',
+        filename: 'table-cell-element',
+        label: 'TableCellHeaderElement',
+        pluginKey: 'ELEMENT_TH',
+        usage: 'TableCellHeaderElement',
+      },
+    ],
   },
   [ELEMENT_TODO_LI]: {
     id: ELEMENT_TODO_LI,
@@ -222,14 +378,32 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Todo List',
     badges: [settingBadges.element],
     route: settingValues.todoli.route,
+    components: [
+      {
+        id: 'todo-list-element',
+        label: 'TodoListElement',
+        pluginKey: 'ELEMENT_TODO_LI',
+        usage: 'TodoListElement',
+      },
+    ],
   },
   [MARK_BOLD]: {
     id: MARK_BOLD,
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createItalicPlugin',
+    pluginFactory: 'createBoldPlugin',
     label: 'Bold',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'bold',
+        label: 'BoldLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_BOLD',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 'strong' })`,
+      },
+    ],
   },
   [MARK_CODE]: {
     id: MARK_CODE,
@@ -238,6 +412,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Code',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'code-leaf',
+        label: 'CodeLeaf',
+        pluginKey: 'MARK_CODE',
+        usage: `CodeLeaf`,
+      },
+    ],
   },
   [MARK_COMMENT]: {
     id: MARK_COMMENT,
@@ -249,9 +431,9 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'comment-leaf',
-        label: 'Comment',
+        label: 'CommentLeaf',
         pluginKey: 'MARK_COMMENT',
-        reactComponent: 'CommentLeaf',
+        usage: 'CommentLeaf',
       },
     ],
   },
@@ -286,6 +468,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Highlight',
     badges: [settingBadges.leaf],
     route: settingValues.highlight.route,
+    components: [
+      {
+        id: 'highlight-leaf',
+        label: 'HighlightLeaf',
+        pluginKey: 'MARK_HIGHLIGHT',
+        usage: 'HighlightLeaf',
+      },
+    ],
   },
   [MARK_ITALIC]: {
     id: MARK_ITALIC,
@@ -294,6 +484,16 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Italic',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'italic',
+        label: 'ItalicLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_ITALIC',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 'em' })`,
+      },
+    ],
   },
   [MARK_KBD]: {
     id: MARK_KBD,
@@ -302,6 +502,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Keyboard Input',
     badges: [settingBadges.leaf],
     route: settingValues.kbd.route,
+    components: [
+      {
+        id: 'kbd-leaf',
+        label: 'KbdLeaf',
+        pluginKey: 'MARK_KBD',
+        usage: 'KbdLeaf',
+      },
+    ],
   },
   [MARK_STRIKETHROUGH]: {
     id: MARK_STRIKETHROUGH,
@@ -310,6 +518,16 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Strikethrough',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'strikethrough',
+        label: 'StrikethroughLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_STRIKETHROUGH',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 's' })`,
+      },
+    ],
   },
   [MARK_SUBSCRIPT]: {
     id: MARK_SUBSCRIPT,
@@ -318,6 +536,16 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Subscript',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'subscript',
+        label: 'SubscriptLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_SUBSCRIPT',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 'sub' })`,
+      },
+    ],
   },
   [MARK_SUPERSCRIPT]: {
     id: MARK_SUPERSCRIPT,
@@ -326,6 +554,16 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Superscript',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'superscript',
+        label: 'SuperscriptLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_SUPERSCRIPT',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 'sup' })`,
+      },
+    ],
   },
   [MARK_UNDERLINE]: {
     id: MARK_UNDERLINE,
@@ -334,6 +572,16 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     label: 'Underline',
     badges: [settingBadges.leaf],
     route: settingValues.basicmarks.route,
+    components: [
+      {
+        id: 'underline',
+        label: 'UnderlineLeaf',
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'MARK_UNDERLINE',
+        noImport: true,
+        usage: `withProps(PlateLeaf, { as: 'u' })`,
+      },
+    ],
   },
   [KEY_ALIGN]: {
     id: KEY_ALIGN,

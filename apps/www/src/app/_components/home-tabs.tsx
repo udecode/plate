@@ -47,7 +47,7 @@ export function HomeTabs() {
           </div>
         </TabsContent>
         <TabsContent value="installation" className="pt-2">
-          <div className="max-w-[1336px] p-4">
+          <div className="max-w-[1136px] p-4">
             <InstallationTab />
           </div>
         </TabsContent>

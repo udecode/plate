@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 
 import { CustomizerDrawer } from '@/components/customizer-drawer';
 import { ThemesButton } from '@/components/themes-button';
+
+import { AnnouncementButton } from './announcement-button';
 
 import '../../public/registry/themes.css';
 
@@ -18,7 +19,6 @@ import {
 } from '@/components/page-header';
 import { ThemeWrapper } from '@/components/theme-wrapper';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { Separator } from '@/registry/default/plate-ui/separator';
 
 import { HomeTabs } from './_components/home-tabs';
 
@@ -28,15 +28,8 @@ export default function IndexPage() {
       <div className="container relative">
         <div className="flex items-center justify-between">
           <PageHeader className="w-full pb-8">
-            <Link
-              // TODO:
-              href="/docs/components"
-              className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
-            >
-              🎉 <Separator className="mx-2 h-4" orientation="vertical" />{' '}
-              Introducing Plate UI, a new CLI and more.
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Link>
+            <AnnouncementButton />
+
             <div className="flex w-full items-center justify-between">
               <PageHeaderHeading>
                 Build your rich-text editor.
