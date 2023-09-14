@@ -1,7 +1,7 @@
-export type SettingBadge = {
+export type CustomizerBadge = {
   label: string;
 };
-export const settingBadges = {
+export const customizerBadges = {
   element: {
     label: 'Element',
     description: '',

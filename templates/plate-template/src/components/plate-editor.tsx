@@ -1,4 +1,4 @@
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { createPlugins, Plate, PlateProvider } from '@udecode/plate-common';
 
 const plugins = createPlugins([], {
   components: {},
@@ -6,11 +6,16 @@ const plugins = createPlugins([], {
 
 const initialValue = [
   {
+    id: 1,
     type: 'p',
     children: [{ text: 'Hello, World!' }],
   },
 ];
 
 export function PlateEditor() {
-  return <Plate plugins={plugins} initialValue={initialValue} />;
+  return (
+    <PlateProvider plugins={plugins} initialValue={initialValue}>
+      <Plate />
+    </PlateProvider>
+  );
 }

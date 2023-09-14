@@ -1,4 +1,4 @@
-export const settingComponents = {
+export const customizerComponents = {
   alignDropdownMenu: {
     title: 'Align Dropdown Menu',
     href: '/docs/components/align-dropdown-menu',

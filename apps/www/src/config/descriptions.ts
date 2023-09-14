@@ -105,4 +105,5 @@ export const descriptions: Record<string, string> = {
   [KEY_DESERIALIZE_MD]: 'Copy paste from MD to Slate.',
   [KEY_JUICE]:
     'Inline CSS properties into the `style` attribute when pasting HTML.',
+  toolbar: 'Toolbar components.',
 };

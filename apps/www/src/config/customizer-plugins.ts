@@ -39,6 +39,7 @@ import {
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
 import { KEY_CAPTION } from '@udecode/plate-caption';
+import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -65,10 +66,10 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-export type ValueId = keyof typeof settingValues;
+export type ValueId = keyof typeof customizerPlugins;
 
 // cmdk needs lowercase
-export const settingValues = {
+export const customizerPlugins = {
   align: {
     id: 'align',
     label: 'Align',
@@ -115,6 +116,12 @@ export const settingValues = {
     value: mediaValue,
     route: '/docs/caption',
     plugins: [KEY_CAPTION],
+  },
+  combobox: {
+    id: 'combobox',
+    label: 'Combobox',
+    route: '/docs/combobox',
+    plugins: [KEY_COMBOBOX],
   },
   comment: {
     id: 'comment',

@@ -4,7 +4,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
-import { settingPlugins } from '@/config/setting-plugins';
+import { customizerList } from '@/config/customizer-list';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
@@ -120,7 +120,7 @@ export function PluginsTabContentLazy() {
       </div>
 
       <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">
-        {settingPlugins.map((item) => (
+        {customizerList.map((item) => (
           <AccordionItem key={item.id} value={item.id}>
             <AccordionTrigger className="py-4 pl-6 pr-[34px]">
               {item.label}

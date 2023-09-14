@@ -91,7 +91,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
-import { ValueId } from '@/config/setting-values';
+import { ValueId } from '@/config/customizer-plugins';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
@@ -173,6 +173,7 @@ export const usePlaygroundPlugins = ({
           createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
           createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
           createIndentListPlugin({
+            ...indentPlugin,
             enabled: id === 'indentlist' || !!enabled.listStyleType,
           }),
           createLineHeightPlugin({

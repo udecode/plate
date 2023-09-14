@@ -2,19 +2,16 @@
 
 import { createStore } from '@udecode/plate-common';
 
-import {
-  SettingPlugin,
-  settingPluginItems,
-  settingPlugins,
-} from '@/config/setting-plugins';
-import { settingValues } from '@/config/setting-values';
+import { customizerItems, SettingPlugin } from '@/config/customizer-items';
+import { customizerList } from '@/config/customizer-list';
+import { customizerPlugins } from '@/config/customizer-plugins';
 import { toast } from '@/components/ui/use-toast';
 
-export const categoryIds = settingPlugins.map((item) => item.id);
+export const categoryIds = customizerList.map((item) => item.id);
 
 const defaultCheckedComponents = {} as Record<string, boolean>;
 
-const defaultCheckedPlugins = settingPlugins.reduce(
+const defaultCheckedPlugins = customizerList.reduce(
   (acc, item) => {
     item.children.forEach((child) => {
       child.components?.forEach((component) => {
@@ -51,7 +48,7 @@ export const settingsStore = createStore('settings')({
   // homeTab: 'installation',
   customizerTab: 'plugins',
 
-  valueId: settingValues.playground.id,
+  valueId: customizerPlugins.playground.id,
 
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
@@ -90,14 +87,14 @@ export const settingsStore = createStore('settings')({
         draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
         const conflicts =
-          (settingPluginItems[id as string] as SettingPlugin)?.conflicts ?? [];
+          (customizerItems[id as string] as SettingPlugin)?.conflicts ?? [];
 
         conflicts.forEach((item) => {
           if (!draft.checkedPluginsNext[item]) return;
 
           draft.checkedPluginsNext[item] = false;
 
-          const label = settingPluginItems[item]?.label;
+          const label = customizerItems[item]?.label;
           if (label) {
             toast({
               description: `${label} plugin disabled.`,

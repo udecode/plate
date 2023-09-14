@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { descriptions } from '@/config/descriptions';
-import { SettingPlugin, settingPluginItems } from '@/config/setting-plugins';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
@@ -103,7 +103,7 @@ export function SettingCheckbox({
                             variant="secondary"
                             className="inline leading-none"
                           >
-                            {settingPluginItems[dependency].label}
+                            {customizerItems[dependency].label}
                           </Badge>
                         ))}
                       </div>
@@ -136,7 +136,7 @@ export function SettingCheckbox({
                             variant="secondary"
                             className="inline leading-none"
                           >
-                            {settingPluginItems[conflict].label}
+                            {customizerItems[conflict].label}
                           </Badge>
                         ))}
                       </div>
