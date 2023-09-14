@@ -16611,6 +16611,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mitt@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: 412983584700bcc97c11c8f8b291b5ef459b0237ae491f845e93b82fce3b93b2f79dcc75e9a2cf4a88e8be0652afb3ab55d1cecb027a83b9285e7eab3a36ec11
+  languageName: node
+  linkType: hard
+
 "mixme@npm:^0.5.1":
   version: 0.5.9
   resolution: "mixme@npm:0.5.9"
@@ -16756,6 +16763,19 @@ __metadata:
     react: "*"
     react-dom: "*"
   checksum: 1bf6c956a3daba1fd4ff6f7a7c13735b1ef0c72f4caafb5a3128fd35cccca9048b38961195e52512e6e66dcba5558a59bd82791102f9548a244b3f2954a2b543
+  languageName: node
+  linkType: hard
+
+"next-usequerystate@npm:1.8.0-beta.13":
+  version: 1.8.0-beta.13
+  resolution: "next-usequerystate@npm:1.8.0-beta.13"
+  dependencies:
+    mitt: "npm:^3.0.1"
+  peerDependencies:
+    next: ^13.4
+    react: "*"
+    react-dom: "*"
+  checksum: a8ce64d4ac0bbfac575bac7772212c5016faea78f6eb26273e913d6bcc0ef06141379b32eb5df0ebc1086fe44a7cc1f4bd645e5fcd67b97075925c637087eaa5
   languageName: node
   linkType: hard
 
@@ -23314,6 +23334,7 @@ __metadata:
     next: "npm:13.4.9"
     next-contentlayer: "npm:0.3.4"
     next-themes: "npm:^0.2.1"
+    next-usequerystate: "npm:1.8.0-beta.13"
     postcss: "npm:^8.4.25"
     prism-react-renderer: "npm:^1.3.5"
     react: "npm:^18.2.0"

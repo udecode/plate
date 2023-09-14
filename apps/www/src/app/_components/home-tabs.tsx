@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Settings2 } from 'lucide-react';
+import { useQueryState } from 'next-usequerystate';
 
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +16,21 @@ const InstallationTab = dynamic(() => import('./installation-tab'));
 export default function HomeTabs() {
   const active = settingsStore.use.showSettings();
   const homeTab = settingsStore.use.homeTab();
+  const [builder, setBuilder] = useQueryState('builder');
+
+  useEffect(() => {
+    if (builder === 'true') {
+      settingsStore.set.showSettings(true);
+    }
+  }, [builder]);
+
+  useEffect(() => {
+    if (active) {
+      void setBuilder('true');
+    } else {
+      void setBuilder(null);
+    }
+  }, [active, setBuilder]);
 
   return (
     <div>

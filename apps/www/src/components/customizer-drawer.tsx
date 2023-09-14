@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import { useMounted } from '@/hooks/use-mounted';
 import { useViewport } from '@/hooks/use-viewport';
 import { Button } from '@/registry/default/plate-ui/button';
 
@@ -23,6 +24,7 @@ export default function CustomizerDrawer() {
   const setOpen = settingsStore.set.showSettings;
   const { width } = useViewport();
   const cancelLoadingRef = useRef<any>('');
+  const mounted = useMounted();
 
   useEffect(() => {
     if (open) {
@@ -38,6 +40,8 @@ export default function CustomizerDrawer() {
       }, 600);
     }
   }, [open]);
+
+  if (!mounted) return null;
 
   return (
     <div className="flex items-center space-x-2">

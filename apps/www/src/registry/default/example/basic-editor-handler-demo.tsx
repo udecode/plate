@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
-import { Plate } from '@udecode/plate-common';
-
-import { MyValue } from '@/types/plate-types';
+import { Plate, Value } from '@udecode/plate-common';
 
 export default function BasicEditorHandlerDemo() {
-  const [debugValue, setDebugValue] = useState<MyValue | null>(null);
+  const [debugValue, setDebugValue] = useState<Value>([]);
 
   return (
-    <Plate<MyValue>
+    <Plate
       editableProps={editableProps}
       initialValue={[
         {

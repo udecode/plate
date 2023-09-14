@@ -2,8 +2,6 @@ import React from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { Plate } from '@udecode/plate-common';
 
-import { MyParagraphElement, MyValue } from '@/types/plate-types';
-
 const initialValue = [
   {
     type: 'p',
@@ -12,11 +10,9 @@ const initialValue = [
         text: 'This is editable plain text with react and history plugins, just like a <textarea>!',
       },
     ],
-  } as MyParagraphElement,
+  },
 ];
 
 export default function BasicEditorValueDemo() {
-  return (
-    <Plate<MyValue> editableProps={editableProps} initialValue={initialValue} />
-  );
+  return <Plate editableProps={editableProps} initialValue={initialValue} />;
 }

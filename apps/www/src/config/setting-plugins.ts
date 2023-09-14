@@ -50,6 +50,7 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { SettingBadge, settingBadges } from '@/config/setting-badges';
+import { settingComponents } from '@/config/setting-components';
 import { settingValues } from '@/config/setting-values';
 
 export type SettingPlugin = {
@@ -67,6 +68,7 @@ export type SettingPlugin = {
     id: string; // e.g. 'blockquote-element'
     filename?: string; // e.g. 'blockquote-element' (default: id)
     plateImports?: string[];
+    route?: string;
     label: string; // e.g. 'Blockquote'
     pluginKey?: string; // Plugin components only, e.g. 'ELEMENT_BLOCKQUOTE'
     import?: string;
@@ -89,6 +91,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'BlockquoteElement',
         pluginKey: 'ELEMENT_BLOCKQUOTE',
         usage: 'BlockquoteElement',
+        route: settingComponents.blockquoteElement.href,
       },
     ],
   },
@@ -105,18 +108,21 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'CodeBlockElement',
         pluginKey: 'ELEMENT_CODE_BLOCK',
         usage: 'CodeBlockElement',
+        route: settingComponents.codeBlockElement.href,
       },
       {
         id: 'code-line-element',
         label: 'CodeLineElement',
         pluginKey: 'ELEMENT_CODE_LINE',
         usage: 'CodeLineElement',
+        route: settingComponents.codeLineElement.href,
       },
       {
         id: 'code-syntax-leaf',
         label: 'CodeSyntaxLeaf',
         pluginKey: 'ELEMENT_CODE_SYNTAX',
         usage: 'CodeSyntaxLeaf',
+        route: settingComponents.codeSyntaxLeaf.href,
       },
     ],
   },
@@ -133,6 +139,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'ExcalidrawElement',
         pluginKey: 'ELEMENT_EXCALIDRAW',
         usage: 'ExcalidrawElement',
+        route: settingComponents.excalidrawElement.href,
       },
     ],
   },
@@ -149,6 +156,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'HrElement',
         pluginKey: 'ELEMENT_HR',
         usage: 'HrElement',
+        route: settingComponents.hrElement.href,
       },
     ],
   },
@@ -165,6 +173,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'ImageElement',
         pluginKey: 'ELEMENT_IMAGE',
         usage: 'ImageElement',
+        route: settingComponents.imageElement.href,
       },
     ],
   },
@@ -181,6 +190,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'LinkElement',
         pluginKey: 'ELEMENT_LINK',
         usage: 'LinkElement',
+        route: settingComponents.linkElement.href,
       },
     ],
   },
@@ -200,6 +210,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H1',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h1' })`,
+        route: settingComponents.headingElement.href,
       },
       {
         id: 'h2',
@@ -209,6 +220,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H2',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h2' })`,
+        route: settingComponents.headingElement.href,
       },
       {
         id: 'h3',
@@ -218,6 +230,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H3',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h3' })`,
+        route: settingComponents.headingElement.href,
       },
       {
         id: 'h4',
@@ -227,6 +240,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H4',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h4' })`,
+        route: settingComponents.headingElement.href,
       },
       {
         id: 'h5',
@@ -236,6 +250,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H5',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h5' })`,
+        route: settingComponents.headingElement.href,
       },
       {
         id: 'h6',
@@ -245,6 +260,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_H6',
         import: 'HeadingElement',
         usage: `withProps(HeadingElement, { variant: 'h6' })`,
+        route: settingComponents.headingElement.href,
       },
     ],
   },
@@ -264,6 +280,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         pluginKey: 'ELEMENT_UL',
         import: 'ListElement',
         usage: `withProps(ListElement, { variant: 'ul' })`,
+        route: settingComponents.listElement.href,
       },
       {
         id: 'ol',
@@ -273,6 +290,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         noImport: true,
         import: 'ListElement',
         usage: `withProps(ListElement, { variant: 'ol' })`,
+        route: settingComponents.listElement.href,
       },
       {
         id: 'li',
@@ -298,6 +316,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'MediaEmbedElement',
         pluginKey: 'ELEMENT_MEDIA_EMBED',
         usage: 'MediaEmbedElement',
+        route: settingComponents.mediaEmbedElement.href,
       },
     ],
   },
@@ -315,12 +334,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'MentionElement',
         pluginKey: 'ELEMENT_MENTION',
         usage: 'MentionElement',
+        route: settingComponents.mentionElement.href,
       },
       {
         id: 'mention-input-element',
         label: 'MentionInputElement',
         pluginKey: 'ELEMENT_MENTION_INPUT',
         usage: 'MentionInputElement',
+        route: settingComponents.mentionInputElement.href,
       },
     ],
   },
@@ -337,6 +358,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'ParagraphElement',
         pluginKey: 'ELEMENT_PARAGRAPH',
         usage: 'ParagraphElement',
+        route: settingComponents.paragraphElement.href,
       },
     ],
   },
@@ -353,12 +375,14 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'TableElement',
         pluginKey: 'ELEMENT_TABLE',
         usage: 'TableElement',
+        route: settingComponents.tableElement.href,
       },
       {
         id: 'table-row-element',
         label: 'TableRowElement',
         pluginKey: 'ELEMENT_TR',
         usage: 'TableRowElement',
+        route: settingComponents.tableRowElement.href,
       },
       {
         id: 'td',
@@ -366,6 +390,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'TableCellElement',
         pluginKey: 'ELEMENT_TD',
         usage: 'TableCellElement',
+        route: settingComponents.tableCellElement.href,
       },
       {
         id: 'th',
@@ -373,6 +398,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'TableCellHeaderElement',
         pluginKey: 'ELEMENT_TH',
         usage: 'TableCellHeaderElement',
+        route: settingComponents.tableCellElement.href,
       },
     ],
   },
@@ -389,6 +415,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'TodoListElement',
         pluginKey: 'ELEMENT_TODO_LI',
         usage: 'TodoListElement',
+        route: settingComponents.todoListElement.href,
       },
     ],
   },
@@ -423,6 +450,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'CodeLeaf',
         pluginKey: 'MARK_CODE',
         usage: `CodeLeaf`,
+        route: settingComponents.codeLeaf.href,
       },
     ],
   },
@@ -439,6 +467,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'CommentLeaf',
         pluginKey: 'MARK_COMMENT',
         usage: 'CommentLeaf',
+        route: settingComponents.commentLeaf.href,
       },
     ],
   },
@@ -479,6 +508,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'HighlightLeaf',
         pluginKey: 'MARK_HIGHLIGHT',
         usage: 'HighlightLeaf',
+        route: settingComponents.highlightLeaf.href,
       },
     ],
   },
@@ -513,6 +543,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
         label: 'KbdLeaf',
         pluginKey: 'MARK_KBD',
         usage: 'KbdLeaf',
+        route: settingComponents.kbdLeaf.href,
       },
     ],
   },
