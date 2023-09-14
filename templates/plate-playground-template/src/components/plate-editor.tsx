@@ -19,7 +19,7 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 
-export default function Editor() {
+export default function PlateEditor() {
   const containerRef = useRef(null);
 
   const initialValue = [

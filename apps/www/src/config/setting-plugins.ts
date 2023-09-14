@@ -145,7 +145,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     route: settingValues.hr.route,
     components: [
       {
-        id: 'horizontal-rule-element',
+        id: 'hr-element',
         label: 'HrElement',
         pluginKey: 'ELEMENT_HR',
         usage: 'HrElement',
@@ -188,7 +188,6 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
     id: 'heading',
     npmPackage: '@udecode/plate-heading',
     pluginFactory: 'createHeadingPlugin',
-    plateImports: ['withProps'],
     label: 'Heading',
     badges: [settingBadges.element],
     route: settingValues.basicnodes.route,
@@ -196,6 +195,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h1',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H1Element',
         pluginKey: 'ELEMENT_H1',
         import: 'HeadingElement',
@@ -204,6 +204,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h2',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H2Element',
         pluginKey: 'ELEMENT_H2',
         import: 'HeadingElement',
@@ -212,6 +213,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h3',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H3Element',
         pluginKey: 'ELEMENT_H3',
         import: 'HeadingElement',
@@ -220,6 +222,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h4',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H4Element',
         pluginKey: 'ELEMENT_H4',
         import: 'HeadingElement',
@@ -228,6 +231,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h5',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H5Element',
         pluginKey: 'ELEMENT_H5',
         import: 'HeadingElement',
@@ -236,6 +240,7 @@ export const settingPluginItems: Record<string, SettingPlugin> = {
       {
         id: 'h6',
         filename: 'heading-element',
+        plateImports: ['withProps'],
         label: 'H6Element',
         pluginKey: 'ELEMENT_H6',
         import: 'HeadingElement',

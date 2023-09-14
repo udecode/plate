@@ -497,7 +497,7 @@ const ui: Registry = [
     name: 'table-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-table'],
-    registryDependencies: [],
+    registryDependencies: ['dropdown-menu'],
     files: ['plate-ui/table-element.tsx'],
   },
   {
@@ -511,7 +511,7 @@ const ui: Registry = [
     name: 'todo-list-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-list'],
-    registryDependencies: [],
+    registryDependencies: ['checkbox'],
     files: ['plate-ui/todo-list-element.tsx'],
   },
   {

@@ -127,16 +127,26 @@ export default function InstallationTab() {
   }, [componentsWithPluginKey]);
 
   const groupedImportsByPackage = useMemo(() => {
-    return plugins.reduce(
-      (acc, { pluginFactory, npmPackage }) => {
-        if (!acc[npmPackage]) {
-          acc[npmPackage] = new Set();
+    const grouped = {} as Record<string, Set<string>>;
+
+    // Add pluginFactory and pluginKey from plugins
+    plugins.forEach((plugin) => {
+      if (!grouped[plugin.npmPackage]) {
+        grouped[plugin.npmPackage] = new Set();
+      }
+      grouped[plugin.npmPackage].add(plugin.pluginFactory);
+
+      plugin.components?.forEach((component) => {
+        if (
+          component.pluginKey &&
+          componentsWithPluginKey.includes(component)
+        ) {
+          grouped[plugin.npmPackage].add(component.pluginKey);
         }
-        acc[npmPackage].add(pluginFactory);
-        return acc;
-      },
-      {} as Record<string, Set<string>>
-    );
+      });
+    });
+
+    return grouped;
   }, [plugins]);
 
   const importsCode = useMemo(() => {
@@ -178,12 +188,14 @@ export default function InstallationTab() {
   const plateCode = [
     `const initialValue = [`,
     `  {`,
-    `    type: ELEMENT_PARAGRAPH,`,
+    `    type: 'p',`,
     `    children: [{ text: 'Hello, World!' }],`,
     `  },`,
     `];`,
     ``,
-    `export default () => <Plate plugins={plugins} initialValue={initialValue} />;`,
+    `export function PlateEditor() {`,
+    `  return <Plate plugins={plugins} initialValue={initialValue} />;`,
+    `}`,
   ].join('\n');
 
   const fullCode = [importsCode, usageCode, plateCode].join('\n\n');
