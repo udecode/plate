@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
+import Editor from '@/components/plate-editor';
 import { buttonVariants } from '@/components/plate-ui/button';
-import Editor from '@/components/plate/editor';
 
 export default function IndexPage() {
   return (
