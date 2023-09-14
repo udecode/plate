@@ -1,6 +1,6 @@
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { CustomizerDrawer } from '@/components/customizer-drawer';
 import { ThemesButton } from '@/components/themes-button';
 
 import { AnnouncementButton } from './announcement-button';
@@ -20,7 +20,10 @@ import {
 import { ThemeWrapper } from '@/components/theme-wrapper';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 
-import { HomeTabs } from './_components/home-tabs';
+const HomeTabs = dynamic(() => import('./_components/home-tabs'));
+const CustomizerDrawer = dynamic(
+  () => import('@/components/customizer-drawer')
+);
 
 export default function IndexPage() {
   return (

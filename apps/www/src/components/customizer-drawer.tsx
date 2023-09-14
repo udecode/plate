@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { useViewport } from '@/hooks/use-viewport';
 import { Button } from '@/registry/default/plate-ui/button';
 
@@ -16,14 +18,26 @@ import { settingsStore } from './context/settings-store';
 import { DrawerContent } from './drawer';
 import { Sheet, SheetContent } from './ui/sheet';
 
-export function CustomizerDrawer() {
+export default function CustomizerDrawer() {
   const open = settingsStore.use.showSettings();
   const setOpen = settingsStore.set.showSettings;
   const { width } = useViewport();
+  const cancelLoadingRef = useRef<any>('');
 
-  React.useEffect(() => {
-    setOpen(true);
-  }, [setOpen]);
+  useEffect(() => {
+    if (open) {
+      settingsStore.set.loadingSettings(true);
+
+      if (cancelLoadingRef.current) {
+        clearTimeout(cancelLoadingRef.current);
+        cancelLoadingRef.current = '';
+      }
+
+      cancelLoadingRef.current = setTimeout(() => {
+        settingsStore.set.loadingSettings(false);
+      }, 600);
+    }
+  }, [open]);
 
   return (
     <div className="flex items-center space-x-2">
@@ -54,7 +68,7 @@ export function CustomizerDrawer() {
           modal={false}
         >
           <SheetContent
-            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-6 py-3 data-[state=open]:duration-0 md:flex"
+            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-6 py-3 md:flex"
             modal={false}
             hideClose
           >

@@ -52,7 +52,7 @@ function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
   };
 }
 
-export function InstallationTab() {
+export default function InstallationTab() {
   const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
   const mounted = useMounted();

@@ -1,11 +1,11 @@
 # Playground Template
 
-A comprehensive playground template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 13.
+A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 13.
 
 ## Usage
 
 ```bash
-pnpm create next-app -e https://github.com/udecode/plate-playground-template
+pnpm create next-app -e https://github.com/udecode/plate-template
 ```
 
 ## Features

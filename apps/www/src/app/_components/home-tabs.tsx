@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Settings2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -8,9 +9,9 @@ import { settingsStore } from '@/components/context/settings-store';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { InstallationTab } from './installation-tab';
+const InstallationTab = dynamic(() => import('./installation-tab'));
 
-export function HomeTabs() {
+export default function HomeTabs() {
   const active = settingsStore.use.showSettings();
   const homeTab = settingsStore.use.homeTab();
 

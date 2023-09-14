@@ -45,9 +45,10 @@ export const getDefaultCheckedComponents = () => {
 
 export const settingsStore = createStore('settings')({
   showSettings: false,
+  loadingSettings: true,
   showComponents: true,
-  // homeTab: 'playground',
-  homeTab: 'installation',
+  homeTab: 'playground',
+  // homeTab: 'installation',
   customizerTab: 'plugins',
 
   valueId: settingValues.playground.id,

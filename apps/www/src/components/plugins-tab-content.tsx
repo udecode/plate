@@ -235,7 +235,7 @@ export function SettingsEffect() {
   return null;
 }
 
-export function PluginsTabContent() {
+export function PluginsTabContentLazy() {
   const checkedPlugins = settingsStore.use.checkedPluginsNext();
   const checkedComponents = settingsStore.use.checkedComponents();
   const showComponents = settingsStore.use.showComponents();
@@ -254,6 +254,87 @@ export function PluginsTabContent() {
     <div>
       <SettingsEffect />
 
+      <div className="flex items-center">
+        <Checkbox
+          id="check-plugins"
+          checked={somePluginChecked}
+          onCheckedChange={(_checked: boolean) => {
+            if (somePluginChecked) {
+              settingsStore.set.checkedPluginsNext({} as any);
+            } else {
+              settingsStore.set.resetPlugins();
+            }
+          }}
+        />
+        <Label htmlFor="check-plugins" className="flex p-2">
+          Plugins
+        </Label>
+      </div>
+
+      <div className="flex items-center">
+        <TreeIcon isFirst isLast className="mx-1" />
+
+        <Checkbox
+          id="check-components"
+          checked={someComponentChecked}
+          onCheckedChange={(_checked: boolean) => {
+            if (someComponentChecked) {
+              settingsStore.set.checkedComponents({} as any);
+            } else {
+              settingsStore.set.showComponents(true);
+              settingsStore.set.resetComponents();
+            }
+          }}
+        />
+
+        <Label htmlFor="check-components" className="flex p-2">
+          Components
+        </Label>
+
+        <Button
+          size="xs"
+          variant="ghost"
+          className="px-2"
+          onClick={() => {
+            if (showComponents) {
+              settingsStore.set.checkedComponents({} as any);
+            }
+            settingsStore.set.showComponents(!showComponents);
+          }}
+        >
+          {showComponents ? (
+            <Eye className="h-4 w-4" />
+          ) : (
+            <EyeOff className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">
+        {settingPlugins.map((item) => (
+          <AccordionItem key={item.id} value={item.id}>
+            <AccordionTrigger className="px-6 py-4">
+              {item.label}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col gap-2 pl-6 pr-3.5">
+                {item.children.map((child) => (
+                  <SettingsSwitch key={child.id} {...child} />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+export function PluginsTabContent() {
+  const loadingSettings = settingsStore.use.loadingSettings();
+
+  return (
+    <div>
       <div className="space-y-4">
         <div className="flex justify-between">
           <SettingsCombobox />
@@ -280,80 +361,14 @@ export function PluginsTabContent() {
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-
-          <div className="flex items-center">
-            <Checkbox
-              id="check-plugins"
-              checked={somePluginChecked}
-              onCheckedChange={(_checked: boolean) => {
-                if (somePluginChecked) {
-                  settingsStore.set.checkedPluginsNext({} as any);
-                } else {
-                  settingsStore.set.resetPlugins();
-                }
-              }}
-            />
-            <Label htmlFor="check-plugins" className="flex p-2">
-              Plugins
-            </Label>
-          </div>
-
-          <div className="flex items-center">
-            <TreeIcon isFirst isLast className="mx-1" />
-
-            <Checkbox
-              id="check-components"
-              checked={someComponentChecked}
-              onCheckedChange={(_checked: boolean) => {
-                if (someComponentChecked) {
-                  settingsStore.set.checkedComponents({} as any);
-                } else {
-                  settingsStore.set.showComponents(true);
-                  settingsStore.set.resetComponents();
-                }
-              }}
-            />
-
-            <Label htmlFor="check-components" className="flex p-2">
-              Components
-            </Label>
-
-            <Button
-              size="xs"
-              variant="ghost"
-              className="px-2"
-              onClick={() => {
-                if (showComponents) {
-                  settingsStore.set.checkedComponents({} as any);
-                }
-                settingsStore.set.showComponents(!showComponents);
-              }}
-            >
-              {showComponents ? (
-                <Eye className="h-4 w-4" />
-              ) : (
-                <EyeOff className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
         </div>
-
-        <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">
-          {settingPlugins.map((item) => (
-            <AccordionItem key={item.id} value={item.id}>
-              <AccordionTrigger className="px-6 py-4">
-                {item.label}
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-2 pl-6 pr-3.5">
-                  {item.children.map((child) => (
-                    <SettingsSwitch key={child.id} {...child} />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        {loadingSettings ? (
+          <div className="mt-4 flex h-[30px] items-center justify-center">
+            <Icons.spinner className="h-5 w-5 animate-spin" />
+          </div>
+        ) : (
+          <PluginsTabContentLazy />
+        )}
       </div>
     </div>
   );
