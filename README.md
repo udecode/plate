@@ -31,6 +31,16 @@ Plate
 [//]: # '3. **Primitives**: Besides the headless plugins, we also provide primitive hooks and components built on top of [Radix UI](https://www.radix-ui.com/). These are **unstyled** and accessible parts for making great design systems.'
 [//]: # '4. **Components**: We know a good-looking start is important. So, we give you components created with Plate CLI and [shadcn/ui](https://ui.shadcn.com/). Use these as a starting point to create your own component library.'
 
+## Templates
+
+You can choose one of the following templates to get started:
+
+| Option                                                                            | NextJS | Tailwind | Plate | Plugins |
+| --------------------------------------------------------------------------------- | ------ | -------- | ----- | ------- |
+| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     | ✅       | ✅    | ✅      |
+| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     | ✅       | ✅    |         |
+| [NextJS template](/docs/components/installation/next)                             | ✅     | ✅       |       |         |
+
 ## Documentation
 
 You can learn more about Plate by checking out our [documentation](https://platejs.org/docs).

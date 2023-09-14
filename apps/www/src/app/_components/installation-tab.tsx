@@ -225,7 +225,14 @@ export default function InstallationTab() {
             `npm install @udecode/plate-common`,
           ].join('\n')}
         >
-          Install the peer dependencies and Plate:
+          Start from our{' '}
+          <Link
+            href="https://github.com/udecode/plate-template"
+            target="_blank"
+          >
+            template
+          </Link>{' '}
+          or install the peer dependencies and Plate:
         </InstallationCode>
         {somePlugins && (
           <>
