@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 23.7.5
+
+### Patch Changes
+
+- [#2624](https://github.com/udecode/plate/pull/2624) by [@OliverWales](https://github.com/OliverWales) – Add jsx element for nli element
+
 ## 13.4.0
 
 ### Minor Changes
