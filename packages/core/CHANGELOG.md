@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 23.7.4
+
 ## 23.6.0
 
 ### Minor Changes

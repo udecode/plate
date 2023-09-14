@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 23.7.4
+
 ## 23.7.2
 
 ### Patch Changes
