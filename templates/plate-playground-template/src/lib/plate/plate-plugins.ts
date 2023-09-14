@@ -223,7 +223,20 @@ export const plugins = createPlugins(
         },
       },
     }),
-    createIndentListPlugin(),
+    createIndentListPlugin({
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1,
+            ELEMENT_H2,
+            ELEMENT_H3,
+            ELEMENT_BLOCKQUOTE,
+            ELEMENT_CODE_BLOCK,
+          ],
+        },
+      },
+    }),
     createLineHeightPlugin({
       inject: {
         props: {
