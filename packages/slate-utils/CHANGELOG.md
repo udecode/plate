@@ -1,5 +1,7 @@
 # @udecode/slate-utils
 
+## 23.7.4
+
 ## 22.0.2
 
 ### Patch Changes

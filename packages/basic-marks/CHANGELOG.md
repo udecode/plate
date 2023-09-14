@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 23.7.4
+
 ## 23.7.1
 
 ### Patch Changes

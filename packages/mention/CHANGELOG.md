@@ -1,5 +1,13 @@
 # @udecode/plate-mention
 
+## 23.7.4
+
+## 23.7.3
+
+### Patch Changes
+
+- [#2619](https://github.com/udecode/plate/pull/2619) by [@OliverWales](https://github.com/OliverWales) – Remove mention inputs from editor on blur
+
 ## 23.7.0
 
 ## 23.6.0
