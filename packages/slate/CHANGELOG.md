@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 23.7.4
+
+### Patch Changes
+
+- [#2622](https://github.com/udecode/plate/pull/2622) by [@12joan](https://github.com/12joan) – Ensure the return type of `unhangRange` matches the argument type
+
 ## 22.0.2
 
 ### Patch Changes
