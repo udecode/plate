@@ -53,7 +53,7 @@
     "p:brl": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l all -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:brl:below": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l below -q -e '.*(fixture|template|spec|__tests__).*'",
     "p:build": "cd $INIT_CWD && yarn p:tsup && tsc",
-    "p:build:watch": "cd $INIT_CWD && concurrently \"yarn p:tsup -w\" \"yarn p:typecheck -w\"",
+    "p:build:watch": "cd $INIT_CWD && concurrently \"yarn p:tsup --watch\" \"yarn p:typecheck -w\"",
     "p:clean": "cd $INIT_CWD && rimraf dist && jest --clear-cache",
     "p:lint": "eslint $INIT_CWD/src --color",
     "p:lint:fix": "eslint $INIT_CWD/src --color --fix",
