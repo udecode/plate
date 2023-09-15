@@ -115,7 +115,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'placeholder',
         registry: 'placeholder',
-        filename: 'with-placeholders',
         label: 'Placeholder',
         usage: 'withPlaceholders',
         route: customizerComponents.placeholder.href,
