@@ -17,8 +17,8 @@ strategy:
       - plate-playground-template
 
 jobs:
-  build-playground:
-    name: build-playground
+  build:
+    name: build
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -63,7 +63,7 @@ jobs:
         run: pnpm build
 
   sync:
-    needs: build-playground
+    needs: build
     runs-on: ubuntu-20.04
     if: ${{ success() }}
     steps:
