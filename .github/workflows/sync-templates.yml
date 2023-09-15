@@ -9,17 +9,16 @@ on:
       - 'scripts/sync-templates.sh'
       - 'templates/**'
 
-strategy:
-  fail-fast: false
-  matrix:
-    template:
-      - plate-template
-      - plate-playground-template
-
 jobs:
   build:
     name: build
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - plate-template
+          - plate-playground-template
     defaults:
       run:
         working-directory: templates/${{ matrix.template }}
@@ -65,6 +64,12 @@ jobs:
   sync:
     needs: build
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - plate-template
+          - plate-playground-template
     if: ${{ success() }}
     steps:
       - name: Checkout Repo
