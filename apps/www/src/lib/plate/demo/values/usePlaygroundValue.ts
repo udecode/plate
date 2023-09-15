@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 
 import { MyValue } from '@/types/plate-types';
-import { settingValues, ValueId } from '@/config/setting-values';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 import { settingsStore } from '@/components/context/settings-store';
 
 import { alignValue } from './alignValue';
@@ -44,11 +44,12 @@ export const usePlaygroundValue = (id?: ValueId) => {
     const value = [...basicElementsValue];
 
     if (enabled.action_item) value.push(...todoListValue);
+    if (enabled.a) value.push(...linkValue);
 
     value.push(...basicMarksValue);
 
-    if (valueId !== settingValues.playground.id) {
-      const newValue = settingValues[valueId].value ?? [];
+    if (valueId !== customizerPlugins.playground.id) {
+      const newValue = customizerPlugins[valueId].value ?? [];
 
       if (newValue.length === 0) {
         return mapNodeId(value);
@@ -62,7 +63,6 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.kbd) value.push(...kbdValue);
 
     // Inline nodes
-    if (enabled.a) value.push(...linkValue);
     if (enabled.mention) value.push(...mentionValue);
     if (enabled.emoji) value.push(...emojiValue);
 

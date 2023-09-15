@@ -1,3 +1,4 @@
+// local import, not from npm
 import { createPlateUI } from '@/plate/create-plate-ui';
 import {
   createBoldPlugin,
@@ -12,10 +13,9 @@ import { createPlugins, Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-import { MyValue } from '@/types/plate-types';
-
-const plugins = createPlugins<MyValue>(
+const plugins = createPlugins(
   [
+    // Pick your plugins in https://platejs.org/?builder=true
     createParagraphPlugin(),
     createBlockquotePlugin(),
     createCodeBlockPlugin(),
@@ -28,13 +28,14 @@ const plugins = createPlugins<MyValue>(
     createCodePlugin(),
   ],
   {
+    // Pick your components in https://platejs.org/?builder=true
     components: createPlateUI(),
   }
 );
 
 export default function BasicPluginsComponentsDemo() {
   return (
-    <Plate<MyValue>
+    <Plate
       editableProps={{
         spellCheck: false,
         autoFocus: false,
@@ -49,7 +50,7 @@ export default function BasicPluginsComponentsDemo() {
   );
 }
 
-export const basicEditorValue: MyValue = [
+export const basicEditorValue = [
   {
     type: 'h1',
     children: [

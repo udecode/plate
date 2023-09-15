@@ -10,12 +10,18 @@ on:
       - 'templates/**'
 
 jobs:
-  build-playground:
-    name: build-playground
+  build:
+    name: build
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - plate-template
+          - plate-playground-template
     defaults:
       run:
-        working-directory: templates/plate-playground-template
+        working-directory: templates/${{ matrix.template }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -52,13 +58,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # Lint, typecheck, build
       - name: Build
         run: pnpm build
 
   sync:
-    needs: build-playground
+    needs: build
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - plate-template
+          - plate-playground-template
     if: ${{ success() }}
     steps:
       - name: Checkout Repo
@@ -68,5 +79,5 @@ jobs:
       - name: Sync Templates
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        run: ./scripts/sync-templates.sh "templates/plate-playground-template"
+        run: ./scripts/sync-templates.sh "templates/${{ matrix.template }}"
         shell: bash

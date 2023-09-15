@@ -67,6 +67,7 @@ module.exports = {
           'warn',
           {
             alias: {
+              '@/app': './apps/www/src/app',
               '@/plate': './apps/www/src/lib/plate',
               '@/components': './apps/www/src/components',
               '@/hooks': './apps/www/src/hooks',

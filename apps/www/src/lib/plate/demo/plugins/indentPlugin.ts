@@ -8,12 +8,9 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { IndentPlugin } from '@udecode/plate-indent';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin } from '@/types/plate-types';
-
-export const indentPlugin: Partial<MyPlatePlugin<IndentPlugin>> = {
+export const indentPlugin = {
   inject: {
     props: {
       validTypes: [

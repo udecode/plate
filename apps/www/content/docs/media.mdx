@@ -46,7 +46,9 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
-  createCaptionPlugin({ options: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] }),
+  createCaptionPlugin({
+    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+  }),
   createImagePlugin(),
   createMediaEmbedPlugin(),
   createSelectOnBackspacePlugin({

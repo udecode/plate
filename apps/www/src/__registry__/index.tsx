@@ -616,7 +616,7 @@ export const Index: Record<string, any> = {
     'table-element': {
       name: 'table-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["dropdown-menu"],
       files: ['registry/default/plate-ui/table-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/table-element')),
     },
@@ -630,7 +630,7 @@ export const Index: Record<string, any> = {
     'todo-list-element': {
       name: 'todo-list-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["checkbox"],
       files: ['registry/default/plate-ui/todo-list-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/todo-list-element')),
     },
