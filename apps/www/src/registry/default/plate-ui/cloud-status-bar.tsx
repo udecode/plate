@@ -67,7 +67,10 @@ export function FailBar({
   );
 }
 
-export function StatusBar(props: { upload: Upload; children?: JSX.Element }) {
+export function StatusBar(props: {
+  upload: Upload;
+  children?: React.ReactNode;
+}) {
   const { upload, children } = props;
   switch (upload.status) {
     case 'progress': {

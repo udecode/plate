@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import {
   createBoldPlugin,
   createCodePlugin,
@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, PlatePlugin, Value } from '@udecode/plate-common';
+import { Editor, Plate, PlatePlugin, Value } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -33,7 +33,6 @@ export default function BasicPluginsDefaultDemo() {
 
   return (
     <Plate
-      editableProps={editableProps}
       initialValue={basicEditorValue}
       plugins={plugins}
       onChange={(newValue) => {
@@ -41,6 +40,7 @@ export default function BasicPluginsDefaultDemo() {
         // save newValue...
       }}
     >
+      <Editor {...editorProps} />
       debug value:
       <br />
       {JSON.stringify(debugValue)}

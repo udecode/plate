@@ -31,7 +31,11 @@ const plugins = createPlugins([
 ]);
 
 export default () => {
-  return <Plate plugins={plugins} />;
+  return (
+    <Plate plugins={plugins}>
+      <Editor />
+    </Plate>
+  );
 };
 ```
 
@@ -289,7 +293,11 @@ const MyEditor = ({ username }: { username: string }) => {
     [username]
   );
 
-  return <Plate plugins={plugins} />;
+  return (
+    <Plate plugins={plugins}>
+      <Editor />
+    </Plate>
+  );
 };
 
 export default () => <MyEditor username="Marsha P. Johnson" />;

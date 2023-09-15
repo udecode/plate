@@ -175,12 +175,12 @@ export type PlatePlugin<
     /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: RenderAfterEditable<V>;
+    renderAfterEditable?: RenderAfterEditable;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: RenderAfterEditable<V>;
+    renderBeforeEditable?: RenderAfterEditable;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.

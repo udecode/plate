@@ -52,7 +52,7 @@ export type PlateStoreState<
   /**
    * Whether `Editable` is rendered so slate DOM is resolvable.
    */
-  isRendered: boolean;
+  isMounted: boolean;
 
   /**
    * A random key updated on each editor change.
@@ -80,9 +80,9 @@ export type PlateStoreState<
    */
   editorRef: { ref: ForwardedRef<E> };
 
-  decorate: { fn: NonNullable<TEditableProps<V>['decorate']> };
-  renderElement: { fn: NonNullable<TEditableProps<V>['renderElement']> };
-  renderLeaf: { fn: NonNullable<TEditableProps<V>['renderLeaf']> };
+  decorate: { fn: NonNullable<TEditableProps['decorate']> };
+  renderElement: { fn: NonNullable<TEditableProps['renderElement']> };
+  renderLeaf: { fn: NonNullable<TEditableProps['renderLeaf']> };
 }>;
 
 // A list of store keys to be exposed in `editor.plate.set`.

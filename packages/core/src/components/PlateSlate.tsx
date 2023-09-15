@@ -4,6 +4,12 @@ import { Slate } from 'slate-react';
 import { useSlateProps } from '../hooks';
 import { PlateId, usePlateSelectors } from '../stores';
 
+/**
+ * Slate with plugins.
+ *
+ * - onChange prop
+ * - renderAboveSlate
+ */
 export function PlateSlate({
   id,
   children,
@@ -15,7 +21,7 @@ export function PlateSlate({
 
   const { plugins } = usePlateSelectors(id).editor();
 
-  let aboveSlate: JSX.Element | null = (
+  let aboveSlate: React.ReactElement | null = (
     <Slate {...(slateProps as any)}>{children}</Slate>
   );
 

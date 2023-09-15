@@ -2,15 +2,17 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 
 import { createPlateEditor } from '../utils/createPlateEditor';
+import { Editor, EditorProps } from './Editor';
 import { Plate, PlateProps } from './Plate';
 
 export function PlateTest<V extends Value>({
   variant = 'wordProcessor',
-  editableProps,
   normalizeInitialValue,
+  editorProps,
   ...props
 }: {
   variant?: 'comment' | 'wordProcessor';
+  editorProps?: EditorProps;
 } & PlateProps<V>) {
   const { editor: _editor, id, plugins } = props;
 
@@ -26,17 +28,13 @@ export function PlateTest<V extends Value>({
   }
 
   return (
-    <Plate
-      {...props}
-      editor={editor}
-      editableProps={
-        {
-          'data-variant': variant,
-          'data-testid': 'slate-content-editable',
-          autoFocus: true,
-          ...editableProps,
-        } as any
-      }
-    />
+    <Plate {...props} editor={editor}>
+      <Editor
+        data-variant={variant}
+        data-testid="slate-content-editable"
+        autoFocus
+        {...editorProps}
+      />
+    </Plate>
   );
 }

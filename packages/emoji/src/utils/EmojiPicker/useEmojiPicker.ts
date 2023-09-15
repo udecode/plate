@@ -36,7 +36,9 @@ export type UseEmojiPickerProps = {
   indexSearch: AIndexSearch<Emoji>;
 };
 
-export type UseEmojiPickerType<T extends JSX.Element = JSX.Element> = {
+export type UseEmojiPickerType<
+  T extends React.ReactElement = React.ReactElement,
+> = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   i18n: i18nProps;

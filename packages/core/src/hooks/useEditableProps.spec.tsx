@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { Plate } from '../components/index';
+import { Editor, Plate } from '../components/index';
 import { PlatePlugin } from '../types/index';
 
 describe('useEditableProps', () => {
@@ -19,7 +19,11 @@ describe('useEditableProps', () => {
         },
       ];
 
-      render(<Plate plugins={plugins} />);
+      render(
+        <Plate plugins={plugins}>
+          <Editor />
+        </Plate>
+      );
 
       expect(decorate).toHaveBeenCalledTimes(3);
     });

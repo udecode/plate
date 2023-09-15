@@ -102,6 +102,8 @@ const CustomEffect = () => {
 
 export default () => (
   <Plate>
+    <Editor />
+
     <CustomEffect />
   </Plate>
 );
@@ -129,11 +131,11 @@ const Toolbar = () => {
   // ...
 };
 
-export default () => (
-  <PlateProvider>
+const PlateEditor = () => (
+  <Plate>
     <Toolbar />
-    <Plate />
-  </PlateProvider>
+    <Editor />
+  </Plate>
 );
 ```
 
@@ -162,11 +164,15 @@ const App = () => {
   // ...
 };
 
-const MyEditor = ({
+const PlateEditor = ({
   editorRef,
 }: {
   editorRef: MutableRefObject<PlateEditor | null>;
-}) => <Plate editorRef={editorRef} />;
+}) => (
+  <Plate editorRef={editorRef}>
+    <Editor />
+  </Plate>
+);
 ```
 
 ### With State
@@ -199,13 +205,17 @@ const EditorPreview = ({ editor }: { editor: PlateEditor | null }) => {
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
-const MyEditor = ({
+const PlateEditor = ({
   setEditor,
   handleUpdateEditor,
 }: {
   setEditor: (editor: PlateEditor | null) => void;
   handleUpdateEditor: () => void;
-}) => <Plate editorRef={setEditor} onChange={handleUpdateEditor} />;
+}) => (
+  <Plate editorRef={setEditor} onChange={handleUpdateEditor}>
+    <Editor />
+  </Plate>
+);
 ```
 
 ## Temporary Editor Instance
@@ -222,7 +232,7 @@ const plugins = createPlugins([
   // ...
 ]);
 
-export default ({ initialHtml }: { initialHtml: string }) => {
+const PlateEditor = ({ initialHtml }: { initialHtml: string }) => {
   /**
    * Changing the initialValue after render is not supported, so initialHtml
    * is not included in the useMemo deps.
@@ -234,6 +244,10 @@ export default ({ initialHtml }: { initialHtml: string }) => {
     });
   }, []);
 
-  return <Plate plugins={plugins} initialValue={initialValue} />;
+  return (
+    <Plate plugins={plugins} initialValue={initialValue}>
+      <Editor />
+    </Plate>
+  );
 };
 ```

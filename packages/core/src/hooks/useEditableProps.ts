@@ -3,7 +3,7 @@ import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import { PlateId, usePlateSelectors } from '../stores';
+import { usePlateSelectors } from '../stores';
 import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
 import { DOM_HANDLERS } from '../types/misc/dom-attributes';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
@@ -12,10 +12,11 @@ import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
 
-export const useEditableProps = ({
-  id,
-  ...editableProps
-}: TEditableProps & { id?: PlateId } = {}): TEditableProps => {
+export const useEditableProps = (
+  editableProps: TEditableProps = {}
+): TEditableProps => {
+  const { id } = editableProps;
+
   const editor = usePlateEditorRef(id);
   const selectors = usePlateSelectors(id);
   const keyDecorate = selectors.keyDecorate();

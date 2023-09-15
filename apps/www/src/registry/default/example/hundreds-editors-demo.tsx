@@ -1,8 +1,8 @@
 import React from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
-import { Plate } from '@udecode/plate-common';
+import { Editor, Plate } from '@udecode/plate-common';
 
 import { MyValue } from '@/types/plate-types';
 
@@ -12,10 +12,11 @@ function WithPlate({ initialValue, id }: any) {
   return (
     <Plate<MyValue>
       id={id}
-      editableProps={editableProps}
       initialValue={initialValue}
       plugins={basicNodesPlugins}
-    />
+    >
+      <Editor {...editorProps} />
+    </Plate>
   );
 }
 
@@ -39,7 +40,7 @@ function WithPlate({ initialValue, id }: any) {
 //       value={value}
 //       onChange={useCallback((v) => setValue(v), [])}
 //     >
-//       <Editable renderElement={renderElement} {...(editableProps as any)} />
+//       <Editable renderElement={renderElement} {...(editorProps as any)} />
 //     </Slate>
 //   );
 // }

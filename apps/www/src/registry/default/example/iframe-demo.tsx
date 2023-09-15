@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { Plate } from '@udecode/plate-common';
+import { Editor, Plate } from '@udecode/plate-common';
 import { createPortal } from 'react-dom';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
@@ -43,11 +43,9 @@ export function IFrame({ children, ...props }: any) {
 export default function IframeDemo() {
   return (
     <IFrame>
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={iframeValue}
-      />
+      <Plate<MyValue> plugins={plugins} initialValue={iframeValue}>
+        <Editor {...editorProps} />
+      </Plate>
     </IFrame>
   );
 }

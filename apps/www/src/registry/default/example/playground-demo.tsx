@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
@@ -47,9 +47,9 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
   createPlateEditor,
+  Editor,
   Plate,
   PlatePluginComponent,
-  PlateProvider,
   usePlateActions,
   usePlateSelectors,
 } from '@udecode/plate-common';
@@ -294,7 +294,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <PlateProvider<MyValue>
+        <Plate<MyValue>
           initialValue={initialValue}
           plugins={plugins}
           normalizeInitialValue
@@ -321,34 +321,32 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
                 )}
               >
-                <Plate
-                  editableProps={{
-                    ...editableProps,
-                    placeholder: '',
-                    className: cn(
-                      editableProps.className,
-                      'px-8 outline-none',
-                      !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
-                      id && 'pb-8 pt-2'
-                    ),
-                  }}
-                >
-                  {enabled['floating-toolbar'] && (
-                    <FloatingToolbar>
-                      {enabled['floating-toolbar-buttons'] && (
-                        <PlaygroundFloatingToolbarButtons id={id} />
-                      )}
-                    </FloatingToolbar>
+                <Editor
+                  {...editorProps}
+                  placeholder=""
+                  className={cn(
+                    editorProps.className,
+                    'px-8 outline-none',
+                    !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
+                    id && 'pb-8 pt-2'
                   )}
+                />
 
-                  {isEnabled('mention', id, enabled['mention-combobox']) && (
-                    <MentionCombobox items={MENTIONABLES} />
-                  )}
+                {enabled['floating-toolbar'] && (
+                  <FloatingToolbar>
+                    {enabled['floating-toolbar-buttons'] && (
+                      <PlaygroundFloatingToolbarButtons id={id} />
+                    )}
+                  </FloatingToolbar>
+                )}
 
-                  {isEnabled('cursoroverlay', id) && (
-                    <CursorOverlay containerRef={containerRef} />
-                  )}
-                </Plate>
+                {isEnabled('mention', id, enabled['mention-combobox']) && (
+                  <MentionCombobox items={MENTIONABLES} />
+                )}
+
+                {isEnabled('cursoroverlay', id) && (
+                  <CursorOverlay containerRef={containerRef} />
+                )}
               </div>
 
               {isEnabled('comment', id, enabled['comments-popover']) && (
@@ -356,7 +354,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               )}
             </CommentsProvider>
           </div>
-        </PlateProvider>
+        </Plate>
       </div>
     </DndProvider>
   );

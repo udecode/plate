@@ -48,9 +48,9 @@ export type UsePlateEffectsProps<
      */
     editorRef?: ForwardedRef<E>;
 
-    decorate?: TEditableProps<V>['decorate'];
-    renderElement?: TEditableProps<V>['renderElement'];
-    renderLeaf?: TEditableProps<V>['renderLeaf'];
+    decorate?: TEditableProps['decorate'];
+    renderElement?: TEditableProps['renderElement'];
+    renderLeaf?: TEditableProps['renderLeaf'];
   }>;
 
 /**

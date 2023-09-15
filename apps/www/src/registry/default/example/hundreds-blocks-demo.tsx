@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Plate, TElement } from '@udecode/plate-common';
+import { Editor, Plate, TElement } from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -18,11 +18,9 @@ const initialValue = createHugeDocumentValue() as MyValue;
 
 function WithPlate() {
   return (
-    <Plate
-      editableProps={editableProps}
-      initialValue={initialValue}
-      plugins={basicNodesPlugins}
-    />
+    <Plate initialValue={initialValue} plugins={basicNodesPlugins}>
+      <Editor {...editorProps} />
+    </Plate>
   );
 }
 
@@ -48,7 +46,7 @@ function WithoutPlate() {
       initialValue={value}
       onChange={useCallback((v) => setValue(v), [])}
     >
-      <Editable renderElement={renderElement} {...(editableProps as any)} />
+      <Editable renderElement={renderElement} {...(editorProps as any)} />
     </Slate>
   );
 }

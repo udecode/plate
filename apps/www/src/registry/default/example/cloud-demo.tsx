@@ -1,6 +1,6 @@
 import React from 'react';
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
@@ -11,7 +11,7 @@ import {
   ELEMENT_CLOUD_ATTACHMENT,
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
-import { Plate, PlateProvider } from '@udecode/plate-common';
+import { Editor, Plate } from '@udecode/plate-common';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud-attachment-element';
@@ -56,11 +56,12 @@ const plugins = createMyPlugins(
 
 export default function CloudDemo() {
   return (
-    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+    <Plate<MyValue> plugins={plugins} initialValue={cloudValue}>
       <FixedToolbar>
         <CloudToolbarButtons />
       </FixedToolbar>
-      <Plate<MyValue> editableProps={editableProps} />
-    </PlateProvider>
+
+      <Editor {...editorProps} />
+    </Plate>
   );
 }

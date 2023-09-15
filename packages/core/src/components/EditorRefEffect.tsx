@@ -13,18 +13,18 @@ export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
 }
 
 export function EditorRefEffect({ id }: { id?: PlateId }) {
-  const setIsRendered = usePlateActions(id).isRendered();
+  const setIsMounted = usePlateActions(id).isMounted();
   const plugins = usePlateSelectors(id).plugins();
   const editorState = useEditorRef();
   const editorRef = usePlateSelectors(id).editorRef()?.ref;
 
   useEffect(() => {
-    setIsRendered(true);
+    setIsMounted(true);
 
     return () => {
-      setIsRendered(false);
+      setIsMounted(false);
     };
-  }, [setIsRendered]);
+  }, [setIsMounted]);
 
   /**
    * Pass `editorState` to `editorRef` when the editor mounts. Since the editor

@@ -13,6 +13,8 @@ export const EditorStateEffect = memo(({ id }: { id?: PlateId }) => {
     updateKeyEditor();
   });
 
+  console.log('a');
+
   useEffect(() => {
     updateKeySelection();
   }, [editorState.selection, updateKeySelection]);

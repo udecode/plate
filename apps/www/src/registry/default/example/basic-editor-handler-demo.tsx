@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
-import { Plate, Value } from '@udecode/plate-common';
+import { editorProps } from '@/plate/demo/editorProps';
+import { Editor, Plate, Value } from '@udecode/plate-common';
 
 export default function BasicEditorHandlerDemo() {
   const [debugValue, setDebugValue] = useState<Value>([]);
 
   return (
     <Plate
-      editableProps={editableProps}
       initialValue={[
         {
           type: 'p',
@@ -23,6 +22,7 @@ export default function BasicEditorHandlerDemo() {
         // save newValue...
       }}
     >
+      <Editor {...editorProps} />
       debug value:
       <br />
       {JSON.stringify(debugValue)}

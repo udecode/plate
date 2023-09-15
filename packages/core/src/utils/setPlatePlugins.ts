@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
 
-import { PlateProps } from '../components/Plate';
+import { PlateProps } from '../components/index';
 import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
 import {
   createDeserializeAstPlugin,

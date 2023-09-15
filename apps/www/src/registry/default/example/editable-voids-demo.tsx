@@ -1,7 +1,7 @@
 'use client';
 
 import React, { CSSProperties, useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+import { editorProps } from '@/plate/demo/editorProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -15,6 +15,7 @@ import {
 } from '@udecode/plate-break';
 import {
   createPluginFactory,
+  Editor,
   Plate,
   PlateRenderElementProps,
   TElement,
@@ -89,9 +90,10 @@ export function EditableVoidElement({
           <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={editableVoidPlugins}
-            editableProps={editableProps}
             // initialValue={basicElementsValue}
-          />
+          >
+            <Editor {...editorProps} />
+          </Plate>
         </div>
       </div>
       {children}
@@ -113,10 +115,8 @@ const plugins = createMyPlugins(
 
 export default function EditableVoidsDemo() {
   return (
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={editableVoidsValue}
-    />
+    <Plate<MyValue> plugins={plugins} initialValue={editableVoidsValue}>
+      <Editor {...editorProps} />
+    </Plate>
   );
 }

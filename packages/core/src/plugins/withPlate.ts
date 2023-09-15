@@ -1,6 +1,6 @@
 import { TEditor, Value } from '@udecode/slate';
 
-import { PlateProps } from '../components/Plate';
+import { PlateProps } from '../components/index';
 import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
 
