@@ -84,13 +84,11 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
       | undefined;
 
     if (nextRow) {
-      // console.log('nextRow', nextRow);
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;
         const curRowCellColIndex = curRowCell.colIndex!;
         const curRowCellRowSpan = curRowCell.rowSpan!;
 
-        // console.log('current row', nextRow.children, 'current cell', curRowCell);
         // search for anchor cell where to place current cell
         const startingCellIndex = nextRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
