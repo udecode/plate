@@ -277,7 +277,7 @@ export function ResetPluginsEffect({
 
 export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
-
+  const enabled = settingsStore.use.checkedComponents();
   const initialValue = usePlaygroundValue(id);
 
   const plugins = usePlaygroundPlugins({
@@ -301,9 +301,13 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         >
           <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
 
-          <FixedToolbar>
-            <PlaygroundFixedToolbarButtons id={id} />
-          </FixedToolbar>
+          {enabled['fixed-toolbar'] && (
+            <FixedToolbar>
+              {enabled['fixed-toolbar-buttons'] && (
+                <PlaygroundFixedToolbarButtons id={id} />
+              )}
+            </FixedToolbar>
+          )}
 
           <div className="flex w-full">
             <CommentsProvider>
@@ -329,11 +333,15 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     ),
                   }}
                 >
-                  <FloatingToolbar>
-                    <PlaygroundFloatingToolbarButtons id={id} />
-                  </FloatingToolbar>
+                  {enabled['floating-toolbar'] && (
+                    <FloatingToolbar>
+                      {enabled['floating-toolbar-buttons'] && (
+                        <PlaygroundFloatingToolbarButtons id={id} />
+                      )}
+                    </FloatingToolbar>
+                  )}
 
-                  {isEnabled('mention', id) && (
+                  {isEnabled('mention', id, enabled['mention-combobox']) && (
                     <MentionCombobox items={MENTIONABLES} />
                   )}
 
@@ -343,7 +351,9 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 </Plate>
               </div>
 
-              {isEnabled('comment', id) && <CommentsPopover />}
+              {isEnabled('comment', id, enabled['comments-popover']) && (
+                <CommentsPopover />
+              )}
             </CommentsProvider>
           </div>
         </PlateProvider>
