@@ -1,3 +1,5 @@
+console.log('TS Bundler: [Rollup]')
+
 const fs = require('node:fs');
 const path = require('node:path');
 const autoprefixer = require('autoprefixer');
