@@ -9,16 +9,17 @@ on:
       - 'scripts/sync-templates.sh'
       - 'templates/**'
 
+strategy:
+  fail-fast: false
+  matrix:
+    template:
+      - plate-template
+      - plate-playground-template
+
 jobs:
   build-playground:
     name: build-playground
     runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        template:
-          - plate-template
-          - plate-playground-template
     defaults:
       run:
         working-directory: templates/${{ matrix.template }}
