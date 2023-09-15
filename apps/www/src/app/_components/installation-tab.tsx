@@ -262,49 +262,83 @@ export default function InstallationTab() {
     (comp) => comp.id === 'floating-toolbar-buttons'
   );
 
+  let indentLevel = 0;
   const jsxCode: string[] = [];
 
+  const addLine = (
+    line: string,
+    opensBlock: boolean = false,
+    closesBlock: boolean = false
+  ) => {
+    if (closesBlock && indentLevel > 0) {
+      indentLevel--;
+    }
+
+    const tabs = Array.from({ length: indentLevel }).fill('  ').join(''); // double spaces for each level
+    jsxCode.push(`${tabs}${line}`);
+
+    if (opensBlock) {
+      indentLevel++;
+    }
+  };
+
   if (hasDnd) {
-    jsxCode.push(`<DndProvider backend={HTML5Backend}>`);
+    addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
+
   if (hasCommentsPopover) {
-    jsxCode.push(`<CommentsProvider users={{}} myUserId="1">`);
+    addLine(`<CommentsProvider users={{}} myUserId="1">`, true);
   }
 
-  jsxCode.push(`<PlateProvider plugins={plugins} initialValue={initialValue}>`);
+  addLine(
+    `<PlateProvider plugins={plugins} initialValue={initialValue}>`,
+    true
+  );
 
   if (hasFixedToolbar) {
-    jsxCode.push(`<FixedToolbar>`);
+    addLine(`<FixedToolbar>`, true);
   }
+
   if (hasFixedToolbarButtons) {
-    jsxCode.push(`<FixedToolbarButtons />`);
+    addLine(`<FixedToolbarButtons />`);
   }
+
   if (hasFixedToolbar) {
-    jsxCode.push(`</FixedToolbar>`);
+    addLine(`</FixedToolbar>`, false, true);
+    addLine(``);
   }
 
-  jsxCode.push(`  <Plate />`);
+  addLine(`<Plate />`);
+  addLine(``);
 
   if (hasFloatingToolbar) {
-    jsxCode.push(`<FloatingToolbar>`);
+    addLine(`<FloatingToolbar>`, true);
   }
+
   if (hasFloatingToolbarButtons) {
-    jsxCode.push(`<FloatingToolbarButtons />`);
-  }
-  if (hasFloatingToolbar) {
-    jsxCode.push(`</FloatingToolbar>`);
+    addLine(`<FloatingToolbarButtons />`);
   }
 
-  jsxCode.push(`</PlateProvider>`);
+  if (hasFloatingToolbar) {
+    addLine(`</FloatingToolbar>`, false, true);
+  }
 
   if (hasMentionCombobox) {
-    jsxCode.push(`<MentionCombobox items={[]} />`);
+    addLine(`<MentionCombobox items={[]} />`);
   }
+
   if (hasCommentsPopover) {
-    jsxCode.push(`<CommentsPopover />`, `</CommentsProvider>`);
+    addLine(`<CommentsPopover />`);
   }
+
+  addLine(`</PlateProvider>`, false, true);
+
+  if (hasCommentsPopover) {
+    addLine(`</CommentsProvider>`, false, true);
+  }
+
   if (hasDnd) {
-    jsxCode.push(`</DndProvider>`);
+    addLine(`</DndProvider>`, false, true);
   }
 
   const plateCode = [
