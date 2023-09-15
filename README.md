@@ -39,7 +39,7 @@ You can choose one of the following templates to get started:
 | --------------------------------------------------------------------------------- | ------ | -------- | ----- | ------- |
 | [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     | ✅       | ✅    | ✅      |
 | [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     | ✅       | ✅    |         |
-| [NextJS template](/docs/components/installation/next)                             | ✅     | ✅       |       |         |
+| [NextJS template](https://platejs.org/docs/components/installation/next)          | ✅     | ✅       |       |         |
 
 ## Documentation
 
