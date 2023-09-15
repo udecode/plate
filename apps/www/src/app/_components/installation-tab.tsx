@@ -366,7 +366,9 @@ export default function InstallationTab() {
     `}`,
   ].join('\n');
 
-  const fullCode = [importsCode, usageCode, plateCode].join('\n\n');
+  const fullCode = [`'use client';`, importsCode, usageCode, plateCode].join(
+    '\n\n'
+  );
 
   if (!mounted) return null;
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { createPlugins, Plate, PlateProvider } from '@udecode/plate-common';
 
 const plugins = createPlugins([], {
