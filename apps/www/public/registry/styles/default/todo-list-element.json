@@ -3,7 +3,9 @@
   "dependencies": [
     "@udecode/plate-list"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "checkbox"
+  ],
   "files": [
     {
       "name": "todo-list-element.tsx",

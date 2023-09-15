@@ -5,7 +5,6 @@ import {
   isCollapsed,
   PlateElement,
   PlateElementProps,
-  someNode,
   useElement,
   usePlateEditorState,
   useRemoveNodeButton,
@@ -16,7 +15,7 @@ import {
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
-import { useReadOnly } from 'slate-react';
+import { useReadOnly, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 import { Icons, iconVariants } from '@/components/icons';
@@ -113,13 +112,9 @@ const TableFloatingToolbar = React.forwardRef<
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const readOnly = useReadOnly();
+  const selected = useSelected();
   const editor = usePlateEditorState();
-  const open =
-    !readOnly &&
-    someNode(editor, {
-      match: (n) => n === element,
-    }) &&
-    isCollapsed(editor.selection);
+  const open = !readOnly && selected && isCollapsed(editor.selection);
 
   return (
     <Popover open={open} modal={false}>

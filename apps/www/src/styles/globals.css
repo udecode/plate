@@ -82,11 +82,6 @@
       Segoe UI Symbol,
       'Noto Color Emoji';
   }
-
-  .slate-selection-area {
-    background: #4f90f22d;
-    border: 1px solid #4f90f2;
-  }
 }
 
 @layer utilities {

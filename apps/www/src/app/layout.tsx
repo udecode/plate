@@ -11,11 +11,11 @@ import {
   Toaster as NewYorkToaster,
 } from '@/components/ui/toaster';
 import { Analytics } from '@/components/analytics';
+import { Body } from '@/components/body';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { ThemeSwitcher } from '@/components/theme-switcher';
 
 export const metadata: Metadata = {
   title: {
@@ -85,9 +85,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body
+      <Body
+        defaultTheme="slate"
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
+          '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
           fontSans.variable
         )}
         suppressHydrationWarning
@@ -98,14 +100,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="flex-1">{children}</div>
             <SiteFooter />
           </div>
-          <TailwindIndicator />
         </Providers>
-        <ThemeSwitcher />
+        <TailwindIndicator />
         <Analytics />
 
         <NewYorkToaster />
         <DefaultToaster />
-      </body>
+      </Body>
     </html>
   );
 }

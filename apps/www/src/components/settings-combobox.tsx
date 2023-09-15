@@ -2,8 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 
-import { SettingPlugin, settingPluginItems } from '@/config/setting-plugins';
-import { settingValues } from '@/config/setting-values';
+import { customizerItems, SettingPlugin } from '@/config/customizer-items';
+import { customizerPlugins } from '@/config/customizer-plugins';
 import { cn } from '@/lib/utils';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
@@ -28,44 +28,44 @@ const categories = [
   {
     value: 'root',
     label: '',
-    items: [settingValues.playground],
+    items: [customizerPlugins.playground],
   },
   {
     value: 'plugins',
     label: 'Plugins',
     items: [
-      settingValues.align,
-      settingValues.autoformat,
-      settingValues.basicnodes,
-      settingValues.blockselection,
-      settingValues.comment,
-      settingValues.cursoroverlay,
-      settingValues.deserializecsv,
-      settingValues.deserializedocx,
-      settingValues.deserializehtml,
-      settingValues.deserializemd,
-      settingValues.emoji,
-      settingValues.excalidraw,
-      settingValues.exitbreak,
-      settingValues.font,
-      settingValues.forcedlayout,
-      settingValues.highlight,
-      settingValues.hr,
-      settingValues.indent,
-      settingValues.indentlist,
-      settingValues.lineheight,
-      settingValues.link,
-      settingValues.list,
-      settingValues.media,
-      settingValues.mention,
-      settingValues.playground,
-      settingValues.resetnode,
-      settingValues.singleline,
-      settingValues.softbreak,
-      settingValues.tabbable,
-      settingValues.table,
-      settingValues.todoli,
-      settingValues.trailingblock,
+      customizerPlugins.align,
+      customizerPlugins.autoformat,
+      customizerPlugins.basicnodes,
+      customizerPlugins.blockselection,
+      customizerPlugins.comment,
+      customizerPlugins.cursoroverlay,
+      customizerPlugins.deserializecsv,
+      customizerPlugins.deserializedocx,
+      customizerPlugins.deserializehtml,
+      customizerPlugins.deserializemd,
+      customizerPlugins.emoji,
+      customizerPlugins.excalidraw,
+      customizerPlugins.exitbreak,
+      customizerPlugins.font,
+      customizerPlugins.forcedlayout,
+      customizerPlugins.highlight,
+      customizerPlugins.hr,
+      customizerPlugins.indent,
+      customizerPlugins.indentlist,
+      customizerPlugins.lineheight,
+      customizerPlugins.link,
+      customizerPlugins.list,
+      customizerPlugins.media,
+      customizerPlugins.mention,
+      customizerPlugins.playground,
+      customizerPlugins.resetnode,
+      customizerPlugins.singleline,
+      customizerPlugins.softbreak,
+      customizerPlugins.tabbable,
+      customizerPlugins.table,
+      customizerPlugins.todoli,
+      customizerPlugins.trailingblock,
     ],
   },
 ];
@@ -76,7 +76,7 @@ export function SettingsCombobox() {
 
   const loaded = useFixHydration();
 
-  const route = settingValues[valueId]?.route;
+  const route = customizerPlugins[valueId]?.route;
 
   return (
     <>
@@ -87,16 +87,22 @@ export function SettingsCombobox() {
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-[220px] justify-between"
+              className="min-w-fit justify-between md:w-[220px]"
+              onClick={() => {
+                // quick fix: drawer is closing it
+                setTimeout(() => {
+                  setOpen(!open);
+                }, 0);
+              }}
             >
-              {settingValues[valueId]?.label ?? 'Select a value...'}
+              {customizerPlugins[valueId]?.label ?? 'Select a value...'}
               <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           )}
         </PopoverTrigger>
-        <PopoverContent className="z-[99999999] w-[220px] p-0">
+        <PopoverContent className="z-[99999999] w-[220px] p-0" align="start">
           <Command defaultValue={valueId}>
-            <CommandInput placeholder="Search value..." />
+            <CommandInput placeholder="Search example..." />
             <CommandEmpty>No value found.</CommandEmpty>
 
             <CommandList>
@@ -111,11 +117,11 @@ export function SettingsCombobox() {
                           settingsStore.set.valueId(newId);
 
                           const valuePlugins =
-                            settingValues[newId]?.plugins ?? [];
+                            customizerPlugins[newId]?.plugins ?? [];
 
                           valuePlugins.forEach((pluginKey) => {
                             const deps = (
-                              settingPluginItems[pluginKey] as
+                              customizerItems[pluginKey] as
                                 | SettingPlugin
                                 | undefined
                             )?.dependencies;

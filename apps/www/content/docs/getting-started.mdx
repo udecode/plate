@@ -3,11 +3,23 @@ title: Getting Started
 description: A quick tutorial to get you up and running with Plate.
 ---
 
+<Callout className="my-4">
+  Use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to generate _personalized_ installation steps.
+</Callout>
+
 <Steps>
 
 ### Create project
 
-Using Plate components? Check out the [installation guide](/docs/components/installation).
+You can choose one of the following templates to get started:
+
+| Option                                                                            | NextJS | Tailwind | Plate | Plugins |
+| --------------------------------------------------------------------------------- | -------| -------- | ------| ------- |
+| <Link target="_blank" href="https://github.com/udecode/plate-playground-template">Plate playground template</Link>| ✅ | ✅ | ✅    | ✅      |
+| <Link target="_blank" href="https://github.com/udecode/plate-template">Plate minimal template</Link>              | ✅ | ✅ | ✅     |         |
+| <Link target="_blank" href="/docs/components/installation/next">NextJS template</Link>                          | ✅ | ✅ |       |         |
+
+For an existing project, jump to the next step.
 
 ### Add dependencies
 
@@ -72,8 +84,8 @@ export default function BasicEditor() {
 ```
 
 <Callout className="mt-4">
-  **Note**: Plate uses the **`type`** property to enable plugins to render nodes by
-  type.
+  **Note**: Plate uses the **`type`** property to enable plugins to render nodes
+  by type.
 </Callout>
 
 <ComponentPreview name="basic-editor-value-demo" padding="md" />
@@ -102,6 +114,10 @@ export default function BasicEditor() {
 
 ### Plugins
 
+<Callout className="my-4">
+Use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to pick your plugins.
+</Callout>
+
 Let's use the basic plugins for a rich-text editor.
 
 <ComponentPreview name="basic-plugins-default-demo" padding="md" />
@@ -109,22 +125,22 @@ Let's use the basic plugins for a rich-text editor.
 The debug value indicates everything works as expected. However, we haven't provided any components for rendering, hence it's utilizing the default (unstyled) ones. The default element component is a **`div`** and the default leaf component is a **`span`**.
 
 <Callout className="mt-4">
-  **Note**: You don't need to add core plugins such as **`react`** and **`history`** as
-  **`Plate`** already does it.
+  **Note**: You don't need to add core plugins such as **`react`** and
+  **`history`** as **`Plate`** already does it.
 </Callout>
 
 ### Components
 
 <Callout className="mt-4">
-  **Note**: Plate plugins are packaged unstyled, implying that you have complete
-  control over markup and styling, hence you can integrate your own design
-  system or [Plate UI](/docs/components).
+**Note**: Plate plugins are packaged unstyled, implying that you have complete
+control over markup and styling, hence you can integrate your own design
+system or [Plate UI](/docs/components). If using the latter, use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to pick your components.
 </Callout>
 
 To simultaneously plug-in all the components, **`createPlugins`** can be used:
 
 - use the first parameter for the **`plugins`**
-- use the second parameter for the **`components`**. In the following example, we'll call **`createPlateUI()`**, which returns all Plate components by plugin key.
+- use the second parameter for the **`components`**. In the following example, we have created **`createPlateUI`**, which returns all Plate components by plugin key.
 
 ```tsx showLineNumbers {16-31, 36}
 // ...
@@ -136,7 +152,7 @@ import {
   createUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { Plate, createPlugins } from '@udecode/plate-common';
+import { createPlugins, Plate } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -172,5 +188,9 @@ export default function BasicEditor() {
 <ComponentSource src="src/lib/plate/create-plate-ui.ts" />
 
 <ComponentPreview name="basic-plugins-components-demo" padding="md" />
+
+### That's it!
+
+You can now play around with the <Link href="/?builder=true">Playground</Link> and start building your own rich-text editor.
 
 </Steps>

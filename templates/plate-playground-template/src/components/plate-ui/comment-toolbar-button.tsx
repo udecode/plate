@@ -8,7 +8,9 @@ import { Icons } from '@/components/icons';
 import { ToolbarButton } from './toolbar';
 
 export function CommentToolbarButton() {
-  const { props } = useCommentAddButton();
+  const { hidden, props } = useCommentAddButton();
+
+  if (hidden) return null;
 
   return (
     <ToolbarButton tooltip="Comment (⌘+⇧+M)" {...props}>

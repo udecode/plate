@@ -66,6 +66,6 @@
   @apply mt-2;
 }
 
-.mdx > .steps:first-child > h3:first-child {
+.typography > .steps:first-child > h3:first-child {
   @apply mt-0;
 }

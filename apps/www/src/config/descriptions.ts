@@ -46,9 +46,7 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-import { CheckedId } from '@/config/setting-plugins';
-
-export const descriptions: Record<CheckedId, string> = {
+export const descriptions: Record<string, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
   caption: 'Add captions to your blocks.',
   code_block: 'Encapsulate blocks of code.',
@@ -107,4 +105,5 @@ export const descriptions: Record<CheckedId, string> = {
   [KEY_DESERIALIZE_MD]: 'Copy paste from MD to Slate.',
   [KEY_JUICE]:
     'Inline CSS properties into the `style` attribute when pasting HTML.',
+  components: 'Components.',
 };

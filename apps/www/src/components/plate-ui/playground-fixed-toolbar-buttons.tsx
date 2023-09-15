@@ -13,7 +13,7 @@ import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 
-import { ValueId } from '@/config/setting-values';
+import { ValueId } from '@/config/customizer-plugins';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';

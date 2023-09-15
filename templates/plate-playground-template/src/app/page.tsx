@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
+import PlateEditor from '@/components/plate-editor';
 import { buttonVariants } from '@/components/plate-ui/button';
-import Editor from '@/components/plate/editor';
 
 export default function IndexPage() {
   return (
@@ -38,7 +38,7 @@ export default function IndexPage() {
       </div>
 
       <div className="max-w-[1336px] rounded-lg border bg-background shadow">
-        <Editor />
+        <PlateEditor />
       </div>
     </section>
   );

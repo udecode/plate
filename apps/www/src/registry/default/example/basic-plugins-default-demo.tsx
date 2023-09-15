@@ -9,15 +9,13 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate } from '@udecode/plate-common';
+import { Plate, PlatePlugin, Value } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin, MyValue } from '@/types/plate-types';
-
 import { basicEditorValue } from './basic-plugins-components-demo';
 
-const plugins: MyPlatePlugin[] = [
+const plugins: PlatePlugin[] = [
   createParagraphPlugin(),
   createBlockquotePlugin(),
   createCodeBlockPlugin(),
@@ -31,10 +29,10 @@ const plugins: MyPlatePlugin[] = [
 ];
 
 export default function BasicPluginsDefaultDemo() {
-  const [debugValue, setDebugValue] = useState<MyValue | null>(null);
+  const [debugValue, setDebugValue] = useState<Value>([]);
 
   return (
-    <Plate<MyValue>
+    <Plate
       editableProps={editableProps}
       initialValue={basicEditorValue}
       plugins={plugins}

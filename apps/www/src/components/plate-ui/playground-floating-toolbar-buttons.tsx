@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { usePlateReadOnly } from '@udecode/plate-common';
 
-import { ValueId } from '@/config/setting-values';
+import { ValueId } from '@/config/customizer-plugins';
 import { Icons } from '@/components/icons';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
