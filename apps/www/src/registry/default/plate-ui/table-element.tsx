@@ -131,18 +131,6 @@ const TableFloatingToolbar = React.forwardRef<
     ((cellEntries[0][0] as any)?.colSpan > 1 ||
       (cellEntries[0][0] as any)?.rowSpan > 1);
 
-  console.log(
-    'canUnmerge',
-    canUnmerge,
-    'hasEntries',
-    hasEntries,
-    isCollapsed(editor.selection),
-    cellEntries,
-    cellEntries?.length === 1,
-    (cellEntries?.[0]?.[0] as any)?.colSpan,
-    (cellEntries?.[0]?.[0] as any)?.rowSpan
-  );
-
   const mergeToolbarActive =
     isSelected &&
     !readOnly &&

@@ -1,6 +1,5 @@
+import { DEFAULT_MIN_COL_WIDTH } from '../createTablePlugin';
 import { TableStoreSizeOverrides } from '../stores/index';
-
-const DEFAULT_COL_WIDTH = 200;
 
 /**
  * Returns node.colSizes if it exists, applying overrides, otherwise returns a
@@ -9,6 +8,7 @@ const DEFAULT_COL_WIDTH = 200;
  */
 export const getTableOverriddenColSizes = (
   colCount: number,
+  minColumnWidth?: number,
   colSizes?: number[],
   colSizeOverrides?: TableStoreSizeOverrides
 ): number[] => {
@@ -19,7 +19,7 @@ export const getTableOverriddenColSizes = (
     if (overridden) return overridden;
     if (size > 0) return size;
 
-    return DEFAULT_COL_WIDTH;
+    return minColumnWidth || DEFAULT_MIN_COL_WIDTH;
   });
 
   return newColSizes;

@@ -35,7 +35,6 @@ export const useSelectedCells = () => {
     if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
 
-      console.log('current cells', cells);
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
       }

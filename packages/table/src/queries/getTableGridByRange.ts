@@ -11,7 +11,7 @@ import { Range } from 'slate';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
-import { getCellTypes } from '../utils';
+import { findCellByIndexes, getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
 export type FormatType = 'table' | 'cell' | 'all';
@@ -90,7 +90,7 @@ export const getTableGridByRange = <T extends FormatType, V extends Value>(
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
   while (true) {
-    const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
+    const cell = findCellByIndexes(realTable, rowIndex, colIndex);
     if (!cell) {
       break;
     }
@@ -139,45 +139,8 @@ export const getTableGridByRange = <T extends FormatType, V extends Value>(
     return [[table, tablePath]] as GetTableGridReturnType<T>;
   }
 
-  console.log('return entries', [[table, tablePath]], cellEntries);
-
   return {
     tableEntries: [[table, tablePath]],
     cellEntries,
   } as GetTableGridReturnType<T>;
-};
-
-const findCellByIndexes = <V extends Value>(
-  editor: PlateEditor<V>,
-  table: TTableElement,
-  searchRowIndex: number,
-  searchColIndex: number
-) => {
-  const allCells = table.children.flatMap(
-    (current) => current.children
-  ) as TTableCellElement[];
-
-  console.log('searching for', searchRowIndex, searchColIndex);
-  const foundCell = allCells.find((cell) => {
-    const cellElement = cell as TTableCellElement;
-
-    const colIndex = cellElement.colIndex!;
-    const endColIndex = cellElement.colIndex! + cellElement.colSpan! - 1;
-    const rowIndex = cellElement.rowIndex!;
-    const endRowIndex = cellElement.rowIndex! + cellElement.rowSpan! - 1;
-
-    console.log('current', colIndex, endColIndex, rowIndex, endRowIndex);
-    if (
-      searchColIndex >= colIndex &&
-      searchColIndex <= endColIndex &&
-      searchRowIndex >= rowIndex &&
-      searchRowIndex <= endRowIndex
-    ) {
-      return true;
-    }
-
-    return false;
-  });
-
-  return foundCell;
 };

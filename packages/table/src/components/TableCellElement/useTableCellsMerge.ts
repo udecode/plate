@@ -17,15 +17,13 @@ import {
 } from '../../types';
 import { getCellTypes, getEmptyCellNode } from '../../utils/index';
 
-const getRowSpanInCol = (table: TTableCellElement, colIndex: number) => {
+const getRowSpanInFirstCol = (table: TTableCellElement, colIndex: number) => {
   return table.children.reduce((acc, cur) => {
     const rowEl = cur as TTableRowElement;
     const cellEl = rowEl.children.find((cell) => {
       const cellElem = cell as TTableCellElement;
       return cellElem?.colIndex === colIndex;
     }) as TTableCellElement;
-
-    // console.log('cellEl', cellEl);
 
     if (colIndex === cellEl?.colIndex) {
       const curRowSpan = cellEl?.rowSpan || 1;
@@ -56,14 +54,14 @@ export const useTableCellsMerge = () => {
     // define rowSpan
     const firstCell = firstRow.children?.[0] as TTableCellElement;
     const firstColIndex = firstCell.colIndex!;
-    const rowSpan = getRowSpanInCol(table, firstColIndex);
+    const rowSpan = getRowSpanInFirstCol(table, firstColIndex);
 
     const [, startCellPath] = selectedCellEntries[0];
 
     const contents = [];
     for (const cellEntry of selectedCellEntries) {
       const [el] = cellEntry;
-      contents.push(...el.children); // TODO: make deep clone here
+      contents.push(...el.children); // TODO: consider using deep clone
     }
 
     const cols: any = {};
@@ -78,8 +76,6 @@ export const useTableCellsMerge = () => {
         cols[path[1]] = [path];
       }
     });
-
-    // console.log('colSpan', colSpan, 'rowSpan', rowSpan, 'cols', cols);
 
     // removes multiple cells with on same path.
     // once cell removed, next cell in the row will settle down on that path
@@ -98,7 +94,7 @@ export const useTableCellsMerge = () => {
       rowSpan,
     };
 
-    insertElements(editor, mergedCell, { at: startCellPath });
+    insertElements(editor, mergedCell, { at: startCellPath, select: true });
   };
 
   const onUnmerge = () => {
@@ -124,22 +120,14 @@ export const useTableCellsMerge = () => {
     const colSpan = cellElem.colSpan;
     const rowSpan = cellElem.rowSpan;
 
-    // console.log('cellPath', cellPath, 'rowSpan', rowSpan, 'colSpan', colSpan);
-
     const colPaths = Array.from(
       { length: colSpan } as ArrayLike<number>,
-      (_, index) => {
-        return index;
-      }
-    ).map((current) => {
-      return colPath + current;
-    });
+      (_, index) => index
+    ).map((current) => colPath + current);
 
     let paths = Array.from(
       { length: rowSpan } as ArrayLike<number>,
-      (_, index) => {
-        return index;
-      }
+      (_, index) => index
     ).map((current) => {
       const currentRowPath = rowPath + current;
       return colPaths.map((currentColPath) => [
@@ -154,12 +142,10 @@ export const useTableCellsMerge = () => {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
     const table = tableEntry?.[0] as TTableElement;
-    // console.log('found table', table);
 
     paths = paths.map((cellsPaths) => {
       const currentPath = cellsPaths[0]; // pick starting cell in the row
       const [rowIndex, colIndex] = currentPath.slice(-2);
-      // console.log('cellsPaths', cellsPaths);
 
       let newCellPaths = cellsPaths;
       if (colIndex > 0) {
@@ -168,12 +154,6 @@ export const useTableCellsMerge = () => {
           at: prevCellInRowPath,
           match: { type: getCellTypes(editor) },
         });
-        // console.log(
-        //   'prevCellInRowPath',
-        //   prevCellInRowPath,
-        //   'foundEntry',
-        //   foundEntry
-        // );
 
         /**
          * Search for the last cell path in the row.
@@ -182,15 +162,8 @@ export const useTableCellsMerge = () => {
          */
         if (!foundEntry) {
           const currentRow = table.children[rowIndex] as TTableRowElement;
-          console.log('table', table, rowIndex, currentRow);
           const endingCell = currentRow.children.at(-1)!;
           const endingCellPath = findNodePath(editor, endingCell)!;
-          console.log(
-            'endingCell',
-            endingCell,
-            'endingCellPath',
-            endingCellPath
-          );
 
           const [, startingColIndex] = endingCellPath.slice(-2);
           const startWith =
@@ -198,7 +171,7 @@ export const useTableCellsMerge = () => {
 
           newCellPaths = cellsPaths.map((currentCellPath, i) => {
             const currentRowPath = currentCellPath.slice(0, -1);
-            const newPath = [...currentRowPath, startWith + i];
+            const newPath = [...currentRowPath, startWith + i]; // adjust column path
             return newPath;
           });
         }
@@ -206,11 +179,10 @@ export const useTableCellsMerge = () => {
       return newCellPaths;
     });
 
-    // console.log('-----------------');
-
+    // remove merged cell
     removeNodes(editor, { at: path });
 
-    // console.log('paths', paths);
+    // insert new cells
     paths
       .flat()
       .forEach((p, index) =>

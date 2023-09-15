@@ -72,8 +72,6 @@ export const getTableGridAbove = <
       return [start] as GetTableGridReturnType<T>;
     }
 
-    console.log('return all', start, table);
-
     return {
       tableEntries: [[table, start[1].slice(0, -2)]],
       cellEntries: [start],

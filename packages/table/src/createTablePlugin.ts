@@ -9,6 +9,7 @@ export const ELEMENT_TABLE = 'table';
 export const ELEMENT_TH = 'th';
 export const ELEMENT_TR = 'tr';
 export const ELEMENT_TD = 'td';
+export const DEFAULT_MIN_COL_WIDTH = 48;
 
 /**
  * Enables support for tables.
@@ -35,7 +36,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         disableSelect: true,
       });
     },
-    minColumnWidth: 48,
+    minColumnWidth: DEFAULT_MIN_COL_WIDTH,
   },
   withOverrides: withTable,
   plugins: [

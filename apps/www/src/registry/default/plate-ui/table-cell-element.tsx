@@ -47,8 +47,8 @@ const TableCellElement = React.forwardRef<
 
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
-    
 
+    
   const Cell = isHeader ? 'th' : 'td';
 
   return (

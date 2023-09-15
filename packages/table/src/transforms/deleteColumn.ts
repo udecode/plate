@@ -1,22 +1,21 @@
 import {
+  findNodePath,
   getAboveNode,
   getPluginType,
+  insertElements,
   PlateEditor,
   removeNodes,
   setNodes,
   someNode,
-  TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { Path } from 'slate';
 
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-} from '../createTablePlugin';
-import { TTableElement } from '../types';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { getTableColumnCount } from '../queries';
+import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
+import { findCellByIndexes, getCellTypes } from '../utils';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   if (
@@ -24,23 +23,114 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const tdEntry = getAboveNode(editor, {
-      match: {
-        type: [
-          getPluginType(editor, ELEMENT_TD),
-          getPluginType(editor, ELEMENT_TH),
-        ],
-      },
-    });
-    const trEntry = getAboveNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TR) },
-    });
     const tableEntry = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
+    if (!tableEntry) return;
+    const table = tableEntry[0] as TTableElement;
+
+    const selectedCellEntry = getAboveNode(editor, {
+      match: {
+        type: getCellTypes(editor),
+      },
+    });
+    if (!selectedCellEntry) return;
+    const selectedCell = selectedCellEntry[0] as TTableCellElement;
+
+    const deletingColIndex = selectedCell.colIndex!;
+    const colsDeleteNumber = selectedCell.colSpan!;
+    const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
+
+    const rowNumber = table.children.length;
+    const affectedCellsSet = new Set();
+    // iterating by rows is important here to keep the order of affected cells
+    Array.from({ length: rowNumber }, (_, i) => i).forEach((rI) => {
+      return Array.from({ length: colsDeleteNumber }, (_, i) => i).forEach(
+        (cI) => {
+          const colIndex = deletingColIndex + cI;
+          const found = findCellByIndexes(table, rI, colIndex);
+          affectedCellsSet.add(found);
+        }
+      );
+    });
+    const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
+
+    const { moveToNextColCells, squizeColSpanCells } = affectedCells.reduce<{
+      squizeColSpanCells: TTableCellElement[];
+      moveToNextColCells: TTableCellElement[];
+    }>(
+      (acc, cur) => {
+        if (!cur) return acc;
+
+        const currentCell = cur as TTableCellElement;
+        const curColIndex = currentCell.colIndex!;
+        const curColSpan = currentCell.colSpan!;
+
+        if (curColIndex < deletingColIndex && curColSpan > 1) {
+          acc.squizeColSpanCells.push(currentCell);
+        } else if (
+          curColSpan > 1 &&
+          curColIndex + curColSpan - 1 > endingColIndex
+        ) {
+          acc.moveToNextColCells.push(currentCell);
+        }
+        return acc;
+      },
+      { moveToNextColCells: [], squizeColSpanCells: [] }
+    );
+
+    const nextColIndex = deletingColIndex + colsDeleteNumber;
+    const colNumber = getTableColumnCount(table);
+    if (colNumber > nextColIndex) {
+      moveToNextColCells.forEach((cur) => {
+        const curCell = cur as TTableCellElement;
+        const curRowIndex = curCell.rowIndex!;
+        const curColIndex = curCell.colIndex!;
+        const curColSpan = curCell.colSpan!;
+
+        const curRow = table.children[curRowIndex] as TTableRowElement;
+        const startingCellIndex = curRow.children.findIndex((curC) => {
+          const cell = curC as TTableCellElement;
+          return cell.colIndex! >= curColIndex + 1;
+        });
+
+        const startingCell = curRow.children[startingCellIndex];
+        const startingCellPath = findNodePath(editor, startingCell);
+        const colsNumberAffected = endingColIndex - curColIndex + 1;
+
+        const newCell = {
+          ...curCell,
+          colSpan: curColSpan - colsNumberAffected,
+        };
+        insertElements(editor, newCell, { at: startingCellPath });
+      });
+    }
+
+    squizeColSpanCells.forEach((cur) => {
+      const curCell = cur as TTableCellElement;
+      const curColIndex = curCell.colIndex!;
+      const curColSpan = curCell.colSpan!;
+      const curCellPath = findNodePath(editor, curCell)!;
+
+      const curCellEndingColIndex = Math.min(
+        curColIndex + curColSpan - 1,
+        endingColIndex
+      );
+      const colsNumberAffected = curCellEndingColIndex - deletingColIndex + 1;
+
+      setNodes<TTableCellElement>(
+        editor,
+        { ...curCell, colSpan: curColSpan - colsNumberAffected },
+        { at: curCellPath }
+      );
+    });
+
+    const trEntry = getAboveNode(editor, {
+      match: { type: getPluginType(editor, ELEMENT_TR) },
+    });
 
     if (
-      tdEntry &&
+      selectedCell &&
       trEntry &&
       tableEntry &&
       // Cannot delete the last cell
@@ -48,44 +138,42 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
     ) {
       const [tableNode, tablePath] = tableEntry;
 
-      const tdPath = tdEntry[1];
-      const colIndex = tdPath.at(-1)!;
+      // calc paths to delete
+      const paths: Array<Path[]> = [];
+      affectedCells.forEach((cur) => {
+        const curCell = cur as TTableCellElement;
+        const curColIndex = curCell.colIndex!;
+        const curRowIndex = curCell.rowIndex!;
 
-      const pathToDelete = tdPath.slice();
-      const replacePathPos = pathToDelete.length - 2;
+        if (curColIndex >= deletingColIndex && curColIndex <= endingColIndex) {
+          const cellPath = findNodePath(editor, curCell)!;
+
+          if (!paths[curRowIndex]) {
+            paths[curRowIndex] = [];
+          }
+          paths[curRowIndex].push(cellPath);
+        }
+      });
 
       withoutNormalizing(editor, () => {
-        tableNode.children.forEach((row, rowIdx) => {
-          pathToDelete[replacePathPos] = rowIdx;
-
-          // for tables containing rows of different lengths
-          // - don't delete if only one cell in row
-          // - don't delete if row doesn't have this cell
-          if (
-            (row.children as TElement[]).length === 1 ||
-            colIndex > (row.children as TElement[]).length - 1
-          )
-            return;
-
-          removeNodes(editor, {
-            at: pathToDelete,
+        paths.forEach((cellPaths) => {
+          const pathToDelete = cellPaths[0];
+          cellPaths.forEach(() => {
+            removeNodes(editor, {
+              at: pathToDelete,
+            });
           });
         });
 
         const { colSizes } = tableNode;
-
         if (colSizes) {
           const newColSizes = [...colSizes];
-          newColSizes.splice(colIndex, 1);
+          newColSizes.splice(deletingColIndex, 1);
 
           setNodes<TTableElement>(
             editor,
-            {
-              colSizes: newColSizes,
-            },
-            {
-              at: tablePath,
-            }
+            { colSizes: newColSizes },
+            { at: tablePath }
           );
         }
       });

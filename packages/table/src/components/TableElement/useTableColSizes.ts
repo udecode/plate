@@ -26,10 +26,8 @@ export const useTableColSizes = (
   const editor = usePlateEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
-  const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { enableUnsetSingleColSize, minColumnWidth } =
+    getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
 
   const colCount = getTableColumnCount(tableNode);
 
@@ -38,10 +36,17 @@ export const useTableColSizes = (
     () =>
       getTableOverriddenColSizes(
         colCount,
+        minColumnWidth,
         tableNode.colSizes ? [...tableNode.colSizes] : undefined,
         disableOverrides ? undefined : colSizeOverrides
       ),
-    [colCount, colSizeOverrides, disableOverrides, tableNode.colSizes]
+    [
+      colCount,
+      colSizeOverrides,
+      disableOverrides,
+      minColumnWidth,
+      tableNode.colSizes,
+    ]
   );
 
   const setCellsOffsets = useTableStore().set.cellsOffsets();

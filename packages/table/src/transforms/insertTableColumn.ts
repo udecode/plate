@@ -1,11 +1,14 @@
 import {
   findNode,
+  findNodePath,
   getBlockAbove,
+  getParentNode,
   getPluginOptions,
   getPluginType,
   insertElements,
   PlateEditor,
   setNodes,
+  TDescendant,
   TElement,
   Value,
   withoutNormalizing,
@@ -13,9 +16,36 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
-import { TablePlugin, TTableElement } from '../types';
-import { getEmptyCellNode } from '../utils/getEmptyCellNode';
-import { getCellTypes } from '../utils/index';
+import {
+  TablePlugin,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../types';
+import { findCellByIndexes, getCellTypes, getEmptyCellNode } from '../utils';
+
+const createEmptyCell = <V extends Value>(
+  editor: PlateEditor<V>,
+  row: TTableRowElement,
+  rowSpan: number,
+  newCellChildren?: TDescendant[],
+  header?: boolean
+) => {
+  const isHeaderRow =
+    header === undefined
+      ? (row as TElement).children.every(
+          (c) => c.type === getPluginType(editor, ELEMENT_TH)
+        )
+      : header;
+
+  return {
+    ...getEmptyCellNode(editor, {
+      header: isHeaderRow,
+      newCellChildren,
+    }),
+    rowSpan,
+  };
+};
 
 export const insertTableColumn = <V extends Value>(
   editor: PlateEditor<V>,
@@ -55,6 +85,7 @@ export const insertTableColumn = <V extends Value>(
   if (!cellEntry) return;
 
   const [, cellPath] = cellEntry;
+  const cell = cellEntry[0] as TTableCellElement;
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -62,53 +93,81 @@ export const insertTableColumn = <V extends Value>(
   });
   if (!tableEntry) return;
 
-  const [tableNode, tablePath] = tableEntry;
-
-  let nextCellPath: Path;
-  let nextColIndex: number;
-
-  if (Path.isPath(at)) {
-    nextCellPath = at;
-    nextColIndex = at.at(-1)!;
-  } else {
-    nextCellPath = Path.next(cellPath);
-    nextColIndex = cellPath.at(-1)! + 1;
-  }
-  const currentRowIndex = cellPath.at(-2);
-
   const { newCellChildren, initialTableWidth, minColumnWidth } =
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const [tableNode, tablePath] = tableEntry;
+
+  const cellColIndex = cell.colIndex!;
+  const cellColSpan = cell.colSpan!;
+
+  let nextColIndex: number;
+  let checkingColIndex: number;
+  if (Path.isPath(at)) {
+    nextColIndex = cellColIndex;
+    checkingColIndex = cellColIndex - 1;
+  } else {
+    nextColIndex = cellColIndex + cellColSpan;
+    checkingColIndex = cellColIndex + cellColSpan - 1;
+  }
+
+  const currentRowIndex = cellPath.at(-2); // recheck it
+  const rowNumber = tableNode.children.length;
+  const firstCol = nextColIndex <= 0;
+
+  // const colCount = getTableColumnCount(tableNode);
+  // const lastRow = nextColIndex === colCount;
+
+  let placementCorrection = 1;
+  if (firstCol) {
+    checkingColIndex = 0;
+    placementCorrection = 0;
+  }
+
+  const affectedCellsSet = new Set();
+  Array.from({ length: rowNumber }, (_, i) => i).forEach((rI) => {
+    const found = findCellByIndexes(tableNode, rI, checkingColIndex);
+    affectedCellsSet.add(found);
+  });
+  const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
+
+  affectedCells.forEach((cur) => {
+    const curCell = cur as TTableCellElement;
+    const curColIndex = curCell.colIndex!;
+    const curColSpan = curCell.colSpan!;
+    const curRowSpan = curCell.rowSpan!;
+    const currentCellPath = findNodePath(editor, curCell)!;
+
+    const endCurI = curColIndex + curColSpan - 1;
+    if (endCurI >= nextColIndex && !firstCol) {
+      // make wider
+      setNodes<TTableCellElement>(
+        editor,
+        { ...curCell, colSpan: curColSpan + 1 },
+        { at: currentCellPath }
+      );
+    } else {
+      // add new
+      const curRowPath = currentCellPath.slice(0, -1);
+      const curColPath = currentCellPath.at(-1)!;
+      const placementPath = [...curRowPath, curColPath + placementCorrection];
+
+      const row = getParentNode(editor, currentCellPath)!;
+      const rowElement = row[0] as TTableRowElement;
+      const emptyCell = createEmptyCell(
+        editor,
+        rowElement,
+        curRowSpan,
+        newCellChildren,
+        header
+      );
+      insertElements(editor, emptyCell, {
+        at: placementPath,
+        select: !disableSelect && curCell.rowIndex === currentRowIndex,
+      });
+    }
+  });
 
   withoutNormalizing(editor, () => {
-    // for each row, insert a new cell
-    tableNode.children.forEach((row, rowIndex) => {
-      const insertCellPath = [...nextCellPath];
-      if (Path.isPath(at)) {
-        insertCellPath[at.length - 2] = rowIndex;
-      } else {
-        insertCellPath[cellPath.length - 2] = rowIndex;
-      }
-
-      const isHeaderRow =
-        header === undefined
-          ? (row as TElement).children.every(
-              (c) => c.type === getPluginType(editor, ELEMENT_TH)
-            )
-          : header;
-
-      insertElements(
-        editor,
-        getEmptyCellNode(editor, {
-          header: isHeaderRow,
-          newCellChildren,
-        }),
-        {
-          at: insertCellPath,
-          select: !disableSelect && rowIndex === currentRowIndex,
-        }
-      );
-    });
-
     const { colSizes } = tableNode;
 
     if (colSizes) {
