@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
@@ -79,7 +79,7 @@ export default function FindReplaceDemo() {
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
       <Plate<MyValue> plugins={plugins} initialValue={findReplaceValue}>
-        <PlateContent {...editorProps} />
+        <PlateContent {...editableProps} />
       </Plate>
     </>
   );

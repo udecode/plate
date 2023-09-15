@@ -3,10 +3,10 @@ import {
   focusEditor,
   getPluginOptions,
   useComposedRef,
+  useEditorReadOnly,
   useEditorRef,
   useHotkeys,
   useOnClickOutside,
-  usePlateReadOnly,
 } from '@udecode/plate-common';
 import {
   getSelectionBoundingClientRect,
@@ -36,7 +36,7 @@ export const useFloatingLinkInsertState = ({
     editor,
     ELEMENT_LINK
   );
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
   const focused = useFocused();
   const mode = useFloatingLinkSelectors().mode();
   const isOpen = useFloatingLinkSelectors().isOpen(editor.id);

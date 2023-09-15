@@ -8,11 +8,11 @@ import { PlateContent, PlateContentProps } from './PlateContent';
 export function PlateTest<V extends Value>({
   variant = 'wordProcessor',
   normalizeInitialValue,
-  editorProps,
+  editableProps,
   ...props
 }: {
   variant?: 'comment' | 'wordProcessor';
-  editorProps?: PlateContentProps;
+  editableProps?: PlateContentProps;
 } & PlateProps<V>) {
   const { editor: _editor, id, plugins } = props;
 
@@ -33,7 +33,7 @@ export function PlateTest<V extends Value>({
         data-variant={variant}
         data-testid="slate-content-editable"
         autoFocus
-        {...editorProps}
+        {...editableProps}
       />
     </Plate>
   );

@@ -29,6 +29,11 @@ export interface PlateProps<
    * @default false
    */
   normalizeInitialValue?: boolean;
+
+  /**
+   * Specifies the maximum number of characters allowed in the editor.
+   */
+  maxLength?: number;
 }
 
 function PlateContent<
@@ -52,6 +57,7 @@ function PlateContent<
     renderElement,
     renderLeaf,
     readOnly,
+    maxLength,
   } = props;
 
   const editor: E = useMemo(
@@ -61,6 +67,7 @@ function PlateContent<
         id,
         plugins: pluginsProp as any,
         disableCorePlugins,
+        maxLength,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []

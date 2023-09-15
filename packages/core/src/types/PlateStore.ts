@@ -11,7 +11,10 @@ import {
 } from './plugin/PlatePlugin';
 import { TEditableProps } from './slate-react/TEditableProps';
 
-export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';
+export type PlateChangeKey =
+  | 'versionEditor'
+  | 'versionSelection'
+  | 'versionDecorate';
 
 export type PlateStoreState<
   V extends Value = Value,
@@ -55,20 +58,20 @@ export type PlateStoreState<
   isMounted: boolean;
 
   /**
-   * A random key updated on each editor change.
+   * Version incremented on each editor change.
    */
-  keyEditor: string;
+  versionEditor: number;
 
   /**
-   * A random key updated on each editor.selection change.
+   * Version incremented on each editor.selection change.
    */
-  keySelection: string;
+  versionSelection: number;
 
   /**
-   * A random key updated when calling `redecorate`.
+   * Version incremented when calling `redecorate`.
    * This is a dependency of the `decorate` function.
    */
-  keyDecorate: string;
+  versionDecorate: number;
 
   /**
    * Controlled callback called when the editor state changes.

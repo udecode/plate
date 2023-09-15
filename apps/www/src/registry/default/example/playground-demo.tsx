@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
@@ -50,8 +50,8 @@ import {
   Plate,
   PlateContent,
   PlatePluginComponent,
+  useEditorRef,
   usePlateActions,
-  usePlateSelectors,
 } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
@@ -261,7 +261,7 @@ export function ResetPluginsEffect({
   initialValue,
   plugins,
 }: ResetPluginsEffectProps) {
-  const editor = usePlateSelectors().editor();
+  const editor = useEditorRef();
   const setEditor = usePlateActions().editor();
   const setValue = usePlateActions().value();
 
@@ -322,10 +322,10 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 )}
               >
                 <PlateContent
-                  {...editorProps}
+                  {...editableProps}
                   placeholder=""
                   className={cn(
-                    editorProps.className,
+                    editableProps.className,
                     'px-8 outline-none',
                     !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
                     id && 'pb-8 pt-2'

@@ -4,7 +4,7 @@ import {
   findNode,
   getPluginType,
   useEditorRef,
-  usePlateSelection,
+  useEditorSelection,
 } from '@udecode/plate-common';
 
 import { ELEMENT_LINK } from '../../createLinkPlugin';
@@ -13,7 +13,7 @@ import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {
   const editor = useEditorRef();
-  const selection = usePlateSelection();
+  const selection = useEditorSelection();
 
   const entry = useMemo(
     () =>

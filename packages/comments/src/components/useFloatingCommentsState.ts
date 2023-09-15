@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   someNode,
   useEditorRef,
-  usePlateSelectors,
+  useEditorVersion,
 } from '@udecode/plate-common';
 
 import { MARK_COMMENT } from '../constants';
@@ -17,7 +17,7 @@ export const useFloatingCommentsState = () => {
   const resetNewCommentValue = useResetNewCommentValue();
   const setActiveCommentId = useCommentsActions().activeCommentId()!;
   const editor = useEditorRef();
-  const key = usePlateSelectors().keyEditor();
+  const version = useEditorVersion();
 
   const [loaded, setLoaded] = useState(false);
 
@@ -38,7 +38,7 @@ export const useFloatingCommentsState = () => {
       setActiveCommentId(null);
       setActive(false);
     }
-  }, [active, activeCommentId, editor, key, setActiveCommentId]);
+  }, [active, activeCommentId, editor, version, setActiveCommentId]);
 
   useEffect(() => {
     setLoaded(true);

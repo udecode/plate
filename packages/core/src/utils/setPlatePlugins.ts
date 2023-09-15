@@ -1,4 +1,5 @@
 import { Value } from '@udecode/slate';
+import { isDefined } from '@udecode/utils';
 
 import { PlateProps } from '../components/index';
 import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
@@ -23,6 +24,7 @@ import {
   createInsertDataPlugin,
   KEY_INSERT_DATA,
 } from '../plugins/createInsertDataPlugin';
+import { createLengthPlugin, KEY_LENGTH } from '../plugins/createLengthPlugin';
 import {
   createNodeFactoryPlugin,
   KEY_NODE_FACTORY,
@@ -48,7 +50,8 @@ export const setPlatePlugins = <
   {
     disableCorePlugins,
     plugins: _plugins = [],
-  }: Pick<PlateProps<V, E>, 'plugins' | 'disableCorePlugins'>
+    maxLength,
+  }: Pick<PlateProps<V, E>, 'plugins' | 'disableCorePlugins' | 'maxLength'>
 ) => {
   let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
 
@@ -91,6 +94,16 @@ export const setPlatePlugins = <
       plugins.push(
         (editor?.pluginsByKey?.[KEY_PREV_SELECTION] as any) ??
           createPrevSelectionPlugin()
+      );
+    }
+    if ((typeof dcp !== 'object' || !dcp?.length) && isDefined(maxLength)) {
+      plugins.push(
+        (editor?.pluginsByKey?.[KEY_LENGTH] as any) ??
+          createLengthPlugin({
+            options: {
+              maxLength,
+            },
+          })
       );
     }
     if (typeof dcp !== 'object' || !dcp?.deserializeHtml) {

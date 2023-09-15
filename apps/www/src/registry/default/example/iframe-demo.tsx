@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
@@ -44,7 +44,7 @@ export default function IframeDemo() {
   return (
     <IFrame>
       <Plate<MyValue> plugins={plugins} initialValue={iframeValue}>
-        <PlateContent {...editorProps} />
+        <PlateContent {...editableProps} />
       </Plate>
     </IFrame>
   );

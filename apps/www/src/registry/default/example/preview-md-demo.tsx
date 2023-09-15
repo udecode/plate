@@ -1,7 +1,7 @@
 import 'prismjs/components/prism-markdown';
 
 import React from 'react';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
@@ -105,7 +105,7 @@ function PreviewLeaf({
 }
 
 const _editableProps = {
-  ...editorProps,
+  ...editableProps,
   renderLeaf: PreviewLeaf,
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
@@ -61,7 +61,7 @@ export default function CloudDemo() {
         <CloudToolbarButtons />
       </FixedToolbar>
 
-      <PlateContent {...editorProps} />
+      <PlateContent {...editableProps} />
     </Plate>
   );
 }

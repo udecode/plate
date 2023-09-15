@@ -81,7 +81,7 @@ const initialValue = [
 export default function BasicEditor() {
   return (
     <Plate initialValue={initialValue}>
-      <PlateContent {...editorProps} />
+      <PlateContent />
     </Plate>
   );
 }
@@ -109,7 +109,7 @@ export default function BasicEditor() {
         // save newValue...
       }}
     >
-      <PlateContent {...editorProps} />
+      <PlateContent />
     </Plate>
   );
 }
@@ -186,7 +186,7 @@ export default function BasicEditor() {
       plugins={plugins}
       // ...
     >
-      <PlateContent {...editorProps} />
+      <PlateContent />
     </Plate>
   );
 }

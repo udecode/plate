@@ -2,8 +2,8 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   focusEditor,
+  useEditorReadOnly,
   useEditorState,
-  usePlateReadOnly,
   usePlateStore,
 } from '@udecode/plate-common';
 
@@ -22,7 +22,7 @@ import { ToolbarButton } from './toolbar';
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorState();
   const setReadOnly = usePlateStore().set.readOnly();
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
   const openState = useOpenState();
 
   let value = 'editing';

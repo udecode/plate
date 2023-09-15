@@ -1,8 +1,8 @@
-import { EditorProps } from '@udecode/plate-common';
+import { PlateContentProps } from '@udecode/plate-common';
 
 import { cn } from '@/lib/utils';
 
-export const editorProps: EditorProps = {
+export const editableProps: PlateContentProps = {
   spellCheck: false,
   autoFocus: false,
   placeholder: 'Type…',

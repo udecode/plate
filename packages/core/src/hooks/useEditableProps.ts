@@ -19,7 +19,7 @@ export const useEditableProps = (
 
   const editor = useEditorRef(id);
   const selectors = usePlateSelectors(id);
-  const keyDecorate = selectors.keyDecorate();
+  const versionDecorate = selectors.versionDecorate();
   const readOnly = selectors.readOnly();
   const storeDecorate = selectors.decorate()?.fn;
   const storeRenderLeaf = selectors.renderLeaf()?.fn;
@@ -30,10 +30,10 @@ export const useEditableProps = (
   }, [editableProps?.decorate, editor, storeDecorate]);
 
   const decorate: typeof decorateMemo = useMemo(() => {
-    if (!keyDecorate || !decorateMemo) return;
+    if (!versionDecorate || !decorateMemo) return;
 
     return (entry) => decorateMemo(entry);
-  }, [decorateMemo, keyDecorate]);
+  }, [decorateMemo, versionDecorate]);
 
   const renderElement = useMemo(() => {
     return pipeRenderElement(

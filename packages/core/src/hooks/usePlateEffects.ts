@@ -35,6 +35,7 @@ export type UsePlateEffectsProps<
           nodeFactory?: boolean;
           react?: boolean;
           selection?: boolean;
+          length?: boolean;
         }
       | boolean;
 

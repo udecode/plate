@@ -1,6 +1,7 @@
 import { TEditor, Value } from '@udecode/slate';
 
 import { PlateProps } from '../components/index';
+import { resetEditor } from '../transforms/index';
 import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
 
@@ -13,7 +14,10 @@ const shouldHaveBeenOverridden = (fnName: string) => () => {
 export interface WithPlateOptions<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-> extends Pick<PlateProps<V, E>, 'disableCorePlugins' | 'plugins'> {
+> extends Pick<
+    PlateProps<V, E>,
+    'disableCorePlugins' | 'plugins' | 'maxLength'
+  > {
   id?: any;
 }
 
@@ -33,6 +37,7 @@ export const withPlate = <
     id,
     plugins = [],
     disableCorePlugins,
+    maxLength,
   }: WithPlateOptions<V, E & PlateEditor<V>> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
@@ -43,7 +48,7 @@ export const withPlate = <
   editor.currentKeyboardEvent = null;
 
   // Editor methods
-  editor.reset = () => shouldHaveBeenOverridden('reset');
+  editor.reset = () => resetEditor(editor);
   editor.redecorate = () => shouldHaveBeenOverridden('redecorate');
   editor.plate = {
     get set() {
@@ -58,6 +63,7 @@ export const withPlate = <
 
   setPlatePlugins<V>(editor, {
     plugins: plugins as any,
+    maxLength,
     disableCorePlugins,
   });
 

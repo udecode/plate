@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { Slate } from 'slate-react';
 
 import { useSlateProps } from '../hooks';
-import { PlateId, usePlateSelectors } from '../stores';
+import { PlateId, useEditorRef } from '../stores';
 
 /**
  * Slate with plugins.
@@ -19,7 +19,7 @@ export function PlateSlate({
 }) {
   const slateProps = useSlateProps({ id });
 
-  const { plugins } = usePlateSelectors(id).editor();
+  const { plugins } = useEditorRef(id);
 
   let aboveSlate: React.ReactElement | null = (
     <Slate {...(slateProps as any)}>{children}</Slate>

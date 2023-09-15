@@ -7,7 +7,7 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { usePlateReadOnly } from '@udecode/plate-common';
+import { useEditorReadOnly } from '@udecode/plate-common';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { Icons } from '@/components/icons';
@@ -20,7 +20,7 @@ import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return (
     <>

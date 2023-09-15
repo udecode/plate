@@ -7,10 +7,10 @@ import {
   getPluginType,
   getStartPoint,
   someNode,
+  useEditorReadOnly,
   useEditorRef,
+  useEditorVersion,
   useHotkeys,
-  usePlateReadOnly,
-  usePlateSelectors,
 } from '@udecode/plate-common';
 import {
   getDefaultBoundingClientRect,
@@ -37,9 +37,9 @@ export const useFloatingLinkEditState = ({
     editor,
     ELEMENT_LINK
   );
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
   const isEditing = useFloatingLinkSelectors().isEditing();
-  const keyEditor = usePlateSelectors().keyEditor();
+  const version = useEditorVersion();
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 
@@ -73,7 +73,7 @@ export const useFloatingLinkEditState = ({
     triggerFloatingLinkHotkeys,
     isOpen,
     floating,
-    keyEditor,
+    versionEditor: version,
     isEditing,
     readOnly,
   };
@@ -82,7 +82,7 @@ export const useFloatingLinkEditState = ({
 export const useFloatingLinkEdit = ({
   editor,
   triggerFloatingLinkHotkeys,
-  keyEditor,
+  versionEditor,
   floating,
   isOpen,
   readOnly,
@@ -103,7 +103,7 @@ export const useFloatingLinkEdit = ({
       floatingLinkActions.hide();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, keyEditor, floating.update]);
+  }, [editor, versionEditor, floating.update]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,

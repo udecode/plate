@@ -1,17 +1,10 @@
 import { useEffect, useMemo } from 'react';
 
-import {
-  PlateId,
-  useEditorRef,
-  usePlateStore,
-  useRedecorate,
-  useResetPlateEditor,
-} from '../stores';
+import { PlateId, useEditorRef, usePlateStore, useRedecorate } from '../stores';
 import { EXPOSED_STORE_KEYS } from '../types/PlateStore';
 
 export const EditorMethodsEffect = ({ id }: { id?: PlateId }) => {
   const editor = useEditorRef();
-  const resetEditor = useResetPlateEditor(id);
   const redecorate = useRedecorate(id);
 
   const plateStore = usePlateStore(id);
@@ -25,12 +18,11 @@ export const EditorMethodsEffect = ({ id }: { id?: PlateId }) => {
   const memorizedStoreSetters = useMemo(() => storeSetters, []);
 
   useEffect(() => {
-    editor.reset = resetEditor;
     editor.redecorate = redecorate;
     editor.plate = {
       set: memorizedStoreSetters,
     };
-  }, [editor, resetEditor, redecorate, memorizedStoreSetters]);
+  }, [editor, redecorate, memorizedStoreSetters]);
 
   return null;
 };

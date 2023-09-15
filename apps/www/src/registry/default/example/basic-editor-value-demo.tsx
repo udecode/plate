@@ -1,5 +1,5 @@
 import React from 'react';
-import { editorProps } from '@/plate/demo/editorProps';
+import { editableProps } from '@/plate/demo/editableProps';
 import { Plate, PlateContent } from '@udecode/plate-common';
 
 const initialValue = [
@@ -16,7 +16,7 @@ const initialValue = [
 export default function BasicEditorValueDemo() {
   return (
     <Plate initialValue={initialValue}>
-      <PlateContent {...editorProps} />
+      <PlateContent {...editableProps} />
     </Plate>
   );
 }
