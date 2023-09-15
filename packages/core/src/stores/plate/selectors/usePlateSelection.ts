@@ -1,5 +1,5 @@
 import { PlateId, usePlateSelectors } from '../createPlateStore';
-import { usePlateEditorRef } from './usePlateEditorRef';
+import { useEditorRef } from './useEditorRef';
 
 /**
  * Get the editor selection which is updated on editor change.
@@ -7,5 +7,5 @@ import { usePlateEditorRef } from './usePlateEditorRef';
 export const usePlateSelection = (id?: PlateId) => {
   usePlateSelectors(id).keySelection();
 
-  return usePlateEditorRef(id).selection;
+  return useEditorRef(id).selection;
 };

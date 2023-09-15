@@ -1,8 +1,4 @@
-import {
-  focusEditor,
-  useHotkeys,
-  usePlateEditorRef,
-} from '@udecode/plate-common';
+import { focusEditor, useEditorRef, useHotkeys } from '@udecode/plate-common';
 
 import {
   floatingLinkActions,
@@ -11,7 +7,7 @@ import {
 } from './floatingLinkStore';
 
 export const useFloatingLinkEscape = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 

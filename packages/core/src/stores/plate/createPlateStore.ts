@@ -14,7 +14,7 @@ import { PlateStoreState } from '../../types/PlateStore';
 
 /**
  * A unique id used as a provider scope.
- * Use it if you have multiple `PlateProvider` in the same React tree.
+ * Use it if you have multiple `Plate` in the same React tree.
  * @default PLATE_SCOPE
  */
 export type PlateId = Scope;

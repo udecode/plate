@@ -353,13 +353,14 @@ A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
-### usePlateEditorRef
+### useEditorRef
 
-Get an editor reference which is never updated.
+Get the Slate editor reference.
 
 - Does not re-render on editor change.
 - Supports nested editors.
-- Should be used inside `Plate` or `PlateProvider`.
+- Should be used inside `Plate`.
+- Note the reference does not change when the editor changes.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
@@ -372,13 +373,14 @@ A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
-### usePlateEditorState
+### useEditorState
 
-Get the Slate editor reference. Re-renders on editor change.
+Get the Slate editor reference which .
 
 - Re-renders on editor change.
 - Supports nested editors.
-- Should be used inside `Plate` or `PlateProvider`.
+- Should be used inside `Plate`.
+- Note the reference does not change when the editor changes.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>

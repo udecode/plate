@@ -6,8 +6,8 @@ import { isEqual, memoize } from 'lodash';
 
 import { PlatePlugin } from '../types/index';
 import { createPlateEditor } from '../utils/index';
-import { Editor } from './Editor';
 import { Plate } from './Plate';
+import { PlateContent } from './PlateContent';
 
 describe('Plate', () => {
   describe('when normalizeInitialValue false', () => {
@@ -87,7 +87,7 @@ describe('Plate', () => {
           plugins={plugins}
           initialValue={[{ children: [{ text: '' }] } as any]}
         >
-          <Editor />
+          <PlateContent />
         </Plate>
       );
 
@@ -117,7 +117,7 @@ describe('Plate', () => {
       expect(() =>
         render(
           <Plate editor={editor} initialValue={[{}] as any}>
-            <Editor />
+            <PlateContent />
           </Plate>
         )
       ).not.toThrow();
@@ -142,7 +142,7 @@ describe('Plate', () => {
       expect(() =>
         render(
           <Plate editor={editor} initialValue={[{}] as any}>
-            <Editor />
+            <PlateContent />
           </Plate>
         )
       ).toThrow();
@@ -159,7 +159,7 @@ describe('Plate', () => {
           component: ({ children, attributes }) => (
             <div {...attributes}>
               <Plate id="test">
-                <Editor id="test" />
+                <PlateContent id="test" />
               </Plate>
               {children}
             </div>
@@ -177,7 +177,7 @@ describe('Plate', () => {
             editor={editor}
             initialValue={[{ type: 'a', children: [{ text: '' }] }] as any}
           >
-            <Editor />
+            <PlateContent />
           </Plate>
         )
       ).not.toThrow();

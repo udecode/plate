@@ -6,7 +6,7 @@ export * from './DefaultLeaf';
 export * from './EditorMethodsEffect';
 export * from './EditorRefEffect';
 export * from './EditorStateEffect';
-export * from './Editor';
+export * from './PlateContent';
 export * from './Plate';
 export * from './PlateEffects';
 export * from './PlateSlate';

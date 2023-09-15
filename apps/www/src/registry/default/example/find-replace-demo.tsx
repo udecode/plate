@@ -3,7 +3,7 @@ import { editorProps } from '@/plate/demo/editorProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
@@ -79,7 +79,7 @@ export default function FindReplaceDemo() {
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
       <Plate<MyValue> plugins={plugins} initialValue={findReplaceValue}>
-        <Editor {...editorProps} />
+        <PlateContent {...editorProps} />
       </Plate>
     </>
   );

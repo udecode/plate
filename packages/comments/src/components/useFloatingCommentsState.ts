@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   someNode,
-  usePlateEditorRef,
+  useEditorRef,
   usePlateSelectors,
 } from '@udecode/plate-common';
 
@@ -16,7 +16,7 @@ export const useFloatingCommentsState = () => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const resetNewCommentValue = useResetNewCommentValue();
   const setActiveCommentId = useCommentsActions().activeCommentId()!;
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const key = usePlateSelectors().keyEditor();
 
   const [loaded, setLoaded] = useState(false);

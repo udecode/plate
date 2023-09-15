@@ -11,7 +11,7 @@ import {
   ELEMENT_CLOUD_ATTACHMENT,
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud-attachment-element';
@@ -61,7 +61,7 @@ export default function CloudDemo() {
         <CloudToolbarButtons />
       </FixedToolbar>
 
-      <Editor {...editorProps} />
+      <PlateContent {...editorProps} />
     </Plate>
   );
 }

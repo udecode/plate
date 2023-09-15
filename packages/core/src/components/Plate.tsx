@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 
 import { JotaiProvider } from '../libs/jotai';
@@ -9,9 +9,8 @@ import {
   plateStore,
 } from '../stores';
 import { PlateEditor, PlateStoreState } from '../types';
-import { createPlateEditor, normalizeInitialValue, withHOC } from '../utils';
+import { createPlateEditor, normalizeInitialValue } from '../utils';
 import { PlateEffects, PlateEffectsProps } from './PlateEffects';
-import { PlateSlate } from './PlateSlate';
 
 export interface PlateProps<
   V extends Value = Value,
@@ -116,9 +115,7 @@ function PlateContent<
         initialValues={[[plateIdAtom, id]]}
         scope={GLOBAL_PLATE_SCOPE}
       >
-        <PlateEffects {...props}>
-          <PlateSlate id={id}>{children}</PlateSlate>
-        </PlateEffects>
+        <PlateEffects {...props}>{children}</PlateEffects>
       </JotaiProvider>
     </JotaiProvider>
   );
@@ -132,6 +129,3 @@ export function Plate<
 
   return <PlateContent key={id?.toString()} {...props} />;
 }
-
-export const withPlateProvider = <T,>(Component: FC<T>, hocProps?: T) =>
-  withHOC<T>(Plate, Component, hocProps);

@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Editor, Plate, PlatePlugin, Value } from '@udecode/plate-common';
+import { Plate, PlateContent, PlatePlugin, Value } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -40,7 +40,7 @@ export default function BasicPluginsDefaultDemo() {
         // save newValue...
       }}
     >
-      <Editor {...editorProps} />
+      <PlateContent {...editorProps} />
       debug value:
       <br />
       {JSON.stringify(debugValue)}

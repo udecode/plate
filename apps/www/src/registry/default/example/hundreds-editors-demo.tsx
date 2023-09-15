@@ -2,7 +2,7 @@ import React from 'react';
 import { editorProps } from '@/plate/demo/editorProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 import { MyValue } from '@/types/plate-types';
 
@@ -15,7 +15,7 @@ function WithPlate({ initialValue, id }: any) {
       initialValue={initialValue}
       plugins={basicNodesPlugins}
     >
-      <Editor {...editorProps} />
+      <PlateContent {...editorProps} />
     </Plate>
   );
 }

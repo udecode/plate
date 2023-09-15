@@ -4,7 +4,7 @@ import { imagePlugins } from '@/plate/demo/plugins/imagePlugins';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 import { MyValue } from '@/types/plate-types';
 import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
@@ -32,11 +32,11 @@ export default function MultipleEditorsDemo() {
           </FixedToolbar>
 
           <div>
-            <Editor />
+            <PlateContent />
             <Separator />
-            <Editor id="marks" />
+            <PlateContent id="marks" />
             <Separator />
-            <Editor id="image" />
+            <PlateContent id="image" />
           </div>
         </Plate>
       </Plate>

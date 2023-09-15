@@ -3,7 +3,7 @@ import {
   createPrimitiveComponent,
   findNode,
   getPluginType,
-  usePlateEditorRef,
+  useEditorRef,
   usePlateSelection,
 } from '@udecode/plate-common';
 
@@ -12,7 +12,7 @@ import { TLinkElement } from '../../types';
 import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const selection = usePlateSelection();
 
   const entry = useMemo(
@@ -36,7 +36,7 @@ export const useLinkOpenButtonState = () => {
 };
 
 export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   if (!element) {
     return {

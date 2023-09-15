@@ -1,11 +1,11 @@
 'use client';
 
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 export function TestClient() {
   return (
     <Plate>
-      <Editor />
+      <PlateContent />
     </Plate>
   );
 }

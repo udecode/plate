@@ -272,7 +272,7 @@ export const docsConfig: DocsConfig = {
               href: '/docs/api/core/plate',
               headings: [
                 'PlateProps',
-                'PlateProvider',
+                'PlateContent',
                 'id',
                 'children',
                 'decorate',
@@ -401,8 +401,6 @@ export const docsConfig: DocsConfig = {
             'useEditorRef',
             'useEditorState',
             'useElement',
-            'usePlateEditorRef',
-            'usePlateEditorState',
             'usePlateReadOnly',
             'usePlateSelection',
             'withPlate',

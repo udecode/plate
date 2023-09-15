@@ -2,7 +2,7 @@ import { ForwardedRef, useEffect } from 'react';
 import { Value } from '@udecode/slate';
 import { isUndefined } from 'lodash';
 
-import { usePlateEditorRef, usePlateStates } from '../stores';
+import { useEditorRef, usePlateStates } from '../stores';
 import {
   Nullable,
   PlateEditor,
@@ -90,7 +90,7 @@ export const usePlateEffects = <
   renderLeaf: renderLeafProp,
   readOnly: readOnlyProp,
 }: UsePlateEffectsProps<V, E>) => {
-  const editor = usePlateEditorRef<V, E>(id);
+  const editor = useEditorRef<V, E>(id);
 
   const states = usePlateStates<V, E>(id);
   const [value, setValue] = states.value();

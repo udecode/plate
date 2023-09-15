@@ -1,11 +1,11 @@
-import { focusEditor, usePlateEditorRef } from '@udecode/plate-common';
+import { focusEditor, useEditorRef } from '@udecode/plate-common';
 
 import { insertMedia } from './insertMedia';
 
 export const useMediaToolbarButton = ({
   nodeType,
 }: { nodeType?: string } = {}) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     props: {

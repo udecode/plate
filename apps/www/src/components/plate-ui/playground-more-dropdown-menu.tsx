@@ -5,7 +5,7 @@ import {
   collapseSelection,
   focusEditor,
   toggleMark,
-  usePlateEditorState,
+  useEditorState,
 } from '@udecode/plate-common';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { MARK_KBD } from '@udecode/plate-kbd';
@@ -21,7 +21,7 @@ import {
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 
 export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const openState = useOpenState();
 
   return (

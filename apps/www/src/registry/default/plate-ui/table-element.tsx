@@ -5,8 +5,8 @@ import {
   isCollapsed,
   PlateElement,
   PlateElementProps,
+  useEditorState,
   useElement,
-  usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
@@ -113,7 +113,7 @@ const TableFloatingToolbar = React.forwardRef<
 
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const open = !readOnly && selected && isCollapsed(editor.selection);
 
   return (

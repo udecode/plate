@@ -7,8 +7,8 @@ import {
   getPluginType,
   getStartPoint,
   someNode,
+  useEditorRef,
   useHotkeys,
-  usePlateEditorRef,
   usePlateReadOnly,
   usePlateSelectors,
 } from '@udecode/plate-common';
@@ -32,7 +32,7 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK

@@ -47,8 +47,8 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
   createPlateEditor,
-  Editor,
   Plate,
+  PlateContent,
   PlatePluginComponent,
   usePlateActions,
   usePlateSelectors,
@@ -321,7 +321,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
                 )}
               >
-                <Editor
+                <PlateContent
                   {...editorProps}
                   placeholder=""
                   className={cn(

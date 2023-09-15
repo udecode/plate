@@ -2,15 +2,15 @@ import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import {
   createPlateEditor,
-  usePlateEditorRef,
+  useEditorRef,
   usePlateSelectors,
 } from '@udecode/plate-common';
 
 import { PLATE_SCOPE } from '../stores/index';
 import { Plate } from './Plate';
 
-describe('PlateProvider', () => {
-  describe('usePlateEditorRef()', () => {
+describe('Plate', () => {
+  describe('useEditorRef()', () => {
     describe('when editor is defined', () => {
       it('should be initialValue', async () => {
         const editor = createPlateEditor();
@@ -18,7 +18,7 @@ describe('PlateProvider', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateEditorRef(), {
+        const { result } = renderHook(() => useEditorRef(), {
           wrapper,
         });
 
@@ -28,7 +28,7 @@ describe('PlateProvider', () => {
     describe('when editor is not defined', () => {
       it('should be default', async () => {
         const wrapper = ({ children }: any) => <Plate>{children}</Plate>;
-        const { result } = renderHook(() => usePlateEditorRef(), {
+        const { result } = renderHook(() => useEditorRef(), {
           wrapper,
         });
 
@@ -40,7 +40,7 @@ describe('PlateProvider', () => {
         const wrapper = ({ children }: any) => (
           <Plate id="test">{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateEditorRef('test'), {
+        const { result } = renderHook(() => useEditorRef('test'), {
           wrapper,
         });
 
@@ -135,7 +135,7 @@ describe('PlateProvider', () => {
   });
 
   describe('when id updates', () => {
-    it('should remount PlateProvider', () => {
+    it('should remount Plate', () => {
       const _plugins = [{ key: 'test1' }];
 
       const wrapper = ({ children, id }: any) => (
@@ -160,7 +160,7 @@ describe('PlateProvider', () => {
   });
 
   describe('usePlateSelectors().id()', () => {
-    describe('when PlateProvider has an id', () => {
+    describe('when Plate has an id', () => {
       it('should be that id', () => {
         const wrapper = ({ children }: any) => (
           <Plate id="test">{children}</Plate>
@@ -173,7 +173,7 @@ describe('PlateProvider', () => {
       });
     });
 
-    describe('when PlateProvider without id > PlateProvider with id', () => {
+    describe('when Plate without id > Plate with id', () => {
       it('should be the one without id', () => {
         const wrapper = ({ children }: any) => (
           <Plate>
@@ -188,7 +188,7 @@ describe('PlateProvider', () => {
       });
     });
 
-    describe('when PlateProvider with id > PlateProvider without id > select id', () => {
+    describe('when Plate with id > Plate without id > select id', () => {
       it('should be that id', () => {
         const wrapper = ({ children }: any) => (
           <Plate id="test">
@@ -203,7 +203,7 @@ describe('PlateProvider', () => {
       });
     });
 
-    describe('when PlateProvider with id > PlateProvider without id', () => {
+    describe('when Plate with id > Plate without id', () => {
       it('should be that id', () => {
         const wrapper = ({ children }: any) => (
           <Plate id="test">

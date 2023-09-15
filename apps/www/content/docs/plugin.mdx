@@ -33,7 +33,7 @@ const plugins = createPlugins([
 export default () => {
   return (
     <Plate plugins={plugins}>
-      <Editor />
+      <PlateContent />
     </Plate>
   );
 };
@@ -295,7 +295,7 @@ const MyEditor = ({ username }: { username: string }) => {
 
   return (
     <Plate plugins={plugins}>
-      <Editor />
+      <PlateContent />
     </Plate>
   );
 };

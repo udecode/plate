@@ -7,9 +7,9 @@ import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
 import {
   createPluginFactory,
-  Editor,
   isText,
   Plate,
+  PlateContent,
   TRenderLeafProps,
   TText,
 } from '@udecode/plate-common';
@@ -112,7 +112,7 @@ const _editableProps = {
 export default function PreviewMdDemo() {
   return (
     <Plate<MyValue> plugins={plugins} initialValue={previewMdValue}>
-      <Editor {..._editableProps} />
+      <PlateContent {..._editableProps} />
     </Plate>
   );
 }

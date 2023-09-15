@@ -1,4 +1,4 @@
-import { usePlateEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 import {
   ComboboxControls,
@@ -28,7 +28,7 @@ export const useComboboxItem = <TData extends Data = NoData>({
   onRenderItem,
   combobox,
 }: ComboboxContentItemProps<TData>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const text = useComboboxSelectors.text() ?? '';
   const highlightedIndex = useComboboxSelectors.highlightedIndex();
 

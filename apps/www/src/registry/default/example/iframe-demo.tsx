@@ -3,7 +3,7 @@ import { editorProps } from '@/plate/demo/editorProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { Editor, Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 import { createPortal } from 'react-dom';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
@@ -44,7 +44,7 @@ export default function IframeDemo() {
   return (
     <IFrame>
       <Plate<MyValue> plugins={plugins} initialValue={iframeValue}>
-        <Editor {...editorProps} />
+        <PlateContent {...editorProps} />
       </Plate>
     </IFrame>
   );

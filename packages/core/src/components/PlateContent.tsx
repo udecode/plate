@@ -1,14 +1,15 @@
 import React from 'react';
 import { Editable } from 'slate-react';
 
-import { useEditableProps, useEditorRef } from '../hooks/index';
-import { PLATE_SCOPE } from '../stores';
+import { useEditableProps } from '../hooks/index';
+import { PLATE_SCOPE, useEditorRef } from '../stores';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
+import { PlateSlate } from './PlateSlate';
 
-export type EditorProps = TEditableProps & {
+export type PlateContentProps = TEditableProps & {
   /**
    * Renders the editable content.
    */
@@ -27,8 +28,8 @@ export type EditorProps = TEditableProps & {
  * - renderLeaf prop
  * - useHooks
  */
-const Editor = React.forwardRef(
-  ({ renderEditable, ...props }: EditorProps, ref) => {
+const PlateContent = React.forwardRef(
+  ({ renderEditable, ...props }: PlateContentProps, ref) => {
     const { id = PLATE_SCOPE } = props;
 
     const editor = useEditorRef();
@@ -86,9 +87,9 @@ const Editor = React.forwardRef(
         }) as any;
     });
 
-    return aboveEditable;
+    return <PlateSlate id={id}>{aboveEditable}</PlateSlate>;
   }
 );
-Editor.displayName = 'Editor';
+PlateContent.displayName = 'PlateContent';
 
-export { Editor };
+export { PlateContent };

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { PlateCloudEditor } from '@udecode/plate-cloud';
-import { usePlateEditorRef } from '@udecode/plate-common';
 
 const buttonStyle: React.CSSProperties = {
   marginRight: 4,
@@ -13,7 +12,7 @@ const buttonStyle: React.CSSProperties = {
 };
 
 export function CloudToolbarButtons() {
-  const editor = usePlateEditorRef() as PlateCloudEditor;
+  const editor = useEditorRef() as PlateCloudEditor;
   const getSaveValue = () => {
     console.info('editor.children', editor.children);
     console.info('editor.cloud.getSaveValue()', editor.cloud.getSaveValue());

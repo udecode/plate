@@ -3,9 +3,9 @@ import {
   focusEditor,
   getPluginOptions,
   useComposedRef,
+  useEditorRef,
   useHotkeys,
   useOnClickOutside,
-  usePlateEditorRef,
   usePlateReadOnly,
 } from '@udecode/plate-common';
 import {
@@ -31,7 +31,7 @@ export type LinkFloatingToolbarState = {
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK

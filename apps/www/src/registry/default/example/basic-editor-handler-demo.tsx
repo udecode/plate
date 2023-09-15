@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { editorProps } from '@/plate/demo/editorProps';
-import { Editor, Plate, Value } from '@udecode/plate-common';
+import { Plate, PlateContent, Value } from '@udecode/plate-common';
 
 export default function BasicEditorHandlerDemo() {
   const [debugValue, setDebugValue] = useState<Value>([]);
@@ -22,7 +22,7 @@ export default function BasicEditorHandlerDemo() {
         // save newValue...
       }}
     >
-      <Editor {...editorProps} />
+      <PlateContent {...editorProps} />
       debug value:
       <br />
       {JSON.stringify(debugValue)}

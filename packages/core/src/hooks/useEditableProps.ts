@@ -4,7 +4,7 @@ import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
 import { usePlateSelectors } from '../stores';
-import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
+import { useEditorRef } from '../stores/plate/selectors/useEditorRef';
 import { DOM_HANDLERS } from '../types/misc/dom-attributes';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 import { pipeDecorate } from '../utils/pipeDecorate';
@@ -17,7 +17,7 @@ export const useEditableProps = (
 ): TEditableProps => {
   const { id } = editableProps;
 
-  const editor = usePlateEditorRef(id);
+  const editor = useEditorRef(id);
   const selectors = usePlateSelectors(id);
   const keyDecorate = selectors.keyDecorate();
   const readOnly = selectors.readOnly();
