@@ -3,7 +3,9 @@
   "dependencies": [
     "@udecode/plate-table"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "dropdown-menu"
+  ],
   "files": [
     {
       "name": "table-element.tsx",
