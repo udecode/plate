@@ -14,7 +14,7 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.6",
-    "@udecode/plate-common": "^23.7.0",
+    "@udecode/plate-common": "^23.7.4",
     "class-variance-authority": "0.7.0",
     "clsx": "2.0.0",
     "eslint-plugin-prettier": "^5.0.0",
