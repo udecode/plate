@@ -68,6 +68,7 @@ export type SettingPlugin = {
   disablePlugins?: string[];
   components?: {
     id: string; // e.g. 'blockquote-element'
+    registry?: string;
     filename?: string; // e.g. 'blockquote-element' (default: id)
     customImports?: string[];
     plateImports?: string[];
@@ -82,9 +83,9 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
-  toolbar: {
-    id: 'toolbar',
-    label: 'Toolbar',
+  components: {
+    id: 'components',
+    label: 'Components',
     badges: [customizerBadges.ui],
     components: [
       {
@@ -110,6 +111,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'FloatingToolbarButtons',
         usage: 'FloatingToolbarButtons',
         route: customizerComponents.floatingToolbarButtons.href,
+      },
+      {
+        id: 'placeholder',
+        registry: 'placeholder',
+        filename: 'with-placeholders',
+        label: 'Placeholder',
+        usage: 'withPlaceholders',
+        route: customizerComponents.placeholder.href,
       },
     ],
   },
@@ -828,6 +837,16 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.handler, customizerBadges.ui],
     dependencies: [KEY_NODE_ID],
     route: customizerPlugins.dnd.route,
+    components: [
+      {
+        id: 'draggable',
+        registry: 'draggable',
+        filename: 'with-draggables',
+        label: 'Draggable',
+        usage: 'withDraggables',
+        route: customizerComponents.draggable.href,
+      },
+    ],
   },
   [KEY_DRAG_OVER_CURSOR]: {
     id: KEY_DRAG_OVER_CURSOR,

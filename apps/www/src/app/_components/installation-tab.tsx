@@ -96,12 +96,15 @@ export default function InstallationTab() {
         }, new Set<string>())
       ).join(' ')}`,
       components: `npx @udecode/plate-ui@latest add ${Array.from(
-        components.reduce((uniqueFilenames, { id, filename, noImport }) => {
-          if (noImport) return uniqueFilenames;
+        components.reduce(
+          (uniqueFilenames, { id, registry, filename, noImport }) => {
+            if (noImport) return uniqueFilenames;
 
-          uniqueFilenames.add(filename ?? id);
-          return uniqueFilenames;
-        }, new Set<string>())
+            uniqueFilenames.add(registry ?? filename ?? id);
+            return uniqueFilenames;
+          },
+          new Set<string>()
+        )
       ).join(' ')}`,
     };
   }, [plugins, components]);
@@ -227,22 +230,28 @@ export default function InstallationTab() {
     }
   );
 
+  const hasDraggable = components.some((comp) => comp.id === 'draggable');
+  const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
+
   const usageCode = [
     'const plugins = createPlugins(',
     '  [',
     pluginsCode.join('\n'),
     '  ],',
     '  {',
-    '    components: {',
+    `    components: ${hasDraggable ? 'withDraggables(' : ''}${
+      hasPlaceholder ? 'withPlaceholders(' : ''
+    }{`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    '    },',
-    '  }',
+    `    }${hasPlaceholder ? ')' : ''}${hasDraggable ? ')' : ''},`,
+    `  }`,
     ');',
   ].join('\n');
 
   const hasDnd = plugins.some((plugin) => plugin.id === KEY_DND);
+
   const hasCommentsPopover = components.some(
     (comp) => comp.id === 'comments-popover'
   );
@@ -309,9 +318,9 @@ export default function InstallationTab() {
   }
 
   addLine(`<Plate />`);
-  addLine(``);
 
   if (hasFloatingToolbar) {
+    addLine(``);
     addLine(`<FloatingToolbar>`, true);
   }
 

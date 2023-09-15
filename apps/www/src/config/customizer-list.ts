@@ -104,6 +104,7 @@ export const customizerList = [
     id: 'functionality',
     label: 'Functionality',
     children: [
+      customizerItems.components,
       customizerItems[KEY_AUTOFORMAT],
       customizerItems[KEY_BLOCK_SELECTION],
       customizerItems[KEY_CAPTION],
@@ -119,7 +120,6 @@ export const customizerList = [
       customizerItems[KEY_SINGLE_LINE],
       customizerItems[KEY_SOFT_BREAK],
       customizerItems[KEY_TABBABLE],
-      customizerItems.toolbar,
       customizerItems[KEY_TRAILING_BLOCK],
     ],
   },
