@@ -19,13 +19,13 @@ export function PlateSlate({
 }) {
   const slateProps = useSlateProps({ id });
 
-  const { plugins } = useEditorRef(id);
+  const editor = useEditorRef(id);
 
   let aboveSlate: React.ReactElement | null = (
     <Slate {...(slateProps as any)}>{children}</Slate>
   );
 
-  plugins?.forEach((plugin) => {
+  editor.plugins?.forEach((plugin) => {
     const { renderAboveSlate } = plugin;
 
     if (renderAboveSlate)

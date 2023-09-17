@@ -80,11 +80,12 @@ export const createPlateStore = <
     usePlateStore: (_id?: PlateId) => {
       const closestId = usePlateId();
 
-      // get targeted store if id defined or if the store is found
-      if (isDefined(_id) || stores.usePlateStore(_id).get.id(_id)) {
+      // get targeted store if id defined and if the store is found
+      if (isDefined(_id) && stores.usePlateStore(_id).get.id(_id)) {
         return stores.usePlateStore(_id);
       }
 
+      // if targeted store not found, get the closest store
       return stores.usePlateStore(closestId);
     },
   };

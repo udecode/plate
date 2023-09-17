@@ -4,7 +4,7 @@ import { PlateId, useEditorRef, usePlateStore, useRedecorate } from '../stores';
 import { EXPOSED_STORE_KEYS } from '../types/PlateStore';
 
 export const EditorMethodsEffect = ({ id }: { id?: PlateId }) => {
-  const editor = useEditorRef();
+  const editor = useEditorRef(id);
   const redecorate = useRedecorate(id);
 
   const plateStore = usePlateStore(id);

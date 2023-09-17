@@ -23321,6 +23321,7 @@ __metadata:
     class-variance-authority: "npm:^0.6.1"
     clsx: "npm:^1.2.1"
     cmdk: "npm:^0.2.0"
+    concurrently: "npm:^8.2.0"
     contentlayer: "npm:0.3.4"
     date-fns: "npm:^2.30.0"
     framer-motion: "npm:10.12.20"

@@ -36,7 +36,7 @@ export interface PlateProps<
   maxLength?: number;
 }
 
-function PlateContent<
+function PlateInner<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
@@ -134,5 +134,5 @@ export function Plate<
 >(props: PlateProps<V, E>) {
   const { id } = props;
 
-  return <PlateContent key={id?.toString()} {...props} />;
+  return <PlateInner key={id?.toString()} {...props} />;
 }

@@ -19,7 +19,7 @@ export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
 export function EditorRefEffect({ id }: { id?: PlateId }) {
   const setIsMounted = usePlateActions(id).isMounted();
   const plugins = usePlateSelectors(id).plugins();
-  const editorState = useEditorRef();
+  const editorState = useEditorRef(id);
   const editorRef = usePlateSelectors(id).editorRef()?.ref;
 
   useEffect(() => {

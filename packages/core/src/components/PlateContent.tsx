@@ -2,7 +2,7 @@ import React from 'react';
 import { Editable } from 'slate-react';
 
 import { useEditableProps } from '../hooks/index';
-import { PLATE_SCOPE, useEditorRef } from '../stores';
+import { useEditorRef } from '../stores';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
@@ -30,10 +30,15 @@ export type PlateContentProps = TEditableProps & {
  */
 const PlateContent = React.forwardRef(
   ({ renderEditable, ...props }: PlateContentProps, ref) => {
-    const { id = PLATE_SCOPE } = props;
+    const { id } = props;
 
-    const editor = useEditorRef();
-    const { plugins } = editor;
+    const editor = useEditorRef(id);
+
+    if (!editor) {
+      throw new Error(
+        'Editor not found. Please ensure that PlateContent is rendered below Plate.'
+      );
+    }
 
     const editableProps = useEditableProps(props);
 
@@ -42,7 +47,7 @@ const PlateContent = React.forwardRef(
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    plugins.forEach((plugin) => {
+    editor.plugins.forEach((plugin) => {
       const { renderBeforeEditable, renderAfterEditable } = plugin;
 
       if (renderAfterEditable) {
@@ -78,7 +83,7 @@ const PlateContent = React.forwardRef(
       </>
     );
 
-    plugins.forEach((plugin) => {
+    editor.plugins.forEach((plugin) => {
       const { renderAboveEditable } = plugin;
 
       if (renderAboveEditable)
