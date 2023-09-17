@@ -9,7 +9,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { createPlugins, Plate, PlateContent } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createLinkPlugin } from '@udecode/plate-link';
@@ -52,7 +52,11 @@ function PlateContainer() {
     createSelectOnBackspacePlugin(),
   ]);
 
-  return <Plate plugins={plugins} />;
+  return (
+    <Plate plugins={plugins}>
+      <PlateContent />
+    </Plate>
+  );
 }
 
 describe('when all plugins', () => {
