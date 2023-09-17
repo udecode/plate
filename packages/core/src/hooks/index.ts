@@ -3,7 +3,5 @@
  */
 
 export * from './useEditableProps';
-export * from './useEditorRef';
-export * from './useEditorState';
 export * from './usePlateEffects';
 export * from './useSlateProps';

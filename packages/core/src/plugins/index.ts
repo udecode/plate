@@ -8,6 +8,7 @@ export * from './createEventEditorPlugin';
 export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
+export * from './createLengthPlugin';
 export * from './createNodeFactoryPlugin';
 export * from './createPrevSelectionPlugin';
 export * from './createReactPlugin';

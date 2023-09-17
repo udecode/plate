@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Plate, TElement } from '@udecode/plate-common';
+import { Plate, PlateContent, TElement } from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -18,11 +18,9 @@ const initialValue = createHugeDocumentValue() as MyValue;
 
 function WithPlate() {
   return (
-    <Plate
-      editableProps={editableProps}
-      initialValue={initialValue}
-      plugins={basicNodesPlugins}
-    />
+    <Plate initialValue={initialValue} plugins={basicNodesPlugins}>
+      <PlateContent {...editableProps} />
+    </Plate>
   );
 }
 

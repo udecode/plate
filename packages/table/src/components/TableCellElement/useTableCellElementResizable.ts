@@ -2,8 +2,8 @@ import { ComponentPropsWithoutRef, useCallback } from 'react';
 import {
   findNodePath,
   getPluginOptions,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 import {
   ResizeEvent,
@@ -51,7 +51,7 @@ export const useTableCellElementResizableState = ({
   stepX = step,
   stepY = step,
 }: TableCellElementResizableOptions) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const { disableMarginLeft } = getPluginOptions<TablePlugin>(
     editor,
     ELEMENT_TABLE
@@ -78,7 +78,7 @@ export const useTableCellElementResizable = ({
   leftProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
   hiddenLeft: boolean;
 } => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const element = useElement();
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const { minColumnWidth = 0 } = getPluginOptions<TablePlugin>(

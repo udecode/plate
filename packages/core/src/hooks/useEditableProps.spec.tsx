@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { Plate } from '../components/index';
+import { Plate, PlateContent } from '../components/index';
 import { PlatePlugin } from '../types/index';
 
 describe('useEditableProps', () => {
@@ -19,7 +19,11 @@ describe('useEditableProps', () => {
         },
       ];
 
-      render(<Plate plugins={plugins} />);
+      render(
+        <Plate plugins={plugins}>
+          <PlateContent />
+        </Plate>
+      );
 
       expect(decorate).toHaveBeenCalledTimes(3);
     });
@@ -46,7 +50,7 @@ describe('useEditableProps', () => {
   //     }
   //
   //     const wrapper = ({ children }: any) => (
-  //       <PlateProvider plugins={plugins}><A />{children}</PlateProvider>
+  //       <Plate plugins={plugins}><A />{children}</Plate>
   //     );
   //
   //     const { result } = renderHook(() => usePlateSelectors().value(), {

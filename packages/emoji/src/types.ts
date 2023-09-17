@@ -1,5 +1,4 @@
 import { TComboboxItem } from '@udecode/plate-combobox';
-import { TEditableProps, Value } from '@udecode/plate-common';
 
 import { IEmojiTriggeringController } from './utils/index';
 
@@ -22,10 +21,6 @@ export type EmojiSettingsType = {
     prefix?: string;
   };
 };
-
-export type EmojiComboboxProps = (
-  editableProps: TEditableProps<Value>
-) => JSX.Element | null;
 
 export type EmojiItemData = {
   id: string;

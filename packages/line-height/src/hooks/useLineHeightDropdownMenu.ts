@@ -4,14 +4,14 @@ import {
   getPluginInjectProps,
   isCollapsed,
   TElement,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { KEY_LINE_HEIGHT, setLineHeight } from '../index';
 
 export const useLineHeightDropdownMenuState = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const { validNodeValues: values = [], defaultNodeValue } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
   let value: string | undefined;
@@ -34,7 +34,7 @@ export const useLineHeightDropdownMenuState = () => {
 export const useLineHeightDropdownMenu = ({
   value,
 }: ReturnType<typeof useLineHeightDropdownMenuState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     radioGroupProps: {

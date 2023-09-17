@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 
-import { PlateProvider } from '../components/index';
+import { Plate } from '../components/index';
 import { usePlateSelectors } from '../stores/index';
 import { PlatePlugin } from '../types/index';
 
@@ -26,12 +26,12 @@ describe('normalizeInitialValue', () => {
       ];
 
       const wrapper = ({ children }: any) => (
-        <PlateProvider
+        <Plate
           plugins={plugins}
           initialValue={[{ type: 'p', count: 0, children: [{ text: '' }] }]}
         >
           {children}
-        </PlateProvider>
+        </Plate>
       );
 
       const { result } = renderHook(() => usePlateSelectors().value(), {

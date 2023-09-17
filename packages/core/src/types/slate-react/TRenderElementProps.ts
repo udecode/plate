@@ -8,6 +8,6 @@ export type TRenderElementProps<
   element: N;
 };
 
-export type RenderElementFn<V extends Value = Value> = (
-  props: TRenderElementProps<V>
-) => JSX.Element;
+export type RenderElementFn = (
+  props: TRenderElementProps
+) => React.ReactElement;

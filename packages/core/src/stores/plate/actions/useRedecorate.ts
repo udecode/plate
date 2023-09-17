@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
 import { PlateId } from '../createPlateStore';
-import { useUpdatePlateKey } from './useUpdatePlateKey';
+import { useIncrementVersion } from './useIncrementVersion';
 
 export const useRedecorate = (id?: PlateId) => {
-  const updateDecorate = useUpdatePlateKey('keyDecorate', id);
+  const updateDecorate = useIncrementVersion('versionDecorate', id);
 
   return useCallback(() => {
     updateDecorate();

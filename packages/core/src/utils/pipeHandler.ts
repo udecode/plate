@@ -40,7 +40,7 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
   {
     editableProps,
     handlerKey,
-  }: { editableProps?: TEditableProps<V> | null; handlerKey: K }
+  }: { editableProps?: TEditableProps | null; handlerKey: K }
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
   pluginsHandlers = editor.plugins.flatMap(

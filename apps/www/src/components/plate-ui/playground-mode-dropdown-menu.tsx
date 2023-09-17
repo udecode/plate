@@ -2,8 +2,8 @@ import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   focusEditor,
-  usePlateEditorState,
-  usePlateReadOnly,
+  useEditorReadOnly,
+  useEditorState,
   usePlateStore,
 } from '@udecode/plate-common';
 
@@ -19,9 +19,9 @@ import {
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 
 export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const setReadOnly = usePlateStore().set.readOnly();
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
   const openState = useOpenState();
 
   let value = 'editing';

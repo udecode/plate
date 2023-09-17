@@ -16,7 +16,7 @@ import { onChangeCombobox } from './onChangeCombobox';
 jsx;
 
 describe('onChangeCombobox', () => {
-  const createEditor = (state: JSX.Element) => {
+  const createEditor = (state: React.ReactElement) => {
     const plugins = [createParagraphPlugin(), createComboboxPlugin()];
 
     return createPlateEditor({
@@ -25,7 +25,7 @@ describe('onChangeCombobox', () => {
     });
   };
 
-  const onChange = (fragment: JSX.Element): HandlerReturnType => {
+  const onChange = (fragment: React.ReactElement): HandlerReturnType => {
     return onChangeCombobox(createEditor(fragment))();
   };
 

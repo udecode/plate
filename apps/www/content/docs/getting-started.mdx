@@ -13,11 +13,11 @@ description: A quick tutorial to get you up and running with Plate.
 
 You can choose one of the following templates to get started:
 
-| Option                                                                            | NextJS | Tailwind | Plate | Plugins |
-| --------------------------------------------------------------------------------- | -------| -------- | ------| ------- |
-| <Link target="_blank" href="https://github.com/udecode/plate-playground-template">Plate playground template</Link>| ✅ | ✅ | ✅    | ✅      |
-| <Link target="_blank" href="https://github.com/udecode/plate-template">Plate minimal template</Link>              | ✅ | ✅ | ✅     |         |
-| <Link target="_blank" href="/docs/components/installation/next">NextJS template</Link>                          | ✅ | ✅ |       |         |
+| Option                                                                                                             | NextJS | Tailwind | Plate | Plugins |
+| ------------------------------------------------------------------------------------------------------------------ | ------ | -------- | ----- | ------- |
+| <Link target="_blank" href="https://github.com/udecode/plate-playground-template">Plate playground template</Link> | ✅     | ✅       | ✅    | ✅      |
+| <Link target="_blank" href="https://github.com/udecode/plate-template">Plate minimal template</Link>               | ✅     | ✅       | ✅    |         |
+| <Link target="_blank" href="/docs/components/installation/next">NextJS template</Link>                             | ✅     | ✅       |       |         |
 
 For an existing project, jump to the next step.
 
@@ -37,17 +37,17 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 
 ### Basic Editor
 
-Let's start with a minimal editor setup leveraging **`Plate`** and **`editableProps`**.
+Let's start with a minimal editor setup using **`Plate`** and **`PlateContent`**.
 
-```tsx showLineNumbers {1,3-5,9}
+```tsx showLineNumbers {1,5-7}
 import { Plate } from '@udecode/plate-common';
 
-const editableProps = {
-  placeholder: 'Type...',
-};
-
 export default function BasicEditor() {
-  return <Plate editableProps={editableProps} />;
+  return (
+    <Plate>
+      <PlateContent placeholder="Type..." />
+    </Plate>
+  );
 }
 ```
 
@@ -64,7 +64,7 @@ Simple and straightforward. Try it out:
 
 Let's specify the initial content of the editor: a single paragraph.
 
-```tsx showLineNumbers {3-12,18}
+```tsx showLineNumbers {3-12,16-18}
 // ...
 
 const initialValue = [
@@ -79,7 +79,11 @@ const initialValue = [
 ];
 
 export default function BasicEditor() {
-  return <Plate editableProps={editableProps} initialValue={initialValue} />;
+  return (
+    <Plate initialValue={initialValue}>
+      <PlateContent />
+    </Plate>
+  );
 }
 ```
 
@@ -94,18 +98,19 @@ export default function BasicEditor() {
 
 At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose.
 
-```tsx showLineNumbers {8-10}
+```tsx showLineNumbers {7-9}
 // ...
 
 export default function BasicEditor() {
   return (
     <Plate
-      editableProps={editableProps}
       initialValue={initialValue}
       onChange={(newValue) => {
         // save newValue...
       }}
-    />
+    >
+      <PlateContent />
+    </Plate>
   );
 }
 ```
@@ -180,7 +185,9 @@ export default function BasicEditor() {
     <Plate
       plugins={plugins}
       // ...
-    />
+    >
+      <PlateContent />
+    </Plate>
   );
 }
 ```
@@ -191,6 +198,6 @@ export default function BasicEditor() {
 
 ### That's it!
 
-You can now play around with the <Link href="/?builder=true">Playground</Link> and start building your own rich-text editor.
+You can now play around with the <Link href="/?builder=true">Playground</Link> and start building your own editor.
 
 </Steps>

@@ -3,7 +3,7 @@ import {
   findNodePath,
   isDefined,
   setNodes,
-  usePlateEditorRef,
+  useEditorRef,
 } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
@@ -14,7 +14,7 @@ export const useCloudAttachmentElementState = ({
 }: {
   element: TCloudAttachmentElement;
 }) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const upload = useUpload(element.url);
 

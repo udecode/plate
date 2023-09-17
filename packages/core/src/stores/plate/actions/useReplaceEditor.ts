@@ -1,17 +1,15 @@
 import { useCallback } from 'react';
 
 import { createPlateEditor } from '../../../utils/index';
-import {
-  PlateId,
-  usePlateActions,
-  usePlateSelectors,
-} from '../createPlateStore';
+import { PlateId, usePlateActions } from '../createPlateStore';
+import { useEditorRef } from '../selectors/index';
 
 /**
- * Set a new editor with plate.
+ * Replace plate editor with the same id and plugins.
+ * Remounts `PlateContent`.
  */
-export const useResetPlateEditor = (id?: PlateId) => {
-  const editor = usePlateSelectors(id).editor();
+export const useReplaceEditor = (id?: PlateId) => {
+  const editor = useEditorRef(id);
   const setEditor = usePlateActions(id).editor();
 
   return useCallback(() => {
