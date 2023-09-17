@@ -37,9 +37,9 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 
 ### Basic Editor
 
-Let's start with a minimal editor setup leveraging **`Plate`** and **`PlateContent`**.
+Let's start with a minimal editor setup using **`Plate`** and **`PlateContent`**.
 
-```tsx showLineNumbers {1,3-5,9}
+```tsx showLineNumbers {1,5-7}
 import { Plate } from '@udecode/plate-common';
 
 export default function BasicEditor() {
@@ -64,7 +64,7 @@ Simple and straightforward. Try it out:
 
 Let's specify the initial content of the editor: a single paragraph.
 
-```tsx showLineNumbers {3-12,18}
+```tsx showLineNumbers {3-12,16-18}
 // ...
 
 const initialValue = [
@@ -98,7 +98,7 @@ export default function BasicEditor() {
 
 At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose.
 
-```tsx showLineNumbers {8-10}
+```tsx showLineNumbers {7-9}
 // ...
 
 export default function BasicEditor() {
@@ -198,6 +198,6 @@ export default function BasicEditor() {
 
 ### That's it!
 
-You can now play around with the <Link href="/?builder=true">Playground</Link> and start building your own rich-text editor.
+You can now play around with the <Link href="/?builder=true">Playground</Link> and start building your own editor.
 
 </Steps>

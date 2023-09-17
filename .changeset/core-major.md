@@ -26,7 +26,6 @@
 - [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
 - [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
 - [**Breaking**] Remove `withPlateProvider`.
-- [**Breaking**] Rename `usePlate` to `usePlateActions`.
 - [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
 - [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
 - [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
@@ -37,4 +36,4 @@
 - Add `useEditorVersion` hook. Version incremented on each editor change.
 - Add `useSelectionVersion` hook. Version incremented on each selection change.
 - Fix `editor.reset` should now reset the editor without mutating the ref so it does not remount `PlateContent`. Default is using `resetEditor`. If you need to replace the editor ref, use `useReplaceEditor`.
-- [Type] Remove generic from `TEditableProps`, `RenderElementFn`
+- [Type] Remove generic from `TEditableProps`, `RenderElementFn`, `RenderAfterEditable`
