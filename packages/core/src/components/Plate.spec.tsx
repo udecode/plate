@@ -174,7 +174,7 @@ describe('Plate', () => {
     });
 
     describe('when Plate without id > Plate with id', () => {
-      it('should be the one without id', () => {
+      it('should be the closest one', () => {
         const wrapper = ({ children }: any) => (
           <Plate>
             <Plate id="test">{children}</Plate>
@@ -184,7 +184,7 @@ describe('Plate', () => {
           wrapper,
         });
 
-        expect(result.current).toBe(PLATE_SCOPE);
+        expect(result.current).toBe('test');
       });
     });
 
