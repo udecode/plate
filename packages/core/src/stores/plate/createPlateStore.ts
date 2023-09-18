@@ -8,7 +8,7 @@ import {
   SetRecord,
   UseRecord,
 } from '../../atoms/index';
-import { Scope, useAtom } from '../../libs/index';
+import { useAtom } from '../../libs/index';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 
@@ -17,7 +17,7 @@ import { PlateStoreState } from '../../types/PlateStore';
  * Use it if you have multiple `Plate` in the same React tree.
  * @default PLATE_SCOPE
  */
-export type PlateId = Scope;
+export type PlateId = string;
 
 export const PLATE_SCOPE = 'plate';
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
