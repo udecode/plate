@@ -42,6 +42,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
             fontSans.variable
           )}
+          suppressHydrationWarning
         >
           <ThemeProvider attribute="class" defaultTheme="light">
             <TooltipProvider

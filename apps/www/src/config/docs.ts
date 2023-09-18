@@ -720,6 +720,7 @@ export const docsConfig: DocsConfig = {
     {
       title: 'Components',
       items: [
+        customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,
         customizerComponents.blockquoteElement,

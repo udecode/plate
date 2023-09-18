@@ -2,6 +2,13 @@ import { Registry } from './schema';
 
 const ui: Registry = [
   {
+    name: 'editor',
+    type: 'components:plate-ui',
+    dependencies: [],
+    registryDependencies: [],
+    files: ['plate-ui/editor.tsx'],
+  },
+  {
     name: 'cloud',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-cloud'],
@@ -557,10 +564,58 @@ const ui: Registry = [
 
 const example: Registry = [
   {
+    name: 'editor-default',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-default.tsx'],
+  },
+  {
+    name: 'editor-disabled',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-disabled.tsx'],
+  },
+  {
+    name: 'editor-ghost',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-ghost.tsx'],
+  },
+  {
+    name: 'editor-label',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-label.tsx'],
+  },
+  {
+    name: 'editor-text',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-text.tsx'],
+  },
+  {
+    name: 'editor-button',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-button.tsx'],
+  },
+  {
+    name: 'editor-form',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/editor-form.tsx'],
+  },
+  {
     name: 'basic-editor-default-demo',
     type: 'components:example',
     registryDependencies: [],
     files: ['example/basic-editor-default-demo.tsx'],
+  },
+  {
+    name: 'basic-editor-styling-demo',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/basic-editor-styling-demo.tsx'],
   },
   {
     name: 'basic-editor-handler-demo',

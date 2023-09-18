@@ -37,7 +37,7 @@ export default function IndexPage() {
         </Link>
       </div>
 
-      <div className="max-w-[1336px] rounded-lg border bg-background shadow">
+      <div className="flex w-[600px] flex-col gap-4">
         <PlateEditor />
       </div>
     </section>

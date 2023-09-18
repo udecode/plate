@@ -11,12 +11,13 @@ import {
   ELEMENT_CLOUD_ATTACHMENT,
   ELEMENT_CLOUD_IMAGE,
 } from '@udecode/plate-cloud';
-import { Plate, PlateContent } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud-attachment-element';
 import { CloudImageElement } from '@/registry/default/plate-ui/cloud-image-element';
 import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud-toolbar-buttons';
+import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 const plugins = createMyPlugins(
@@ -61,7 +62,7 @@ export default function CloudDemo() {
         <CloudToolbarButtons />
       </FixedToolbar>
 
-      <PlateContent {...editableProps} />
+      <Editor className="mt-2" {...editableProps} />
     </Plate>
   );
 }

@@ -89,6 +89,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.ui],
     components: [
       {
+        id: 'editor',
+        label: 'Editor',
+        usage: 'Editor',
+        route: customizerComponents.editor.href,
+      },
+      {
         id: 'fixed-toolbar',
         label: 'FixedToolbar',
         usage: 'FixedToolbar',

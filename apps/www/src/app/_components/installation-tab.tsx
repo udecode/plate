@@ -177,6 +177,8 @@ export default function InstallationTab() {
     return res;
   }, [plugins]);
 
+  const hasEditor = components.some((comp) => comp.id === 'editor');
+
   const importsCode = useMemo(() => {
     const importsGroups = Object.entries(groupedImportsByPackage).map(
       ([packageName, imports]) =>
@@ -189,7 +191,7 @@ export default function InstallationTab() {
         )} } from '@/components/plate-ui/${componentId}';`
     );
     return [
-      `import { createPlugins, Plate, PlateContent${
+      `import { createPlugins, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
       } } from '@udecode/plate-common';`,
       ...importsGroups,
@@ -314,7 +316,7 @@ export default function InstallationTab() {
     addLine(``);
   }
 
-  addLine(`<PlateContent />`);
+  addLine(`<${hasEditor ? 'Editor' : 'PlateContent'} />`);
 
   if (hasFloatingToolbar) {
     addLine(``);
