@@ -139,7 +139,7 @@ describe('Plate', () => {
       const _plugins = [{ key: 'test1' }];
 
       const wrapper = ({ children, id }: any) => (
-        <Plate id={id} plugins={id === 1 ? _plugins : undefined}>
+        <Plate id={id} plugins={id === '1' ? _plugins : undefined}>
           {children}
         </Plate>
       );
@@ -147,13 +147,13 @@ describe('Plate', () => {
         ({ id }) => usePlateSelectors(id).plugins(),
         {
           wrapper,
-          initialProps: { id: 1 },
+          initialProps: { id: '1' },
         }
       );
 
       expect(result.current.at(-1)!.key).toBe('test1');
 
-      rerender({ id: 2 });
+      rerender({ id: '2' });
 
       expect(result.current.at(-1)!.key).not.toBe('test1');
     });
