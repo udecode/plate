@@ -48,7 +48,6 @@ import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
   createPlateEditor,
   Plate,
-  PlateContent,
   PlatePluginComponent,
   useEditorRef,
   usePlateActions,
@@ -98,6 +97,7 @@ import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
@@ -321,12 +321,15 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
                 )}
               >
-                <PlateContent
+                <Editor
                   {...editableProps}
                   placeholder=""
+                  variant="ghost"
+                  size="md"
+                  focusRing={false}
                   className={cn(
                     editableProps.className,
-                    'px-8 outline-none',
+                    'px-8',
                     !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
                     id && 'pb-8 pt-2'
                   )}

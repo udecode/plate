@@ -4,6 +4,13 @@
 import * as React from 'react'
 export const Index: Record<string, any> = {
   'default': {
+    'editor': {
+      name: 'editor',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/editor.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/editor')),
+    },
     'cloud': {
       name: 'cloud',
       type: 'components:plate-ui',
@@ -669,12 +676,68 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/resizable.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/resizable')),
     },
+    'editor-default': {
+      name: 'editor-default',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-default.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-default')),
+    },
+    'editor-disabled': {
+      name: 'editor-disabled',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-disabled.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-disabled')),
+    },
+    'editor-ghost': {
+      name: 'editor-ghost',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-ghost.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-ghost')),
+    },
+    'editor-label': {
+      name: 'editor-label',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-label.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-label')),
+    },
+    'editor-text': {
+      name: 'editor-text',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-text.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-text')),
+    },
+    'editor-button': {
+      name: 'editor-button',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-button.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-button')),
+    },
+    'editor-form': {
+      name: 'editor-form',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/editor-form.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/editor-form')),
+    },
     'basic-editor-default-demo': {
       name: 'basic-editor-default-demo',
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-editor-default-demo.tsx'],
       component: React.lazy(() => import('@/registry/default/example/basic-editor-default-demo')),
+    },
+    'basic-editor-styling-demo': {
+      name: 'basic-editor-styling-demo',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/basic-editor-styling-demo.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/basic-editor-styling-demo')),
     },
     'basic-editor-handler-demo': {
       name: 'basic-editor-handler-demo',

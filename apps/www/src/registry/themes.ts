@@ -79,7 +79,7 @@ export const themes = [
         'destructive-foreground': '210 40% 98%',
         border: '214.3 31.8% 91.4%',
         input: '214.3 31.8% 91.4%',
-        ring: '222.2 84% 4.9%',
+        ring: '215 20.2% 65.1%',
         radius: '0.5rem',
       },
       dark: {
@@ -101,7 +101,7 @@ export const themes = [
         'destructive-foreground': '210 40% 98%',
         border: '217.2 32.6% 17.5%',
         input: '217.2 32.6% 17.5%',
-        ring: '212.7 26.8% 83.9',
+        ring: '217.2 32.6% 17.5%',
       },
     },
   },

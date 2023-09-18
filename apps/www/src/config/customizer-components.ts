@@ -1,4 +1,8 @@
 export const customizerComponents = {
+  editor: {
+    title: 'Editor',
+    href: '/docs/components/editor',
+  },
   alignDropdownMenu: {
     title: 'Align Dropdown Menu',
     href: '/docs/components/align-dropdown-menu',

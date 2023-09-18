@@ -37,7 +37,7 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 
 ### Basic Editor
 
-Let's start with a minimal editor setup using **`Plate`** and **`PlateContent`**.
+Let's start with a minimal editor setup.
 
 ```tsx showLineNumbers {1,5-7}
 import { Plate } from '@udecode/plate-common';
@@ -51,12 +51,30 @@ export default function BasicEditor() {
 }
 ```
 
-Simple and straightforward. Try it out:
+`Plate` manages the editor state and `PlateContent` renders the editor content. 
 
 <ComponentPreview name="basic-editor-default-demo" padding="md" />
 
+### Styling
+
+Let's give our editor some styles: [Editor](/docs/components/editor) is a styled version of `PlateContent`. 
+
+```tsx showLineNumbers {1,5-7}
+import { Plate } from '@udecode/plate-common';
+
+export default function BasicEditor() {
+  return (
+    <Plate>
+      <Editor placeholder="Type..." />
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="basic-editor-styling-demo" padding="md" />
+
 <Callout className="mt-4">
-  **Note**: The following examples are using these global styles:
+  **Note**: `Editor` is just an example of a styled editor using Tailwind. You can create your own styled version of `PlateContent`.
   <ComponentSource name="globals" />
 </Callout>
 
@@ -81,7 +99,7 @@ const initialValue = [
 export default function BasicEditor() {
   return (
     <Plate initialValue={initialValue}>
-      <PlateContent />
+      <Editor />
     </Plate>
   );
 }
@@ -109,7 +127,7 @@ export default function BasicEditor() {
         // save newValue...
       }}
     >
-      <PlateContent />
+      <Editor />
     </Plate>
   );
 }
@@ -186,7 +204,7 @@ export default function BasicEditor() {
       plugins={plugins}
       // ...
     >
-      <PlateContent />
+      <Editor />
     </Plate>
   );
 }

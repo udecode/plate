@@ -1,5 +1,14 @@
 [
   {
+    "name": "editor",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/editor.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
     "name": "cloud",
     "dependencies": [
       "@udecode/plate-cloud"

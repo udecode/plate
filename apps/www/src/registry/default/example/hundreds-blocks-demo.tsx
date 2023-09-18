@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Plate, PlateContent, TElement } from '@udecode/plate-common';
+import { Plate, TElement } from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -13,13 +13,14 @@ import {
 } from 'slate-react';
 
 import { MyValue } from '@/types/plate-types';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 
 function WithPlate() {
   return (
     <Plate initialValue={initialValue} plugins={basicNodesPlugins}>
-      <PlateContent {...editableProps} />
+      <Editor {...editableProps} />
     </Plate>
   );
 }
@@ -54,8 +55,12 @@ function WithoutPlate() {
 export default function HundredsBlocksDemo() {
   return (
     <div className="flex">
-      <WithPlate />
-      <WithoutPlate />
+      <div className="w-1/2 p-4">
+        <WithPlate />
+      </div>
+      <div className="w-1/2 p-4">
+        <WithoutPlate />
+      </div>
     </div>
   );
 }

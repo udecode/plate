@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+import Prism from 'prismjs';
 import 'prismjs/components/prism-markdown';
 
 import React from 'react';
@@ -9,14 +11,13 @@ import {
   createPluginFactory,
   isText,
   Plate,
-  PlateContent,
   TRenderLeafProps,
   TText,
 } from '@udecode/plate-common';
-import Prism from 'prismjs';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { cn } from '@/lib/utils';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 /**
  * Decorate texts with markdown preview.
@@ -111,8 +112,10 @@ const _editableProps = {
 
 export default function PreviewMdDemo() {
   return (
-    <Plate<MyValue> plugins={plugins} initialValue={previewMdValue}>
-      <PlateContent {..._editableProps} />
-    </Plate>
+    <div className="p-10">
+      <Plate<MyValue> plugins={plugins} initialValue={previewMdValue}>
+        <Editor {..._editableProps} />
+      </Plate>
+    </div>
   );
 }

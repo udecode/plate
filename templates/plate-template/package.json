@@ -14,11 +14,11 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.6",
-    "@udecode/plate-common": "^23.7.4",
+    "@udecode/plate-common": "^24.0.0",
     "class-variance-authority": "0.7.0",
     "clsx": "2.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "lucide-react": "0.277.0",
+    "lucide-react": "0.279.0",
     "next": "^13.4.19",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.1.0",
-    "@types/node": "^20.6.1",
+    "@types/node": "^20.6.2",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/parser": "^6.7.0",
