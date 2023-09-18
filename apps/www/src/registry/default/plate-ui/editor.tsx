@@ -9,8 +9,8 @@ import type { VariantProps } from 'class-variance-authority';
 
 const editorVariants = cva(
   cn(
-    'relative whitespace-pre-wrap break-words',
-    'min-h-[80px] w-full rounded-md bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+    'relative overflow-x-auto whitespace-pre-wrap break-words',
+    'min-h-[80px] w-full rounded-md bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
     '[&_strong]:font-bold'
@@ -27,9 +27,19 @@ const editorVariants = cva(
       disabled: {
         true: 'cursor-not-allowed opacity-50',
       },
+      focusRing: {
+        true: 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        false: '',
+      },
+      size: {
+        sm: 'text-sm',
+        md: 'text-base',
+      },
     },
     defaultVariants: {
       variant: 'outline',
+      focusRing: true,
+      size: 'sm',
     },
   }
 );
@@ -38,12 +48,30 @@ export type EditorProps = PlateContentProps &
   VariantProps<typeof editorVariants>;
 
 const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
-  ({ variant, disabled, focused, readOnly, className, ...props }, ref) => {
+  (
+    {
+      className,
+      disabled,
+      focused,
+      focusRing,
+      readOnly,
+      size,
+      variant,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <div ref={ref} className="relative w-full">
         <PlateContent
           className={cn(
-            editorVariants({ variant, focused, disabled }),
+            editorVariants({
+              disabled,
+              focused,
+              focusRing,
+              size,
+              variant,
+            }),
             className
           )}
           disableDefaultStyles

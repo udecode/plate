@@ -325,9 +325,11 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   {...editableProps}
                   placeholder=""
                   variant="ghost"
+                  size="md"
+                  focusRing={false}
                   className={cn(
                     editableProps.className,
-                    'px-8 text-base',
+                    'px-8',
                     !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
                     id && 'pb-8 pt-2'
                   )}
