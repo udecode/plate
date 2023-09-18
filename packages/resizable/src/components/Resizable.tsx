@@ -9,8 +9,8 @@ import {
   findNodePath,
   select,
   setNodes,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 
 import { ResizeEvent, ResizeLength } from '../types';
@@ -37,7 +37,7 @@ export const useResizableState = ({
   maxWidth = '100%',
 }: ResizableOptions = {}) => {
   const element = useElement<TResizableElement>();
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const nodeWidth = element?.width ?? '100%';
 

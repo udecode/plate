@@ -26,6 +26,7 @@ export * from './isAncestorEmpty';
 export * from './isBlockAboveEmpty';
 export * from './isBlockTextEmptyAfterSelection';
 export * from './isDocumentEnd';
+export * from './isEditorEmpty';
 export * from './isFirstChild';
 export * from './isMarkActive';
 export * from './isPointAtWordEnd';

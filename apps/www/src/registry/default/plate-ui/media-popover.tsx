@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import {
   isCollapsed,
+  useEditorState,
   useElement,
-  usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
@@ -27,7 +27,7 @@ export interface MediaPopoverProps {
 export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   const isOpen = !readOnly && selected && isCollapsed(editor.selection);
   const isEditing = useFloatingMediaSelectors().isEditing();

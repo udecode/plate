@@ -4,17 +4,17 @@ import { Value } from '@udecode/slate';
 import { usePlateEffects, UsePlateEffectsProps } from '../hooks';
 import { PlateEditor } from '../types';
 
-export interface PlateProviderEffectsProps<
+export interface PlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > extends UsePlateEffectsProps<V, E> {
   children: ReactNode;
 }
 
-export function PlateProviderEffects<
+export function PlateEffects<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
->({ children, ...props }: PlateProviderEffectsProps<V, E>) {
+>({ children, ...props }: PlateEffectsProps<V, E>) {
   usePlateEffects<V, E>(props);
 
   return <>{children}</>;

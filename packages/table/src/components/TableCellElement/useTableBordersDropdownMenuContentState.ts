@@ -1,11 +1,11 @@
-import { usePlateEditorState } from '@udecode/plate-common';
+import { useEditorState } from '@udecode/plate-common';
 
 import { isTableBorderHidden } from '../../queries/index';
 import { useTableStore } from '../../stores/index';
 import { getOnSelectTableBorderFactory } from './getOnSelectTableBorderFactory';
 
 export const useTableBordersDropdownMenuContentState = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const selectedCells = useTableStore().get.selectedCells();
 
   const hasBottomBorder = !isTableBorderHidden(editor, 'bottom');

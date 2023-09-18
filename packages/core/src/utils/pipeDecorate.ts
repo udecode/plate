@@ -1,4 +1,3 @@
-import { Value } from '@udecode/slate';
 import { Range } from 'slate';
 
 import { PlateEditor } from '../types/PlateEditor';
@@ -8,10 +7,10 @@ import { TEditableProps } from '../types/slate-react/TEditableProps';
  * @see {@link Decorate}.
  * Optimization: return undefined if empty list so Editable uses a memo.
  */
-export const pipeDecorate = <V extends Value>(
-  editor: PlateEditor<V>,
-  decorateProp?: TEditableProps<V>['decorate']
-): TEditableProps<V>['decorate'] => {
+export const pipeDecorate = (
+  editor: PlateEditor,
+  decorateProp?: TEditableProps['decorate']
+): TEditableProps['decorate'] => {
   const decorates = editor.plugins.flatMap(
     (plugin) => plugin.decorate?.(editor, plugin) ?? []
   );

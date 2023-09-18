@@ -17,4 +17,4 @@ export type TRenderLeafProps<
 
 export type RenderLeafFn<V extends Value = Value> = (
   props: TRenderLeafProps<V>
-) => JSX.Element;
+) => React.ReactElement;

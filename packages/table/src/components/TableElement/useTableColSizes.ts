@@ -3,7 +3,7 @@ import {
   findNodePath,
   getPluginOptions,
   unsetNodes,
-  usePlateEditorRef,
+  useEditorRef,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
@@ -22,7 +22,7 @@ export const useTableColSizes = (
   tableNode: TTableElement,
   { disableOverrides = false } = {}
 ): number[] => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
   const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(

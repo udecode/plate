@@ -189,7 +189,7 @@ export default function InstallationTab() {
         )} } from '@/components/plate-ui/${componentId}';`
     );
     return [
-      `import { createPlugins, Plate, PlateProvider${
+      `import { createPlugins, Plate, PlateContent${
         plateImports.length > 0 ? ', ' + plateImports : ''
       } } from '@udecode/plate-common';`,
       ...importsGroups,
@@ -299,10 +299,7 @@ export default function InstallationTab() {
     addLine(`<CommentsProvider users={{}} myUserId="1">`, true);
   }
 
-  addLine(
-    `<PlateProvider plugins={plugins} initialValue={initialValue}>`,
-    true
-  );
+  addLine(`<Plate plugins={plugins} initialValue={initialValue}>`, true);
 
   if (hasFixedToolbar) {
     addLine(`<FixedToolbar>`, true);
@@ -317,7 +314,7 @@ export default function InstallationTab() {
     addLine(``);
   }
 
-  addLine(`<Plate />`);
+  addLine(`<PlateContent />`);
 
   if (hasFloatingToolbar) {
     addLine(``);
@@ -340,7 +337,7 @@ export default function InstallationTab() {
     addLine(`<CommentsPopover />`);
   }
 
-  addLine(`</PlateProvider>`, false, true);
+  addLine(`</Plate>`, false, true);
 
   if (hasCommentsPopover) {
     addLine(`</CommentsProvider>`, false, true);

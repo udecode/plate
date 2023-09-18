@@ -60,7 +60,7 @@ it('custom serialize bold to html', () => {
   ).toEqual('Some paragraph of text with <b>bold</b> part.');
 });
 
-function Bold({ children }: any): JSX.Element {
+function Bold({ children }: any): React.ReactElement {
   return React.createElement('b', {}, children);
 }
 

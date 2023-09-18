@@ -1,10 +1,6 @@
 import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import {
-  focusEditor,
-  someNode,
-  usePlateEditorState,
-} from '@udecode/plate-common';
+import { focusEditor, someNode, useEditorState } from '@udecode/plate-common';
 import {
   deleteColumn,
   deleteRow,
@@ -30,7 +26,7 @@ import {
 import { ToolbarButton } from './toolbar';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   const tableSelected = someNode(editor, {
     match: { type: ELEMENT_TABLE },

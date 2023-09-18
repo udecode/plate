@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { usePlateEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 import {
   getCommentKeyId,
@@ -11,7 +11,7 @@ import {
 } from '..';
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const [commentIds, setCommentIds] = useState<string[]>([]);
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();

@@ -93,7 +93,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 <DndProvider backend={HTML5Backend}>
-  <Plate plugins={plugins} />
+  <Plate plugins={plugins}>
+    <PlateContent />
+  </Plate>
 </DndProvider>;
 ```
 

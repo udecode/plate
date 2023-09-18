@@ -16,6 +16,7 @@ import {
 import {
   createPluginFactory,
   Plate,
+  PlateContent,
   PlateRenderElementProps,
   TElement,
 } from '@udecode/plate-common';
@@ -89,9 +90,10 @@ export function EditableVoidElement({
           <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={editableVoidPlugins}
-            editableProps={editableProps}
             // initialValue={basicElementsValue}
-          />
+          >
+            <PlateContent {...editableProps} />
+          </Plate>
         </div>
       </div>
       {children}
@@ -113,10 +115,8 @@ const plugins = createMyPlugins(
 
 export default function EditableVoidsDemo() {
   return (
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={editableVoidsValue}
-    />
+    <Plate<MyValue> plugins={plugins} initialValue={editableVoidsValue}>
+      <PlateContent {...editableProps} />
+    </Plate>
   );
 }

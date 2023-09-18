@@ -1,10 +1,10 @@
-import { useHotkeys, usePlateEditorRef } from '@udecode/plate-common';
+import { useEditorRef, useHotkeys } from '@udecode/plate-common';
 
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
 import { useFloatingLinkSelectors } from './floatingLinkStore';
 
 export const useFloatingLinkEnter = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 

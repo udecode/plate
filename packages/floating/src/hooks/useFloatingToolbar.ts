@@ -3,8 +3,8 @@ import {
   getSelectionText,
   isSelectionExpanded,
   mergeProps,
+  useEditorState,
   useEventEditorSelectors,
-  usePlateEditorState,
 } from '@udecode/plate-common';
 import { useFocused } from 'slate-react';
 
@@ -25,7 +25,7 @@ export const useFloatingToolbarState = ({
   hideToolbar,
   ignoreReadOnly,
 }: FloatingToolbarState) => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const focusedEditorId = useEventEditorSelectors.focus();
   const focused = useFocused();
 

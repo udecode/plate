@@ -33,7 +33,7 @@ describe('withMention', () => {
   };
 
   const createEditor = <V extends Value>(
-    state: JSX.Element,
+    state: React.ReactElement,
     options: CreateEditorOptions = {}
   ): PlateEditor<V> =>
     createEditorWithMentions(state, {
@@ -46,7 +46,7 @@ describe('withMention', () => {
     });
 
   const createEditorWithMentionInput = <V extends Value>(
-    at: JSX.Element = (
+    at: React.ReactElement = (
       <hp>
         <htext />
         <cursor />
@@ -528,8 +528,8 @@ describe('withMention', () => {
   describe('paste', () => {
     const testPaste: (
       data: DataTransferDataMap,
-      input: JSX.Element,
-      expected: JSX.Element
+      input: React.ReactElement,
+      expected: React.ReactElement
     ) => void = (data, input, expected) => {
       const editor = createEditorWithMentionInput(input);
 

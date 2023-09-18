@@ -3,8 +3,8 @@ import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import { PlateId, usePlateSelectors } from '../stores';
-import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
+import { usePlateSelectors } from '../stores';
+import { useEditorRef } from '../stores/plate/selectors/useEditorRef';
 import { DOM_HANDLERS } from '../types/misc/dom-attributes';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 import { pipeDecorate } from '../utils/pipeDecorate';
@@ -12,13 +12,14 @@ import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
 
-export const useEditableProps = ({
-  id,
-  ...editableProps
-}: TEditableProps & { id?: PlateId } = {}): TEditableProps => {
-  const editor = usePlateEditorRef(id);
+export const useEditableProps = (
+  editableProps: TEditableProps = {}
+): TEditableProps => {
+  const { id } = editableProps;
+
+  const editor = useEditorRef(id);
   const selectors = usePlateSelectors(id);
-  const keyDecorate = selectors.keyDecorate();
+  const versionDecorate = selectors.versionDecorate();
   const readOnly = selectors.readOnly();
   const storeDecorate = selectors.decorate()?.fn;
   const storeRenderLeaf = selectors.renderLeaf()?.fn;
@@ -29,10 +30,10 @@ export const useEditableProps = ({
   }, [editableProps?.decorate, editor, storeDecorate]);
 
   const decorate: typeof decorateMemo = useMemo(() => {
-    if (!keyDecorate || !decorateMemo) return;
+    if (!versionDecorate || !decorateMemo) return;
 
     return (entry) => decorateMemo(entry);
-  }, [decorateMemo, keyDecorate]);
+  }, [decorateMemo, versionDecorate]);
 
   const renderElement = useMemo(() => {
     return pipeRenderElement(

@@ -14,8 +14,8 @@ import { pluginRenderLeaf } from './pluginRenderLeaf';
  */
 export const pipeRenderLeaf = <V extends Value>(
   editor: PlateEditor<V>,
-  renderLeafProp?: TEditableProps<V>['renderLeaf']
-): TEditableProps<V>['renderLeaf'] => {
+  renderLeafProp?: TEditableProps['renderLeaf']
+): TEditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
 
   editor.plugins.forEach((plugin) => {

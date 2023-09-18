@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   createPrimitiveComponent,
   toDOMNode,
-  usePlateEditorRef,
+  useEditorRef,
 } from '@udecode/plate-common';
 
 import { getCommentPosition } from '../queries/index';
@@ -10,7 +10,7 @@ import { useCommentsSelectors } from '../stores/comments/CommentsProvider';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';
 
 export const useCommentsPositionerState = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   let activeCommentId = useCommentsSelectors().activeCommentId();
 
   const [position, setPosition] = useState<{ top: number; left: number }>({

@@ -18,7 +18,7 @@ export type CreateEditorOptions = {
 };
 
 export const createEditorWithMentions = <V extends Value>(
-  state: JSX.Element,
+  state: React.ReactElement,
   {
     multipleMentionPlugins,
     pluginOptions: { trigger, key, triggerPreviousCharPattern } = {},
