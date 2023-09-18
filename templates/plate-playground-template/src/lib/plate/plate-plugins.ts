@@ -262,7 +262,7 @@ export const plugins = createPlugins(
       options: { enableScroller: true },
     }),
     createEmojiPlugin({
-      renderAfterEditable: EmojiCombobox,
+      renderAfterEditable: EmojiCombobox as RenderAfterEditable,
     }),
     createExitBreakPlugin({
       options: {
