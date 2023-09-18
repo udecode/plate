@@ -9,6 +9,7 @@ import {
   createPluginFactory,
   isText,
   Plate,
+  PlateContent,
   TRenderLeafProps,
   TText,
 } from '@udecode/plate-common';
@@ -110,10 +111,8 @@ const _editableProps = {
 
 export default function PreviewMdDemo() {
   return (
-    <Plate<MyValue>
-      editableProps={_editableProps}
-      plugins={plugins}
-      initialValue={previewMdValue}
-    />
+    <Plate<MyValue> plugins={plugins} initialValue={previewMdValue}>
+      <PlateContent {..._editableProps} />
+    </Plate>
   );
 }

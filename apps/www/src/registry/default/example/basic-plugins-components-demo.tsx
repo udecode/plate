@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { createPlugins, Plate, PlateContent } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -35,18 +35,14 @@ const plugins = createPlugins(
 
 export default function BasicPluginsComponentsDemo() {
   return (
-    <Plate
-      editableProps={{
-        spellCheck: false,
-        autoFocus: false,
-        placeholder: 'Type…',
-        style: {
-          outline: 'none',
-        },
-      }}
-      initialValue={basicEditorValue}
-      plugins={plugins}
-    />
+    <Plate initialValue={basicEditorValue} plugins={plugins}>
+      <PlateContent
+        spellCheck={false}
+        autoFocus={false}
+        placeholder="Type..."
+        style={{ outline: 'none' }}
+      />
+    </Plate>
   );
 }
 

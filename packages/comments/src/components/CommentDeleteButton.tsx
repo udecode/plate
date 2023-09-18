@@ -1,7 +1,4 @@
-import {
-  createPrimitiveComponent,
-  usePlateEditorRef,
-} from '@udecode/plate-common';
+import { createPrimitiveComponent, useEditorRef } from '@udecode/plate-common';
 
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {
@@ -17,7 +14,7 @@ export const useCommentDeleteButtonState = () => {
   const id = useCommentSelectors().id();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const removeComment = useRemoveComment();
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     activeCommentId,

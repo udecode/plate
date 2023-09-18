@@ -6,7 +6,7 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-common';
 
-import { useAddCommentMark, useCommentsActions } from './stores/index';
+import { useAddCommentMark, useCommentsActions } from './stores';
 import { CommentsPlugin } from './types';
 
 export const useHooksComments = <

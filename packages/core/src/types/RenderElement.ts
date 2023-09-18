@@ -9,4 +9,4 @@ import { PlateRenderElementProps } from './PlateRenderElementProps';
  */
 export type RenderElement = <V extends Value>(
   props: PlateRenderElementProps<V>
-) => JSX.Element | undefined;
+) => React.ReactElement | undefined;

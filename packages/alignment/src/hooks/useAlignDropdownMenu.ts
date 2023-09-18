@@ -3,14 +3,14 @@ import {
   focusEditor,
   isCollapsed,
   isDefined,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { Alignment, KEY_ALIGN, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   let value: Alignment = 'left';
   if (isCollapsed(editor?.selection)) {
@@ -33,7 +33,7 @@ export const useAlignDropdownMenuState = () => {
 export const useAlignDropdownMenu = ({
   value,
 }: ReturnType<typeof useAlignDropdownMenuState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     radioGroupProps: {

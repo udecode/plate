@@ -3,8 +3,8 @@ import {
   findNodePath,
   getPluginOptions,
   setNodes,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
@@ -15,7 +15,7 @@ import {
 } from '../index';
 
 export const useCodeBlockComboboxState = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
   const element = useElement<TCodeBlockElement>();
   const [value, setValue] = React.useState(element.lang ?? 'text');
@@ -42,7 +42,7 @@ export const useCodeBlockCombobox = ({
   element,
   setValue,
 }: ReturnType<typeof useCodeBlockComboboxState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     commandItemProps: {

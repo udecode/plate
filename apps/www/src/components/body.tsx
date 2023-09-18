@@ -11,7 +11,12 @@ interface ThemeBodyProps extends React.ComponentProps<'body'> {
   defaultTheme?: string;
 }
 
-export function Body({ defaultTheme, children, className }: ThemeBodyProps) {
+export function Body({
+  defaultTheme,
+  children,
+  className,
+  ...props
+}: ThemeBodyProps) {
   const [config] = useConfig();
   const pathname = usePathname();
   const mounted = useMounted();
@@ -25,10 +30,13 @@ export function Body({ defaultTheme, children, className }: ThemeBodyProps) {
     <body
       className={cn(theme, className)}
       style={
-        {
-          '--radius': `${config.radius ?? 0.5}rem`,
-        } as React.CSSProperties
+        mounted
+          ? ({
+              '--radius': `${config.radius ?? 0.5}rem;`,
+            } as React.CSSProperties)
+          : undefined
       }
+      {...props}
     >
       {children}
     </body>

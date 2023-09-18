@@ -1,171 +1,221 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import { isBlock } from '@udecode/slate/src/interfaces/editor/isBlock';
-import { setNodes } from '@udecode/slate/src/interfaces/transforms/setNodes';
-import { isEqual, memoize } from 'lodash';
+import { renderHook } from '@testing-library/react-hooks';
+import {
+  createPlateEditor,
+  useEditorRef,
+  usePlateSelectors,
+} from '@udecode/plate-common';
 
-import { PlatePlugin } from '../types/index';
-import { createPlateEditor } from '../utils/index';
+import { PLATE_SCOPE } from '../stores/index';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
-  describe('when normalizeInitialValue false', () => {
-    // it('should trigger normalize if normalizeInitialValue set', () => {
-    //   const fn = jest.fn((e: TEditor<V>, [node, path]) => {
-    //     if (
-    //       isBlock(e, node) &&
-    //       path?.length &&
-    //       !isEqual((node as any).path, path)
-    //     ) {
-    //       setNodes(e, { path } as any, { at: path });
-    //     }
-    //   });
-    //
-    //   const plugins: PlatePlugin[] = [
-    //     {
-    //       key: 'a',
-    //       withOverrides: (e) => {
-    //         const { normalizeNode } = e;
-    //         e.normalizeNode = (n: TNodeEntry) => {
-    //           fn(e, n);
-    //           normalizeNode(n);
-    //         };
-    //         return e;
-    //       },
-    //     },
-    //   ];
-    //
-    //   const component = (
-    //     <Plate
-    //       plugins={plugins}
-    //       normalizeInitialValue
-    //       initialValue={[{ children: [{ text: '' }] }]}
-    //     />
-    //   );
-    //
-    //   render(component);
+  describe('useEditorRef()', () => {
+    describe('when editor is defined', () => {
+      it('should be initialValue', async () => {
+        const editor = createPlateEditor();
 
-    // expect(fn).toBeCalled();
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+        const { result } = renderHook(() => useEditorRef(), {
+          wrapper,
+        });
 
-    //   expect(getPlateEditorRef().children).toStrictEqual([
-    //     { children: [{ text: '' }], path: [0] },
-    //   ]);
-    // });
-
-    it('should not trigger normalize if normalizeInitialValue is not set to true', () => {
-      const fn = jest.fn((e, [node, path]) => {
-        if (
-          isBlock(e, node) &&
-          path?.length &&
-          !isEqual((node as any).path, path)
-        ) {
-          setNodes(e, { path } as any, { at: path });
-        }
+        expect(result.current).toBe(editor);
       });
+    });
+    describe('when editor is not defined', () => {
+      it('should be default', async () => {
+        const wrapper = ({ children }: any) => <Plate>{children}</Plate>;
+        const { result } = renderHook(() => useEditorRef(), {
+          wrapper,
+        });
 
-      // @ts-ignore
-      const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
+        expect(result.current.id).toBe(PLATE_SCOPE.toString());
+      });
+    });
+    describe('when id is defined', () => {
+      it('should be id', async () => {
+        const wrapper = ({ children }: any) => (
+          <Plate id="test">{children}</Plate>
+        );
+        const { result } = renderHook(() => useEditorRef('test'), {
+          wrapper,
+        });
+
+        expect(result.current.id).toBe('test');
+      });
+    });
+  });
+
+  describe('usePlateSelectors().value()', () => {
+    describe('when initialValue is defined', () => {
+      it('should be initialValue', async () => {
+        const initialValue = [{ type: 'p', children: [{ text: 'test' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <Plate initialValue={initialValue}>{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(initialValue);
+      });
+    });
+    describe('when value is defined', () => {
+      it('should be value', async () => {
+        const value = [{ type: 'p', children: [{ text: 'value' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <Plate value={value}>{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(value);
+      });
+    });
+    describe('when editor with children is defined', () => {
+      it('should be editor.children', async () => {
+        const editor = createPlateEditor();
+        editor.children = [{ type: 'p', children: [{ text: 'value' }] }];
+
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(editor.children);
+      });
+    });
+    describe('when editor without children is defined', () => {
+      it('should be default', async () => {
+        const editor = createPlateEditor();
+
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().value(), {
+          wrapper,
+        });
+
+        expect(result.current).toEqual(editor.childrenFactory());
+      });
+    });
+  });
+
+  describe('usePlateSelectors().plugins()', () => {
+    describe('when plugins is updated', () => {
+      it('should be updated', () => {
+        const _plugins = [{ key: 'test' }];
+
+        const wrapper = ({ children, plugins }: any) => (
+          <Plate plugins={plugins}>{children}</Plate>
+        );
+        const { result, rerender } = renderHook(
+          () => usePlateSelectors().plugins(),
+          {
+            wrapper,
+            initialProps: { plugins: _plugins },
+          }
+        );
+
+        expect(result.current.at(-1)!.key).toBe('test');
+
+        rerender({ plugins: [{ key: 'test2' }] });
+
+        expect(result.current.at(-1)!.key).toBe('test2');
+      });
+    });
+  });
+
+  describe('when id updates', () => {
+    it('should remount Plate', () => {
+      const _plugins = [{ key: 'test1' }];
+
+      const wrapper = ({ children, id }: any) => (
+        <Plate id={id} plugins={id === 1 ? _plugins : undefined}>
+          {children}
+        </Plate>
+      );
+      const { result, rerender } = renderHook(
+        ({ id }) => usePlateSelectors(id).plugins(),
         {
-          key: 'a',
-          withOverrides: (e) => {
-            const { normalizeNode } = e;
-            e.normalizeNode = (n) => {
-              fn(e, n);
-              normalizeNode(n);
-            };
-            return e;
-          },
-        },
-      ])();
-
-      const editor = createPlateEditor();
-
-      render(
-        <Plate
-          editor={editor}
-          plugins={plugins}
-          initialValue={[{ children: [{ text: '' }] } as any]}
-        />
+          wrapper,
+          initialProps: { id: 1 },
+        }
       );
 
-      expect(fn).not.toHaveBeenCalled();
+      expect(result.current.at(-1)!.key).toBe('test1');
 
-      expect(editor.children).not.toStrictEqual([
-        { children: [{ text: '' }], path: [0] },
-      ]);
+      rerender({ id: 2 });
+
+      expect(result.current.at(-1)!.key).not.toBe('test1');
     });
   });
 
-  describe('when renderAboveSlate renders null', () => {
-    it('should not normalize editor children', () => {
-      const plugins: PlatePlugin[] = [
-        {
-          key: 'a',
-          renderAboveSlate: () => {
-            return null;
-          },
-        },
-      ];
+  describe('usePlateSelectors().id()', () => {
+    describe('when Plate has an id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <Plate id="test">{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
 
-      const editor = createPlateEditor({
-        plugins,
+        expect(result.current).toBe('test');
       });
-
-      expect(() =>
-        render(<Plate editor={editor} initialValue={[{}] as any} />)
-      ).not.toThrow();
     });
-  });
 
-  describe('when renderAboveSlate renders children', () => {
-    it("should not trigger plugin's normalize", () => {
-      const plugins: PlatePlugin[] = [
-        {
-          key: 'a',
-          renderAboveSlate: ({ children }) => {
-            return <>{children}</>;
-          },
-        },
-      ];
+    describe('when Plate without id > Plate with id', () => {
+      it('should be the closest one', () => {
+        const wrapper = ({ children }: any) => (
+          <Plate>
+            <Plate id="test">{children}</Plate>
+          </Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
 
-      const editor = createPlateEditor({
-        plugins,
+        expect(result.current).toBe('test');
       });
-
-      expect(() =>
-        render(<Plate editor={editor} initialValue={[{}] as any} />)
-      ).toThrow();
     });
-  });
 
-  describe('when nested Plate', () => {
-    it('should work', () => {
-      const plugins: PlatePlugin[] = [
-        {
-          key: 'a',
-          isElement: true,
-          isVoid: true,
-          component: ({ children, attributes }) => (
-            <div {...attributes}>
-              <Plate id="test" />
-              {children}
-            </div>
-          ),
-        },
-      ];
+    describe('when Plate with id > Plate without id > select id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <Plate id="test">
+            <Plate>{children}</Plate>
+          </Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors('test').id(), {
+          wrapper,
+        });
 
-      const editor = createPlateEditor({
-        plugins,
+        expect(result.current).toBe('test');
       });
+    });
 
-      expect(() =>
-        render(
-          <Plate
-            editor={editor}
-            initialValue={[{ type: 'a', children: [{ text: '' }] }] as any}
-          />
-        )
-      ).not.toThrow();
+    describe('when Plate with id > Plate without id', () => {
+      it('should be that id', () => {
+        const wrapper = ({ children }: any) => (
+          <Plate id="test">
+            <Plate>{children}</Plate>
+          </Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe(PLATE_SCOPE);
+      });
     });
   });
 });

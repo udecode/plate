@@ -3,7 +3,7 @@ import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { createMyPlugins, MyValue } from '@/types/plate-types';
@@ -78,11 +78,9 @@ export default function FindReplaceDemo() {
     <>
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={findReplaceValue}
-      />
+      <Plate<MyValue> plugins={plugins} initialValue={findReplaceValue}>
+        <PlateContent {...editableProps} />
+      </Plate>
     </>
   );
 }

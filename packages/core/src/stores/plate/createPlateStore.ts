@@ -14,7 +14,7 @@ import { PlateStoreState } from '../../types/PlateStore';
 
 /**
  * A unique id used as a provider scope.
- * Use it if you have multiple `PlateProvider` in the same React tree.
+ * Use it if you have multiple `Plate` in the same React tree.
  * @default PLATE_SCOPE
  */
 export type PlateId = Scope;
@@ -36,10 +36,10 @@ export const createPlateStore = <
   decorate = null,
   editor = null as any,
   id,
-  isRendered = false,
-  keyDecorate = '1',
-  keyEditor = '1',
-  keySelection = '1',
+  isMounted = false,
+  versionDecorate = 1,
+  versionEditor = 1,
+  versionSelection = 1,
   onChange = null,
   editorRef = null,
   plugins = [],
@@ -55,10 +55,10 @@ export const createPlateStore = <
       decorate,
       editor,
       id,
-      isRendered,
-      keyDecorate,
-      keyEditor,
-      keySelection,
+      isMounted,
+      versionDecorate,
+      versionEditor,
+      versionSelection,
       onChange,
       editorRef,
       plugins,
@@ -80,11 +80,12 @@ export const createPlateStore = <
     usePlateStore: (_id?: PlateId) => {
       const closestId = usePlateId();
 
-      // get targeted store if id defined or if the store is found
-      if (isDefined(_id) || stores.usePlateStore(_id).get.id(_id)) {
+      // get targeted store if id defined and if the store is found
+      if (isDefined(_id) && stores.usePlateStore(_id).get.id(_id)) {
         return stores.usePlateStore(_id);
       }
 
+      // if targeted store not found, get the closest store
       return stores.usePlateStore(closestId);
     },
   };

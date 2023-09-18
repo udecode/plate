@@ -11,7 +11,10 @@ import {
 } from './plugin/PlatePlugin';
 import { TEditableProps } from './slate-react/TEditableProps';
 
-export type PlateChangeKey = 'keyEditor' | 'keySelection' | 'keyDecorate';
+export type PlateChangeKey =
+  | 'versionEditor'
+  | 'versionSelection'
+  | 'versionDecorate';
 
 export type PlateStoreState<
   V extends Value = Value,
@@ -19,7 +22,7 @@ export type PlateStoreState<
 > = {
   /**
    * A unique id used as a provider scope.
-   * Use it if you have multiple `PlateProvider` in the same React tree.
+   * Use it if you have multiple `Plate` in the same React tree.
    * @default PLATE_SCOPE
    */
   id: PlateId;
@@ -52,23 +55,23 @@ export type PlateStoreState<
   /**
    * Whether `Editable` is rendered so slate DOM is resolvable.
    */
-  isRendered: boolean;
+  isMounted: boolean;
 
   /**
-   * A random key updated on each editor change.
+   * Version incremented on each editor change.
    */
-  keyEditor: string;
+  versionEditor: number;
 
   /**
-   * A random key updated on each editor.selection change.
+   * Version incremented on each editor.selection change.
    */
-  keySelection: string;
+  versionSelection: number;
 
   /**
-   * A random key updated when calling `redecorate`.
+   * Version incremented when calling `redecorate`.
    * This is a dependency of the `decorate` function.
    */
-  keyDecorate: string;
+  versionDecorate: number;
 
   /**
    * Controlled callback called when the editor state changes.
@@ -80,9 +83,9 @@ export type PlateStoreState<
    */
   editorRef: { ref: ForwardedRef<E> };
 
-  decorate: { fn: NonNullable<TEditableProps<V>['decorate']> };
-  renderElement: { fn: NonNullable<TEditableProps<V>['renderElement']> };
-  renderLeaf: { fn: NonNullable<TEditableProps<V>['renderLeaf']> };
+  decorate: { fn: NonNullable<TEditableProps['decorate']> };
+  renderElement: { fn: NonNullable<TEditableProps['renderElement']> };
+  renderLeaf: { fn: NonNullable<TEditableProps['renderLeaf']> };
 }>;
 
 // A list of store keys to be exposed in `editor.plate.set`.

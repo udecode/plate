@@ -6,7 +6,7 @@ import { PlateId, usePlateSelectors } from '../createPlateStore';
 /**
  * Get editor ref which is never updated.
  */
-export const usePlateEditorRef = <
+export const useEditorRef = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(

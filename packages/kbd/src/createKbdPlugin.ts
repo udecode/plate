@@ -15,8 +15,6 @@ export const createKbdPlugin = createPluginFactory({
     onKeyDown: onKeyDownToggleMark,
   },
   deserializeHtml: {
-    rules: [
-      { validNodeName: ['KBD'] },
-    ],
+    rules: [{ validNodeName: ['KBD'] }],
   },
 });

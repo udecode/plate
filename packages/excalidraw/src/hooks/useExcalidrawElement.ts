@@ -24,7 +24,7 @@ export const useExcalidrawElement = ({
 
   const _excalidrawRef = useRef<ExcalidrawImperativeAPI>(null);
 
-  // const editor = usePlateEditorRef();
+  // const editor = useEditorRef();
 
   const excalidrawProps: TExcalidrawProps = {
     excalidrawRef: _excalidrawRef,

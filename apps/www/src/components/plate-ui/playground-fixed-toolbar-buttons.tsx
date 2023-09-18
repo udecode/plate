@@ -7,7 +7,7 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { usePlateReadOnly } from '@udecode/plate-common';
+import { useEditorReadOnly } from '@udecode/plate-common';
 import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
@@ -37,7 +37,7 @@ import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
   return (
