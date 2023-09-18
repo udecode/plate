@@ -32,7 +32,7 @@ export function Body({
       style={
         mounted
           ? ({
-              '--radius': `${config.radius ?? 0.5}rem;`,
+              '--radius': `${config.radius ?? 0.5}rem`,
             } as React.CSSProperties)
           : undefined
       }
