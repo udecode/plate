@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-highlight",
-  "version": "23.7.4",
+  "version": "24.0.0",
   "description": "Highlight plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -30,7 +30,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "23.7.4"
+    "@udecode/plate-common": "24.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
