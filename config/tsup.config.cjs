@@ -1,20 +1,43 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { defineConfig } from 'tsup';
-import ts from 'typescript';
 
 const cwd = process.cwd();
-const tsConfigPath = ts.findConfigFile(cwd, ts.sys.fileExists, 'tsconfig.json');
-if (!tsConfigPath) {
-  throw new Error(`tsconfig.json not found in the current directory! ${cwd}`);
-}
-const configFile = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
-const tsConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, cwd);
+
+const INPUT_FILE_PATH = path.join(cwd, 'src/index.ts');
+const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
+  ? INPUT_FILE_PATH
+  : path.join(cwd, 'src/index.tsx');
+
+// export default defineConfig({
+//   entry: [INPUT_FILE],
+//   silent: true,
+//   format: ['cjs', 'esm'],
+//   outExtension: (ctx) => {
+//     return { js: `.${ctx.format === 'esm' ? 'es' : ctx.format}.js` };
+//   },
+//   outDir: 'dist',
+// });
+
+const { dependencies = {}, peerDependencies = {} } = JSON.parse(
+  fs.readFileSync(path.join(cwd, 'package.json'), 'utf8')
+);
 
 export default defineConfig({
-  entry: [...tsConfig.fileNames],
-  outDir: 'dist',
   clean: true,
-  bundle: false,
+  outDir: 'dist',
+  sourcemap: true,
   format: ['esm', 'cjs'],
-  sourcemap: tsConfig.options.sourceMap,
-  target: tsConfig.raw?.compilerOptions?.target ?? 'es2020',
+  entry: [INPUT_FILE],
+  external: [
+    ...Object.keys(dependencies),
+    ...Object.keys(peerDependencies),
+    'react-textarea-autosize',
+  ],
+  outExtension: (ctx) => {
+    return { js: `.${ctx.format === 'esm' ? 'es' : ctx.format}.js` };
+  },
+  env: {
+    NODE_ENV: 'production',
+  },
 });

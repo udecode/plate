@@ -5,6 +5,7 @@ const nextConfig = {
   // Enable React strict mode.
   // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
   reactStrictMode: true,
+  transpilePackages: ['@udecode/*'],
 
   // Configure domains to allow for optimized image loading.
   // https://nextjs.org/docs/basic-features/image-optimization#domains
