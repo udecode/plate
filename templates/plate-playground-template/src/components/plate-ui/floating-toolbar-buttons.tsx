@@ -6,7 +6,7 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { useEditorReadOnly } from '@udecode/plate-core';
+import { useEditorReadOnly } from '@udecode/plate-common';
 
 import { Icons } from '@/components/icons';
 import { CommentToolbarButton } from '@/components/plate-ui/comment-toolbar-button';
