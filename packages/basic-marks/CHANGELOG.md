@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 24.0.1
+
 ## 24.0.0
 
 ## 23.7.4

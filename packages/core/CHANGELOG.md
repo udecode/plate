@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 24.0.1
+
+### Patch Changes
+
+- [#2635](https://github.com/udecode/plate/pull/2635) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: set Plate `id` prop type to `string` to satisfy [HTML specs](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id).
+
 ## 24.0.0
 
 ### Major Changes
