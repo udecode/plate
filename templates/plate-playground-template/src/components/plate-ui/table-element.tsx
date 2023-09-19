@@ -2,12 +2,11 @@ import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
-  findNodePath,
-  getBlockAbove,
+  isCollapsed,
   PlateElement,
   PlateElementProps,
+  useEditorState,
   useElement,
-  usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
@@ -16,8 +15,7 @@ import {
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
-import { Path } from 'slate';
-import { useReadOnly } from 'slate-react';
+import { useReadOnly, useSelected } from 'slate-react';
 
 import { cn } from '@/lib/utils';
 import { Icons, iconVariants } from '@/components/icons';
@@ -114,17 +112,12 @@ const TableFloatingToolbar = React.forwardRef<
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const readOnly = useReadOnly();
-  const editor = usePlateEditorState();
-  const path = findNodePath(editor, element);
-  const open =
-    path &&
-    !readOnly &&
-    !!getBlockAbove(editor, {
-      match: (_n, p) => Path.equals(path, p),
-    });
+  const selected = useSelected();
+  const editor = useEditorState();
+  const open = !readOnly && selected && isCollapsed(editor.selection);
 
   return (
-    <Popover open={open}>
+    <Popover open={open} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         ref={ref}

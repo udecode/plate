@@ -1,5 +1,5 @@
 import { MutableRefObject, useEffect, useRef } from 'react';
-import { useElement, usePlateEditorRef } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
@@ -41,7 +41,7 @@ export const useTableCellElementState = ({
    */
   ignoreReadOnly?: boolean;
 } = {}): TableCellElementState => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const cellElement = useElement<TTableCellElement>();
   const cellRef = useRef<HTMLTableCellElement>();
 

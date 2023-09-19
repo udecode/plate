@@ -1,8 +1,8 @@
 import {
   collapseSelection,
   getPluginOptions,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
@@ -27,7 +27,7 @@ export const useTableElementState = ({
    */
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): TableElementState => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
     editor,
@@ -59,7 +59,7 @@ export const useTableElementState = ({
 };
 
 export const useTableElement = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const selectedCells = useTableStore().get.selectedCells();
 
   useSelectedCells();

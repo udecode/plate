@@ -13,8 +13,8 @@ import {
   getPointAfter,
   setNodes,
   TElement,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 import isHotkey from 'is-hotkey';
 import { TextareaAutosizeProps } from 'react-textarea-autosize';
@@ -31,7 +31,7 @@ import { TextareaAutosize } from './TextareaAutosize';
 export const useCaptionTextareaFocus = (
   textareaRef: RefObject<HTMLTextAreaElement>
 ) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
   const focusCaptionPath = captionGlobalStore.use.focusEndCaptionPath();
@@ -80,7 +80,7 @@ export const useCaptionTextarea = ({
   element,
   readOnly,
 }: ReturnType<typeof useCaptionTextareaState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const onChange: TextareaAutosizeProps['onChange'] = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {

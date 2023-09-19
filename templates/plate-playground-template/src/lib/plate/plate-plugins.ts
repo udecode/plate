@@ -24,6 +24,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
+import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
   createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
@@ -39,6 +40,7 @@ import {
   createPlugins,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
+  PlateElement,
   PlateLeaf,
   RenderAfterEditable,
   someNode,
@@ -151,7 +153,7 @@ import { TableElement } from '@/components/plate-ui/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
-import { TabbableElement } from '@/components/plate/tabbable-element';
+import { TabbableElement } from '@/components/tabbable-element';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
@@ -177,6 +179,9 @@ export const plugins = createPlugins(
     }),
     createImagePlugin(),
     createMediaEmbedPlugin(),
+    createCaptionPlugin({
+      options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    }),
     createMentionPlugin(),
     createTablePlugin(),
     createTodoListPlugin(),
@@ -218,7 +223,20 @@ export const plugins = createPlugins(
         },
       },
     }),
-    createIndentListPlugin(),
+    createIndentListPlugin({
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1,
+            ELEMENT_H2,
+            ELEMENT_H3,
+            ELEMENT_BLOCKQUOTE,
+            ELEMENT_CODE_BLOCK,
+          ],
+        },
+      },
+    }),
     createLineHeightPlugin({
       inject: {
         props: {
@@ -244,7 +262,7 @@ export const plugins = createPlugins(
       options: { enableScroller: true },
     }),
     createEmojiPlugin({
-      renderAfterEditable: EmojiCombobox,
+      renderAfterEditable: EmojiCombobox as RenderAfterEditable,
     }),
     createExitBreakPlugin({
       options: {
@@ -371,6 +389,7 @@ export const plugins = createPlugins(
         [ELEMENT_H5]: withProps(HeadingElement, { variant: 'h5' }),
         [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
         [ELEMENT_IMAGE]: ImageElement,
+        [ELEMENT_LI]: withProps(PlateElement, { as: 'li' }),
         [ELEMENT_LINK]: LinkElement,
         [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
         [ELEMENT_MENTION]: MentionElement,

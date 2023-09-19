@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import {
   PlateEditor,
-  usePlateSelectors,
+  useEditorVersion,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
@@ -19,7 +19,7 @@ export const useHooksSuggestion = <
   // eslint-disable-next-line unused-imports/no-unused-vars
   plugin: WithPlatePlugin<SuggestionPlugin>
 ) => {
-  const key = usePlateSelectors().keyEditor();
+  const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 
   /**
@@ -43,5 +43,5 @@ export const useHooksSuggestion = <
     if (!id) return resetActiveSuggestion();
 
     setActiveSuggestionId(id);
-  }, [editor, key, setActiveSuggestionId]);
+  }, [editor, version, setActiveSuggestionId]);
 };

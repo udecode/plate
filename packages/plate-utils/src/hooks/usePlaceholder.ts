@@ -1,4 +1,4 @@
-import { usePlateEditorState } from '@udecode/plate-core';
+import { useEditorState } from '@udecode/plate-core';
 import {
   isCollapsed,
   isElementEmpty,
@@ -23,7 +23,7 @@ export const usePlaceholderState = ({
 }: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   const isEmptyBlock = isElementEmpty(editor, element);
 

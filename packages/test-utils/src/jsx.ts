@@ -52,6 +52,7 @@ const ELEMENT_LINK = 'a';
 const ELEMENT_MEDIA_EMBED = 'media_embed';
 const ELEMENT_MENTION = 'mention';
 const ELEMENT_MENTION_INPUT = 'mention_input';
+const ELEMENT_NLI = 'nli';
 const ELEMENT_OL = 'ol';
 const ELEMENT_PARAGRAPH = 'p';
 const ELEMENT_TABLE = 'table';
@@ -80,6 +81,7 @@ const elements: HyperscriptShorthands = {
   hmediaembed: { type: ELEMENT_MEDIA_EMBED, children: voidChildren },
   hmention: { type: ELEMENT_MENTION, children: voidChildren },
   hmentioninput: { type: ELEMENT_MENTION_INPUT, children: voidChildren },
+  hnli: { type: ELEMENT_NLI },
   hol: { type: ELEMENT_OL },
   hp: { type: ELEMENT_PARAGRAPH },
   htable: { type: ELEMENT_TABLE },

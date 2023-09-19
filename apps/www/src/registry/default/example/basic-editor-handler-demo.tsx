@@ -1,33 +1,45 @@
 import React, { useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
-import { Plate } from '@udecode/plate-common';
+import { Plate, Value } from '@udecode/plate-common';
 
-import { MyValue } from '@/types/plate-types';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Editor } from '@/registry/default/plate-ui/editor';
+
+const initialValue = [
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'This is editable plain text with react and history plugins, just like a textarea!',
+      },
+    ],
+  },
+];
 
 export default function BasicEditorHandlerDemo() {
-  const [debugValue, setDebugValue] = useState<MyValue | null>(null);
+  const [debugValue, setDebugValue] = useState<Value>(initialValue);
 
   return (
-    <Plate<MyValue>
-      editableProps={editableProps}
-      initialValue={[
-        {
-          type: 'p',
-          children: [
-            {
-              text: 'This is editable plain text with react and history plugins, just like a textarea!',
-            },
-          ],
-        },
-      ]}
+    <Plate
+      initialValue={initialValue}
       onChange={(newValue) => {
         setDebugValue(newValue);
         // save newValue...
       }}
     >
-      debug value:
-      <br />
-      {JSON.stringify(debugValue)}
+      <Editor {...editableProps} />
+
+      <Accordion type="single" collapsible>
+        <AccordionItem value="manual-installation">
+          <AccordionTrigger>Debug Value</AccordionTrigger>
+          <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </Plate>
   );
 }

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import {
   isCollapsed,
+  useEditorState,
   useElement,
-  usePlateEditorState,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
@@ -27,7 +27,7 @@ export interface MediaPopoverProps {
 export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   const isOpen = !readOnly && selected && isCollapsed(editor.selection);
   const isEditing = useFloatingMediaSelectors().isEditing();
@@ -45,10 +45,13 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
-      <PopoverContent className="w-auto p-1">
+      <PopoverContent
+        className="w-auto p-1"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">

@@ -3,7 +3,7 @@ import { Value } from '@udecode/slate';
 import { SlateProps } from '@udecode/slate-react';
 
 import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
-import { usePlateEditorRef } from '../stores/plate/selectors/usePlateEditorRef';
+import { useEditorRef } from '../stores/plate/selectors/useEditorRef';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
 /**
@@ -14,7 +14,7 @@ export const useSlateProps = <V extends Value>({
 }: {
   id?: PlateId;
 }): Omit<SlateProps, 'children'> => {
-  const editor = usePlateEditorRef(id);
+  const editor = useEditorRef(id);
   const value = usePlateSelectors(id).value();
   const setValue = usePlateActions(id).value();
   const onChangeProp = usePlateSelectors(id).onChange()?.fn;

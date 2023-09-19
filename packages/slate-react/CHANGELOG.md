@@ -1,5 +1,14 @@
 # @udecode/slate-react
 
+## 24.0.0
+
+### Minor Changes
+
+- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `focusEditorEdge` transform. Focus the editor at the start or end of the document.
+
+## 23.7.4
+
 ## 22.0.2
 
 ## 22.0.1

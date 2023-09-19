@@ -9,8 +9,6 @@ docs:
     title: Tooltip
 ---
 
-<ComponentPreview name="playground-demo" id="dnd" />
-
 ## Installation
 
 <Tabs defaultValue="cli">
@@ -63,6 +61,8 @@ Update the import paths to match your project setup.
 
 ## Examples
 
+<ComponentPreview name="playground-demo" id="dnd" />
+
 ```tsx
 import { createPlugins } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
@@ -93,7 +93,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 <DndProvider backend={HTML5Backend}>
-  <Plate plugins={plugins} />
+  <Plate plugins={plugins}>
+    <PlateContent />
+  </Plate>
 </DndProvider>;
 ```
 

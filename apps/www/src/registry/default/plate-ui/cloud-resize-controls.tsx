@@ -13,11 +13,7 @@ import {
   PlateCloudImageEditor,
   TCloudImageElement,
 } from '@udecode/plate-cloud';
-import {
-  findNodePath,
-  setNodes,
-  usePlateEditorRef,
-} from '@udecode/plate-common';
+import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 
 type ImageSize = { width: number; height: number };
 
@@ -117,8 +113,7 @@ export function ResizeControls({
   size: ImageSize;
   setSize: SetImageSize;
 }) {
-  const editor = usePlateEditorRef() as PlateCloudEditor &
-    PlateCloudImageEditor;
+  const editor = useEditorRef() as PlateCloudEditor & PlateCloudImageEditor;
   const [isResizing, setIsResizing] = useState(false);
 
   const { minResizeWidth, maxResizeWidth } = editor.cloudImage;

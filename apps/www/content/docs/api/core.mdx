@@ -315,7 +315,7 @@ Hook to get the element from a node component.
 <APIItem name="pluginKey" type="string" optional>
 The plugin key.
 
-- **Default:** `SCOPE_ELEMENT`.
+- **Default:** the closest element key.
 
 </APIItem>
 </APIParameters>
@@ -327,12 +327,17 @@ The value of the element as a TElement.
 
 ### useEditorRef
 
-Get the Slate editor reference.
+Get the Slate editor reference without re-rendering.
 
 - Does not re-render on editor change.
-- Does not support nested editors.
 - Should be used inside `Plate`.
+- Note the reference does not change when the editor changes.
 
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+  </APIItem>
+</APIParameters>
 <APIReturns>
 
 A `PlateEditor` object, which is the Slate editor.
@@ -341,29 +346,16 @@ A `PlateEditor` object, which is the Slate editor.
 
 ### useEditorState
 
-Get the Slate editor reference.
+Get the Slate editor reference with re-rendering.
 
 - Re-renders on editor change.
-- Does not support nested editors.
+- Supports nested editors.
 - Should be used inside `Plate`.
-
-<APIReturns>
-
-A `PlateEditor` object, which is the Slate editor.
-
-</APIReturns>
-
-### usePlateEditorRef
-
-Get an editor reference which is never updated.
-
-- Does not re-render on editor change.
-- Supports nested editors.
-- Should be used inside `Plate` or `PlateProvider`.
+- Note the reference does not change when the editor changes.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
-    The ID of the plate editor. Useful only when nesting editors. 
+    The ID of the plate editor. Default is using the closest editor id.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -372,26 +364,7 @@ A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
-### usePlateEditorState
-
-Get the Slate editor reference. Re-renders on editor change.
-
-- Re-renders on editor change.
-- Supports nested editors.
-- Should be used inside `Plate` or `PlateProvider`.
-
-<APIParameters>
-  <APIItem name="id" type="PlateId" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-
-A `PlateEditor` object, which is the Slate editor.
-
-</APIReturns>
-
-### usePlateReadOnly
+### useEditorReadOnly
 
 Get the editor's `readOnly` state.
 
@@ -406,9 +379,9 @@ The `readOnly` state of the editor.
 
 </APIReturns>
 
-### usePlateSelection
+### useEditorSelection
 
-Get the editor's selection which is updated on each editor change.
+Get the editor's selection. Memoized so it does not re-render if the range is the same.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
@@ -416,6 +389,28 @@ Get the editor's selection which is updated on each editor change.
   </APIItem>
 </APIParameters>
 <APIReturns>The current selection in the editor.</APIReturns>
+
+### useEditorVersion
+
+Get the version of the editor value. That version is incremented on each editor change.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>The current version of the editor value.</APIReturns>
+
+### useSelectionVersion
+
+Get the version of the editor selection. That version is incremented on each selection change (the range being different).
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>The current version of the editor selection.</APIReturns>
 
 ## Core plugins
 
@@ -446,6 +441,10 @@ Creates a plugin that merges and registers all the inline types and void types f
 ### createInsertDataPlugin
 
 Creates a plugin that overrides the default `insertData` function in the editor, which is called when data is being pasted or dragged into the editor.
+
+### createLengthPlugin
+
+Creates a plugin that enforces a maximum length for the editor.
 
 ### createNodeFactoryPlugin
 

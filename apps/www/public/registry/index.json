@@ -1,5 +1,14 @@
 [
   {
+    "name": "editor",
+    "dependencies": [],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/editor.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
     "name": "cloud",
     "dependencies": [
       "@udecode/plate-cloud"
@@ -776,7 +785,9 @@
     "dependencies": [
       "@udecode/plate-table"
     ],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "dropdown-menu"
+    ],
     "files": [
       "plate-ui/table-element.tsx"
     ],
@@ -798,7 +809,9 @@
     "dependencies": [
       "@udecode/plate-list"
     ],
-    "registryDependencies": [],
+    "registryDependencies": [
+      "checkbox"
+    ],
     "files": [
       "plate-ui/todo-list-element.tsx"
     ],

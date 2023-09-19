@@ -1,7 +1,7 @@
 import {
   focusEditor,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { ListStyleType, toggleIndentList } from '../index';
@@ -10,7 +10,7 @@ import { someIndentList } from './someIndentList';
 export const useIndentListToolbarButtonState = ({
   nodeType = ListStyleType.Disc,
 }: { nodeType?: string } = {}) => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   return {
     pressed: someIndentList(editor, nodeType),
@@ -22,7 +22,7 @@ export const useIndentListToolbarButton = ({
   nodeType,
   pressed,
 }: ReturnType<typeof useIndentListToolbarButtonState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     props: {

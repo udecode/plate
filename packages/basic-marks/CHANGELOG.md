@@ -1,5 +1,19 @@
 # @udecode/plate-basic-marks
 
+## 24.0.2
+
+## 24.0.1
+
+## 24.0.0
+
+## 23.7.4
+
+## 23.7.1
+
+### Patch Changes
+
+- [#2614](https://github.com/udecode/plate/pull/2614) by [@12joan](https://github.com/12joan) – Do not deserialize break-word style (fixes #2612)
+
 ## 23.7.0
 
 ## 23.6.0

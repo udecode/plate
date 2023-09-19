@@ -13,16 +13,15 @@ import {
 } from 'slate-react';
 
 import { MyValue } from '@/types/plate-types';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValue = createHugeDocumentValue() as MyValue;
 
 function WithPlate() {
   return (
-    <Plate
-      editableProps={editableProps}
-      initialValue={initialValue}
-      plugins={basicNodesPlugins}
-    />
+    <Plate initialValue={initialValue} plugins={basicNodesPlugins}>
+      <Editor {...editableProps} />
+    </Plate>
   );
 }
 
@@ -56,8 +55,12 @@ function WithoutPlate() {
 export default function HundredsBlocksDemo() {
   return (
     <div className="flex">
-      <WithPlate />
-      <WithoutPlate />
+      <div className="w-1/2 p-4">
+        <WithPlate />
+      </div>
+      <div className="w-1/2 p-4">
+        <WithoutPlate />
+      </div>
     </div>
   );
 }

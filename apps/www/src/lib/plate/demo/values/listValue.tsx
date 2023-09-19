@@ -69,15 +69,11 @@ export const listValue: any = (
 
 export const todoListValue: any = (
   <fragment>
-    <hp>
-      With Slate you can build complex block types that have their own embedded
-      content and behaviors, like rendering checkboxes inside check list items!
-    </hp>
-    <htodoli checked>Slide to the left.</htodoli>
-    <htodoli checked>Slide to the right.</htodoli>
-    <htodoli>Criss-cross.</htodoli>
-    <htodoli checked>Criss-cross.</htodoli>
-    <htodoli>Cha cha real smooth…</htodoli>
-    <htodoli>Let's go to work!</htodoli>
+    <hp>Each block is a React component in which you can manage the state:</hp>
+    <htodoli checked>Create a "banana language" translation plugin</htodoli>
+    <htodoli checked>
+      Create a "detect sarcasm" plugin (good luck with that)
+    </htodoli>
+    <htodoli>Create an AI auto-complete plugin</htodoli>
   </fragment>
 );

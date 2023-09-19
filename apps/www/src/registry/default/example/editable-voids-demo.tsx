@@ -22,6 +22,10 @@ import {
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { createMyPlugins, MyEditor, MyValue } from '@/types/plate-types';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Editor } from '@/registry/default/plate-ui/editor';
+import { Input } from '@/registry/default/plate-ui/input';
 
 export const ELEMENT_EDITABLE_VOID = 'editable-void';
 
@@ -43,7 +47,6 @@ const editableVoidPlugins = createMyPlugins(
   }
 );
 const styles: Record<string, CSSProperties> = {
-  box: { boxShadow: '0 0 0 3px #ddd', padding: '8px' },
   input: { margin: '8px 0' },
   radio: { width: 'unset' },
   editor: { padding: '20px', border: '2px solid #ddd' },
@@ -58,40 +61,45 @@ export function EditableVoidElement({
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
     <div {...attributes} contentEditable={false}>
-      <div style={styles.box}>
-        <h4>Name:</h4>
-        <input
-          style={styles.input}
+      <div className="mt-2 grid gap-6 rounded-md border p-6 shadow">
+        <Input
           type="text"
+          id="name"
+          placeholder="Name"
+          className="my-2"
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
           }}
         />
-        <h4>Left or right handed:</h4>
-        <input
-          style={styles.radio}
-          type="radio"
-          name="handedness"
-          value="left"
-        />{' '}
-        Left
-        <br />
-        <input
-          style={styles.radio}
-          type="radio"
-          name="handedness"
-          value="right"
-        />{' '}
-        Right
-        <h4>Tell us about yourself:</h4>
-        <div style={styles.editor}>
+
+        <div className="grid w-full max-w-sm items-center gap-2">
+          <Label htmlFor="handed">Left or right handed:</Label>
+
+          <RadioGroup id="handed" defaultValue="r1">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="r1" id="r1" />
+              <Label htmlFor="r1">Left</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="r2" id="r2" />
+              <Label htmlFor="r2">Right</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="editable-void-basic-elements">
+            Tell us about yourself:
+          </Label>
+
           <Plate<MyValue, MyEditor>
             id="editable-void-basic-elements"
             plugins={editableVoidPlugins}
-            editableProps={editableProps}
             // initialValue={basicElementsValue}
-          />
+          >
+            <Editor {...editableProps} />
+          </Plate>
         </div>
       </div>
       {children}
@@ -113,10 +121,10 @@ const plugins = createMyPlugins(
 
 export default function EditableVoidsDemo() {
   return (
-    <Plate<MyValue>
-      editableProps={editableProps}
-      plugins={plugins}
-      initialValue={editableVoidsValue}
-    />
+    <div className="p-10">
+      <Plate<MyValue> plugins={plugins} initialValue={editableVoidsValue}>
+        <Editor {...editableProps} />
+      </Plate>
+    </div>
   );
 }

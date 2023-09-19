@@ -31,7 +31,11 @@ const plugins = createPlugins([
 ]);
 
 export default () => {
-  return <Plate plugins={plugins} />;
+  return (
+    <Plate plugins={plugins}>
+      <PlateContent />
+    </Plate>
+  );
 };
 ```
 
@@ -53,9 +57,7 @@ const createParagraphPlugin = createPluginFactory({
 Each element should have an associated component, which you can provide either as an option **`component: ParagraphElement`** to **`createPluginFactory`**, or in the **`components`** option of **`createPlugins`** (recommended).
 
 ```ts showLineNumbers {4}
-const plugins = createPlugins([
-  createParagraphPlugin(),
-], {
+const plugins = createPlugins([createParagraphPlugin()], {
   components: {
     [ELEMENT_PARAGRAPH]: ParagraphElement,
   },
@@ -160,7 +162,7 @@ Rather than render an element or a mark, you may want to customize the behavior 
 
 ### Event Handlers
 
-The recommended way to respond to user-generated events from inside a plugin is with the **`handlers`** plugin option. A handler should be a function that takes an **`editor`** object and returns another function that takes  an event object.
+The recommended way to respond to user-generated events from inside a plugin is with the **`handlers`** plugin option. A handler should be a function that takes an **`editor`** object and returns another function that takes an event object.
 
 The **`onChange`** handler, which is called when the editor value changes, is an exception to this rule; the inner function of an **`onChange`** handler should accept a **`Value`** object instead of an event.
 
@@ -169,10 +171,10 @@ const createExamplePlugin = createPluginFactory({
   key: KEY_EXAMPLE,
   handlers: {
     onChange: (editor) => (value) => {
-      console.log(editor, value);
+      console.info(editor, value);
     },
     onKeyDown: (editor) => (event) => {
-      console.log(`You pressed ${event.key}`);
+      console.info(`You pressed ${event.key}`);
     },
   },
 });
@@ -215,15 +217,17 @@ A paragraph node affected by the above plugin would look like this:
 
 ### With Overrides (Advanced)
 
-Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the **`withOverrides`** plugin option to directly mutate properties of the **`editor`** object after its creation. 
+Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the **`withOverrides`** plugin option to directly mutate properties of the **`editor`** object after its creation.
 
-One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing). 
+One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing).
 
 ```ts showLineNumbers {20}
 const withCustomNormalizer = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->(editor: E) => {
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E
+) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]: TNodeEntry) => {
@@ -261,7 +265,7 @@ const createDemoPlugin = createPluginFactory<DemoPlugin>({
   handlers: {
     onKeyDown: (editor) => (event) => {
       const { username } = getPluginOptions<DemoPlugin>(editor, KEY_DEMO);
-      console.log(`${username} pressed ${event.key}`)
+      console.info(`${username} pressed ${event.key}`);
     },
   },
   then: (_editor, { options }) => ({
@@ -279,13 +283,21 @@ const createDemoPlugin = createPluginFactory<DemoPlugin>({
 });
 
 const MyEditor = ({ username }: { username: string }) => {
-  const plugins = useMemo(() => createPlugins([
-    createDemoPlugin({
-      options: { username },
-    }),
-  ]), [username]);
-  
-  return <Plate plugins={plugins} />;
+  const plugins = useMemo(
+    () =>
+      createPlugins([
+        createDemoPlugin({
+          options: { username },
+        }),
+      ]),
+    [username]
+  );
+
+  return (
+    <Plate plugins={plugins}>
+      <PlateContent />
+    </Plate>
+  );
 };
 
 export default () => <MyEditor username="Marsha P. Johnson" />;

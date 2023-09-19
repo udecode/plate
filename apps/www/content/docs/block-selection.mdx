@@ -37,13 +37,10 @@ const plugins = [
 
 ### Styling
 
-You can style the selection area by using the `slate-selection-area` class:
+You can style the selection area by adding this class to `body`, selecting `slate-selection-area`.
 
-```css
-.slate-selection-area {
-  background: #4f90f22d;
-  border: 1px solid #4f90f2;
-}
+```js
+'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/20'
 ```
 
 ## API

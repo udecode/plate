@@ -116,9 +116,9 @@ export function CursorOverlayContent<
 export function CursorOverlay<
   TCursorData extends UnknownObject = UnknownObject,
 >(props: CursorOverlayProps<TCursorData>) {
-  const isRendered = usePlateSelectors().isRendered();
+  const isMounted = usePlateSelectors().isMounted();
 
-  if (!isRendered) return null;
+  if (!isMounted) return null;
 
   return <CursorOverlayContent {...props} />;
 }

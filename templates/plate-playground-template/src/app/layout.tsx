@@ -2,9 +2,9 @@ import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/components/plate-ui/tooltip';
-import { SiteHeader } from '@/components/site-header';
-import { TailwindIndicator } from '@/components/tailwind-indicator';
-import { ThemeProvider } from '@/components/theme-provider';
+import { SiteHeader } from '@/components/site/site-header';
+import { TailwindIndicator } from '@/components/site/tailwind-indicator';
+import { ThemeProvider } from '@/components/site/theme-provider';
 
 import '@/styles/globals.css';
 
@@ -39,6 +39,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <body
           className={cn(
             'min-h-screen bg-background font-sans antialiased',
+            '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
             fontSans.variable
           )}
         >

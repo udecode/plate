@@ -6,7 +6,7 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { usePlateReadOnly } from '@udecode/plate-common';
+import { useEditorReadOnly } from '@udecode/plate-common';
 
 import { Icons } from '@/components/icons';
 
@@ -17,7 +17,7 @@ import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FixedToolbarButtons() {
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return (
     <div className="w-full overflow-hidden">

@@ -7,8 +7,6 @@ docs:
     title: Cloud
 ---
 
-<ComponentPreview name="cloud-demo" padding="md" />
-
 ## Installation
 
 <Tabs defaultValue="cli">
@@ -63,6 +61,8 @@ Update the import paths to match your project setup.
 
 ## Examples
 
+<ComponentPreview name="cloud-demo" padding="md" />
+
 ### Plugins
 
 ```tsx
@@ -97,12 +97,12 @@ const plugins = createMyPlugins(
 ```tsx
 export default function CloudDemo() {
   return (
-    <PlateProvider<MyValue> plugins={plugins} initialValue={cloudValue}>
+    <Plate<MyValue> plugins={plugins} initialValue={cloudValue}>
       <FixedToolbar>
         <CloudToolbarButtons />
       </FixedToolbar>
-      <Plate<MyValue> editableProps={editableProps} />
-    </PlateProvider>
+      <Editor />
+    </Plate>
   );
 }
 ```

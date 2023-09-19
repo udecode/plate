@@ -4,7 +4,7 @@ import {
   isText,
   nanoid,
   setNodes,
-  usePlateEditorRef,
+  useEditorRef,
 } from '@udecode/plate-common';
 
 import { MARK_COMMENT } from '../../constants';
@@ -12,7 +12,7 @@ import { getCommentKey } from '../../utils/index';
 import { useCommentsActions } from './CommentsProvider';
 
 export const useAddCommentMark = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const setActiveCommentId = useCommentsActions().activeCommentId();
 
   return () => {
