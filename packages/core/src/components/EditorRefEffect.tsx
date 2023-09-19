@@ -8,8 +8,14 @@ import {
 } from '../stores';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 
-export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
-  const editor = useEditorRef();
+export function EditorRefPluginEffect({
+  id,
+  plugin,
+}: {
+  id?: PlateId;
+  plugin: WithPlatePlugin;
+}) {
+  const editor = useEditorRef(id);
 
   plugin.useHooks?.(editor, plugin);
 
@@ -53,7 +59,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   return (
     <>
       {plugins.map((plugin) => (
-        <EditorRefPluginEffect key={plugin.key} plugin={plugin} />
+        <EditorRefPluginEffect key={plugin.key} id={id} plugin={plugin} />
       ))}
     </>
   );

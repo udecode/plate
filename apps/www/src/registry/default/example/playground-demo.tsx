@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
@@ -45,13 +45,7 @@ import { createCaptionPlugin } from '@udecode/plate-caption';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
-import {
-  createPlateEditor,
-  Plate,
-  PlatePluginComponent,
-  useEditorRef,
-  usePlateActions,
-} from '@udecode/plate-common';
+import { Plate, PlatePluginComponent, Value } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -252,33 +246,25 @@ export const usePlaygroundPlugins = ({
   );
 };
 
-export interface ResetPluginsEffectProps {
-  initialValue: any;
-  plugins: any;
-}
-
-export function ResetPluginsEffect({
-  initialValue,
-  plugins,
-}: ResetPluginsEffectProps) {
-  const editor = useEditorRef();
-  const setEditor = usePlateActions().editor();
-  const setValue = usePlateActions().value();
+// reset editor when initialValue changes
+export const useInitialValueVersion = (initialValue: Value) => {
+  const [version, setVersion] = useState(1);
+  const prevInitialValueRef = useRef(initialValue);
 
   useEffect(() => {
-    const newEditor = createPlateEditor({ id: editor.id, plugins });
-    newEditor.children = initialValue ?? editor.children;
-    setValue(initialValue);
-    setEditor(newEditor);
-  }, [plugins, setEditor, editor.id, editor.children, initialValue, setValue]);
+    if (initialValue === prevInitialValueRef.current) return;
+    prevInitialValueRef.current = initialValue;
+    setVersion((v) => v + 1);
+  }, [initialValue]);
 
-  return null;
-}
+  return version;
+};
 
 export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
   const initialValue = usePlaygroundValue(id);
+  const key = useInitialValueVersion(initialValue);
 
   const plugins = usePlaygroundPlugins({
     id,
@@ -295,12 +281,11 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate<MyValue>
+          key={key}
           initialValue={initialValue}
           plugins={plugins}
           normalizeInitialValue
         >
-          <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
-
           {enabled['fixed-toolbar'] && (
             <FixedToolbar>
               {enabled['fixed-toolbar-buttons'] && (
