@@ -1,6 +1,7 @@
 import {
   findNode,
   findNodePath,
+  getNodeString,
   getPluginType,
   insertElements,
   removeNodes,
@@ -61,7 +62,10 @@ export const useTableCellsMerge = () => {
     const contents = [];
     for (const cellEntry of selectedCellEntries) {
       const [el] = cellEntry;
-      contents.push(...el.children); // TODO: consider using deep clone
+
+      if (getNodeString(el)) {
+        contents.push(...el.children); // TODO: consider using deep clone
+      }
     }
 
     const cols: any = {};
