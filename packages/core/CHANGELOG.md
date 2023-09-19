@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 24.0.2
+
+### Patch Changes
+
+- [#2639](https://github.com/udecode/plate/pull/2639) by [@zbeyens](https://github.com/zbeyens) – missing id in a hook call
+
 ## 24.0.1
 
 ### Patch Changes
