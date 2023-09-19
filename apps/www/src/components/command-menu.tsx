@@ -46,7 +46,7 @@ export function CommandItems({
       {item.headings?.map((heading) => {
         return (
           <CommandItem
-            key={heading}
+            key={item.href + heading}
             onSelect={() => {
               runCommand(() =>
                 router.push(
