@@ -1,7 +1,7 @@
 import {
   findNode,
-  findNodePath,
   getBlockAbove,
+  getNodeEntry,
   getParentNode,
   getPluginOptions,
   getPluginType,
@@ -23,6 +23,7 @@ import {
   TTableRowElement,
 } from '../types';
 import { findCellByIndexes, getCellTypes, getEmptyCellNode } from '../utils';
+import { getCellPath } from '../utils/getCellPath';
 
 const createEmptyCell = <V extends Value>(
   editor: PlateEditor<V>,
@@ -126,16 +127,19 @@ export const insertTableColumn = <V extends Value>(
   const affectedCellsSet = new Set();
   Array.from({ length: rowNumber }, (_, i) => i).forEach((rI) => {
     const found = findCellByIndexes(tableNode, rI, checkingColIndex);
-    affectedCellsSet.add(found);
+    if (found) {
+      affectedCellsSet.add(found);
+    }
   });
   const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
   affectedCells.forEach((cur) => {
     const curCell = cur as TTableCellElement;
+    const curRowIndex = curCell.rowIndex!;
     const curColIndex = curCell.colIndex!;
-    const curColSpan = curCell.colSpan!;
     const curRowSpan = curCell.rowSpan!;
-    const currentCellPath = findNodePath(editor, curCell)!;
+    const curColSpan = curCell.colSpan!;
+    const currentCellPath = getCellPath(tableEntry, curCell);
 
     const endCurI = curColIndex + curColSpan - 1;
     if (endCurI >= nextColIndex && !firstCol) {
@@ -165,6 +169,8 @@ export const insertTableColumn = <V extends Value>(
         select: !disableSelect && curCell.rowIndex === currentRowIndex,
       });
     }
+
+    updateRestCellsInRow(editor, currentCellPath, curRowIndex, curColIndex);
   });
 
   withoutNormalizing(editor, () => {
@@ -204,6 +210,51 @@ export const insertTableColumn = <V extends Value>(
           at: tablePath,
         }
       );
+    }
+  });
+};
+
+// Update the rest cells indexes in the row.
+// Needed only for cases when insert invoked multiple times synchronously
+// and col indexes haven't updated yet in cell elem hook. So we do it beforehand.
+const updateRestCellsInRow = <V extends Value>(
+  editor: PlateEditor<V>,
+  currentCellPath: number[],
+  curRowIndex: number,
+  curColIndex: number
+) => {
+  const tablePath = currentCellPath.slice(0, -2);
+  const rowPath = currentCellPath.slice(0, -1);
+  const freshRowEntry = getNodeEntry<TTableRowElement>(editor, rowPath);
+  if (!freshRowEntry) return;
+  const [freshRow] = freshRowEntry;
+
+  const startingColPath = currentCellPath.at(-1)!;
+  let assignColIndex = curColIndex;
+  freshRow.children.forEach((c, cP) => {
+    if (cP > startingColPath) {
+      const cE = c as TTableCellElement;
+      // colIndex might be undefined for just inserted cell
+      const cI = cE.colIndex || assignColIndex;
+      const rI = cE.rowIndex || curRowIndex;
+      const rS = cE.rowSpan || 1;
+      const cS = cE.colSpan || 1;
+
+      const path = tablePath.concat([curRowIndex, cP]);
+      setNodes<TTableCellElement>(
+        editor,
+        {
+          ...cE,
+          colIndex: cI + 1,
+          rowIndex: rI,
+          rowSpan: rS,
+          colSpan: cS,
+        },
+        { at: path }
+      );
+
+      // increment assigning index for next cell in the row
+      assignColIndex += cS;
     }
   });
 };

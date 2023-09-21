@@ -39,7 +39,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -51,15 +51,19 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 12
                 <anchor />
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 22
                 <focus />
               </htd>
@@ -71,10 +75,14 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>12</htd>
+            <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+              12
+            </htd>
           </htr>
           <htr>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -83,7 +91,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -95,15 +103,19 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 21
                 <anchor />
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 22
                 <focus />
               </htd>
@@ -115,8 +127,12 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>21</htd>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -125,7 +141,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -137,19 +153,25 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 11
                 <focus />
               </htd>
-              <htd>12</htd>
-              <htd>13</htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
+              <htd rowIndex={0} colIndex={2} rowSpan={1} colSpan={1}>
+                13
+              </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 21
                 <anchor />
               </htd>
-              <htd>22</htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={2}>
+                22
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -158,10 +180,14 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>11</htd>
+            <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+              11
+            </htd>
           </htr>
           <htr>
-            <htd>21</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -170,7 +196,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -182,15 +208,19 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 11
                 <anchor />
               </htd>
-              <htd>12</htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 22
                 <focus />
               </htd>
@@ -202,12 +232,20 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>11</htd>
-            <htd>12</htd>
+            <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+              11
+            </htd>
+            <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+              12
+            </htd>
           </htr>
           <htr>
-            <htd>21</htd>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -216,7 +254,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -228,15 +266,19 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 11
                 <focus />
               </htd>
-              <htd>12</htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 22
                 <anchor />
               </htd>
@@ -248,12 +290,20 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>11</htd>
-            <htd>12</htd>
+            <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+              11
+            </htd>
+            <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+              12
+            </htd>
           </htr>
           <htr>
-            <htd>21</htd>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -262,7 +312,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -274,18 +324,22 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 12
                 <anchor />
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 21
                 <focus />
               </htd>
-              <htd>22</htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -294,12 +348,20 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>11</htd>
-            <htd>12</htd>
+            <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+              11
+            </htd>
+            <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+              12
+            </htd>
           </htr>
           <htr>
-            <htd>21</htd>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -308,7 +370,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });
@@ -320,18 +382,22 @@ describe('getTableGridByRange', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 12
                 <focus />
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 21
                 <anchor />
               </htd>
-              <htd>22</htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -340,12 +406,20 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>11</htd>
-            <htd>12</htd>
+            <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+              11
+            </htd>
+            <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+              12
+            </htd>
           </htr>
           <htr>
-            <htd>21</htd>
-            <htd>22</htd>
+            <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+              21
+            </htd>
+            <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+              22
+            </htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -354,7 +428,7 @@ describe('getTableGridByRange', () => {
         editor: input,
       });
 
-      const table = getTableGridAbove(editor)[0][0];
+      const table = getTableGridAbove(editor, { format: 'table' })[0][0];
 
       expect(table).toEqual(output);
     });

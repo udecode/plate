@@ -1,6 +1,5 @@
 import {
   findNode,
-  findNodePath,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
@@ -25,11 +24,11 @@ import {
   TTableRowElement,
 } from '../types';
 import { findCellByIndexes, getCellTypes, getEmptyCellNode } from '../utils';
+import { getCellPath } from '../utils/getCellPath';
 
 const createEmptyCell = <V extends Value>(
   editor: PlateEditor<V>,
   row: TTableRowElement,
-  colSpan: number,
   newCellChildren?: TDescendant[],
   header?: boolean
 ) => {
@@ -40,13 +39,10 @@ const createEmptyCell = <V extends Value>(
         )
       : header;
 
-  return {
-    ...getEmptyCellNode(editor, {
-      header: isHeaderRow,
-      newCellChildren,
-    }),
-    colSpan,
-  };
+  return getEmptyCellNode(editor, {
+    header: isHeaderRow,
+    newCellChildren,
+  });
 };
 
 export const insertTableRow = <V extends Value>(
@@ -79,7 +75,7 @@ export const insertTableRow = <V extends Value>(
 
   const [, trPath] = trEntry;
 
-  const tableEntry = getBlockAbove(editor, {
+  const tableEntry = getBlockAbove<TTableElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
     at: trPath,
   });
@@ -110,6 +106,7 @@ export const insertTableRow = <V extends Value>(
     nextRowIndex = cellRowIndex;
     checkingRowIndex = cellRowIndex - 1;
     nextRowPath = [...tablePath, rowPath];
+    // nextRowPath = at;
   } else {
     nextRowIndex = cellRowIndex + cellRowSpan;
     checkingRowIndex = cellRowIndex + cellRowSpan - 1;
@@ -125,7 +122,9 @@ export const insertTableRow = <V extends Value>(
   const affectedCellsSet = new Set();
   Array.from({ length: colCount }, (_, i) => i).forEach((cI) => {
     const found = findCellByIndexes(tableNode, checkingRowIndex, cI);
-    affectedCellsSet.add(found);
+    if (found) {
+      affectedCellsSet.add(found);
+    }
   });
   const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
@@ -135,9 +134,10 @@ export const insertTableRow = <V extends Value>(
 
     const curCell = cur as TTableCellElement;
     const curRowIndex = curCell.rowIndex!;
+    const curColIndex = curCell.colIndex!;
     const curRowSpan = curCell.rowSpan!;
     const curColSpan = curCell.colSpan!;
-    const currentCellPath = findNodePath(editor, curCell)!;
+    const currentCellPath = getCellPath(tableEntry, curCell);
 
     const endCurI = curRowIndex + curRowSpan - 1;
     if (endCurI >= nextRowIndex && !firstRow) {
@@ -154,12 +154,17 @@ export const insertTableRow = <V extends Value>(
       const emptyCell = createEmptyCell(
         editor,
         rowElement,
-        curColSpan,
         newCellChildren,
         header
       ) as TTableCellElement;
 
-      newRowChildren.push(emptyCell);
+      newRowChildren.push({
+        ...emptyCell,
+        rowIndex: curRowIndex + 1, //
+        colIndex: curColIndex,
+        rowSpan: 1,
+        colSpan: curColSpan,
+      });
     }
   });
 
@@ -174,6 +179,8 @@ export const insertTableRow = <V extends Value>(
         at: nextRowPath,
       }
     );
+
+    updateRestRowsIndexes(editor, trPath, nextRowIndex);
   });
 
   if (!disableSelect) {
@@ -186,4 +193,33 @@ export const insertTableRow = <V extends Value>(
 
     select(editor, nextCellPath);
   }
+};
+
+const updateRestRowsIndexes = <V extends Value>(
+  editor: PlateEditor<V>,
+  trPath: number[],
+  nextRowIndex: number
+) => {
+  const freshTableEntry = getBlockAbove<TTableElement>(editor, {
+    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    at: trPath,
+  });
+  if (!freshTableEntry) return;
+  const [freshTableNode, freshTablePath] = freshTableEntry;
+
+  freshTableNode.children.forEach((r, rP) => {
+    const rE = r as TTableRowElement;
+    if (rP > nextRowIndex) {
+      rE.children.forEach((c, cP) => {
+        const cE = c as TTableCellElement;
+        const path = freshTablePath.concat([rP, cP]);
+
+        setNodes<TTableCellElement>(
+          editor,
+          { ...cE, rowIndex: rP },
+          { at: path }
+        );
+      });
+    }
+  });
 };

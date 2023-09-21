@@ -175,19 +175,19 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 11
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 22
                 <focus />
               </htd>
@@ -200,10 +200,10 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>a</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>b</hp>
               </htd>
             </htr>
@@ -215,20 +215,20 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>a</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>b</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
@@ -343,18 +343,18 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   22
                   <cursor />
@@ -369,18 +369,18 @@ describe('withInsertFragmentTable', () => {
         <fragment>
           <htable>
             <htr>
-              <htd>
+              <htd rowSpan={1} colSpan={1}>
                 <hp>aa</hp>
               </htd>
-              <htd>
+              <htd rowSpan={1} colSpan={1}>
                 <hp>ab</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowSpan={1} colSpan={1}>
                 <hp>ba</hp>
               </htd>
-              <htd>
+              <htd rowSpan={1} colSpan={1}>
                 <hp>bb</hp>
               </htd>
             </htr>
@@ -392,42 +392,42 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={2} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   <anchor />
                   aa
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={2} rowSpan={1} colSpan={1}>
                 <hp>ab</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={2} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={2} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>ba</hp>
               </htd>
-              <htd>
+              <htd rowIndex={2} colIndex={2} rowSpan={1} colSpan={1}>
                 <hp>
                   bb
                   <focus />
@@ -625,13 +625,13 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <anchor />
                   11
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   12
                   <focus />
@@ -653,11 +653,11 @@ describe('withInsertFragmentTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>o11a</hp>
                 <hp>o11b</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>o11a</hp>
                 <hp>o11b</hp>
               </htd>

@@ -126,20 +126,20 @@ describe('withDeleteTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 11
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 21
                 <focus />
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>
@@ -151,24 +151,24 @@ describe('withDeleteTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                   <anchor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                   <focus />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>

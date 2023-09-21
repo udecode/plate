@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import React from 'react';
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -282,23 +281,31 @@ describe('onKeyDownTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 11
               </htd>
-              <htd>12</htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 {' '}
                 <focus />
                 21
               </htd>
-              <htd>22</htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
             </htr>
             <htr>
-              <htd>31</htd>
-              <htd>32</htd>
+              <htd rowIndex={2} colIndex={0} rowSpan={1} colSpan={1}>
+                31
+              </htd>
+              <htd rowIndex={2} colIndex={1} rowSpan={1} colSpan={1}>
+                32
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -347,23 +354,31 @@ describe('onKeyDownTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 {' '}
                 <focus />
                 21
               </htd>
-              <htd>22</htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={2} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 31
               </htd>
-              <htd>32</htd>
+              <htd rowIndex={2} colIndex={1} rowSpan={1} colSpan={1}>
+                32
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -412,20 +427,28 @@ describe('onKeyDownTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 11
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 12
                 <focus />
               </htd>
-              <htd>13</htd>
+              <htd rowIndex={0} colIndex={2} rowSpan={1} colSpan={1}>
+                13
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
-              <htd>23</htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
+              <htd rowIndex={1} colIndex={2} rowSpan={1} colSpan={1}>
+                23
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -435,20 +458,28 @@ describe('onKeyDownTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <anchor />
                 11
               </htd>
-              <htd>12</htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
+                12
+              </htd>
+              <htd rowIndex={0} colIndex={2} rowSpan={1} colSpan={1}>
                 <focus />
                 13
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
-              <htd>23</htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
+              <htd rowIndex={1} colIndex={2} rowSpan={1} colSpan={1}>
+                23
+              </htd>
             </htr>
           </htable>
         </editor>
@@ -472,20 +503,28 @@ describe('onKeyDownTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
+                11
+              </htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 12
                 <anchor />
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={2} rowSpan={1} colSpan={1}>
                 13
                 <focus />
               </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
-              <htd>23</htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
+                21
+              </htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
+                22
+              </htd>
+              <htd rowIndex={1} colIndex={2} rowSpan={1} colSpan={1}>
+                23
+              </htd>
             </htr>
           </htable>
         </editor>

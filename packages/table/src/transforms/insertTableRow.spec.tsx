@@ -15,21 +15,21 @@ describe('insertTableRow', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   21
                   <cursor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>
@@ -41,28 +41,28 @@ describe('insertTableRow', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={2} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <cursor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={2} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
@@ -88,27 +88,27 @@ describe('insertTableRow', () => {
     });
   });
 
-  describe('when inserting a table row at specific path', () => {
+  describe.only('when inserting a table row at specific path', () => {
     it('should insert a tr with empty cells', () => {
       const input = (
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   21
                   <cursor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>
@@ -120,30 +120,30 @@ describe('insertTableRow', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <cursor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={2} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={2} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>22</hp>
               </htd>
             </htr>

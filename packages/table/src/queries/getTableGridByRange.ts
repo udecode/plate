@@ -1,6 +1,5 @@
 import {
   findNode,
-  findNodePath,
   getPluginType,
   PlateEditor,
   TElement,
@@ -12,6 +11,7 @@ import { Range } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 import { findCellByIndexes, getCellTypes } from '../utils';
+import { getCellPath } from '../utils/getCellPath';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
 export type FormatType = 'table' | 'cell' | 'all';
@@ -78,7 +78,7 @@ export const getTableGridByRange = <T extends FormatType, V extends Value>(
     newCellChildren: [],
   });
 
-  const tableEntry = findNode(editor, {
+  const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
   })!; // TODO: improve typing
@@ -95,14 +95,13 @@ export const getTableGridByRange = <T extends FormatType, V extends Value>(
       break;
     }
 
-    const cellPath = findNodePath(editor, cell)!;
-    const path = cellPath.join('');
-    if (!cellsSet.has(path)) {
-      cellsSet.add(path);
+    if (!cellsSet.has(cell)) {
+      cellsSet.add(cell);
 
       const rows = table.children[rowIndex - startRowIndex]
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
+      const cellPath = getCellPath(tableEntry, cell);
 
       cellEntries.push([cell, cellPath]);
     }

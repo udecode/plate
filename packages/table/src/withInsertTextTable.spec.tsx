@@ -15,22 +15,22 @@ describe('withInsertTextTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <anchor />a
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>b</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   c<focus />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>d</hp>
               </htd>
             </htr>
@@ -42,20 +42,20 @@ describe('withInsertTextTable', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   <htext />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>b</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>e</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>d</hp>
               </htd>
             </htr>
