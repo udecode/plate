@@ -28,7 +28,6 @@ import { getCellPath } from '../utils/getCellPath';
 const createEmptyCell = <V extends Value>(
   editor: PlateEditor<V>,
   row: TTableRowElement,
-  rowSpan: number,
   newCellChildren?: TDescendant[],
   header?: boolean
 ) => {
@@ -39,13 +38,10 @@ const createEmptyCell = <V extends Value>(
         )
       : header;
 
-  return {
-    ...getEmptyCellNode(editor, {
-      header: isHeaderRow,
-      newCellChildren,
-    }),
-    rowSpan,
-  };
+  return getEmptyCellNode(editor, {
+    header: isHeaderRow,
+    newCellChildren,
+  });
 };
 
 export const insertTableColumn = <V extends Value>(
@@ -157,20 +153,26 @@ export const insertTableColumn = <V extends Value>(
 
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = createEmptyCell(
-        editor,
-        rowElement,
-        curRowSpan,
-        newCellChildren,
-        header
-      );
+      const emptyCell = {
+        ...createEmptyCell(editor, rowElement, newCellChildren, header),
+        colIndex: nextColIndex,
+        rowIndex: curRowIndex,
+        rowSpan: curRowSpan,
+        colSpan: 1,
+      };
       insertElements(editor, emptyCell, {
         at: placementPath,
         select: !disableSelect && curCell.rowIndex === currentRowIndex,
       });
     }
 
-    updateRestCellsInRow(editor, currentCellPath, curRowIndex, curColIndex);
+    const startingColIndex = firstCol ? curColIndex : curColIndex + 1;
+    updateRestCellsInRow(
+      editor,
+      currentCellPath,
+      curRowIndex,
+      startingColIndex
+    );
   });
 
   withoutNormalizing(editor, () => {
@@ -229,10 +231,11 @@ const updateRestCellsInRow = <V extends Value>(
   if (!freshRowEntry) return;
   const [freshRow] = freshRowEntry;
 
-  const startingColPath = currentCellPath.at(-1)!;
+  // const startingColPath = currentCellPath.at(-1)!;
+  const startingColIndex = curColIndex;
   let assignColIndex = curColIndex;
   freshRow.children.forEach((c, cP) => {
-    if (cP > startingColPath) {
+    if (cP > startingColIndex) {
       const cE = c as TTableCellElement;
       // colIndex might be undefined for just inserted cell
       const cI = cE.colIndex || assignColIndex;

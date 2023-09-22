@@ -1,4 +1,4 @@
-import { TNodeEntry } from 'packages/slate/dist';
+import { TNodeEntry } from '@udecode/plate-common';
 
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 

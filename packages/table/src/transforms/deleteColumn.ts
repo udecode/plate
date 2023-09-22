@@ -1,5 +1,4 @@
 import {
-  findNodePath,
   getAboveNode,
   getPluginType,
   insertElements,
@@ -16,6 +15,7 @@ import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 import { findCellByIndexes, getCellTypes } from '../utils';
+import { getCellPath } from '../utils/getCellPath';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   if (
@@ -49,7 +49,9 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         (cI) => {
           const colIndex = deletingColIndex + cI;
           const found = findCellByIndexes(table, rI, colIndex);
-          affectedCellsSet.add(found);
+          if (found) {
+            affectedCellsSet.add(found);
+          }
         }
       );
     });
@@ -88,14 +90,17 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         const curColIndex = curCell.colIndex!;
         const curColSpan = curCell.colSpan!;
 
+        // simplify logic here. use getParent
         const curRow = table.children[curRowIndex] as TTableRowElement;
         const startingCellIndex = curRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
           return cell.colIndex! >= curColIndex + 1;
         });
 
-        const startingCell = curRow.children[startingCellIndex];
-        const startingCellPath = findNodePath(editor, startingCell);
+        const startingCell = curRow.children.at(
+          startingCellIndex
+        ) as TTableCellElement;
+        const startingCellPath = getCellPath(tableEntry, startingCell);
         const colsNumberAffected = endingColIndex - curColIndex + 1;
 
         const newCell = {
@@ -110,7 +115,8 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       const curCell = cur as TTableCellElement;
       const curColIndex = curCell.colIndex!;
       const curColSpan = curCell.colSpan!;
-      const curCellPath = findNodePath(editor, curCell)!;
+
+      const curCellPath = getCellPath(tableEntry, curCell);
 
       const curCellEndingColIndex = Math.min(
         curColIndex + curColSpan - 1,
@@ -146,7 +152,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         const curRowIndex = curCell.rowIndex!;
 
         if (curColIndex >= deletingColIndex && curColIndex <= endingColIndex) {
-          const cellPath = findNodePath(editor, curCell)!;
+          const cellPath = getCellPath(tableEntry, curCell);
 
           if (!paths[curRowIndex]) {
             paths[curRowIndex] = [];

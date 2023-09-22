@@ -26,7 +26,12 @@ const makeTableWithCols = ({
         {rowCols.map((row, rowIndex) => (
           <htr>
             {row.map((col, colIndex) => (
-              <htd>
+              <htd
+                rowIndex={rowIndex}
+                colIndex={colIndex}
+                rowSpan={1}
+                colSpan={1}
+              >
                 <hp>
                   {col === '' ? <htext /> : col}
                   {cursorPath &&

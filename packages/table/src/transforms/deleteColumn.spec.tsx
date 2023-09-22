@@ -15,18 +15,18 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   22
                   <cursor />
@@ -41,12 +41,12 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
             </htr>
@@ -71,10 +71,10 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>
                   12
                   <cursor />
@@ -82,7 +82,7 @@ describe('deleteColumn', () => {
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={2}>
                 <hp>21</hp>
               </htd>
             </htr>
@@ -94,12 +94,12 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>21</hp>
               </htd>
             </htr>
@@ -124,18 +124,18 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>
                   11
                   <cursor />
                 </hp>
               </htd>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={2}>
                 <hp>21</hp>
               </htd>
             </htr>
@@ -147,12 +147,12 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={1} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={2}>
                 <hp>21</hp>
               </htd>
             </htr>
@@ -165,7 +165,15 @@ describe('deleteColumn', () => {
         plugins: [createTablePlugin()],
       });
 
+      console.log(
+        'before delete',
+        JSON.stringify(editor.children, undefined, 4)
+      );
       deleteColumn(editor);
+      console.log(
+        'after delete',
+        JSON.stringify(editor.children, undefined, 4)
+      );
 
       expect(editor.children).toEqual(output.children);
     });
@@ -177,15 +185,15 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={2}>
                 <hp>
                   21
                   <cursor />
@@ -200,15 +208,15 @@ describe('deleteColumn', () => {
         <editor>
           <htable>
             <htr>
-              <htd>
+              <htd rowIndex={0} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>11</hp>
               </htd>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={1}>
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd rowIndex={1} colIndex={0} rowSpan={1} colSpan={2}>
                 <hp>
                   21
                   <cursor />

@@ -103,10 +103,9 @@ export const insertTableRow = <V extends Value>(
   let checkingRowIndex: number;
   let nextRowPath: number[];
   if (Path.isPath(at)) {
-    nextRowIndex = cellRowIndex;
+    nextRowIndex = at.at(-1)!;
     checkingRowIndex = cellRowIndex - 1;
-    nextRowPath = [...tablePath, rowPath];
-    // nextRowPath = at;
+    nextRowPath = at;
   } else {
     nextRowIndex = cellRowIndex + cellRowSpan;
     checkingRowIndex = cellRowIndex + cellRowSpan - 1;
@@ -160,10 +159,10 @@ export const insertTableRow = <V extends Value>(
 
       newRowChildren.push({
         ...emptyCell,
-        rowIndex: curRowIndex + 1, //
+        rowIndex: nextRowIndex,
         colIndex: curColIndex,
-        rowSpan: 1,
         colSpan: curColSpan,
+        rowSpan: 1,
       });
     }
   });

@@ -6,6 +6,7 @@ import {
   deleteRow,
   deleteTable,
   ELEMENT_TABLE,
+  getTableEntries,
   insertTable,
   insertTableColumn,
   insertTableRow,
@@ -31,6 +32,8 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = someNode(editor, {
     match: { type: ELEMENT_TABLE },
   });
+
+  const { cell, row } = getTableEntries(editor) || {};
 
   const openState = useOpenState();
 
@@ -86,6 +89,17 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
               className="min-w-[180px]"
               disabled={!tableSelected}
               onSelect={async () => {
+                insertTableColumn(editor, { at: cell![1] });
+                focusEditor(editor);
+              }}
+            >
+              <Icons.add className={iconVariants({ variant: 'menuItem' })} />
+              Insert column before
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="min-w-[180px]"
+              disabled={!tableSelected}
+              onSelect={async () => {
                 insertTableColumn(editor);
                 focusEditor(editor);
               }}
@@ -113,6 +127,17 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <span>Row</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
+            <DropdownMenuItem
+              className="min-w-[180px]"
+              disabled={!tableSelected}
+              onSelect={async () => {
+                insertTableRow(editor, { at: row![1] });
+                focusEditor(editor);
+              }}
+            >
+              <Icons.add className={iconVariants({ variant: 'menuItem' })} />
+              Insert row before
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
