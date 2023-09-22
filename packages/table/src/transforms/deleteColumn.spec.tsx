@@ -165,15 +165,7 @@ describe('deleteColumn', () => {
         plugins: [createTablePlugin()],
       });
 
-      console.log(
-        'before delete',
-        JSON.stringify(editor.children, undefined, 4)
-      );
       deleteColumn(editor);
-      console.log(
-        'after delete',
-        JSON.stringify(editor.children, undefined, 4)
-      );
 
       expect(editor.children).toEqual(output.children);
     });
