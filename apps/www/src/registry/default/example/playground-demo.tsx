@@ -248,8 +248,16 @@ export const usePlaygroundPlugins = ({
 
 // reset editor when initialValue changes
 export const useInitialValueVersion = (initialValue: Value) => {
+  const enabled = settingsStore.use.checkedPlugins();
   const [version, setVersion] = useState(1);
+  const prevEnabled = useRef(enabled);
   const prevInitialValueRef = useRef(initialValue);
+
+  useEffect(() => {
+    if (enabled === prevEnabled.current) return;
+    prevEnabled.current = enabled;
+    setVersion((v) => v + 1);
+  }, [enabled]);
 
   useEffect(() => {
     if (initialValue === prevInitialValueRef.current) return;
