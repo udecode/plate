@@ -27,23 +27,21 @@ const explorer = cosmiconfig('components', {
   searchPlaces: ['components.json'],
 });
 
-export const rawConfigSchema = z
-  .object({
-    $schema: z.string().optional(),
-    style: z.string(),
-    rsc: z.coerce.boolean().default(false),
-    tailwind: z.object({
-      config: z.string(),
-      css: z.string(),
-      baseColor: z.string(),
-      cssVariables: z.boolean().default(true),
-    }),
-    aliases: z.object({
-      components: z.string(),
-      utils: z.string(),
-    }),
-  })
-  .strict();
+export const rawConfigSchema = z.object({
+  $schema: z.string().optional(),
+  style: z.string(),
+  rsc: z.coerce.boolean().default(false),
+  tailwind: z.object({
+    config: z.string(),
+    css: z.string(),
+    baseColor: z.string(),
+    cssVariables: z.boolean().default(true),
+  }),
+  aliases: z.object({
+    components: z.string(),
+    utils: z.string(),
+  }),
+});
 
 export type RawConfig = z.infer<typeof rawConfigSchema>;
 
