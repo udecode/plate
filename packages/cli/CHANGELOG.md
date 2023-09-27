@@ -1,5 +1,12 @@
 # @udecode/plate-ui
 
+## 24.1.1
+
+### Patch Changes
+
+- [`7b13d52a`](https://github.com/udecode/plate/commit/7b13d52a1de3639098eb19bbb2e2cba26659b988) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixes #2641
+
 ## 24.1.0
 
 ### Minor Changes
