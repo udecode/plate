@@ -11,14 +11,10 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
 export default defineConfig({
   entry: [INPUT_FILE],
   sourcemap: true,
-  clean: true,
   format: ['cjs', 'esm'],
   minify: false,
-  cjsInterop: true,
   dts: true,
-  replaceNodeEnv: true,
   skipNodeModulesBundle: true,
-  platform: 'browser',
   outExtension: ({ format }) => {
     return {
       js: format === 'cjs' ? '.js' : '.es.js',
