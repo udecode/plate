@@ -37,6 +37,8 @@ on:
       - 'scripts'
       - 'patches'
 
+  workflow_dispatch:
+
 jobs:
   test:
     name: ${{ matrix.command }}
