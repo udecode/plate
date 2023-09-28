@@ -84,11 +84,11 @@ jobs:
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
-        run: yarn build
+        run: yarn build --force
 
       # Test packages that have changed (--include & --since)
       - name: Test
-        run: yarn test
+        run: yarn test --force
         env:
           CI: true
 
@@ -98,7 +98,7 @@ jobs:
     needs:
       - test
     if: ${{ github.event_name == 'push' && failure() }}
-    
+
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1
