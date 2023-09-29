@@ -3,7 +3,7 @@ import {
   getPluginTypes,
   KeyboardHandler,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
+import { isHotkey } from 'is-hotkey';
 
 import { captionGlobalStore } from './captionGlobalStore';
 import { CaptionPlugin } from './createCaptionPlugin';

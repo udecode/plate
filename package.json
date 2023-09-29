@@ -187,5 +187,8 @@
     "node": "^14.13.1 || >=16.0.0",
     "npm": "please-use-yarn",
     "yarn": ">=1.22.0"
+  },
+  "dependencies": {
+    "is-hotkey": "0.2.0"
   }
 }
