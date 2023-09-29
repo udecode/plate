@@ -8,7 +8,7 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
-import isHotkey from 'is-hotkey';
+import { isHotkey } from 'is-hotkey';
 import { castArray } from 'lodash';
 
 export const onKeyDownToggleElement =

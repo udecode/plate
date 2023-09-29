@@ -10,7 +10,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
+import { isHotkey } from 'is-hotkey';
 import { castArray } from 'lodash';
 import { Range } from 'slate';
 

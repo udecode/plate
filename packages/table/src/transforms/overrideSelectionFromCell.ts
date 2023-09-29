@@ -5,7 +5,7 @@ import {
   TRange,
   Value,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
+import { isHotkey } from 'is-hotkey';
 
 import { keyShiftEdges } from '../constants';
 import { getCellTypes } from '../utils/index';
