@@ -8,16 +8,30 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
   ? INPUT_FILE_PATH
   : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 
-export default defineConfig({
-  entry: [INPUT_FILE],
-  sourcemap: true,
-  format: ['cjs', 'esm'],
-  minify: false,
-  dts: true,
-  skipNodeModulesBundle: true,
-  outExtension: ({ format }) => {
-    return {
-      js: format === 'cjs' ? '.js' : '.es.js',
-    };
-  },
+export default defineConfig((opts) => {
+  return {
+    ...opts,
+    entry: [INPUT_FILE],
+    sourcemap: true,
+    format: ['cjs', 'esm'],
+    minify: false,
+    dts: true,
+    skipNodeModulesBundle: true,
+    outExtension: ({ format }) => {
+      return {
+        js: format === 'cjs' ? '.js' : '.es.js',
+      };
+    },
+    onSuccess: async () => {
+      if (opts.watch) {
+        console.log('Watching for changes...');
+
+        return;
+      }
+
+      console.log('Build succeeded!');
+    },
+
+    silent: true,
+  };
 });
