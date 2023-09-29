@@ -86,11 +86,11 @@ jobs:
       # Build packages that have changed (--include & --since), assuming that
       # apps build are done already. Otherwise --from & --since
       - name: Build
-        run: yarn build --force
+        run: yarn build
 
       # Test packages that have changed (--include & --since)
       - name: Test
-        run: yarn test --force
+        run: yarn test
         env:
           CI: true
 

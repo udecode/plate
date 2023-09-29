@@ -40,7 +40,7 @@
     "g:playwright": "yarn playwright test",
     "g:prerelease": "yarn build",
     "g:release:next": "yarn g:prerelease && yarn changeset publish --tag next",
-    "g:test": "turbo --filter \"./packages/**\" test --concurrency=50%",
+    "g:test": "turbo --filter \"./packages/**\" test",
     "g:test:watch": "turbo --filter \"./packages/**\" test:watch",
     "g:test:cov": "yarn g:test --coverage",
     "g:test:covw": "yarn g:test:cov --watch",

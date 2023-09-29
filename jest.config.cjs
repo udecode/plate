@@ -51,13 +51,7 @@ module.exports = {
   testRegex: '(test|spec).tsx?$',
   testPathIgnorePatterns: ['/playwright/'],
   transform: {
-    "^.+\\.[tj]s$": [
-      'ts-jest',
-      {
-        diagnostics: true,
-        tsconfig: '<rootDir>/config/tsconfig.test.json',
-      },
-    ],
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   transformIgnorePatterns: [
