@@ -119,3 +119,5 @@ export const pluginInjectProps = <V extends Value>(
 
   return res;
 };
+
+export type { AnyObject } from '@udecode/utils';

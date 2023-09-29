@@ -1,4 +1,5 @@
 import {
+  AnyObject,
   createPluginFactory,
   DeserializeHtml,
   KEY_DESERIALIZE_HTML,
@@ -81,7 +82,7 @@ KEYS.forEach((key) => {
   };
 });
 
-export const createDeserializeDocxPlugin = createPluginFactory({
+export const createDeserializeDocxPlugin = createPluginFactory<AnyObject>({
   key: KEY_DESERIALIZE_DOCX,
   inject: {
     pluginsByKey: {
