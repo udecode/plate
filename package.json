@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn g:build",
+    "build:watch": "yarn g:build:watch",
     "build:apps": "turbo --filter \"./apps/www\" build",
     "build:registry": "yarn workspace www build:registry",
     "build:templates": "turbo --filter \"./templates/**\" build",

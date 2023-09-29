@@ -11,12 +11,14 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
 export default defineConfig((opts) => {
   return {
     ...opts,
-    entry: [INPUT_FILE],
-    sourcemap: true,
-    format: ['cjs', 'esm'],
-    minify: false,
-    dts: true,
-    skipNodeModulesBundle: true,
+      entry: [INPUT_FILE],
+  format: ['cjs', 'esm'],
+  external: [],
+  skipNodeModulesBundle: true,
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  minify: false,
     outExtension: ({ format }) => {
       return {
         js: format === 'cjs' ? '.js' : '.es.js',
