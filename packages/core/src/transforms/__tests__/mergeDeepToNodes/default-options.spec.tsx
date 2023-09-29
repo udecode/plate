@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { TNode } from '@udecode/slate/src/interfaces/node/TNode';
+import { TNode } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../../utils/index';
 

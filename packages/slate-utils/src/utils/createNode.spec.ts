@@ -1,4 +1,4 @@
-import { TElement } from '@udecode/slate/src/interfaces/element/TElement';
+import { TElement } from '@udecode/slate';
 
 import { createNode } from './createNode';
 

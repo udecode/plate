@@ -1,9 +1,11 @@
 /** @jsx jsx */
 
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { MARK_BOLD } from '@udecode/plate-basic-marks/src/createBoldPlugin';
-import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
-import { MARK_UNDERLINE } from '@udecode/plate-basic-marks/src/createUnderlinePlugin';
+import {
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
+} from '@udecode/plate-basic-marks';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
