@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { execSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
 import { GlobSync } from 'glob';
@@ -51,34 +51,22 @@ const allPackages = foundPackageJson.reduce<AllPackages>(
   }
 );
 
-const buildDependents = async (
-  packageName: string,
-  set = new Set<string>()
-) => {
-  const dependents = [
-    ...(allPackages.packagesWithDependents.get(packageName) || []),
-  ];
+const spawnWithPiping = async (command: string, args: string[]) => {
+  const task = spawn(command, args, {
+    stdio: 'inherit',
+    detached: false,
+    windowsHide: true,
+  });
 
-  if (dependents.length === 0) {
-    return;
-  }
+  task.stdout?.pipe(process.stdout);
 
-  //comment this out to disable building dependents
-  for (const dep of dependents) {
-    if (set.has(dep)) {
-      continue;
-    }
+  task.stderr?.pipe(process.stderr!);
 
-    set.add(dep);
-
-    const command = `yarn workspace ${dep} build`;
-    console.log(`Building ${dep} ...`);
-    const out = execSync(command);
-
-    console.log(`Build complete for ${dep}:\n${out.toString()}`);
-
-    buildDependents(dep, set);
-  }
+  await new Promise<void>((resolve) => {
+    task.on('close', () => {
+      resolve();
+    });
+  });
 };
 
 chokidar
@@ -94,21 +82,26 @@ chokidar
     if (!packageName) {
       return;
     }
-
     console.log(`Change detected in ${packageName} rebuilding...`);
 
-    const command = `yarn workspace ${packageName} build`;
+    console.time(`Build complete for ${packageName}`);
 
-    const out = await execSync(command);
+    await spawnWithPiping('turbo', ['run', 'build', `--filter=${packageName}`]);
 
-    console.log(`Build complete for ${packageName}:\n${out.toString()}`);
+    await spawnWithPiping('turbo', [
+      'run',
+      'build',
+      `--filter=...^${packageName}`,
+      '--filter=!www',
+      '--filter=!e2e-examples',
+      '--concurrency=90%',
+    ]);
 
-    buildDependents(packageName);
-
-    console.log(`Rebuild complete`);
+    console.timeEnd(`Build complete for ${packageName}`);
+    console.log('Watching packages for changes...');
   })
   .on('ready', () => {
-    console.log('Initial scan complete. Ready for changes');
+    console.log('Watching packages for changes...');
   })
   .on('error', (error) => {
     console.log(`Watcher error: ${error}`);
