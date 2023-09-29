@@ -31,9 +31,7 @@ const allPackages = foundPackageJson.reduce<AllPackages>(
 
       all.pathToPackageNameMap.set(current, packageName);
 
-      const packageJsonDependencies = Object.keys(
-        packageJsonParsed.dependencies
-      )
+      Object.keys(packageJsonParsed.dependencies)
         .filter((dependency: string) => dependency.startsWith('@udecode'))
         .forEach((dependency) => {
           const packageEntry =
