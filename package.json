@@ -62,7 +62,8 @@
     "p:test": "cd $INIT_CWD && jest --config=${PROJECT_CWD}/jest.config.cjs --maxWorkers=1 --passWithNoTests $INIT_CWD ",
     "p:typecheck": "cd $INIT_CWD && tsc --noEmit --emitDeclarationOnly false",
     "postinstall": "patch-package",
-    "sync:templates": "./scripts/sync-templates.sh \"templates/*\""
+    "sync:templates": "./scripts/sync-templates.sh \"templates/*\"",
+    "dev:packages": "tsx --watch ./config/dev-packages.ts"
   },
   "workspaces": [
     "apps/*",
@@ -120,6 +121,7 @@
     "babel-plugin-prismjs": "^2.1.0",
     "barrelsby": "^2.8.0",
     "change-case": "^4.1.2",
+    "chokidar": "3.5.3",
     "concurrently": "^8.2.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
@@ -189,6 +191,7 @@
     "yarn": ">=1.22.0"
   },
   "dependencies": {
-    "is-hotkey": "0.2.0"
+    "is-hotkey": "0.2.0",
+    "tsx": "3.13.0"
   }
 }
