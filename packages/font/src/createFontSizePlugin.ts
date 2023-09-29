@@ -1,8 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { AnyObject, createPluginFactory } from '@udecode/plate-common';
 
 export const MARK_FONT_SIZE = 'fontSize';
 
-export const createFontSizePlugin = createPluginFactory({
+export const createFontSizePlugin = createPluginFactory<AnyObject>({
   key: MARK_FONT_SIZE,
   inject: {
     props: {

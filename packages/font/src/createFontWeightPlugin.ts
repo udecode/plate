@@ -1,8 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { AnyObject, createPluginFactory } from '@udecode/plate-common';
 
 export const MARK_FONT_WEIGHT = 'fontWeight';
 
-export const createFontWeightPlugin = createPluginFactory({
+export const createFontWeightPlugin = createPluginFactory<AnyObject>({
   key: MARK_FONT_WEIGHT,
   inject: {
     props: {

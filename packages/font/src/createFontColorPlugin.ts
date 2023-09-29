@@ -1,8 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { AnyObject, createPluginFactory } from '@udecode/plate-common';
 
 export const MARK_COLOR = 'color';
 
-export const createFontColorPlugin = createPluginFactory({
+export const createFontColorPlugin = createPluginFactory<AnyObject>({
   key: MARK_COLOR,
   inject: {
     props: {

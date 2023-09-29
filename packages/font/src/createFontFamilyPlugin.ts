@@ -1,8 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { AnyObject, createPluginFactory } from '@udecode/plate-common';
 
 export const MARK_FONT_FAMILY = 'fontFamily';
 
-export const createFontFamilyPlugin = createPluginFactory({
+export const createFontFamilyPlugin = createPluginFactory<AnyObject>({
   key: MARK_FONT_FAMILY,
   inject: {
     props: {
