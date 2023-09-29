@@ -2,7 +2,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { htmlElementToElement } from './htmlElementToElement';

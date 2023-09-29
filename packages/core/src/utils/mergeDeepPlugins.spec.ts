@@ -1,4 +1,4 @@
-import { createTEditor } from '@udecode/slate/src/createTEditor';
+import { createTEditor } from '@udecode/slate';
 
 import { mergeDeepPlugins } from './mergeDeepPlugins';
 import { mockPlugin } from './mockPlugin';
