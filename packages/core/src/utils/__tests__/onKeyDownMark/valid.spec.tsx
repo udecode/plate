@@ -45,7 +45,7 @@ const editor = createPlateEditor({
 });
 
 it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
   onKeyDownToggleMark(
     editor,

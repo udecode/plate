@@ -22,7 +22,7 @@ describe('mentionOnKeyDownHandler', () => {
       { pluginOptions: { trigger } }
     );
 
-    jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+    jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
     // mentionOnKeyDownHandler({})(editor)(
     //   new KeyboardEvent('keydown', { key: 'Escape' }) as any
