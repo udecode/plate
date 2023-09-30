@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { findNode } from '@udecode/slate/src/queries/findNode';
+import { findNode } from '@udecode/slate';
 import { Path } from 'slate';
 
 import { moveChildren } from './moveChildren';

@@ -13,10 +13,10 @@ import {
   isSelectionAtBlockStart,
   mockPlugin,
 } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
@@ -72,7 +72,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -104,7 +104,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -163,7 +163,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -203,7 +203,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -239,7 +239,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -279,7 +279,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -332,7 +332,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);
@@ -376,7 +376,7 @@ describe('onKeyDownResetNode', () => {
       });
 
       jest
-        .spyOn(isHotkey, 'default')
+        .spyOn(isHotkey, 'isHotkey')
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode(editor, plugin)(new KeyboardEvent('keydown') as any);

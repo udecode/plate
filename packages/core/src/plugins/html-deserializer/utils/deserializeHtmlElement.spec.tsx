@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createBoldPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
-import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createImagePlugin } from '@udecode/plate-media';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { createTablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { deserializeHtmlElement } from './deserializeHtmlElement';

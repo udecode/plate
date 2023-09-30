@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { MARK_ITALIC } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import { MARK_ITALIC } from '@udecode/plate-basic-marks';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';

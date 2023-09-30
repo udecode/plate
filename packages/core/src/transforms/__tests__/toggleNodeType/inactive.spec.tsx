@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { PlateEditor, toggleNodeType } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 

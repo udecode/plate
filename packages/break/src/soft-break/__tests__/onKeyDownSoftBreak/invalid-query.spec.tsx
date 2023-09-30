@@ -2,8 +2,8 @@
 
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { mockPlugin } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
 
 import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownSoftBreak(
     input,
     mockPlugin({

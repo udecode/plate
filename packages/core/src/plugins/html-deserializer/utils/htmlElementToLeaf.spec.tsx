@@ -1,11 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
+import {
+  createBoldPlugin,
+  createItalicPlugin,
+} from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { createListPlugin } from '@udecode/plate-list';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { htmlElementToLeaf } from './htmlElementToLeaf';

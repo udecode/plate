@@ -1,6 +1,6 @@
-import { MARK_BOLD } from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor, mockPlugin } from '@udecode/plate-common';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 

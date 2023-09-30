@@ -37,6 +37,8 @@ on:
       - 'scripts'
       - 'patches'
 
+  workflow_dispatch:
+
 jobs:
   test:
     name: ${{ matrix.command }}
@@ -98,7 +100,7 @@ jobs:
     needs:
       - test
     if: ${{ github.event_name == 'push' && failure() }}
-    
+
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1

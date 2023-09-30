@@ -12,12 +12,21 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "files": [
-    "dist"
-  ],
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
@@ -35,6 +44,7 @@
     "@udecode/utils": "19.7.1",
     "@udecode/zustood": "^1.1.3",
     "clsx": "^1.2.1",
+    "is-hotkey": "^0.2.0",
     "jotai": "1.7.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.6",
