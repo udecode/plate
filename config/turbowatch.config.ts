@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { GlobSync } from 'glob';
-import { defineConfig } from 'turbowatch';
+import { defineConfig, Expression } from 'turbowatch';
 
-const foundPackageJson = new GlobSync('packages/**/package.json').found;
+const foundPackageJson = new GlobSync('packages/*/package.json').found;
 
 type PathToPackageNameMap = Map<string, string>;
 
 const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
-  (all, current) => {
+  (acc, current) => {
     try {
       const packageJson = readFileSync(current, 'utf8');
       const packageJsonParsed = JSON.parse(packageJson) as {
@@ -18,32 +18,21 @@ const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
       const packageName = packageJsonParsed.name;
 
       if (!packageName) {
-        return all;
+        return acc;
       }
+
+      acc.set(current, packageName);
+      return acc;
     } catch (_) {}
 
-    return all;
+    return acc;
   },
   new Map()
 );
 
-// const spawnWithPiping = async (command: string, args: string[]) => {
-//   const task = spawn(command, args, {
-//     stdio: 'inherit',
-//     detached: false,
-//     windowsHide: true,
-//   });
-
-//   task.stdout?.pipe(process.stdout);
-
-//   task.stderr?.pipe(process.stderr!);
-
-//   await new Promise<void>((resolve) => {
-//     task.on('close', () => {
-//       resolve();
-//     });
-//   });
-// };
+const dirList = [...allPackages.keys()].map(
+  (dir) => ['dirname', dir.replace('/package.json', '')] satisfies Expression
+);
 
 export default defineConfig({
   project: process.cwd(),
@@ -51,14 +40,39 @@ export default defineConfig({
     {
       expression: [
         'allof',
-        ['not', ['dirname', 'node_modules']],
-        ['not', ['dirname', 'dist']],
-        ['match', 'packages/*/src/**/*.{ts,tsx}'],
+        ['not', ['anyof', ['dirname', 'node_modules'], ['dirname', 'dist']]],
+        ['anyof', ...dirList],
+        [
+          'anyof',
+          ['match', '*.ts', 'basename'],
+          ['match', '*.tsx', 'basename'],
+          ['match', '*.js', 'basename'],
+        ],
       ],
       interruptible: true,
       name: 'build',
-      onChange: async ({ spawn, files }) => {
-        console.log(files);
+      onChange: async ({ spawn, files, abortSignal }) => {
+        const changedPackages = new Set<string>();
+        for (const file of files) {
+          const pkgJsonPath = file.name
+            .replace(`${process.cwd()}/`, '')
+            .replace(/\/src\/.*/, '/package.json');
+
+          const packageName = allPackages.get(pkgJsonPath);
+
+          if (!packageName) {
+            continue;
+          }
+
+          changedPackages.add(packageName);
+        }
+
+        if (changedPackages.size === 0) {
+          return;
+        }
+
+        await spawn`turbo run build --filter=${[...changedPackages].join(',')}`;
+        if (abortSignal?.aborted) return;
       },
     },
   ],
