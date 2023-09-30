@@ -6,6 +6,13 @@ on:
       - main
     paths:
       - 'templates/**'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - 'templates/**'
 
 jobs:
   build:
