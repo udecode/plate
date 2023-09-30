@@ -180,6 +180,7 @@
     "ts-jest": "^29.1.1",
     "tsup": "7.2.0",
     "turbo": "^1.10.7",
+    "turbowatch": "2.29.4",
     "typescript": "5.1.6"
   },
   "engines": {
