@@ -10,10 +10,10 @@ import { EText } from '../text/TText';
  * element nodes or text nodes. They can be either "blocks" or "inlines"
  * depending on the Slate editor's configuration.
  */
-export interface TElement extends UnknownObject {
+export type TElement = UnknownObject & {
   children: TDescendant[];
   type: string;
-}
+};
 
 /**
  * Element of an editor.

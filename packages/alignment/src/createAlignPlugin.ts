@@ -1,5 +1,4 @@
 import {
-  AnyObject,
   createPluginFactory,
   ELEMENT_DEFAULT,
   getPluginType,
@@ -11,7 +10,7 @@ export const KEY_ALIGN = 'align';
 /**
  * Creates a plugin that adds alignment functionality to the editor.
  */
-export const createAlignPlugin = createPluginFactory<AnyObject>({
+export const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,
   then: (editor) => ({
     inject: {

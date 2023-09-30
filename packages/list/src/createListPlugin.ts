@@ -1,5 +1,4 @@
 import {
-  AnyObject,
   createPluginFactory,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
@@ -18,7 +17,7 @@ export const ELEMENT_LIC = 'lic';
 /**
  * Enables support for bulleted, numbered and to-do lists.
  */
-export const createListPlugin = createPluginFactory<AnyObject>({
+export const createListPlugin = createPluginFactory({
   key: 'list',
   plugins: [
     {

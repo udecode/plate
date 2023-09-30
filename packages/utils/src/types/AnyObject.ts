@@ -1,6 +1,6 @@
-export interface AnyObject {
+export type AnyObject = {
   [key: string]: any;
-}
+};
 
 export interface UnknownObject {
   [key: string]: unknown;

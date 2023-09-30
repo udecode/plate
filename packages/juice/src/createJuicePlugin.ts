@@ -1,5 +1,4 @@
 import {
-  AnyObject,
   createPluginFactory,
   KEY_DESERIALIZE_HTML,
 } from '@udecode/plate-common';
@@ -7,7 +6,7 @@ import juice from 'juice';
 
 export const KEY_JUICE = 'juice';
 
-export const createJuicePlugin = createPluginFactory<AnyObject>({
+export const createJuicePlugin = createPluginFactory({
   key: KEY_JUICE,
   inject: {
     pluginsByKey: {
