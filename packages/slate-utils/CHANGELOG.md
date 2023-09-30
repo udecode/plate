@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 24.2.0
+
+### Minor Changes
+
+- [`18f9778c`](https://github.com/udecode/plate/commit/18f9778cda9450cd99a71c47ab0767b64813db1a) by [@zbeyens](https://github.com/zbeyens) – Add replaceNode
+
 ## 24.0.0
 
 ### Minor Changes

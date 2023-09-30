@@ -1,5 +1,7 @@
 # @udecode/plate-selection
 
+## 24.2.0
+
 ## 24.0.2
 
 ## 24.0.1
