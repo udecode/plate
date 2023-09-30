@@ -14,7 +14,7 @@ import { onKeyDownIndentList } from './onKeyDownIndentList';
 
 jsx;
 
-jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
 describe('when indented list and empty', () => {
   it('should outdent', () => {

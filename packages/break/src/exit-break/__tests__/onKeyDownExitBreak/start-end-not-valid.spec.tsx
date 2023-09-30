@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownExitBreak(
     input,
     mockPlugin({
