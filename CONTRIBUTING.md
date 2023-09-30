@@ -9,7 +9,7 @@ This document will provide guidance to help streamline the process and make effi
 This repository is a monorepo.
 
 - We use [yarn](https://yarnpkg.com/en/docs/install) and [`workspaces`](https://yarnpkg.com/features/workspaces) for development.
-- We use [Rollup](https://rollupjs.org/) as our build system.
+- We use [tsup](https://tsup.egoist.dev/) as our build system.
 - We use [changesets](https://github.com/changesets/changesets) for managing releases.
 
 ## Structure
@@ -32,7 +32,7 @@ packages
 ```
 
 | Path                      | Description                              |
-|---------------------------|------------------------------------------|
+| ------------------------- | ---------------------------------------- |
 | `apps/www/content`        | The content for the website.             |
 | `apps/www/src/app`        | The Next.js application for the website. |
 | `apps/www/src/components` | The React components for the website.    |

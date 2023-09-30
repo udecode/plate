@@ -9,9 +9,9 @@ import { TNode, TNodeProps } from '../node/TNode';
  * Slate document along with any formatting properties. They are always leaf
  * nodes in the document tree as they cannot contain any children.
  */
-export interface TText extends UnknownObject {
+export type TText = UnknownObject & {
   text: string;
-}
+};
 
 /**
  * Text node of an editor.

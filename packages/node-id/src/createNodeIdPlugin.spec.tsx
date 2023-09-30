@@ -7,11 +7,8 @@ import {
   PlateEditor,
   splitNodes,
 } from '@udecode/plate-common';
-import {
-  ELEMENT_LI,
-  ELEMENT_UL,
-} from '@udecode/plate-list/src/createListPlugin';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createNodeIdPlugin } from './createNodeIdPlugin';

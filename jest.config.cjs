@@ -51,16 +51,11 @@ module.exports = {
   testRegex: '(test|spec).tsx?$',
   testPathIgnorePatterns: ['/playwright/'],
   transform: {
-    "^.+\\.[tj]s$": [
-      'ts-jest',
-      {
-        diagnostics: true,
-        tsconfig: '<rootDir>/config/tsconfig.test.json',
-      },
-    ],
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   transformIgnorePatterns: [
     '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-tweet)/)',
   ],
+  watchman: false,
 };

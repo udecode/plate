@@ -1,7 +1,7 @@
 import { PlatePlugin } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createTEditor } from '@udecode/slate/src/createTEditor';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { createTEditor } from '@udecode/slate';
 
 import { getPlugin } from '../utils/index';
 import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
