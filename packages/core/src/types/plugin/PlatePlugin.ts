@@ -223,3 +223,5 @@ export type WithPlatePlugin<
   PlatePlugin<P, V, E>,
   'type' | 'options' | 'inject' | 'editor'
 >;
+
+export type { AnyObject } from '@udecode/utils';
