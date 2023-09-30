@@ -1,7 +1,6 @@
 import { Value } from '@udecode/slate';
 
 import { PlateEditor } from '../types/PlateEditor';
-import { AnyObject } from '../utils';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
@@ -54,7 +53,7 @@ export const withInlineVoid = <
 /**
  * @see {@link withInlineVoid}
  */
-export const createInlineVoidPlugin = createPluginFactory<AnyObject>({
+export const createInlineVoidPlugin = createPluginFactory({
   key: KEY_INLINE_VOID,
   withOverrides: withInlineVoid,
 });

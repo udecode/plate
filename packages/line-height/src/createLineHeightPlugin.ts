@@ -1,5 +1,4 @@
 import {
-  AnyObject,
   createPluginFactory,
   ELEMENT_DEFAULT,
   getPluginType,
@@ -12,7 +11,7 @@ export const KEY_LINE_HEIGHT = 'lineHeight';
  * Enables support for text alignment, useful to align your content
  * to left, right and center it.
  */
-export const createLineHeightPlugin = createPluginFactory<AnyObject>({
+export const createLineHeightPlugin = createPluginFactory({
   key: KEY_LINE_HEIGHT,
   inject: {
     props: {
