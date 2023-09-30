@@ -21,12 +21,11 @@ export default defineConfig((opts) => {
     minify: false,
     onSuccess: async () => {
       if (opts.watch) {
-        console.log('Watching for changes...');
-
+        console.info('Watching for changes...');
         return;
       }
 
-      console.log('Build succeeded!');
+      console.info('Build succeeded!');
     },
 
     silent: true,

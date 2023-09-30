@@ -11,12 +11,12 @@ import {
   focusEditor,
   getNodeString,
   getPointAfter,
+  isHotkey,
   setNodes,
   TElement,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common';
-import { isHotkey } from 'is-hotkey';
 import { TextareaAutosizeProps } from 'react-textarea-autosize';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
