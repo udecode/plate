@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import chokidar from 'chokidar';
 import { GlobSync } from 'glob';
 
-const foundPackageJson = new GlobSync('packages/**/package.json').found;
+const foundPackageJson = new GlobSync('packages/*/package.json').found;
 
 type PathToPackageNameMap = Map<string, string>;
 
@@ -12,6 +12,7 @@ const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
   (all, current) => {
     try {
       const packageJson = readFileSync(current, 'utf8');
+
       const packageJsonParsed = JSON.parse(packageJson) as {
         dependencies: Record<string, string>;
         name: string | undefined;
@@ -22,6 +23,8 @@ const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
       if (!packageName) {
         return all;
       }
+
+      all.set(current, packageName);
     } catch (_) {}
 
     return all;
@@ -54,6 +57,8 @@ chokidar
   })
   .on('change', async (path) => {
     const pkgJsonPath = path.replace(/\/src\/.*/, '/package.json');
+
+    console.log(`Change detected in ${pkgJsonPath}`);
 
     const packageName = allPackages.get(pkgJsonPath);
 
