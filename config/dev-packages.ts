@@ -6,15 +6,9 @@ import { GlobSync } from 'glob';
 
 const foundPackageJson = new GlobSync('packages/**/package.json').found;
 
-type PackagesWithDependents = Map<string, Set<string>>;
 type PathToPackageNameMap = Map<string, string>;
 
-type AllPackages = {
-  packagesWithDependents: PackagesWithDependents;
-  pathToPackageNameMap: PathToPackageNameMap;
-};
-
-const allPackages = foundPackageJson.reduce<AllPackages>(
+const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
   (all, current) => {
     try {
       const packageJson = readFileSync(current, 'utf8');
@@ -28,27 +22,11 @@ const allPackages = foundPackageJson.reduce<AllPackages>(
       if (!packageName) {
         return all;
       }
-
-      all.pathToPackageNameMap.set(current, packageName);
-
-      Object.keys(packageJsonParsed.dependencies)
-        .filter((dependency: string) => dependency.startsWith('@udecode'))
-        .forEach((dependency) => {
-          const packageEntry =
-            all.packagesWithDependents.get(dependency) || new Set();
-
-          packageEntry.add(packageName);
-
-          all.packagesWithDependents.set(dependency, packageEntry);
-        });
     } catch (_) {}
 
     return all;
   },
-  {
-    packagesWithDependents: new Map(),
-    pathToPackageNameMap: new Map(),
-  }
+  new Map()
 );
 
 const spawnWithPiping = async (command: string, args: string[]) => {
@@ -77,11 +55,12 @@ chokidar
   .on('change', async (path) => {
     const pkgJsonPath = path.replace(/\/src\/.*/, '/package.json');
 
-    const packageName = allPackages.pathToPackageNameMap.get(pkgJsonPath);
+    const packageName = allPackages.get(pkgJsonPath);
 
     if (!packageName) {
       return;
     }
+
     console.log(`Change detected in ${packageName} rebuilding...`);
 
     console.time(`Build complete for ${packageName}`);
