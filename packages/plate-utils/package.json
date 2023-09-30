@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "24.0.2",
+  "version": "24.2.0",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -43,7 +43,7 @@
     "@udecode/plate-core": "24.0.2",
     "@udecode/slate": "23.7.4",
     "@udecode/slate-react": "24.0.0",
-    "@udecode/slate-utils": "24.0.0",
+    "@udecode/slate-utils": "24.2.0",
     "@udecode/utils": "19.7.1"
   },
   "peerDependencies": {
