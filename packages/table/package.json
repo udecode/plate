@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@udecode/plate-common": "24.3.0",
-    "@udecode/plate-resizable": "24.3.0"
+    "@udecode/plate-resizable": "24.3.0",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

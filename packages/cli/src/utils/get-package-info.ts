@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs-extra';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { type PackageJson } from 'type-fest';
 
 /**

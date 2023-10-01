@@ -13,7 +13,6 @@ export default defineConfig((opts) => {
     ...opts,
     entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
-    external: [],
     skipNodeModulesBundle: true,
     dts: {
       only: true,

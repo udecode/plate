@@ -1,5 +1,3 @@
-import { castArray } from 'lodash';
-
 import { isBlock } from '../interfaces/editor/isBlock';
 import { TEditor, Value } from '../interfaces/editor/TEditor';
 import { ENode, TNode } from '../interfaces/node/TNode';
@@ -8,6 +6,10 @@ import { TPath } from '../types/interfaces';
 export type PredicateObj = Record<string, any | any[]>;
 export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
 export type Predicate<T extends TNode> = PredicateObj | PredicateFn<T>;
+
+function castArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 /**
  * Match the object with a predicate object or function.
