@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 24.3.1
+
 ## 24.3.0
 
 ## 24.2.0
