@@ -3612,6 +3612,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@linjiajian999/esbuild-plugin-import@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@linjiajian999/esbuild-plugin-import@npm:1.0.2"
+  dependencies:
+    esbuild: "npm:^0.12.15"
+    fs-extra: "npm:^10.0.0"
+  checksum: accec9ae58f7661fa83c44b227234ba4fa6813050d5b7fdddeda4a81a6fbc589583f74c9d264be01f7ad728dd0037ba10d4cfcee9fde70f45ff8b8e331fbce39
+  languageName: node
+  linkType: hard
+
 "@manypkg/find-root@npm:^1.1.0":
   version: 1.1.0
   resolution: "@manypkg/find-root@npm:1.1.0"
@@ -11173,6 +11183,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-plugin-babel@npm:0.2.3":
+  version: 0.2.3
+  resolution: "esbuild-plugin-babel@npm:0.2.3"
+  peerDependencies:
+    "@babel/core": ^7.0.0
+  checksum: aafe4a13d40a7651e127f4d1ed920ecd952b326fccf7eb00a1d13ff8346ba8208821632a23293b091fee3fd1042b6fb804c03b71765337dcc8260d225c7f1203
+  languageName: node
+  linkType: hard
+
 "esbuild@npm:0.17.x || 0.18.x":
   version: 0.18.11
   resolution: "esbuild@npm:0.18.11"
@@ -11247,6 +11266,15 @@ __metadata:
   bin:
     esbuild: bin/esbuild
   checksum: 6e4d3c4cd45bcfb36b0eef429db9a635731f6824f118d507b988b0a88ff9acadc1b01a86c32b5808320b9afde8243e211e36718a6de6b47d985144fa2e32c4ae
+  languageName: node
+  linkType: hard
+
+"esbuild@npm:^0.12.15":
+  version: 0.12.29
+  resolution: "esbuild@npm:0.12.29"
+  bin:
+    esbuild: bin/esbuild
+  checksum: f1a0c7ae6220b3eacba341b28c1a65e8f82ff2f1017a80b42fe10536e66be6162e1fd9271e35314116126bf8e848ef6ecfcc194d12ee35568812c38adb19079c
   languageName: node
   linkType: hard
 
@@ -21086,6 +21114,7 @@ __metadata:
     "@changesets/types": "npm:^5.2.1"
     "@dword-design/eslint-plugin-import-alias": "npm:^4.0.8"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.0.2"
+    "@linjiajian999/esbuild-plugin-import": "npm:1.0.2"
     "@playwright/test": "npm:1.36.0"
     "@swc/core": "npm:1.3.90"
     "@swc/jest": "npm:0.2.29"
@@ -21121,6 +21150,7 @@ __metadata:
     concurrently: "npm:^8.2.0"
     cross-env: "npm:^7.0.3"
     dotenv: "npm:^16.3.1"
+    esbuild-plugin-babel: "npm:0.2.3"
     eslint: "npm:8.44.0"
     eslint-config-next: "npm:^13.4.9"
     eslint-config-prettier: "npm:^8.8.0"
