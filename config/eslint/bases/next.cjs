@@ -34,6 +34,20 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['**/packages/**'],
+      excludedFiles: ['**/*.test.*', '**/*.spec.*', '**/*.fixtures.*', '**/__tests__/**/*', '**/apps/**/*'],
+      rules: {
+        'import/no-extraneous-dependencies': [
+              'error',
+              {
+                devDependencies: false,
+                includeInternal: false,
+                includeTypes: false,
+              },
+            ],
+      }
+    },
+    {
       files: ['apps/www/next.config.mjs'],
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',

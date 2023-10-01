@@ -44,7 +44,9 @@
     "@udecode/slate": "24.3.0",
     "@udecode/slate-react": "24.3.0",
     "@udecode/slate-utils": "24.3.0",
-    "@udecode/utils": "24.3.0"
+    "@udecode/utils": "24.3.0",
+    "clsx": "^1.2.1",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
