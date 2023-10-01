@@ -1,4 +1,5 @@
-import { EText, TRenderLeafProps, TText, Value } from '@udecode/slate';
+import { EText, TText, Value } from '@udecode/slate';
+import { TRenderLeafProps } from '@udecode/slate-react';
 
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
 

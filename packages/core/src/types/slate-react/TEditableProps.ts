@@ -1,4 +1,5 @@
-import { RenderLeafFn, TNodeEntry } from '@udecode/slate';
+import { TNodeEntry } from '@udecode/slate';
+import { RenderLeafFn } from '@udecode/slate-react';
 import { Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
 

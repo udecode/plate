@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 24.3.1
+
+### Patch Changes
+
+- [#2659](https://github.com/udecode/plate/pull/2659) by [@zbeyens](https://github.com/zbeyens) – fix build (types)
+
 ## 24.3.0
 
 ### Minor Changes
