@@ -1,4 +1,4 @@
-import { createStore } from '@udecode/zustood';
+import { createStore } from '@udecode/plate-common';
 
 export const yjsStore = createStore('yjs')({
   isConnected: false,

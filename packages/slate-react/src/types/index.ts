@@ -4,3 +4,4 @@
 
 export * from './SlateProps';
 export * from './TReactEditor';
+export * from './TRenderLeafProps';

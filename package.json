@@ -32,7 +32,7 @@
     "gen:package": "yarn plop --plopfile scripts/plop/plopfile.cjs package",
     "g:dev": "turbo --filter=www dev",
     "g:dev:cli": "yarn workspace @udecode/plate-ui dev",
-    "g:lint": "turbo lint",
+    "g:lint": "turbo --filter \"./packages/**\" lint",
     "g:lint:fix": "turbo lint:fix",
     "g:lint:apps": "turbo --filter=www lint && cd templates/plate-playground-template && pnpm lint",
     "g:lint:apps:fix": "turbo --filter=www lint --fix && cd templates/plate-playground-template && pnpm lint:fix",
