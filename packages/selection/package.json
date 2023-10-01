@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-selection",
-  "version": "24.3.0",
+  "version": "24.3.1",
   "description": "Plate plugin to add a visual way of selecting blocks",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.3.0",
+    "@udecode/plate-common": "24.3.1",
     "@viselect/vanilla": "3.2.5",
     "copy-to-clipboard": "^3.3.3"
   },
