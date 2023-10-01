@@ -7081,6 +7081,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7096,6 +7097,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7114,6 +7116,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7128,6 +7131,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7142,6 +7146,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7156,6 +7161,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7171,6 +7177,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7188,6 +7195,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7203,6 +7211,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7218,6 +7227,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7233,6 +7243,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7252,6 +7263,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7293,6 +7305,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7311,6 +7324,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7327,6 +7341,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7342,6 +7357,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7356,6 +7372,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7373,6 +7390,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7388,6 +7406,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7402,6 +7421,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7416,6 +7436,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7430,6 +7451,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7447,6 +7469,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7461,6 +7484,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7476,6 +7500,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7490,6 +7515,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7504,6 +7530,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7520,6 +7547,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7536,6 +7564,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7551,6 +7580,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7566,6 +7596,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7581,6 +7612,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7596,6 +7628,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7610,6 +7643,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7624,6 +7658,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7638,6 +7673,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7652,6 +7688,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7668,6 +7705,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7750,6 +7788,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7764,6 +7803,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7779,6 +7819,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7818,6 +7859,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7868,6 +7910,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
@@ -7885,6 +7928,7 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.95.0"
   languageName: unknown
   linkType: soft
