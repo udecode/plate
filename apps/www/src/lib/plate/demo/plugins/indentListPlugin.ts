@@ -1,5 +1,6 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { PlatePlugin } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -11,9 +12,7 @@ import {
 import { IndentListPlugin } from '@udecode/plate-indent-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin } from '@/types/plate-types';
-
-export const indentListPlugin: Partial<MyPlatePlugin<IndentListPlugin>> = {
+export const indentListPlugin: Partial<PlatePlugin<IndentListPlugin>> = {
   inject: {
     props: {
       validTypes: [

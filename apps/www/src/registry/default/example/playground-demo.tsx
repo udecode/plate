@@ -9,7 +9,6 @@ import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
-import { captionPlugin } from '@/plate/demo/plugins/captionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -45,7 +44,12 @@ import { createCaptionPlugin } from '@udecode/plate-caption';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
-import { Plate, PlatePluginComponent, Value } from '@udecode/plate-common';
+import {
+  createPlugins,
+  Plate,
+  PlatePluginComponent,
+  Value,
+} from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -83,8 +87,8 @@ import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { ValueId } from '@/config/customizer-plugins';
+import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
@@ -122,7 +126,7 @@ export const usePlaygroundPlugins = ({
 
   return useMemo(
     () =>
-      createMyPlugins(
+      createPlugins(
         [
           // Nodes
           createParagraphPlugin({ enabled: !!enabled.p }),
@@ -288,7 +292,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <Plate<MyValue>
+        <Plate
           key={key}
           initialValue={initialValue}
           plugins={plugins}

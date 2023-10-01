@@ -1,6 +1,5 @@
 import { TComment } from '@udecode/plate-comments';
-
-import { MyValue } from '@/types/plate-types';
+import { Value } from '@udecode/plate-common';
 
 export const usersData = {
   1: {
@@ -53,7 +52,7 @@ export const commentsData: Record<string, TComment> = {
   },
 };
 
-export const commentsValue: MyValue = [
+export const commentsValue: Value = [
   {
     type: 'h2',
     children: [{ text: '💬 Comments' }],

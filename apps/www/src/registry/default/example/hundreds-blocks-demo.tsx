@@ -12,10 +12,9 @@ import {
   withReact,
 } from 'slate-react';
 
-import { MyValue } from '@/types/plate-types';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const initialValue = createHugeDocumentValue() as MyValue;
+const initialValue = createHugeDocumentValue();
 
 function WithPlate() {
   return (

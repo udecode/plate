@@ -1,11 +1,10 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { SoftBreakPlugin } from '@udecode/plate-break';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { PlatePlugin } from '@udecode/plate-common';
 import { ELEMENT_TD } from '@udecode/plate-table';
 
-import { MyPlatePlugin } from '@/types/plate-types';
-
-export const softBreakPlugin: Partial<MyPlatePlugin<SoftBreakPlugin>> = {
+export const softBreakPlugin: Partial<PlatePlugin<SoftBreakPlugin>> = {
   options: {
     rules: [
       { hotkey: 'shift+enter' },
