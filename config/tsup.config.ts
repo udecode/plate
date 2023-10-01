@@ -14,10 +14,11 @@ export default defineConfig((opts) => {
     entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
     skipNodeModulesBundle: true,
-    dts: {
-      only: true,
-      resolve: false,
-    },
+    dts: true,
+    // dts: {
+    //   only: true,
+    //   resolve: false,
+    // },
     sourcemap: true,
     clean: true,
     minify: false,
