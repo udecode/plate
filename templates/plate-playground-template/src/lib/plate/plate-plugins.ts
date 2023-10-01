@@ -166,6 +166,12 @@ const resetBlockTypesCodeBlockRule = {
   onReset: unwrapCodeBlock,
 };
 
+const a = createPlugins([
+  createCaptionPlugin({
+    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+  }),
+]);
+
 export const plugins = createPlugins(
   [
     // Nodes
@@ -176,6 +182,7 @@ export const plugins = createPlugins(
     createHorizontalRulePlugin(),
     createLinkPlugin({
       renderAfterEditable: LinkFloatingToolbar as RenderAfterEditable,
+
     }),
     createImagePlugin(),
     createMediaEmbedPlugin(),

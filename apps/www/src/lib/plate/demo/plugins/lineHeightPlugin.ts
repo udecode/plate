@@ -1,3 +1,4 @@
+import { PlatePlugin } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -8,9 +9,7 @@ import {
 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-import { MyPlatePlugin } from '@/types/plate-types';
-
-export const lineHeightPlugin: Partial<MyPlatePlugin> = {
+export const lineHeightPlugin: Partial<PlatePlugin> = {
   inject: {
     props: {
       defaultNodeValue: 1.5,

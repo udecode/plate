@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
+import { Value } from '@udecode/plate-common';
 
-import { MyValue } from '@/types/plate-types';
 import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 import { settingsStore } from '@/components/context/settings-store';
 
@@ -96,7 +96,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
-    return mapNodeId(value) as MyValue;
+    return mapNodeId(value) as Value;
   }, [
     enabled.a,
     enabled.action_item,

@@ -18,7 +18,7 @@ export default function EditorText() {
 
   return (
     <div className="mt-[72px] grid gap-1.5 p-10">
-      <Plate>
+      <Plate plugins={plugins}>
         <Label htmlFor="message-2">Your Message</Label>
         <Editor placeholder="Type your message here." id="message-2" />
 

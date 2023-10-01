@@ -4,18 +4,13 @@ import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
 import { Plate } from '@udecode/plate-common';
 
-import { MyValue } from '@/types/plate-types';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValues = createMultiEditorsValue();
 
 function WithPlate({ initialValue, id }: any) {
   return (
-    <Plate<MyValue>
-      id={id}
-      initialValue={initialValue}
-      plugins={basicNodesPlugins}
-    >
+    <Plate id={id} initialValue={initialValue} plugins={basicNodesPlugins}>
       <Editor {...editableProps} />
     </Plate>
   );

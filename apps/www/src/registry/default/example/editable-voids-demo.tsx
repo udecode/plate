@@ -1,6 +1,6 @@
 'use client';
 
-import React, { CSSProperties, useState } from 'react';
+import React, { useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
@@ -17,11 +17,10 @@ import {
   createPluginFactory,
   Plate,
   PlateRenderElementProps,
-  TElement,
 } from '@udecode/plate-common';
+import { createPlugins } from '@udecode/plate-core';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
-import { createMyPlugins, MyEditor, MyValue } from '@/types/plate-types';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Editor } from '@/registry/default/plate-ui/editor';
@@ -35,7 +34,7 @@ export const createEditableVoidPlugin = createPluginFactory({
   isVoid: true,
 });
 
-const editableVoidPlugins = createMyPlugins(
+const editableVoidPlugins = createPlugins(
   [
     createBasicElementsPlugin(),
     createResetNodePlugin(resetBlockTypePlugin),
@@ -46,16 +45,11 @@ const editableVoidPlugins = createMyPlugins(
     components: plateUI,
   }
 );
-const styles: Record<string, CSSProperties> = {
-  input: { margin: '8px 0' },
-  radio: { width: 'unset' },
-  editor: { padding: '20px', border: '2px solid #ddd' },
-};
 
 export function EditableVoidElement({
   attributes,
   children,
-}: PlateRenderElementProps<MyValue, TElement>) {
+}: PlateRenderElementProps) {
   const [inputValue, setInputValue] = useState('');
 
   return (
@@ -93,7 +87,7 @@ export function EditableVoidElement({
             Tell us about yourself:
           </Label>
 
-          <Plate<MyValue, MyEditor>
+          <Plate
             id="editable-void-basic-elements"
             plugins={editableVoidPlugins}
             // initialValue={basicElementsValue}
@@ -107,7 +101,7 @@ export function EditableVoidElement({
   );
 }
 
-const plugins = createMyPlugins(
+const plugins = createPlugins(
   [
     ...basicNodesPlugins,
     createEditableVoidPlugin({
@@ -122,7 +116,7 @@ const plugins = createMyPlugins(
 export default function EditableVoidsDemo() {
   return (
     <div className="p-10">
-      <Plate<MyValue> plugins={plugins} initialValue={editableVoidsValue}>
+      <Plate plugins={plugins} initialValue={editableVoidsValue}>
         <Editor {...editableProps} />
       </Plate>
     </div>

@@ -1,5 +1,5 @@
 /** @jsxRuntime classic */
-import { TDescendant } from '@udecode/plate-common';
+import { TDescendant, Value } from '@udecode/plate-common';
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -37,5 +37,5 @@ export const createHugeDocumentValue = () => {
     }
   }
 
-  return hugeDocument;
+  return hugeDocument as Value;
 };

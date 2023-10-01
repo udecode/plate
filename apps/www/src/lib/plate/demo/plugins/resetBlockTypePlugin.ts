@@ -8,12 +8,11 @@ import {
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
+  PlatePlugin,
 } from '@udecode/plate-common';
 import { ELEMENT_TODO_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
-
-import { MyPlatePlugin } from '@/types/plate-types';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
@@ -26,7 +25,7 @@ const resetBlockTypesCodeBlockRule = {
   onReset: unwrapCodeBlock,
 };
 
-export const resetBlockTypePlugin: Partial<MyPlatePlugin<ResetNodePlugin>> = {
+export const resetBlockTypePlugin: Partial<PlatePlugin<ResetNodePlugin>> = {
   options: {
     rules: [
       {
