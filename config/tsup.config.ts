@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { esbuildPluginImport } from '@linjiajian999/esbuild-plugin-import';
 import { defineConfig } from 'tsup';
 
 const PACKAGE_ROOT_PATH = process.cwd();
@@ -30,7 +31,15 @@ export default defineConfig((opts) => {
 
       console.info('Build succeeded!');
     },
-
+    esbuildPlugins: [
+      esbuildPluginImport([
+        {
+          libraryName: 'lodash',
+          libraryDirectory: '',
+          camel2DashComponentName: false,
+        },
+      ]) as any,
+    ],
     silent: true,
   };
 });
