@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-alignment",
-  "version": "24.3.2",
+  "version": "24.3.5",
   "description": "Text alignment plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.3.2"
+    "@udecode/plate-common": "24.3.5"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
