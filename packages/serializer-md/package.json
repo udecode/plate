@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "24.3.2",
+  "version": "24.3.3",
   "description": "Markdown serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
