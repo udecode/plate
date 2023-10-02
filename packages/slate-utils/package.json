@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-utils",
-  "version": "24.3.1",
+  "version": "24.3.2",
   "description": "Slate utils",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "24.3.1",
+    "@udecode/slate": "24.3.2",
     "@udecode/utils": "24.3.0",
     "lodash": "^4.17.21"
   },
