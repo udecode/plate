@@ -1,8 +1,9 @@
 /* eslint-disable unicorn/prefer-module,@typescript-eslint/no-shadow */
 import fs from 'node:fs';
 import path from 'node:path';
-import { esbuildPluginImport } from '@linjiajian999/esbuild-plugin-import';
 import { defineConfig } from 'tsup';
+
+const silent = false;
 
 const PACKAGE_ROOT_PATH = process.cwd();
 const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
@@ -15,30 +16,22 @@ export default defineConfig((opts) => {
     ...opts,
     entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
-    skipNodeModulesBundle: true,
-    dts: {
-      resolve: false,
-    },
+    dts: { resolve: false },
     sourcemap: true,
     clean: true,
-    esbuildPlugins: [
-      esbuildPluginImport([
-        {
-          libraryName: 'lodash',
-          libraryDirectory: '',
-          camel2DashComponentName: false,
-        },
-      ]) as any,
-    ],
-    onSuccess: async () => {
-      if (opts.watch) {
-        console.info('Watching for changes...');
-        return;
-      }
 
-      console.info('Build succeeded!');
-    },
-    silent: true,
-    plugins: [],
+    ...(silent
+      ? {
+          silent: true,
+          onSuccess: async () => {
+            if (opts.watch) {
+              console.info('Watching for changes...');
+              return;
+            }
+
+            console.info('Build succeeded!');
+          },
+        }
+      : {}),
   };
 });

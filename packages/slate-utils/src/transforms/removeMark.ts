@@ -6,7 +6,7 @@ import {
   unsetNodes,
   Value,
 } from '@udecode/slate';
-import { castArray } from 'lodash';
+import { castArray } from 'lodash-es';
 import { Range } from 'slate';
 
 export interface RemoveMarkOptions<V extends Value = Value>

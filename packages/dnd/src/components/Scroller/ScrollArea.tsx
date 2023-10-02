@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { throttle } from 'lodash';
+import { throttle } from 'lodash-es';
 import raf from 'raf';
 
 const getCoords = (e: any) => {
