@@ -119,6 +119,7 @@ export const usePlaygroundPlugins = ({
   } else if (!!enabled.list) {
     autoformatOptions.rules.push(...autoformatLists);
   }
+  console.log('.');
 
   return useMemo(
     () =>
