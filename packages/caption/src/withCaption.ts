@@ -50,7 +50,7 @@ export const withCaption = <
         newSelection &&
         isCollapsed(newSelection)
       ) {
-        const types = getPluginTypes(editor, pluginKeys);
+        const types = getPluginTypes(editor, pluginKeys!);
 
         const entry = getAboveNode(editor, {
           at: newSelection,
