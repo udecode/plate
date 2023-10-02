@@ -35,7 +35,7 @@ jobs:
             yarn-cache-folder-
  
       - name: Install
-        run: yarn install
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
  
       - name: Build Registry
         run: yarn build:registry
