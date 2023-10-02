@@ -8,10 +8,9 @@ import {
   createSuperscriptPlugin,
   createUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
+import { createPlugins } from '@udecode/plate-common';
 
-import { createMyPlugins } from '@/types/plate-types';
-
-export const basicMarksPlugins = createMyPlugins(
+export const basicMarksPlugins = createPlugins(
   [
     createBoldPlugin(),
     createCodePlugin(),

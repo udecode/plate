@@ -195,7 +195,7 @@ export type PlatePlugin<
     then?: (
       editor: E,
       plugin: WithPlatePlugin<P, V, E>
-    ) => Partial<PlatePlugin<P, V, E>> | void;
+    ) => Partial<PlatePlugin<PluginOptions, V, E>> | undefined | void;
 
     /**
      * For internal use. Tracks if then has been replaced for recursive calls.

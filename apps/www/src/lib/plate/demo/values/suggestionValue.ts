@@ -1,6 +1,5 @@
+import { Value } from '@udecode/plate-common';
 import { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
-
-import { MyValue } from '@/types/plate-types';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {
@@ -32,7 +31,7 @@ export const suggestionsData: Record<string, TSuggestion> = {
   },
 };
 
-export const suggestionValue: MyValue = [
+export const suggestionValue: Value = [
   {
     type: 'p',
     children: [
