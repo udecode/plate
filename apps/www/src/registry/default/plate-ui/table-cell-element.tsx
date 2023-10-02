@@ -1,4 +1,4 @@
-import React, { LegacyRef } from 'react';
+import React from 'react';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TTableCellElement,
@@ -48,7 +48,6 @@ const TableCellElement = React.forwardRef<
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
 
-    
   const Cell = isHeader ? 'th' : 'td';
 
   return (
@@ -85,7 +84,7 @@ const TableCellElement = React.forwardRef<
         } as React.CSSProperties
       }
     >
-      <Cell ref={cellRef as LegacyRef<HTMLTableDataCellElement> | undefined}>
+      <Cell ref={cellRef}>
         <div
           className="relative z-20 box-border h-full px-3 py-2"
           style={{

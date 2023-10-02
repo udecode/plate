@@ -2,22 +2,22 @@ import { MutableRefObject, useEffect, useRef } from 'react';
 import { useEditorRef, useElement } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
-import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
-import { useTableStore } from '../../stores/tableStore';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin.js';
+import { getTableColumnIndex, getTableRowIndex } from '../../queries/index.js';
+import { useTableStore } from '../../stores/tableStore.js';
 import {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '../../types';
-import { getClosest } from './getClosest';
-import { getColSpan } from './getColSpan';
-import { getRowSpan } from './getRowSpan';
+} from '../../types.js';
+import { getClosest } from './getClosest.js';
+import { getColSpan } from './getColSpan.js';
+import { getRowSpan } from './getRowSpan.js';
 import {
   BorderStylesDefault,
   getTableCellBorders,
-} from './getTableCellBorders';
-import { useIsCellSelected } from './useIsCellSelected';
+} from './getTableCellBorders.js';
+import { useIsCellSelected } from './useIsCellSelected.js';
 
 export type TableCellElementState = {
   colIndex: number;
@@ -30,7 +30,7 @@ export type TableCellElementState = {
   rowSize: number | undefined;
   borders: BorderStylesDefault;
   isSelectingCell: boolean;
-  cellRef: MutableRefObject<HTMLTableCellElement | undefined>;
+  cellRef: MutableRefObject<HTMLTableCellElement | null>;
 };
 
 export const useTableCellElementState = ({
@@ -43,7 +43,7 @@ export const useTableCellElementState = ({
 } = {}): TableCellElementState => {
   const editor = useEditorRef();
   const cellElement = useElement<TTableCellElement>();
-  const cellRef = useRef<HTMLTableCellElement>();
+  const cellRef = useRef<HTMLTableCellElement>(null);
 
   // TODO: get rid of mutating element here
   // currently needed only for pasting tables from clipboard to gather span attributes
