@@ -11,7 +11,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { castArray } from 'lodash';
+import { castArray } from 'lodash-es';
 import { Range } from 'slate';
 
 import { ELEMENT_LI } from './createListPlugin';

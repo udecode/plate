@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { isBlock, setNodes } from '@udecode/slate';
-import { isEqual, memoize } from 'lodash';
+import { isEqual, memoize } from 'lodash-es';
 
 import { PlatePlugin } from '../types/index';
 import { createPlateEditor } from '../utils/index';
