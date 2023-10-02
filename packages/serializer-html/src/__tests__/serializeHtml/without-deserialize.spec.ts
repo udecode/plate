@@ -1,8 +1,8 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
