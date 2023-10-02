@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { esbuildPluginFilePathExtensions } from 'esbuild-plugin-file-path-extensions';
 import { esbuildPluginImport } from '@linjiajian999/esbuild-plugin-import';
 import { defineConfig } from 'tsup';
 
@@ -16,13 +17,18 @@ export default defineConfig((opts) => {
     format: ['cjs', 'esm'],
     skipNodeModulesBundle: true,
     dts: true,
-    // dts: {
-    //   only: true,
-    //   resolve: false,
-    // },
     sourcemap: true,
     clean: true,
-    minify: false,
+    esbuildPlugins: [
+      esbuildPluginFilePathExtensions({ esmExtension: 'js' }) as any,
+      esbuildPluginImport([
+              {
+                libraryName: 'lodash',
+                libraryDirectory: '',
+                camel2DashComponentName: false,
+              },
+            ]) as any,
+    ],
     onSuccess: async () => {
       if (opts.watch) {
         console.info('Watching for changes...');
@@ -31,15 +37,6 @@ export default defineConfig((opts) => {
 
       console.info('Build succeeded!');
     },
-    esbuildPlugins: [
-      esbuildPluginImport([
-        {
-          libraryName: 'lodash',
-          libraryDirectory: '',
-          camel2DashComponentName: false,
-        },
-      ]) as any,
-    ],
     silent: true,
   };
 });
