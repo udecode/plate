@@ -1,4 +1,3 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
@@ -17,10 +16,10 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
-
-import { TableCellElement } from '@/registry/default/plate-ui/table-cell-element';
-import { TableElement } from '@/registry/default/plate-ui/table-element';
-import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
+import { TableCellElement } from 'www/src/registry/default/plate-ui/table-cell-element';
+import { TableElement } from 'www/src/registry/default/plate-ui/table-element';
+import { TableRowElement } from 'www/src/registry/default/plate-ui/table-row-element';
 
 import { serializeHtml } from '../../serializeHtml';
 
