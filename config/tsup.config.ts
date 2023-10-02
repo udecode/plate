@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { esbuildPluginFilePathExtensions } from 'esbuild-plugin-file-path-extensions';
 import { esbuildPluginImport } from '@linjiajian999/esbuild-plugin-import';
+import { esbuildPluginFilePathExtensions } from 'esbuild-plugin-file-path-extensions';
 import { defineConfig } from 'tsup';
 
 const PACKAGE_ROOT_PATH = process.cwd();
@@ -22,12 +22,12 @@ export default defineConfig((opts) => {
     esbuildPlugins: [
       esbuildPluginFilePathExtensions({ esmExtension: 'js' }) as any,
       esbuildPluginImport([
-              {
-                libraryName: 'lodash',
-                libraryDirectory: '',
-                camel2DashComponentName: false,
-              },
-            ]) as any,
+        {
+          libraryName: 'lodash',
+          libraryDirectory: '',
+          camel2DashComponentName: false,
+        },
+      ]) as any,
     ],
     onSuccess: async () => {
       if (opts.watch) {
