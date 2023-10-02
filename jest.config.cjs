@@ -3,7 +3,9 @@ const appRoot = require('app-root-path');
 
 const packageJson = require(`${process.cwd()}/package.json`);
 const packageName = packageJson.name ?? 'plate';
-const { compilerOptions: baseTsConfig } = require(`${appRoot}/tsconfig.json`);
+const {
+  compilerOptions: baseTsConfig,
+} = require(`${appRoot}/config/tsconfig.test.json`);
 
 // Take the paths from tsconfig automatically from base tsconfig.json
 // @link https://kulshekhar.github.io/ts-jest/docs/paths-mapping
@@ -25,7 +27,8 @@ Object.keys(aliases).forEach((key) => {
   modules[`^${key}$`] = `<rootDir>/packages/${value}/src`;
 });
 
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+//@ts-check
 module.exports = {
   displayName: packageName,
   collectCoverageFrom: [
