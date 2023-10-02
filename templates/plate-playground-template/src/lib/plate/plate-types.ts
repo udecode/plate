@@ -389,10 +389,10 @@ export const createMyPluginFactory = <P = PluginOptions>(
   defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
 ) => createPluginFactory(defaultPlugin);
 export const createMyPlugins = (
-  plugins: MyPlatePlugin[],
+  plugins: PlatePlugin[],
   options?: {
     components?: Record<string, PlatePluginComponent>;
-    overrideByKey?: MyOverrideByKey;
+    overrideByKey?: OverrideByKey;
   }
 ) => createPlugins<MyValue, MyEditor>(plugins, options);
 
