@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
 import { AnyObject, isDefined } from '@udecode/utils';
-import castArray from 'lodash/castArray';
+import { castArray } from 'lodash-es';
 
 import { Nullable } from '../../../types';
 import { PlateEditor } from '../../../types/PlateEditor';

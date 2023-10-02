@@ -11,8 +11,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { castArray } from 'lodash';
-import cloneDeep from 'lodash/cloneDeep';
+import { castArray, cloneDeep } from 'lodash-es';
 
 import { NodeIdPlugin } from './createNodeIdPlugin';
 

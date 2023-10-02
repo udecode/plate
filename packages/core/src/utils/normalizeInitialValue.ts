@@ -1,6 +1,5 @@
 import { Value } from '@udecode/slate';
-import { cloneDeep } from 'lodash';
-import isEqual from 'lodash/isEqual';
+import { cloneDeep, isEqual } from 'lodash-es';
 
 import { PlateEditor } from '../types';
 
