@@ -7777,7 +7777,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:24.3.2, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:24.3.3, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
@@ -7980,7 +7980,7 @@ __metadata:
     "@udecode/plate-serializer-csv": "npm:24.3.2"
     "@udecode/plate-serializer-docx": "npm:24.3.2"
     "@udecode/plate-serializer-html": "npm:24.3.2"
-    "@udecode/plate-serializer-md": "npm:24.3.2"
+    "@udecode/plate-serializer-md": "npm:24.3.3"
     "@udecode/plate-suggestion": "npm:24.3.2"
     "@udecode/plate-tabbable": "npm:24.3.2"
     "@udecode/plate-table": "npm:24.3.2"
