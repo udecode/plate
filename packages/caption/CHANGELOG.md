@@ -1,5 +1,19 @@
 # @udecode/plate-caption
 
+## 24.3.3
+
+### Patch Changes
+
+- [`f47fdba0`](https://github.com/udecode/plate/commit/f47fdba049c363d6a441c6bc7bab12b4e1267929) by [@zbeyens](https://github.com/zbeyens) – fix types
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
 ## 24.0.2
 
 ## 24.0.1

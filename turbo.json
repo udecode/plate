@@ -59,7 +59,7 @@
     },
     "test": {
       "dependsOn": [],
-      "outputs": []
+      "outputs": ["jest.config.cjs"]
     },
     "test:watch": {
       "dependsOn": [],

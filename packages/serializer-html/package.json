@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-html",
-  "version": "24.0.2",
+  "version": "24.3.2",
   "description": "HTML serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -12,12 +12,21 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "files": [
-    "dist"
-  ],
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
@@ -30,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.0.2",
+    "@udecode/plate-common": "24.3.2",
     "html-entities": "^2.4.0"
   },
   "peerDependencies": {

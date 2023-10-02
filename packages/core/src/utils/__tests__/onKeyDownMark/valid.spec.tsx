@@ -1,13 +1,10 @@
 /** @jsx jsx */
 
-import {
-  createBoldPlugin,
-  MARK_BOLD,
-} from '@udecode/plate-basic-marks/src/createBoldPlugin';
+import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { onKeyDownToggleMark } from '@udecode/plate-utils/src/plate/onKeyDownToggleMark';
-import * as isHotkey from 'is-hotkey';
+import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
 import { ToggleMarkPlugin } from '../../../types/index';
 import { getPlugin } from '../../getPlugin';
@@ -48,7 +45,7 @@ const editor = createPlateEditor({
 });
 
 it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
   onKeyDownToggleMark(
     editor,

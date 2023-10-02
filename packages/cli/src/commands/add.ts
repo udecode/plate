@@ -25,6 +25,7 @@ const addOptionsSchema = z.object({
   yes: z.boolean(),
   overwrite: z.boolean(),
   cwd: z.string(),
+  all: z.boolean(),
   path: z.string().optional(),
 });
 
@@ -32,13 +33,14 @@ export const add = new Command()
   .name('add')
   .description('add a component to your project')
   .argument('[components...]', 'the components to add')
-  .option('-y, --yes', 'skip confirmation prompt.', false)
+  .option('-y, --yes', 'skip confirmation prompt.', true)
   .option('-o, --overwrite', 'overwrite existing files.', false)
   .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
     process.cwd()
   )
+  .option('-a, --all', 'add all available components', false)
   .option('-p, --path <path>', 'the path to add the component to.')
   .action(async (components, opts) => {
     try {
@@ -66,8 +68,10 @@ export const add = new Command()
 
       const registryIndex = await getRegistryIndex();
 
-      let selectedComponents = options.components;
-      if (!options.components?.length) {
+      let selectedComponents = options.all
+        ? registryIndex.map((entry) => entry.name)
+        : options.components;
+      if (!options.components?.length && !options.all) {
         const { components } = await prompts({
           type: 'multiselect',
           name: 'components',
@@ -77,6 +81,9 @@ export const add = new Command()
           choices: registryIndex.map((entry) => ({
             title: entry.name,
             value: entry.name,
+            selected: options.all
+              ? true
+              : options.components?.includes(entry.name),
           })),
         });
         selectedComponents = components;
@@ -132,15 +139,27 @@ export const add = new Command()
 
         if (existingComponent.length > 0 && !options.overwrite) {
           if (selectedComponents.includes(item.name)) {
-            logger.warn(
-              `Component ${item.name} already exists. Use ${chalk.green(
-                '--overwrite'
-              )} to overwrite.`
-            );
-            process.exit(1);
-          }
+            spinner.stop();
+            const { overwrite } = await prompts({
+              type: 'confirm',
+              name: 'overwrite',
+              message: `Component ${item.name} already exists. Would you like to overwrite?`,
+              initial: false,
+            });
 
-          continue;
+            if (!overwrite) {
+              logger.info(
+                `Skipped ${item.name}. To overwrite, run with the ${chalk.green(
+                  '--overwrite'
+                )} flag.`
+              );
+              continue;
+            }
+
+            spinner.start(`Installing ${item.name}...`);
+          } else {
+            continue;
+          }
         }
 
         for (const file of item.files) {

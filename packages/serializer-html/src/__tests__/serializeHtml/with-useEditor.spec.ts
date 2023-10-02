@@ -1,5 +1,5 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { createTodoListPlugin } from '@udecode/plate-list';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 

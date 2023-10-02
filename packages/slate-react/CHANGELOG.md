@@ -1,5 +1,11 @@
 # @udecode/slate-react
 
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
 ## 24.0.0
 
 ### Minor Changes

@@ -118,3 +118,4 @@ packages/plate/docs/
 /playwright-report/
 /playwright/.cache/
 .turbo
+.vercel

@@ -1,5 +1,19 @@
 # @udecode/slate
 
+## 24.3.2
+
+### Patch Changes
+
+- [`3f17d0bb`](https://github.com/udecode/plate/commit/3f17d0bbcd9e31437d1f1325c8458cac2db0e3da) by [@zbeyens](https://github.com/zbeyens) – fix build
+
+## 24.3.1
+
+### Patch Changes
+
+- [#2659](https://github.com/udecode/plate/pull/2659) by [@zbeyens](https://github.com/zbeyens) – fix build (types)
+
+## 24.3.0
+
 ## 23.7.4
 
 ### Patch Changes

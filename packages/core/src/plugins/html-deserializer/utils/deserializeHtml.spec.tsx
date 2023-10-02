@@ -1,28 +1,32 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { createAlignPlugin } from '@udecode/plate-alignment/src/createAlignPlugin';
-import { createBoldPlugin } from '@udecode/plate-basic-marks/src/createBoldPlugin';
-import { createCodePlugin } from '@udecode/plate-basic-marks/src/createCodePlugin';
-import { createItalicPlugin } from '@udecode/plate-basic-marks/src/createItalicPlugin';
-import { createStrikethroughPlugin } from '@udecode/plate-basic-marks/src/createStrikethroughPlugin';
-import { createSubscriptPlugin } from '@udecode/plate-basic-marks/src/createSubscriptPlugin';
-import { createSuperscriptPlugin } from '@udecode/plate-basic-marks/src/createSuperscriptPlugin';
-import { createUnderlinePlugin } from '@udecode/plate-basic-marks/src/createUnderlinePlugin';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote/src/createBlockquotePlugin';
-import { createSoftBreakPlugin } from '@udecode/plate-break/src/soft-break/createSoftBreakPlugin';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block/src/createCodeBlockPlugin';
+import { createAlignPlugin } from '@udecode/plate-alignment';
+import {
+  createBoldPlugin,
+  createCodePlugin,
+  createItalicPlugin,
+  createStrikethroughPlugin,
+  createSubscriptPlugin,
+  createSuperscriptPlugin,
+  createUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createSoftBreakPlugin } from '@udecode/plate-break';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace/src/createFindReplacePlugin';
-import { createHeadingPlugin } from '@udecode/plate-heading/src/createHeadingPlugin';
-import { createHighlightPlugin } from '@udecode/plate-highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '@udecode/plate-kbd/src/createKbdPlugin';
-import { createLinkPlugin } from '@udecode/plate-link/src/createLinkPlugin';
-import { createListPlugin } from '@udecode/plate-list/src/createListPlugin';
-import { createImagePlugin } from '@udecode/plate-media/src/image/createImagePlugin';
-import { createMediaEmbedPlugin } from '@udecode/plate-media/src/media-embed/createMediaEmbedPlugin';
-import { createParagraphPlugin } from '@udecode/plate-paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '@udecode/plate-table/src/createTablePlugin';
+import { createFindReplacePlugin } from '@udecode/plate-find-replace';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createHighlightPlugin } from '@udecode/plate-highlight';
+import { createKbdPlugin } from '@udecode/plate-kbd';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { createListPlugin } from '@udecode/plate-list';
+import {
+  createImagePlugin,
+  createMediaEmbedPlugin,
+} from '@udecode/plate-media';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { createTablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { deserializeHtml } from './deserializeHtml';

@@ -1,5 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
+import { isHotkey, PlateEditor, Value } from '@udecode/plate-common';
 
 import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';

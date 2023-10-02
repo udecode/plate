@@ -163,6 +163,7 @@ export async function promptForConfig(
       cssVariables: options.tailwindCssVariables,
     },
     rsc: options.rsc,
+    tsx: true,
     aliases: {
       utils: options.utils,
       components: options.components,

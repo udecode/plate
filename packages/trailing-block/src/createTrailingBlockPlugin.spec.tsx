@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor, ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { ELEMENT_H1 } from '@udecode/plate-heading/src/constants';
+import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createTrailingBlockPlugin } from './createTrailingBlockPlugin';

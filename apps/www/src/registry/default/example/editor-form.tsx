@@ -17,7 +17,7 @@ export default function EditorForm() {
 
   return (
     <div className="mt-[72px] p-10">
-      <Plate>
+      <Plate plugins={plugins}>
         <Editor placeholder="Type your message here." />
 
         <FloatingToolbar>

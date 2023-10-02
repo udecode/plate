@@ -7,7 +7,7 @@ export interface CaptionPlugin {
   /**
    * Plugin keys to enable caption.
    */
-  pluginKeys: string[];
+  pluginKeys?: string[];
 }
 
 export const KEY_CAPTION = 'caption';

@@ -1,9 +1,9 @@
 import {
   getBlockAbove,
   getPluginTypes,
+  isHotkey,
   KeyboardHandler,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
 
 import { captionGlobalStore } from './captionGlobalStore';
 import { CaptionPlugin } from './createCaptionPlugin';
@@ -15,7 +15,7 @@ export const onKeyDownCaption: KeyboardHandler<CaptionPlugin> =
 
     // focus caption from image
     if (isHotkey('down', e)) {
-      const types = getPluginTypes(editor, options.pluginKeys);
+      const types = getPluginTypes(editor, options.pluginKeys!);
 
       const entry = getBlockAbove(editor, {
         match: { type: types },

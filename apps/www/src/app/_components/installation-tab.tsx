@@ -199,7 +199,13 @@ export default function InstallationTab() {
       '',
       ...componentImportsGroup,
     ].join('\n');
-  }, [componentImports, customImports, groupedImportsByPackage, plateImports]);
+  }, [
+    componentImports,
+    customImports,
+    groupedImportsByPackage,
+    hasEditor,
+    plateImports,
+  ]);
 
   const pluginsCode: string[] = [];
 

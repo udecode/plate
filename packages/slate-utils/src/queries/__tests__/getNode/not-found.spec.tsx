@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core/src/types/PlateEditor';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getNode } from '@udecode/slate/src/interfaces/node/getNode';
+import { getNode } from '@udecode/slate';
 
 jsx;
 

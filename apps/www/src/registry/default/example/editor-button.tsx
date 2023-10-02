@@ -18,7 +18,7 @@ export default function EditorButton() {
 
   return (
     <div className="mt-[72px] grid w-full gap-2 p-10">
-      <Plate>
+      <Plate plugins={plugins}>
         <Editor placeholder="Type your message here." />
 
         <FloatingToolbar>
