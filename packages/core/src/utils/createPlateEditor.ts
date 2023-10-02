@@ -3,7 +3,7 @@ import { createTEditor, normalizeEditor, TEditor, Value } from '@udecode/slate';
 import { withPlate, WithPlateOptions } from '../plugins/withPlate';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugin/PlatePluginComponent';
 import { createPlugins } from './createPlugins';
 
@@ -19,7 +19,7 @@ export interface CreatePlateEditorOptions<
   /**
    * Editor plugins.
    */
-  plugins?: PlatePlugin<PluginOptions, V>[];
+  plugins?: PlatePlugin[];
 
   /**
    * Inject components into plugins.
@@ -29,7 +29,7 @@ export interface CreatePlateEditorOptions<
   /**
    * Override plugins by key.
    */
-  overrideByKey?: OverrideByKey<V>;
+  overrideByKey?: OverrideByKey;
 
   /**
    * Normalize editor.
@@ -54,7 +54,7 @@ export const createPlateEditor = <
   normalizeInitialValue: shouldNormalizeInitialValue,
   ...withPlateOptions
 }: CreatePlateEditorOptions<V, E> = {}): E & PlateEditor<V> => {
-  plugins = createPlugins<V>(plugins, {
+  plugins = createPlugins(plugins, {
     components,
     overrideByKey,
   });

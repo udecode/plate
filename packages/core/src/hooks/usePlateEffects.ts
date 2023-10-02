@@ -8,7 +8,6 @@ import {
   PlateEditor,
   PlatePlugin,
   PlateStoreState,
-  PluginOptions,
   TEditableProps,
 } from '../types';
 import { setPlatePlugins } from '../utils';
@@ -17,7 +16,7 @@ export type UsePlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value' | 'readOnly'>> & {
-  plugins?: PlatePlugin<PluginOptions, V, E>[];
+  plugins?: PlatePlugin[];
 } & Nullable<{
     /**
      * If `true`, disable all the core plugins.
