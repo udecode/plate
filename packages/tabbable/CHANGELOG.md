@@ -1,5 +1,11 @@
 # @udecode/plate-tabbable
 
+## 24.3.4
+
+### Patch Changes
+
+- [#2665](https://github.com/udecode/plate/pull/2665) by [@12joan](https://github.com/12joan) – Disable tabbable when editor is read-only
+
 ## 24.3.2
 
 ## 24.3.1
