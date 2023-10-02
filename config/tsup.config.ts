@@ -1,7 +1,7 @@
+/* eslint-disable unicorn/prefer-module,@typescript-eslint/no-shadow */
 import fs from 'node:fs';
 import path from 'node:path';
 import { esbuildPluginImport } from '@linjiajian999/esbuild-plugin-import';
-import { esbuildPluginFilePathExtensions } from 'esbuild-plugin-file-path-extensions';
 import { defineConfig } from 'tsup';
 
 const PACKAGE_ROOT_PATH = process.cwd();
@@ -20,7 +20,6 @@ export default defineConfig((opts) => {
     sourcemap: true,
     clean: true,
     esbuildPlugins: [
-      esbuildPluginFilePathExtensions({ esmExtension: 'js' }) as any,
       esbuildPluginImport([
         {
           libraryName: 'lodash',
@@ -38,5 +37,16 @@ export default defineConfig((opts) => {
       console.info('Build succeeded!');
     },
     silent: true,
+    // plugins: [
+    //   {
+    //     name: 'add-mjs',
+    //     setup(build: any) {
+    //       build.onResolve({ filter: /.*/ }, (args: any) => {
+    //         if (args.importer)
+    //           return { path: args.path + '.mjs', external: true };
+    //       });
+    //     },
+    //   },
+    // ],
   };
 });
