@@ -125,126 +125,126 @@ export const usePlaygroundPlugins = ({
   }
 
   return useMemo(
-    () =>
-      createPlugins(
-        [
-          // Nodes
-          createParagraphPlugin({ enabled: !!enabled.p }),
-          createHeadingPlugin({ enabled: !!enabled.heading }),
-          createBlockquotePlugin({ enabled: !!enabled.blockquote }),
-          createCodeBlockPlugin({ enabled: !!enabled.code_block }),
-          createHorizontalRulePlugin({ enabled: !!enabled.hr }),
-          createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
-          createListPlugin({
-            enabled: id === 'list' || !!enabled.list,
-          }),
-          createImagePlugin({ enabled: !!enabled.img }),
-          createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
-          createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
-          createMentionPlugin({
-            enabled: !!enabled.mention,
-            options: {
-              triggerPreviousCharPattern: /^$|^[\s"']$/,
+    () => {
+      const plugins = [
+        // Nodes
+        createParagraphPlugin({ enabled: !!enabled.p }),
+        createHeadingPlugin({ enabled: !!enabled.heading }),
+        createBlockquotePlugin({ enabled: !!enabled.blockquote }),
+        createCodeBlockPlugin({ enabled: !!enabled.code_block }),
+        createHorizontalRulePlugin({ enabled: !!enabled.hr }),
+        createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
+        createListPlugin({
+          enabled: id === 'list' || !!enabled.list,
+        }),
+        createImagePlugin({ enabled: !!enabled.img }),
+        createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
+        createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
+        createMentionPlugin({
+          enabled: !!enabled.mention,
+          options: {
+            triggerPreviousCharPattern: /^$|^[\s"']$/,
+          },
+        }),
+        createTablePlugin({ enabled: !!enabled.table }),
+        createTodoListPlugin({ enabled: !!enabled.action_item }),
+        createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
+
+        // Marks
+        createBoldPlugin({ enabled: !!enabled.bold }),
+        createItalicPlugin({ enabled: !!enabled.italic }),
+        createUnderlinePlugin({ enabled: !!enabled.underline }),
+        createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
+        createCodePlugin({ enabled: !!enabled.code }),
+        createSubscriptPlugin({ enabled: !!enabled.subscript }),
+        createSuperscriptPlugin({ enabled: !!enabled.superscript }),
+        createFontColorPlugin({ enabled: !!enabled.color }),
+        createFontBackgroundColorPlugin({
+          enabled: !!enabled.backgroundColor,
+        }),
+        createFontSizePlugin({ enabled: !!enabled.fontSize }),
+        createHighlightPlugin({ enabled: !!enabled.highlight }),
+        createKbdPlugin({ enabled: !!enabled.kbd }),
+
+        // Block Style
+        createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+        createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
+        createIndentListPlugin({
+          ...indentPlugin,
+          enabled: id === 'indentlist' || !!enabled.listStyleType,
+        }),
+        createLineHeightPlugin({
+          ...lineHeightPlugin,
+          enabled: !!enabled.lineHeight,
+        }),
+
+        // Functionality
+        createAutoformatPlugin({
+          enabled: !!enabled.autoformat,
+          options: autoformatOptions,
+        }),
+        createBlockSelectionPlugin({
+          options: {
+            sizes: {
+              top: 0,
+              bottom: 0,
             },
-          }),
-          createTablePlugin({ enabled: !!enabled.table }),
-          createTodoListPlugin({ enabled: !!enabled.action_item }),
-          createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
+          },
+          enabled: id === 'blockselection' || !!enabled.blockSelection,
+        }),
+        createComboboxPlugin({ enabled: !!enabled.combobox }),
+        createDndPlugin({
+          options: { enableScroller: true },
+          enabled: !!enabled.dnd,
+        }),
+        createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
+        createExitBreakPlugin({
+          ...exitBreakPlugin,
+          enabled: !!enabled.exitBreak,
+        }),
+        createNodeIdPlugin({ enabled: !!enabled.nodeId }),
+        createNormalizeTypesPlugin({
+          ...forcedLayoutPlugin,
+          enabled: !!enabled.normalizeTypes,
+        }),
+        createResetNodePlugin({
+          ...resetBlockTypePlugin,
+          enabled: !!enabled.resetNode,
+        }),
+        createSelectOnBackspacePlugin({
+          ...selectOnBackspacePlugin,
+          enabled: !!enabled.selectOnBackspace,
+        }),
+        createSingleLinePlugin({
+          enabled: id === 'singleline' || !!enabled.singleLine,
+        }),
+        createSoftBreakPlugin({
+          ...softBreakPlugin,
+          enabled: !!enabled.softBreak,
+        }),
+        createTabbablePlugin({
+          ...tabbablePlugin,
+          enabled: !!enabled.tabbable,
+        }),
+        createTrailingBlockPlugin({
+          ...trailingBlockPlugin,
+          enabled: id !== 'singleline' && !!enabled.trailingBlock,
+        }),
+        { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
 
-          // Marks
-          createBoldPlugin({ enabled: !!enabled.bold }),
-          createItalicPlugin({ enabled: !!enabled.italic }),
-          createUnderlinePlugin({ enabled: !!enabled.underline }),
-          createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
-          createCodePlugin({ enabled: !!enabled.code }),
-          createSubscriptPlugin({ enabled: !!enabled.subscript }),
-          createSuperscriptPlugin({ enabled: !!enabled.superscript }),
-          createFontColorPlugin({ enabled: !!enabled.color }),
-          createFontBackgroundColorPlugin({
-            enabled: !!enabled.backgroundColor,
-          }),
-          createFontSizePlugin({ enabled: !!enabled.fontSize }),
-          createHighlightPlugin({ enabled: !!enabled.highlight }),
-          createKbdPlugin({ enabled: !!enabled.kbd }),
+        // Collaboration
+        createCommentsPlugin({ enabled: !!enabled.comment }),
 
-          // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
-          createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
-          createIndentListPlugin({
-            ...indentPlugin,
-            enabled: id === 'indentlist' || !!enabled.listStyleType,
-          }),
-          createLineHeightPlugin({
-            ...lineHeightPlugin,
-            enabled: !!enabled.lineHeight,
-          }),
+        // Deserialization
+        createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
+        createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
+        createJuicePlugin({ enabled: !!enabled.juice }),
+      ];
 
-          // Functionality
-          createAutoformatPlugin({
-            enabled: !!enabled.autoformat,
-            options: autoformatOptions,
-          }),
-          createBlockSelectionPlugin({
-            options: {
-              sizes: {
-                top: 0,
-                bottom: 0,
-              },
-            },
-            enabled: id === 'blockselection' || !!enabled.blockSelection,
-          }),
-          createComboboxPlugin({ enabled: !!enabled.combobox }),
-          createDndPlugin({
-            options: { enableScroller: true },
-            enabled: !!enabled.dnd,
-          }),
-          createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
-          createExitBreakPlugin({
-            ...exitBreakPlugin,
-            enabled: !!enabled.exitBreak,
-          }),
-          createNodeIdPlugin({ enabled: !!enabled.nodeId }),
-          createNormalizeTypesPlugin({
-            ...forcedLayoutPlugin,
-            enabled: !!enabled.normalizeTypes,
-          }),
-          createResetNodePlugin({
-            ...resetBlockTypePlugin,
-            enabled: !!enabled.resetNode,
-          }),
-          createSelectOnBackspacePlugin({
-            ...selectOnBackspacePlugin,
-            enabled: !!enabled.selectOnBackspace,
-          }),
-          createSingleLinePlugin({
-            enabled: id === 'singleline' || !!enabled.singleLine,
-          }),
-          createSoftBreakPlugin({
-            ...softBreakPlugin,
-            enabled: !!enabled.softBreak,
-          }),
-          createTabbablePlugin({
-            ...tabbablePlugin,
-            enabled: !!enabled.tabbable,
-          }),
-          createTrailingBlockPlugin({
-            ...trailingBlockPlugin,
-            enabled: id !== 'singleline' && !!enabled.trailingBlock,
-          }),
-          { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
-
-          // Collaboration
-          createCommentsPlugin({ enabled: !!enabled.comment }),
-
-          // Deserialization
-          createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
-          createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
-          createJuicePlugin({ enabled: !!enabled.juice }),
-        ],
-        {
-          components,
-        }
-      ),
+      return createPlugins(plugins, {
+        components,
+      });
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enabled]
   );
