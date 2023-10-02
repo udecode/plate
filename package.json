@@ -124,6 +124,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "esbuild-plugin-babel": "0.2.3",
+    "esbuild-plugin-file-path-extensions": "^1.0.0",
     "eslint": "8.44.0",
     "eslint-config-next": "^13.4.9",
     "eslint-config-prettier": "^8.8.0",
