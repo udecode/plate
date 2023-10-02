@@ -16,7 +16,9 @@ export default defineConfig((opts) => {
     entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
     skipNodeModulesBundle: true,
-    dts: true,
+    dts: {
+      resolve: false,
+    },
     sourcemap: true,
     clean: true,
     esbuildPlugins: [
@@ -37,16 +39,6 @@ export default defineConfig((opts) => {
       console.info('Build succeeded!');
     },
     silent: true,
-    // plugins: [
-    //   {
-    //     name: 'add-mjs',
-    //     setup(build: any) {
-    //       build.onResolve({ filter: /.*/ }, (args: any) => {
-    //         if (args.importer)
-    //           return { path: args.path + '.mjs', external: true };
-    //       });
-    //     },
-    //   },
-    // ],
+    plugins: [],
   };
 });

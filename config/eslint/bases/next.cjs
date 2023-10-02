@@ -27,7 +27,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['^@/plate'],
+        ignore: ['^@/'],
       },
     ],
     'import/prefer-default-export': 'off',
@@ -35,17 +35,23 @@ module.exports = {
   overrides: [
     {
       files: ['**/packages/**'],
-      excludedFiles: ['**/*.test.*', '**/*.spec.*', '**/*.fixtures.*', '**/__tests__/**/*', '**/apps/**/*'],
+      excludedFiles: [
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/*.fixtures.*',
+        '**/__tests__/**/*',
+        '**/apps/**/*',
+      ],
       rules: {
         'import/no-extraneous-dependencies': [
-              'error',
-              {
-                devDependencies: false,
-                includeInternal: false,
-                includeTypes: false,
-              },
-            ],
-      }
+          'error',
+          {
+            devDependencies: false,
+            includeInternal: false,
+            includeTypes: false,
+          },
+        ],
+      },
     },
     {
       files: ['apps/www/next.config.mjs'],
