@@ -1,5 +1,7 @@
 # @udecode/plate-alignment
 
+## 24.3.2
+
 ## 24.3.1
 
 ## 24.3.0
