@@ -6460,6 +6460,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash-es@npm:^4.17.9":
+  version: 4.17.9
+  resolution: "@types/lodash-es@npm:4.17.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: fabbfa08ed21452c976385354660dd3d5277d172960b858ff375e07ccc6c4f69a551c9a99e6d67465305973a57f17e2234d3302722ebd4e7903147bb09a2d633
+  languageName: node
+  linkType: hard
+
 "@types/lodash.template@npm:^4.5.1":
   version: 4.5.1
   resolution: "@types/lodash.template@npm:4.5.1"
@@ -7101,7 +7110,7 @@ __metadata:
   resolution: "@udecode/plate-autoformat@workspace:packages/autoformat"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7247,7 +7256,7 @@ __metadata:
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7290,7 +7299,7 @@ __metadata:
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:1.7.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     react-hotkeys-hook: "npm:^4.4.1"
     use-deep-compare: "npm:^1.1.0"
@@ -7325,7 +7334,7 @@ __metadata:
   resolution: "@udecode/plate-dnd@workspace:packages/dnd"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
     raf: "npm:^3.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7410,7 +7419,7 @@ __metadata:
   resolution: "@udecode/plate-font@workspace:packages/font"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7568,7 +7577,7 @@ __metadata:
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
     "@udecode/plate-reset-node": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7616,7 +7625,7 @@ __metadata:
   resolution: "@udecode/plate-node-id@workspace:packages/node-id"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7632,7 +7641,7 @@ __metadata:
   resolution: "@udecode/plate-normalizers@workspace:packages/normalizers"
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7818,7 +7827,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-tabbable@npm:24.3.2, @udecode/plate-tabbable@workspace:^, @udecode/plate-tabbable@workspace:packages/tabbable":
+"@udecode/plate-tabbable@npm:24.3.4, @udecode/plate-tabbable@workspace:^, @udecode/plate-tabbable@workspace:packages/tabbable":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-tabbable@workspace:packages/tabbable"
   dependencies:
@@ -7840,7 +7849,7 @@ __metadata:
   dependencies:
     "@udecode/plate-common": "npm:24.3.2"
     "@udecode/plate-resizable": "npm:24.3.2"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7914,7 +7923,7 @@ __metadata:
     "@udecode/slate-utils": "npm:24.3.2"
     "@udecode/utils": "npm:24.3.0"
     clsx: "npm:^1.2.1"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -7982,7 +7991,7 @@ __metadata:
     "@udecode/plate-serializer-html": "npm:24.3.2"
     "@udecode/plate-serializer-md": "npm:24.3.3"
     "@udecode/plate-suggestion": "npm:24.3.2"
-    "@udecode/plate-tabbable": "npm:24.3.2"
+    "@udecode/plate-tabbable": "npm:24.3.4"
     "@udecode/plate-table": "npm:24.3.2"
     "@udecode/plate-trailing-block": "npm:24.3.2"
   peerDependencies:
@@ -8016,7 +8025,7 @@ __metadata:
   dependencies:
     "@udecode/slate": "npm:24.3.2"
     "@udecode/utils": "npm:24.3.0"
-    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
   peerDependencies:
     slate: ">=0.94.0"
     slate-history: ">=0.93.0"
@@ -16081,6 +16090,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash-es@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash-es@npm:4.17.21"
+  checksum: d1c3ee94118daeeee47c630ab5f91e94cc4e41ebe2452d837edbe599e853eb2d4be7edf82b4fe62f9fc74f27a8ed7f82fdbd9d301d0acef88f00941db64c4843
+  languageName: node
+  linkType: hard
+
 "lodash._reinterpolate@npm:^3.0.0":
   version: 3.0.0
   resolution: "lodash._reinterpolate@npm:3.0.0"
@@ -21143,6 +21159,7 @@ __metadata:
     "@types/is-hotkey": "npm:^0.1.7"
     "@types/jest": "npm:^29.5.3"
     "@types/lodash": "npm:^4.14.195"
+    "@types/lodash-es": "npm:^4.17.9"
     "@types/marked": "npm:^4.3.1"
     "@types/node": "npm:^20.4.2"
     "@types/prismjs": "npm:^1.26.0"

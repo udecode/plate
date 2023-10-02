@@ -6,7 +6,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import castArray from 'lodash/castArray';
+import { castArray } from 'lodash-es';
 
 import { RemoveEmptyNodesPlugin } from './createRemoveEmptyNodesPlugin';
 

@@ -41,7 +41,7 @@
   "dependencies": {
     "@udecode/slate": "24.3.2",
     "@udecode/utils": "24.3.0",
-    "lodash": "^4.17.21"
+    "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
     "slate": ">=0.94.0",
