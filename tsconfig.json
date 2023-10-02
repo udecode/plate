@@ -19,19 +19,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "@/plate/*": ["apps/www/src/lib/plate/*"],
-      "@/lib/*": ["apps/www/src/lib/*"],
-      "@/types/*": ["apps/www/src/types/*"],
-      "@/styles/*": ["apps/www/src/styles/*"],
-      "@/components/*": ["apps/www/src/components/*"],
-      "@/registry/*": ["apps/www/src/registry/*"],
-      "@/__registry__/*": ["apps/www/src/__registry__/*"],
-      "@/hooks/*": ["apps/www/src/hooks/*"],
-      "@/config/*": ["apps/www/src/config/*"]
-    }
+    "outDir": "dist"
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }
