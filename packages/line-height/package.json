@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-line-height",
-  "version": "24.3.1",
+  "version": "24.3.2",
   "description": "Line height plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.3.1"
+    "@udecode/plate-common": "24.3.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
