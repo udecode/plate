@@ -13,7 +13,7 @@ module.exports = {
       {
         ts: 'never',
         tsx: 'never',
-        js: 'always',
+        js: 'ignorePackages',
         jsx: 'never',
         json: 'always',
         scss: 'always',
