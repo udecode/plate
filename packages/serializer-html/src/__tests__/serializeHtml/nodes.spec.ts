@@ -1,4 +1,3 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import {
   createBoldPlugin,
   createItalicPlugin,
@@ -6,6 +5,7 @@ import {
 import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
