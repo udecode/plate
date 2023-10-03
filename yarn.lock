@@ -7263,6 +7263,7 @@ __metadata:
     "@udecode/utils": "npm:19.7.1"
     "@udecode/zustood": "npm:^1.1.3"
     clsx: "npm:^1.2.1"
+    is-hotkey: "npm:^0.2.0"
     jotai: "npm:1.7.2"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
@@ -14289,17 +14290,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-hotkey@npm:0.2.0, is-hotkey@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "is-hotkey@npm:0.2.0"
-  checksum: 62047b3137a9cdc257f834626fff0f730e1e0aeac033fcee81da5c60bcfeb03cac11b0141bf8b293f19bab6e58f0daea1bc7f41962cc0187f8a4e65e3942792a
-  languageName: node
-  linkType: hard
-
 "is-hotkey@npm:^0.1.6":
   version: 0.1.8
   resolution: "is-hotkey@npm:0.1.8"
   checksum: 0fd88b39c4295106ca57c2bd3f8feb2a96c80f3218ab1ccd16860185e3a337be24d54d200f35872cf47ee529ed21759350e6454406f6ce2e6abe9d7153de5c9a
+  languageName: node
+  linkType: hard
+
+"is-hotkey@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "is-hotkey@npm:0.2.0"
+  checksum: 62047b3137a9cdc257f834626fff0f730e1e0aeac033fcee81da5c60bcfeb03cac11b0141bf8b293f19bab6e58f0daea1bc7f41962cc0187f8a4e65e3942792a
   languageName: node
   linkType: hard
 
@@ -21125,7 +21126,6 @@ __metadata:
     eslint-plugin-testing-library: "npm:^5.11.0"
     eslint-plugin-unicorn: "npm:^47.0.0"
     eslint-plugin-unused-imports: "npm:^3.0.0"
-    is-hotkey: "npm:0.2.0"
     jest: "npm:29.7.0"
     jest-environment-jsdom: "npm:^29.6.1"
     patch-package: "npm:^7.0.2"

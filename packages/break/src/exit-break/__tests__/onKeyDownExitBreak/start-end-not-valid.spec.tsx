@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { mockPlugin } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 

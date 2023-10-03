@@ -1,12 +1,12 @@
 import {
   getBlockAbove,
+  isHotkey,
   KeyboardHandlerReturnType,
   PlateEditor,
   queryNode,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { isHotkey } from 'is-hotkey';
 
 import { SoftBreakPlugin } from './types';
 
