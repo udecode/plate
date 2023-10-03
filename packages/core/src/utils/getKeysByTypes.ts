@@ -1,5 +1,5 @@
 import { Value } from '@udecode/slate';
-import { castArray } from 'lodash-es';
+import castArray from 'lodash/castArray.js';
 
 import { PlateEditor } from '../types/PlateEditor';
 

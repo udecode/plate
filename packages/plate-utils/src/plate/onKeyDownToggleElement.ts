@@ -9,7 +9,7 @@ import {
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
-import { castArray } from 'lodash-es';
+import castArray from 'lodash/castArray.js';
 
 export const onKeyDownToggleElement =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(

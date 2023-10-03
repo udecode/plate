@@ -1,5 +1,8 @@
 import { Value } from '@udecode/slate';
-import { defaultsDeep, keyBy, merge, values } from 'lodash-es';
+import defaultsDeep from 'lodash/defaultsDeep.js';
+import keyBy from 'lodash/keyBy.js';
+import merge from 'lodash/merge.js';
+import values from 'lodash/values.js';
 
 import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
