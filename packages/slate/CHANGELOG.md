@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 24.3.6
+
+### Patch Changes
+
+- [#2671](https://github.com/udecode/plate/pull/2671) by [@zbeyens](https://github.com/zbeyens) – Fix lodash import
+
 ## 24.3.5
 
 ### Patch Changes
