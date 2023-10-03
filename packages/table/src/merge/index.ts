@@ -6,5 +6,6 @@ export * from './getCellsOffsets';
 export * from './getClosest';
 export * from './getColSpan';
 export * from './getRowSpan';
+export * from './isTableRectangular';
 export * from './mergeTableCells';
 export * from './unmergeTableCells';

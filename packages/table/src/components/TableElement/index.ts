@@ -5,4 +5,3 @@
 export * from './useSelectedCells';
 export * from './useTableColSizes';
 export * from './useTableElement';
-export * from '../../merge/isTableRectangular';
