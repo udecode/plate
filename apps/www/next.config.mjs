@@ -1,4 +1,21 @@
 // import { createContentlayerPlugin } from 'next-contentlayer';
+import fs from 'node:fs';
+import glob from 'glob';
+
+const packageNames = new glob.GlobSync('../../packages/**/package.json').found
+  .map((file) => {
+    const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return packageJson.name;
+  })
+  .filter((pkg) => {
+    if (!pkg) {
+      return false;
+    }
+
+    if (pkg.startsWith('@udecode')) {
+      return true;
+    }
+  });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -33,6 +50,7 @@ const nextConfig = {
     // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
     serverComponentsExternalPackages: ['@prisma/client'],
   },
+  transpilePackages: packageNames,
 
   // redirects() {
   //   return [
