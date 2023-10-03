@@ -1,4 +1,4 @@
-import { deserializeHtml, htmlStringToDOMNode } from '@udecode/plate-core';
+import { deserializeHtml, htmlStringToDOMNode } from '@udecode/plate-common';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
