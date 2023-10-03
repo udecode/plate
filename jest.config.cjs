@@ -45,7 +45,6 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
-    '^lodash-es$': 'lodash',
     ...getTsConfigBasePaths(),
     // '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     ...modules,
@@ -59,7 +58,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   transformIgnorePatterns: [
-    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-tweet)/)',
+    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet)/)',
   ],
   watchman: false,
 };

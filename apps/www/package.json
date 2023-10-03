@@ -120,8 +120,8 @@
     "next-usequerystate": "1.8.0-beta.13",
     "prism-react-renderer": "^1.3.5",
     "react": "^18.2.0",
-    "react-dnd": "patch:react-dnd@npm%3A15.1.2#~/.yarn/patches/react-dnd-npm-15.1.2-0351d81431.patch",
-    "react-dnd-html5-backend": "^15.1.3",
+    "react-dnd": "16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.3.52",
     "react-modal-sheet": "2.0.0",
@@ -140,9 +140,7 @@
   },
   "resolutions": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dnd": "^15.1.2",
-    "react-dnd-html5-backend": "^15.1.3"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/lodash.template": "^4.5.1",
