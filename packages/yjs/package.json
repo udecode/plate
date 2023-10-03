@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-yjs",
-  "version": "24.3.2",
+  "version": "24.3.5",
   "description": "Yjs plugin for Plate",
   "license": "MIT",
   "homepage": "https://plate.udecode.io",
@@ -41,7 +41,7 @@
   "dependencies": {
     "@hocuspocus/provider": "^2.2.1",
     "@slate-yjs/core": "^1.0.1",
-    "@udecode/plate-common": "24.3.2",
+    "@udecode/plate-common": "24.3.5",
     "yjs": "^13.5.42"
   },
   "peerDependencies": {
