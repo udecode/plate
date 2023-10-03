@@ -1,11 +1,10 @@
-import {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../../types';
+import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 
 const allEqual = (arr: number[]) => arr.every((val) => val === arr[0]);
 
+/**
+ * Checks if the given table is rectangular, meaning all rows have the same effective number of cells, considering colspan and rowspan.
+ */
 export const isTableRectangular = (table?: TTableElement) => {
   const arr: number[] = [];
   table?.children?.forEach((row, rI) => {

@@ -82,8 +82,12 @@ export interface TTableRowElement extends TElement {
 export interface TTableCellElement extends TElement {
   size?: number;
   background?: string;
+
+  // to remove
   rowIndex?: number;
+  // to remove
   colIndex?: number;
+
   colSpan?: number;
   rowSpan?: number;
   attributes?: {
