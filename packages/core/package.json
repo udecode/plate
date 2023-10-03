@@ -47,7 +47,7 @@
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",
     "jotai": "1.7.2",
-    "lodash-es": "^4.17.21",
+    "lodash": "^4.17.21",
     "nanoid": "^3.3.6",
     "react-hotkeys-hook": "^4.4.1",
     "use-deep-compare": "^1.1.0",

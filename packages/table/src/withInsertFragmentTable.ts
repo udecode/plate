@@ -12,7 +12,7 @@ import {
   withoutNormalizing,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import { cloneDeep } from 'lodash-es';
+import cloneDeep from 'lodash/cloneDeep.js';
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE } from './createTablePlugin';

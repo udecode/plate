@@ -1,5 +1,5 @@
 import { PlateEditor, toDOMNode, Value } from '@udecode/plate-common';
-import { clamp } from 'lodash-es';
+import clamp from 'lodash/clamp.js';
 
 import { TCommentText } from '../types';
 import { getElementAbsolutePosition } from '../utils/getElementAbsolutePosition';

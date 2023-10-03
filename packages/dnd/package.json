@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "24.3.5",
-    "lodash-es": "^4.17.21",
+    "lodash": "^4.17.21",
     "raf": "^3.4.1"
   },
   "peerDependencies": {
