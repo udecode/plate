@@ -1,6 +1,6 @@
 import { applyDeepToNodes, ApplyDeepToNodesOptions } from '@udecode/plate-core';
 import { TNode } from '@udecode/slate';
-import { defaults } from 'lodash-es';
+import defaults from 'lodash/defaults.js';
 
 /**
  * Recursively merge a source object to children nodes with a query.

@@ -1,6 +1,6 @@
 import { ForwardedRef, useEffect } from 'react';
 import { Value } from '@udecode/slate';
-import { isUndefined } from 'lodash-es';
+import { isUndefined } from '@udecode/utils';
 
 import { useEditorRef, usePlateStates } from '../stores';
 import {
