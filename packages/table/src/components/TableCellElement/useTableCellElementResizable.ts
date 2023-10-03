@@ -89,7 +89,7 @@ export const useTableCellElementResizable = ({
     ELEMENT_TABLE
   );
 
-  // override width for horizontally merged cell
+  // MERGE: override width for horizontally merged cell
   let initialWidth: number | undefined;
   if (colSpan > 1) {
     initialWidth = tableElement.colSizes?.[colIndex];

@@ -7,13 +7,13 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
+import { getCellOffsets } from '../../merge/getCellsOffsets';
 import {
   getTableColumnCount,
   getTableOverriddenColSizes,
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
-import { getCellOffsets } from '../TableCellElement/getCellsOffsets';
 
 /**
  * Returns colSizes with overrides applied.

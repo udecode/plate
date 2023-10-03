@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
   isCollapsed,
+  isExpanded,
   PlateElement,
   PlateElementProps,
   useEditorState,
@@ -10,10 +11,11 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
-  isTableRectangular,
+  getTableGridAbove,
+  mergeTableCells,
   TTableElement,
+  unmergeTableCells,
   useTableBordersDropdownMenuContentState,
-  useTableCellsMerge,
   useTableElement,
   useTableElementState,
 } from '@udecode/plate-table';
@@ -114,56 +116,47 @@ const TableFloatingToolbar = React.forwardRef<
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const readOnly = useReadOnly();
+  const selected = useSelected();
   const editor = useEditorState();
-  const isSelected = useSelected();
+  const collapsed = !readOnly && selected && isCollapsed(editor.selection);
+  const expanded = !readOnly && selected && isExpanded(editor.selection);
+  const open = !readOnly && selected;
 
-  const { onMergeCells, onUnmerge, cellEntries, subTable } =
-    useTableCellsMerge();
-  const tableSelection = subTable?.[0]?.[0];
+  const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
-  const collapsedToolbarActive =
-    isSelected && !readOnly && isCollapsed(editor.selection);
-
-  const hasEntries = !!cellEntries?.length;
   const canUnmerge =
-    hasEntries &&
-    cellEntries?.length === 1 &&
+    collapsed &&
+    cellEntries &&
+    cellEntries.length === 1 &&
     ((cellEntries[0][0] as any)?.colSpan > 1 ||
       (cellEntries[0][0] as any)?.rowSpan > 1);
 
-  const mergeToolbarActive =
-    isSelected &&
-    !readOnly &&
-    hasEntries &&
-    cellEntries.length > 1 &&
-    !isCollapsed(editor.selection) &&
-    isTableRectangular(tableSelection);
-
-  const mergeButton = (
+  const mergeContent = expanded && (
     <Button
       contentEditable={false}
       variant="ghost"
       isMenu
-      onClick={onMergeCells}
+      onClick={() => mergeTableCells(editor)}
     >
       <Icons.combine className="mr-2 h-4 w-4" />
       Merge
     </Button>
   );
 
-  const collapsedContent = (
+  const unmergeButton = canUnmerge && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={() => unmergeTableCells(editor)}
+    >
+      <Icons.ungroup className="mr-2 h-4 w-4" />
+      Unmerge
+    </Button>
+  );
+
+  const bordersContent = collapsed && (
     <>
-      {canUnmerge && (
-        <Button
-          contentEditable={false}
-          variant="ghost"
-          isMenu
-          onClick={onUnmerge}
-        >
-          <Icons.ungroup className="mr-2 h-4 w-4" />
-          Unmerge
-        </Button>
-      )}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" isMenu>
@@ -176,6 +169,7 @@ const TableFloatingToolbar = React.forwardRef<
           <TableBordersDropdownMenuContent />
         </DropdownMenuPortal>
       </DropdownMenu>
+
       <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
         <Icons.delete className="mr-2 h-4 w-4" />
         Delete
@@ -184,28 +178,18 @@ const TableFloatingToolbar = React.forwardRef<
   );
 
   return (
-    <Popover open={mergeToolbarActive || collapsedToolbarActive} modal={false}>
+    <Popover open={open} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
-      {mergeToolbarActive && (
-        <PopoverContent
-          ref={ref}
-          className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          {...props}
-        >
-          {mergeButton}
-        </PopoverContent>
-      )}
-      {collapsedToolbarActive && (
-        <PopoverContent
-          ref={ref}
-          className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          {...props}
-        >
-          {collapsedContent}
-        </PopoverContent>
-      )}
+      <PopoverContent
+        ref={ref}
+        className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        {...props}
+      >
+        {unmergeButton}
+        {mergeContent}
+        {bordersContent}
+      </PopoverContent>
     </Popover>
   );
 });

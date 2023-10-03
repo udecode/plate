@@ -15,6 +15,9 @@ export interface TablePlugin<V extends Value = Value> {
   // Disable first column left resizer.
   disableMarginLeft?: boolean;
 
+  // Disable merging cells.
+  disableMergeCells?: boolean;
+
   /**
    * Disable unsetting the first column width when the table has one column.
    * Set it to true if you want to resize the table width when there is only one column.

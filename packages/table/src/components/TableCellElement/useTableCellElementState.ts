@@ -3,6 +3,9 @@ import { useEditorRef, useElement } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
+import { getClosest } from '../../merge/getClosest';
+import { getColSpan } from '../../merge/getColSpan';
+import { getRowSpan } from '../../merge/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 import {
@@ -10,9 +13,6 @@ import {
   TTableElement,
   TTableRowElement,
 } from '../../types';
-import { getClosest } from './getClosest';
-import { getColSpan } from './getColSpan';
-import { getRowSpan } from './getRowSpan';
 import {
   BorderStylesDefault,
   getTableCellBorders,
@@ -21,7 +21,6 @@ import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
   colIndex: number;
-  colSpan: number;
   rowIndex: number;
   readOnly: boolean;
   hovered: boolean;
@@ -30,6 +29,9 @@ export type TableCellElementState = {
   rowSize: number | undefined;
   borders: BorderStylesDefault;
   isSelectingCell: boolean;
+
+  // Merge: cell colspan.
+  colSpan: number;
   cellRef: MutableRefObject<HTMLTableCellElement | undefined>;
 };
 
@@ -43,16 +45,15 @@ export const useTableCellElementState = ({
 } = {}): TableCellElementState => {
   const editor = useEditorRef();
   const cellElement = useElement<TTableCellElement>();
-  const cellRef = useRef<HTMLTableCellElement>();
+  const cellRef = useRef<HTMLTableDataCellElement>();
 
   // TODO: get rid of mutating element here
   // currently needed only for pasting tables from clipboard to gather span attributes
   cellElement.colSpan = getColSpan(cellElement);
   cellElement.rowSpan = getRowSpan(cellElement);
 
-  const rowIndex = getTableRowIndex(editor, cellElement);
-  cellElement.rowIndex = rowIndex; // TODO: get rid of mutation or make it more explicit
-  const endRowIndex = rowIndex + cellElement.rowSpan - 1;
+  const rowIndex =
+    getTableRowIndex(editor, cellElement) + cellElement.rowSpan - 1;
 
   const readOnly = useReadOnly();
 
@@ -65,7 +66,7 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
-    rowSizeOverrides.get(endRowIndex) ?? rowElement?.size ?? undefined;
+    rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
 
   const endColIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
   const startCIndex = useRef<number>(getTableColumnIndex(editor, cellElement));
@@ -75,7 +76,6 @@ export const useTableCellElementState = ({
   if (cellRef.current && hoveredColIndex === null && cellOffsets) {
     const cellOffset = cellRef.current.offsetLeft;
     const startColIndex = getClosest(cellOffset, cellOffsets);
-    cellElement.colIndex = startColIndex; // TODO: get rid of mutation or make it more explicit
 
     startCIndex.current = startColIndex;
     endColIndex.current = startColIndex + cellElement.colSpan - 1;
@@ -91,7 +91,7 @@ export const useTableCellElementState = ({
 
   return {
     colIndex: endColIndex.current,
-    rowIndex: endRowIndex,
+    rowIndex,
     colSpan: cellElement.colSpan,
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
