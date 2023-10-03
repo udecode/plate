@@ -16,6 +16,7 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
+import { getRowSpan } from '../merge/getRowSpan';
 import { getTableColumnCount } from '../queries';
 import {
   TablePlugin,
