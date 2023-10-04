@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
 ## 24.3.6
 
 ## 24.3.5
