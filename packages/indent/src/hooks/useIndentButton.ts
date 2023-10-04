@@ -1,4 +1,4 @@
-import { focusEditor, useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 import { indent } from '../index';
 
@@ -7,11 +7,11 @@ export const useIndentButton = () => {
 
   return {
     props: {
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        e.stopPropagation();
+      },
+      onClick: () => {
         indent(editor);
-        focusEditor(editor);
       },
     },
   };

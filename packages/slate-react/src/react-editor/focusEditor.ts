@@ -24,7 +24,7 @@ export const focusEditor = <V extends Value>(
   }
 
   // From slate-react 0.99.0, setTimeout is mandatory to focus the editor after a transform.
-  setTimeout(() => {
-    ReactEditor.focus(editor as any);
-  }, 0);
+  // setTimeout(() => {
+  ReactEditor.focus(editor as any);
+  // }, 0);
 };

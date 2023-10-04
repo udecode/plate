@@ -1,5 +1,4 @@
 import {
-  focusEditor,
   getPluginType,
   someNode,
   useEditorRef,
@@ -28,12 +27,11 @@ export const useListToolbarButton = (
   return {
     props: {
       pressed: state.pressed,
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        e.stopPropagation();
-
+      },
+      onClick: () => {
         toggleList(editor, { type: state.nodeType });
-        focusEditor(editor);
       },
     },
   };
