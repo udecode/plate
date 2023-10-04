@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react';
 import {
-  focusEditor,
   getAboveNode,
   getEndPoint,
   getPluginOptions,
@@ -134,15 +133,17 @@ export const useFloatingLinkEdit = ({
       },
     },
     editButtonProps: {
-      onClick: useCallback(() => {
+      onClick: () => {
         triggerFloatingLinkEdit(editor);
-      }, [editor]),
+      },
     },
     unlinkButtonProps: {
-      onClick: useCallback(() => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+      },
+      onClick: () => {
         unwrapLink(editor);
-        focusEditor(editor, editor.selection!);
-      }, [editor]),
+      },
     },
   };
 };

@@ -26,10 +26,7 @@ export const useLinkToolbarButton = (
   return {
     props: {
       pressed: state.pressed,
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+      onClick: () => {
         triggerFloatingLink(editor, { focused: true });
       },
     },

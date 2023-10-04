@@ -27,7 +27,7 @@
     "react-dom": "^18.2.0",
     "slate": "0.94.1",
     "slate-history": "0.93.0",
-    "slate-react": "^0.98.3",
+    "slate-react": "0.99.0",
     "tailwind-merge": "1.14.0",
     "tailwindcss-animate": "1.0.7"
   },

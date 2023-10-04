@@ -1,8 +1,4 @@
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorState,
-} from '@udecode/plate-common';
+import { useEditorRef, useEditorState } from '@udecode/plate-common';
 
 import { ListStyleType, toggleIndentList } from '../index';
 import { someIndentList } from './someIndentList';
@@ -27,14 +23,13 @@ export const useIndentListToolbarButton = ({
   return {
     props: {
       pressed,
-      onClick: (e: any) => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        e.stopPropagation();
-
+      },
+      onClick: () => {
         toggleIndentList(editor, {
           listStyleType: nodeType,
         });
-        focusEditor(editor);
       },
     },
   };
