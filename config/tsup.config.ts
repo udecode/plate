@@ -16,7 +16,7 @@ export default defineConfig((opts) => {
     ...opts,
     entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
-    dts: { resolve: false },
+    dts: true,
     sourcemap: true,
     clean: true,
 
