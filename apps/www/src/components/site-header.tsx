@@ -1,3 +1,4 @@
+/* eslint-disable turbo/no-undeclared-env-vars */
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
@@ -9,19 +10,39 @@ import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
+import { StarOnGithub } from './star-on-github';
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const { stargazers_count: count } = await fetch(
+    'https://api.github.com/repos/udecode/plate',
+    {
+      ...(process.env.GITHUB_OAUTH_TOKEN && {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }),
+      next: {
+        revalidate: 3600,
+      },
+    }
+  )
+    .then((res) => res.json())
+    .catch(() => ({ stargazers_count: 0 }));
+
   return (
     <header className="supports-backdrop-blur:bg-background/60 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-      <div className="container flex h-14 items-center">
+      <div className="container flex h-14 items-center justify-between">
         <MainNav />
         <MobileNav />
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+        <StarOnGithub count={count} />
+        <div className="flex items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div>
           <nav className="flex items-center">
             <Link
+              className="inline md:hidden"
               href={siteConfig.links.github}
               target="_blank"
               rel="noreferrer"
