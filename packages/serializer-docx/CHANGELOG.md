@@ -1,5 +1,11 @@
 # @udecode/plate-docx-serializer
 
+## 24.4.1
+
+### Patch Changes
+
+- [#2678](https://github.com/udecode/plate/pull/2678) by [@rcbevans](https://github.com/rcbevans) – Fixes #2677: CommonJS validator import in cleanDocXImageElements
+
 ## 24.4.0
 
 ### Minor Changes

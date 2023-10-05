@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "24.4.0",
+  "version": "24.4.1",
   "description": "Docx serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
