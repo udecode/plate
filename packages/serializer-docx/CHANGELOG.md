@@ -1,5 +1,7 @@
 # @udecode/plate-docx-serializer
 
+## 24.4.2
+
 ## 24.4.1
 
 ### Patch Changes
