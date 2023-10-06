@@ -1,5 +1,6 @@
 import {
   getBlockAbove,
+  getPluginOptions,
   getPluginType,
   getStartPoint,
   insertNodes,
@@ -12,7 +13,7 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TTableElement } from '../types';
+import { TablePlugin, TTableElement } from '../types';
 import {
   getEmptyTableNode,
   GetEmptyTableNodeOptions,
@@ -24,9 +25,16 @@ import {
  */
 export const insertTable = <V extends Value>(
   editor: PlateEditor<V>,
-  { rowCount = 2, colCount = 2, header }: GetEmptyTableNodeOptions = {},
+  {
+    rowCount = 2,
+    colCount = 2,
+    header,
+    newCellChildren,
+  }: GetEmptyTableNodeOptions = {},
   options: InsertNodesOptions<V> = {}
 ) => {
+  const pluginOptions = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+
   withoutNormalizing(editor, () => {
     if (
       !someNode(editor, {
@@ -35,7 +43,12 @@ export const insertTable = <V extends Value>(
     ) {
       insertNodes<TTableElement>(
         editor,
-        getEmptyTableNode(editor, { header, rowCount, colCount }),
+        getEmptyTableNode(editor, {
+          header,
+          rowCount,
+          colCount,
+          newCellChildren: newCellChildren || pluginOptions?.newCellChildren,
+        }),
         {
           nextBlock: true,
           ...(options as any),
