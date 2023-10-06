@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 24.4.2
+
+### Patch Changes
+
+- [#2682](https://github.com/udecode/plate/pull/2682) by [@kristian-puccio](https://github.com/kristian-puccio) – newCellChildren is now passed as an option to insertTable or the plugin option is used
+
 ## 24.4.0
 
 ### Minor Changes
