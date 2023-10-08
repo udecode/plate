@@ -108,7 +108,7 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { createRemoveOnDeleteForwardPlugin, createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -154,6 +154,7 @@ import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 import { TabbableElement } from '@/components/tabbable-element';
+import { createDeletePlugin } from '@udecode/plate-select';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
@@ -322,10 +323,10 @@ export const plugins = createPlugins(
       },
     }),
 
-    createRemoveOnDeleteForwardPlugin({
+    createDeletePlugin({
       options: {
         query: {
-          allow: [ELEMENT_IMAGE, ELEMENT_HR],
+          allow: [ELEMENT_PARAGRAPH],
         },
       },
     }),

@@ -99,8 +99,8 @@ import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
-import { createRemoveOnDeleteForwardPlugin } from '@udecode/plate-select';
 import { removeOnDeleteForwardPlugin } from '@/lib/plate/demo/plugins/removeOnDeleteForwardPlugin';
+import { createDeletePlugin } from '@udecode/plate-select';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -218,7 +218,7 @@ export const usePlaygroundPlugins = ({
             ...selectOnBackspacePlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
-          createRemoveOnDeleteForwardPlugin({
+          createDeletePlugin({
             ...removeOnDeleteForwardPlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
