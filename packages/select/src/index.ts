@@ -4,3 +4,5 @@
 
 export * from './createSelectOnBackspacePlugin';
 export * from './withSelectOnBackspace';
+export * from './createRemoveOnDeleteForwardPlugin';
+export * from './withCreateRemoveOnDeleteForward';

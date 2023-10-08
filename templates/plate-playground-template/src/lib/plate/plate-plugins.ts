@@ -108,7 +108,7 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import { createRemoveOnDeleteForwardPlugin, createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -315,6 +315,14 @@ export const plugins = createPlugins(
       },
     }),
     createSelectOnBackspacePlugin({
+      options: {
+        query: {
+          allow: [ELEMENT_IMAGE, ELEMENT_HR],
+        },
+      },
+    }),
+
+    createRemoveOnDeleteForwardPlugin({
       options: {
         query: {
           allow: [ELEMENT_IMAGE, ELEMENT_HR],
