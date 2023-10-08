@@ -7,7 +7,7 @@ import { createDeletePlugin } from './createDeletePlugin';
 
 jsx;
 
-describe('p (empty) + list when selection not in list', () => {
+describe('p (empty) + codeblock when selection not in code block', () => {
   it('should remove the p', () => {
     const input = (
       <editor>
@@ -41,7 +41,7 @@ describe('p (empty) + list when selection not in list', () => {
   });
 });
 
-describe('p (empty) + list when selection not in list', () => {
+describe('p (not empty) + code block when selection not in code block', () => {
   it('should remove the p', () => {
     const input = (
       <editor>
