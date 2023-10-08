@@ -13,18 +13,7 @@ export const withParagraph = <
   const { deleteForward, deleteBackward } = editor;
   editor.deleteForward = (unit) => {
     if (isSelectionAtBlockStart(editor) && isSelectionAtBlockEnd(editor)) {
-      const path = editor.selection?.focus.path;
-      let previousListItemPath: Path;
-      try {
-        if (path != undefined) {
-          previousListItemPath = Path.previous(path);
-        }
-        // Delete the current empty line and work as deleteBackward
-        deleteBackward(unit);
-        move(editor as any, { unit: "line", reverse: false });
-      } catch {
-        removeNodes(editor as any);
-      }
+      removeNodes(editor as any);
     } else {
       // Perform the default deleteForward behavior
       deleteForward(unit);
