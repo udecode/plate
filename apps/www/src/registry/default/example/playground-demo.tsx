@@ -77,7 +77,7 @@ import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { RemoveOnDeleteForwardPlugin, createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -100,6 +100,7 @@ import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 import { createRemoveOnDeleteForwardPlugin } from '@udecode/plate-select';
+import { removeOnDeleteForwardPlugin } from '@/lib/plate/demo/plugins/removeOnDeleteForwardPlugin';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -218,7 +219,7 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.selectOnBackspace,
           }),
           createRemoveOnDeleteForwardPlugin({
-            ...RemoveOnDeleteForwardPlugin,
+            ...removeOnDeleteForwardPlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
           createSingleLinePlugin({
