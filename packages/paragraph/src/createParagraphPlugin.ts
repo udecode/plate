@@ -3,6 +3,7 @@ import {
   HotkeyPlugin,
   onKeyDownToggleElement,
 } from '@udecode/plate-common';
+import { withParagraph } from './withParagraph';
 
 export const ELEMENT_PARAGRAPH = 'p';
 
@@ -15,6 +16,7 @@ export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },
+  withOverrides: withParagraph,
   options: {
     hotkey: ['mod+opt+0', 'mod+shift+0'],
   },
