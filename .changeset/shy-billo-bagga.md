@@ -2,4 +2,4 @@
 '@udecode/plate-select': minor
 ---
 
-With this patch, deleteForward will check if current Line is empty then current line is deleted and cursor is moved to next line
+Added `createDeletePlugin`. If enabled, performing a delete forward inside an empty block will remove that block without affecting the subsequent block.

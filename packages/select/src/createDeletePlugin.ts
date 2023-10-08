@@ -6,13 +6,12 @@ export type DeletePlugin = {
   query?: QueryNodeOptions;
 };
 
-export const KEY_FORWARD_DELETE = 'forwardDeleteBeforeCodeBlock';
+export const KEY_DELETE = 'delete';
 
 /**
  * @see {@link withDelete}
  */
-export const createDeletePlugin =
-  createPluginFactory<DeletePlugin>({
-    key: KEY_FORWARD_DELETE,
-    withOverrides: withDelete,
-  });
+export const createDeletePlugin = createPluginFactory<DeletePlugin>({
+  key: KEY_DELETE,
+  withOverrides: withDelete,
+});

@@ -32,7 +32,6 @@ export const withSelectOnBackspace = <
 
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {
     const { selection } = editor;
-    console.log("query", query);
     if (unit === 'character' && isCollapsed(selection)) {
       const pointBefore = getPointBefore(editor, selection as Slate.Location, {
         unit,

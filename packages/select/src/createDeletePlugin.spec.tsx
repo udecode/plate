@@ -2,7 +2,8 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createDeletePlugin } from './createDeletePlugin'
+
+import { createDeletePlugin } from './createDeletePlugin';
 
 jsx;
 
@@ -14,18 +15,18 @@ describe('p (empty) + list when selection not in list', () => {
           <cursor />
         </hp>
         <hcodeblock>
-            <hcodeline>test</hcodeline>
-            <hcodeline>test2</hcodeline>
-          </hcodeblock>
+          <hcodeline>test</hcodeline>
+          <hcodeline>test2</hcodeline>
+        </hcodeblock>
       </editor>
     ) as any as PlateEditor;
 
     const expected = (
       <editor>
         <hcodeblock>
-        <hcodeline>test</hcodeline>
-            <hcodeline>test2</hcodeline>
-          </hcodeblock>
+          <hcodeline>test</hcodeline>
+          <hcodeline>test2</hcodeline>
+        </hcodeblock>
       </editor>
     ) as any as PlateEditor;
 
@@ -40,7 +41,6 @@ describe('p (empty) + list when selection not in list', () => {
   });
 });
 
-
 describe('p (empty) + list when selection not in list', () => {
   it('should remove the p', () => {
     const input = (
@@ -50,20 +50,18 @@ describe('p (empty) + list when selection not in list', () => {
           <cursor />
         </hp>
         <hcodeblock>
-            <hcodeline>test</hcodeline>
-            <hcodeline>test2</hcodeline>
-          </hcodeblock>
+          <hcodeline>test</hcodeline>
+          <hcodeline>test2</hcodeline>
+        </hcodeblock>
       </editor>
     ) as any as PlateEditor;
 
     const expected = (
       <editor>
-        <hp>
-          paratest
-        </hp>
+        <hp>paratest</hp>
         <hcodeblock>
-            <hcodeline>test2</hcodeline>
-          </hcodeblock>
+          <hcodeline>test2</hcodeline>
+        </hcodeblock>
       </editor>
     ) as any as PlateEditor;
 

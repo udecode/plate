@@ -77,7 +77,10 @@ import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import {
+  createDeletePlugin,
+  createSelectOnBackspacePlugin,
+} from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -89,6 +92,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import { deletePlugin } from '@/lib/plate/demo/plugins/deletePlugin';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
@@ -99,8 +103,6 @@ import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
-import { removeOnDeleteForwardPlugin } from '@/lib/plate/demo/plugins/removeOnDeleteForwardPlugin';
-import { createDeletePlugin } from '@udecode/plate-select';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -219,7 +221,7 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.selectOnBackspace,
           }),
           createDeletePlugin({
-            ...removeOnDeleteForwardPlugin,
+            ...deletePlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
           createSingleLinePlugin({
