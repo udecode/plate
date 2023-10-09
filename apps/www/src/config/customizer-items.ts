@@ -959,7 +959,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
   },
   [KEY_DELETE]: {
     id: KEY_DELETE,
-    npmPackage: '@udecode/plate-delete',
+    npmPackage: '@udecode/plate-select',
     pluginFactory: 'createDeletePlugin',
     label: 'Delete',
     badges: [customizerBadges.handler],
