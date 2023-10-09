@@ -92,7 +92,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
-import { deletePlugin } from '@/lib/plate/demo/plugins/deletePlugin';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
@@ -221,7 +220,6 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.selectOnBackspace,
           }),
           createDeletePlugin({
-            ...deletePlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
           createSingleLinePlugin({

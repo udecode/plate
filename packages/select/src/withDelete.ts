@@ -24,24 +24,16 @@ export const withDelete = <
   const { deleteForward } = editor;
   editor.deleteForward = (unit: 'character' | 'word' | 'line' | 'block') => {
     if (!editor.selection) return;
-    if (!isSelectionExpanded(editor) && isBlockAboveEmpty(editor)) {
-      // check when line is empty
-      const isValidNode = queryNode(getAboveNode(editor), query);
-      if (query) {
-        //is query is passed
-        if (isValidNode) {
-          // cursor is in query blocks
-          removeNodes(editor as any);
-        } else {
-          //fallback to default behaiour
-          deleteForward(unit);
-        }
-      } else {
-        // query is not passed, then plugin is active everywhere
-        removeNodes(editor as any);
-      }
+    const isValidNode = queryNode(getAboveNode(editor), query);
+    if (
+      !isSelectionExpanded(editor) &&
+      isBlockAboveEmpty(editor) &&
+      isValidNode
+    ) {
+      // Cursor is in query blocks and line is empty
+      removeNodes(editor as any);
     } else {
-      // when line is not empty, fall back to default behavior
+      // When the line is not empty or other conditions are not met, fall back to default behavior
       deleteForward(unit);
     }
   };
