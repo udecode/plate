@@ -38,7 +38,6 @@ import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import {
   createPlugins,
-  ELEMENT_DEFAULT,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   PlateElement,
@@ -324,13 +323,6 @@ export const plugins = createPlugins(
       },
     }),
 
-    createDeletePlugin({
-      options: {
-        query: {
-          allow: [ELEMENT_DEFAULT],
-        },
-      },
-    }),
     createSoftBreakPlugin({
       options: {
         rules: [

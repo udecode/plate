@@ -22,7 +22,7 @@ export const withDelete = <
   { options: { query } }: WithPlatePlugin<DeletePlugin, V, E>
 ) => {
   const { deleteForward } = editor;
-  editor.deleteForward = (unit: 'character' | 'word' | 'line' | 'block') => {
+  editor.deleteForward = (unit) => {
     if (!editor.selection) return;
     const isValidNode = queryNode(getAboveNode(editor), query);
     if (

@@ -959,20 +959,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
   },
   [KEY_DELETE]: {
     id: KEY_DELETE,
-    npmPackage: '@udecode/plate-select',
+    npmPackage: '@udecode/plate-delete',
     pluginFactory: 'createDeletePlugin',
-    pluginOptions: [
-      `options: {`,
-      `  query: {`,
-      `    allow: [`,
-      `      // ELEMENT_IMAGE, ELEMENT_HR`,
-      `    ],`,
-      `  },`,
-      `},`,
-    ],
-    label: 'Forward Delete Plugin',
+    label: 'Delete',
     badges: [customizerBadges.handler],
-    route: customizerPlugins.media.route,
   },
   [KEY_SINGLE_LINE]: {
     id: KEY_SINGLE_LINE,

@@ -1,4 +1,4 @@
-import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common';
+import { createPluginFactory, ELEMENT_DEFAULT, QueryNodeOptions } from '@udecode/plate-common';
 
 import { withDelete } from './withDelete';
 
@@ -14,4 +14,9 @@ export const KEY_DELETE = 'delete';
 export const createDeletePlugin = createPluginFactory<DeletePlugin>({
   key: KEY_DELETE,
   withOverrides: withDelete,
+  options: {
+    query: {
+      allow: [ELEMENT_DEFAULT],
+    },
+  },
 });
