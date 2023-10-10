@@ -1,5 +1,7 @@
 # @udecode/plate-basic-elements
 
+## 24.4.3
+
 ## 24.4.0
 
 ### Minor Changes

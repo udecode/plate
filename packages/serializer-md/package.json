@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "24.4.0",
+  "version": "24.4.3",
   "description": "Markdown serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -41,7 +41,7 @@
   "dependencies": {
     "@udecode/plate-basic-marks": "24.4.0",
     "@udecode/plate-block-quote": "24.4.0",
-    "@udecode/plate-code-block": "24.4.0",
+    "@udecode/plate-code-block": "24.4.3",
     "@udecode/plate-common": "24.4.0",
     "@udecode/plate-heading": "24.4.0",
     "@udecode/plate-horizontal-rule": "24.4.0",
