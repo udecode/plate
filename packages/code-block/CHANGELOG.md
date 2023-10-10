@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 24.4.3
+
+### Patch Changes
+
+- [#2693](https://github.com/udecode/plate/pull/2693) by [@zbeyens](https://github.com/zbeyens) – Fix "Named export 'Token' not found.
+
 ## 24.4.0
 
 ### Minor Changes
