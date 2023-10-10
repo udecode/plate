@@ -1,4 +1,4 @@
-import { ParseConfig } from 'papaparse';
+import type { ParseConfig } from 'papaparse';
 
 export type DeserializeCsvParseOptions = ParseConfig;
 
