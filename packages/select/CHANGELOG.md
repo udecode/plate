@@ -1,5 +1,11 @@
 # @udecode/plate-select
 
+## 24.5.0
+
+### Minor Changes
+
+- [#2687](https://github.com/udecode/plate/pull/2687) by [@archie9211](https://github.com/archie9211) – Added `createDeletePlugin`. If enabled, performing a delete forward inside an empty block will remove that block without affecting the subsequent block.
+
 ## 24.4.0
 
 ### Minor Changes
