@@ -94,7 +94,8 @@ export const descriptions: Record<string, string> = {
   [KEY_RESET_NODE]: 'Reset the block type using rules.',
   [KEY_SELECT_ON_BACKSPACE]:
     'Select the preceding block instead of deleting when pressing backspace.',
-  [KEY_DELETE]: 'Remove the current block if empty when pressing delete forward',
+  [KEY_DELETE]:
+    'Remove the current block if empty when pressing delete forward',
   [KEY_SINGLE_LINE]: 'Restrict the editor to a single block.',
   [KEY_SOFT_BREAK]:
     'Insert line breaks within a block of text without starting a new block.',

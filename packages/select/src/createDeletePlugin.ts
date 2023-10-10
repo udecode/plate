@@ -1,4 +1,8 @@
-import { createPluginFactory, ELEMENT_DEFAULT, QueryNodeOptions } from '@udecode/plate-common';
+import {
+  createPluginFactory,
+  ELEMENT_DEFAULT,
+  QueryNodeOptions,
+} from '@udecode/plate-common';
 
 import { withDelete } from './withDelete';
 

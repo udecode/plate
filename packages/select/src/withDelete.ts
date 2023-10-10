@@ -24,7 +24,7 @@ export const withDelete = <
   const { deleteForward } = editor;
   editor.deleteForward = (unit) => {
     if (!editor.selection) return;
-    const isValidNode = queryNode(getAboveNode(editor), query);
+    const isValidNode = !query || queryNode(getAboveNode(editor), query);
     if (
       !isSelectionExpanded(editor) &&
       isBlockAboveEmpty(editor) &&
