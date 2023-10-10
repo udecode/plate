@@ -14,10 +14,12 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
-import { parse } from 'papaparse';
+import papaparse from 'papaparse';
 
 import { KEY_DESERIALIZE_CSV } from '../createDeserializeCsvPlugin';
 import { DeserializeCsvParseOptions, DeserializeCsvPlugin } from '../types';
+
+const { parse } = papaparse;
 
 const isValidCsv = (
   data: Record<string, string>[][],
