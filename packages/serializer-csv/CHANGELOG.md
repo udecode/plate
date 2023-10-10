@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-csv
 
+## 24.5.0
+
+### Patch Changes
+
+- [#2696](https://github.com/udecode/plate/pull/2696) by [@zbeyens](https://github.com/zbeyens) – Fix: Named export 'parse' not found.
+
 ## 24.4.2
 
 ## 24.4.0
