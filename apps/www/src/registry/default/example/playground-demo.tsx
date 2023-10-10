@@ -220,7 +220,7 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.selectOnBackspace,
           }),
           createDeletePlugin({
-            enabled: !!enabled.createDeletePlugin,
+            enabled: !!enabled.delete,
           }),
           createSingleLinePlugin({
             enabled: id === 'singleline' || !!enabled.singleLine,
