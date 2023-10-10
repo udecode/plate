@@ -30,7 +30,10 @@ export const cleanDocxImageElements = (
 
       const alt = element.getAttribute('alt');
 
-      if (typeof alt === 'string' && validator.isURL(alt, { require_protocol: true })) {
+      if (
+        typeof alt === 'string' &&
+        validator.isURL(alt, { require_protocol: true })
+      ) {
         element.setAttribute('src', alt);
         return true;
       }

@@ -77,7 +77,10 @@ import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import {
+  createDeletePlugin,
+  createSelectOnBackspacePlugin,
+} from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -215,6 +218,9 @@ export const usePlaygroundPlugins = ({
           createSelectOnBackspacePlugin({
             ...selectOnBackspacePlugin,
             enabled: !!enabled.selectOnBackspace,
+          }),
+          createDeletePlugin({
+            enabled: !!enabled.delete,
           }),
           createSingleLinePlugin({
             enabled: id === 'singleline' || !!enabled.singleLine,

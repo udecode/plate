@@ -37,7 +37,7 @@ import { KEY_NODE_ID } from '@udecode/plate-node-id';
 import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
-import { KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
+import { KEY_DELETE, KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
 import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
 import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
 import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
@@ -94,6 +94,8 @@ export const descriptions: Record<string, string> = {
   [KEY_RESET_NODE]: 'Reset the block type using rules.',
   [KEY_SELECT_ON_BACKSPACE]:
     'Select the preceding block instead of deleting when pressing backspace.',
+  [KEY_DELETE]:
+    'Remove the current block if empty when pressing delete forward',
   [KEY_SINGLE_LINE]: 'Restrict the editor to a single block.',
   [KEY_SOFT_BREAK]:
     'Insert line breaks within a block of text without starting a new block.',

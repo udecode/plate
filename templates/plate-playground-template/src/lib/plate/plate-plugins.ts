@@ -321,6 +321,7 @@ export const plugins = createPlugins(
         },
       },
     }),
+
     createSoftBreakPlugin({
       options: {
         rules: [
