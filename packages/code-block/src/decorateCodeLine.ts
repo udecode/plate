@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-imports,unused-imports/no-unused-vars */
 import {
   DecorateEntry,
   getNodeString,
@@ -7,8 +6,7 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
-// noinspection ES6UnusedImports
-import Prism, { languages, Token, tokenize } from 'prismjs';
+import Prism from 'prismjs';
 
 import 'prismjs/components/prism-antlr4.js';
 import 'prismjs/components/prism-bash.js';
@@ -66,6 +64,8 @@ import {
   ELEMENT_CODE_SYNTAX,
 } from './constants';
 import { CodeBlockPlugin, TCodeBlockElement } from './types';
+
+const { languages, Token, tokenize } = Prism;
 
 export interface CodeSyntaxRange extends Range {
   tokenType: string;
