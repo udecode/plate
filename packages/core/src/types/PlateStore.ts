@@ -79,6 +79,16 @@ export type PlateStoreState<
   onChange: { fn: (value: V) => void };
 
   /**
+   * Controlled callback called when the editor selection state changes.
+   */
+  onSelectionChange: { fn: (value: V) => void };
+
+  /**
+   * Controlled callback called when the editor value state changes.
+   */
+  onValueChange: { fn: (value: V) => void };
+
+  /**
    * Access the editor object using a React ref.
    */
   editorRef: { ref: ForwardedRef<E> };
@@ -93,6 +103,8 @@ export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
   'readOnly',
   'plugins',
   'onChange',
+  'onSelectionChange',
+  'onValueChange',
   'decorate',
   'renderElement',
   'renderLeaf',

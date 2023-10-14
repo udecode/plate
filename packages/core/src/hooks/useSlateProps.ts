@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Value } from '@udecode/slate';
 import { SlateProps } from '@udecode/slate-react';
+import isEqual from 'lodash/isEqual.js';
 
 import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
 import { useEditorRef } from '../stores/plate/selectors/useEditorRef';
@@ -18,6 +19,10 @@ export const useSlateProps = <V extends Value>({
   const value = usePlateSelectors(id).value();
   const setValue = usePlateActions(id).value();
   const onChangeProp = usePlateSelectors(id).onChange()?.fn;
+  const onSelectionChangeProp = usePlateSelectors(id).onSelectionChange()?.fn;
+  const onValueChangeProp = usePlateSelectors(id).onValueChange()?.fn;
+  const prevValueRef = useRef<Value | null>(value);
+
 
   const onChange = useCallback(
     (newValue: V) => {
@@ -25,9 +30,18 @@ export const useSlateProps = <V extends Value>({
 
       if (!eventIsHandled) {
         onChangeProp?.(newValue);
+        if (prevValueRef.current !== null) {
+          if (isEqual(newValue, prevValueRef.current)) {
+            onSelectionChangeProp?.(newValue);
+          }
+          else{
+            onValueChangeProp?.(newValue);
+          }
+        }
       }
 
       setValue(newValue);
+      prevValueRef.current = newValue;
     },
     [editor, setValue, onChangeProp]
   );

@@ -284,6 +284,8 @@ export const docsConfig: DocsConfig = {
                 'initialValue',
                 'normalizeInitialValue',
                 'onChange',
+                'onSelectionChange',
+                'onValueChange',
                 'plugins',
                 'renderEditable',
                 'renderElement',

@@ -44,6 +44,16 @@ export type UsePlateEffectsProps<
     onChange?: (value: V) => void;
 
     /**
+     * Controlled callback called when the editor selection state changes.
+     */
+    onSelectionChange?: (value: V) => void;
+
+    /**
+     * Controlled callback called when the editor value state changes.
+     */
+    onValueChange?: (value: V) => void;
+
+    /**
      * Access the editor object using a React ref.
      */
     editorRef?: ForwardedRef<E>;
@@ -83,6 +93,8 @@ export const usePlateEffects = <
   disableCorePlugins,
   value: valueProp,
   onChange: onChangeProp,
+  onSelectionChange: onSelectionChangeProp,
+  onValueChange: onValueChangeProp,
   plugins: pluginsProp,
   editorRef: editorRefProp,
   decorate: decorateProp,
@@ -101,6 +113,9 @@ export const usePlateEffects = <
   const [rawPlugins, setRawPlugins] = states.rawPlugins();
   const [, setPlugins] = states.plugins();
   const [onChange, setOnChange] = states.onChange();
+  const [onSelectionChange, setOnSelectionChange] = states.onSelectionChange();
+  const [onValueChange, setOnValueChange] = states.onValueChange();
+
   const [readOnly, setReadOnly] = states.readOnly();
 
   // Store Slate.value
@@ -128,6 +143,20 @@ export const usePlateEffects = <
     setState: setOnChange,
     nextState: onChangeProp,
     nextStateValue: onChangeProp ? { fn: onChangeProp } : null,
+  });
+
+  usePlateStoreOnChange({
+    state: onSelectionChange?.fn,
+    setState: setOnSelectionChange,
+    nextState: onSelectionChangeProp,
+    nextStateValue: onSelectionChangeProp ? { fn: onSelectionChangeProp } : null,
+  });
+
+  usePlateStoreOnChange({
+    state: onValueChange?.fn,
+    setState: setOnValueChange,
+    nextState: onValueChangeProp,
+    nextStateValue: onValueChangeProp ? { fn: onValueChangeProp } : null,
   });
 
   usePlateStoreOnChange({
