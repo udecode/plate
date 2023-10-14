@@ -115,7 +115,6 @@ export const usePlateEffects = <
   const [onChange, setOnChange] = states.onChange();
   const [onSelectionChange, setOnSelectionChange] = states.onSelectionChange();
   const [onValueChange, setOnValueChange] = states.onValueChange();
-
   const [readOnly, setReadOnly] = states.readOnly();
 
   // Store Slate.value
@@ -149,7 +148,9 @@ export const usePlateEffects = <
     state: onSelectionChange?.fn,
     setState: setOnSelectionChange,
     nextState: onSelectionChangeProp,
-    nextStateValue: onSelectionChangeProp ? { fn: onSelectionChangeProp } : null,
+    nextStateValue: onSelectionChangeProp
+      ? { fn: onSelectionChangeProp }
+      : null,
   });
 
   usePlateStoreOnChange({

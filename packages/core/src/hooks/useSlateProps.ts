@@ -23,7 +23,6 @@ export const useSlateProps = <V extends Value>({
   const onValueChangeProp = usePlateSelectors(id).onValueChange()?.fn;
   const prevValueRef = useRef<Value | null>(value);
 
-
   const onChange = useCallback(
     (newValue: V) => {
       const eventIsHandled = pipeOnChange(editor)(newValue);
@@ -33,8 +32,7 @@ export const useSlateProps = <V extends Value>({
         if (prevValueRef.current !== null) {
           if (isEqual(newValue, prevValueRef.current)) {
             onSelectionChangeProp?.(newValue);
-          }
-          else{
+          } else {
             onValueChangeProp?.(newValue);
           }
         }
@@ -43,7 +41,7 @@ export const useSlateProps = <V extends Value>({
       setValue(newValue);
       prevValueRef.current = newValue;
     },
-    [editor, setValue, onChangeProp]
+    [editor, setValue, onChangeProp, onSelectionChangeProp, onValueChangeProp]
   );
 
   return useMemo(() => {
