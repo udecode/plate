@@ -39,7 +39,9 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
     skipValidation: true,
   });
 
-  focusEditor(editor, editor.selection!);
+  setTimeout(() => {
+    focusEditor(editor, editor.selection!);
+  }, 0);
 
   return true;
 };
