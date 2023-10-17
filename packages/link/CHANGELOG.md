@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 24.5.1
+
+### Patch Changes
+
+- [#2705](https://github.com/udecode/plate/pull/2705) by [@AndreyMarchuk](https://github.com/AndreyMarchuk) – Fix: "Cannot resolve a DOM node from Slate node" floating link case
+
 ## 24.4.0
 
 ### Minor Changes
