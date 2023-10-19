@@ -77,14 +77,28 @@ export interface DraggableProps
   ) => boolean;
 }
 
+const dragHandle = (
+  <Tooltip>
+    <TooltipTrigger>
+      <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
+    </TooltipTrigger>
+    <TooltipContent>Drag to move</TooltipContent>
+  </Tooltip>
+);
+
 const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
     const { children, element } = props;
 
     const state = useDraggableState({ element, onDropHandler });
-    const { dropLine, isDragging } = state;
-    const { droplineProps, gutterLeftProps, previewRef, handleRef } =
-      useDraggable(state);
+    const { dropLine, isDragging, isHovered } = state;
+    const {
+      groupProps,
+      droplineProps,
+      gutterLeftProps,
+      previewRef,
+      handleRef,
+    } = useDraggable(state);
 
     return (
       <div
@@ -95,6 +109,7 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
           className
         )}
         ref={ref}
+        {...groupProps}
       >
         <div
           className={cn(
@@ -110,12 +125,9 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <Tooltip>
-                <TooltipTrigger ref={handleRef}>
-                  <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>Drag to move</TooltipContent>
-              </Tooltip>
+              <div ref={handleRef} className="h-4 w-4">
+                {isHovered && dragHandle}
+              </div>
             </div>
           </div>
         </div>
