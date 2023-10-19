@@ -1,5 +1,7 @@
 # @udecode/plate-autoformat
 
+## 24.5.2
+
 ## 24.4.0
 
 ### Minor Changes

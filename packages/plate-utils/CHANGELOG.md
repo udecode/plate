@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 24.5.2
+
+### Patch Changes
+
+- [#2708](https://github.com/udecode/plate/pull/2708) by [@12joan](https://github.com/12joan) – Do not re-render placeholder on every editor change
+
 ## 24.4.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "24.4.0",
+  "version": "24.5.2",
   "description": "List plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,8 +39,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.4.0",
-    "@udecode/plate-reset-node": "24.4.0",
+    "@udecode/plate-common": "24.5.2",
+    "@udecode/plate-reset-node": "24.5.2",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
