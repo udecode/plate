@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 24.5.2
+
+### Patch Changes
+
+- [#2708](https://github.com/udecode/plate/pull/2708) by [@12joan](https://github.com/12joan) – Reduce performance overhead of draggable component
+
 ## 24.4.0
 
 ### Minor Changes

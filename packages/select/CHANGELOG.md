@@ -1,5 +1,7 @@
 # @udecode/plate-select
 
+## 24.5.2
+
 ## 24.5.0
 
 ### Minor Changes
