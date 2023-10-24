@@ -146,7 +146,7 @@ const ToolbarButton = React.forwardRef<
 
     return isLoaded && tooltip ? (
       <Tooltip>
-        <TooltipTrigger>{content}</TooltipTrigger>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
 
         <TooltipPortal>
           <TooltipContent>{tooltip}</TooltipContent>
