@@ -1,15 +1,29 @@
 import { Modify } from '@udecode/utils';
-import { Path, Transforms } from 'slate';
+import { Path, removeNodes, Transforms, withoutNormalizing } from 'slate';
 
+import { QueryNodeOptions } from '../../types';
 import { NodeMatchOption } from '../../types/NodeMatchOption';
-import { getAboveNode, getEndPoint } from '../editor';
+import { queryNode } from '../../utils';
+import { getAboveNode, getEndPoint, isInline } from '../editor';
 import { TEditor, Value } from '../editor/TEditor';
 import { EElementOrText } from '../element/TElement';
+import { getNodeString, TDescendant } from '../node';
 
 export type InsertNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.insertNodes>[2]>,
   NodeMatchOption<V>
 > & {
+  /**
+   * Remove the currect block if empty before inserting. Only applies to
+   * paragraphs by default, but can be customized by passing a
+   * QueryNodeOptions object.
+   */
+  removeEmpty?: boolean | QueryNodeOptions;
+
+  /**
+   * Insert the nodes after the currect block. Does not apply if the
+   * removeEmpty option caused the current block to be removed.
+   */
   nextBlock?: boolean;
 };
 
@@ -22,22 +36,60 @@ export const insertNodes = <
 >(
   editor: TEditor<V>,
   nodes: N | N[],
-  options?: InsertNodesOptions<V>
+  {
+    at: optionsAt,
+    nextBlock,
+    removeEmpty,
+    ...options
+  }: InsertNodesOptions<V> = {}
 ) => {
-  if (options?.nextBlock) {
-    const at = options?.at || editor.selection;
-    if (at) {
-      const endPoint = getEndPoint(editor, at);
+  let at = optionsAt || editor.selection;
+  if (!at) return;
+
+  withoutNormalizing(editor as any, () => {
+    if (removeEmpty) {
+      const blockEntry = getAboveNode(editor, { at: at! });
+
+      if (blockEntry) {
+        const queryNodeOptions: QueryNodeOptions =
+          removeEmpty === true
+            ? {
+                allow: ['p'],
+              }
+            : removeEmpty;
+
+        const { filter } = queryNodeOptions;
+
+        queryNodeOptions.filter = ([node, path]) => {
+          if (getNodeString(node)) return false;
+          const children = node.children as TDescendant[];
+          if (children.some((n) => isInline(editor, n))) return false;
+          return !filter || filter([node, path]);
+        };
+
+        if (queryNode(blockEntry, queryNodeOptions)) {
+          removeNodes(editor as any, { at: blockEntry[1] });
+          nextBlock = false;
+        }
+      }
+    }
+
+    if (nextBlock) {
+      const endPoint = getEndPoint(editor, at!);
+
       const blockEntry = getAboveNode(editor, {
         at: endPoint,
         block: true,
       });
+
       if (blockEntry) {
-        const nextPath = Path.next(blockEntry[1]);
-        options.at = nextPath;
+        at = Path.next(blockEntry[1]);
       }
     }
-  }
 
-  Transforms.insertNodes(editor as any, nodes, options as any);
+    Transforms.insertNodes(editor as any, nodes, {
+      at,
+      ...options,
+    } as any);
+  });
 };

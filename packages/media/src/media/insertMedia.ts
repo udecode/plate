@@ -1,4 +1,9 @@
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  getPluginType,
+  InsertNodesOptions,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-common';
 
 import {
   ELEMENT_IMAGE,
@@ -7,7 +12,8 @@ import {
   insertMediaEmbed,
 } from '..';
 
-export interface InsertMediaOptions {
+export interface InsertMediaOptions<V extends Value>
+  extends InsertNodesOptions<V> {
   /**
    * Default onClick is getting the image url by calling this promise before inserting the image.
    */
@@ -21,7 +27,8 @@ export const insertMedia = async <V extends Value>(
   {
     getUrl,
     type = getPluginType(editor, ELEMENT_IMAGE),
-  }: InsertMediaOptions = {}
+    ...options
+  }: InsertMediaOptions<V> = {}
 ) => {
   const url = getUrl
     ? await getUrl()
@@ -33,8 +40,8 @@ export const insertMedia = async <V extends Value>(
   if (!url) return;
 
   if (type === getPluginType(editor, ELEMENT_IMAGE)) {
-    insertImage(editor, url);
+    insertImage(editor, url, options);
   } else {
-    insertMediaEmbed(editor, { url });
+    insertMediaEmbed(editor, { url }, options);
   }
 };
