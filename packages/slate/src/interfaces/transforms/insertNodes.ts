@@ -36,19 +36,11 @@ export const insertNodes = <
 >(
   editor: TEditor<V>,
   nodes: N | N[],
-  {
-    at: optionsAt,
-    nextBlock,
-    removeEmpty,
-    ...options
-  }: InsertNodesOptions<V> = {}
+  { nextBlock, removeEmpty, ...options }: InsertNodesOptions<V> = {}
 ) => {
-  let at = optionsAt || editor.selection;
-  if (!at) return;
-
   withoutNormalizing(editor as any, () => {
     if (removeEmpty) {
-      const blockEntry = getAboveNode(editor, { at: at! });
+      const blockEntry = getAboveNode(editor, { at: options.at });
 
       if (blockEntry) {
         const queryNodeOptions: QueryNodeOptions =
@@ -74,8 +66,8 @@ export const insertNodes = <
       }
     }
 
-    if (nextBlock) {
-      const endPoint = getEndPoint(editor, at!);
+    if (nextBlock && options.at) {
+      const endPoint = getEndPoint(editor, options.at);
 
       const blockEntry = getAboveNode(editor, {
         at: endPoint,
@@ -83,13 +75,10 @@ export const insertNodes = <
       });
 
       if (blockEntry) {
-        at = Path.next(blockEntry[1]);
+        options.at = Path.next(blockEntry[1]);
       }
     }
 
-    Transforms.insertNodes(editor as any, nodes, {
-      at,
-      ...options,
-    } as any);
+    Transforms.insertNodes(editor as any, nodes, options as any);
   });
 };
