@@ -66,16 +66,20 @@ export const insertNodes = <
       }
     }
 
-    if (nextBlock && options.at) {
-      const endPoint = getEndPoint(editor, options.at);
+    if (nextBlock) {
+      const { at = editor.selection } = options;
 
-      const blockEntry = getAboveNode(editor, {
-        at: endPoint,
-        block: true,
-      });
+      if (at) {
+        const endPoint = getEndPoint(editor, at);
 
-      if (blockEntry) {
-        options.at = Path.next(blockEntry[1]);
+        const blockEntry = getAboveNode(editor, {
+          at: endPoint,
+          block: true,
+        });
+
+        if (blockEntry) {
+          options.at = Path.next(blockEntry[1]);
+        }
       }
     }
 
