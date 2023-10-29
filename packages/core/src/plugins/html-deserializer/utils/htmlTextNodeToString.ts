@@ -2,6 +2,7 @@
  * Deserialize HTML text node to text.
  */
 import { isHtmlText } from './isHtmlText';
+import { getStripWhitespace } from './stripWhitespaceConfig';
 
 function getStyleFromNode(node: HTMLElement | ChildNode): string {
   if (!(node as HTMLElement).getAttribute) return '';
@@ -38,14 +39,16 @@ function styleToObject(styleText: string): Record<string, string> {
 
 function findParentElementWhiteSpace(node: HTMLElement | ChildNode) {
   let parentNode = node.parentNode;
-
+  // Both `node.style` and `getComputedStyle` always return an empty value.
   while (parentNode != null) {
-    const styleStr = getStyleFromNode(parentNode as typeof node);
-    const styles = styleStr ? styleToObject(styleStr) : {};
 
-    if (parentNode.nodeType === Node.ELEMENT_NODE && styles['whiteSpace']) {
-      // If parentNode.nodeType === 'PRE', do not perform any processing here.
-      return styles['whiteSpace'];
+    if (parentNode.nodeType === Node.ELEMENT_NODE) {
+      const styleStr = getStyleFromNode(parentNode as typeof node);
+      const styles = styleStr ? styleToObject(styleStr) : {};
+
+      if (styles['whiteSpace'] && styles['whiteSpace'] !== 'inherit') {
+        return styles['whiteSpace'];
+      }
     }
 
     parentNode = parentNode.parentNode;
@@ -62,6 +65,8 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
   }
 
   switch (parentWhiteSpace) {
+    case 'unset':
+    case 'initial': // Browser's default styles.
     case 'normal':
     case 'nowrap': {
       node.textContent =
@@ -74,11 +79,10 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
       break;
     }
     case 'pre':
-      node.textContent =
-        node.textContent && node.textContent.replace(/\n+$/, '');
-      break;
     case 'break-spaces':
     case 'pre-wrap':
+    case 'revert': // "revert" and "revert-layer" are expected to be supported in the future.
+    case 'revert-layer':
     default: {
       break;
     }
@@ -87,9 +91,9 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
 
 export const htmlTextNodeToString = (
   node: HTMLElement | ChildNode,
-  stripWhitespace = true
 ) => {
   if (isHtmlText(node)) {
+    const stripWhitespace = getStripWhitespace();
 
     if (stripWhitespace) {
       mergeWhitespace(node);

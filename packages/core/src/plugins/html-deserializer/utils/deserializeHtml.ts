@@ -4,6 +4,7 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
+import { setStripWhitespace } from './stripWhitespaceConfig';
 
 /**
  * Deserialize HTML element to a valid document fragment.
@@ -18,6 +19,7 @@ export const deserializeHtml = <V extends Value>(
     stripWhitespace?: boolean;
   }
 ): EDescendant<V>[] => {
+  setStripWhitespace(stripWhitespace);
   // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element, stripWhitespace);
