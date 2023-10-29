@@ -2,7 +2,6 @@
  * Deserialize HTML text node to text.
  */
 import { isHtmlText } from './isHtmlText';
-import { getStripWhitespace } from './stripWhitespaceConfig';
 
 function getStyleFromNode(node: HTMLElement | ChildNode): string {
   if (!(node as HTMLElement).getAttribute) return '';
