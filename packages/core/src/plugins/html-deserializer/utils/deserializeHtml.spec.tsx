@@ -232,3 +232,36 @@ describe('when deserializing all plugins', () => {
     ).toEqual(output.children);
   });
 });
+
+describe('when stripWhitespace is true', () => {
+  // https://github.com/udecode/plate/issues/2713#issuecomment-1780118687
+  const html = `<p>\n  Hello  world\n  </p>\n\n  <p>\n  one     two   \n  three\n</p>\n\n<pre>\nhello     one two\nthree\nfour\n</pre>\n\n<div style="white-space: pre">\nhello     one two\nthree\nfour\n</div>\n\n<div style="white-space: pre-line">\nhello     one two\nthree\nfour\n</div>`;
+  const element = getHtmlDocument(html).body;
+
+  const expectedOutput = [
+    {
+      text: 'Hello world',
+    },
+    {
+      text: 'one two three',
+    },
+    {
+      text: 'hello one two three four',
+    },
+    {
+      text: '\nhello     one two\nthree\nfour\n',
+    },
+    {
+      text: '\nhello one two\nthree\nfour\n',
+    }
+  ];
+
+  it('should strip Whitespace by style', () => {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
+      element,
+      stripWhitespace: true,
+    });
+
+    expect(convertedDocumentFragment).toEqual(expectedOutput);
+  });
+});
