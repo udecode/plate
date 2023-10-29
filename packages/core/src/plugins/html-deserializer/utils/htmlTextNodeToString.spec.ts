@@ -1,6 +1,11 @@
 import { htmlTextNodeToString } from './htmlTextNodeToString';
+import { setStripWhitespace } from './stripWhitespaceConfig';
 
 describe('htmlTextNodeToString', () => {
+  beforeEach(() => {
+    setStripWhitespace(true);
+  });
+
   describe('when empty div element', () => {
     it('should be undefined', () => {
       const input = document.createElement('div');
@@ -31,7 +36,9 @@ describe('htmlTextNodeToString', () => {
   describe('when text node with text and \n characters', () => {
     it('should strip \n characters from start and end', () => {
       const input = document.createTextNode('\n\n\ntest\n\ntest\n\n');
-      const output = 'test test';
+      const output = 'test\n\ntest';
+
+      setStripWhitespace(false);
 
       expect(htmlTextNodeToString(input)).toEqual(output);
     });
