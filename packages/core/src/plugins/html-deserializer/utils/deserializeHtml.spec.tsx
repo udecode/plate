@@ -246,13 +246,13 @@ describe('when stripWhitespace is true', () => {
       text: 'one two three',
     },
     {
-      text: 'hello     one two\nthree\nfour\n',
+      text: 'hello     one two\nthree\nfour',
     },
     {
-      text: '\nhello     one two\nthree\nfour\n',
+      text: '\nhello     one two\nthree\nfour',
     },
     {
-      text: '\nhello one two\nthree\nfour\n',
+      text: '\nhello one two\nthree\nfour',
     }
   ];
 

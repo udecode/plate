@@ -25,7 +25,7 @@ describe('htmlTextNodeToString', () => {
       const input = document.createTextNode('\n\n\n\n\n');
       const output = null;
 
-      expect(htmlTextNodeToString(input)).toEqual(output);
+      expect(htmlTextNodeToString(input, false)).toEqual(output);
     });
   });
 
