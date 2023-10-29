@@ -42,6 +42,9 @@ function findParentElementWhiteSpace(node: HTMLElement | ChildNode) {
   // Both `node.style` and `getComputedStyle` always return an empty value.
   while (parentNode != null) {
 
+    // The <pre> default style is "white-space: pre;"
+    if (parentNode.nodeName === 'PRE') return 'pre';
+
     if (parentNode.nodeType === Node.ELEMENT_NODE) {
       const styleStr = getStyleFromNode(parentNode as typeof node);
       const styles = styleStr ? styleToObject(styleStr) : {};
@@ -91,9 +94,9 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
 
 export const htmlTextNodeToString = (
   node: HTMLElement | ChildNode,
+  stripWhitespace = true
 ) => {
   if (isHtmlText(node)) {
-    const stripWhitespace = getStripWhitespace();
 
     if (stripWhitespace) {
       mergeWhitespace(node);

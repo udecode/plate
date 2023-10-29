@@ -11,13 +11,14 @@ jsx;
  */
 export const htmlBodyToFragment = <V extends Value>(
   editor: PlateEditor<V>,
-  element: HTMLElement
+  element: HTMLElement,
+  stripWhitespace = true
 ): EDescendant<V>[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx(
       'fragment',
       {},
-      deserializeHtmlNodeChildren(editor, element)
+      deserializeHtmlNodeChildren(editor, element, stripWhitespace)
     ) as EDescendant<V>[];
   }
 };

@@ -246,7 +246,7 @@ describe('when stripWhitespace is true', () => {
       text: 'one two three',
     },
     {
-      text: 'hello one two three four',
+      text: 'hello     one two\nthree\nfour\n',
     },
     {
       text: '\nhello     one two\nthree\nfour\n',

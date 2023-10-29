@@ -6,8 +6,9 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 export const deserializeHtmlNodeChildren = <V extends Value>(
   editor: PlateEditor<V>,
-  node: HTMLElement | ChildNode
+  node: HTMLElement | ChildNode,
+  stripWhitespace: boolean
 ) =>
   Array.from(node.childNodes).flatMap(
-    deserializeHtmlNode(editor)
+    deserializeHtmlNode(editor, stripWhitespace)
   ) as DeserializeHtmlChildren<EDescendant<V>>[];

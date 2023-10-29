@@ -18,11 +18,12 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  */
 export const htmlElementToLeaf = <V extends Value>(
   editor: PlateEditor<V>,
-  element: HTMLElement
+  element: HTMLElement,
+  stripWhitespace = true
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);
 
-  return deserializeHtmlNodeChildren(editor, element).reduce(
+  return deserializeHtmlNodeChildren(editor, element, stripWhitespace).reduce(
     (arr: TDescendant[], child) => {
       if (!child) return arr;
 

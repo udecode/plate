@@ -1,10 +1,6 @@
 import { htmlTextNodeToString } from './htmlTextNodeToString';
-import { setStripWhitespace } from './stripWhitespaceConfig';
 
 describe('htmlTextNodeToString', () => {
-  beforeEach(() => {
-    setStripWhitespace(true);
-  });
 
   describe('when empty div element', () => {
     it('should be undefined', () => {
@@ -38,9 +34,7 @@ describe('htmlTextNodeToString', () => {
       const input = document.createTextNode('\n\n\ntest\n\ntest\n\n');
       const output = 'test\n\ntest';
 
-      setStripWhitespace(false);
-
-      expect(htmlTextNodeToString(input)).toEqual(output);
+      expect(htmlTextNodeToString(input, false)).toEqual(output);
     });
   });
 

@@ -13,11 +13,14 @@ import { isHtmlElement } from './isHtmlElement';
  * Deserialize HTML element or child node.
  */
 export const deserializeHtmlNode =
-  <V extends Value>(editor: PlateEditor<V>) =>
+  <V extends Value>(
+    editor: PlateEditor<V>,
+    stripWhitespace = true,
+  ) =>
   (
     node: HTMLElement | ChildNode
   ): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
-    const textNode = htmlTextNodeToString(node);
+    const textNode = htmlTextNodeToString(node, stripWhitespace);
     if (textNode) return textNode;
 
     if (!isHtmlElement(node)) return null;
@@ -27,13 +30,13 @@ export const deserializeHtmlNode =
     if (breakLine) return breakLine;
 
     // body
-    const fragment = htmlBodyToFragment(editor, node as HTMLElement);
+    const fragment = htmlBodyToFragment(editor, node as HTMLElement, stripWhitespace);
     if (fragment) return fragment;
 
     // element
-    const element = htmlElementToElement(editor, node as HTMLElement);
+    const element = htmlElementToElement(editor, node as HTMLElement, stripWhitespace);
     if (element) return element;
 
     // leaf
-    return htmlElementToLeaf(editor, node as HTMLElement);
+    return htmlElementToLeaf(editor, node as HTMLElement, stripWhitespace);
   };

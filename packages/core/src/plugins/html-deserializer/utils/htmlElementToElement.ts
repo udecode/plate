@@ -10,7 +10,8 @@ import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
  */
 export const htmlElementToElement = <V extends Value>(
   editor: PlateEditor<V>,
-  element: HTMLElement
+  element: HTMLElement,
+  stripWhitespace = true
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
 
@@ -19,7 +20,7 @@ export const htmlElementToElement = <V extends Value>(
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element) as TDescendant[]);
+      (deserializeHtmlNodeChildren(editor, element, stripWhitespace) as TDescendant[]);
     if (descendants.length === 0 || withoutChildren) {
       descendants = [{ text: '' }];
     }
