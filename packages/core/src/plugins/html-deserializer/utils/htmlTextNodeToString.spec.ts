@@ -1,7 +1,6 @@
 import { htmlTextNodeToString } from './htmlTextNodeToString';
 
 describe('htmlTextNodeToString', () => {
-
   describe('when empty div element', () => {
     it('should be undefined', () => {
       const input = document.createElement('div');

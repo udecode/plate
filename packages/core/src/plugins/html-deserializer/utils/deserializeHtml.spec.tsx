@@ -253,7 +253,7 @@ describe('when stripWhitespace is true', () => {
     },
     {
       text: '\nhello one two\nthree\nfour',
-    }
+    },
   ];
 
   it('should strip Whitespace by style', () => {

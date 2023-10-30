@@ -23,7 +23,11 @@ export const deserializeHtml = <V extends Value>(
     element = htmlStringToDOMNode(element);
   }
 
-  const fragment = deserializeHtmlElement(editor, element, stripWhitespace) as EDescendant<V>[];
+  const fragment = deserializeHtmlElement(
+    editor,
+    element,
+    stripWhitespace
+  ) as EDescendant<V>[];
 
   return normalizeDescendantsToDocumentFragment(editor, {
     descendants: fragment,

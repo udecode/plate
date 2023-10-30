@@ -3,11 +3,12 @@
  */
 import { isHtmlText } from './isHtmlText';
 
-function findParentElementWithWhiteSpace(node: HTMLElement | ChildNode): HTMLElement | null {
+function findParentElementWithWhiteSpace(
+  node: HTMLElement | ChildNode
+): HTMLElement | null {
   let parentNode = node.parentNode as HTMLElement;
 
   while (parentNode != null) {
-
     if (parentNode.nodeType === Node.ELEMENT_NODE) {
       const style = parentNode.style;
 
@@ -27,13 +28,13 @@ function findParentElementWithWhiteSpace(node: HTMLElement | ChildNode): HTMLEle
 
 // https://github.com/udecode/plate/pull/2718#discussion_r1375418430
 // Strip exactly one \n from the end of the text node
-const stripOneNewlineFromEnd = (str = '') => str.replace(/((?<!\n)\n(?!\n))$/g, '');
+const stripOneNewlineFromEnd = (str = '') => str.replaceAll(/(?<!\n)\n$/g, '');
 
 // Strip exactly one \n from the start of the text node
-const stripOneNewlineFromStart = (str = '') => str.replace(/^((?<!\n)\n(?!\n))/g, '');
+const stripOneNewlineFromStart = (str = '') => str.replaceAll(/^\n(?!\n)/g, '');
 
 const mergeWhitespace = (node: HTMLElement | ChildNode) => {
-  let parentNode = findParentElementWithWhiteSpace(node);
+  const parentNode = findParentElementWithWhiteSpace(node);
   if (!parentNode) return;
 
   let parentWhiteSpace = parentNode.style.whiteSpace;
@@ -44,7 +45,8 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
     // Strip exactly one \n from the start of the text node
     // Strip exactly one \n from the end of the text node
     node.textContent =
-      node.textContent && stripOneNewlineFromStart(stripOneNewlineFromEnd(node.textContent));
+      node.textContent &&
+      stripOneNewlineFromStart(stripOneNewlineFromEnd(node.textContent));
     return;
   }
 
@@ -66,16 +68,22 @@ const mergeWhitespace = (node: HTMLElement | ChildNode) => {
     // Strip exactly one \n from the end of the text node
     case 'pre-line': {
       node.textContent =
-        node.textContent && stripOneNewlineFromEnd(node.textContent.replaceAll(/[\t ]+/g, ' '));
+        node.textContent &&
+        stripOneNewlineFromEnd(node.textContent.replaceAll(/[\t ]+/g, ' '));
       break;
     }
-    case 'pre':
+    case 'pre': {
       node.textContent =
         node.textContent && stripOneNewlineFromEnd(node.textContent);
       break;
+    }
+    // eslint-disable-next-line unicorn/no-useless-switch-case
     case 'break-spaces':
+    // eslint-disable-next-line unicorn/no-useless-switch-case
     case 'pre-wrap':
+    // eslint-disable-next-line unicorn/no-useless-switch-case
     case 'revert': // "revert" and "revert-layer" are expected to be supported in the future.
+    // eslint-disable-next-line unicorn/no-useless-switch-case
     case 'revert-layer':
     default: {
       break;
@@ -88,7 +96,6 @@ export const htmlTextNodeToString = (
   stripWhitespace = true
 ) => {
   if (isHtmlText(node)) {
-
     if (stripWhitespace) {
       mergeWhitespace(node);
     } else {

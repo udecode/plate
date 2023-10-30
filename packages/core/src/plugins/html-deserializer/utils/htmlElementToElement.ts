@@ -20,7 +20,11 @@ export const htmlElementToElement = <V extends Value>(
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element, stripWhitespace) as TDescendant[]);
+      (deserializeHtmlNodeChildren(
+        editor,
+        element,
+        stripWhitespace
+      ) as TDescendant[]);
     if (descendants.length === 0 || withoutChildren) {
       descendants = [{ text: '' }];
     }
