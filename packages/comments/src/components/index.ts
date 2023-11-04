@@ -16,7 +16,6 @@ export * from './CommentsPositioner';
 export * from './useCommentAddButton';
 export * from './useCommentItemContent';
 export * from './useCommentLeaf';
-export * from './useCommentValue';
 export * from './useCommentsShowResolvedButton';
 export * from './useFloatingCommentsContentState';
 export * from './useFloatingCommentsState';
