@@ -264,4 +264,40 @@ describe('when stripWhitespace is true', () => {
 
     expect(convertedDocumentFragment).toEqual(expectedOutput);
   });
+
+  it('should strip Whitespace Normal start', () => {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
+      element: getHtmlDocument('<p><strong>Hello </strong> world</p>').body,
+      stripWhitespace: true,
+    });
+
+    expect(convertedDocumentFragment).toEqual([
+      { text: 'Hello ' },
+      { text: 'world' },
+    ]);
+  });
+
+  it('should strip Whitespace Normal end', () => {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
+      element: getHtmlDocument('<p><strong>Hello </strong>world </p>').body,
+      stripWhitespace: true,
+    });
+
+    expect(convertedDocumentFragment).toEqual([
+      { text: 'Hello ' },
+      { text: 'world' },
+    ]);
+  });
+
+  it('should strip Whitespace by <pre>', () => {
+    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
+      element: getHtmlDocument('<pre>\nhello     one two\nthree\nfour\n</pre>')
+        .body,
+      stripWhitespace: true,
+    });
+
+    expect(convertedDocumentFragment).toEqual([
+      { text: 'hello     one two\nthree\nfour' },
+    ]);
+  });
 });

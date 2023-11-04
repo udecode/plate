@@ -9,8 +9,7 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
  */
 export const deserializeHtmlElement = <V extends Value>(
   editor: PlateEditor<V>,
-  element: HTMLElement,
-  stripWhitespace = true
+  element: HTMLElement
 ): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
-  return deserializeHtmlNode(editor, stripWhitespace)(element);
+  return deserializeHtmlNode(editor)(element);
 };

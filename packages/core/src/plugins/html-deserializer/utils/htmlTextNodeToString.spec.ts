@@ -22,57 +22,18 @@ describe('htmlTextNodeToString', () => {
   describe('when text node with no characters except \n', () => {
     it('should be null', () => {
       const input = document.createTextNode('\n\n\n\n\n');
-      const output = null;
+      const output = '\n\n\n\n\n';
 
-      expect(htmlTextNodeToString(input, false)).toEqual(output);
+      expect(htmlTextNodeToString(input)).toEqual(output);
     });
   });
 
   describe('when text node with text and \n characters', () => {
     it('should strip \n characters from start and end', () => {
       const input = document.createTextNode('\n\n\ntest\n\ntest\n\n');
-      const output = 'test\n\ntest';
+      const output = '\n\n\ntest\n\ntest\n\n';
 
-      expect(htmlTextNodeToString(input, false)).toEqual(output);
-    });
-  });
-
-  describe('when htmlTextNodeToString', () => {
-    const text = `${'\n'} ${'\t'} hello     ${'\n'}world!`;
-    const baseInput = (whiteSpace): Text => {
-      const textNode = document.createTextNode(text);
-      const parentDom = document.createElement('div');
-      parentDom.style.whiteSpace = whiteSpace;
-
-      parentDom.append(textNode);
-
-      return textNode;
-    };
-
-    it('white-space: normal', () => {
-      expect(htmlTextNodeToString(baseInput('normal'))).toEqual(`hello world!`);
-    });
-
-    it('white-space: nowrap', () => {
-      expect(htmlTextNodeToString(baseInput('nowrap'))).toEqual(`hello world!`);
-    });
-
-    it('white-space: pre', () => {
-      expect(htmlTextNodeToString(baseInput('pre'))).toEqual(text);
-    });
-
-    it('white-space: pre-wrap', () => {
-      expect(htmlTextNodeToString(baseInput('pre-wrap'))).toEqual(text);
-    });
-
-    it('white-space: pre-line', () => {
-      expect(htmlTextNodeToString(baseInput('pre-line'))).toEqual(
-        `${'\n'} hello ${'\n'}world!`
-      );
-    });
-
-    it('white-space: break-spaces', () => {
-      expect(htmlTextNodeToString(baseInput('break-spaces'))).toEqual(text);
+      expect(htmlTextNodeToString(input)).toEqual(output);
     });
   });
 });
