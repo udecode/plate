@@ -107,10 +107,7 @@ apps
         │   └── plate-ui
 ```
 
-When adding or modifying components, please ensure that:
-
-1. You update the documentation.
-2. You run `yarn build:registry` to update the registry.
+When adding or modifying components, please ensure that you update the documentation.
 
 ## CLI
 
