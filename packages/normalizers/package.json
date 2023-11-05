@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-normalizers",
-  "version": "24.5.2",
+  "version": "25.0.0",
   "description": "Normalizer plugins for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "24.5.2",
+    "@udecode/plate-common": "25.0.0",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {

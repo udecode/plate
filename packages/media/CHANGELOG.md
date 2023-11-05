@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 25.0.0
+
+### Patch Changes
+
+- [#2719](https://github.com/udecode/plate/pull/2719) by [@12joan](https://github.com/12joan) – Pass additional options given to insertMedia to insertImage or insertMediaEmbed
+
 ## 24.5.2
 
 ## 24.4.0
