@@ -1,5 +1,5 @@
-import { isHtmlElement } from '../isHtmlElement';
 import { inlineTagNames } from './inlineTagNames';
+import { isHtmlElement } from './isHtmlElement';
 
 export const isHtmlInlineElement = (node: Node): boolean => {
   if (!isHtmlElement(node)) return false;

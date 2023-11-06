@@ -1,4 +1,4 @@
-import { isHtmlBlockElement } from './isHtmlBlockElement';
+import { isHtmlBlockElement } from '../isHtmlBlockElement';
 
 export const isLastNonEmptyTextOfInlineFormattingBlock = (
   initialText: Text

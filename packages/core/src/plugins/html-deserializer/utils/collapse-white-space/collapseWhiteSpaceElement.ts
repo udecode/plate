@@ -1,6 +1,6 @@
+import { isHtmlInlineElement } from '../isHtmlInlineElement';
 import { collapseWhiteSpaceChildren } from './collapseWhiteSpaceChildren';
 import { inferWhiteSpaceRule } from './inferWhiteSpaceRule';
-import { isHtmlInlineElement } from './isHtmlInlineElement';
 import { endInlineFormattingContext } from './stateTransforms';
 import { CollapseWhiteSpaceState } from './types';
 
