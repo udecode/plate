@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 25.0.0
+
+### Minor Changes
+
+- [#2719](https://github.com/udecode/plate/pull/2719) by [@12joan](https://github.com/12joan) – Add `removeEmpty: boolean | QueryNodeOptions` option to insertNodes
+
 ## 24.3.6
 
 ### Patch Changes

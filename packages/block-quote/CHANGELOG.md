@@ -1,5 +1,7 @@
 # @udecode/plate-block-quote
 
+## 25.0.0
+
 ## 24.5.2
 
 ## 24.4.0

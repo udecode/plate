@@ -1,5 +1,11 @@
 # @udecode/plate-comments
 
+## 25.0.0
+
+### Major Changes
+
+- [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
+
 ## 24.5.2
 
 ## 24.4.0
