@@ -88,7 +88,7 @@ describe('collapseWhiteSpace', () => {
   });
 
   describe('when inside an actual <pre> element', () => {
-    it('preserves whitespace, including newlines, except for newlines at start and end', () => {
+    it('preserves whitespace, including newlines, except for one newline at start and end', () => {
       const input = '<pre>\n\n\n  one  two\nthree  \n  \n\n</pre>';
       const expected = '<pre>\n\n  one  two\nthree  \n  \n</pre>';
       expectCollapsedWhiteSpace(input, expected);
@@ -102,7 +102,7 @@ describe('collapseWhiteSpace', () => {
   });
 
   describe('when `white-space: pre` is applied to a block element', () => {
-    it('preserves whitespace, including newlines, except for newlines at end', () => {
+    it('preserves whitespace, including newlines, except for one newline at end', () => {
       const input = '<div style="white-space: pre">\n  one  two\nthree  \n  \n\n\n\n</div>';
       const expected = '<div style="white-space: pre">\n  one  two\nthree  \n  \n\n\n</div>';
       expectCollapsedWhiteSpace(input, expected);
@@ -123,8 +123,82 @@ describe('collapseWhiteSpace', () => {
     });
   });
 
-  // TODO: When white-space: pre-line 
-  // TODO: Inline through display CSS property
-  // TODO: Block through display CSS property
-  // TODO: Other elements inside <pre>
+  // TODO: Explore what happens when a pre-line contains inline elements.
+  describe('when `white-space: pre-line` is applied to a block element', () => {
+    it('collapses horizontal whitespace', () => {
+      const input = '<div style="white-space: pre-line">Hello   world!</div>';
+      const expected = '<div style="white-space: pre-line">Hello world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('preserves newlines, except for one newline at end', () => {
+      const input = '<div style="white-space: pre-line">\n\n\n  one  two\nthree  \n  \n\n\n\n</div>';
+      const expected = '<div style="white-space: pre-line">\n\n\none two\nthree\n\n\n\n</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+  });
+
+  describe('when a div is made inline using CSS', () => {
+    it('inline div does not interrupt inline formatting context', () => {
+      const input = '<div>Hello<div style="display: inline"></div> world!</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('inline-block div does not interrupt inline formatting context', () => {
+      const input = '<div>Hello<div style="display: inline-block"></div> world!</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('inline-grid div does not interrupt inline formatting context', () => {
+      const input = '<div>Hello<div style="display: inline-grid"></div> world!</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('inline-flex div does not interrupt inline formatting context', () => {
+      const input = '<div>Hello<div style="display: inline-flex"></div> world!</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('inline flow div does not interrupt inline formatting context', () => {
+      const input = '<div>Hello<div style="display: inline flow"></div> world!</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+  });
+
+  describe('when a span is made block using CSS', () => {
+    it('block span does interrupt inline formatting context', () => {
+      const input = '<div>Hello<span style="display: block"></span> world!</div>';
+      const expected = '<div>Hello<span style="display: block"></span>world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('flex span does interrupt inline formatting context', () => {
+      const input = '<div>Hello<span style="display: flex"></span> world!</div>';
+      const expected = '<div>Hello<span style="display: flex"></span>world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('grid span does interrupt inline formatting context', () => {
+      const input = '<div>Hello<span style="display: grid"></span> world!</div>';
+      const expected = '<div>Hello<span style="display: grid"></span>world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('table span does interrupt inline formatting context', () => {
+      const input = '<div>Hello<span style="display: table"></span> world!</div>';
+      const expected = '<div>Hello<span style="display: table"></span>world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('block flow span does interrupt inline formatting context', () => {
+      const input = '<div>Hello<span style="display: block flow"></span> world!</div>';
+      const expected = '<div>Hello<span style="display: block flow"></span>world!</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+  });
 });
