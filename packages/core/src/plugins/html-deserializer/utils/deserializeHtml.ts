@@ -2,9 +2,9 @@ import { EDescendant, Value } from '@udecode/slate';
 
 import { PlateEditor } from '../../../types/PlateEditor';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
+import { collapseWhiteSpace } from './collapseWhiteSpace';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
-import { collapseWhiteSpace } from './collapseWhiteSpace';
 
 /**
  * Deserialize HTML element to a valid document fragment.

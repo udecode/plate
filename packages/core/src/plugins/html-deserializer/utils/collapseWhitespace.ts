@@ -45,7 +45,68 @@ import { isHtmlText } from './isHtmlText';
  *
  * Place the result in the array below (accurate as of 2023-11-06).
  */
-const inlineTags = ['A','ABBR','B','BDI','BDO','BR','CITE','CODE','DATA','DFN','EM','I','KBD','MARK','Q','S','SAMP','SMALL','SPAN','STRONG','SUB','SUP','TIME','U','VAR','WBR','IMG','MAP','TRACK','VIDEO','EMBED','IFRAME','OBJECT','PICTURE','PORTAL','SOURCE','svg','math','CANVAS','DEL','INS','BUTTON','INPUT','LABEL','METER','OUTPUT','PROGRESS','SELECT','TEXTAREA','ACRONYM','BIG','CONTENT','FONT','IMG','MARQUEE','MENUITEM','NOBR','SHADOW','STRIKE','TT'];
+const inlineTags = new Set([
+  'A',
+  'ABBR',
+  'B',
+  'BDI',
+  'BDO',
+  'BR',
+  'CITE',
+  'CODE',
+  'DATA',
+  'DFN',
+  'EM',
+  'I',
+  'KBD',
+  'MARK',
+  'Q',
+  'S',
+  'SAMP',
+  'SMALL',
+  'SPAN',
+  'STRONG',
+  'SUB',
+  'SUP',
+  'TIME',
+  'U',
+  'VAR',
+  'WBR',
+  'IMG',
+  'MAP',
+  'TRACK',
+  'VIDEO',
+  'EMBED',
+  'IFRAME',
+  'OBJECT',
+  'PICTURE',
+  'PORTAL',
+  'SOURCE',
+  'svg',
+  'math',
+  'CANVAS',
+  'DEL',
+  'INS',
+  'BUTTON',
+  'INPUT',
+  'LABEL',
+  'METER',
+  'OUTPUT',
+  'PROGRESS',
+  'SELECT',
+  'TEXTAREA',
+  'ACRONYM',
+  'BIG',
+  'CONTENT',
+  'FONT',
+  'IMG',
+  'MARQUEE',
+  'MENUITEM',
+  'NOBR',
+  'SHADOW',
+  'STRIKE',
+  'TT',
+]);
 
 /**
  * Actual <pre> elements are treated differently, so track these as a separate
@@ -91,11 +152,14 @@ const collapseWhiteSpaceNode = (node: Node, state: CollapseWhiteSpaceState) => {
     collapseWhiteSpaceText(node as Text, state);
     return;
   }
-     
-  collapseWhiteSpaceChildren(node, state);
-}
 
-const collapseWhiteSpaceChildren = (node: Node, state: CollapseWhiteSpaceState) => {
+  collapseWhiteSpaceChildren(node, state);
+};
+
+const collapseWhiteSpaceChildren = (
+  node: Node,
+  state: CollapseWhiteSpaceState
+) => {
   const childNodes = Array.from(node.childNodes);
 
   for (const childNode of childNodes) {
@@ -103,7 +167,10 @@ const collapseWhiteSpaceChildren = (node: Node, state: CollapseWhiteSpaceState) 
   }
 };
 
-const collapseWhiteSpaceElement = (element: HTMLElement, state: CollapseWhiteSpaceState) => {
+const collapseWhiteSpaceElement = (
+  element: HTMLElement,
+  state: CollapseWhiteSpaceState
+) => {
   const isInlineElement = isHtmlInlineElement(element);
   const previousWhiteSpaceRule = state.whiteSpaceRule;
   const inferredWhiteSpaceRule = inferWhiteSpaceRule(element);
@@ -158,7 +225,8 @@ const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
       !state.inlineFormattingContext ||
       state.inlineFormattingContext.atStart ||
       state.inlineFormattingContext.lastHasTrailingWhiteSpace
-    ) return 'all';
+    )
+      return 'all';
 
     return 'collapse';
   })();
@@ -170,7 +238,7 @@ const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
     'pre-line': 'single-newline' as const,
   }[whiteSpaceRule];
 
-  const collapseWhiteSpace: boolean = {
+  const shouldCollapseWhiteSpace: boolean = {
     normal: true,
     'actual-pre': false,
     pre: false,
@@ -182,29 +250,33 @@ const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
   const collapsedTextContent = collapseString(textContent || '', {
     trimStart,
     trimEnd,
-    collapseWhiteSpace,
+    shouldCollapseWhiteSpace,
     whiteSpaceIncludesNewlines,
   });
 
-  if (state.inlineFormattingContext && collapseWhiteSpace) {
-    state.inlineFormattingContext.lastHasTrailingWhiteSpace = collapsedTextContent.endsWith(' ');
+  if (state.inlineFormattingContext && shouldCollapseWhiteSpace) {
+    state.inlineFormattingContext.lastHasTrailingWhiteSpace =
+      collapsedTextContent.endsWith(' ');
   }
 
   text.textContent = collapsedTextContent;
 };
 
 // Utilities
-const collapseString = (text: string, {
-  trimStart = 'collapse',
-  trimEnd = 'collapse',
-  collapseWhiteSpace = true,
-  whiteSpaceIncludesNewlines = true,
-}: {
-  trimStart?: TrimStartRule;
-  trimEnd?: TrimEndRule;
-  collapseWhiteSpace?: boolean;
-  whiteSpaceIncludesNewlines?: boolean;
-} = {}) => {
+const collapseString = (
+  text: string,
+  {
+    trimStart = 'collapse',
+    trimEnd = 'collapse',
+    shouldCollapseWhiteSpace = true,
+    whiteSpaceIncludesNewlines = true,
+  }: {
+    trimStart?: TrimStartRule;
+    trimEnd?: TrimEndRule;
+    shouldCollapseWhiteSpace?: boolean;
+    whiteSpaceIncludesNewlines?: boolean;
+  } = {}
+) => {
   if (trimStart === 'all') {
     text = text.replace(/^\s+/, '');
   }
@@ -214,19 +286,19 @@ const collapseString = (text: string, {
     text = text.replace(/\n$/, '');
   }
 
-  if (collapseWhiteSpace) {
+  if (shouldCollapseWhiteSpace) {
     if (whiteSpaceIncludesNewlines) {
-      text = text.replace(/\s+/g, ' ');
+      text = text.replaceAll(/\s+/g, ' ');
     } else {
       // Collapse horizontal whitespace
-      text = text.replace(/[^\S\r\n]+/g, ' ');
+      text = text.replaceAll(/[^\S\n\r]+/g, ' ');
 
       /**
        * Trim horizontal whitespace from the start and end of lines (behavior
        * of pre-line).
        */
-      text = text.replace(/^[^\S\r\n]+/gm, '');
-      text = text.replace(/[^\S\r\n]+$/gm, '');
+      text = text.replaceAll(/^[^\S\n\r]+/gm, '');
+      text = text.replaceAll(/[^\S\n\r]+$/gm, '');
     }
   }
 
@@ -238,14 +310,17 @@ const inferWhiteSpaceRule = (element: HTMLElement): WhiteSpaceRule | null => {
 
   switch (whiteSpaceProperty) {
     case 'normal':
-    case 'nowrap':
+    case 'nowrap': {
       return 'normal';
+    }
     case 'pre':
     case 'pre-wrap':
-    case 'break-spaces':
+    case 'break-spaces': {
       return 'pre';
-    case 'pre-line':
+    }
+    case 'pre-line': {
       return 'pre-line';
+    }
   }
 
   if (element.tagName === 'PRE') {
@@ -260,7 +335,7 @@ const inferWhiteSpaceRule = (element: HTMLElement): WhiteSpaceRule | null => {
 };
 
 const isHtmlInlineElement = (element: HTMLElement): boolean => {
-  const tagNameIsInline = inlineTags.includes(element.tagName);
+  const tagNameIsInline = inlineTags.has(element.tagName);
 
   /**
    * Valid display values include 'inline flow'. We only care about the first
@@ -288,7 +363,11 @@ const isHtmlInlineElement = (element: HTMLElement): boolean => {
    * parsed. However, if such elements are parsed, it's best for their inline
    * or block status to be left unchanged.
    */
-  if (['initial', 'unset', 'revert', 'revert-layer', 'contents', 'none'].includes(displayProperty)) {
+  if (
+    ['initial', 'unset', 'revert', 'revert-layer', 'contents', 'none'].includes(
+      displayProperty
+    )
+  ) {
     return tagNameIsInline;
   }
 

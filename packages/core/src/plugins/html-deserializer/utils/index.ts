@@ -8,6 +8,7 @@ export * from './cleanHtmlEmptyElements';
 export * from './cleanHtmlFontElements';
 export * from './cleanHtmlLinkElements';
 export * from './cleanHtmlTextNodes';
+export * from './collapseWhiteSpace';
 export * from './copyBlockMarksToSpanChild';
 export * from './deserializeHtml';
 export * from './deserializeHtmlElement';
