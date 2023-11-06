@@ -21,7 +21,7 @@ export const inferWhiteSpaceRule = (
   }
 
   if (element.tagName === 'PRE') {
-    return 'actual-pre';
+    return 'pre';
   }
 
   if (whiteSpaceProperty === 'initial') {

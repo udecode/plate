@@ -46,7 +46,6 @@ export const collapseWhiteSpaceText = (
 
   const shouldCollapseWhiteSpace: boolean = {
     normal: true,
-    'actual-pre': false,
     pre: false,
     'pre-line': true,
   }[whiteSpaceRule];
