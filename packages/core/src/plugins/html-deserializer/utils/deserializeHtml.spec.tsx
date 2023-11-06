@@ -34,8 +34,8 @@ import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;
 
-describe('when stripWhitespace is false', () => {
-  const html = `<blockquote>test \n code</blockquote>`;
+describe('when collapseWhitespace is false', () => {
+  const html = '<blockquote>test \n code</blockquote>';
   const element = getHtmlDocument(html).body.innerHTML;
 
   const expectedOutput = [{ text: 'test \n code' }];
@@ -43,7 +43,7 @@ describe('when stripWhitespace is false', () => {
   it('should have the break line', () => {
     const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
       element,
-      stripWhitespace: false,
+      collapseWhiteSpace: false,
     });
 
     expect(convertedDocumentFragment).toEqual(expectedOutput);

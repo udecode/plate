@@ -231,12 +231,11 @@ const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
     return 'collapse';
   })();
 
-  const trimEnd: TrimEndRule = {
-    normal: 'collapse' as const,
-    'actual-pre': 'single-newline' as const,
-    pre: 'single-newline' as const,
-    'pre-line': 'single-newline' as const,
-  }[whiteSpaceRule];
+  const trimEnd: TrimEndRule = (() => {
+    if (whiteSpaceRule === 'normal') return 'collapse';
+    if (isLastNonEmptyTextOfInlineFormattingBlock(text)) return 'single-newline';
+    return 'collapse';
+  })();
 
   const shouldCollapseWhiteSpace: boolean = {
     normal: true,
@@ -334,7 +333,10 @@ const inferWhiteSpaceRule = (element: HTMLElement): WhiteSpaceRule | null => {
   return null;
 };
 
-const isHtmlInlineElement = (element: HTMLElement): boolean => {
+const isHtmlInlineElement = (node: Node): boolean => {
+  if (!isHtmlElement(node)) return false;
+  const element = node as HTMLElement;
+
   const tagNameIsInline = inlineTags.has(element.tagName);
 
   /**
@@ -372,6 +374,50 @@ const isHtmlInlineElement = (element: HTMLElement): boolean => {
   }
 
   return false;
+};
+
+const isHtmlBlockElement = (node: Node): boolean => {
+  if (!isHtmlElement(node)) return false;
+  const element = node as HTMLElement;
+  return !isHtmlInlineElement(element);
+};
+
+const isLastNonEmptyTextOfInlineFormattingBlock = (
+  initialText: Text,
+): boolean => {
+  let currentNode: Node | null = initialText;
+
+  while (true) {
+    if (currentNode.nextSibling) {
+      currentNode = currentNode.nextSibling;
+    } else {
+      // If there is no next sibling, ascend to the parent node
+      currentNode = currentNode.parentElement;
+      // If the parent node is a block, we've reached the end
+      if (currentNode && isHtmlBlockElement(currentNode)) {
+        return true;
+      }
+      // Otherwise, continue to the next sibling of the parent node
+      currentNode = currentNode?.nextSibling || null;
+    }
+
+    // If there's no next node, we've reached the end
+    if (!currentNode) {
+      return true;
+    }
+
+    // If the next node is a block, we've reached the end
+    if (isHtmlBlockElement(currentNode)) {
+      return true;
+    }
+
+    // If the next node is a non-empty text node, we're not at the end
+    if ((currentNode.textContent || '').length > 0) {
+      return false;
+    }
+
+    // Otherwise, continue to the next node
+  }
 };
 
 // State transforms

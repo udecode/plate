@@ -95,9 +95,51 @@ describe('collapseWhiteSpace', () => {
       expectCollapsedWhiteSpace(input, expected);
     });
 
-    it('removes single newline at start and end', () => {
-      const input = '<pre>\nhello world\n</pre>';
+    it('removes single newline at start of <pre> element', () => {
+      const input = '<pre>\nhello world</pre>';
       const expected = '<pre>hello world</pre>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('does not remove single newline in first text node of <pre> element if not a direct child', () => {
+      const input = '<pre><span>\nhello</span> world</pre>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single newline at end of <pre> element', () => {
+      const input = '<pre>hello world\n</pre>';
+      const expected = '<pre>hello world</pre>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single new line at the end of nested inline formatting context', () => {
+      const input = '<pre><div>hello world\n</div>x\n</pre>';
+      const expected = '<pre><div>hello world</div>x</pre>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('does not remove single newline at the start of nested blocks', () => {
+      const input = '<pre><div>\nhello world</div></pre>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('does not remove single newline when not at the end of some inline formatting context', () => {
+      const input = '<pre><span>hello world\n</span> </pre>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single newline at the end of inline formatting context: case 1', () => {
+      const input = '<pre><span>hello world\n</span><span></span></pre>';
+      const expected = '<pre><span>hello world</span><span></span></pre>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single newline at the end of inline formatting context: case 2', () => {
+      const input = '<pre><span>hello world\n</span><div></div>x</pre>';
+      const expected = '<pre><span>hello world</span><div></div>x</pre>';
       expectCollapsedWhiteSpace(input, expected);
     });
   });
@@ -111,9 +153,27 @@ describe('collapseWhiteSpace', () => {
       expectCollapsedWhiteSpace(input, expected);
     });
 
-    it('removes single newline at end', () => {
+    it('removes single newline at end of top-level block', () => {
       const input = '<div style="white-space: pre">\nhello world\n</div>';
       const expected = '<div style="white-space: pre">\nhello world</div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single new line at the end of nested inline formatting context', () => {
+      const input = '<div style="white-space: pre"><div>hello world\n</div>\n</div>';
+      const expected = '<div style="white-space: pre"><div>hello world</div></div>';
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('does not remove single newline when not at the end of some inline formatting context', () => {
+      const input = '<div style="white-space: pre"><span>hello world\n</span>x</div>';
+      const expected = input;
+      expectCollapsedWhiteSpace(input, expected);
+    });
+
+    it('removes single newline at the end of some inline formatting block', () => {
+      const input = '<div style="white-space: pre"><span>hello world\n</span><span></span></div>';
+      const expected = '<div style="white-space: pre"><span>hello world</span><span></span></div>';
       expectCollapsedWhiteSpace(input, expected);
     });
   });
