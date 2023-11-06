@@ -20,7 +20,7 @@ export const deserializeHtml = <V extends Value>(
 ): EDescendant<V>[] => {
   // for serializer
   if (typeof element === 'string') {
-    element = htmlStringToDOMNode(element, stripWhitespace);
+    element = htmlStringToDOMNode(element);
   }
 
   const fragment = deserializeHtmlElement(editor, element) as EDescendant<V>[];
