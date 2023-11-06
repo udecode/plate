@@ -1,74 +1,70 @@
 import { isHtmlElement } from './isHtmlElement';
-import {isHtmlText} from './isHtmlText';
+import { isHtmlText } from './isHtmlText';
 
-const isHtmlInlineElement = (element: HTMLElement) => {
-  // TODO: Proper implementation
-  const inlineTags = ['SPAN', 'A', 'B', 'I', 'EM', 'STRONG', 'S', 'U', 'CODE'];
-  return inlineTags.includes(element.tagName);
-};
+/**
+ * Actual <pre> elements are treated differently, so track these as a separate
+ * rule.
+ */
+type WhiteSpaceRule = 'normal' | 'actual-pre' | 'pre' | 'pre-line';
 
-type CollapseWhitespaceState = {
+type TrimStartRule = 'collapse' | 'all';
+type TrimEndRule = 'collapse' | 'single-newline';
+
+type CollapseWhiteSpaceState = {
   inlineFormattingContext: null | {
     atStart: boolean;
-    lastHasTrailingWhitespace: boolean;
+    lastHasTrailingWhiteSpace: boolean;
   };
-};
 
-// State transforms
-const upsertInlineFormattingContext = (state: CollapseWhitespaceState) => {
-  if (state.inlineFormattingContext) {
-    state.inlineFormattingContext.atStart = false;
-  } else {
-    state.inlineFormattingContext = {
-      atStart: true,
-      lastHasTrailingWhitespace: false,
-    };
-  }
-};
-
-const endInlineFormattingContext = (state: CollapseWhitespaceState) => {
-  state.inlineFormattingContext = null;
+  whiteSpaceRule: WhiteSpaceRule;
 };
 
 // Entrypoint
-export const collapseWhitespace = (element: HTMLElement) => {
+export const collapseWhiteSpace = (element: HTMLElement) => {
   const clonedElement = element.cloneNode(true) as HTMLElement;
 
   // Mutable state object
-  const state: CollapseWhitespaceState = {
+  const state: CollapseWhiteSpaceState = {
     inlineFormattingContext: null,
+    whiteSpaceRule: 'normal',
   };
 
-  collapseWhitespaceElement(clonedElement, state);
+  collapseWhiteSpaceElement(clonedElement, state);
 
   return clonedElement;
 };
 
 // Recursive functions
-const collapseWhitespaceNode = (node: Node, state: CollapseWhitespaceState) => {
+const collapseWhiteSpaceNode = (node: Node, state: CollapseWhiteSpaceState) => {
   if (isHtmlElement(node)) {
-    collapseWhitespaceElement(node as HTMLElement, state);
+    collapseWhiteSpaceElement(node as HTMLElement, state);
     return;
   }
 
   if (isHtmlText(node)) {
-    collapseWhitespaceText(node as Text, state);
+    collapseWhiteSpaceText(node as Text, state);
     return;
   }
      
-  collapseWhitespaceChildren(node, state);
+  collapseWhiteSpaceChildren(node, state);
 }
 
-const collapseWhitespaceChildren = (node: Node, state: CollapseWhitespaceState) => {
+const collapseWhiteSpaceChildren = (node: Node, state: CollapseWhiteSpaceState) => {
   const childNodes = Array.from(node.childNodes);
 
   for (const childNode of childNodes) {
-    collapseWhitespaceNode(childNode, state);
+    collapseWhiteSpaceNode(childNode, state);
   }
 };
 
-const collapseWhitespaceElement = (element: HTMLElement, state: CollapseWhitespaceState) => {
+const collapseWhiteSpaceElement = (element: HTMLElement, state: CollapseWhiteSpaceState) => {
   const isInlineElement = isHtmlInlineElement(element);
+  const previousWhiteSpaceRule = state.whiteSpaceRule;
+  const inferredWhiteSpaceRule = inferWhiteSpaceRule(element);
+
+  if (inferredWhiteSpaceRule) {
+    state.whiteSpaceRule = inferredWhiteSpaceRule;
+  }
 
   /**
    * Note: We do not want to start an inline formatting context until we
@@ -80,29 +76,72 @@ const collapseWhitespaceElement = (element: HTMLElement, state: CollapseWhitespa
     endInlineFormattingContext(state);
   }
 
-  collapseWhitespaceChildren(element, state);
+  collapseWhiteSpaceChildren(element, state);
 
   // Do not let inline formatting context break out of block elements
   if (!isInlineElement) {
     endInlineFormattingContext(state);
   }
+
+  // Restore previous whiteSpaceRule
+  state.whiteSpaceRule = previousWhiteSpaceRule;
 };
 
-const collapseWhitespaceText = (text: Text, state: CollapseWhitespaceState) => {
+const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
   const textContent = text.textContent || '';
-  const isWhitespaceOnly = textContent.trim() === '';
+  const isWhiteSpaceOnly = textContent.trim() === '';
 
-  // Do not start an inline formatting context with a whitespace-only text node
-  if (state.inlineFormattingContext || !isWhitespaceOnly) {
+  // Do not start an inline formatting context with a whiteSpace-only text node
+  if (state.inlineFormattingContext || !isWhiteSpaceOnly) {
     upsertInlineFormattingContext(state);
   }
 
+  const { whiteSpaceRule } = state;
+
+  /**
+   * Note: Due to the way HTML strings are parsed in htmlStringToDOMNode, up to
+   * one newline is already trimmed from the start of text nodes inside <pre>
+   * elements. If we do so again here, we may remove too many newlines. This
+   * only applies to actual <pre> elements, not elements with the white-space
+   * CSS property.
+   */
+  const trimStart: TrimStartRule = (() => {
+    if (whiteSpaceRule !== 'normal') return 'collapse';
+
+    if (
+      !state.inlineFormattingContext ||
+      state.inlineFormattingContext.atStart ||
+      state.inlineFormattingContext.lastHasTrailingWhiteSpace
+    ) return 'all';
+
+    return 'collapse';
+  })();
+
+  const trimEnd: TrimEndRule = {
+    normal: 'collapse' as const,
+    'actual-pre': 'single-newline' as const,
+    pre: 'single-newline' as const,
+    'pre-line': 'single-newline' as const,
+  }[whiteSpaceRule];
+
+  const collapseWhiteSpace: boolean = {
+    normal: true,
+    'actual-pre': false,
+    pre: false,
+    'pre-line': true,
+  }[whiteSpaceRule];
+
+  const whiteSpaceIncludesNewlines = whiteSpaceRule !== 'pre-line';
+
   const collapsedTextContent = collapseString(textContent || '', {
-    trimStart: state.inlineFormattingContext?.atStart || state.inlineFormattingContext?.lastHasTrailingWhitespace,
+    trimStart,
+    trimEnd,
+    collapseWhiteSpace,
+    whiteSpaceIncludesNewlines,
   });
 
-  if (state.inlineFormattingContext && collapsedTextContent.endsWith(' ')) {
-    state.inlineFormattingContext.lastHasTrailingWhitespace = true;
+  if (state.inlineFormattingContext && collapseWhiteSpace) {
+    state.inlineFormattingContext.lastHasTrailingWhiteSpace = collapsedTextContent.endsWith(' ');
   }
 
   text.textContent = collapsedTextContent;
@@ -110,21 +149,77 @@ const collapseWhitespaceText = (text: Text, state: CollapseWhitespaceState) => {
 
 // Utilities
 const collapseString = (text: string, {
-  trimStart = true,
-  trimEnd = false,
+  trimStart = 'collapse',
+  trimEnd = 'collapse',
+  collapseWhiteSpace = true,
+  whiteSpaceIncludesNewlines = true,
 }: {
-  trimStart?: boolean;
-  trimEnd?: boolean;
+  trimStart?: TrimStartRule;
+  trimEnd?: TrimEndRule;
+  collapseWhiteSpace?: boolean;
+  whiteSpaceIncludesNewlines?: boolean;
 } = {}) => {
-  if (trimStart) {
-    text = text.replace(/^\s+/g, '');
+  if (trimStart === 'all') {
+    text = text.replace(/^\s+/, '');
   }
 
-  if (trimEnd) {
-    text = text.replace(/\s+$/g, '');
+  if (trimEnd === 'single-newline') {
+    // Strip at most one newline from the end
+    text = text.replace(/\n$/, '');
   }
 
-  text = text.replace(/\s+/g, ' ');
+  if (collapseWhiteSpace) {
+    const whiteSpaceRegex = whiteSpaceIncludesNewlines ? /\s+/g : /[^\S\r\n]+/g;
+    text = text.replace(whiteSpaceRegex, ' ');
+  }
 
   return text;
+};
+
+const isHtmlInlineElement = (element: HTMLElement) => {
+  // TODO: Proper implementation
+  const inlineTags = ['SPAN', 'A', 'B', 'I', 'EM', 'STRONG', 'S', 'U', 'CODE'];
+  return inlineTags.includes(element.tagName);
+};
+
+const inferWhiteSpaceRule = (element: HTMLElement): WhiteSpaceRule | null => {
+  const whiteSpaceProperty = element.style.whiteSpace;
+
+  switch (whiteSpaceProperty) {
+    case 'normal':
+    case 'nowrap':
+      return 'normal';
+    case 'pre':
+    case 'pre-wrap':
+    case 'break-spaces':
+      return 'pre';
+    case 'pre-line':
+      return 'pre-line';
+  }
+
+  if (element.tagName === 'PRE') {
+    return 'actual-pre';
+  }
+
+  if (whiteSpaceProperty === 'initial') {
+    return 'normal';
+  }
+
+  return null;
+};
+
+// State transforms
+const upsertInlineFormattingContext = (state: CollapseWhiteSpaceState) => {
+  if (state.inlineFormattingContext) {
+    state.inlineFormattingContext.atStart = false;
+  } else {
+    state.inlineFormattingContext = {
+      atStart: true,
+      lastHasTrailingWhiteSpace: false,
+    };
+  }
+};
+
+const endInlineFormattingContext = (state: CollapseWhiteSpaceState) => {
+  state.inlineFormattingContext = null;
 };

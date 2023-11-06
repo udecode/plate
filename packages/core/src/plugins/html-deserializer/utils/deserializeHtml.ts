@@ -4,7 +4,7 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
-import { collapseWhitespace } from './collapseWhitespace';
+import { collapseWhiteSpace } from './collapseWhiteSpace';
 
 /**
  * Deserialize HTML element to a valid document fragment.
@@ -13,10 +13,10 @@ export const deserializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
     element,
-    collapseWhitespace: shouldCollapseWhitespace = true,
+    collapseWhiteSpace: shouldCollapseWhiteSpace = true,
   }: {
     element: HTMLElement | string;
-    collapseWhitespace?: boolean;
+    collapseWhiteSpace?: boolean;
   }
 ): EDescendant<V>[] => {
   // for serializer
@@ -24,8 +24,8 @@ export const deserializeHtml = <V extends Value>(
     element = htmlStringToDOMNode(element);
   }
 
-  if (shouldCollapseWhitespace) {
-    element = collapseWhitespace(element);
+  if (shouldCollapseWhiteSpace) {
+    element = collapseWhiteSpace(element);
   }
 
   const fragment = deserializeHtmlElement(editor, element) as EDescendant<V>[];
