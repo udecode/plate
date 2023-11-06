@@ -1,5 +1,5 @@
+import { htmlStringToDOMNode } from '../htmlStringToDOMNode';
 import { collapseWhiteSpace } from './collapseWhiteSpace';
-import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
 const expectCollapsedWhiteSpace = (input: string, expected: string) => {
   const element = htmlStringToDOMNode(input);

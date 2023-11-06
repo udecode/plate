@@ -2,7 +2,7 @@ import { EDescendant, Value } from '@udecode/slate';
 
 import { PlateEditor } from '../../../types/PlateEditor';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
-import { collapseWhiteSpace } from './collapseWhiteSpace';
+import { collapseWhiteSpace } from './collapse-white-space';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
