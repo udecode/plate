@@ -233,7 +233,8 @@ const collapseWhiteSpaceText = (text: Text, state: CollapseWhiteSpaceState) => {
 
   const trimEnd: TrimEndRule = (() => {
     if (whiteSpaceRule === 'normal') return 'collapse';
-    if (isLastNonEmptyTextOfInlineFormattingBlock(text)) return 'single-newline';
+    if (isLastNonEmptyTextOfInlineFormattingBlock(text))
+      return 'single-newline';
     return 'collapse';
   })();
 
@@ -383,7 +384,7 @@ const isHtmlBlockElement = (node: Node): boolean => {
 };
 
 const isLastNonEmptyTextOfInlineFormattingBlock = (
-  initialText: Text,
+  initialText: Text
 ): boolean => {
   let currentNode: Node | null = initialText;
 
