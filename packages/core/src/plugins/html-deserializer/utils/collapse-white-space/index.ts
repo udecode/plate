@@ -9,6 +9,6 @@ export * from './collapseWhiteSpaceElement';
 export * from './collapseWhiteSpaceNode';
 export * from './collapseWhiteSpaceText';
 export * from './inferWhiteSpaceRule';
-export * from './isLastNonEmptyTextOfInlineFormattingBlock';
+export * from './isLastNonEmptyTextOfInlineFormattingContext';
 export * from './stateTransforms';
 export * from './types';

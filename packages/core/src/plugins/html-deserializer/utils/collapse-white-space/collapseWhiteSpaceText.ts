@@ -1,5 +1,5 @@
 import { collapseString } from './collapseString';
-import { isLastNonEmptyTextOfInlineFormattingBlock } from './isLastNonEmptyTextOfInlineFormattingBlock';
+import { isLastNonEmptyTextOfInlineFormattingContext } from './isLastNonEmptyTextOfInlineFormattingContext';
 import { upsertInlineFormattingContext } from './stateTransforms';
 import { CollapseWhiteSpaceState, TrimEndRule, TrimStartRule } from './types';
 
@@ -10,7 +10,10 @@ export const collapseWhiteSpaceText = (
   const textContent = text.textContent || '';
   const isWhiteSpaceOnly = textContent.trim() === '';
 
-  // Do not start an inline formatting context with a whiteSpace-only text node
+  /**
+   * Do not start an inline formatting context with a text node containing
+   * only white space.
+   */
   if (state.inlineFormattingContext || !isWhiteSpaceOnly) {
     upsertInlineFormattingContext(state);
   }
@@ -39,7 +42,7 @@ export const collapseWhiteSpaceText = (
 
   const trimEnd: TrimEndRule = (() => {
     if (whiteSpaceRule === 'normal') return 'collapse';
-    if (isLastNonEmptyTextOfInlineFormattingBlock(text))
+    if (isLastNonEmptyTextOfInlineFormattingContext(text))
       return 'single-newline';
     return 'collapse';
   })();

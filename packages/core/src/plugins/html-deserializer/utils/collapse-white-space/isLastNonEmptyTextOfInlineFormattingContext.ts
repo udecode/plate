@@ -1,6 +1,6 @@
 import { isHtmlBlockElement } from '../isHtmlBlockElement';
 
-export const isLastNonEmptyTextOfInlineFormattingBlock = (
+export const isLastNonEmptyTextOfInlineFormattingContext = (
   initialText: Text
 ): boolean => {
   let currentNode: Node | null = initialText;
