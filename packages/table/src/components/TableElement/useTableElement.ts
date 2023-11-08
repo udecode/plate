@@ -3,14 +3,15 @@ import {
   collapseSelection,
   findNodePath,
   getNode,
+  getParentNode,
   getPluginOptions,
+  PlateEditor,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores/tableStore';
 import {
   TablePlugin,
@@ -97,6 +98,11 @@ export const useTableElement = () => {
   };
 };
 
+const cellAttributes = new WeakMap<
+  TTableCellElement,
+  { row: number; col: number }
+>();
+
 function getCellIndices(
   editor: PlateEditor,
   tableEl: TTableElement,
@@ -110,65 +116,40 @@ function getCellIndices(
 
   for (let r = 0; r < tableNodes.length; r++) {
     const row = tableNodes[r] as TTableRowElement;
-    // console.log('row.type', row.type);
-    // if (row.type === 'tr') {
-    rowIndex++;
 
     let cIndex = 0;
     for (let c = 0; c < row.children.length; c++) {
       const cell = row.children[c] as TTableCellElement;
-      // console.log('current cell', cell);
-      // console.log('cell.type', cell.type);
-      // if (cell.type === 'th') {
       const curCellPath = [r, c];
-      // const curCellPath = findNodePath(editor, cell)!;
-
       if (Path.equals(curCellPath, cellPath)) {
-        // colIndex = cIndex;
-        console.log('early break', cIndex);
+        colIndex = cIndex;
+        rowIndex = r;
         break;
       }
       cIndex += cell.colSpan || 1; // consider 0 and undefined as 1
-      console.log('incrementing cell index,', cIndex);
-      // }
-    }
-
-    // If target cell is not in this row, but the rowSpan from previous rows is impacting
-    // the colIndex for the next row, then increment manually
-    if (rowIndex >= 1) {
-      console.log('tableNodes', tableNodes, 'rowIndex', rowIndex);
-      tableNodes.slice(0, rowIndex).forEach((pR, _rowIndex) => {
-        const prevRow = pR as TTableRowElement;
-        console.log('current row', row, 'prevRow', prevRow);
-
-        prevRow.children.forEach((pC) => {
-          const prevCell = pC as TTableCellElement;
-          console.log('prevCell', prevCell);
-          if (
-            prevCell.rowSpan &&
-            prevCell.rowSpan > 1 &&
-            rowIndex - _rowIndex < prevCell.rowSpan
-          ) {
-            cIndex += prevCell.colSpan || 1;
-            console.log(
-              'increment by affected row span:',
-              _rowIndex,
-              cIndex,
-              cellPath
-            );
-          }
-        });
-      });
-    }
-    // }
-
-    if (colIndex !== -1) {
-      // Break once we've found the target cell
-      colIndex = cIndex;
-      console.log('breaking, we found cell');
-      break;
     }
   }
+
+  tableNodes.slice(0, rowIndex).forEach((pR, _rowIndex) => {
+    const prevRow = pR as TTableRowElement;
+    prevRow.children.forEach((pC) => {
+      const prevCell = pC as TTableCellElement;
+      const prevIndices = cellAttributes.get(prevCell);
+      if (prevIndices) {
+        const { col: prevColIndex } = prevIndices;
+        if (
+          // colIndex affects
+          prevColIndex <= colIndex &&
+          // rowSpan affects
+          prevCell.rowSpan &&
+          prevCell.rowSpan > 1 &&
+          rowIndex - _rowIndex < prevCell.rowSpan
+        ) {
+          colIndex += prevCell.colSpan || 1;
+        }
+      }
+    });
+  });
 
   if (rowIndex === -1 || colIndex === -1) {
     console.log('Invalid cell location.');
@@ -212,6 +193,9 @@ const calculateCellIndexes = (
       );
 
       const indices = getCellIndices(editor, tableNode, tablePath, cellPath);
+      if (indices) {
+        cellAttributes.set(cell, indices);
+      }
       rowIndicesArray.push(indices);
     }
 

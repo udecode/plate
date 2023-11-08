@@ -2,25 +2,17 @@ import { useEffect } from 'react';
 import {
   findNodePath,
   getPluginOptions,
-  PlateEditor,
   unsetNodes,
   useEditorRef,
 } from '@udecode/plate-common';
-import { BaseEditor, Editor, Path } from 'slate';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
   getTableColumnCount,
   getTableOverriddenColSizes,
-  getTableRowIndex,
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../../types';
+import { TablePlugin, TTableElement } from '../../types';
 
 /**
  * Returns colSizes with overrides applied.

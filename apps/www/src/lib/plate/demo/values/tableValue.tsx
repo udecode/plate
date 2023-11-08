@@ -109,7 +109,7 @@ export const createMergedCellsTable = (): any => (
   <fragment>
     <htable colSizes={[100, 100, 100, 100]}>
       <htr>
-        <hth rowSpan={2} colSpan={2}>
+        <hth rowSpan={2} colSpan={1}>
           <hp>
             <htext bold>Heading</htext>
           </hp>
@@ -121,14 +121,22 @@ export const createMergedCellsTable = (): any => (
         </hth>
         <hth>
           <hp>
+            <htext bold>Cell 11</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
             <htext bold>Cell 2</htext>
           </hp>
         </hth>
       </htr>
       <htr>
-        <htd>
+        <htd rowSpan={2} colSpan={2}>
           <hp>Cell 3</hp>
         </htd>
+        {/* <htd>
+          <hp>Cell 77</hp>
+        </htd> */}
         <htd>
           <hp>Cell 7</hp>
         </htd>
@@ -139,12 +147,9 @@ export const createMergedCellsTable = (): any => (
             <htext bold>Cell 4</htext>
           </hp>
         </htd>
-        <htd>
+        {/* <htd>
           <hp>Cell 5</hp>
-        </htd>
-        <htd>
-          <hp>Cell 6</hp>
-        </htd>
+        </htd> */}
         <htd>
           <hp>Cell 8</hp>
         </htd>
@@ -152,6 +157,7 @@ export const createMergedCellsTable = (): any => (
     </htable>
   </fragment>
 );
+
 
 export const tableValue: any = (
   <fragment>
