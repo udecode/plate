@@ -11,8 +11,8 @@ import {
   onKeyDownToggleMark,
   ToggleMarkPlugin,
 } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
 
 jsx;
 
@@ -52,7 +52,7 @@ const editor = createPlateEditor({
 });
 
 it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
   onKeyDownToggleMark(
     editor,

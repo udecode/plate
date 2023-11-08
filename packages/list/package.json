@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "22.0.2",
+  "version": "25.0.0",
   "description": "List plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -12,12 +12,21 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "files": [
-    "dist"
-  ],
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
@@ -30,15 +39,17 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.2",
-    "@udecode/plate-reset-node": "22.0.2"
+    "@udecode/plate-common": "25.0.0",
+    "@udecode/plate-reset-node": "25.0.0",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
-    "slate-react": ">=0.95.0"
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.99.0"
   },
   "keywords": [
     "plate",

@@ -13,8 +13,8 @@ import { pluginRenderElement } from './pluginRenderElement';
  */
 export const pipeRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
-  renderElementProp?: TEditableProps<V>['renderElement']
-): TEditableProps<V>['renderElement'] => {
+  renderElementProp?: TEditableProps['renderElement']
+): TEditableProps['renderElement'] => {
   const renderElements: RenderElement[] = [];
 
   editor.plugins.forEach((plugin) => {

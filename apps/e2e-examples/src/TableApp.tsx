@@ -1,5 +1,10 @@
 import { createPlateUI } from '@/plate/create-plate-ui';
-import { Plate, createPlugins, createTablePlugin } from '@udecode/plate';
+import {
+  createPlugins,
+  createTablePlugin,
+  Plate,
+  PlateContent,
+} from '@udecode/plate';
 
 import { useVariant } from './useVariant';
 
@@ -80,10 +85,8 @@ export function TableApp() {
   ];
 
   return (
-    <Plate
-      plugins={plugins}
-      initialValue={initialValue}
-      editableProps={{ readOnly }}
-    />
+    <Plate plugins={plugins} initialValue={initialValue}>
+      <PlateContent readOnly={readOnly} />
+    </Plate>
   );
 }

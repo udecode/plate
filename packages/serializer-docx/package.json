@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "23.1.0",
+  "version": "25.0.0",
   "description": "Docx serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -12,12 +12,21 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "files": [
-    "dist"
-  ],
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
@@ -30,13 +39,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "22.0.2",
-    "@udecode/plate-heading": "22.0.2",
-    "@udecode/plate-indent": "22.0.2",
-    "@udecode/plate-indent-list": "22.0.2",
-    "@udecode/plate-media": "23.0.0",
-    "@udecode/plate-paragraph": "22.0.2",
-    "@udecode/plate-table": "23.1.0",
+    "@udecode/plate-common": "25.0.0",
+    "@udecode/plate-heading": "25.0.0",
+    "@udecode/plate-indent": "25.0.0",
+    "@udecode/plate-indent-list": "25.0.0",
+    "@udecode/plate-media": "25.0.0",
+    "@udecode/plate-paragraph": "25.0.0",
+    "@udecode/plate-table": "25.0.0",
     "validator": "^13.9.0"
   },
   "peerDependencies": {
@@ -45,7 +54,7 @@
     "slate": ">=0.94.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.95.0"
+    "slate-react": ">=0.99.0"
   },
   "keywords": [
     "docx",

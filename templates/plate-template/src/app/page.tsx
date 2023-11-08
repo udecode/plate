@@ -1,16 +1,15 @@
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
-import { buttonVariants } from '@/components/ui/button';
-import Editor from '@/components/plate/editor';
+import { PlateEditor } from '@/components/plate-editor';
+import { buttonVariants } from '@/components/plate-ui/button';
 
 export default function IndexPage() {
   return (
     <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
       <div className="flex max-w-[980px] flex-col items-start gap-2">
         <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
-          Rich-text editor built with <br className="hidden sm:inline" />
-          Plate and shadcn/ui.
+          Plate Template.
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground">
           Plugin system & primitive component library.{' '}
@@ -38,8 +37,8 @@ export default function IndexPage() {
         </Link>
       </div>
 
-      <div className="max-w-[1336px] rounded-lg border bg-background shadow">
-        <Editor />
+      <div className="flex w-[600px] flex-col gap-4">
+        <PlateEditor />
       </div>
     </section>
   );

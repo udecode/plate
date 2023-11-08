@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
@@ -9,7 +9,6 @@ import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
 import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
-import { captionPlugin } from '@/plate/demo/plugins/captionPlugin';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
@@ -46,12 +45,10 @@ import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
-  createPlateEditor,
+  createPlugins,
   Plate,
   PlatePluginComponent,
-  PlateProvider,
-  usePlateActions,
-  usePlateSelectors,
+  Value,
 } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
@@ -80,7 +77,10 @@ import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import {
+  createDeletePlugin,
+  createSelectOnBackspacePlugin,
+} from '@udecode/plate-select';
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
@@ -90,16 +90,15 @@ import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { createMyPlugins, MyValue } from '@/types/plate-types';
-import { ValueId } from '@/config/setting-values';
+import { ValueId } from '@/config/customizer-plugins';
+import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
 import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
-import { SettingsPanel } from '@/components/settings-panel';
-import { SettingsToggle } from '@/components/settings-toggle';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
@@ -129,8 +128,8 @@ export const usePlaygroundPlugins = ({
   }
 
   return useMemo(
-    () =>
-      createMyPlugins(
+    () => {
+      return createPlugins(
         [
           // Nodes
           createParagraphPlugin({ enabled: !!enabled.p }),
@@ -175,6 +174,7 @@ export const usePlaygroundPlugins = ({
           createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
           createIndentPlugin({ ...indentPlugin, enabled: !!enabled.indent }),
           createIndentListPlugin({
+            ...indentPlugin,
             enabled: id === 'indentlist' || !!enabled.listStyleType,
           }),
           createLineHeightPlugin({
@@ -219,6 +219,9 @@ export const usePlaygroundPlugins = ({
             ...selectOnBackspacePlugin,
             enabled: !!enabled.selectOnBackspace,
           }),
+          createDeletePlugin({
+            enabled: !!enabled.delete,
+          }),
           createSingleLinePlugin({
             enabled: id === 'singleline' || !!enabled.singleLine,
           }),
@@ -247,39 +250,40 @@ export const usePlaygroundPlugins = ({
         {
           components,
         }
-      ),
+      );
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enabled]
   );
 };
 
-export interface ResetPluginsEffectProps {
-  initialValue: any;
-  plugins: any;
-}
-
-export function ResetPluginsEffect({
-  initialValue,
-  plugins,
-}: ResetPluginsEffectProps) {
-  const editor = usePlateSelectors().editor();
-  const setEditor = usePlateActions().editor();
-  const setValue = usePlateActions().value();
+// reset editor when initialValue changes
+export const useInitialValueVersion = (initialValue: Value) => {
+  const enabled = settingsStore.use.checkedPlugins();
+  const [version, setVersion] = useState(1);
+  const prevEnabled = useRef(enabled);
+  const prevInitialValueRef = useRef(initialValue);
 
   useEffect(() => {
-    const newEditor = createPlateEditor({ id: editor.id, plugins });
-    newEditor.children = initialValue ?? editor.children;
-    setValue(initialValue);
-    setEditor(newEditor);
-  }, [plugins, setEditor, editor.id, editor.children, initialValue, setValue]);
+    if (enabled === prevEnabled.current) return;
+    prevEnabled.current = enabled;
+    setVersion((v) => v + 1);
+  }, [enabled]);
 
-  return null;
-}
+  useEffect(() => {
+    if (initialValue === prevInitialValueRef.current) return;
+    prevInitialValueRef.current = initialValue;
+    setVersion((v) => v + 1);
+  }, [initialValue]);
+
+  return version;
+};
 
 export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
-
+  const enabled = settingsStore.use.checkedComponents();
   const initialValue = usePlaygroundValue(id);
+  const key = useInitialValueVersion(initialValue);
 
   const plugins = usePlaygroundPlugins({
     id,
@@ -295,72 +299,69 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <PlateProvider<MyValue>
+        <Plate
+          key={key}
           initialValue={initialValue}
           plugins={plugins}
           normalizeInitialValue
         >
-          <ResetPluginsEffect initialValue={initialValue} plugins={plugins} />
-
-          <FixedToolbar>
-            <PlaygroundFixedToolbarButtons id={id} />
-          </FixedToolbar>
+          {enabled['fixed-toolbar'] && (
+            <FixedToolbar>
+              {enabled['fixed-toolbar-buttons'] && (
+                <PlaygroundFixedToolbarButtons id={id} />
+              )}
+            </FixedToolbar>
+          )}
 
           <div className="flex w-full">
             <CommentsProvider>
               <div
                 ref={containerRef}
                 className={cn(
-                  'relative flex w-full max-w-[900px] overflow-x-auto',
+                  'relative flex w-full overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
                   '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
                   !id &&
                     'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
                 )}
               >
-                <Plate
-                  editableProps={{
-                    ...editableProps,
-                    placeholder: '',
-                    className: cn(
-                      editableProps.className,
-                      'px-8 outline-none',
-                      !id &&
-                        'min-h-[920px] w-[900px] pb-[20vh] pt-4 md:px-[96px]',
-                      id && 'pb-8 pt-2'
-                    ),
-                  }}
-                >
+                <Editor
+                  {...editableProps}
+                  placeholder=""
+                  variant="ghost"
+                  size="md"
+                  focusRing={false}
+                  className={cn(
+                    editableProps.className,
+                    'px-8',
+                    !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
+                    id && 'pb-8 pt-2'
+                  )}
+                />
+
+                {enabled['floating-toolbar'] && (
                   <FloatingToolbar>
-                    <PlaygroundFloatingToolbarButtons id={id} />
+                    {enabled['floating-toolbar-buttons'] && (
+                      <PlaygroundFloatingToolbarButtons id={id} />
+                    )}
                   </FloatingToolbar>
+                )}
 
-                  {isEnabled('mention', id) && (
-                    <MentionCombobox items={MENTIONABLES} />
-                  )}
+                {isEnabled('mention', id, enabled['mention-combobox']) && (
+                  <MentionCombobox items={MENTIONABLES} />
+                )}
 
-                  {isEnabled('cursoroverlay', id) && (
-                    <CursorOverlay containerRef={containerRef} />
-                  )}
-                </Plate>
+                {isEnabled('cursoroverlay', id) && (
+                  <CursorOverlay containerRef={containerRef} />
+                )}
               </div>
 
-              {isEnabled('comment', id) && <CommentsPopover />}
+              {isEnabled('comment', id, enabled['comments-popover']) && (
+                <CommentsPopover />
+              )}
             </CommentsProvider>
-
-            {!id && (
-              <>
-                <div className="fixed right-0 top-full z-[100]">
-                  <div className="-translate-y-full p-4">
-                    <SettingsToggle />
-                  </div>
-                </div>
-
-                <SettingsPanel />
-              </>
-            )}
           </div>
-        </PlateProvider>
+        </Plate>
       </div>
     </DndProvider>
   );

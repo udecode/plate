@@ -1,24 +1,23 @@
 import { useCallback, useEffect } from 'react';
 import {
-  focusEditor,
   getAboveNode,
   getEndPoint,
   getPluginOptions,
   getPluginType,
   getStartPoint,
   someNode,
+  useEditorReadOnly,
+  useEditorRef,
+  useEditorVersion,
   useHotkeys,
-  usePlateEditorRef,
-  usePlateSelectors,
 } from '@udecode/plate-common';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
-  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
-import { unwrapLink } from '../../index';
+import { LinkFloatingToolbarState, unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import {
   floatingLinkActions,
@@ -31,18 +30,17 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
 export const useFloatingLinkEditState = ({
   floatingOptions,
-}: {
-  floatingOptions?: UseVirtualFloatingOptions;
-} = {}) => {
-  const editor = usePlateEditorRef();
-  const keyEditor = usePlateSelectors().keyEditor();
-  const mode = useFloatingLinkSelectors().mode();
-  const open = useFloatingLinkSelectors().isOpen(editor.id);
-
+}: LinkFloatingToolbarState = {}) => {
+  const editor = useEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
     editor,
     ELEMENT_LINK
   );
+  const readOnly = useEditorReadOnly();
+  const isEditing = useFloatingLinkSelectors().isEditing();
+  const version = useEditorVersion();
+  const mode = useFloatingLinkSelectors().mode();
+  const open = useFloatingLinkSelectors().isOpen(editor.id);
 
   const getBoundingClientRect = useCallback(() => {
     const entry = getAboveNode(editor, {
@@ -68,8 +66,26 @@ export const useFloatingLinkEditState = ({
     getBoundingClientRect,
     ...floatingOptions,
   });
-  const { update } = floating;
 
+  return {
+    editor,
+    triggerFloatingLinkHotkeys,
+    isOpen,
+    floating,
+    versionEditor: version,
+    isEditing,
+    readOnly,
+  };
+};
+
+export const useFloatingLinkEdit = ({
+  editor,
+  triggerFloatingLinkHotkeys,
+  versionEditor,
+  floating,
+  isOpen,
+  readOnly,
+}: ReturnType<typeof useFloatingLinkEditState>) => {
   useEffect(() => {
     if (
       editor.selection &&
@@ -78,14 +94,15 @@ export const useFloatingLinkEditState = ({
       })
     ) {
       floatingLinkActions.show('edit', editor.id);
-      update();
+      floating.update();
       return;
     }
 
     if (floatingLinkSelectors.mode() === 'edit') {
       floatingLinkActions.hide();
     }
-  }, [editor, keyEditor, update]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, versionEditor, floating.update]);
 
   useHotkeys(
     triggerFloatingLinkHotkeys!,
@@ -108,33 +125,25 @@ export const useFloatingLinkEditState = ({
   useFloatingLinkEscape();
 
   return {
-    floating,
-  };
-};
-
-export const useFloatingLinkEdit = (
-  state: ReturnType<typeof useFloatingLinkEditState>
-) => {
-  const editor = usePlateEditorRef();
-
-  return {
-    ref: state.floating.refs.setFloating,
+    ref: floating.refs.setFloating,
     props: {
       style: {
-        ...state.floating.style,
+        ...floating.style,
         zIndex: 1,
       },
     },
     editButtonProps: {
-      onClick: useCallback(() => {
+      onClick: () => {
         triggerFloatingLinkEdit(editor);
-      }, [editor]),
+      },
     },
     unlinkButtonProps: {
-      onClick: useCallback(() => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+      },
+      onClick: () => {
         unwrapLink(editor);
-        focusEditor(editor, editor.selection!);
-      }, [editor]),
+      },
     },
   };
 };

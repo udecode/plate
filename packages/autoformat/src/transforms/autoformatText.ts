@@ -4,7 +4,7 @@ import {
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
-import castArray from 'lodash/castArray';
+import castArray from 'lodash/castArray.js';
 import { Point, Range } from 'slate';
 
 import { AutoformatTextRule } from '../types';

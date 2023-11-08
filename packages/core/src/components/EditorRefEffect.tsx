@@ -1,11 +1,21 @@
 import React, { useEffect } from 'react';
 
-import { useEditorRef } from '../hooks';
-import { PlateId, usePlateActions, usePlateSelectors } from '../stores';
+import {
+  PlateId,
+  useEditorRef,
+  usePlateActions,
+  usePlateSelectors,
+} from '../stores';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 
-export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
-  const editor = useEditorRef();
+export function EditorRefPluginEffect({
+  id,
+  plugin,
+}: {
+  id?: PlateId;
+  plugin: WithPlatePlugin;
+}) {
+  const editor = useEditorRef(id);
 
   plugin.useHooks?.(editor, plugin);
 
@@ -13,18 +23,18 @@ export function EditorRefPluginEffect({ plugin }: { plugin: WithPlatePlugin }) {
 }
 
 export function EditorRefEffect({ id }: { id?: PlateId }) {
-  const setIsRendered = usePlateActions(id).isRendered();
+  const setIsMounted = usePlateActions(id).isMounted();
   const plugins = usePlateSelectors(id).plugins();
-  const editorState = useEditorRef();
+  const editorState = useEditorRef(id);
   const editorRef = usePlateSelectors(id).editorRef()?.ref;
 
   useEffect(() => {
-    setIsRendered(true);
+    setIsMounted(true);
 
     return () => {
-      setIsRendered(false);
+      setIsMounted(false);
     };
-  }, [setIsRendered]);
+  }, [setIsMounted]);
 
   /**
    * Pass `editorState` to `editorRef` when the editor mounts. Since the editor
@@ -49,7 +59,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   return (
     <>
       {plugins.map((plugin) => (
-        <EditorRefPluginEffect key={plugin.key} plugin={plugin} />
+        <EditorRefPluginEffect key={plugin.key} id={id} plugin={plugin} />
       ))}
     </>
   );

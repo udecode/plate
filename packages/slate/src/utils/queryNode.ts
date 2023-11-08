@@ -1,7 +1,9 @@
-import castArray from 'lodash/castArray';
-
 import { TNode, TNodeEntry } from '../interfaces';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
+
+function castArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 /**
  * Query the node entry.

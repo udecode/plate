@@ -4,9 +4,8 @@ import {
   findNodePath,
   getNode,
   getPluginOptions,
-  PlateEditor,
+  useEditorRef,
   useElement,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -29,17 +28,15 @@ export interface TableElementState {
   marginLeft: number;
 }
 
-export const useTableElementState = (
-  {
-    transformColSizes,
-  }: {
-    /**
-     * Transform node column sizes
-     */
-    transformColSizes?: (colSizes: number[]) => number[];
-  } = {}
-): TableElementState => {
-  const editor = usePlateEditorRef();
+export const useTableElementState = ({
+  transformColSizes,
+}: {
+  /**
+   * Transform node column sizes
+   */
+  transformColSizes?: (colSizes: number[]) => number[];
+} = {}): TableElementState => {
+  const editor = useEditorRef();
 
   const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
     editor,
@@ -79,7 +76,7 @@ export const useTableElementState = (
 };
 
 export const useTableElement = () => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const selectedCells = useTableStore().get.selectedCells();
 
   useSelectedCells();

@@ -12,7 +12,7 @@ describe('cleanDocx', () => {
   //     '../docx-cleaner/__tests__/output/nested-lists.html'
   //   );
   //   const result = cleanDocx(html, MOCK_RTF);
-  //   expect(result).toBe(expected);
+  //   expect(result.trim()).toBe(expected.trim());
   // });
 
   it('Treats in-text line-feed as a space', () => {
@@ -23,7 +23,7 @@ describe('cleanDocx', () => {
       '../docx-cleaner/__tests__/output/whitespaces-1.html'
     );
     const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
+    expect(result.trim()).toBe(expected.trim());
   });
 
   it('Ignores extra space in soft breaks', () => {
@@ -34,7 +34,7 @@ describe('cleanDocx', () => {
       '../docx-cleaner/__tests__/output/whitespaces-2.html'
     );
     const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
+    expect(result.trim()).toBe(expected.trim());
   });
 
   it('Ignores HTML whitespace', () => {
@@ -45,7 +45,7 @@ describe('cleanDocx', () => {
       '../docx-cleaner/__tests__/output/whitespaces-3.html'
     );
     const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
+    expect(result.trim()).toBe(expected.trim());
   });
 
   it('Cleans empty paragraphs', () => {
@@ -56,14 +56,14 @@ describe('cleanDocx', () => {
       '../docx-cleaner/__tests__/output/empty-paragraphs.html'
     );
     const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
+    expect(result.trim()).toBe(expected.trim());
   });
 
   it('Replaces br with line-feed', () => {
     const html = readTestFile('../docx-cleaner/__tests__/input/brs.html');
     const expected = readTestFile('../docx-cleaner/__tests__/output/brs.html');
     const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
+    expect(result.trim()).toBe(expected.trim());
   });
 
   // it('Stylesheet', () => {
@@ -75,6 +75,6 @@ describe('cleanDocx', () => {
   //   );
   //   const result = cleanDocx(html, MOCK_RTF);
   //   expect(1).toBe(1);
-  //   // expect(result).toBe(expected);
+  //   // expect(result.trim()).toBe(expected.trim());
   // });
 });

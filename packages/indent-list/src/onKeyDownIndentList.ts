@@ -1,13 +1,13 @@
 import {
   getBlockAbove,
   isBlockAboveEmpty,
+  isHotkey,
   KeyboardHandlerReturnType,
   PlateEditor,
   TElement,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
 
 import {
   IndentListPlugin,

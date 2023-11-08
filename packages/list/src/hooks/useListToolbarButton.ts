@@ -1,15 +1,14 @@
 import {
-  focusEditor,
   getPluginType,
   someNode,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { ELEMENT_UL, toggleList } from '../index';
 
 export const useListToolbarButtonState = ({ nodeType = ELEMENT_UL } = {}) => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const pressed =
     !!editor?.selection &&
     someNode(editor, { match: { type: getPluginType(editor, nodeType) } });
@@ -23,17 +22,16 @@ export const useListToolbarButtonState = ({ nodeType = ELEMENT_UL } = {}) => {
 export const useListToolbarButton = (
   state: ReturnType<typeof useListToolbarButtonState>
 ) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     props: {
       pressed: state.pressed,
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        e.stopPropagation();
-
+      },
+      onClick: () => {
         toggleList(editor, { type: state.nodeType });
-        focusEditor(editor);
       },
     },
   };

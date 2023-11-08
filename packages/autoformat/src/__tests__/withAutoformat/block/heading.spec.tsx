@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 import { mockPlugin } from '@udecode/plate-common';
-import { ELEMENT_H1 } from '@udecode/plate-heading/src/constants';
+import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
+import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
 
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -38,7 +38,7 @@ describe('when #space', () => {
               mode: 'block',
               type: ELEMENT_H1,
               match: '# ',
-              preFormat,
+              preFormat: preFormat,
             },
           ],
         },

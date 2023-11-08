@@ -7,11 +7,8 @@ import {
   PlateEditor,
   splitNodes,
 } from '@udecode/plate-common';
-import {
-  ELEMENT_LI,
-  ELEMENT_UL,
-} from '@udecode/plate-list/src/createListPlugin';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createNodeIdPlugin } from './createNodeIdPlugin';
@@ -767,6 +764,51 @@ describe('when merging nodes', () => {
           </hli>
         ) as any
       );
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when id override', () => {
+    it('should work', () => {
+      const input = (
+        <editor>
+          <hp id={10}>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as PlateEditor;
+
+      const output = (
+        <editor>
+          <hp id={10}>test</hp>
+          <hli id={1}>
+            <hp id={11}>inserted</hp>
+          </hli>
+          <hp id={12}>test</hp>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+            },
+          }),
+        ],
+      });
+
+      editor.insertNodes([
+        (
+          <hli>
+            <hp _id={11}>inserted</hp>
+          </hli>
+        ) as any,
+        <hp _id={12}>test</hp>,
+      ]);
 
       expect(input.children).toEqual(output.children);
     });

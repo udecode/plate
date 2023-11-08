@@ -1,8 +1,4 @@
-import {
-  findNodePath,
-  setNodes,
-  usePlateEditorRef,
-} from '@udecode/plate-common';
+import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
 import { TTodoListItemElement } from '../index';
@@ -12,7 +8,7 @@ export const useTodoListElementState = ({
 }: {
   element: TTodoListItemElement;
 }) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const { checked } = element;
   const readOnly = useReadOnly();
 
@@ -28,7 +24,7 @@ export const useTodoListElement = (
   state: ReturnType<typeof useTodoListElementState>
 ) => {
   const { checked, readOnly, element } = state;
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     checkboxProps: {

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { ELEMENT_LI } from '@udecode/plate-list/src/createListPlugin';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph/src/createParagraphPlugin';
+import { ELEMENT_LI } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 

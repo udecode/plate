@@ -8,13 +8,13 @@ assignees: ''
 
 ---
 
-**Description**
+## Description
 
 
 
 <!-- A clear and concise description of what the bug is. -->
 
-**Steps to Reproduce**
+## Steps to Reproduce
 
 
 
@@ -25,7 +25,7 @@ assignees: ''
 3. Scroll down to '....'
 4. See the error -->
 
-**Sandbox**
+## Sandbox
 
 
 
@@ -35,18 +35,18 @@ Share a link to a CodeSandbox where the error can be reproduced. You can start f
 [base sandbox here](https://codesandbox.io/s/rxo5rl?file=%2FApp.tsx)
 or refer to the examples too. -->
 
-**Expected Behavior**
+## Expected Behavior
 
 
 
 <!-- A clear and concise description of what you expected to happen. It's often helpful to test the behavior of other editors like Google Docs, Medium, Notion, etc., to see how they handle the same issue. -->
 
-**Environment**
+## Environment
 
 - slate: 
 - slate-react: 
 - browser: chrome
 
-**Bounty**
+## Bounty
 
 Click [here](https://console.algora.io/org/Udecode/bounties/new) to add a bounty via Algora.

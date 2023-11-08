@@ -1,8 +1,8 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createKbdPlugin } from '@udecode/plate-kbd';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 

@@ -16,7 +16,6 @@ export const transformCssVars: Transformer = async ({
 
   // Find jsx attributes with the name className.
   // const openingElements = sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement)
-  // console.log(openingElements)
   // const jsxAttributes = sourceFile
   //   .getDescendantsOfKind(SyntaxKind.JsxAttribute)
   //   .filter((node) => node.getName() === "className")
@@ -61,7 +60,6 @@ export const transformCssVars: Transformer = async ({
 //       if (node?.value?.type) {
 //         if (node.value.type === "StringLiteral") {
 //           node.value.value = applyColorMapping(node.value.value)
-//           console.log(node.value.value)
 //         }
 
 //         if (
@@ -147,27 +145,27 @@ export function applyColorMapping(
 
   // Build color mappings.
   const classNames = input.split(' ');
-  const lightMode: string[] = [];
-  const darkMode: string[] = [];
+  const lightMode = new Set<string>();
+  const darkMode = new Set<string>();
   for (const className of classNames) {
     const [variant, value, modifier] = splitClassName(className);
     const prefix = PREFIXES.find((pre) => value?.startsWith(pre));
     if (!prefix) {
-      if (!lightMode.includes(className)) {
-        lightMode.push(className);
+      if (!lightMode.has(className)) {
+        lightMode.add(className);
       }
       continue;
     }
 
     const needle = value?.replace(prefix, '');
     if (needle && needle in mapping.light) {
-      lightMode.push(
+      lightMode.add(
         [variant, `${prefix}${mapping.light[needle]}`]
           .filter(Boolean)
           .join(':') + (modifier ? `/${modifier}` : '')
       );
 
-      darkMode.push(
+      darkMode.add(
         ['dark', variant, `${prefix}${mapping.dark[needle]}`]
           .filter(Boolean)
           .join(':') + (modifier ? `/${modifier}` : '')
@@ -175,10 +173,10 @@ export function applyColorMapping(
       continue;
     }
 
-    if (!lightMode.includes(className)) {
-      lightMode.push(className);
+    if (!lightMode.has(className)) {
+      lightMode.add(className);
     }
   }
 
-  return lightMode.join(' ') + ' ' + darkMode.join(' ').trim();
+  return [...Array.from(lightMode), ...Array.from(darkMode)].join(' ').trim();
 }

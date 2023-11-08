@@ -1,14 +1,14 @@
 import {
   getPluginType,
   someNode,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { ELEMENT_LINK, triggerFloatingLink } from '../index';
 
 export const useLinkToolbarButtonState = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const pressed =
     !!editor?.selection &&
     someNode(editor, { match: { type: getPluginType(editor, ELEMENT_LINK) } });
@@ -21,15 +21,12 @@ export const useLinkToolbarButtonState = () => {
 export const useLinkToolbarButton = (
   state: ReturnType<typeof useLinkToolbarButtonState>
 ) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     props: {
       pressed: state.pressed,
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+      onClick: () => {
         triggerFloatingLink(editor, { focused: true });
       },
     },

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
 import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
+import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 
 import { withAutoformat } from '../../../withAutoformat';
 

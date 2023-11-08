@@ -49,6 +49,7 @@ export * from './isEditorNormalizing';
 export * from './isElementEmpty';
 export * from './isEndPoint';
 export * from './isInline';
+export * from './isMarkableVoid';
 export * from './isStartPoint';
 export * from './isVoid';
 export * from './normalizeEditor';

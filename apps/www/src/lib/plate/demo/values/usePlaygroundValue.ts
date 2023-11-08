@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
+import { Value } from '@udecode/plate-common';
 
-import { MyValue } from '@/types/plate-types';
-import { settingValues, ValueId } from '@/config/setting-values';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 import { settingsStore } from '@/components/context/settings-store';
 
 import { alignValue } from './alignValue';
@@ -41,10 +41,15 @@ export const usePlaygroundValue = (id?: ValueId) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
-    const value = [...basicElementsValue, ...basicMarksValue];
+    const value = [...basicElementsValue];
 
-    if (valueId !== settingValues.playground.id) {
-      const newValue = settingValues[valueId].value ?? [];
+    if (enabled.action_item) value.push(...todoListValue);
+    if (enabled.a) value.push(...linkValue);
+
+    value.push(...basicMarksValue);
+
+    if (valueId !== customizerPlugins.playground.id) {
+      const newValue = customizerPlugins[valueId].value ?? [];
 
       if (newValue.length === 0) {
         return mapNodeId(value);
@@ -58,7 +63,6 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.kbd) value.push(...kbdValue);
 
     // Inline nodes
-    if (enabled.a) value.push(...linkValue);
     if (enabled.mention) value.push(...mentionValue);
     if (enabled.emoji) value.push(...emojiValue);
 
@@ -71,7 +75,6 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.list) value.push(...listValue);
     if (enabled.img || enabled.media_embed) value.push(...mediaValue);
     if (enabled.table) value.push(...tableValue);
-    if (enabled.action_item) value.push(...todoListValue);
 
     // Functionalities
     if (enabled.autoformat) value.push(...autoformatValue);
@@ -93,7 +96,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
-    return mapNodeId(value) as MyValue;
+    return mapNodeId(value) as Value;
   }, [
     enabled.a,
     enabled.action_item,

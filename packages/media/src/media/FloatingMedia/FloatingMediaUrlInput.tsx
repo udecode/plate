@@ -2,9 +2,9 @@ import { ChangeEventHandler, useCallback } from 'react';
 import {
   createPrimitiveComponent,
   focusEditor,
+  useEditorRef,
   useElement,
   useHotkeys,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 
 import { TMediaElement } from '../types';
@@ -19,7 +19,7 @@ export const useFloatingMediaUrlInputState = ({
 }: {
   pluginKey?: string;
 } = {}) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const element = useElement<TMediaElement>();
 
   useHotkeys(

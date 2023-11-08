@@ -1,5 +1,5 @@
 import { Value } from '@udecode/slate';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
@@ -16,7 +16,7 @@ export const createPlugins = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
-  plugins: PlatePlugin<PluginOptions, V, E>[],
+  plugins: PlatePlugin[],
   {
     components,
     overrideByKey,
@@ -29,10 +29,10 @@ export const createPlugins = <
     /**
      * Override plugin by key.
      */
-    overrideByKey?: OverrideByKey<V, E>;
+    overrideByKey?: OverrideByKey;
   } = {}
 ): PlatePlugin<PluginOptions, V, E>[] => {
-  let allOverrideByKey: OverrideByKey<V, E> = {};
+  let allOverrideByKey: OverrideByKey = {};
 
   if (overrideByKey) {
     allOverrideByKey = cloneDeep(overrideByKey);
@@ -48,9 +48,9 @@ export const createPlugins = <
 
   if (Object.keys(allOverrideByKey).length > 0) {
     return plugins.map((plugin) => {
-      return overridePluginsByKey<{}, V, E>(plugin, allOverrideByKey);
+      return overridePluginsByKey(plugin as any, allOverrideByKey as any);
     });
   }
 
-  return plugins;
+  return plugins as PlatePlugin<PluginOptions, V, E>[];
 };

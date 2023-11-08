@@ -2,8 +2,6 @@ import React, { CSSProperties } from 'react';
 import { PlateElementProps } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
-import { MyValue } from '@/types/plate-types';
-
 const boxStyle: CSSProperties = {
   padding: '8px',
   marginBottom: '8px',
@@ -19,10 +17,7 @@ const selectedBoxStyle: CSSProperties = {
   border: '2px solid blue',
 };
 
-export function TabbableElement({
-  attributes,
-  children,
-}: PlateElementProps<MyValue>) {
+export function TabbableElement({ attributes, children }: PlateElementProps) {
   const selected = useSelected();
   const focused = useFocused();
 

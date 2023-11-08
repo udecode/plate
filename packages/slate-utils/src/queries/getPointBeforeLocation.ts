@@ -6,8 +6,8 @@ import {
   TEditor,
   Value,
 } from '@udecode/slate';
-import castArray from 'lodash/castArray';
-import map from 'lodash/map';
+import castArray from 'lodash/castArray.js';
+import map from 'lodash/map.js';
 import { Location, Point } from 'slate';
 
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';

@@ -259,6 +259,15 @@ Default node value.
 <APISubListItem parent="inject.props" name="nodeKey" type="string" optional>
 Node key to map to the styles.
 </APISubListItem>
+<APISubListItem parent="inject.props" name="query" type="function" optional>
+Whether to inject the props. If true, overrides all other checks.
+```ts
+(
+  options: NonNullable<NonNullable<InjectProps<V>['inject']>['props']>,
+  nodeProps: GetInjectPropsOptions<V>
+) => boolean
+```
+</APISubListItem>
 <APISubListItem parent="inject.props" name="styleKey" type="keyofCSSProperties" optional>
 Style key to override.
 - Default: `nodeKey`
@@ -275,6 +284,15 @@ Transform the node value for the style or className.
 - Default: `nodeValue`
 ```ts
 (options: TransformOptions) => any
+```
+</APISubListItem>
+<APISubListItem parent="inject.props" name="transformProps" type="function" optional>
+Transform the injected props.
+```ts
+(
+  options: TransformOptions<V>,
+  props: GetInjectPropsReturnType
+) => AnyObject | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="inject.props" name="transformStyle" type="function" optional>
@@ -350,6 +368,10 @@ Property used by Plate to render nodes of this `type` as leaves, i.e.
 <APIItem name="isVoid" type="boolean" optional>
 Property used by `inlineVoid` core plugin to set elements of this `type` as
 void.
+</APIItem>
+<APIItem name="isMarkableVoid" type="boolean" optional>
+Property used by `markableVoid` core plugin to set void elements of this `type` as
+markable.
 </APIItem>
 <APIItem name="normalizeInitialValue" type="(initialValue: V) => V" optional>
 Normalize value before passing it into the editor.

@@ -1,19 +1,17 @@
-# plate-template
+# Playground Template
 
-A Next.js 13 template for building rich-text editors with Plate and [shadcn/ui](https://ui.shadcn.com/).
+A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 13.
 
 ## Usage
 
 ```bash
-yarn dev
+pnpm create next-app -e https://github.com/udecode/plate-template
 ```
-
-[//]: # 'npx create-next-app -e https://github.com/udecode/plate-template'
 
 ## Features
 
 - Next.js 13 App Directory
-- [Plate](https://platejs.org/) Editor.
+- [Plate](https://platejs.org/) Editor
 - [shadcn/ui](https://ui.shadcn.com/)
 - Radix UI Primitives
 - Tailwind CSS

@@ -1,5 +1,5 @@
 import { TEditor, Value, withoutNormalizing } from '@udecode/slate';
-import castArray from 'lodash/castArray';
+import castArray from 'lodash/castArray.js';
 
 import { isMarkActive } from '../queries';
 import { removeMark } from './removeMark';

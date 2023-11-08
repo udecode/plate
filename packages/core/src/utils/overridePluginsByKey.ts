@@ -1,5 +1,5 @@
 import { Value } from '@udecode/slate';
-import defaultsDeep from 'lodash/defaultsDeep';
+import defaultsDeep from 'lodash/defaultsDeep.js';
 
 import { NoInfer } from '../types/misc/NoInfer';
 import { OverrideByKey } from '../types/OverrideByKey';

@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
-import { cloneDeep } from 'lodash';
-import isEqual from 'lodash/isEqual';
+import cloneDeep from 'lodash/cloneDeep.js';
+import isEqual from 'lodash/isEqual.js';
 
 import { PlateEditor } from '../types';
 

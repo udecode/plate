@@ -1,4 +1,4 @@
-import castArray from 'lodash/castArray';
+import castArray from 'lodash/castArray.js';
 
 import { AutoformatRule, MatchRange } from '../types';
 

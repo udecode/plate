@@ -1,21 +1,38 @@
 /* eslint-disable react/display-name */
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useRef } from 'react';
+import { Range, Selection } from 'slate';
+import { useSlate } from 'slate-react';
 
-import { useEditorState } from '../hooks/useEditorState';
-import { PlateId, useUpdatePlateKey } from '../stores';
+import { PlateId, useIncrementVersion } from '../stores';
 
 export const EditorStateEffect = memo(({ id }: { id?: PlateId }) => {
-  const editorState = useEditorState();
-  const updateKeyEditor = useUpdatePlateKey('keyEditor', id);
-  const updateKeySelection = useUpdatePlateKey('keySelection', id);
+  const editorState = useSlate();
+  const updateVersionEditor = useIncrementVersion('versionEditor', id);
 
   useEffect(() => {
-    updateKeyEditor();
+    updateVersionEditor();
   });
 
+  const updateVersionSelection = useIncrementVersion('versionSelection', id);
+  const prevSelectionRef = useRef(editorState.selection);
+
+  const sameSelection = isSelectionEqual(
+    prevSelectionRef.current,
+    editorState.selection
+  );
+
   useEffect(() => {
-    updateKeySelection();
-  }, [editorState.selection, updateKeySelection]);
+    if (!sameSelection) {
+      updateVersionSelection();
+    }
+    prevSelectionRef.current = editorState.selection;
+  }, [editorState.selection, sameSelection, updateVersionSelection]);
 
   return null;
 });
+
+const isSelectionEqual = (a: Selection, b: Selection) => {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return Range.equals(a, b);
+};

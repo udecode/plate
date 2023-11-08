@@ -8,6 +8,8 @@ import {
 } from '@udecode/plate-comments';
 import { PlateLeaf, PlateLeafProps, Value } from '@udecode/plate-common';
 
+import { cn } from '@/lib/utils';
+
 export function CommentLeaf({
   className,
   ...props
@@ -22,33 +24,22 @@ export function CommentLeaf({
 
   let aboveChildren = <>{children}</>;
 
-  const backgroundColor = state.isActive
-    ? 'rgb(255, 212, 0)'
-    : 'rgba(255, 212, 0, 0.14)';
-
   if (!state.isActive) {
     for (let i = 1; i < state.commentCount; i++) {
-      aboveChildren = (
-        <span
-          style={{
-            backgroundColor: 'rgba(255, 212, 0, 0.14)',
-          }}
-        >
-          {aboveChildren}
-        </span>
-      );
+      aboveChildren = <span className="bg-primary/20">{aboveChildren}</span>;
     }
   }
 
   return (
     <PlateLeaf
       {...props}
+      className={cn(
+        'border-b-2 border-b-primary/40',
+        state.isActive ? 'bg-primary/40' : 'bg-primary/20',
+        className
+      )}
       nodeProps={{
         ...rootProps,
-        style: {
-          backgroundColor,
-          borderBottom: '2px solid rgb(255, 212, 0)',
-        },
         ...nodeProps,
       }}
     >

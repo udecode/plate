@@ -1,5 +1,61 @@
 # @udecode/plate-table
 
+## 25.0.0
+
+## 24.5.2
+
+## 24.4.2
+
+### Patch Changes
+
+- [#2682](https://github.com/udecode/plate/pull/2682) by [@kristian-puccio](https://github.com/kristian-puccio) – newCellChildren is now passed as an option to insertTable or the plugin option is used
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
+## 24.0.2
+
+## 24.0.1
+
+## 24.0.0
+
+## 23.7.4
+
+## 23.7.0
+
+## 23.6.1
+
+### Patch Changes
+
+- [#2594](https://github.com/udecode/plate/pull/2594) by [@OliverWales](https://github.com/OliverWales) – Fix column deletion early return
+
+## 23.6.0
+
+## 23.4.1
+
+### Patch Changes
+
+- [#2581](https://github.com/udecode/plate/pull/2581) by [@OliverWales](https://github.com/OliverWales) – Modify insertTableRow and insertTableColumn to support header columns to preserve header columns if they exist + not blindly assume that it's a header row if the first cell in that row is a header cell.
+
+## 23.3.1
+
+## 23.3.0
+
 ## 23.1.0
 
 ### Minor Changes

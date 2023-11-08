@@ -2,7 +2,6 @@
 
 packages/cli/components
 **/tsconfig.tsbuildinfo
-apps/www/tsconfig.tsbuildinfo
 
 .yarn/*
 !.yarn/cache
@@ -119,3 +118,4 @@ packages/plate/docs/
 /playwright-report/
 /playwright/.cache/
 .turbo
+.vercel

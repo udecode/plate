@@ -37,6 +37,8 @@ on:
       - 'scripts'
       - 'patches'
 
+  workflow_dispatch:
+
 jobs:
   test:
     name: ${{ matrix.command }}
@@ -97,8 +99,8 @@ jobs:
     runs-on: ubuntu-20.04
     needs:
       - test
-    if: ${{ !github.event.pull_request.draft && failure() }}
-    
+    if: ${{ github.event_name == 'push' && failure() }}
+
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1

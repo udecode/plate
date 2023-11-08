@@ -1,5 +1,56 @@
 # @udecode/plate-list
 
+## 25.0.0
+
+## 24.5.2
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
+## 24.0.2
+
+## 24.0.1
+
+## 24.0.0
+
+## 23.7.4
+
+## 23.7.2
+
+### Patch Changes
+
+- [#2597](https://github.com/udecode/plate/pull/2597) by [@nicktrn](https://github.com/nicktrn) – Prevent `deleteBackward` and `deleteForward` from creating empty nodes when merging sibling list items with multiple children
+
+## 23.7.0
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
+## 23.2.0
+
+### Patch Changes
+
+- [#2559](https://github.com/udecode/plate/pull/2559) by [@dimaanj](https://github.com/dimaanj) –
+  - list plugin: call `deleteFragmentList` only if in a list
+
 ## 22.0.2
 
 ## 22.0.1

@@ -1,5 +1,4 @@
 import React from 'react';
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import { createBoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import {
@@ -8,6 +7,7 @@ import {
   PlatePlugin,
 } from '@udecode/plate-core';
 import { createImagePlugin } from '@udecode/plate-media';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
@@ -60,7 +60,7 @@ it('custom serialize bold to html', () => {
   ).toEqual('Some paragraph of text with <b>bold</b> part.');
 });
 
-function Bold({ children }: any): JSX.Element {
+function Bold({ children }: any): React.ReactElement {
   return React.createElement('b', {}, children);
 }
 

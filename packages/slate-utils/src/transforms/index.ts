@@ -8,6 +8,7 @@ export * from './moveChildren';
 export * from './removeMark';
 export * from './removeNodeChildren';
 export * from './removeSelectionMark';
+export * from './replaceNode';
 export * from './replaceNodeChildren';
 export * from './selectEndOfBlockAboveSelection';
 export * from './setMarks';

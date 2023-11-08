@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { AnyObject } from '@udecode/utils';
-import { castArray } from 'lodash';
-import merge from 'lodash/merge';
+import castArray from 'lodash/castArray.js';
+import merge from 'lodash/merge.js';
 
 import { createNodeHOC } from './createNodeHOC';
 

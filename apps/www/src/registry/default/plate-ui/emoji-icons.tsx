@@ -3,7 +3,7 @@ import { EmojiCategoryList } from '@udecode/plate-emoji';
 
 export const emojiCategoryIcons: Record<
   EmojiCategoryList,
-  { outline: JSX.Element; solid: JSX.Element }
+  { outline: React.ReactElement; solid: React.ReactElement }
 > = {
   activity: {
     outline: (

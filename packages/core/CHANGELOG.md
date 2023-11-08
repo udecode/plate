@@ -1,5 +1,100 @@
 # @udecode/plate-core
 
+## 25.0.0
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.0.2
+
+### Patch Changes
+
+- [#2639](https://github.com/udecode/plate/pull/2639) by [@zbeyens](https://github.com/zbeyens) – missing id in a hook call
+
+## 24.0.1
+
+### Patch Changes
+
+- [#2635](https://github.com/udecode/plate/pull/2635) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: set Plate `id` prop type to `string` to satisfy [HTML specs](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id).
+
+## 24.0.0
+
+### Major Changes
+
+- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
+
+  - [**Breaking**] Rename `Plate` to `PlateContent`.
+  - [**Breaking**] Rename `PlateProvider` to `Plate`.
+  - [**Breaking**] Rendering `PlateContent` is now required in `Plate`. This allows you to choose where to render the editor next to other components like toolbar. Example:
+
+  ```tsx
+  // Before
+  <Plate />
+  // or
+  <PlateProvider>
+    <Plate />
+  </PlateProvider>
+
+  // After
+  <Plate>
+    <PlateContent />
+  </Plate>
+  ```
+
+  - [**Breaking**] Remove provider props such as `plugins` from `PlateContent`. These props should be passed to `Plate`.
+  - [**Breaking**] Remove `editableProps` prop from `PlateContent`. Move these as`PlateContent` props.
+  - [**Breaking**] Remove `children` prop from `PlateContent`. Render instead these components after `PlateContent`.
+  - [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
+  - [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
+  - [**Breaking**] Remove `withPlateProvider`.
+  - [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
+  - [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
+  - [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
+  - [**Breaking**] Rename `usePlateSelection` to `useEditorSelection`.
+  - [**Breaking**] Rename store attributes `keyDecorate`, `keyEditor` and `keySelection` to `versionDecorate`, `versionEditor` and `versionSelection`. These are now numbers incremented on each change.
+  - [**Breaking**] Rename store attribute `isRendered` to `isMounted`.
+  - Add `maxLength` prop to `Plate`. Specifies the maximum number of characters allowed in the editor. This is a new core plugin (`createLengthPlugin`).
+  - Add `useEditorVersion` hook. Version incremented on each editor change.
+  - Add `useSelectionVersion` hook. Version incremented on each selection change.
+  - Fix `editor.reset` should now reset the editor without mutating the ref so it does not remount `PlateContent`. Default is using `resetEditor`. If you need to replace the editor ref, use `useReplaceEditor`.
+  - [Type] Remove generic from `TEditableProps`, `RenderElementFn`, `RenderAfterEditable`
+
+## 23.7.4
+
+## 23.6.0
+
+### Minor Changes
+
+- [#2588](https://github.com/udecode/plate/pull/2588) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin`
+  - `inject.props.query` (new): Whether to inject the props. If true, overrides all other checks.
+  - `inject.props.transformProps` (new): Transform the injected props.
+
+## 23.3.1
+
+### Patch Changes
+
+- [#2571](https://github.com/udecode/plate/pull/2571) by [@zbeyens](https://github.com/zbeyens) – fix: markable void were set on all void nodes
+
+## 23.3.0
+
+### Minor Changes
+
+- [#2568](https://github.com/udecode/plate/pull/2568) by [@zbeyens](https://github.com/zbeyens) – New `PlatePlugin` attribute: `isMarkableVoid: boolean`.
+
 ## 22.0.2
 
 ## 22.0.1
@@ -388,7 +483,7 @@
   ```tsx
   export interface PlateProviderProps<
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>
+    E extends PlateEditor<V> = PlateEditor<V>,
   > extends PlateProviderEffectsProps<V, E>,
       Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
     /**

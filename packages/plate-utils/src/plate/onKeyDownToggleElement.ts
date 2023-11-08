@@ -2,14 +2,14 @@ import {
   ELEMENT_DEFAULT,
   getPluginType,
   HotkeyPlugin,
+  isHotkey,
   KeyboardHandlerReturnType,
   PlateEditor,
   toggleNodeType,
   WithPlatePlugin,
 } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
-import isHotkey from 'is-hotkey';
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray.js';
 
 export const onKeyDownToggleElement =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(

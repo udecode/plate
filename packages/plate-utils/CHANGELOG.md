@@ -1,5 +1,53 @@
 # @udecode/plate-utils
 
+## 25.0.0
+
+## 24.5.2
+
+### Patch Changes
+
+- [#2708](https://github.com/udecode/plate/pull/2708) by [@12joan](https://github.com/12joan) – Do not re-render placeholder on every editor change
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
+## 24.0.2
+
+## 24.0.1
+
+## 24.0.0
+
+## 23.7.4
+
+## 23.7.0
+
+### Minor Changes
+
+- [#2593](https://github.com/udecode/plate/pull/2593) by [@zbeyens](https://github.com/zbeyens) –
+  - New prop in `createPrimitiveComponent`: `setProps` where the first parameter is the props returned by the "props hook". Returned attributes are passed to the component. You can use this prop to merge or override all props.
+  - Plate components `className` and `style` props are now merged with the "props hook" ones if defined. To override instead of merging, use `setProps`.
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
+
 ## 22.0.2
 
 ## 22.0.1

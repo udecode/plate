@@ -1,7 +1,5 @@
 /** @jsx jsx */
 
-import { autoformatPlugin } from '@/plate/demo/plugins/autoformatPlugin';
-import { preFormat } from '@/plate/demo/plugins/autoformatUtils';
 import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   ELEMENT_CODE_BLOCK,
@@ -18,6 +16,8 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
+import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
 
 import { withAutoformat } from '../../../withAutoformat';
 

@@ -11,7 +11,7 @@ import {
   someNode,
   Value,
 } from '@udecode/plate-common';
-import castArray from 'lodash/castArray';
+import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
 import { AutoformatBlockRule } from '../types';

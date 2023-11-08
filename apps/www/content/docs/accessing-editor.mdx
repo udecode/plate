@@ -57,11 +57,11 @@ const createMyPlugin = createPluginFactory({
 
 ## From a Child of Plate
 
-Use the **`usePlateEditorRef`** or **`usePlateEditorState`** hooks.
+Use the **`useEditorRef`** or **`useEditorState`** hooks.
 
-Internally, **`usePlateEditorState`** is a wrapper for **`usePlateEditorRef`**. The only difference is that **`usePlateEditorState`** causes React to re-render whenever the **`editor`** state changes, whereas **`usePlateEditorRef`** does not cause a re-render. Since **`editor`** is mutable and is updated by reference, **`usePlateEditorRef`** will be sufficient (and more efficient) in most situations.
+Internally, **`useEditorState`** is a wrapper for **`useEditorRef`**. The only difference is that **`useEditorState`** causes React to re-render whenever the **`editor`** state changes, whereas **`useEditorRef`** does not cause a re-render. Since **`editor`** is mutable and is updated by reference, **`useEditorRef`** will be sufficient (and more efficient) in most situations.
 
-You can call these hooks from any React component that is rendered as a descendant of the **`Plate`** (or **`PlateProvider`**) component, including [Plugin Components](/docs/plugin-components).
+You can call these hooks from any React component that is rendered as a descendant of the **`Plate`** component, including [Plugin Components](/docs/plugin-components).
 
 ```tsx showLineNumbers {6}
 const ParagraphElement = ({
@@ -69,17 +69,15 @@ const ParagraphElement = ({
   children,
   ...props
 }: PlateElementProps) => {
-  const editor = usePlateEditorRef();
-  
+  const editor = useEditorRef();
+
   const handleClick = useCallback(() => {
-    console.log('You clicked on a paragraph, and the editor is ', editor);
+    console.info('You clicked on a paragraph, and the editor is ', editor);
   }, [editor]);
-  
+
   return (
     <PlateElement asChild className={className} {...props}>
-      <p onClick={handleClick}>
-        {children}
-      </p>
+      <p onClick={handleClick}>{children}</p>
     </PlateElement>
   );
 };
@@ -89,55 +87,59 @@ One common pattern is to add an effect component as a child of **`Plate`** that 
 
 ```tsx showLineNumbers {2,17}
 const CustomEffect = () => {
-  const editor = usePlateEditorRef();
-  
+  const editor = useEditorRef();
+
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('The editor is ', editor);
+      console.info('The editor is ', editor);
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [editor]);
-  
+
   return null;
 };
 
 export default () => (
   <Plate>
     <CustomEffect />
+
+    <PlateContent />
   </Plate>
 );
 ```
 
 <Callout className="my-4">
-  **If **`editor`** is modified by reference, why include it in dependency lists?**<br />
-  Good question! Even though **`editor`** is usually modified by reference, there are some situations in which it's replaced with a fresh instance, such as when the editor is reset.
+  **If **`editor`** is modified by reference, why include it in dependency
+  lists?**
+  <br />
+  Good question! Even though **`editor`** is usually modified by reference,
+  there are some situations in which it's replaced with a fresh instance, such
+  as when the editor is reset.
 </Callout>
 
 ## From a Sibling of Plate
 
-Wrap **`Plate`** and the sibling in **`PlateProvider`**, and then use **`usePlateEditorRef`** or **`usePlateEditorState`** from within the sibling.
-
-Note that certain **`Plate`** props, such as **`plugins`** and **`initialValue`**, must be lifted up to the **`PlateProvider`**. See [From an Ancestor](#from-an-ancestor) if this is impractical or impossible for you to achieve.
+Wrap **`PlateContent`** and the sibling in **`Plate`**, and then use **`useEditorRef`** or **`useEditorState`** from within the sibling.
 
 ```tsx showLineNumbers {2,8,11}
 const Toolbar = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   // Do something with editor
   // ...
 };
 
-export default () => (
-  <PlateProvider>
+const Editor = () => (
+  <Plate>
     <Toolbar />
-    <Plate />
-  </PlateProvider>
+    <PlateContent />
+  </Plate>
 );
 ```
 
 ## From an Ancestor
 
-If you need to access the **`editor`** instance from an ancestor of **`Plate`**, wrapping the relevant components in a **`PlateProvider`** is the preferred solution. If this is not an option, you can instead use the **`editorRef`** prop to pass a reference to the **`editor`** instance up the React component tree to where it is needed.
+If you need to access the **`editor`** instance from an ancestor of **`PlateContent`**, wrapping the relevant components in a **`Plate`** is the preferred solution. If this is not an option, you can instead use the **`editorRef`** prop to pass a reference to the **`editor`** instance up the React component tree to where it is needed.
 
 The **`editorRef`** prop can be used with **`useRef`**, **`useState`**, or a custom ref callback. Regardless of which you use, you'll need to handle the case where **`editor`** is null. This happens when the editor hasn't had a chance to render yet or has unmounted.
 
@@ -146,70 +148,71 @@ The **`editorRef`** prop can be used with **`useRef`**, **`useState`**, or a cus
 ```tsx showLineNumbers {2,21}
 const App = () => {
   const editorRef = useRef<PlateEditor | null>(null);
-  
+
   const handleSomeEvent = useCallback(() => {
     // editor has type PlateEditor | null
     const editor = editorRef.current;
-    
+
     if (editor) {
       // Do something with editor
     }
   }, []);
-  
+
   // Pass editorRef and handleSomeEvent down to where they're needed
   // ...
 };
 
-const MyEditor = ({
+const Editor = ({
   editorRef,
 }: {
   editorRef: MutableRefObject<PlateEditor | null>;
-}) => <Plate editorRef={editorRef} />;
+}) => (
+  <Plate editorRef={editorRef}>
+    <PlateContent />
+  </Plate>
+);
 ```
 
 ### With State
 
 If you want your ancestor component to re-render when the editor content changes, you may want to use **`useState`** to store your **`editor`** instance. Since the **`editorRef`** callback is only called once when the editor first mounts, you'll also need to manually trigger a re-render by updating a counter whenever the **`onChange`** handler of **`Plate`** is called.
 
-Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`usePlateEditorRef`** instead of **`usePlateEditorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
+Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`useEditorRef`** instead of **`useEditorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
 
 ```tsx showLineNumbers {2-3,34-35}
 const App = () => {
   const [editor, setEditor] = useState<PlateEditor | null>(null);
   const [, handleUpdateEditor] = useReducer((x) => x + 1, 0);
-  
+
   // Pass editor, setEditor and handleUpdateEditor down to where they're needed
   // ...
 };
 
-const EditorPreview = ({
-  editor,
-}: {
-  editor: PlateEditor | null;
-}) => {
+const EditorPreview = ({ editor }: { editor: PlateEditor | null }) => {
   // html has type string | null
   const html = useMemo(
-    () => editor && serializeHtml(editor, {
-      nodes: editor.children,
-    }),
+    () =>
+      editor &&
+      serializeHtml(editor, {
+        nodes: editor.children,
+      }),
     [editor, editor?.children]
   );
-  
+
   if (!html) return null;
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
-const MyEditor = ({
+const Editor = ({
   setEditor,
   handleUpdateEditor,
 }: {
   setEditor: (editor: PlateEditor | null) => void;
   handleUpdateEditor: () => void;
 }) => (
-  <Plate
-    editorRef={setEditor}
-    onChange={handleUpdateEditor}
-  />
+  <Plate editorRef={setEditor} onChange={handleUpdateEditor}>
+    <PlateContent />
+  </Plate>
 );
 ```
 
@@ -227,7 +230,7 @@ const plugins = createPlugins([
   // ...
 ]);
 
-export default ({ initialHtml }: { initialHtml: string }) => {
+const Editor = ({ initialHtml }: { initialHtml: string }) => {
   /**
    * Changing the initialValue after render is not supported, so initialHtml
    * is not included in the useMemo deps.
@@ -238,13 +241,11 @@ export default ({ initialHtml }: { initialHtml: string }) => {
       element: initialHtml,
     });
   }, []);
-  
+
   return (
-    <Plate
-      plugins={plugins}
-      initialValue={initialValue}
-    />
+    <Plate plugins={plugins} initialValue={initialValue}>
+      <PlateContent />
+    </Plate>
   );
 };
 ```
-

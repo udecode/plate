@@ -9,7 +9,7 @@ import {
   isCollapsed,
   TElement,
   toggleNodeType,
-  usePlateEditorState,
+  useEditorState,
 } from '@udecode/plate-common';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
@@ -75,7 +75,7 @@ const items = [
 const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const openState = useOpenState();
 
   let value: string = ELEMENT_PARAGRAPH;

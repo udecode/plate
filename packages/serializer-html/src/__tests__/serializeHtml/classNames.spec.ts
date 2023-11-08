@@ -1,9 +1,9 @@
-import { createPlateUIEditor } from '@/plate/create-plate-ui-editor';
 import {
   createBoldPlugin,
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate';
+import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 

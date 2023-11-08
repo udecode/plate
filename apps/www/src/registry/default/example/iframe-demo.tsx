@@ -4,16 +4,17 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
 import { Plate } from '@udecode/plate-common';
+import { createPlugins } from '@udecode/plate-core';
 import { createPortal } from 'react-dom';
 
-import { createMyPlugins, MyValue } from '@/types/plate-types';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 import {
   createEditableVoidPlugin,
   EditableVoidElement,
 } from './editable-voids-demo';
 
-const plugins = createMyPlugins(
+const plugins = createPlugins(
   [
     ...basicNodesPlugins,
     createEditableVoidPlugin({
@@ -42,12 +43,10 @@ export function IFrame({ children, ...props }: any) {
 
 export default function IframeDemo() {
   return (
-    <IFrame>
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={iframeValue}
-      />
+    <IFrame className="p-10">
+      <Plate plugins={plugins} initialValue={iframeValue}>
+        <Editor {...editableProps} />
+      </Plate>
     </IFrame>
   );
 }

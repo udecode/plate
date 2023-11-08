@@ -1,5 +1,59 @@
 # @udecode/plate-docx-serializer
 
+## 25.0.0
+
+## 24.5.2
+
+## 24.4.2
+
+## 24.4.1
+
+### Patch Changes
+
+- [#2678](https://github.com/udecode/plate/pull/2678) by [@rcbevans](https://github.com/rcbevans) – Fixes #2677: CommonJS validator import in cleanDocXImageElements
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
+## 24.0.2
+
+## 24.0.1
+
+## 24.0.0
+
+## 23.7.4
+
+## 23.7.2
+
+## 23.7.0
+
+## 23.6.1
+
+## 23.6.0
+
+## 23.4.1
+
+## 23.3.1
+
+## 23.3.0
+
+## 23.2.0
+
 ## 23.1.0
 
 ## 23.0.1

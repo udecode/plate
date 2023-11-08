@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   UnknownObject,
+  useEditorRef,
   useIsomorphicLayoutEffect,
-  usePlateEditorRef,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -21,7 +21,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   cursors: cursorStates,
   refreshOnResize = true,
 }: CursorOverlayProps<TCursorData> = {}) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   const selectionRectCache = useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()

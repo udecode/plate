@@ -1,5 +1,5 @@
 import { hexToBase64, traverseHtmlElements } from '@udecode/plate-common';
-import isURL from 'validator/lib/isURL';
+import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';
 import { getVShapeSpid } from './getVShapeSpid';
@@ -30,7 +30,10 @@ export const cleanDocxImageElements = (
 
       const alt = element.getAttribute('alt');
 
-      if (typeof alt === 'string' && isURL(alt, { require_protocol: true })) {
+      if (
+        typeof alt === 'string' &&
+        validator.isURL(alt, { require_protocol: true })
+      ) {
         element.setAttribute('src', alt);
         return true;
       }

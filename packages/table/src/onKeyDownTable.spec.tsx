@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import React from 'react';
 import { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 

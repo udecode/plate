@@ -46,8 +46,6 @@ import {
   useEditorRef,
   useEditorState,
   usePlateActions,
-  usePlateEditorRef,
-  usePlateEditorState,
   usePlateSelectors,
   usePlateStates,
   WithOverride,
@@ -373,10 +371,6 @@ export const getMyEditor = (editor: MyEditor) =>
   getTEditor<MyValue, MyEditor>(editor);
 export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
 export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
-export const useMyPlateEditorRef = (id?: PlateId) =>
-  usePlateEditorRef<MyValue, MyEditor>(id);
-export const useMyPlateEditorState = (id?: PlateId) =>
-  usePlateEditorState<MyValue, MyEditor>(id);
 export const useMyPlateSelectors = (id?: PlateId) =>
   usePlateSelectors<MyValue, MyEditor>(id);
 export const useMyPlateActions = (id?: PlateId) =>
@@ -395,10 +389,10 @@ export const createMyPluginFactory = <P = PluginOptions>(
   defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
 ) => createPluginFactory(defaultPlugin);
 export const createMyPlugins = (
-  plugins: MyPlatePlugin[],
+  plugins: PlatePlugin[],
   options?: {
     components?: Record<string, PlatePluginComponent>;
-    overrideByKey?: MyOverrideByKey;
+    overrideByKey?: OverrideByKey;
   }
 ) => createPlugins<MyValue, MyEditor>(plugins, options);
 

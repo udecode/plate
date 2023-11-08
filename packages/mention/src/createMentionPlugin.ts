@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory, removeNodes } from '@udecode/plate-common';
 
 import { mentionOnKeyDownHandler } from './handlers/mentionOnKeyDownHandler';
 import { isSelectionInMentionInput } from './queries/index';
@@ -16,8 +16,16 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   isElement: true,
   isInline: true,
   isVoid: true,
+  isMarkableVoid: true,
   handlers: {
     onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
+    onBlur: (editor) => () => {
+      // remove mention_input nodes from editor on blur
+      removeNodes(editor, {
+        match: (n) => n.type === ELEMENT_MENTION_INPUT,
+        at: [],
+      });
+    },
   },
   withOverrides: withMention,
   options: {

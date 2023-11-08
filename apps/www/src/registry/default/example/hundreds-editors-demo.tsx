@@ -4,18 +4,15 @@ import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
 import { Plate } from '@udecode/plate-common';
 
-import { MyValue } from '@/types/plate-types';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValues = createMultiEditorsValue();
 
 function WithPlate({ initialValue, id }: any) {
   return (
-    <Plate<MyValue>
-      id={id}
-      editableProps={editableProps}
-      initialValue={initialValue}
-      plugins={basicNodesPlugins}
-    />
+    <Plate id={id} initialValue={initialValue} plugins={basicNodesPlugins}>
+      <Editor {...editableProps} />
+    </Plate>
   );
 }
 
@@ -39,22 +36,18 @@ function WithPlate({ initialValue, id }: any) {
 //       value={value}
 //       onChange={useCallback((v) => setValue(v), [])}
 //     >
-//       <Editable renderElement={renderElement} {...(editableProps as any)} />
+//       <Editable renderElement={renderElement} />
 //     </Slate>
 //   );
 // }
-
-const styles = {
-  wrapper: { border: '1px solid black', marginBottom: '20px', padding: 4 },
-};
 
 export default function HundredsEditorsDemo() {
   return (
     <div className="flex flex-col">
       {initialValues.map((initialValue, idx) => {
         return (
-          <div style={styles.wrapper} key={idx}>
-            <div>{idx}</div>
+          <div key={idx} className="p-10">
+            <h3 className="mb-2 font-semibold">#{idx + 1}</h3>
             <WithPlate initialValue={initialValue} id={idx + 1} />
             {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}
           </div>

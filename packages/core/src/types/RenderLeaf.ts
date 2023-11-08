@@ -13,4 +13,4 @@ import { PlateRenderLeafProps } from './PlateRenderLeafProps';
  */
 export type RenderLeaf = <V extends Value = Value>(
   props: PlateRenderLeafProps<V>
-) => JSX.Element;
+) => React.ReactElement;

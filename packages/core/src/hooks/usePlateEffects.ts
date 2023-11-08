@@ -1,14 +1,13 @@
 import { ForwardedRef, useEffect } from 'react';
 import { Value } from '@udecode/slate';
-import { isUndefined } from 'lodash';
+import { isUndefined } from '@udecode/utils';
 
-import { usePlateEditorRef, usePlateStates } from '../stores';
+import { useEditorRef, usePlateStates } from '../stores';
 import {
   Nullable,
   PlateEditor,
   PlatePlugin,
   PlateStoreState,
-  PluginOptions,
   TEditableProps,
 } from '../types';
 import { setPlatePlugins } from '../utils';
@@ -17,7 +16,7 @@ export type UsePlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > = Partial<Pick<PlateStoreState<V, E>, 'id' | 'value' | 'readOnly'>> & {
-  plugins?: PlatePlugin<PluginOptions, V, E>[];
+  plugins?: PlatePlugin[];
 } & Nullable<{
     /**
      * If `true`, disable all the core plugins.
@@ -35,6 +34,7 @@ export type UsePlateEffectsProps<
           nodeFactory?: boolean;
           react?: boolean;
           selection?: boolean;
+          length?: boolean;
         }
       | boolean;
 
@@ -48,9 +48,9 @@ export type UsePlateEffectsProps<
      */
     editorRef?: ForwardedRef<E>;
 
-    decorate?: TEditableProps<V>['decorate'];
-    renderElement?: TEditableProps<V>['renderElement'];
-    renderLeaf?: TEditableProps<V>['renderLeaf'];
+    decorate?: TEditableProps['decorate'];
+    renderElement?: TEditableProps['renderElement'];
+    renderLeaf?: TEditableProps['renderLeaf'];
   }>;
 
 /**
@@ -90,7 +90,7 @@ export const usePlateEffects = <
   renderLeaf: renderLeafProp,
   readOnly: readOnlyProp,
 }: UsePlateEffectsProps<V, E>) => {
-  const editor = usePlateEditorRef<V, E>(id);
+  const editor = useEditorRef<V, E>(id);
 
   const states = usePlateStates<V, E>(id);
   const [value, setValue] = states.value();

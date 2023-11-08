@@ -1,5 +1,43 @@
 # @udecode/slate
 
+## 25.0.0
+
+### Minor Changes
+
+- [#2719](https://github.com/udecode/plate/pull/2719) by [@12joan](https://github.com/12joan) – Add `removeEmpty: boolean | QueryNodeOptions` option to insertNodes
+
+## 24.3.6
+
+### Patch Changes
+
+- [#2671](https://github.com/udecode/plate/pull/2671) by [@zbeyens](https://github.com/zbeyens) – Fix lodash import
+
+## 24.3.5
+
+### Patch Changes
+
+- [#2669](https://github.com/udecode/plate/pull/2669) by [@zbeyens](https://github.com/zbeyens) – Replace lodash by lodash-es
+
+## 24.3.2
+
+### Patch Changes
+
+- [`3f17d0bb`](https://github.com/udecode/plate/commit/3f17d0bbcd9e31437d1f1325c8458cac2db0e3da) by [@zbeyens](https://github.com/zbeyens) – fix build
+
+## 24.3.1
+
+### Patch Changes
+
+- [#2659](https://github.com/udecode/plate/pull/2659) by [@zbeyens](https://github.com/zbeyens) – fix build (types)
+
+## 24.3.0
+
+## 23.7.4
+
+### Patch Changes
+
+- [#2622](https://github.com/udecode/plate/pull/2622) by [@12joan](https://github.com/12joan) – Ensure the return type of `unhangRange` matches the argument type
+
 ## 22.0.2
 
 ### Patch Changes

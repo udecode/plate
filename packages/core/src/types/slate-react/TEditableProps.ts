@@ -1,14 +1,18 @@
-import { ENodeEntry, RenderLeafFn, Value } from '@udecode/slate';
+import { TNodeEntry } from '@udecode/slate';
+import { RenderLeafFn } from '@udecode/slate-react';
 import { Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
 
 import { RenderElementFn } from './TRenderElementProps';
 
-export type TEditableProps<V extends Value = Value> = Omit<
+/**
+ * `EditableProps` are passed to the <Editable> component.
+ */
+export type TEditableProps = Omit<
   EditableProps,
   'decorate' | 'renderElement' | 'renderLeaf'
 > & {
-  decorate?: (entry: ENodeEntry<V>) => Range[];
-  renderElement?: RenderElementFn<V>;
-  renderLeaf?: RenderLeafFn<V>;
+  decorate?: (entry: TNodeEntry) => Range[];
+  renderElement?: RenderElementFn;
+  renderLeaf?: RenderLeafFn;
 };

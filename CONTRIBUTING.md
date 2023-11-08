@@ -4,7 +4,174 @@ Thank you for your interest in helping to improve **`plate`**! As a community-le
 
 This document will provide guidance to help streamline the process and make efficient use of everyone's valuable time.
 
-## **Issues**
+## About this repository
+
+This repository is a monorepo.
+
+- We use [yarn](https://yarnpkg.com/en/docs/install) and [`workspaces`](https://yarnpkg.com/features/workspaces) for development.
+- We use [tsup](https://tsup.egoist.dev/) as our build system.
+- We use [changesets](https://github.com/changesets/changesets) for managing releases.
+
+## Structure
+
+This repository is structured as follows:
+
+```
+apps
+└── www
+    ├── content
+    └── src
+        └── app
+            ├── components
+            └── registry
+                └── default
+                    ├── example
+                    └── plate-ui
+packages
+└── core
+```
+
+| Path                      | Description                              |
+| ------------------------- | ---------------------------------------- |
+| `apps/www/content`        | The content for the website.             |
+| `apps/www/src/app`        | The Next.js application for the website. |
+| `apps/www/src/components` | The React components for the website.    |
+| `apps/www/src/registry`   | The registry for the components.         |
+| `packages/core`           | The `@udecode/plate-core` package.       |
+
+## Development
+
+### Start by cloning the repository:
+
+```bash
+git clone git@github.com:udecode/plate.git
+```
+
+### Install
+
+```bash
+yarn install
+```
+
+### Build
+
+```bash
+yarn build
+```
+
+### Run a workspace
+
+You can use the `turbo --filter=[WORKSPACE]` command to start the development process for a workspace.
+
+#### Examples
+
+1. To run the `platejs.org` website:
+
+```
+turbo --filter=www dev
+```
+
+2. To build the `@udecode/plate-core` package:
+
+```
+turbo --filter=@udecode/plate-core build
+```
+
+## Documentation
+
+The documentation for this project is located in the `www` workspace. After running `yarn build`, you can run the documentation locally by running the following command:
+
+```bash
+yarn dev
+```
+
+Documentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `apps/www/content/docs` directory.
+
+**Re-run the following commands on each package update:**
+
+```bash
+turbo --filter=[PACKAGE] build
+yarn dev
+```
+
+## Components
+
+We use a registry system for developing components. You can find the source code for the components under `apps/www/src/registry`. The components are organized by styles.
+
+```bash
+apps
+└── www
+    └── registry
+        ├── default
+        │   ├── example
+        │   └── plate-ui
+```
+
+When adding or modifying components, please ensure that you update the documentation.
+
+## CLI
+
+The `@udecode/plate-ui` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://platejs.org/docs/components/cli).
+
+Any changes to the CLI should be made in the `packages/plate-ui` directory. If you can, it would be great if you could add tests for your changes.
+
+### Run Linter
+
+We use [ESLint](https://eslint.org/) as our code linter. To run the linter, use the following command:
+
+```bash
+yarn lint
+# autofix with:
+yarn lint:fix
+```
+
+## Testing
+
+### Run Unit Tests
+
+Tests are written using [Jest](https://jestjs.io/). You can run all the tests from the root of the repository.
+
+```bash
+yarn test
+```
+
+There are various modes available for running tests, including **`--watch`**, **`--coverage`**, and **`--runInBand`**. These can be selected from the command line interface or passed to **`yarn test`** as specific parameters.
+
+Please ensure that the tests are passing when submitting a pull request. If you're adding new features, please include tests.
+
+### Run Playwright Tests
+
+We use Playwright for our end-to-end (e2e) tests in headless browsers. The React app for these tests is located in **`/apps/e2e-examples`**.
+
+To install Playwright's browsers and dependencies, use:
+
+```bash
+yarn install:playwright # first time
+```
+
+To run all tests:
+
+```bash
+yarn playwright
+```
+
+## Release Guide
+
+For those wanting a release, follow this sequence:
+
+- Commit your changes:
+  - Run **`yarn brl`** to synchronize the exports and automatically update the index files.
+  - Make sure lint, test, and build pass.
+- Open a PR against **`main`** and **[add a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**.
+- Merge the PR, which will trigger the bot to create a PR release.
+- Review the final changesets.
+- Merge the PR release, and the bot will release the updated packages on npm.
+
+## Requests for new features
+
+If you have a request for a new feature, please open a discussion on GitHub. We'll be happy to help you out.
+
+## Issues
 
 No software is without bugs. If you encounter a problem, please follow these steps:
 
@@ -12,49 +179,46 @@ No software is without bugs. If you encounter a problem, please follow these ste
   - If you find an existing issue that matches yours, please give it a "thumbs-up reaction". This helps us prioritize which issues to address first!
 - If you can't find a match, feel free to create a new issue.
 
-### **Reproductions**
+### Reproductions
 
 The best way to help us understand and fix your issue is to provide a minimal reproduction of the problem. You can do this using **[our CodeSandbox](https://codesandbox.io/s/github/udecode/plate-playground)**.
 
-### Development Guide
+### Responding to questions
 
-### **Initial Setup**
+The **[Q&A](https://github.com/udecode/plate/discussions/categories/q-a)** is a great place to help. If you can answer a question, it will benefit the asker and others who have a similar question. If an issue needs reproduction, you may be able to guide the reporter toward one, or even reproduce it yourself using **[this technique](https://github.com/udecode/plate/blob/main/CONTRIBUTING.md#reproductions)**.
 
-### Yarn
+### Triaging issues
 
-This repo uses yarn workspaces. You'll need to install **`yarn`** as your package manager. Check out the **[installation guide](https://yarnpkg.com/en/docs/install)** for help.
+Once you've helped out on a few issues, you can help label issues and respond to reporters. We use a label scheme to categorize issues:
 
-### Clone
+- **type** - **`bug`**, **`feature`**, **`dependencies`**, **`maintenance`**.
+- **area** - **`plugin:x`**, **`plugin:list`**, **`plugin:common`**, **`ui`**, etc.
+- **status** - **`needs reproduction`**, etc.
 
-Clone the repo by running the following command:
+All issues should have a **`type`** label. **`dependencies`** is for keeping package dependencies up to date and **`maintenance`** is a catch-all for any kind of cleanup or refactoring. They should also have one or more **`area`**/**`status`** labels. We use these labels to filter issues down so we can see all of the issues for a particular area and keep the total number of open issues under control. For more info see **[searching issues](https://help.github.com/articles/searching-issues/)** in the GitHub docs.
 
-```bash
-git clone https://github.com/udecode/plate.git
-```
+If an issue is a **`bug`**, and it doesn't have a clear reproduction that you have personally confirmed, label it **`needs reproduction`** and ask the author to try and create a reproduction, or have a go yourself.
 
-### Install & Build
+### Closing issues
 
-Navigate to the project's root directory and run the following commands:
+- Duplicate issues should be closed with a link to the original.
+- Unreproducible issues should be closed if it's not possible to reproduce them. If the reporter drops offline, it is reasonable to wait 2 weeks before closing.
+- **`bug`**s should be closed when the issue is fixed and released.
+- **`feature`**s, **`maintenance`**s, should be closed when released or if the feature is deemed not appropriate.
 
-```bash
-cd plate
-yarn install
-yarn build
-```
+## Pull Requests (PRs)
 
-### **Development**
+We welcome all contributions and there are many ways you can help. Before you submit a new PR, please run **build**, **lint** and **test**. Do not submit a PR if tests are failing. If you need help, the best way is to **[join Plate's Discord and ask in the #contributing channel](https://discord.gg/mAZRuBzGM3)**.
 
-To start the NextJS app on your local machine, use:
+You miss time/knowledge but still want to contribute? Just open a PR or a gist on Discord and we'll try to help.
 
-```bash
-yarn dev
-```
+### Reviewing PRs
 
-If you'd like to monitor a specific package for changes, run:
+**As a PR submitter**, you should reference the issue if there is one, include a short description of what you contributed, and provide instructions for manual testing if it is a code change. If your PR is reviewed as only needing trivial changes and you have commit access, then you can merge the PR after making those changes.
 
-```bash
-yarn workspace <package> build:watch
-```
+**As a PR reviewer**, read through the changes and comment on any potential problems. Also, follow the testing instructions and manually test the changes. If the instructions are missing, unclear, or overly complex, request better instructions from the submitter. Unless the PR is a draft, if you approve the review and there are no other required discussions or changes, you should also go ahead and merge the PR.
+
+## Guides
 
 ### How to: Create a Component
 
@@ -99,99 +263,3 @@ After creating your package, install and build it:
 yarn install
 yarn build
 ```
-
-### Run Linter
-
-We use ESLint as our code linter (for all code, including TypeScript). To run the linter, use the following command:
-
-```bash
-yarn lint
-# or
-yarn lint:fix
-```
-
-### Run Unit Tests
-
-To list all test suites and options for running tests, use:
-
-```bash
-yarn test
-```
-
-There are various modes available for running tests, including **`--watch`**, **`--coverage`**, and **`--runInBand`**. These can be selected from the command line interface or passed to **`yarn test`** as specific parameters.
-
-### Run Playwright Tests
-
-We use Playwright for our end-to-end (e2e) tests in headless browsers. The React app for these tests is located in **`/apps/e2e-examples`**.
-
-To install Playwright's browsers and dependencies, use:
-
-```bash
-yarn install:playwright # first time
-```
-
-To run all tests:
-
-```bash
-yarn playwright
-```
-
-For further details, refer to the specific sections in the original document.
-
-### Updating Tests
-
-Before submitting any contributions in a PR, please add or update meaningful tests. If your PR has failing tests, it will be considered as “Work in Progress” and won't be merged until all tests pass.
-
-For further details on how to add tests, refer to the specific sections in the original document.
-
-## Rel**ease Guide**
-
-For those wanting a release, follow this sequence:
-
-- Commit your changes:
-  - Run **`yarn brl`** to synchronize the exports and automatically update the index files.
-  - Make sure lint, test, and build pass.
-- Open a PR against **`main`** and **[add a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**.
-- To create a **[snapshot release](https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md)**, maintainers can comment a GitHub issue starting with **`/release:next`**.
-- Merge the PR, which will trigger the bot to create a PR release.
-- Review the final changesets.
-- Merge the PR release, and the bot will release the updated packages on npm.
-
-## **Pull Requests (PRs)**
-
-We welcome all contributions and there are many ways you can help. Before you submit a new PR, please run **`yarn prerelease`**. Do not submit a PR if tests are failing. If you need help, the best way is to **[join Plate's Discord and ask in the #contributing channel](https://discord.gg/mAZRuBzGM3)**.
-
-You miss time/knowledge but still want to contribute? Just open a PR or a gist on Discord and we'll try to help.
-
-### **Reviewing PRs**
-
-**As a PR submitter**, you should reference the issue if there is one, include a short description of what you contributed, and provide instructions for manual testing if it is a code change. If your PR is reviewed as only needing trivial changes and you have commit access, then you can merge the PR after making those changes.
-
-**As a PR reviewer**, read through the changes and comment on any potential problems. Also, follow the testing instructions and manually test the changes. If the instructions are missing, unclear, or overly complex, request better instructions from the submitter. Unless the PR is a draft, if you approve the review and there are no other required discussions or changes, you should also go ahead and merge the PR.
-
-## **Issue Triage**
-
-Helping with issue triaging is a great way to contribute:
-
-### **Responding to questions**
-
-The **[Q&A](https://github.com/udecode/plate/discussions/categories/q-a)** is a great place to help. If you can answer a question, it will benefit the asker and others who have a similar question. If an issue needs reproduction, you may be able to guide the reporter toward one, or even reproduce it yourself using **[this technique](https://github.com/udecode/plate/blob/main/CONTRIBUTING.md#reproductions)**.
-
-### **Triaging issues**
-
-Once you've helped out on a few issues, you can help label issues and respond to reporters. We use a label scheme to categorize issues:
-
-- **type** - **`bug`**, **`feature`**, **`dependencies`**, **`maintenance`**.
-- **area** - **`plugin:x`**, **`plugin:list`**, **`plugin:common`**, **`ui`**, etc.
-- **status** - **`needs reproduction`**, etc.
-
-All issues should have a **`type`** label. **`dependencies`** is for keeping package dependencies up to date and **`maintenance`** is a catch-all for any kind of cleanup or refactoring. They should also have one or more **`area`**/**`status`** labels. We use these labels to filter issues down so we can see all of the issues for a particular area and keep the total number of open issues under control. For more info see **[searching issues](https://help.github.com/articles/searching-issues/)** in the GitHub docs.
-
-If an issue is a **`bug`**, and it doesn't have a clear reproduction that you have personally confirmed, label it **`needs reproduction`** and ask the author to try and create a reproduction, or have a go yourself.
-
-### **Closing issues**
-
-- Duplicate issues should be closed with a link to the original.
-- Unreproducible issues should be closed if it's not possible to reproduce them. If the reporter drops offline, it is reasonable to wait 2 weeks before closing.
-- **`bug`**s should be closed when the issue is fixed and released.
-- **`feature`**s, **`maintenance`**s, should be closed when released or if the feature is deemed not appropriate.

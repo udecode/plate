@@ -9,9 +9,7 @@ import {
 
 import { Combobox } from './combobox';
 
-export function EmojiComboboxItem({
-  item,
-}: ComboboxItemProps<EmojiItemData>): JSX.Element {
+export function EmojiComboboxItem({ item }: ComboboxItemProps<EmojiItemData>) {
   const {
     data: { id, emoji },
   } = item;

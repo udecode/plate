@@ -1,9 +1,8 @@
 import { CaptionPlugin } from '@udecode/plate-caption';
+import { PlatePlugin } from '@udecode/plate-common';
 import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
-import { MyPlatePlugin } from '@/types/plate-types';
-
-export const captionPlugin: Partial<MyPlatePlugin<CaptionPlugin>> = {
+export const captionPlugin: Partial<PlatePlugin<CaptionPlugin>> = {
   options: {
     pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
   },

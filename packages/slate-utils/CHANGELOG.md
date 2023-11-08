@@ -1,5 +1,32 @@
 # @udecode/slate-utils
 
+## 25.0.0
+
+## 24.3.6
+
+## 24.3.5
+
+## 24.3.2
+
+## 24.3.1
+
+## 24.3.0
+
+## 24.2.0
+
+### Minor Changes
+
+- [`18f9778c`](https://github.com/udecode/plate/commit/18f9778cda9450cd99a71c47ab0767b64813db1a) by [@zbeyens](https://github.com/zbeyens) – Add replaceNode
+
+## 24.0.0
+
+### Minor Changes
+
+- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `isEditorEmpty` query. Whether the editor is empty. An editor is empty if it has only one empty element.
+
+## 23.7.4
+
 ## 22.0.2
 
 ### Patch Changes

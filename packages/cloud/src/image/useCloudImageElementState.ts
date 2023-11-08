@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  findNodePath,
-  setNodes,
-  usePlateEditorRef,
-} from '@udecode/plate-common';
+import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
 import { generateSrcAndSrcSet, TCloudImageElement, useUpload } from '..';
@@ -13,7 +9,7 @@ export const useCloudImageElementState = ({
 }: {
   element: TCloudImageElement;
 }) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
   const upload = useUpload(element.url);
 
   const url = upload.status === 'not-found' ? undefined : upload.url;

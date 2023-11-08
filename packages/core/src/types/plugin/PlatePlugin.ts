@@ -83,6 +83,11 @@ export type PlatePlugin<
   isInline?: boolean;
 
   /**
+   * Property used by `isMarkableVoid` core plugin to set void elements of this `type` as markable.
+   */
+  isMarkableVoid?: boolean;
+
+  /**
    * Property used by Plate to render nodes of this `type` as leaves, i.e. `renderLeaf`.
    */
   isLeaf?: boolean;
@@ -170,12 +175,12 @@ export type PlatePlugin<
     /**
      * Render a component after `Editable`.
      */
-    renderAfterEditable?: RenderAfterEditable<V>;
+    renderAfterEditable?: RenderAfterEditable;
 
     /**
      * Render a component before `Editable`.
      */
-    renderBeforeEditable?: RenderAfterEditable<V>;
+    renderBeforeEditable?: RenderAfterEditable;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
@@ -190,7 +195,7 @@ export type PlatePlugin<
     then?: (
       editor: E,
       plugin: WithPlatePlugin<P, V, E>
-    ) => Partial<PlatePlugin<P, V, E>> | void;
+    ) => Partial<PlatePlugin<PluginOptions, V, E>> | undefined | void;
 
     /**
      * For internal use. Tracks if then has been replaced for recursive calls.

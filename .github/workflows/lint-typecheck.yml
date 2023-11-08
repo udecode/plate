@@ -84,6 +84,9 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Build apps contentlayer
+        run: yarn g:typecheck:apps
+
       # Lint packages that have changed (--include & --since)
       - name: Lint
         run: yarn lint
@@ -97,7 +100,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs:
       - lint-typecheck
-    if: ${{ !github.event.pull_request.draft && failure() }}
+    if: ${{ github.event_name == 'push' && failure() }}
     
     steps:
       - name: Notify

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "22.0.3",
+  "version": "24.1.1",
   "description": "Add Plate components to your apps.",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -12,11 +12,22 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
-  "files": [
-    "dist"
-  ],
   "type": "module",
-  "exports": "./dist/index.js",
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "bin": "./dist/index.js",
   "scripts": {
     "build": "yarn tsup",

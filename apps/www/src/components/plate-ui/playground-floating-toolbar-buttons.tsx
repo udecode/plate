@@ -7,9 +7,9 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { usePlateReadOnly } from '@udecode/plate-common';
+import { useEditorReadOnly } from '@udecode/plate-common';
 
-import { ValueId } from '@/config/setting-values';
+import { ValueId } from '@/config/customizer-plugins';
 import { Icons } from '@/components/icons';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
@@ -20,7 +20,7 @@ import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
 export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
-  const readOnly = usePlateReadOnly();
+  const readOnly = useEditorReadOnly();
 
   return (
     <>

@@ -4,12 +4,12 @@ import {
   getEditorString,
   getPointBefore,
   insertText,
+  isHotkey,
   KeyboardHandlerReturnType,
   PlateEditor,
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
 import { Range } from 'slate';
 
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';

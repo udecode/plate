@@ -5,7 +5,7 @@ import {
   removeMark,
   select,
   setMarks,
-  usePlateEditorState,
+  useEditorState,
 } from '@udecode/plate-common';
 
 export const useColorDropdownMenuState = ({
@@ -19,7 +19,7 @@ export const useColorDropdownMenuState = ({
   customColors: { name: string; value: string; isBrightColor: boolean }[];
   closeOnSelect?: boolean;
 }) => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
 
   const color = editor && (getMark(editor, nodeType) as string);
 

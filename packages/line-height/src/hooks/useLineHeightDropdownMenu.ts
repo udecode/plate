@@ -1,26 +1,23 @@
 import {
-  findNode,
   focusEditor,
+  getBlockAbove,
   getPluginInjectProps,
-  isBlock,
   isCollapsed,
   TElement,
-  usePlateEditorRef,
-  usePlateEditorState,
+  useEditorRef,
+  useEditorState,
 } from '@udecode/plate-common';
 
 import { KEY_LINE_HEIGHT, setLineHeight } from '../index';
 
 export const useLineHeightDropdownMenuState = () => {
-  const editor = usePlateEditorState();
+  const editor = useEditorState();
   const { validNodeValues: values = [], defaultNodeValue } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
-  let value: string = defaultNodeValue;
+  let value: string | undefined;
 
   if (isCollapsed(editor?.selection)) {
-    const entry = findNode<TElement>(editor!, {
-      match: (n) => isBlock(editor, n),
-    });
+    const entry = getBlockAbove<TElement>(editor);
     if (entry) {
       value =
         values.find((item) => item === entry[0][KEY_LINE_HEIGHT]) ??
@@ -37,7 +34,7 @@ export const useLineHeightDropdownMenuState = () => {
 export const useLineHeightDropdownMenu = ({
   value,
 }: ReturnType<typeof useLineHeightDropdownMenuState>) => {
-  const editor = usePlateEditorRef();
+  const editor = useEditorRef();
 
   return {
     radioGroupProps: {

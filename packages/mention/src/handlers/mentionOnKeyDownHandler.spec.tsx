@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import * as isHotkey from 'is-hotkey';
 
 import { createEditorWithMentions } from '../__tests__/createEditorWithMentions';
 
@@ -22,7 +22,7 @@ describe('mentionOnKeyDownHandler', () => {
       { pluginOptions: { trigger } }
     );
 
-    jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+    jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
     // mentionOnKeyDownHandler({})(editor)(
     //   new KeyboardEvent('keydown', { key: 'Escape' }) as any

@@ -4,10 +4,11 @@ import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { Plate } from '@udecode/plate-common';
+import { createPlugins } from '@udecode/plate-core';
 import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 
-import { createMyPlugins, MyValue } from '@/types/plate-types';
 import { Icons } from '@/components/icons';
+import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 export interface SearchHighlightToolbarProps {
@@ -62,7 +63,7 @@ export default function FindReplaceDemo() {
 
   const plugins = useMemo(
     () =>
-      createMyPlugins(
+      createPlugins(
         [
           ...basicNodesPlugins,
           createFindReplacePlugin({ options: { search } }),
@@ -78,11 +79,9 @@ export default function FindReplaceDemo() {
     <>
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
-      <Plate<MyValue>
-        editableProps={editableProps}
-        plugins={plugins}
-        initialValue={findReplaceValue}
-      />
+      <Plate plugins={plugins} initialValue={findReplaceValue}>
+        <Editor {...editableProps} />
+      </Plate>
     </>
   );
 }

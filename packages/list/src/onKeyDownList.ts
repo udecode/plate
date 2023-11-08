@@ -2,6 +2,7 @@ import {
   getPluginType,
   Hotkeys,
   isCollapsed,
+  isHotkey,
   KeyboardHandlerReturnType,
   PlateEditor,
   select,
@@ -10,8 +11,7 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import isHotkey from 'is-hotkey';
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
 import { ELEMENT_LI } from './createListPlugin';

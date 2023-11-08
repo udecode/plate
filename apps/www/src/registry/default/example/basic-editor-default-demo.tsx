@@ -1,13 +1,10 @@
 import React from 'react';
-import { Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 export default function BasicEditorDefaultDemo() {
   return (
-    // eslint-disable-next-line react/jsx-no-undef
-    <Plate
-      editableProps={{
-        placeholder: 'Type...',
-      }}
-    />
+    <Plate>
+      <PlateContent placeholder="Type..." />
+    </Plate>
   );
 }

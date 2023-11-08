@@ -45,5 +45,10 @@ export const cleanDocx = (html: string, rtf: string): string => {
   cleanDocxListElements(body);
   copyBlockMarksToSpanChild(body);
 
-  return postCleanHtml(body.innerHTML);
+  // Prevent deserializeHtml from collapsing whitespace
+  const preformattedWrapper = document.createElement('div');
+  preformattedWrapper.style.whiteSpace = 'pre-wrap';
+  preformattedWrapper.innerHTML = body.innerHTML;
+
+  return postCleanHtml(preformattedWrapper.outerHTML);
 };

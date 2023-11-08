@@ -1,11 +1,10 @@
-import { findEventRange } from '@udecode/plate-common';
+import { findEventRange, PlatePlugin } from '@udecode/plate-common';
 
-import { MyPlatePlugin } from '@/types/plate-types';
 import { cursorStore } from '@/registry/default/plate-ui/cursor-overlay';
 
 export const KEY_DRAG_OVER_CURSOR = 'dragOverCursor';
 
-export const dragOverCursorPlugin: MyPlatePlugin = {
+export const dragOverCursorPlugin: PlatePlugin = {
   key: KEY_DRAG_OVER_CURSOR,
   handlers: {
     onDragOver: (editor) => (event) => {
