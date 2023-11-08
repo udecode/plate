@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "25.0.0",
+  "version": "25.0.1",
   "description": "Basic elements plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,11 +39,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "25.0.0",
-    "@udecode/plate-code-block": "25.0.0",
-    "@udecode/plate-common": "25.0.0",
-    "@udecode/plate-heading": "25.0.0",
-    "@udecode/plate-paragraph": "25.0.0"
+    "@udecode/plate-block-quote": "25.0.1",
+    "@udecode/plate-code-block": "25.0.1",
+    "@udecode/plate-common": "25.0.1",
+    "@udecode/plate-heading": "25.0.1",
+    "@udecode/plate-paragraph": "25.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

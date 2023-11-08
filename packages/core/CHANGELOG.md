@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 25.0.1
+
+### Patch Changes
+
+- [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
+  On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
+
 ## 25.0.0
 
 ## 24.4.0
