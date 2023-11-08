@@ -6,6 +6,7 @@ export * from './insertElements';
 export * from './insertEmptyElement';
 export * from './moveChildren';
 export * from './removeMark';
+export * from './removeNodeChildren';
 export * from './removeSelectionMark';
 export * from './replaceNode';
 export * from './replaceNodeChildren';

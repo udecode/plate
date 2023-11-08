@@ -56,7 +56,7 @@ describe(getDocxTestName(name), () => {
         </hp>
         <hp indent={7}>
           <htext underline>{'\t'}</htext>
-          Name
+          {'\n'}Name
         </hp>
         <hp indent={7}>Date of signature: </hp>
         <hp indent={7}>
