@@ -40,6 +40,9 @@ const TableCellElement = React.forwardRef<
     colIndex,
     rowIndex,
   });
+
+  
+
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
 

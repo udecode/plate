@@ -89,6 +89,7 @@ export const useTableCellElement = ({
   return {
     props: {
       colSpan: element.colSpan,
+      rowSpan: element.rowSpan,
     },
   };
 };

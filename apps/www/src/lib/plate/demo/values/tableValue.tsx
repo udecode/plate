@@ -105,6 +105,54 @@ export const createSpanningTable = (): any => (
   </fragment>
 );
 
+export const createMergedCellsTable = (): any => (
+  <fragment>
+    <htable colSizes={[100, 100, 100, 100]}>
+      <htr>
+        <hth rowSpan={2} colSpan={2}>
+          <hp>
+            <htext bold>Heading</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
+            <htext bold>Cell 1</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
+            <htext bold>Cell 2</htext>
+          </hp>
+        </hth>
+      </htr>
+      <htr>
+        <htd>
+          <hp>Cell 3</hp>
+        </htd>
+        <htd>
+          <hp>Cell 7</hp>
+        </htd>
+      </htr>
+      <htr>
+        <htd>
+          <hp>
+            <htext bold>Cell 4</htext>
+          </hp>
+        </htd>
+        <htd>
+          <hp>Cell 5</hp>
+        </htd>
+        <htd>
+          <hp>Cell 6</hp>
+        </htd>
+        <htd>
+          <hp>Cell 8</hp>
+        </htd>
+      </htr>
+    </htable>
+  </fragment>
+);
+
 export const tableValue: any = (
   <fragment>
     <hh2>🏓 Table</hh2>
@@ -112,10 +160,11 @@ export const tableValue: any = (
       Create customizable tables with resizable columns and rows, allowing you
       to design structured layouts.
     </hp>
-    {createTable()}
-    <hp>
+    {createMergedCellsTable()}
+    {/* {createTable()} */}
+    {/* <hp>
       This table is an example of rendering a table spanning multiple columns:
     </hp>
-    {createSpanningTable()}
+    {createSpanningTable()} */}
   </fragment>
 );
