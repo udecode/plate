@@ -1,5 +1,11 @@
 # @udecode/plate-docx-serializer
 
+## 25.0.1
+
+### Patch Changes
+
+- [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – Before sending DOCX HTML to be deserialized, wrap it in a `<div>` with `white-space: pre-wrap` to prevent white space from being collapsed.
+
 ## 25.0.0
 
 ## 24.5.2
