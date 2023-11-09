@@ -7,6 +7,51 @@
 - [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
   On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
 
+## @udecode/plate-comments@25.0.0
+
+### Major Changes
+
+-   [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
+
+# 24.0.0
+
+## @udecode/plate-core@24.0.0
+
+### Major Changes
+
+-   [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   [**Breaking**] Rename `Plate` to `PlateContent`.
+    -   [**Breaking**] Rename `PlateProvider` to `Plate`.
+    -   [**Breaking**] Rendering `PlateContent` is now required in `Plate`. This allows you to choose where to render the editor next to other components like toolbar. Example:
+
+    ```tsx
+    // Before
+    <Plate />
+    // or
+    <PlateProvider>
+      <Plate />
+    </PlateProvider>
+
+    // After
+    <Plate>
+      <PlateContent />
+    </Plate>
+    ```
+
+    -   [**Breaking**] Remove provider props such as `plugins` from `PlateContent`. These props should be passed to `Plate`.
+    -   [**Breaking**] Remove `editableProps` prop from `PlateContent`. Move these as`PlateContent` props.
+    -   [**Breaking**] Remove `children` prop from `PlateContent`. Render instead these components after `PlateContent`.
+    -   [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
+    -   [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
+    -   [**Breaking**] Remove `withPlateProvider`.
+    -   [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
+    -   [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
+    -   [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
+    -   [**Breaking**] Rename `usePlateSelection` to `useEditorSelection`.
+    -   [**Breaking**] Rename store attributes `keyDecorate`, `keyEditor` and `keySelection` to `versionDecorate`, `versionEditor` and `versionSelection`. These are now numbers incremented on each change.
+    -   [**Breaking**] Rename store attribute `isRendered` to `isMounted`.
+
 # 23.0.0
 
 ## @udecode/plate-media@23.0.0
