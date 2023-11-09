@@ -34,14 +34,14 @@ const TableCellElement = React.forwardRef<
     rowSize,
     borders,
     isSelectingCell,
+    colSpan,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
   const resizableState = useTableCellElementResizableState({
     colIndex,
     rowIndex,
+    colSpan,
   });
-
-  
 
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);

@@ -12,7 +12,10 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { useTableStore } from '../../stores/tableStore';
+import {
+  TableStoreCellAttributes,
+  useTableStore,
+} from '../../stores/tableStore';
 import {
   TablePlugin,
   TTableCellElement,
@@ -47,11 +50,13 @@ export const useTableElementState = ({
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();
   const marginLeftOverride = useTableStore().get.marginLeftOverride();
+  const setCellAttributes = useTableStore().set.cellAttributes();
 
-  // initial calc, than it will be calculated when each individual cell updated
   useEffect(() => {
-    calculateCellIndexes(editor, element);
-  }, [editor, element]);
+    const newAttributes = new WeakMap() as TableStoreCellAttributes;
+    calculateCellIndexes(editor, element, newAttributes);
+    setCellAttributes(newAttributes);
+  }, [editor, element, setCellAttributes]);
 
   const marginLeft = disableMarginLeft
     ? 0
@@ -98,13 +103,13 @@ export const useTableElement = () => {
   };
 };
 
-const cellAttributes = new WeakMap<
-  TTableCellElement,
-  { row: number; col: number }
->();
+// const cellAttributes = new WeakMap<
+//   TTableCellElement,
+//   { row: number; col: number }
+// >();
 
 function getCellIndices(
-  editor: PlateEditor,
+  cellAttributes: TableStoreCellAttributes,
   tableEl: TTableElement,
   tablePath: Path,
   cellPath: Path
@@ -161,7 +166,8 @@ function getCellIndices(
 
 const calculateCellIndexes = (
   editor: PlateEditor,
-  tableNode: TTableElement
+  tableNode: TTableElement,
+  cellAttributes: TableStoreCellAttributes
 ) => {
   // (Place the `getCellIndices()` function from the previous response here)
 
@@ -180,19 +186,23 @@ const calculateCellIndexes = (
       const cell = row.children[c] as TTableCellElement;
 
       // Get cell indices and store them in the row's array
-      // const cellPath = findNodePath(editor, cell)!; // TODO: use concat instead of findNodePath
       const cellPath = [r, c];
-      console.log(
-        'searching for',
-        cell.children.map((m) => {
-          return (m as any).children[0].text;
-        }),
+      // console.log(
+      //   'searching for',
+      //   cell.children.map((m) => {
+      //     return (m as any).children[0].text;
+      //   }),
+      //   tableNode,
+      //   tablePath,
+      //   cellPath
+      // );
+
+      const indices = getCellIndices(
+        cellAttributes,
         tableNode,
         tablePath,
         cellPath
       );
-
-      const indices = getCellIndices(editor, tableNode, tablePath, cellPath);
       if (indices) {
         cellAttributes.set(cell, indices);
       }

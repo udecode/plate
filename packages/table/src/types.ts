@@ -95,6 +95,10 @@ export interface TTableCellElement extends TElement {
      */
     right?: BorderStyle;
   };
+  attributes: {
+    colspan?: string;
+    rowspan?: string;
+  }
 }
 
 export type BorderDirection = 'top' | 'left' | 'bottom' | 'right';

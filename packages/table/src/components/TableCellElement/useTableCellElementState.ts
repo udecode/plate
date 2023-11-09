@@ -26,6 +26,25 @@ export type TableCellElementState = {
   rowSize: number | undefined;
   borders: BorderStylesDefault;
   isSelectingCell: boolean;
+  colSpan: number;
+};
+
+/**
+ * Returns the colspan attribute of the table cell element.
+ * @default 1 if undefined.
+ */
+export const getColSpan = (cellElem: TTableCellElement) => {
+  const attrColSpan = Number(cellElem.attributes?.colspan);
+  return cellElem.colSpan || attrColSpan || 1;
+};
+
+/**
+ * Returns the rowspan attribute of the table cell element.
+ * @default 1 if undefined
+ */
+export const getRowSpan = (cellElem: TTableCellElement) => {
+  const attrRowSpan = Number(cellElem.attributes?.rowspan);
+  return cellElem.rowSpan || attrRowSpan || 1;
 };
 
 export const useTableCellElementState = ({
@@ -39,20 +58,32 @@ export const useTableCellElementState = ({
   const editor = useEditorRef();
   const cellElement = useElement<TTableCellElement>();
 
-  const colIndex = getTableColumnIndex(editor, cellElement);
-  const rowIndex = getTableRowIndex(editor, cellElement);
+  const colSpan = getColSpan(cellElement);
+  const rowSpan = getRowSpan(cellElement);
+
+  const defaultColIndex = getTableColumnIndex(editor, cellElement);
+  const defaultRowIndex = getTableRowIndex(editor, cellElement);
 
   const readOnly = useReadOnly();
 
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
   const selectedCells = useTableStore().get.selectedCells();
+  const cellAttributes = useTableStore().get.cellAttributes();
 
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
+
+  const x = cellAttributes.get(cellElement);
+  const colIndex = x?.col ?? defaultColIndex;
+  const rowIndex = x?.row ?? defaultRowIndex;
+
+  const endingRowIndex = rowIndex + rowSpan - 1;
+  const endingColIndex = colIndex + colSpan - 1;
+
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
-    rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
+    rowSizeOverrides.get(endingRowIndex) ?? rowElement?.size ?? undefined;
 
   const isFirstCell = colIndex === 0;
   const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -63,15 +94,16 @@ export const useTableCellElementState = ({
   });
 
   return {
-    colIndex,
-    rowIndex,
+    colIndex: endingColIndex,
+    rowIndex: endingRowIndex,
     readOnly: !ignoreReadOnly && readOnly,
     selected: isCellSelected,
-    hovered: hoveredColIndex === colIndex,
+    hovered: hoveredColIndex === endingColIndex,
     hoveredLeft: isFirstCell && hoveredColIndex === -1,
     rowSize,
     borders,
     isSelectingCell: !!selectedCells,
+    colSpan,
   };
 };
 

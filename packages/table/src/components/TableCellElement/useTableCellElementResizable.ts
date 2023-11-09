@@ -30,7 +30,7 @@ import { TableCellElementState } from './useTableCellElementState';
 
 export type TableCellElementResizableOptions = Pick<
   TableCellElementState,
-  'colIndex' | 'rowIndex'
+  'colIndex' | 'rowIndex' | 'colSpan'
 > & {
   /**
    * Resize by step instead of by pixel.
@@ -50,6 +50,7 @@ export const useTableCellElementResizableState = ({
   step,
   stepX = step,
   stepY = step,
+  colSpan,
 }: TableCellElementResizableOptions) => {
   const editor = useEditorRef();
   const { disableMarginLeft } = getPluginOptions<TablePlugin>(
@@ -63,6 +64,7 @@ export const useTableCellElementResizableState = ({
     rowIndex,
     stepX,
     stepY,
+    colSpan,
   };
 };
 
@@ -72,6 +74,7 @@ export const useTableCellElementResizable = ({
   rowIndex,
   stepX,
   stepY,
+  colSpan,
 }: ReturnType<typeof useTableCellElementResizableState>): {
   rightProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
   bottomProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
@@ -85,6 +88,12 @@ export const useTableCellElementResizable = ({
     editor,
     ELEMENT_TABLE
   );
+
+  // MERGE: override width for horizontally merged cell
+  let initialWidth: number | undefined;
+  if (colSpan > 1) {
+    initialWidth = tableElement.colSizes?.[colIndex];
+  }
 
   const [hoveredColIndex, setHoveredColIndex] =
     useTableStore().use.hoveredColIndex();
@@ -246,6 +255,7 @@ export const useTableCellElementResizable = ({
     rightProps: {
       options: {
         direction: 'right',
+        initialSize: initialWidth,
         onResize: handleResizeRight,
         ...getHandleHoverProps(colIndex),
       },

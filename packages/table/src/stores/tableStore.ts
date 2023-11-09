@@ -2,13 +2,20 @@ import { useCallback } from 'react';
 import { createAtomStore, TElement } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
+import { TTableCellElement } from '../types';
 
 export type TableStoreSizeOverrides = Map<number, number>;
+
+export type TableStoreCellAttributes = Map<
+  TTableCellElement,
+  { row: number; col: number }
+>;
 
 export const { tableStore, useTableStore } = createAtomStore(
   {
     colSizeOverrides: new Map() as TableStoreSizeOverrides,
     rowSizeOverrides: new Map() as TableStoreSizeOverrides,
+    cellAttributes: new WeakMap() as TableStoreCellAttributes,
     marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,

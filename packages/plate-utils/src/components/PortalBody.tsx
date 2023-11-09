@@ -14,5 +14,5 @@ export const PortalBody: ({
     element || typeof window !== 'undefined' ? document.body : undefined;
   if (!container) return (<>{children}</>) as any;
 
-  return ReactDOM.createPortal(children as any, element || document.body);
+  return ReactDOM.createPortal(children, element || document.body);
 };
