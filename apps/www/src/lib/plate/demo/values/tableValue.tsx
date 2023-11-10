@@ -167,6 +167,7 @@ export const tableValue: any = (
       to design structured layouts.
     </hp>
     {createMergedCellsTable()}
+    {createSpanningTable()}
     {/* {createTable()} */}
     {/* <hp>
       This table is an example of rendering a table spanning multiple columns:

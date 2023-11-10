@@ -1,11 +1,19 @@
-import { useEffect } from 'react';
-import { useEditorRef, useElement } from '@udecode/plate-common';
+import { useEffect, useMemo } from 'react';
+import {
+  getPluginOptions,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
+import { getCellIndices } from '../../queries/getCellIdices';
+import { getColSpan } from '../../queries/getColSpan';
+import { getRowSpan } from '../../queries/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 import {
+  TablePlugin,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -29,24 +37,6 @@ export type TableCellElementState = {
   colSpan: number;
 };
 
-/**
- * Returns the colspan attribute of the table cell element.
- * @default 1 if undefined.
- */
-export const getColSpan = (cellElem: TTableCellElement) => {
-  const attrColSpan = Number(cellElem.attributes?.colspan);
-  return cellElem.colSpan || attrColSpan || 1;
-};
-
-/**
- * Returns the rowspan attribute of the table cell element.
- * @default 1 if undefined
- */
-export const getRowSpan = (cellElem: TTableCellElement) => {
-  const attrRowSpan = Number(cellElem.attributes?.rowspan);
-  return cellElem.rowSpan || attrRowSpan || 1;
-};
-
 export const useTableCellElementState = ({
   ignoreReadOnly,
 }: {
@@ -61,22 +51,39 @@ export const useTableCellElementState = ({
   const colSpan = getColSpan(cellElement);
   const rowSpan = getRowSpan(cellElement);
 
-  const defaultColIndex = getTableColumnIndex(editor, cellElement);
-  const defaultRowIndex = getTableRowIndex(editor, cellElement);
-
   const readOnly = useReadOnly();
 
   const isCellSelected = useIsCellSelected(cellElement);
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
   const selectedCells = useTableStore().get.selectedCells();
-  const cellAttributes = useTableStore().get.cellAttributes();
 
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
 
-  const x = cellAttributes.get(cellElement);
-  const colIndex = x?.col ?? defaultColIndex;
-  const rowIndex = x?.row ?? defaultRowIndex;
+  const { _cellIndices } = useMemo(
+    () => getPluginOptions<TablePlugin>(editor as any, ELEMENT_TABLE),
+    [editor]
+  );
+
+  let x: { col: number; row: number };
+  const fromWeakMap = _cellIndices.get(cellElement);
+  if (fromWeakMap) {
+    x = fromWeakMap;
+    console.log('from weak map', x, 'cellElement', cellElement);
+  } else {
+    const x1 = getCellIndices(editor, tableElement, cellElement);
+    if (x1) {
+      x = x1;
+      console.log('computed', x, 'cellElement', cellElement);
+    } else {
+      const defaultColIndex = getTableColumnIndex(editor, cellElement);
+      const defaultRowIndex = getTableRowIndex(editor, cellElement);
+      x = { col: defaultColIndex, row: defaultRowIndex };
+      console.log('get default', x, 'cellElement', cellElement);
+    }
+  }
+  const colIndex = x.col;
+  const rowIndex = x.row;
 
   const endingRowIndex = rowIndex + rowSpan - 1;
   const endingColIndex = colIndex + colSpan - 1;

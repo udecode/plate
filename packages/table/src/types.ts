@@ -58,7 +58,17 @@ export interface TablePlugin<V extends Value = Value> {
    * @default 48
    */
   minColumnWidth?: number;
+
+  /**
+   * For internal use. Keeps track of cell indices
+   */
+  _cellIndices: TableStoreCellAttributes;
 }
+
+export type TableStoreCellAttributes = Map<
+  TTableCellElement,
+  { row: number; col: number }
+>;
 
 export interface BorderStyle {
   // https://docx.js.org/api/enums/BorderStyle.html

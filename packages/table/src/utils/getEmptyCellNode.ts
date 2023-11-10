@@ -3,7 +3,8 @@ import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
 import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 import { TablePlugin } from '../types';
 
-export interface GetEmptyCellNodeOptions extends TablePlugin {
+export interface GetEmptyCellNodeOptions
+  extends Omit<TablePlugin, '_cellIndices'> {
   /**
    * Header cell
    */
