@@ -53,7 +53,7 @@ const TableCellElement = React.forwardRef<
       asChild
       ref={ref}
       className={cn(
-        'relative overflow-visible border-none bg-background p-0',
+        'relative h-full overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
         !hideBorder &&
