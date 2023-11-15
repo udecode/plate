@@ -19,7 +19,8 @@ import {
 } from '../types';
 import { getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
-import { findCellByIndexes1 } from './findCellByIndexes';
+import { computeCellIndices } from './computeCellIndices';
+import { findCellByIndexes } from './findCellByIndexes';
 import { getIndices } from './getIndices';
 import { getIndicesWithSpans } from './getIndicesWithSpans';
 
@@ -75,8 +76,15 @@ export const getTableGridByRange = <V extends Value>(
   })!; // TODO: improve typing
   const realTable = tableEntry[0] as TTableElement;
 
-  const { _startColIndex, _startRowIndex } = getIndices(options, startCell);
-  const { _endRowIndex, _endColIndex } = getIndicesWithSpans(options, endCell);
+  const { col: _startColIndex, row: _startRowIndex } =
+    getIndices(options, startCell) ||
+    computeCellIndices(editor, realTable, startCell)!;
+
+  const { row: _endRowIndex, col: _endColIndex } = getIndicesWithSpans(
+    getIndices(options, endCell) ||
+      computeCellIndices(editor, realTable, endCell)!,
+    endCell
+  );
 
   const startRowIndex = Math.min(_startRowIndex, _endRowIndex);
   const endRowIndex = Math.max(_startRowIndex, _endRowIndex);
@@ -93,25 +101,24 @@ export const getTableGridByRange = <V extends Value>(
   });
 
   const cellEntries: TElementEntry[] = [];
-  const cellsSet = new Set();
+  const cellsSet = new WeakSet();
 
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
   while (true) {
-    const cell = findCellByIndexes1(options, realTable, rowIndex, colIndex);
+    const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
     if (!cell) {
       break;
     }
 
-    const cellPath = findNodePath(editor, cell)!;
-    const path = cellPath.join('');
-    if (!cellsSet.has(path)) {
-      cellsSet.add(path);
+    if (!cellsSet.has(cell)) {
+      cellsSet.add(cell);
 
       const rows = table.children[rowIndex - startRowIndex]
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
 
+      const cellPath = findNodePath(editor, cell)!;
       cellEntries.push([cell, cellPath]);
     }
 
@@ -142,8 +149,6 @@ export const getTableGridByRange = <V extends Value>(
 
     rowElement.children = filteredChildren;
   });
-
-  console.log('return entries', [[table, tablePath]], cellEntries);
 
   return [[table, tablePath]];
 };

@@ -158,6 +158,59 @@ export const createMergedCellsTable = (): any => (
   </fragment>
 );
 
+export const createAutoLayoutTable = (): any => (
+  <fragment>
+    <htable>
+      <htr>
+        <hth rowSpan={2} colSpan={1}>
+          <hp>
+            <htext bold>Heading</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
+            <htext bold>Cell 1</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
+            <htext bold>Cell 11</htext>
+          </hp>
+        </hth>
+        <hth>
+          <hp>
+            <htext bold>Cell 2</htext>
+          </hp>
+        </hth>
+      </htr>
+      <htr>
+        <htd rowSpan={2} colSpan={2}>
+          <hp>Cell 3</hp>
+        </htd>
+        {/* <htd>
+          <hp>Cell 77</hp>
+        </htd> */}
+        <htd>
+          <hp>Cell 7</hp>
+        </htd>
+      </htr>
+      <htr>
+        <htd>
+          <hp>
+            <htext bold>Cell 4</htext>
+          </hp>
+        </htd>
+        {/* <htd>
+          <hp>Cell 5</hp>
+        </htd> */}
+        <htd>
+          <hp>Cell 8</hp>
+        </htd>
+      </htr>
+    </htable>
+  </fragment>
+);
+
 
 export const tableValue: any = (
   <fragment>
@@ -167,7 +220,8 @@ export const tableValue: any = (
       to design structured layouts.
     </hp>
     {createMergedCellsTable()}
-    {createSpanningTable()}
+    {/* {createSpanningTable()}
+    {createAutoLayoutTable()} */}
     {/* {createTable()} */}
     {/* <hp>
       This table is an example of rendering a table spanning multiple columns:

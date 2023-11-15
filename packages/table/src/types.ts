@@ -65,7 +65,7 @@ export interface TablePlugin<V extends Value = Value> {
   _cellIndices: TableStoreCellAttributes;
 }
 
-export type TableStoreCellAttributes = Map<
+export type TableStoreCellAttributes = WeakMap<
   TTableCellElement,
   { row: number; col: number }
 >;

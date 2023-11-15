@@ -7,7 +7,7 @@ import {
 import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
-import { getCellIndices } from '../../queries/getCellIdices';
+import { computeCellIndices } from '../../queries/computeCellIndices';
 import { getColSpan } from '../../queries/getColSpan';
 import { getRowSpan } from '../../queries/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
@@ -67,19 +67,28 @@ export const useTableCellElementState = ({
 
   let x: { col: number; row: number };
   const fromWeakMap = _cellIndices.get(cellElement);
+  // const cellContent = cellElement.children.map((i) => {
+  //   return (i.children as any)[0].text;
+  // });
+
+  // const spans = {
+  //   colSpan: getColSpan(cellElement),
+  //   rowSpan: getRowSpan(cellElement),
+  // };
+
   if (fromWeakMap) {
     x = fromWeakMap;
-    console.log('from weak map', x, 'cellElement', cellElement);
+    // console.log('cellContent', cellContent, x);
   } else {
-    const x1 = getCellIndices(editor, tableElement, cellElement);
+    const x1 = computeCellIndices(editor, tableElement, cellElement);
     if (x1) {
       x = x1;
-      console.log('computed', x, 'cellElement', cellElement);
+      // console.log('computed', x, 'cellContent', cellContent, 'spans', spans);
     } else {
       const defaultColIndex = getTableColumnIndex(editor, cellElement);
       const defaultRowIndex = getTableRowIndex(editor, cellElement);
       x = { col: defaultColIndex, row: defaultRowIndex };
-      console.log('get default', x, 'cellElement', cellElement);
+      // console.log('get default', x, 'cellContent', cellContent);
     }
   }
   const colIndex = x.col;

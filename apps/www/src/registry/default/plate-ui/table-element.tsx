@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
   isCollapsed,
+  isExpanded,
   PlateElement,
   PlateElementProps,
   useEditorState,
@@ -10,7 +11,10 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
+  getTableGridAbove,
+  mergeTableCells,
   TTableElement,
+  unmergeTableCells,
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableElementState,
@@ -114,7 +118,66 @@ const TableFloatingToolbar = React.forwardRef<
   const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorState();
-  const open = !readOnly && selected && isCollapsed(editor.selection);
+  // const open = !readOnly && selected && isCollapsed(editor.selection);
+
+  const collapsed = !readOnly && selected && isCollapsed(editor.selection);
+  const expanded = !readOnly && selected && isExpanded(editor.selection);
+  const open = !readOnly && selected;
+
+  const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+
+  const canUnmerge =
+    collapsed &&
+    cellEntries &&
+    cellEntries.length === 1 &&
+    ((cellEntries[0][0] as any)?.colSpan > 1 ||
+      (cellEntries[0][0] as any)?.rowSpan > 1);
+
+  const mergeContent = expanded && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={() => mergeTableCells(editor)}
+    >
+      <Icons.combine className="mr-2 h-4 w-4" />
+      Merge
+    </Button>
+  );
+
+  const unmergeButton = canUnmerge && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={() => unmergeTableCells(editor)}
+    >
+      <Icons.ungroup className="mr-2 h-4 w-4" />
+      Unmerge
+    </Button>
+  );
+
+  const bordersContent = collapsed && (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" isMenu>
+            <Icons.borderAll className="mr-2 h-4 w-4" />
+            Borders
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuPortal>
+          <TableBordersDropdownMenuContent />
+        </DropdownMenuPortal>
+      </DropdownMenu>
+
+      <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
+        <Icons.delete className="mr-2 h-4 w-4" />
+        Delete
+      </Button>
+    </>
+  );
 
   return (
     <Popover open={open} modal={false}>
@@ -125,23 +188,9 @@ const TableFloatingToolbar = React.forwardRef<
         onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
-              <Icons.borderAll className="mr-2 h-4 w-4" />
-              Borders
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <TableBordersDropdownMenuContent />
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
-          <Icons.delete className="mr-2 h-4 w-4" />
-          Delete
-        </Button>
+        {unmergeButton}
+        {mergeContent}
+        {bordersContent}
       </PopoverContent>
     </Popover>
   );
