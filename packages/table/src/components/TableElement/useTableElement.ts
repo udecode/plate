@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   collapseSelection,
   getPluginOptions,
@@ -7,7 +6,6 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
@@ -30,10 +28,8 @@ export const useTableElementState = ({
 } = {}): TableElementState => {
   const editor = useEditorRef();
 
-  const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { minColumnWidth, disableMarginLeft, disableCellsMerging } =
+    getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();
@@ -44,10 +40,6 @@ export const useTableElementState = ({
     : marginLeftOverride ?? element.marginLeft ?? 0;
 
   let colSizes = useTableColSizes(element);
-
-  useEffect(() => {
-    computeAllCellIndices(editor, element);
-  }, [editor, element]);
 
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);

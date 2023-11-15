@@ -1,9 +1,4 @@
-import {
-  findNodePath,
-  getPluginOptions,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import {
@@ -62,7 +57,7 @@ export function computeCellIndices<V extends Value>(
   });
 
   if (rowIndex === -1 || colIndex === -1) {
-    console.log('Invalid cell location.');
+    console.log('Invalid cell location.', rowIndex, colIndex);
     return null;
   }
 
@@ -78,34 +73,18 @@ export const computeAllCellIndices = <V extends Value>(
 ) => {
   const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
-  // Initialize an array to store the indices of each cell
-  const cellIndicesArray = [];
-
-  // const tablePath = findNodePath(editor, tableNode)!;
-
   // Iterate through the table rows
   for (let r = 0; r < tableNode.children.length; r++) {
     const row = tableNode.children[r] as TTableRowElement;
-    const rowIndicesArray = [];
 
     // Iterate through the row cells
     for (let c = 0; c < row.children.length; c++) {
       const cell = row.children[c] as TTableCellElement;
 
-      // Get cell indices and store them in the row's array
-      // const cellPath = [r, c];
-
       const indices = computeCellIndices(editor, tableNode, cell);
       if (indices) {
         options._cellIndices.set(cell, indices);
       }
-      rowIndicesArray.push(indices);
     }
-
-    // Push the rowIndicesArray to the cellIndicesArray
-    cellIndicesArray.push(rowIndicesArray);
-    // console.log('calculated array', cellIndicesArray);
   }
-
-  return cellIndicesArray;
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import {
   getPluginOptions,
   useEditorRef,
@@ -59,45 +59,60 @@ export const useTableCellElementState = ({
 
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
+  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
-  const { _cellIndices } = useMemo(
-    () => getPluginOptions<TablePlugin>(editor as any, ELEMENT_TABLE),
-    [editor]
+  const { disableCellsMerging, _cellIndices } = getPluginOptions<TablePlugin>(
+    editor as any,
+    ELEMENT_TABLE
   );
+  if (disableCellsMerging) {
+    const colIndex = getTableColumnIndex(editor, cellElement);
+    const rowIndex = getTableRowIndex(editor, cellElement);
 
-  let x: { col: number; row: number };
-  const fromWeakMap = _cellIndices.get(cellElement);
-  // const cellContent = cellElement.children.map((i) => {
-  //   return (i.children as any)[0].text;
-  // });
+    const rowSize =
+      rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
 
-  // const spans = {
-  //   colSpan: getColSpan(cellElement),
-  //   rowSpan: getRowSpan(cellElement),
-  // };
+    const isFirstCell = colIndex === 0;
+    const isFirstRow = tableElement.children?.[0] === rowElement;
 
-  if (fromWeakMap) {
-    x = fromWeakMap;
-    // console.log('cellContent', cellContent, x);
-  } else {
-    const x1 = computeCellIndices(editor, tableElement, cellElement);
-    if (x1) {
-      x = x1;
-      // console.log('computed', x, 'cellContent', cellContent, 'spans', spans);
-    } else {
-      const defaultColIndex = getTableColumnIndex(editor, cellElement);
-      const defaultRowIndex = getTableRowIndex(editor, cellElement);
-      x = { col: defaultColIndex, row: defaultRowIndex };
-      // console.log('get default', x, 'cellContent', cellContent);
-    }
+    const borders = getTableCellBorders(cellElement, {
+      isFirstCell,
+      isFirstRow,
+    });
+
+    return {
+      colIndex,
+      rowIndex,
+      readOnly: !ignoreReadOnly && readOnly,
+      selected: isCellSelected,
+      hovered: hoveredColIndex === colIndex,
+      hoveredLeft: isFirstCell && hoveredColIndex === -1,
+      rowSize,
+      borders,
+      isSelectingCell: !!selectedCells,
+      colSpan,
+    };
   }
-  const colIndex = x.col;
-  const rowIndex = x.row;
+
+  let result: { col: number; row: number };
+
+  const calculated =
+    _cellIndices.get(cellElement) ||
+    computeCellIndices(editor, tableElement, cellElement);
+
+  if (calculated) {
+    result = calculated;
+  } else {
+    const defaultColIndex = getTableColumnIndex(editor, cellElement);
+    const defaultRowIndex = getTableRowIndex(editor, cellElement);
+    result = { col: defaultColIndex, row: defaultRowIndex };
+  }
+  const colIndex = result.col;
+  const rowIndex = result.row;
 
   const endingRowIndex = rowIndex + rowSpan - 1;
   const endingColIndex = colIndex + colSpan - 1;
 
-  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
   const rowSize =
     rowSizeOverrides.get(endingRowIndex) ?? rowElement?.size ?? undefined;
 

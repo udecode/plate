@@ -21,6 +21,7 @@ import {
   TTableRowElement,
 } from '../types';
 import { getCellTypes } from '../utils';
+import { computeAllCellIndices } from './computeCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getIndices } from './getIndices';
 

@@ -106,24 +106,5 @@ export const mergeTableCells = <V extends Value = Value>(
 
     // insert the new merged cell in place of the first cell in the selection
     insertElements(editor, mergedCell, { at: cellEntries[0][1] });
-
-    // /**
-    //  * Update cell indices in weak map
-    //  */
-    // const tableEntry = findNode(editor, {
-    //   at: cellEntries[0][1],
-    //   match: { type: getPluginType(editor, ELEMENT_TABLE) },
-    // })!; // TODO: improve typing
-    // const cellEntry = findNode(editor, {
-    //   at: cellEntries[0][1],
-    //   match: { type: getCellTypes(editor) },
-    // })!; // TODO: improve typing
-
-    // const realTable = tableEntry[0] as TTableElement;
-    // const mC = cellEntry[0] as TTableCellElement;
-    // console.log('realTable', realTable, 'mC', mC);
-
-    // computeCellIndices(editor, realTable, mC);
-    // console.log('should be computed');
   });
 };

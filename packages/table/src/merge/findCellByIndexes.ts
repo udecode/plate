@@ -18,13 +18,13 @@ export const findCellByIndexes = <V extends Value>(
     (current) => current.children
   ) as TTableCellElement[];
 
-  // console.log('searching for', searchRowIndex, searchColIndex);
   const foundCell = allCells.find((cell) => {
     const cellElement = cell as TTableCellElement;
 
     const indices =
       getIndices(options, cellElement) ||
       computeCellIndices(editor, table, cellElement)!;
+    // getIndices(options, cellElement)!;
 
     const { col: _startColIndex, row: _startRowIndex } = indices;
     const { row: _endRowIndex, col: _endColIndex } = getIndicesWithSpans(
@@ -32,7 +32,6 @@ export const findCellByIndexes = <V extends Value>(
       cellElement
     );
 
-    // console.log('current', colIndex, endColIndex, rowIndex, endRowIndex);
     if (
       searchColIndex >= _startColIndex &&
       searchColIndex <= _endColIndex &&

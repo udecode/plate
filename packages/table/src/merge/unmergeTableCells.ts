@@ -13,12 +13,7 @@ import {
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
+import { TablePlugin, TTableCellElement, TTableRowElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 
 export const unmergeTableCells = <V extends Value = Value>(
@@ -73,12 +68,10 @@ export const unmergeTableCells = <V extends Value = Value>(
         const { col: c } = options._cellIndices.get(item as TTableCellElement)!;
         if (c === col - 1) {
           newColPath = rowEl.children.indexOf(item) + 1;
-          // console.log('found first', newColPath);
           break;
         }
         if (col + getColSpan(cellElem as TTableCellElement) === c - 1) {
           newColPath = rowEl.children.indexOf(item);
-          // console.log('found last', newColPath);
           break;
         }
       }

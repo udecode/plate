@@ -5,6 +5,7 @@ import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
 import { withInsertFragmentTable } from './withInsertFragmentTable';
 import { withInsertTextTable } from './withInsertTextTable';
+import { withMergedCells } from './withMergedCells';
 import { withNormalizeTable } from './withNormalizeTable';
 import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
@@ -16,6 +17,9 @@ export const withTable = <
   editor: E,
   plugin: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
+  editor = plugin.options.disableCellsMerging
+    ? editor
+    : withMergedCells<V, E>(editor);
   editor = withNormalizeTable<V, E>(editor);
   editor = withDeleteTable<V, E>(editor);
   editor = withGetFragmentTable<V, E>(editor);
