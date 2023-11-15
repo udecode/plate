@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
-import { computeAllCellIndices } from '../../queries/computeCellIndices';
+import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
 import { TablePlugin, TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';

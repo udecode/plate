@@ -1,10 +1,10 @@
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
+import { getIndices } from '../merge/getIndices';
+import { getIndicesWithSpans } from '../merge/getIndicesWithSpans';
 import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { computeCellIndices } from './computeCellIndices';
-import { getIndices } from './getIndices';
-import { getIndicesWithSpans } from './getIndicesWithSpans';
 
 export const findCellByIndexes = <V extends Value>(
   editor: PlateEditor<V>,

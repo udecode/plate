@@ -1,5 +1,6 @@
 import {
   getAboveNode,
+  getPluginOptions,
   getPluginType,
   PlateEditor,
   removeNodes,
@@ -16,9 +17,18 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '../createTablePlugin';
-import { TTableElement } from '../types';
+import { deleteColumn as deleteColumnMerging } from '../merge/deleteColumn';
+import { TablePlugin, TTableElement } from '../types';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
+  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+  if (!disableCellsMerging) {
+    return deleteColumnMerging(editor);
+  }
+
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

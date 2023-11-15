@@ -62,16 +62,11 @@ export function computeCellIndices<V extends Value>(
   });
 
   if (rowIndex === -1 || colIndex === -1) {
-    // console.log('Invalid cell location.');
+    console.log('Invalid cell location.');
     return null;
   }
 
   const indices = { row: rowIndex, col: colIndex };
-  const cellContent = cellEl.children?.map((i) => {
-    return (i.children as any)[0].text;
-  });
-  // console.log('new cell location', cellContent, indices);
-
   options?._cellIndices?.set(cellEl, indices);
 
   return indices;

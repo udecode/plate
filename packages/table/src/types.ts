@@ -60,7 +60,12 @@ export interface TablePlugin<V extends Value = Value> {
   minColumnWidth?: number;
 
   /**
-   * For internal use. Keeps track of cell indices
+   * Enables / disabled cells merging functionality.
+   */
+  disableCellsMerging?: boolean;
+
+  /**
+   * For internal use. Keeps track of cell indices. Used only when disableCellsMerging is false.
    */
   _cellIndices: TableStoreCellAttributes;
 }

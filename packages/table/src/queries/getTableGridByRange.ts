@@ -1,8 +1,6 @@
 import {
-  findNode,
-  findNodePath,
+  getNode,
   getPluginOptions,
-  getPluginType,
   PlateEditor,
   TElement,
   TElementEntry,
@@ -11,29 +9,9 @@ import {
 import { Range } from 'slate';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
-import { getCellTypes } from '../utils';
+import { getTableGridByRange as getTableGridByRangeMerge } from '../merge/getTableGridByRange';
+import { TablePlugin, TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
-import { computeCellIndices } from './computeCellIndices';
-import { findCellByIndexes } from './findCellByIndexes';
-import { getIndices } from './getIndices';
-import { getIndicesWithSpans } from './getIndicesWithSpans';
-
-export type FormatType = 'table' | 'cell' | 'all';
-
-export interface TableGridEntries {
-  tableEntries: TElementEntry[];
-  cellEntries: TElementEntry[];
-}
-
-export type GetTableGridReturnType<T> = T extends 'all'
-  ? TableGridEntries
-  : TElementEntry[];
 
 export interface GetTableGridByRangeOptions {
   at: Range;
@@ -53,43 +31,28 @@ export const getTableGridByRange = <V extends Value>(
   editor: PlateEditor<V>,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
-
-  const startCellEntry = findNode(editor, {
-    at: (at as any).anchor.path,
-    match: { type: getCellTypes(editor) },
-  })!; // TODO: improve typing
-  const endCellEntry = findNode(editor, {
-    at: (at as any).focus.path,
-    match: { type: getCellTypes(editor) },
-  })!;
-
-  const startCell = startCellEntry[0] as TTableCellElement;
-  const endCell = endCellEntry[0] as TTableCellElement;
-
-  const startCellPath = (at as any).anchor.path;
-  const tablePath = startCellPath.slice(0, -2);
-
-  const tableEntry = findNode(editor, {
-    at: tablePath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
-  })!; // TODO: improve typing
-  const realTable = tableEntry[0] as TTableElement;
-
-  const { col: _startColIndex, row: _startRowIndex } =
-    getIndices(options, startCell) ||
-    computeCellIndices(editor, realTable, startCell)!;
-
-  const { row: _endRowIndex, col: _endColIndex } = getIndicesWithSpans(
-    getIndices(options, endCell) ||
-      computeCellIndices(editor, realTable, endCell)!,
-    endCell
+  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
   );
+  if (!disableCellsMerging) {
+    return getTableGridByRangeMerge(editor, { at, format });
+  }
+
+  const startCellPath = at.anchor.path;
+  const endCellPath = at.focus.path;
+
+  const _startRowIndex = startCellPath.at(-2)!;
+  const _endRowIndex = endCellPath.at(-2)!;
+  const _startColIndex = startCellPath.at(-1)!;
+  const _endColIndex = endCellPath.at(-1)!;
 
   const startRowIndex = Math.min(_startRowIndex, _endRowIndex);
   const endRowIndex = Math.max(_startRowIndex, _endRowIndex);
   const startColIndex = Math.min(_startColIndex, _endColIndex);
   const endColIndex = Math.max(_startColIndex, _endColIndex);
+
+  const tablePath = startCellPath.slice(0, -2);
 
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
@@ -100,55 +63,37 @@ export const getTableGridByRange = <V extends Value>(
     newCellChildren: [],
   });
 
-  const cellEntries: TElementEntry[] = [];
-  const cellsSet = new WeakSet();
-
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
+
+  const cellEntries: TElementEntry[] = [];
+
   while (true) {
-    const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
-    if (!cell) {
-      break;
-    }
+    const cellPath = tablePath.concat([rowIndex, colIndex]);
 
-    if (!cellsSet.has(cell)) {
-      cellsSet.add(cell);
+    const cell = getNode<TElement>(editor, cellPath);
+    if (!cell) break;
 
-      const rows = table.children[rowIndex - startRowIndex]
-        .children as TElement[];
-      rows[colIndex - startColIndex] = cell;
+    const rows = table.children[rowIndex - startRowIndex]
+      .children as TElement[];
 
-      const cellPath = findNodePath(editor, cell)!;
-      cellEntries.push([cell, cellPath]);
-    }
+    rows[colIndex - startColIndex] = cell;
+
+    cellEntries.push([cell, cellPath]);
 
     if (colIndex + 1 <= endColIndex) {
-      colIndex = colIndex + 1;
+      colIndex += 1;
     } else if (rowIndex + 1 <= endRowIndex) {
       colIndex = startColIndex;
-      rowIndex = rowIndex + 1;
+      rowIndex += 1;
     } else {
       break;
     }
   }
 
-  const formatType = (format as string) || 'table';
-
-  if (formatType === 'cell') {
+  if (format === 'cell') {
     return cellEntries;
   }
-
-  // clear redundant cells
-  table.children?.forEach((rowEl) => {
-    const rowElement = rowEl as TTableRowElement;
-
-    const filteredChildren = rowElement.children?.filter((cellEl) => {
-      const cellElement = cellEl as TTableCellElement;
-      return !!cellElement?.children.length;
-    });
-
-    rowElement.children = filteredChildren;
-  });
 
   return [[table, tablePath]];
 };

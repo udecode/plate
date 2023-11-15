@@ -1,8 +1,6 @@
-import { Value } from '@udecode/plate-common';
-
-import { TablePlugin, TTableCellElement } from '../types';
-import { getColSpan } from './getColSpan';
-import { getRowSpan } from './getRowSpan';
+import { getColSpan } from '../queries/getColSpan';
+import { getRowSpan } from '../queries/getRowSpan';
+import { TTableCellElement } from '../types';
 
 export const getIndicesWithSpans = (
   { col, row }: { col: number; row: number },

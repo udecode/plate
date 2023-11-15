@@ -13,17 +13,13 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
+import { insertTableRow as insertTableRowMerging } from '../merge/insertTableRow';
 import { TablePlugin } from '../types';
 import { getCellTypes, getEmptyCellNode } from '../utils/index';
 
 export const insertTableRow = <V extends Value>(
   editor: PlateEditor<V>,
-  {
-    header,
-    fromRow,
-    at,
-    disableSelect,
-  }: {
+  options: {
     header?: boolean;
     fromRow?: Path;
     /**
@@ -34,6 +30,16 @@ export const insertTableRow = <V extends Value>(
     disableSelect?: boolean;
   } = {}
 ) => {
+  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+  if (!disableCellsMerging) {
+    return insertTableRowMerging(editor, options);
+  }
+
+  const { header, fromRow, at, disableSelect } = options;
+
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,

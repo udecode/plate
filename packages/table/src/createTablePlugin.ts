@@ -36,6 +36,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       });
     },
     minColumnWidth: 48,
+    disableCellsMerging: false,
     _cellIndices: new WeakMap() as TableStoreCellAttributes,
   },
   withOverrides: withTable,

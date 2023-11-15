@@ -12,11 +12,11 @@ import { cloneDeep } from 'lodash';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
-import { computeCellIndices } from '../queries/computeCellIndices';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils';
+import { computeCellIndices } from './computeCellIndices';
 
 /**
  * Merges multiple selected cells into one.

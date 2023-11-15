@@ -7,7 +7,7 @@ import {
 import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
-import { computeCellIndices } from '../../queries/computeCellIndices';
+import { computeCellIndices } from '../../merge/computeCellIndices';
 import { getColSpan } from '../../queries/getColSpan';
 import { getRowSpan } from '../../queries/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
