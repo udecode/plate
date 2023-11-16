@@ -13,8 +13,8 @@ import { Range } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { computeCellIndices } from '../merge/computeCellIndices';
 import { findCellByIndexes } from '../merge/findCellByIndexes';
-import { getIndices } from '../merge/getIndices';
-import { getIndicesWithSpans } from '../merge/getIndicesWithSpans';
+import { getCellIndices } from '../merge/getCellIndices';
+import { getCellIndicesWithSpans } from '../merge/getCellIndicesWithSpans';
 import {
   TablePlugin,
   TTableCellElement,
@@ -35,7 +35,7 @@ export type GetTableGridReturnType<T> = T extends 'all'
   ? TableGridEntries
   : TElementEntry[];
 
-export interface GetTableGridByRangeOptions {
+export interface GetTableGridByRangeOptions<T extends FormatType> {
   at: Range;
 
   /**
@@ -43,16 +43,16 @@ export interface GetTableGridByRangeOptions {
    * - table element
    * - array of cells
    */
-  format?: 'table' | 'cell';
+  format?: T;
 }
 
 /**
  * Get sub table between 2 cell paths.
  */
-export const getTableGridByRange = <V extends Value>(
+export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
-  { at, format = 'table' }: GetTableGridByRangeOptions
-): TElementEntry[] => {
+  { at, format }: GetTableGridByRangeOptions<T>
+): GetTableGridReturnType<T> => {
   const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   const startCellEntry = findNode(editor, {
@@ -77,11 +77,11 @@ export const getTableGridByRange = <V extends Value>(
   const realTable = tableEntry[0] as TTableElement;
 
   const { col: _startColIndex, row: _startRowIndex } =
-    getIndices(options, startCell) ||
+    getCellIndices(options, startCell) ||
     computeCellIndices(editor, realTable, startCell)!;
 
-  const { row: _endRowIndex, col: _endColIndex } = getIndicesWithSpans(
-    getIndices(options, endCell) ||
+  const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
+    getCellIndices(options, endCell) ||
       computeCellIndices(editor, realTable, endCell)!,
     endCell
   );
@@ -135,20 +135,32 @@ export const getTableGridByRange = <V extends Value>(
   const formatType = (format as string) || 'table';
 
   if (formatType === 'cell') {
-    return cellEntries;
+    console.log(0);
+    
+    return cellEntries as GetTableGridReturnType<T>;
   }
-
+  
   // clear redundant cells
   table.children?.forEach((rowEl) => {
     const rowElement = rowEl as TTableRowElement;
-
+    
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
       return !!cellElement?.children.length;
     });
-
+    
     rowElement.children = filteredChildren;
   });
+  
+  if (formatType === 'table') {
+    console.log(11)
+    return [[table, tablePath]] as GetTableGridReturnType<T>;
+  }
 
-  return [[table, tablePath]];
+  console.log(22)
+
+  return {
+    tableEntries: [[table, tablePath]],
+    cellEntries,
+  } as GetTableGridReturnType<T>;
 };

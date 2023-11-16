@@ -9,11 +9,22 @@ import {
 import { Range } from 'slate';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { getTableGridByRange as getTableGridByRangeMerge } from '../merge/getTableGridByRange';
+import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 import { TablePlugin, TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export interface GetTableGridByRangeOptions {
+export type FormatType = 'table' | 'cell' | 'all';
+
+export interface TableGridEntries {
+  tableEntries: TElementEntry[];
+  cellEntries: TElementEntry[];
+}
+
+export type GetTableGridReturnType<T> = T extends 'all'
+  ? TableGridEntries
+  : TElementEntry[];
+
+export interface GetTableGridByRangeOptions<T extends FormatType> {
   at: Range;
 
   /**
@@ -21,22 +32,22 @@ export interface GetTableGridByRangeOptions {
    * - table element
    * - array of cells
    */
-  format?: 'table' | 'cell';
+  format?: T;
 }
 
 /**
  * Get sub table between 2 cell paths.
  */
-export const getTableGridByRange = <V extends Value>(
+export const getTableGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
-  { at, format = 'table' }: GetTableGridByRangeOptions
-): TElementEntry[] => {
+  { at, format }: GetTableGridByRangeOptions<T>
+): GetTableGridReturnType<T> => {
   const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
   if (!disableCellsMerging) {
-    return getTableGridByRangeMerge(editor, { at, format });
+    return getTableMergeGridByRange(editor, { at, format });
   }
 
   const startCellPath = at.anchor.path;
@@ -92,8 +103,15 @@ export const getTableGridByRange = <V extends Value>(
   }
 
   if (format === 'cell') {
-    return cellEntries;
+    return cellEntries as GetTableGridReturnType<T>;
   }
 
-  return [[table, tablePath]];
+  if (format === 'table') {
+    return [[table, tablePath]] as GetTableGridReturnType<T>;
+  }
+
+  return {
+    tableEntries: [[table, tablePath]],
+    cellEntries,
+  } as GetTableGridReturnType<T>;
 };

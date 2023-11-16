@@ -12,7 +12,7 @@ import {
   TTableElement,
   TTableRowElement,
 } from '../types';
-import { getIndices } from './getIndices';
+import { getCellIndices } from './getCellIndices';
 
 export const getCellPath = <V extends Value>(
   editor: PlateEditor<V>,
@@ -26,7 +26,7 @@ export const getCellPath = <V extends Value>(
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
-    const { col: colIndex } = getIndices(options, cE)!;
+    const { col: colIndex } = getCellIndices(options, cE)!;
     return colIndex === curColIndex;
   });
   return tablePath.concat([curRowIndex, foundColIndex]);

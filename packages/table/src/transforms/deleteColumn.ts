@@ -17,7 +17,7 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '../createTablePlugin';
-import { deleteColumn as deleteColumnMerging } from '../merge/deleteColumn';
+import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { TablePlugin, TTableElement } from '../types';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
@@ -26,7 +26,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
     ELEMENT_TABLE
   );
   if (!disableCellsMerging) {
-    return deleteColumnMerging(editor);
+    return deleteTableMergeColumn(editor);
   }
 
   if (

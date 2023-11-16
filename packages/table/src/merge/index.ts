@@ -4,3 +4,4 @@
 
 export * from './mergeTableCells';
 export * from './unmergeTableCells';
+export * from './useTableMergeState';

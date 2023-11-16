@@ -8,6 +8,7 @@ import { useReadOnly } from 'slate-react';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { computeCellIndices } from '../../merge/computeCellIndices';
+import { getCellIndices } from '../../merge/getCellIndices';
 import { getColSpan } from '../../queries/getColSpan';
 import { getRowSpan } from '../../queries/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
@@ -61,11 +62,8 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
-  const { disableCellsMerging, _cellIndices } = getPluginOptions<TablePlugin>(
-    editor as any,
-    ELEMENT_TABLE
-  );
-  if (disableCellsMerging) {
+  const options = getPluginOptions<TablePlugin>(editor as any, ELEMENT_TABLE);
+  if (options.disableCellsMerging) {
     const colIndex = getTableColumnIndex(editor, cellElement);
     const rowIndex = getTableRowIndex(editor, cellElement);
 
@@ -97,7 +95,7 @@ export const useTableCellElementState = ({
   let result: { col: number; row: number };
 
   const calculated =
-    _cellIndices.get(cellElement) ||
+    getCellIndices(options, cellElement) ||
     computeCellIndices(editor, tableElement, cellElement);
 
   if (calculated) {

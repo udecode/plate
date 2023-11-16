@@ -2,7 +2,7 @@ import { Value } from '@udecode/plate-common';
 
 import { TablePlugin, TTableCellElement } from '../types';
 
-export const getIndices = (
+export const getCellIndices = (
   options: TablePlugin<Value>,
   startCell: TTableCellElement
 ) => {

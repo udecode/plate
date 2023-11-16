@@ -21,11 +21,12 @@ import {
   TTableRowElement,
 } from '../types';
 import { getCellTypes } from '../utils';
-import { computeAllCellIndices } from './computeCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
-import { getIndices } from './getIndices';
+import { getCellIndices } from './getCellIndices';
 
-export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
+export const deleteTableRowMerging = <V extends Value>(
+  editor: PlateEditor<V>
+) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -45,7 +46,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
     if (!selectedCellEntry) return;
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
-    const { row: deletingRowIndex } = getIndices(options, selectedCell)!;
+    const { row: deletingRowIndex } = getCellIndices(options, selectedCell)!;
     const rowsDeleteNumber = getRowSpan(selectedCell);
     const endingRowIndex = deletingRowIndex + rowsDeleteNumber - 1;
 
@@ -71,7 +72,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { row: curRowIndex } = getIndices(options, currentCell)!;
+        const { row: curRowIndex } = getCellIndices(options, currentCell)!;
         const curRowSpan = getRowSpan(currentCell);
 
         if (!curRowIndex || !curRowSpan) return acc;
@@ -98,20 +99,20 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
     if (nextRow) {
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;
-        const { col: curRowCellColIndex } = getIndices(options, curRowCell)!;
+        const { col: curRowCellColIndex } = getCellIndices(options, curRowCell)!;
         const curRowCellRowSpan = getRowSpan(curRowCell);
 
         // search for anchor cell where to place current cell
         const startingCellIndex = nextRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
-          const { col: curColIndex } = getIndices(options, cell)!;
+          const { col: curColIndex } = getCellIndices(options, cell)!;
           return curColIndex >= curRowCellColIndex;
         });
 
         const startingCell = nextRow.children[
           startingCellIndex
         ] as TTableCellElement;
-        const { col: startingColIndex } = getIndices(options, startingCell)!;
+        const { col: startingColIndex } = getCellIndices(options, startingCell)!;
 
         // consider already inserted cell by adding index each time to the col path
         let incrementBy = index;
@@ -144,7 +145,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
 
     squizeRowSpanCells.forEach((cur) => {
       const curRowCell = cur as TTableCellElement;
-      const { row: curRowCellRowIndex } = getIndices(options, curRowCell)!;
+      const { row: curRowCellRowIndex } = getCellIndices(options, curRowCell)!;
       const curRowCellRowSpan = getRowSpan(curRowCell);
 
       const curCellPath = findNodePath(editor, curRowCell)!;

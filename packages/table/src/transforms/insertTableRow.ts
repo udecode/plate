@@ -13,7 +13,7 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
-import { insertTableRow as insertTableRowMerging } from '../merge/insertTableRow';
+import { insertTableRowMerging } from '../merge/insertTableRow';
 import { TablePlugin } from '../types';
 import { getCellTypes, getEmptyCellNode } from '../utils/index';
 

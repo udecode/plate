@@ -17,6 +17,7 @@ import { getRowSpan } from '../queries/getRowSpan';
 import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 import { computeCellIndices } from './computeCellIndices';
+import { getCellIndices } from './getCellIndices';
 
 /**
  * Merges multiple selected cells into one.
@@ -47,7 +48,8 @@ export const mergeTableCells = <V extends Value = Value>(
 
     // calculate the rowSpan which is the number of vertical cells that a cell should span.
     let rowSpan = 0;
-    const { col } = options._cellIndices.get(
+    const { col } = getCellIndices(
+      options,
       cellEntries[0][0] as TTableCellElement
     )!;
     cellEntries.forEach((cE) => {

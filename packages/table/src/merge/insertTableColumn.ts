@@ -27,7 +27,7 @@ import {
 import { getCellTypes, getEmptyCellNode } from '../utils';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
-import { getIndices } from './getIndices';
+import { getCellIndices } from './getCellIndices';
 
 const createEmptyCell = <V extends Value>(
   editor: PlateEditor<V>,
@@ -48,7 +48,7 @@ const createEmptyCell = <V extends Value>(
   });
 };
 
-export const insertTableColumn = <V extends Value>(
+export const insertTableColumnMerging = <V extends Value>(
   editor: PlateEditor<V>,
   {
     disableSelect,
@@ -100,7 +100,7 @@ export const insertTableColumn = <V extends Value>(
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
   const [tableNode, tablePath] = tableEntry;
 
-  const { col: cellColIndex } = getIndices(options, cell)!;
+  const { col: cellColIndex } = getCellIndices(options, cell)!;
   const cellColSpan = getColSpan(cell);
 
   let nextColIndex: number;
@@ -137,7 +137,7 @@ export const insertTableColumn = <V extends Value>(
 
   affectedCells.forEach((cur) => {
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } = getIndices(
+    const { row: curRowIndex, col: curColIndex } = getCellIndices(
       options,
       curCell
     )!;

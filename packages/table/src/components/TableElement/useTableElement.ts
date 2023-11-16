@@ -28,8 +28,10 @@ export const useTableElementState = ({
 } = {}): TableElementState => {
   const editor = useEditorRef();
 
-  const { minColumnWidth, disableMarginLeft, disableCellsMerging } =
-    getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
+  const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();

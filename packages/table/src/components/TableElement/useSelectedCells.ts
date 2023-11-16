@@ -16,23 +16,40 @@ export const useSelectedCells = () => {
   const editor = useEditorRef();
 
   const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
+  const setSelectedTable = useTableStore().set.selectedTable();
 
   useEffect(() => {
-    if (!selected || readOnly) setSelectedCells(null);
-  }, [selected, editor, setSelectedCells, readOnly]);
+    if (!selected || readOnly) {
+      setSelectedCells(null);
+      setSelectedTable(null);
+    }
+  }, [selected, editor, setSelectedCells, readOnly, setSelectedTable]);
 
   useEffect(() => {
     if (readOnly) return;
 
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-    if (cellEntries.length > 1) {
+    const { tableEntries, cellEntries } = getTableGridAbove(editor, {
+      format: 'all',
+    });
+    console.log('tableEntries', tableEntries, 'cellEntries', cellEntries);
+    if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
+      const tables = tableEntries.map((entry) => entry[0]);
 
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
+        setSelectedTable(tables);
       }
     } else if (selectedCells) {
       setSelectedCells(null);
+      setSelectedTable(null);
     }
-  }, [editor, editor?.selection, readOnly, selectedCells, setSelectedCells]);
+  }, [
+    editor,
+    editor.selection,
+    readOnly,
+    selectedCells,
+    setSelectedCells,
+    setSelectedTable,
+  ]);
 };

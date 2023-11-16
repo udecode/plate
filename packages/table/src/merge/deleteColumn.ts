@@ -23,10 +23,12 @@ import {
 } from '../types';
 import { getCellTypes } from '../utils';
 import { findCellByIndexes } from './findCellByIndexes';
+import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
-import { getIndices } from './getIndices';
 
-export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
+export const deleteTableMergeColumn = <V extends Value>(
+  editor: PlateEditor<V>
+) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -48,7 +50,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
     if (!selectedCellEntry) return;
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
-    const { col: deletingColIndex } = getIndices(options, selectedCell)!;
+    const { col: deletingColIndex } = getCellIndices(options, selectedCell)!;
     const colsDeleteNumber = getColSpan(selectedCell);
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
@@ -77,7 +79,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getIndices(options, currentCell)!;
+        const { col: curColIndex } = getCellIndices(options, currentCell)!;
         const curColSpan = getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
@@ -98,7 +100,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
     if (colNumber > nextColIndex) {
       moveToNextColCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getIndices(
+        const { col: curColIndex, row: curRowIndex } = getCellIndices(
           options,
           curCell
         )!;
@@ -109,14 +111,14 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
         const curRow = table.children[curRowIndex] as TTableRowElement;
         const startingCellIndex = curRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
-          const { col: cellColIndex } = getIndices(options, cell)!;
+          const { col: cellColIndex } = getCellIndices(options, cell)!;
           return cellColIndex >= curColIndex + 1;
         });
 
         const startingCell = curRow.children.at(
           startingCellIndex
         ) as TTableCellElement;
-        const { col: startingColIndex, row: startingRowIndex } = getIndices(
+        const { col: startingColIndex, row: startingRowIndex } = getCellIndices(
           options,
           startingCell
         )!;
@@ -140,7 +142,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
     squizeColSpanCells.forEach((cur) => {
       const curCell = cur as TTableCellElement;
 
-      const { col: curColIndex, row: curColRowIndex } = getIndices(
+      const { col: curColIndex, row: curColRowIndex } = getCellIndices(
         options,
         curCell
       )!;
@@ -183,7 +185,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       const paths: Array<Path[]> = [];
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getIndices(
+        const { col: curColIndex, row: curRowIndex } = getCellIndices(
           options,
           curCell
         )!;

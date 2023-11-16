@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { deleteRow as deleteRowMerging } from '../merge/deleteRow';
+import { deleteTableRowMerging } from '../merge/deleteRow';
 import { TablePlugin, TTableElement } from '../types';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
@@ -18,7 +18,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
     ELEMENT_TABLE
   );
   if (!disableCellsMerging) {
-    return deleteRowMerging(editor);
+    return deleteTableRowMerging(editor);
   }
 
   if (
