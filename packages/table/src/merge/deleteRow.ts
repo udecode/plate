@@ -75,7 +75,7 @@ export const deleteTableRowMerging = <V extends Value>(
         const { row: curRowIndex } = getCellIndices(options, currentCell)!;
         const curRowSpan = getRowSpan(currentCell);
 
-        if (!curRowIndex || !curRowSpan) return acc;
+        // if (!curRowIndex || !curRowSpan) return acc;
 
         if (curRowIndex < deletingRowIndex && curRowSpan > 1) {
           acc.squizeRowSpanCells.push(currentCell);
@@ -99,7 +99,10 @@ export const deleteTableRowMerging = <V extends Value>(
     if (nextRow) {
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;
-        const { col: curRowCellColIndex } = getCellIndices(options, curRowCell)!;
+        const { col: curRowCellColIndex } = getCellIndices(
+          options,
+          curRowCell
+        )!;
         const curRowCellRowSpan = getRowSpan(curRowCell);
 
         // search for anchor cell where to place current cell
@@ -112,7 +115,10 @@ export const deleteTableRowMerging = <V extends Value>(
         const startingCell = nextRow.children[
           startingCellIndex
         ] as TTableCellElement;
-        const { col: startingColIndex } = getCellIndices(options, startingCell)!;
+        const { col: startingColIndex } = getCellIndices(
+          options,
+          startingCell
+        )!;
 
         // consider already inserted cell by adding index each time to the col path
         let incrementBy = index;

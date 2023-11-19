@@ -1,21 +1,18 @@
 import {
   findNode,
   getBlockAbove,
-  getNodeEntry,
   getParentNode,
   getPluginOptions,
   getPluginType,
   insertElements,
   PlateEditor,
   setNodes,
-  TDescendant,
-  TElement,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import {
@@ -24,29 +21,11 @@ import {
   TTableElement,
   TTableRowElement,
 } from '../types';
-import { getCellTypes, getEmptyCellNode } from '../utils';
+import { getCellTypes } from '../utils';
+import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
-import { getCellPath } from './getCellPath';
 import { getCellIndices } from './getCellIndices';
-
-const createEmptyCell = <V extends Value>(
-  editor: PlateEditor<V>,
-  row: TTableRowElement,
-  newCellChildren?: TDescendant[],
-  header?: boolean
-) => {
-  const isHeaderRow =
-    header === undefined
-      ? (row as TElement).children.every(
-          (c) => c.type === getPluginType(editor, ELEMENT_TH)
-        )
-      : header;
-
-  return getEmptyCellNode(editor, {
-    header: isHeaderRow,
-    newCellChildren,
-  });
-};
+import { getCellPath } from './getCellPath';
 
 export const insertTableColumnMerging = <V extends Value>(
   editor: PlateEditor<V>,

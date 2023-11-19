@@ -135,29 +135,24 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const formatType = (format as string) || 'table';
 
   if (formatType === 'cell') {
-    console.log(0);
-    
     return cellEntries as GetTableGridReturnType<T>;
   }
-  
+
   // clear redundant cells
   table.children?.forEach((rowEl) => {
     const rowElement = rowEl as TTableRowElement;
-    
+
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
       return !!cellElement?.children.length;
     });
-    
+
     rowElement.children = filteredChildren;
   });
-  
+
   if (formatType === 'table') {
-    console.log(11)
     return [[table, tablePath]] as GetTableGridReturnType<T>;
   }
-
-  console.log(22)
 
   return {
     tableEntries: [[table, tablePath]],

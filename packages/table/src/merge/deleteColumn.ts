@@ -1,8 +1,8 @@
 import {
+  focusEditor,
   getAboveNode,
   getPluginOptions,
   getPluginType,
-  insertElements,
   PlateEditor,
   removeNodes,
   setNodes,
@@ -13,14 +13,8 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { getTableColumnCount } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
+import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getCellTypes } from '../utils';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
@@ -71,9 +65,8 @@ export const deleteTableMergeColumn = <V extends Value>(
     });
     const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
-    const { moveToNextColCells, squizeColSpanCells } = affectedCells.reduce<{
+    const { squizeColSpanCells } = affectedCells.reduce<{
       squizeColSpanCells: TTableCellElement[];
-      moveToNextColCells: TTableCellElement[];
     }>(
       (acc, cur) => {
         if (!cur) return acc;
@@ -88,57 +81,16 @@ export const deleteTableMergeColumn = <V extends Value>(
           curColSpan > 1 &&
           curColIndex + curColSpan - 1 > endingColIndex
         ) {
-          acc.moveToNextColCells.push(currentCell);
+          acc.squizeColSpanCells.push(currentCell);
         }
         return acc;
       },
-      { moveToNextColCells: [], squizeColSpanCells: [] }
+      { squizeColSpanCells: [] }
     );
 
-    const nextColIndex = deletingColIndex + colsDeleteNumber;
-    const colNumber = getTableColumnCount(table);
-    if (colNumber > nextColIndex) {
-      moveToNextColCells.forEach((cur) => {
-        const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getCellIndices(
-          options,
-          curCell
-        )!;
-
-        const curColSpan = getColSpan(curCell);
-
-        // simplify logic here. use getParent
-        const curRow = table.children[curRowIndex] as TTableRowElement;
-        const startingCellIndex = curRow.children.findIndex((curC) => {
-          const cell = curC as TTableCellElement;
-          const { col: cellColIndex } = getCellIndices(options, cell)!;
-          return cellColIndex >= curColIndex + 1;
-        });
-
-        const startingCell = curRow.children.at(
-          startingCellIndex
-        ) as TTableCellElement;
-        const { col: startingColIndex, row: startingRowIndex } = getCellIndices(
-          options,
-          startingCell
-        )!;
-
-        const startingCellPath = getCellPath(
-          editor,
-          tableEntry,
-          startingRowIndex,
-          startingColIndex
-        );
-        const colsNumberAffected = endingColIndex - curColIndex + 1;
-
-        const newCell = {
-          ...curCell,
-          colSpan: curColSpan - colsNumberAffected,
-        };
-        insertElements(editor, newCell, { at: startingCellPath });
-      });
-    }
-
+    /**
+     * Change colSpans
+     */
     squizeColSpanCells.forEach((cur) => {
       const curCell = cur as TTableCellElement;
 
@@ -172,6 +124,9 @@ export const deleteTableMergeColumn = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
 
+    /**
+     * Remove cells
+     */
     if (
       selectedCell &&
       trEntry &&
@@ -189,8 +144,11 @@ export const deleteTableMergeColumn = <V extends Value>(
           options,
           curCell
         )!;
-
-        if (curColIndex >= deletingColIndex && curColIndex <= endingColIndex) {
+        if (
+          !squizeColSpanCells.includes(curCell) &&
+          curColIndex >= deletingColIndex &&
+          curColIndex <= endingColIndex
+        ) {
           const cellPath = getCellPath(
             editor,
             tableEntry,

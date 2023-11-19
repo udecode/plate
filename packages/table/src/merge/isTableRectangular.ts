@@ -19,7 +19,6 @@ export const isTableRectangular = (table?: TTableElement) => {
         if (!arr[rI + i]) {
           arr[rI + i] = 0;
         }
-        console.log('current', cellElem?.colSpan || 1);
         arr[rI + i] += cellElem?.colSpan || 1;
       });
     });

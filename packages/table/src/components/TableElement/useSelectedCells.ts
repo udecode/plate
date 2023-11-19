@@ -31,7 +31,6 @@ export const useSelectedCells = () => {
     const { tableEntries, cellEntries } = getTableGridAbove(editor, {
       format: 'all',
     });
-    console.log('tableEntries', tableEntries, 'cellEntries', cellEntries);
     if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
       const tables = tableEntries.map((entry) => entry[0]);

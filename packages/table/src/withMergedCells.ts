@@ -39,7 +39,7 @@ export const withMergedCells = <
       });
       if (tableEntry) {
         const realTable = tableEntry[0] as TTableElement;
-        computeAllCellIndices(editor, realTable);
+        // computeAllCellIndices(editor, realTable);
       }
     };
 

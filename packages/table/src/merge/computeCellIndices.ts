@@ -57,7 +57,6 @@ export function computeCellIndices<V extends Value>(
   });
 
   if (rowIndex === -1 || colIndex === -1) {
-    console.log('Invalid cell location.', rowIndex, colIndex);
     return null;
   }
 
