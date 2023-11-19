@@ -180,11 +180,16 @@ export const withMention = <
           focus: { path: operation.path.concat([0]), offset: text.length },
         });
 
-        comboboxActions.open({
-          activeId: id!,
-          text,
-          targetRange: editor.selection,
-        });
+        // Make sure that we read the updated selection after normalization.
+        // Slate may insert an empty text node before or after the mention input
+        // during normalization.
+        setTimeout(() => {
+          comboboxActions.open({
+            activeId: id!,
+            text,
+            targetRange: editor.selection,
+          });
+        }, 0);
       }
     } else if (
       operation.type === 'remove_node' &&
