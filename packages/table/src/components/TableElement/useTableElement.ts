@@ -30,10 +30,8 @@ export const useTableElementState = ({
 } = {}): TableElementState => {
   const editor = useEditorRef();
 
-  const { minColumnWidth, disableMarginLeft } = getPluginOptions<TablePlugin>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { minColumnWidth, disableMarginLeft, disableCellsMerging } =
+    getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();
@@ -46,8 +44,10 @@ export const useTableElementState = ({
   let colSizes = useTableColSizes(element);
 
   useEffect(() => {
-    computeAllCellIndices(editor, element);
-  }, [editor, element]);
+    if (!disableCellsMerging) {
+      computeAllCellIndices(editor, element);
+    }
+  }, [editor, element, disableCellsMerging]);
 
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);

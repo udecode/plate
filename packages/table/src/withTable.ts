@@ -17,9 +17,6 @@ export const withTable = <
   editor: E,
   plugin: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
-  editor = plugin.options.disableCellsMerging
-    ? editor
-    : withMergedCells<V, E>(editor);
   editor = withNormalizeTable<V, E>(editor);
   editor = withDeleteTable<V, E>(editor);
   editor = withGetFragmentTable<V, E>(editor);
