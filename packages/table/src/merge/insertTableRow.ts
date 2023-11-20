@@ -29,7 +29,7 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
-export const insertTableRowMerging = <V extends Value>(
+export const insertTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>,
   {
     header,
@@ -168,18 +168,8 @@ export const insertTableRowMerging = <V extends Value>(
       },
       {
         at: nextRowPath,
+        // select: !disableSelect
       }
     );
   });
-
-  if (!disableSelect) {
-    const nextCellPath = cellPath;
-    if (Path.isPath(at)) {
-      nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
-    } else {
-      nextCellPath[nextCellPath.length - 2] += cellRowSpan;
-    }
-
-    select(editor, nextCellPath);
-  }
 };

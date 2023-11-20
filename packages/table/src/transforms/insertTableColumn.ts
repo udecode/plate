@@ -13,7 +13,7 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
-import { insertTableColumnMerging } from '../merge/insertTableColumn';
+import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { TablePlugin, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 import { getCellTypes } from '../utils/index';
@@ -45,7 +45,7 @@ export const insertTableColumn = <V extends Value>(
     ELEMENT_TABLE
   );
   if (!disableCellsMerging) {
-    return insertTableColumnMerging(editor, options);
+    return insertTableMergeColumn(editor, options);
   }
 
   const { disableSelect, fromCell, at, header } = options;

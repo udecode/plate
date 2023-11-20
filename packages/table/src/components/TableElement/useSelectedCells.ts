@@ -28,9 +28,8 @@ export const useSelectedCells = () => {
   useEffect(() => {
     if (readOnly) return;
 
-    const { tableEntries, cellEntries } = getTableGridAbove(editor, {
-      format: 'all',
-    });
+    const tableEntries = getTableGridAbove(editor, { format: 'table' });
+    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
       const tables = tableEntries.map((entry) => entry[0]);

@@ -27,7 +27,7 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
-export const insertTableColumnMerging = <V extends Value>(
+export const insertTableMergeColumn = <V extends Value>(
   editor: PlateEditor<V>,
   {
     disableSelect,
@@ -153,7 +153,7 @@ export const insertTableColumnMerging = <V extends Value>(
       };
       insertElements(editor, emptyCell, {
         at: placementPath,
-        select: !disableSelect && curRowIndex === currentRowIndex,
+        // select: !disableSelect && curRowIndex === currentRowIndex,
       });
     }
   });

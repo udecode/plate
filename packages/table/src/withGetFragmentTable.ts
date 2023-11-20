@@ -39,7 +39,7 @@ export const withGetFragmentTable = <
           newFragment.push(...(rows[0].children[0].children as TElement[]));
           return;
         } else {
-          const subTable = getTableGridAbove(editor, { format: 'table' });
+          const subTable = getTableGridAbove(editor);
           if (subTable.length > 0) {
             newFragment.push(subTable[0][0]);
             return;

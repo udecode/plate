@@ -13,7 +13,7 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
-import { insertTableRowMerging } from '../merge/insertTableRow';
+import { insertTableMergeRow } from '../merge/insertTableRow';
 import { TablePlugin } from '../types';
 import { getCellTypes, getEmptyCellNode } from '../utils/index';
 
@@ -35,7 +35,7 @@ export const insertTableRow = <V extends Value>(
     ELEMENT_TABLE
   );
   if (!disableCellsMerging) {
-    return insertTableRowMerging(editor, options);
+    return insertTableMergeRow(editor, options);
   }
 
   const { header, fromRow, at, disableSelect } = options;

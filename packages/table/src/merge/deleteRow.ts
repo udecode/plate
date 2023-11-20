@@ -24,7 +24,7 @@ import { getCellTypes } from '../utils';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 
-export const deleteTableRowMerging = <V extends Value>(
+export const deleteTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>
 ) => {
   if (

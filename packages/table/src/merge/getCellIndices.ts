@@ -6,5 +6,6 @@ export const getCellIndices = (
   options: TablePlugin<Value>,
   startCell: TTableCellElement
 ) => {
-  return options._cellIndices.get(startCell);
+  // optional typing needs for tests
+  return options._cellIndices?.get(startCell);
 };

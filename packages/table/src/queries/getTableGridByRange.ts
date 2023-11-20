@@ -13,18 +13,7 @@ import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 import { TablePlugin, TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export type FormatType = 'table' | 'cell' | 'all';
-
-export interface TableGridEntries {
-  tableEntries: TElementEntry[];
-  cellEntries: TElementEntry[];
-}
-
-export type GetTableGridReturnType<T> = T extends 'all'
-  ? TableGridEntries
-  : TElementEntry[];
-
-export interface GetTableGridByRangeOptions<T extends FormatType> {
+export interface GetTableGridByRangeOptions {
   at: Range;
 
   /**
@@ -32,21 +21,18 @@ export interface GetTableGridByRangeOptions<T extends FormatType> {
    * - table element
    * - array of cells
    */
-  format?: T;
+  format?: 'table' | 'cell';
 }
 
 /**
  * Get sub table between 2 cell paths.
  */
-export const getTableGridByRange = <T extends FormatType, V extends Value>(
+export const getTableGridByRange = <V extends Value>(
   editor: PlateEditor<V>,
-  { at, format }: GetTableGridByRangeOptions<T>
-): GetTableGridReturnType<T> => {
-  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
-  if (!disableCellsMerging) {
+  { at, format = 'table' }: GetTableGridByRangeOptions
+): TElementEntry[] => {
+  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  if (!options.disableCellsMerging) {
     return getTableMergeGridByRange(editor, { at, format });
   }
 
@@ -103,15 +89,8 @@ export const getTableGridByRange = <T extends FormatType, V extends Value>(
   }
 
   if (format === 'cell') {
-    return cellEntries as GetTableGridReturnType<T>;
+    return cellEntries;
   }
 
-  if (format === 'table') {
-    return [[table, tablePath]] as GetTableGridReturnType<T>;
-  }
-
-  return {
-    tableEntries: [[table, tablePath]],
-    cellEntries,
-  } as GetTableGridReturnType<T>;
+  return [[table, tablePath]];
 };
