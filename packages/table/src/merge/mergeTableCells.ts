@@ -55,7 +55,7 @@ export const mergeTableCells = <V extends Value = Value>(
     cellEntries.forEach((cE) => {
       const cell = cE[0] as TTableCellElement;
       const { col: curCol } =
-        options._cellIndices.get(cell) ||
+        options._cellIndices?.get(cell) ||
         computeCellIndices(editor, tableEntry[0] as TTableElement, cell)!;
       if (col === curCol) {
         rowSpan += getRowSpan(cell);

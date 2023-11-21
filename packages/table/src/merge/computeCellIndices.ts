@@ -82,7 +82,7 @@ export const computeAllCellIndices = <V extends Value>(
 
       const indices = computeCellIndices(editor, tableNode, cell);
       if (indices) {
-        options._cellIndices.set(cell, indices);
+        options._cellIndices?.set(cell, indices);
       }
     }
   }

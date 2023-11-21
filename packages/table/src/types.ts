@@ -67,7 +67,7 @@ export interface TablePlugin<V extends Value = Value> {
   /**
    * For internal use. Keeps track of cell indices. Used only when disableCellsMerging is false.
    */
-  _cellIndices: TableStoreCellAttributes;
+  _cellIndices?: TableStoreCellAttributes;
 }
 
 export type TableStoreCellAttributes = WeakMap<
