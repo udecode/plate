@@ -1,5 +1,7 @@
 # @udecode/plate-caption
 
+## 25.0.1
+
 ## 25.0.0
 
 ## 24.5.2

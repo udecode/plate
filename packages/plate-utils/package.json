@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "25.0.0",
+  "version": "25.0.1",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
-    "@udecode/plate-core": "25.0.0",
+    "@udecode/plate-core": "25.0.1",
     "@udecode/slate": "25.0.0",
     "@udecode/slate-react": "25.0.0",
     "@udecode/slate-utils": "25.0.0",
