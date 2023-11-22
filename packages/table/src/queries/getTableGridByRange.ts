@@ -31,8 +31,11 @@ export const getTableGridByRange = <V extends Value>(
   editor: PlateEditor<V>,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
-  if (!options.disableCellsMerging) {
+  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+  if (enableMerging) {
     return getTableMergeGridByRange(editor, { at, format });
   }
 

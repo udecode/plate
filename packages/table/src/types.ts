@@ -60,12 +60,13 @@ export interface TablePlugin<V extends Value = Value> {
   minColumnWidth?: number;
 
   /**
-   * Enables / disabled cells merging functionality.
+   * Enable cells merging functionality.
+   * @default false
    */
-  disableCellsMerging?: boolean;
+  enableMerging?: boolean;
 
   /**
-   * For internal use. Keeps track of cell indices. Used only when disableCellsMerging is false.
+   * For internal use. Keeps track of cell indices. Used only when enableMerging is true.
    */
   _cellIndices?: TableStoreCellAttributes;
 }
@@ -113,7 +114,7 @@ export interface TTableCellElement extends TElement {
   attributes: {
     colspan?: string;
     rowspan?: string;
-  }
+  };
 }
 
 export type BorderDirection = 'top' | 'left' | 'bottom' | 'right';

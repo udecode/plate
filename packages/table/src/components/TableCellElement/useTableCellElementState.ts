@@ -62,8 +62,11 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
-  const options = getPluginOptions<TablePlugin>(editor as any, ELEMENT_TABLE);
-  if (options.disableCellsMerging) {
+  const { enableMerging, _cellIndices } = getPluginOptions<TablePlugin>(
+    editor as any,
+    ELEMENT_TABLE
+  );
+  if (!enableMerging) {
     const colIndex = getTableColumnIndex(editor, cellElement);
     const rowIndex = getTableRowIndex(editor, cellElement);
 
@@ -95,7 +98,7 @@ export const useTableCellElementState = ({
   let result: { col: number; row: number };
 
   const calculated =
-    getCellIndices(options, cellElement) ||
+    getCellIndices(_cellIndices!, cellElement) ||
     computeCellIndices(editor, tableElement, cellElement);
 
   if (calculated) {

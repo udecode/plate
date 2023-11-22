@@ -1,11 +1,9 @@
-import { Value } from '@udecode/plate-common';
-
-import { TablePlugin, TTableCellElement } from '../types';
+import { TableStoreCellAttributes, TTableCellElement } from '../types';
 
 export const getCellIndices = (
-  options: TablePlugin<Value>,
+  cellIndices: TableStoreCellAttributes,
   startCell: TTableCellElement
 ) => {
   // optional typing needs for tests
-  return options._cellIndices?.get(startCell);
+  return cellIndices?.get(startCell);
 };

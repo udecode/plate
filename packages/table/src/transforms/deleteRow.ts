@@ -13,11 +13,11 @@ import { deleteTableMergeRow } from '../merge/deleteRow';
 import { TablePlugin, TTableElement } from '../types';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
-  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
+  const { enableMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
-  if (!disableCellsMerging) {
+  if (enableMerging) {
     return deleteTableMergeRow(editor);
   }
 

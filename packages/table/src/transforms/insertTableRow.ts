@@ -30,11 +30,11 @@ export const insertTableRow = <V extends Value>(
     disableSelect?: boolean;
   } = {}
 ) => {
-  const { disableCellsMerging } = getPluginOptions<TablePlugin, V>(
+  const { enableMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
-  if (!disableCellsMerging) {
+  if (enableMerging) {
     return insertTableMergeRow(editor, options);
   }
 
