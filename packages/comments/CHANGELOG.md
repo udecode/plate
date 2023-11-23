@@ -1,5 +1,23 @@
 # @udecode/plate-comments
 
+## 26.0.0
+
+### Major Changes
+
+- [#2760](https://github.com/udecode/plate/pull/2760) by [@12joan](https://github.com/12joan) –
+  - Renamed the `comments` prop on CommentsProvider to `initialComments` to reflect the fact that updating its value after the initial render has no effect
+  - Removed the following props from CommentsProvider, since they represent the internal state of the comments plugin and should not be controlled externally:
+    - `activeCommentId`
+    - `addingCommentId`
+    - `newValue`
+    - `focusTextarea`
+  - The following props on CommentsProvider can now be updated after the initial render (whereas prior to this version, doing so had no effect):
+    - `myUserId`
+    - `users`
+    - `onCommentAdd`
+    - `onCommentUpdate`
+    - `onCommentDelete`
+
 ## 25.0.1
 
 ## 25.0.0

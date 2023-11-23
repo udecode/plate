@@ -1,5 +1,13 @@
 # @udecode/plate-serializer-html
 
+## 26.0.0
+
+### Major Changes
+
+- [#2733](https://github.com/udecode/plate/pull/2733) by [@dimaanj](https://github.com/dimaanj) –
+  - [Breaking] `serializeHtml`: replaced option `slateProps` by `plateProps`.
+  - Fix errors when the components were using Plate hooks.
+
 ## 25.0.1
 
 ## 25.0.0
