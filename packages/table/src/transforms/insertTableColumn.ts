@@ -13,18 +13,14 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
+import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { TablePlugin, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = <V extends Value>(
   editor: PlateEditor<V>,
-  {
-    disableSelect,
-    fromCell,
-    at,
-    header,
-  }: {
+  options: {
     header?: boolean;
 
     /**
@@ -44,6 +40,16 @@ export const insertTableColumn = <V extends Value>(
     disableSelect?: boolean;
   } = {}
 ) => {
+  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+  if (enableMerging) {
+    return insertTableMergeColumn(editor, options);
+  }
+
+  const { disableSelect, fromCell, at, header } = options;
+
   const cellEntry = fromCell
     ? findNode(editor, {
         at: fromCell,

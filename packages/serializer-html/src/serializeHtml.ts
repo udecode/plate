@@ -4,7 +4,7 @@ import {
   EElement,
   isText,
   PlateEditor,
-  SlateProps,
+  PlateProps,
   Value,
 } from '@udecode/plate-common';
 import { encode } from 'html-entities';
@@ -22,7 +22,7 @@ export const serializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
     nodes,
-    slateProps,
+    plateProps,
     stripDataAttributes = true,
     preserveClassNames,
     stripWhitespace = true,
@@ -45,9 +45,9 @@ export const serializeHtml = <V extends Value>(
     preserveClassNames?: string[];
 
     /**
-     * Slate props to provide if the rendering depends on slate hooks
+     * Slate props to provide if the rendering depends on plate/slate hooks
      */
-    slateProps?: Partial<SlateProps>;
+    plateProps?: Partial<PlateProps>;
 
     /**
      * Whether stripping whitespaces from serialized HTML
@@ -82,7 +82,7 @@ export const serializeHtml = <V extends Value>(
             attributes: { 'data-slate-leaf': true },
             editor,
           },
-          slateProps,
+          plateProps,
           preserveClassNames,
         });
       }
@@ -99,7 +99,7 @@ export const serializeHtml = <V extends Value>(
           attributes: { 'data-slate-node': 'element', ref: null },
           editor,
         },
-        slateProps,
+        plateProps,
         preserveClassNames,
         dndWrapper,
       });

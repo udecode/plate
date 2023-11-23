@@ -1,9 +1,9 @@
 import {
   pipeInjectProps,
   PlateEditor,
+  PlateProps,
   PlateRenderLeafProps,
   pluginRenderLeaf,
-  SlateProps,
   Value,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
@@ -16,11 +16,11 @@ export const leafToHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
     props,
-    slateProps,
+    plateProps,
     preserveClassNames,
   }: {
     props: PlateRenderLeafProps<V>;
-    slateProps?: Partial<SlateProps>;
+    plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
   }
 ) => {
@@ -43,7 +43,7 @@ export const leafToHtml = <V extends Value>(
     let html = decode(
       renderToStaticMarkup(
         createElementWithSlate({
-          ...slateProps,
+          ...plateProps,
           children: serialized,
         })
       )

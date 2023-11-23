@@ -32,7 +32,6 @@ export const getTableGridAbove = <V extends Value = Value>(
     },
     ...options,
   });
-
   if (edges) {
     const [start, end] = edges;
 

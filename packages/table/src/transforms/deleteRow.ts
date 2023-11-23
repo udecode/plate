@@ -1,5 +1,6 @@
 import {
   getAboveNode,
+  getPluginOptions,
   getPluginType,
   PlateEditor,
   removeNodes,
@@ -8,9 +9,18 @@ import {
 } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
-import { TTableElement } from '../types';
+import { deleteTableMergeRow } from '../merge/deleteRow';
+import { TablePlugin, TTableElement } from '../types';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
+  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+  if (enableMerging) {
+    return deleteTableMergeRow(editor);
+  }
+
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

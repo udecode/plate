@@ -2,9 +2,9 @@ import { ComponentClass, FunctionComponent } from 'react';
 import {
   pipeInjectProps,
   PlateEditor,
+  PlateProps,
   PlateRenderElementProps,
   pluginRenderElement,
-  SlateProps,
   Value,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
@@ -17,12 +17,12 @@ export const elementToHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
     props,
-    slateProps,
+    plateProps,
     preserveClassNames,
     dndWrapper,
   }: {
     props: PlateRenderElementProps<V>;
-    slateProps?: Partial<SlateProps>;
+    plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
     dndWrapper?: string | FunctionComponent | ComponentClass;
   }
@@ -50,8 +50,8 @@ export const elementToHtml = <V extends Value>(
       renderToStaticMarkup(
         createElementWithSlate(
           {
-            ...slateProps,
-
+            editor: editor as any,
+            ...plateProps,
             children:
               plugin.serializeHtml?.(props as any) ??
               pluginRenderElement(editor, plugin)(props),

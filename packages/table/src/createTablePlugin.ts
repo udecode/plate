@@ -2,7 +2,7 @@ import { createPluginFactory } from '@udecode/plate-common';
 
 import { onKeyDownTable } from './onKeyDownTable';
 import { insertTableColumn, insertTableRow } from './transforms/index';
-import { TablePlugin } from './types';
+import { TablePlugin, TableStoreCellAttributes } from './types';
 import { withTable } from './withTable';
 
 export const ELEMENT_TABLE = 'table';
@@ -36,6 +36,8 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       });
     },
     minColumnWidth: 48,
+    enableMerging: false,
+    _cellIndices: new WeakMap() as TableStoreCellAttributes,
   },
   withOverrides: withTable,
   plugins: [

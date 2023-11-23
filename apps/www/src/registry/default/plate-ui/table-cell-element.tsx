@@ -34,12 +34,15 @@ const TableCellElement = React.forwardRef<
     rowSize,
     borders,
     isSelectingCell,
+    colSpan,
   } = useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
   const resizableState = useTableCellElementResizableState({
     colIndex,
     rowIndex,
+    colSpan,
   });
+
   const { rightProps, bottomProps, leftProps, hiddenLeft } =
     useTableCellElementResizable(resizableState);
 
@@ -50,7 +53,7 @@ const TableCellElement = React.forwardRef<
       asChild
       ref={ref}
       className={cn(
-        'relative overflow-visible border-none bg-background p-0',
+        'relative h-full overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
         !hideBorder &&

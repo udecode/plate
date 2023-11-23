@@ -58,7 +58,23 @@ export interface TablePlugin<V extends Value = Value> {
    * @default 48
    */
   minColumnWidth?: number;
+
+  /**
+   * Enable cells merging functionality.
+   * @default false
+   */
+  enableMerging?: boolean;
+
+  /**
+   * For internal use. Keeps track of cell indices. Used only when enableMerging is true.
+   */
+  _cellIndices?: TableStoreCellAttributes;
 }
+
+export type TableStoreCellAttributes = WeakMap<
+  TTableCellElement,
+  { row: number; col: number }
+>;
 
 export interface BorderStyle {
   // https://docx.js.org/api/enums/BorderStyle.html
@@ -78,6 +94,7 @@ export interface TTableRowElement extends TElement {
 
 export interface TTableCellElement extends TElement {
   colSpan?: number;
+  rowSpan?: number;
   size?: number;
   background?: string;
   borders?: {
@@ -93,6 +110,10 @@ export interface TTableCellElement extends TElement {
      * Only the last column cells have a right border.
      */
     right?: BorderStyle;
+  };
+  attributes: {
+    colspan?: string;
+    rowspan?: string;
   };
 }
 

@@ -3,7 +3,8 @@ import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
 import { ELEMENT_TR } from '../createTablePlugin';
 import { getEmptyCellNode, GetEmptyCellNodeOptions } from './getEmptyCellNode';
 
-export interface GetEmptyRowNodeOptions extends GetEmptyCellNodeOptions {
+export interface GetEmptyRowNodeOptions
+  extends Omit<GetEmptyCellNodeOptions, '_cellIndices'> {
   colCount?: number;
 }
 

@@ -12,6 +12,7 @@ export const { tableStore, useTableStore } = createAtomStore(
     marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,
+    selectedTable: null as TElement[] | null,
   },
   { name: 'table' as const, scope: ELEMENT_TABLE }
 );

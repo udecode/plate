@@ -1,49 +1,35 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
-import { createTEditor, SlateProps, withTReact } from '@udecode/plate-common';
-import { Slate } from 'slate-react';
+import { Plate, PlateProps } from '@udecode/plate-common';
 
 /**
- * Create a React element wrapped in a Slate provider.
- * By default, it will use an empty editor.
- * TODO: allow other providers
+ * Create a React element wrapped in a Plate provider.
  */
 export const createElementWithSlate = (
-  slateProps?: Partial<SlateProps>,
+  plateProps?: Partial<PlateProps>,
   dndWrapper?: string | FunctionComponent | ComponentClass
 ) => {
   const {
-    editor = withTReact(createTEditor()),
+    editor,
     value = [],
     onChange = () => {},
     children,
     ...props
-  } = slateProps || {};
+  } = plateProps || {};
 
-  if (dndWrapper) {
-    return React.createElement(
-      dndWrapper,
-      null,
-      React.createElement(
-        Slate,
-        {
-          editor,
-          initialValue: value,
-          onChange,
-          ...props,
-        } as any,
-        children
-      )
-    );
-  }
-
-  return React.createElement(
-    Slate,
+  const plate = React.createElement(
+    Plate,
     {
       editor,
       initialValue: value,
       onChange,
       ...props,
-    } as any,
+    } as PlateProps,
     children
   );
+
+  if (dndWrapper) {
+    return React.createElement(dndWrapper, null, plate);
+  }
+
+  return plate;
 };

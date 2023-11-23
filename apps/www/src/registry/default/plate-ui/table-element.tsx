@@ -10,10 +10,13 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common';
 import {
+  mergeTableCells,
   TTableElement,
+  unmergeTableCells,
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableElementState,
+  useTableMergeState,
 } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -114,35 +117,73 @@ const TableFloatingToolbar = React.forwardRef<
   const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorState();
-  const open = !readOnly && selected && isCollapsed(editor.selection);
+
+  const collapsed = !readOnly && selected && isCollapsed(editor.selection);
+  const open = !readOnly && selected;
+
+  const { canMerge, canUnmerge } = useTableMergeState();
+
+  const mergeContent = canMerge && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={() => mergeTableCells(editor)}
+    >
+      <Icons.combine className="mr-2 h-4 w-4" />
+      Merge
+    </Button>
+  );
+
+  const unmergeButton = canUnmerge && (
+    <Button
+      contentEditable={false}
+      variant="ghost"
+      isMenu
+      onClick={() => unmergeTableCells(editor)}
+    >
+      <Icons.ungroup className="mr-2 h-4 w-4" />
+      Unmerge
+    </Button>
+  );
+
+  const bordersContent = collapsed && (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" isMenu>
+            <Icons.borderAll className="mr-2 h-4 w-4" />
+            Borders
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuPortal>
+          <TableBordersDropdownMenuContent />
+        </DropdownMenuPortal>
+      </DropdownMenu>
+
+      <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
+        <Icons.delete className="mr-2 h-4 w-4" />
+        Delete
+      </Button>
+    </>
+  );
 
   return (
     <Popover open={open} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
-      <PopoverContent
-        ref={ref}
-        className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        {...props}
-      >
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
-              <Icons.borderAll className="mr-2 h-4 w-4" />
-              Borders
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <TableBordersDropdownMenuContent />
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
-          <Icons.delete className="mr-2 h-4 w-4" />
-          Delete
-        </Button>
-      </PopoverContent>
+      {(canMerge || canUnmerge || collapsed) && (
+        <PopoverContent
+          ref={ref}
+          className={cn(popoverVariants(), 'flex w-[220px] flex-col gap-1 p-1')}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          {...props}
+        >
+          {unmergeButton}
+          {mergeContent}
+          {bordersContent}
+        </PopoverContent>
+      )}
     </Popover>
   );
 });

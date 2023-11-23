@@ -51,6 +51,7 @@ export const ResizeHandleProvider = ({
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
+  initialSize?: number;
   onResize?: (event: ResizeEvent) => void;
   onMouseDown?: MouseEventHandler;
   onTouchStart?: TouchEventHandler;
@@ -60,6 +61,7 @@ export type ResizeHandleOptions = {
 
 export const useResizeHandleState = ({
   direction = 'left',
+  initialSize: _initialSize,
   onResize,
   onMouseDown,
   onTouchStart,
@@ -88,7 +90,12 @@ export const useResizeHandleState = ({
 
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      onResize?.({ initialSize, delta, finished, direction });
+      onResize?.({
+        initialSize: _initialSize || initialSize,
+        delta,
+        finished,
+        direction,
+      });
     };
 
     const handleMouseMove = (event: MouseEvent | TouchEvent) =>
