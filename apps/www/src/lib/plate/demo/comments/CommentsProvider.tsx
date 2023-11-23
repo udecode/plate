@@ -5,7 +5,7 @@ import { CommentsProvider as CommentsProviderPrimitive } from '@udecode/plate-co
 export function CommentsProvider({ children }: { children: ReactNode }) {
   return (
     <CommentsProviderPrimitive
-      comments={commentsData}
+      initialComments={commentsData}
       users={usersData}
       myUserId="1"
     >

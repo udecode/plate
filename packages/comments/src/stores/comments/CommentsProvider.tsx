@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import {
   createAtomStore,
   getJotaiProviderInitialValues,
@@ -11,9 +11,7 @@ import {
 
 import { CommentUser, TComment } from '../../types';
 
-export const SCOPE_COMMENTS = Symbol('comments');
-
-export interface CommentsStoreState {
+export interface CommentsContext {
   /**
    * Id of the current user.
    */
@@ -24,6 +22,16 @@ export interface CommentsStoreState {
    */
   users: Record<string, CommentUser>;
 
+  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
+  onCommentUpdate:
+    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
+    | null;
+  onCommentDelete: ((id: string) => void) | null;
+}
+
+export const SCOPE_COMMENTS = Symbol('comments');
+
+export interface CommentsStoreState {
   /**
    * Comments data.
    */
@@ -39,26 +47,10 @@ export interface CommentsStoreState {
   newValue: Value;
 
   focusTextarea: boolean;
-
-  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-  onCommentUpdate:
-    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
-    | null;
-  onCommentDelete: ((id: string) => void) | null;
 }
 
 export const { commentsStore, useCommentsStore } = createAtomStore(
   {
-    /**
-     * Id of the current user.
-     */
-    myUserId: null,
-
-    /**
-     * Users data.
-     */
-    users: {},
-
     /**
      * Comments data.
      */
@@ -74,34 +66,82 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
     newValue: [{ type: 'p', children: [{ text: '' }] }],
 
     focusTextarea: false,
-
-    onCommentAdd: null,
-    onCommentUpdate: null,
-    onCommentDelete: null,
-  } as CommentsStoreState,
+  } satisfies CommentsStoreState as CommentsStoreState,
   {
     name: 'comments',
     scope: SCOPE_COMMENTS,
   }
 );
 
+export const CommentsContext = createContext<CommentsContext>({
+  myUserId: null,
+  users: {},
+  onCommentAdd: null,
+  onCommentUpdate: null,
+  onCommentDelete: null,
+});
+
+export interface CommentsProviderProps extends Partial<CommentsContext> {
+  initialComments?: CommentsStoreState['comments'];
+  children: ReactNode;
+}
+
 export function CommentsProvider({
   children,
-  ...props
-}: Partial<CommentsStoreState> & { children: ReactNode }) {
+  initialComments,
+  myUserId = null,
+  users = {},
+  onCommentAdd = null,
+  onCommentUpdate = null,
+  onCommentDelete = null,
+}: CommentsProviderProps) {
   return (
     <JotaiProvider
-      initialValues={getJotaiProviderInitialValues(commentsStore, props)}
+      initialValues={getJotaiProviderInitialValues(commentsStore, {
+        comments: initialComments,
+      })}
       scope={SCOPE_COMMENTS}
     >
-      {children}
+      <CommentsContext.Provider
+        value={{
+          myUserId,
+          users,
+          onCommentAdd,
+          onCommentUpdate,
+          onCommentDelete,
+        }}
+      >
+        {children}
+      </CommentsContext.Provider>
     </JotaiProvider>
   );
 }
 
 export const useCommentsStates = () => useCommentsStore().use;
-export const useCommentsSelectors = () => useCommentsStore().get;
 export const useCommentsActions = () => useCommentsStore().set;
+
+export const useCommentsSelectors = () => {
+  const context = useContext(CommentsContext);
+
+  const contextGetters = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(context).map(([key, value]) => [key, () => value])
+      ) as { [K in keyof CommentsContext]: () => CommentsContext[K] },
+    [context]
+  );
+
+  const storeGetters = useCommentsStore().get;
+
+  // Combine getters from context and store
+  return useMemo(
+    () => ({
+      ...contextGetters,
+      ...storeGetters,
+    }),
+    [contextGetters, storeGetters]
+  );
+};
 
 export const useCommentById = (id?: string | null): TComment | null => {
   const comments = useCommentsSelectors().comments();
