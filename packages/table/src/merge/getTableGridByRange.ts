@@ -53,7 +53,10 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const startCellEntry = findNode(editor, {
     at: (at as any).anchor.path,
@@ -77,11 +80,11 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const realTable = tableEntry[0] as TTableElement;
 
   const { col: _startColIndex, row: _startRowIndex } =
-    getCellIndices(options, startCell) ||
+    getCellIndices(cellIndices!, startCell) ||
     computeCellIndices(editor, realTable, startCell)!;
 
   const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
-    getCellIndices(options, endCell) ||
+    getCellIndices(cellIndices!, endCell) ||
       computeCellIndices(editor, realTable, endCell)!,
     endCell
   );

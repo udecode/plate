@@ -1,5 +1,4 @@
 import {
-  focusEditor,
   getAboveNode,
   getPluginOptions,
   getPluginType,
@@ -28,7 +27,10 @@ export const deleteTableMergeColumn = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+      editor,
+      ELEMENT_TABLE
+    );
 
     const tableEntry = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -44,7 +46,10 @@ export const deleteTableMergeColumn = <V extends Value>(
     if (!selectedCellEntry) return;
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
-    const { col: deletingColIndex } = getCellIndices(options, selectedCell)!;
+    const { col: deletingColIndex } = getCellIndices(
+      cellIndices!,
+      selectedCell
+    )!;
     const colsDeleteNumber = getColSpan(selectedCell);
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
@@ -72,7 +77,7 @@ export const deleteTableMergeColumn = <V extends Value>(
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getCellIndices(options, currentCell)!;
+        const { col: curColIndex } = getCellIndices(cellIndices!, currentCell)!;
         const curColSpan = getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
@@ -95,7 +100,7 @@ export const deleteTableMergeColumn = <V extends Value>(
       const curCell = cur as TTableCellElement;
 
       const { col: curColIndex, row: curColRowIndex } = getCellIndices(
-        options,
+        cellIndices!,
         curCell
       )!;
       const curColSpan = getColSpan(curCell);
@@ -141,7 +146,7 @@ export const deleteTableMergeColumn = <V extends Value>(
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
         const { col: curColIndex, row: curRowIndex } = getCellIndices(
-          options,
+          cellIndices!,
           curCell
         )!;
         if (

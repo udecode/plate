@@ -26,7 +26,10 @@ export const mergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    const { _cellIndices } = getPluginOptions<TablePlugin, V>(
+      editor,
+      ELEMENT_TABLE
+    );
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -49,13 +52,13 @@ export const mergeTableCells = <V extends Value = Value>(
     // calculate the rowSpan which is the number of vertical cells that a cell should span.
     let rowSpan = 0;
     const { col } = getCellIndices(
-      options,
+      _cellIndices!,
       cellEntries[0][0] as TTableCellElement
     )!;
     cellEntries.forEach((cE) => {
       const cell = cE[0] as TTableCellElement;
       const { col: curCol } =
-        options._cellIndices?.get(cell) ||
+        _cellIndices?.get(cell) ||
         computeCellIndices(editor, tableEntry[0] as TTableElement, cell)!;
       if (col === curCol) {
         rowSpan += getRowSpan(cell);

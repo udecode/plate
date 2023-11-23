@@ -21,7 +21,10 @@ export const unmergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+      editor,
+      ELEMENT_TABLE
+    );
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -54,7 +57,10 @@ export const unmergeTableCells = <V extends Value = Value>(
     // Remove the original merged cell from the editor
     removeNodes(editor, { at: path });
 
-    const { col } = getCellIndices(options, cellElem as TTableCellElement)!;
+    const { col } = getCellIndices(
+      cellIndices!,
+      cellElem as TTableCellElement
+    )!;
 
     const getColPathForRow = (row: number) => {
       let newColPath = 0;
@@ -66,7 +72,10 @@ export const unmergeTableCells = <V extends Value = Value>(
       const rowEl = rowEntry[0] as TTableRowElement;
 
       for (const item of rowEl.children) {
-        const { col: c } = getCellIndices(options, item as TTableCellElement)!;
+        const { col: c } = getCellIndices(
+          cellIndices!,
+          item as TTableCellElement
+        )!;
         if (c === col - 1) {
           newColPath = rowEl.children.indexOf(item) + 1;
           break;

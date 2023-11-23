@@ -54,7 +54,10 @@ export const insertTableMergeColumn = <V extends Value>(
     disableSelect?: boolean;
   } = {}
 ) => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const cellEntry = fromCell
     ? findNode(editor, {
@@ -79,7 +82,7 @@ export const insertTableMergeColumn = <V extends Value>(
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
   const [tableNode, tablePath] = tableEntry;
 
-  const { col: cellColIndex } = getCellIndices(options, cell)!;
+  const { col: cellColIndex } = getCellIndices(cellIndices!, cell)!;
   const cellColSpan = getColSpan(cell);
 
   let nextColIndex: number;
@@ -92,7 +95,6 @@ export const insertTableMergeColumn = <V extends Value>(
     checkingColIndex = cellColIndex + cellColSpan - 1;
   }
 
-  const currentRowIndex = cellPath.at(-2); // recheck it
   const rowNumber = tableNode.children.length;
   const firstCol = nextColIndex <= 0;
 
@@ -117,7 +119,7 @@ export const insertTableMergeColumn = <V extends Value>(
   affectedCells.forEach((cur) => {
     const curCell = cur as TTableCellElement;
     const { row: curRowIndex, col: curColIndex } = getCellIndices(
-      options,
+      cellIndices!,
       curCell
     )!;
     const curRowSpan = getRowSpan(curCell);

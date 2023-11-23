@@ -12,7 +12,10 @@ export const findCellByIndexes = <V extends Value>(
   searchRowIndex: number,
   searchColIndex: number
 ) => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const allCells = table.children.flatMap(
     (current) => current.children
@@ -22,7 +25,7 @@ export const findCellByIndexes = <V extends Value>(
     const cellElement = cell as TTableCellElement;
 
     const indices =
-      getCellIndices(options, cellElement) ||
+      getCellIndices(cellIndices!, cellElement) ||
       computeCellIndices(editor, table, cellElement)!;
 
     const { col: _startColIndex, row: _startRowIndex } = indices;

@@ -6,7 +6,6 @@ import {
   getPluginType,
   insertElements,
   PlateEditor,
-  select,
   setNodes,
   Value,
   withoutNormalizing,
@@ -47,7 +46,10 @@ export const insertTableMergeRow = <V extends Value>(
     disableSelect?: boolean;
   } = {}
 ) => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
 
   const trEntry = fromRow
     ? findNode(editor, {
@@ -80,7 +82,7 @@ export const insertTableMergeRow = <V extends Value>(
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
   const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } = getCellIndices(options, cellElement)!;
+  const { row: cellRowIndex } = getCellIndices(cellIndices!, cellElement)!;
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -119,7 +121,7 @@ export const insertTableMergeRow = <V extends Value>(
 
     const curCell = cur as TTableCellElement;
     const { row: curRowIndex, col: curColIndex } = getCellIndices(
-      options,
+      cellIndices!,
       curCell
     )!;
 

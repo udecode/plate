@@ -32,7 +32,10 @@ export const deleteTableMergeRow = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+      editor,
+      ELEMENT_TABLE
+    );
 
     const currentTableItem = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -46,7 +49,10 @@ export const deleteTableMergeRow = <V extends Value>(
     if (!selectedCellEntry) return;
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
-    const { row: deletingRowIndex } = getCellIndices(options, selectedCell)!;
+    const { row: deletingRowIndex } = getCellIndices(
+      cellIndices!,
+      selectedCell
+    )!;
     const rowsDeleteNumber = getRowSpan(selectedCell);
     const endingRowIndex = deletingRowIndex + rowsDeleteNumber - 1;
 
@@ -72,7 +78,7 @@ export const deleteTableMergeRow = <V extends Value>(
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { row: curRowIndex } = getCellIndices(options, currentCell)!;
+        const { row: curRowIndex } = getCellIndices(cellIndices!, currentCell)!;
         const curRowSpan = getRowSpan(currentCell);
 
         // if (!curRowIndex || !curRowSpan) return acc;
@@ -100,7 +106,7 @@ export const deleteTableMergeRow = <V extends Value>(
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;
         const { col: curRowCellColIndex } = getCellIndices(
-          options,
+          cellIndices!,
           curRowCell
         )!;
         const curRowCellRowSpan = getRowSpan(curRowCell);
@@ -108,7 +114,7 @@ export const deleteTableMergeRow = <V extends Value>(
         // search for anchor cell where to place current cell
         const startingCellIndex = nextRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
-          const { col: curColIndex } = getCellIndices(options, cell)!;
+          const { col: curColIndex } = getCellIndices(cellIndices!, cell)!;
           return curColIndex >= curRowCellColIndex;
         });
 
@@ -116,7 +122,7 @@ export const deleteTableMergeRow = <V extends Value>(
           startingCellIndex
         ] as TTableCellElement;
         const { col: startingColIndex } = getCellIndices(
-          options,
+          cellIndices!,
           startingCell
         )!;
 
@@ -151,7 +157,10 @@ export const deleteTableMergeRow = <V extends Value>(
 
     squizeRowSpanCells.forEach((cur) => {
       const curRowCell = cur as TTableCellElement;
-      const { row: curRowCellRowIndex } = getCellIndices(options, curRowCell)!;
+      const { row: curRowCellRowIndex } = getCellIndices(
+        cellIndices!,
+        curRowCell
+      )!;
       const curRowCellRowSpan = getRowSpan(curRowCell);
 
       const curCellPath = findNodePath(editor, curRowCell)!;

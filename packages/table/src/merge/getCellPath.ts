@@ -20,13 +20,16 @@ export const getCellPath = <V extends Value>(
   curRowIndex: number,
   curColIndex: number
 ) => {
-  const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
   const [tableNode, tablePath] = tableEntry;
 
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
-    const { col: colIndex } = getCellIndices(options, cE)!;
+    const { col: colIndex } = getCellIndices(cellIndices!, cE)!;
     return colIndex === curColIndex;
   });
   return tablePath.concat([curRowIndex, foundColIndex]);
