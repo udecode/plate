@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useEditorRef } from '@udecode/plate-core';
 import {
   flip,
   offset,
@@ -15,8 +16,11 @@ import {
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link';
+import { useCallback, useMemo } from 'react';
+import { ReactEditor } from 'slate-react';
 
 import { cn } from '@/lib/utils';
+
 import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';
@@ -40,6 +44,8 @@ export interface LinkFloatingToolbarProps {
 }
 
 export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
+  const editor = useEditorRef();
+
   const insertState = useFloatingLinkInsertState({
     ...state,
     floatingOptions: {
@@ -67,6 +73,47 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
     editButtonProps,
     unlinkButtonProps,
   } = useFloatingLinkEdit(editState);
+
+  const getSelectionAbsolutePosition = useCallback(() => {
+    if (!editor.selection) return;
+
+    try {
+      const domRange = ReactEditor.toDOMRange(
+        editor as ReactEditor,
+        editor.selection
+      );
+
+      const rect = domRange.getBoundingClientRect();
+
+      const editorContainer = ReactEditor.toDOMNode(
+        editor as ReactEditor,
+        editor.children[0]
+      ).parentElement;
+
+      if (!editorContainer) return;
+
+      const editorRect = editorContainer.getBoundingClientRect();
+
+      // Calculate the maximum x position
+      const maxWidth = editorRect.width - 288; // 288px for w-72
+      let x = rect.left - editorRect.left + editorContainer.scrollLeft;
+
+      // Ensure x does not exceed the maximum width
+      x = Math.min(x, maxWidth);
+
+      return {
+        x: x,
+        y: rect.top - editorRect.top + editorContainer.scrollTop + 40,
+      };
+    } catch (error) {
+      return;
+    }
+  }, [editor]);
+
+  const currentAbsolutePosition = useMemo(() => {
+    // This will only be recalculated when `editor.selection` changes
+    return getSelectionAbsolutePosition();
+  }, [editor.selection, getSelectionAbsolutePosition]);
 
   if (hidden) return null;
 
@@ -136,12 +183,18 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
     </div>
   );
 
+  if (!currentAbsolutePosition) return null;
+
   return (
     <>
       <div
         ref={insertRef}
         className={cn(popoverVariants(), 'w-auto p-1')}
-        {...insertProps}
+        style={{
+          ...insertProps.style,
+          top: currentAbsolutePosition.y,
+          left: currentAbsolutePosition.x,
+        }}
       >
         {input}
       </div>
@@ -149,7 +202,11 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
       <div
         ref={editRef}
         className={cn(popoverVariants(), 'w-auto p-1')}
-        {...editProps}
+        style={{
+          ...editProps.style,
+          top: currentAbsolutePosition.y,
+          left: currentAbsolutePosition.x,
+        }}
       >
         {editContent}
       </div>
